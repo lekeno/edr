@@ -70,13 +70,11 @@ class EDRCmdrProfile(object):
         return lut[mapped_index]
 
     def short_profile(self):
-        result = "{name}: {karma} ".format(name=self.name, karma=self.karma_title())
+        result = "{name}: {karma}".format(name=self.name, karma=self.karma_title())
        
         if not (self.squadron is None or self.squadron == ""):
-            result += "(member of {squadron}".format(squadron=self.squadron)
+            result += " member of {squadron}".format(squadron=self.squadron)
 
         if not (self.role is None or self.role == ""):
-            result += ", {role}".format(role=self.role)
-    
-        result += ")"
+            result += ", {role}".format(role=self.role)    
         return result

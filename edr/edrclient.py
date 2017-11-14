@@ -5,6 +5,7 @@ import Tkinter as tk
 import ttk
 import myNotebook as notebook
 from config import config
+import configparser
 
 import lrucache
 import edentities
@@ -66,6 +67,7 @@ class EDRClient(object):
         self.inara.version = self.EDR_VERSION
         self.mandatory_update = False
         self.crimes_reporting = True
+        self.motd = []
 
     def loudAudioFeedback(self):
         config.set("EDRAudioFeedbackVolume", "loud")
