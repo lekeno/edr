@@ -1,6 +1,3 @@
-# config files
-config/config.ini
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -102,3 +99,5 @@ ENV/
 
 # mypy
 .mypy_cache/
+edr/config/config.ini
+.vscode/*
