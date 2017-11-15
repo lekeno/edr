@@ -1,9 +1,11 @@
-import configparser
+import os
+import ConfigParser
 
 class EDRConfig(object):
     def __init__(self, config_file='config/config.ini'):
-        self.config = configparser.ConfigParser()
-        self.config.read(config_file)
+        self.config = ConfigParser.ConfigParser()
+        self.config.read(os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), config_file))
 
     def edr_version(self):
         return self.config.get('general', 'version')
