@@ -41,7 +41,7 @@ class EDRCmdrProfile(object):
         self.name = json_cmdr.get("userName", "")
         wing = json_cmdr.get("commanderWing", None)
         self.squadron = None if wing is None else wing["wingName"] 
-        self.role = json_cmdr.get("preferredGameRole", "failed")
+        self.role = json_cmdr.get("preferredGameRole", None)
         self.karma = 0 #not supported by Inara API
 
     def from_dict(self, json_cmdr):
@@ -70,7 +70,7 @@ class EDRCmdrProfile(object):
         return lut[mapped_index]
 
     def short_profile(self):
-        result = "{name}: {karma}".format(name=self.name, karma=self.karma_title())
+        result = u"{name}: {karma}".format(name=self.name, karma=self.karma_title())
        
         if not (self.squadron is None or self.squadron == ""):
             result += " member of {squadron}".format(squadron=self.squadron)
