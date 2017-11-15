@@ -3,14 +3,15 @@ import urllib
 import json
 import datetime
 import edrcmdrprofile
+import edrconfig
 
 class EDRInara(object):
 
-    EDR_INARA_API_KEY = ""
-    INARA_ENDPOINT = "https://inara.cz/inapi/v1/"
-
     def __init__(self):
-        self.version = None
+        config = edrconfig.EDRConfig()
+        self.version = config.edr_version()
+        self.INARA_API_KEY = config.inara_api_key()
+        self.INARA_ENDPOINT = config.inara_endpoint()
         self.cmdr_name = None
 
     def cmdr(self, cmdr_name):
@@ -54,7 +55,7 @@ class EDRInara(object):
             "appName": "Elidex",
             "appVersion": self.version,
             "isDeveloped": False,
-            "APIkey": self.EDR_INARA_API_KEY,
+            "APIkey": self.INARA_API_KEY,
             "commanderName": self.cmdr_name
         }
 

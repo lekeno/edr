@@ -5,6 +5,7 @@ import json
 
 import edtime
 import lrucache
+import edrconfig
 
 class EDVehicles(object):
     CANONICAL_SHIP_NAMES = json.loads(open(os.path.join(
@@ -30,6 +31,8 @@ class EDCmdr(object):
         os.path.abspath(os.path.dirname(__file__)), 'cache/friends.p')
 
     def __init__(self):
+        config = edrconfig.EDRConfig()
+
         self.name = None
         self._ship = None
         self.location = EDLocation()
@@ -44,7 +47,7 @@ class EDCmdr(object):
             with open(self.EDR_FRIENDS_CACHE, 'rb') as handle:
                 self.friends = pickle.load(handle)
         except IOError:
-            self.friends = lrucache.LRUCache(10000, 60*60*24*7)
+            self.friends = lrucache.LRUCache(config.lru_max_size, config.friends_max_age)
 
     def persist(self):
         with open(self.EDR_FRIENDS_CACHE, 'wb') as handle:

@@ -5,7 +5,7 @@ import Tkinter as tk
 import ttk
 import myNotebook as notebook
 from config import config
-import configparser
+import edrconfig
 
 import lrucache
 import edentities
@@ -15,12 +15,6 @@ import ingamemsg
 import audiofeedback
 
 class EDRClient(object):
-
-    EDR_VERSION = "0.3.4"
-
-    SYSTEM_NOVELTY_THRESHOLD = 15*1000
-    PLACE_NOVELTY_THRESHOLD = 60*5*1000
-    SHIP_NOVELTY_THRESHOLD = 60*10*1000
     
     EDR_SYSTEMS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/systems.p')
@@ -33,26 +27,34 @@ class EDRClient(object):
     AUDIO_FEEDBACK = audiofeedback.AudioFeedback()
 
     def __init__(self):
+        edr_config = edrconfig.EDRConfig()
+
+        self.EDR_VERSION = edr_config.edr_version()
+
+        self.SYSTEM_NOVELTY_THRESHOLD = edr_config.system_novelty_threshold()
+        self.PLACE_NOVELTY_THRESHOLD = edr_config.place_novelty_threshold()
+        self.SHIP_NOVELTY_THRESHOLD = edr_config.ship_novelty_threshold()
+
         try:
             with open(self.EDR_SYSTEMS_CACHE, 'rb') as handle:
                 self.systems_cache = pickle.load(handle)
         except IOError:
-            self.systems_cache = lrucache.LRUCache(10000, 60*60*24*7)
+            self.systems_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.systems_max_age())
 
         try:
             with open(self.EDR_CMDRS_CACHE, 'rb') as handle:
                 self.cmdrs_cache = pickle.load(handle)
         except IOError:
-            self.cmdrs_cache = lrucache.LRUCache(10000, 60*60*24*1) #TODO increase after there is a good set of cmdrs in the backend
+            self.cmdrs_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.cmdrs_max_age()) #TODO increase after there is a good set of cmdrs in the backend
 
         try:
             with open(self.EDR_INARA_CACHE, 'rb') as handle:
                 self.inara_cache = pickle.load(handle)
         except IOError:
-            self.inara_cache = lrucache.LRUCache(10000, 60*60*24*30)
+            self.inara_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.inara_max_age())
 
-        self.blips_cache = lrucache.LRUCache(1000, 60*30)
-        self.traffic_cache = lrucache.LRUCache(1000, 60*30)
+        self.blips_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
+        self.traffic_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.traffic_max_age())
 
         self._email = tk.StringVar(value=config.get("EDREmail")) 
         self._password = tk.StringVar(value=config.get("EDRPassword"))
@@ -64,7 +66,6 @@ class EDRClient(object):
         self.player = edentities.EDCmdr()
         self.server = edrserver.EDRServer()
         self.inara = edrinara.EDRInara()
-        self.inara.version = self.EDR_VERSION
         self.mandatory_update = False
         self.crimes_reporting = True
         self.motd = []
@@ -122,15 +123,15 @@ class EDRClient(object):
 
         if (self.is_obsolete(version_range["min"])):
             self.status = "mandatory EDR update!"
-            print "[EDR]Mandatory update! {version} vs. {min}".format(version=EDRClient.EDR_VERSION, min=version_range["min"])
+            print "[EDR]Mandatory update! {version} vs. {min}".format(version=self.EDR_VERSION, min=version_range["min"])
             self.mandatory_update = True
         elif self.is_obsolete(version_range["latest"]):
             self.status = "please update EDR."
-            print "[EDR]EDR update available! {version} vs. {latest}".format(version=EDRClient.EDR_VERSION, latest=version_range["latest"])
+            print "[EDR]EDR update available! {version} vs. {latest}".format(version=self.EDR_VERSION, latest=version_range["latest"])
             self.mandatory_update = False
 
     def is_obsolete(self, advertised_version):
-        client_parts = map(int, EDRClient.EDR_VERSION.split('.'))
+        client_parts = map(int, self.EDR_VERSION.split('.'))
         advertised_parts = map(int, advertised_version.split('.'))
         return client_parts < advertised_parts
 
@@ -351,17 +352,17 @@ class EDRClient(object):
         delta = blip["timestamp"] - last_blip["timestamp"]
 
         if blip["starSystem"] != last_blip["starSystem"]:
-            return delta > EDRClient.SYSTEM_NOVELTY_THRESHOLD
+            return delta > self.SYSTEM_NOVELTY_THRESHOLD
 
         if blip["place"] != last_blip["place"]:
             return (last_blip["place"] == "" or
                     last_blip["place"] == "Unknown" or
-                    delta > EDRClient.PLACE_NOVELTY_THRESHOLD)
+                    delta > self.PLACE_NOVELTY_THRESHOLD)
 
         if blip["ship"] != last_blip["ship"]:
             return (last_blip["ship"] == "" or
                     last_blip["ship"] == "Unknown" or
-                    delta > EDRClient.SHIP_NOVELTY_THRESHOLD)
+                    delta > self.SHIP_NOVELTY_THRESHOLD)
 
     def novel_enough_traffic_report(self, sighted_cmdr, report):
         last_report = self.traffic_cache.get(sighted_cmdr)
@@ -371,17 +372,17 @@ class EDRClient(object):
         delta = report["timestamp"] - last_report["timestamp"]
 
         if report["starSystem"] != last_report["starSystem"]:
-            return delta > EDRClient.SYSTEM_NOVELTY_THRESHOLD
+            return delta > self.SYSTEM_NOVELTY_THRESHOLD
 
         if report["place"] != last_report["place"]:
             return (last_report["place"] == "" or
                     last_report["place"] == "Unknown" or
-                    delta > EDRClient.PLACE_NOVELTY_THRESHOLD)
+                    delta > self.PLACE_NOVELTY_THRESHOLD)
 
         if report["ship"] != last_report["ship"]:
             return (last_report["ship"] == "" or
                     last_report["ship"] == "Unknown" or
-                    delta > EDRClient.SHIP_NOVELTY_THRESHOLD)
+                    delta > self.SHIP_NOVELTY_THRESHOLD)
 
     def who(self, cmdr_name):
         print "[EDR]who for {}".format(cmdr_name)
