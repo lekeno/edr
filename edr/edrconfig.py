@@ -51,3 +51,6 @@ class EDRConfig(object):
 
     def lru_max_size(self):
         return int(self.config.get('lrucaches', 'lru_max_size'))
+
+    def logging_level(self):
+        return self.config.get('general', 'logging_level')

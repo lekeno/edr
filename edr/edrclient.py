@@ -13,6 +13,9 @@ import edrserver
 import edrinara
 import ingamemsg
 import audiofeedback
+import edrlog
+
+EDRLOG = edrlog.EDRLog()
 
 class EDRClient(object):
     
@@ -289,8 +292,7 @@ class EDRClient(object):
         cmdr_u = cmdr_name.encode('utf-8', 'replace')
         inara_profile = self.inara_cache.get(cmdr_name)
         if not inara_profile is None:
-            inara_name_u = inara_profile.name.encode('utf-8', 'replace')
-            print u"[EDR]Cmdr {cmdr} is in the Inara cache (name={inara})".format(cmdr=cmdr_u, inara=inara_name_u)
+            EDRLOG.log(u"[EDR]Cmdr {cmdr} is in the Inara cache (name={inara})".format(cmdr=cmdr_u, inara=inara_profile.name), "DEBUG")
         elif checkInaraServer:
             print u"[EDR]Nothing in the Inara cache for {cmdr}. Let's check with Inara API".format(cmdr=cmdr_u)
             inara_profile = self.inara.cmdr(cmdr_name)
@@ -389,7 +391,7 @@ class EDRClient(object):
         cmdr_profile = self.cmdr(cmdr_name, autocreate=False, checkInaraServer=True)
         if not cmdr_profile is None:
             self.status = "got info about {}".format(cmdr_name)
-            print "[EDR]Who {} : {}".format(cmdr_name, cmdr_profile.short_profile())
+            EDRLOG.log(u"[EDR]Who {} : {}".format(cmdr_name, cmdr_profile.short_profile()), "INFO")
             self.notify_with_details("Intel", [cmdr_profile.short_profile()])
         else:
             print "[EDR]Who {} : no info".format(cmdr_name)

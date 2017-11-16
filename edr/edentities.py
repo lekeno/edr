@@ -6,6 +6,9 @@ import json
 import edtime
 import lrucache
 import edrconfig
+import edrlog
+
+EDRLOG = edrlog.EDRLog()
 
 class EDVehicles(object):
     CANONICAL_SHIP_NAMES = json.loads(open(os.path.join(
@@ -174,7 +177,7 @@ class EDCmdr(object):
 
     def update_ship_if_obsolete(self, ship, ed_timestamp):
         if self._ship is None or self._ship != EDVehicles.canonicalize(ship):
-            print "[EDR]Updating ship info (was missing or obsolete). {self} vs. {ship}".format(self=self._ship, ship=ship)
+            EDRLOG.log("Updating ship info (was missing or obsolete). {self} vs. {ship}".format(self=self._ship, ship=ship), "DEBUG")
             self._ship = EDVehicles.canonicalize(ship)
             self._timestamp.from_journal_timestamp(ed_timestamp)
             return True

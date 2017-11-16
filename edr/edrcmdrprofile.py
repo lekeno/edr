@@ -1,3 +1,7 @@
+import edrlog
+
+EDRLOG = edrlog.EDRLog()
+
 class EDRCmdrProfile(object):
     @staticmethod
     def max_karma():
@@ -52,7 +56,7 @@ class EDRCmdrProfile(object):
 
     def complement(self, other_profile):
         if self.name.lower() != other_profile.name.lower():
-            print "[EDR]Can't complement profile since it doesn't match: {} vs. {}".format(other_profile.name, self.name)
+            EDRLOG.log(u"[EDR]Can't complement profile since it doesn't match: {} vs. {}".format(other_profile.name, self.name), "DEBUG")
             return False
 
         if self.squadron is None or self.squadron == "":
@@ -73,7 +77,7 @@ class EDRCmdrProfile(object):
         result = u"{name}: {karma}".format(name=self.name, karma=self.karma_title())
        
         if not (self.squadron is None or self.squadron == ""):
-            result += " member of {squadron}".format(squadron=self.squadron)
+            result += ", {squadron}".format(squadron=self.squadron)
 
         if not (self.role is None or self.role == ""):
             result += ", {role}".format(role=self.role)    
