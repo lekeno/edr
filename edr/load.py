@@ -104,12 +104,12 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["WingAdd"]:
         ed_player.add_to_wing(entry["Name"])
         EDR_CLIENT.status = "added to wing: " + entry["Name"]
-        print u"[EDR] Wing updated: " + ", ".join(ed_player.wing)
+        print u"[EDR] Wing updated: {}".format(ed_player.wing)
     
     if entry["event"] in ["WingJoin"]:
         ed_player.join_wing(entry["Others"])
         EDR_CLIENT.status = "joined wing."
-        print u"[EDR] Wing updated: " + ", ".join(ed_player.wing)
+        print u"[EDR] Wing updated: {}".format(ed_player.wing)
 
     if entry["event"] in ["WingLeave"]:
         ed_player.leave_wing()
@@ -280,7 +280,7 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim):
             }],
         "offence": offence,
         "victim": victim,
-        "victimShip": "Unknown",
+        "victimShip": u"Unknown",
         "reportedBy": criminal_cmdr.name
     }
 
@@ -318,7 +318,7 @@ def edr_submit_contact(cmdr_name, timestamp, source, witness):
         "starSystem": witness.star_system,
         "place": witness.place,
         "timestamp": edt.as_js_epoch(),
-        "ship" : "Unknown",
+        "ship" : u"Unknown",
         "source": source,
         "reportedBy": witness.name
     }
@@ -357,7 +357,7 @@ def edr_submit_traffic(cmdr_name, timestamp, source, witness):
         "starSystem": witness.star_system,
         "place": witness.place,
         "timestamp": edt.as_js_epoch(),
-        "ship" : "Unknown",
+        "ship" : u"Unknown",
         "source": source,
         "reportedBy": witness.name
     }
@@ -396,7 +396,7 @@ def report_crime(cmdr, entry):
             criminal_cmdr.timestamp = entry["timestamp"]
             criminal_cmdr.star_system = cmdr.star_system
             criminal_cmdr.place = cmdr.place
-            criminal_cmdr.ship = "Unknown"
+            criminal_cmdr.ship = u"Unknown"
             criminal_cmdr.name = entry["Interdictor"]
             edr_submit_crime([criminal_cmdr], entry["event"], cmdr)
 

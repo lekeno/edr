@@ -29,5 +29,6 @@
   "cobramkiv": "Cobra Mk IV",
   "independant_trader": "Keelback",
   "asp_scout": "Asp Scout",
-  "TestBuggy": "SRV"
+  "testbuggy": "SRV",
+  "unknown": "Unknown"
 }

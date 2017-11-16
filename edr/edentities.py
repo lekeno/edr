@@ -17,7 +17,7 @@ class EDVehicles(object):
     @staticmethod
     def canonicalize(name):
         if name is None:
-            return "Unknown"
+            return u"Unknown"
 
         if name.lower() in EDVehicles.CANONICAL_SHIP_NAMES:
             return EDVehicles.CANONICAL_SHIP_NAMES[name.lower()]
