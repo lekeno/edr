@@ -4,8 +4,10 @@ Plugin for "EDR"
 from edentities import EDCmdr
 from edrclient import EDRClient
 from edtime import EDTime
+from edrlog import EDRLog
 
 EDR_CLIENT = EDRClient()
+EDRLOG = EDRLog()
 
 def plugin_start():
     """
@@ -52,15 +54,15 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     ed_player = EDR_CLIENT.player
 
     if EDR_CLIENT.mandatory_update:
-        print "[EDR]Out-of-date client, aborting."
+        EDRLOG.log(u"[EDR]Out-of-date client, aborting.", "ERROR")
         return
 
     if not EDR_CLIENT.is_logged_in():
-        print "[EDR]Not logged in, aborting."
+        EDRLOG.log(u"[EDR]Not logged in, aborting.", "ERROR")
         return
 
     if is_beta:
-        print "[EDR]Player is in beta: skip!"
+        EDRLOG.log(u"[EDR]Player is in beta: skip!", "INFO")
         return
 
     place = ""
@@ -71,50 +73,51 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["Music"] and entry["MusicTrack"] == "MainMenu":
         ed_player.game_mode = None
         ed_player.leave_wing()
-        print "[EDR]Main menu"
+        EDRLOG.log(u"[EDR]Player is on the main menu.", "DEBUG")
         return
 
     if entry["event"] == "Resurrect":
         ed_player.resurrect()
-        print "[EDR]Resurrection"
+        EDRLOG.log(u"[EDR]Player has been resurrected.", "DEBUG")
         return
 
     if entry["event"] in ["Fileheader"] and entry["part"] == 1:
         ed_player.inception()
         EDR_CLIENT.status = "friends & wing: OK!"
-        print "[EDR]Journal player just got created, we should have an accurate picture of friends/wings."
+        EDRLOG.log(u"Journal player just got created, we should have an accurate picture of friends/wings.", "DEBUG")
+
 
     if entry["event"] in ["LoadGame"]:
         EDR_CLIENT.warmup()
         ed_player.inception()
         ed_player.game_mode = entry["GameMode"]
-        print "[EDR]game mode = " + ed_player.game_mode
+        EDRLOG.log(u"Game mode is {}".format(ed_player.game_mode), "DEBUG")
     
     if entry["event"] in ["Friends"]:
         ed_player.update_friend(entry["Name"], entry["Status"])
         friend_u = entry["Name"].encode('utf-8', 'replace')
         EDR_CLIENT.status = u"friend {name} is {status}.".format(name=friend_u, status=entry["Status"])
-        print u"[EDR] Updated friend: {name} is {status}".format(name=friend_u, status=entry["Status"])
+        EDRLOG.log(u"Updated friend: {name} is {status}".format(name=friend_u, status=entry["Status"]), "DEBUG")
 
     if ed_player.in_solo_or_private():
         EDR_CLIENT.status = "disabled in Solo/Private."
-        print "[EDR]game mode is Solo or Group: skip! " + ed_player.game_mode
+        EDRLOG.log(u"game mode is Solo or Group: skip! {}".format(ed_player.game_mode), "INFO")
         return
 
     if entry["event"] in ["WingAdd"]:
         ed_player.add_to_wing(entry["Name"])
         EDR_CLIENT.status = "added to wing: " + entry["Name"]
-        print u"[EDR] Wing updated: {}".format(ed_player.wing)
+        EDRLOG.log(u"Addition to wing: {}".format(ed_player.wing), "INFO")
     
     if entry["event"] in ["WingJoin"]:
         ed_player.join_wing(entry["Others"])
         EDR_CLIENT.status = "joined wing."
-        print u"[EDR] Wing updated: {}".format(ed_player.wing)
-
+        EDRLOG.log(u"Joined a wing: {}".format(ed_player.wing), "INFO")
+        
     if entry["event"] in ["WingLeave"]:
         ed_player.leave_wing()
         EDR_CLIENT.status = "left wing."
-        print "[EDR] Left wing"
+        EDRLOG.log(u" Left the wing.", "INFO")
 
     EDR_CLIENT.player_name(cmdr)
     ship = state["ShipType"]
@@ -129,38 +132,38 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
             place = entry["Body"]
         cmdr_status_updated |= ed_player.update_place_if_obsolete(place, entry["timestamp"])
         reason_for_update = "Location event"
-        print "[EDR] place changed: " + place
+        EDRLOG.log(u"Place changed: {}".format(place), "INFO")
 
     if entry["event"] in ["Undocked", "Docked", "DockingCancelled", "DockingDenied", "DockingGranted", "DockingRequested", "DockingTimeout"]:
         place = entry["StationName"]
         cmdr_status_updated |= ed_player.update_place_if_obsolete(place, entry["timestamp"])
         reason_for_update = "Docking events"
-        print "[EDR] place changed: " + place
+        EDRLOG.log(u"Place changed: {}".format(place), "INFO")
 
     if entry["event"] in ["SupercruiseExit"]:
         place = entry["Body"]
         cmdr_status_updated |= ed_player.update_place_if_obsolete(place, entry["timestamp"])
         reason_for_update = "Supercruise exit"
-        print "[EDR] place changed: " + place
+        EDRLOG.log(u"Place changed: {}".format(place), "INFO")
 
     if entry["event"] in ["FSDJump", "SupercruiseEntry"]:
         place = "Supercruise"
         cmdr_status_updated |= ed_player.update_place_if_obsolete(place, entry["timestamp"])
         reason_for_update = "Jump events"
-        print "[EDR] place changed: " + place
+        EDRLOG.log(u"Place changed: {}".format(place), "INFO")
 
     
     if entry["event"] == ["StartJump"] and entry["JumpType"] == "Hyperspace":
         place = "Hyperspace"
         cmdr_status_updated |= ed_player.update_place_if_obsolete(place, entry["timestamp"])
         reason_for_update = "Jump events"
-        print "[EDR] place changed: " + place
         EDR_CLIENT.check_system(entry["StarSystem"])
+        EDRLOG.log(u"Place changed: {}".format(place), "INFO")
     
     if entry["event"] in ["ApproachSettlement"]:
         place = entry["Name"]
         cmdr_status_updated |= ed_player.update_place_if_obsolete(place, entry["timestamp"])
-        print "[EDR] place changed: " + place
+        EDRLOG.log(u"Place changed: {}".format(place), "INFO")
         reason_for_update = "Approach event"
 
     if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PvPKill"]:
@@ -185,13 +188,13 @@ def edr_update_cmdr_status(cmdr, reason_for_update):
     """
 
     if not cmdr.in_open():
-        print "[EDR]Skipping cmdr update due to unconfirmed Open mode"
         EDR_CLIENT.status = "not in Open? Start EDR before Elite."
+        EDRLOG.log(u"Skipping cmdr update due to unconfirmed Open mode", "ERROR")
         return
 
     if cmdr.has_partial_status():
         EDR_CLIENT.status = "partial status."
-        print "[EDR]Skipping cmdr update due to partial status"
+        EDRLOG.log(u"Skipping cmdr update due to partial status", "ERROR")
         return
 
     report = {
@@ -204,7 +207,7 @@ def edr_update_cmdr_status(cmdr, reason_for_update):
             "reportedBy": cmdr.name
     }
 
-    print "[EDR]name: {name}, starSystem: {star_system}, place:{place}, ship:{ship}, timestamp:{timestamp}, source:{source}".format(name=cmdr.name, star_system=cmdr.star_system, place=cmdr.place, ship=cmdr.ship, timestamp=cmdr.timestamp, source=reason_for_update)
+    EDRLOG.log(u"name: {name}, starSystem: {star_system}, place:{place}, ship:{ship}, timestamp:{timestamp}, source:{source}".format(name=cmdr.name, star_system=cmdr.star_system, place=cmdr.place, ship=cmdr.ship, timestamp=cmdr.timestamp, source=reason_for_update), "DEBUG")
     
     if not EDR_CLIENT.blip(cmdr.name, report):
         EDR_CLIENT.status = "status update failed."
@@ -223,13 +226,13 @@ def edr_submit_crime(criminal_cmdrs, offence, victim):
     :return:
     """
     if not victim.in_open():
-        print "[EDR]Skipping submit crime (wing) due to unconfirmed Open mode"
+        EDRLOG.log(u"Skipping submit crime (wing) due to unconfirmed Open mode", "INFO")
         EDR_CLIENT.status = "not in Open? Start EDR before Elite."
         return
 
     criminals = []
     for criminal_cmdr in criminal_cmdrs:
-        print "[EDR]Appending criminal {name} with ship {ship}".format(name=criminal_cmdr.name, ship=criminal_cmdr.ship)
+        EDRLOG.log(u"Appending criminal {name} with ship {ship}".format(name=criminal_cmdr.name, ship=criminal_cmdr.ship), "DEBUG")
         criminals.append({"name": criminal_cmdr.name, "ship": criminal_cmdr.ship})
 
     report = {
@@ -246,7 +249,7 @@ def edr_submit_crime(criminal_cmdrs, offence, victim):
     system_id = EDR_CLIENT.system_id(victim.star_system)
     if system_id is None:
         EDR_CLIENT.status = "no system id (crime)."
-        print "[EDR]Can't submit crime report (no system id)."
+        EDRLOG.log(u"Can't submit crime report (no system id).", "ERROR")
         return
 
     if not EDR_CLIENT.crime(system_id, report):
@@ -266,7 +269,7 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim):
     :return:
     """
     if not criminal_cmdr.in_open():
-        print "[EDR]Skipping submit crime (self) due to unconfirmed Open mode"
+        EDRLOG.log(u"Skipping submit crime (self) due to unconfirmed Open mode", "INFO")
         EDR_CLIENT.status = "not in Open? Start EDR before Elite."
         return
 
@@ -287,11 +290,11 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim):
     system_id = EDR_CLIENT.system_id(criminal_cmdr.star_system)
     if system_id is None:
         EDR_CLIENT.status = "no system id (crime)."
-        print "[EDR]Can't submit perpetrated crime (no system id)."
+        EDRLOG.log(u"Can't submit perpetrated crime (no system id).", "ERROR")
         return
 
-    print "[EDR]Perpetrated crime in system {} on {}".format(system_id, victim)
-    print "[EDR]Perpetrated crime json: {}".format(report)
+    EDRLOG.log(u"Perpetrated crime in system {} on {}".format(system_id, victim), "INFO")
+    EDRLOG.log(u"Perpetrated crime json: {}".format(report), "DEBUG")
    
     if not EDR_CLIENT.crime(system_id, report):
         EDR_CLIENT.status = "failed to report crime (self)."
@@ -324,13 +327,13 @@ def edr_submit_contact(cmdr_name, timestamp, source, witness):
     }
 
     if not witness.in_open():
-        print "[EDR]Skipping submit contact due to unconfirmed Open mode"
+        EDRLOG.log(u"Skipping submit contact due to unconfirmed Open mode", "INFO")
         EDR_CLIENT.status = "not in Open? Start EDR before Elite."
         return
 
     if witness.has_partial_status():
         EDR_CLIENT.status = "partial status."
-        print "[EDR]Skipping cmdr update due to partial status"
+        EDRLOG.log(u"Skipping cmdr update due to partial status", "INFO")
         return
 
     if not EDR_CLIENT.blip(cmdr_name, report):
@@ -363,19 +366,19 @@ def edr_submit_traffic(cmdr_name, timestamp, source, witness):
     }
 
     if not witness.in_open():
-        print "[EDR]Skipping submit traffic due to unconfirmed Open mode"
+        EDRLOG.log(u"Skipping submit traffic due to unconfirmed Open mode", "INFO")
         EDR_CLIENT.status = "not in Open? Start EDR before Elite."
         return
 
     if witness.has_partial_status():
         EDR_CLIENT.status = "partial status."
-        print "[EDR]Skipping traffic update due to partial status"
+        EDRLOG.log(u"Skipping traffic update due to partial status", "INFO")
         return
 
     system_id = EDR_CLIENT.system_id(witness.star_system)
     if system_id is None:
         EDR_CLIENT.status = "no system id (traffic)."
-        print "[EDR]Can't submit traffic report (no system id)."
+        EDRLOG.log(u"Can't submit traffic report (no system id).", "ERROR")
         return
 
     if not EDR_CLIENT.traffic(system_id, report):
@@ -404,7 +407,7 @@ def report_crime(cmdr, entry):
         if "Killers" in entry:
             criminal_cmdrs = []
             for killer in entry["Killers"]:
-                if killer["name"].startswith("Cmdr "):
+                if killer["Name"].startswith("Cmdr "):
                     criminal_cmdr = EDCmdr()
                     criminal_cmdr.timestamp = entry["timestamp"]
                     criminal_cmdr.star_system = cmdr.star_system
@@ -430,7 +433,7 @@ def report_crime(cmdr, entry):
             edr_submit_crime_self(cmdr, offence, entry["Interdicted"], )
 
     if entry["event"] == "PVPKill":
-        print "[EDR]PVPKill!"
+        EDRLOG.log(u"PVPKill!", "INFO")
         edr_submit_crime_self(cmdr, "Murder", entry["Victim"])
 
 
@@ -452,21 +455,21 @@ def report_comms(cmdr, entry):
             if entry["From"].startswith("$cmdr_decorate:#name="):
                 fromCmdr = entry["From"][len("$cmdr_decorate:#name="):-1]
             if cmdr.is_only_reachable_locally(fromCmdr):
-                print "[EDR]Received text from {cmdr} who is not a friend nor in the wing == only reachable locally".format(cmdr=fromCmdr)
+                EDRLOG.log(u"Received text from {cmdr} who is not a friend nor in the wing == only reachable locally".format(cmdr=fromCmdr), "INFO")
                 edr_submit_contact(fromCmdr, entry["timestamp"], "Received text (non wing/friend player)", cmdr)
             else:
                 EDR_CLIENT.status = "comms origin is unclear."
-                print "[EDR]Received text from {cmdr} who might be a friend or in the wing. No guarantees about that player's location".format(cmdr=fromCmdr)
+                EDRLOG.log(u"Received text from {cmdr} who might be a friend or in the wing. No guarantees about that player's location".format(cmdr=fromCmdr), "INFO")
     elif entry["event"] == "SendText" and not entry["To"] == "local":
         toCmdr = entry["To"]
         if entry["To"].startswith("$cmdr_decorate:#name="):
             toCmdr = entry["To"][len("$cmdr_decorate:#name="):-1]
         if cmdr.is_only_reachable_locally(toCmdr):
-            print "[EDR]Sent text to {to} who is not a friend nor in the wing == only reachable locally".format(to=toCmdr)
+            EDRLOG.log(u"Sent text to {to} who is not a friend nor in the wing == only reachable locally".format(to=toCmdr), "INFO")
             edr_submit_contact(toCmdr, entry["timestamp"], "Sent text (non wing/friend player)", cmdr)
         else:
             EDR_CLIENT.status = "comms destination is unclear."
-            print "[EDR]Sent text to {to} who might be a friend or in the wing. No guarantees about that player's location".format(to=toCmdr)
+            EDRLOG.log(u"Sent text to {to} who might be a friend or in the wing. No guarantees about that player's location".format(to=toCmdr), "INFO")
 
 
 def handle_commands(cmdr, entry):
@@ -483,73 +486,73 @@ def handle_commands(cmdr, entry):
     if command[0] == "!overlay":
         overlay_command("" if len(command) == 1 else command[1])
     elif command[0] == "!normal_width" and len(command) == 2:
-        print "[EDR]Setting width for normal font weight"
+        EDRLOG.log(u"Setting width for normal font weight", "INFO")
         EDR_CLIENT.IN_GAME_MSG.normal_width = float(command[1])
     elif command[0] == "!large_width" and len(command) == 2:
-        print "[EDR]Setting width for lage font weight"
+        EDRLOG.log(u"Setting width for lage font weight", "INFO")
         EDR_CLIENT.IN_GAME_MSG.large_width = float(command[1])               
     elif command[0] == "!help":
-        print "[EDR]!overlay [on/off/ ] to enable, disable or test EDR's overlay feature."
-        print "[EDR]!audiocue [on/off/loud/soft] to enable or disable and control the volume of EDR's audio feedback."
-        print "[EDR]!crimes [on/off/ ] to enable or disable and check the status of EDR's crime reporting feature."
+        EDRLOG.log(u"!overlay [on/off/ ] to enable, disable or test EDR's overlay feature.", "INFO")
+        EDRLOG.log(u"!audiocue [on/off/loud/soft] to enable or disable and control the volume of EDR's audio feedback.", "INFO")
+        EDRLOG.log(u"!crimes [on/off/ ] to enable or disable and check the status of EDR's crime reporting feature.", "INFO")
     elif command[0] == "!audiocue" and len(command) == 2:
         audiocue_command(command[1])
     elif command[0] == "o7" and not entry["To"] in ["local", "voicechat", "wing", "friend"]:
-        print "[EDR]Implicit who command for {}".format(entry["To"])
+        EDRLOG.log(u"Implicit who command for {}".format(entry["To"]), "INFO")
         toCmdr = entry["To"]
         if entry["To"].startswith("$cmdr_decorate:#name="):
             toCmdr = entry["To"][len("$cmdr_decorate:#name="):-1]
         EDR_CLIENT.who(toCmdr)
     elif command[0] == "!who" and len(command) == 2:
-        print "[EDR]Explicit who command for {}".format(command[1])
+        EDRLOG.log(u"Explicit who command for {}".format(command[1]), "INFO")
         EDR_CLIENT.who(command[1])
     elif command[0] == "!crimes":
         crimes_command("" if len(command) == 1 else command[1])
 
 def overlay_command(param):
     if param == "":
-        print "[EDR]Is visual feedback enabled? {}".format("Yes." if EDR_CLIENT.visual_feedback else "No.")
+        EDRLOG.log(u"Is visual feedback enabled? {}".format("Yes." if EDR_CLIENT.visual_feedback else "No."), "INFO")
         EDR_CLIENT.notify_with_details("Test Notice", ["notice info 1", "notice info 2"])
         EDR_CLIENT.warn_with_details("Test Warning", ["warning info 1", "warning info 2"])
     elif param == "on":
-        print "[EDR]Enabling visual feedback"
+        EDRLOG.log(u"Enabling visual feedback", "INFO")
         EDR_CLIENT.visual_feedback =True
         EDR_CLIENT.warmup()
     elif param == "off":
-        print "[EDR]Disabling visual feedback"
+        EDRLOG.log(u"Disabling visual feedback", "INFO")
         EDR_CLIENT.notify_with_details("Visual Feedback System", ["disabling"])
         EDR_CLIENT.visual_feedback = False
 
 def crimes_command(param):
     if param == "":
-        print "[EDR]Is EDR's crimes report enabled? {}".format("Yes." if EDR_CLIENT.crimes_reporting else "No.")
+        EDRLOG.log(u"Is EDR's crimes report enabled? {}".format("Yes." if EDR_CLIENT.crimes_reporting else "No."), "INFO")
         EDR_CLIENT.notify_with_details("EDR crimes report", ["Enabled" if EDR_CLIENT.crimes_reporting else "Disabled"])
     elif param == "on":
-        print "[EDR]Enabling crimes reporting"
+        EDRLOG.log(u"Enabling crimes reporting", "INFO")
         EDR_CLIENT.crimes_reporting =True
         EDR_CLIENT.notify_with_details("EDR crimes report", ["Enabling"])
     elif param == "off":
-        print "[EDR]Disabling crimes reporting"
+        EDRLOG.log(u"Disabling crimes reporting", "INFO")
         EDR_CLIENT.crimes_reporting = False
         EDR_CLIENT.notify_with_details("EDR crimes report", ["Disabling"])
 
 
 def audiocue_command(param):
     if param == "on":
-        print "[EDR]Enabling audio feedback"
+        EDRLOG.log(u"Enabling audio feedback", "INFO")
         EDR_CLIENT.audio_feedback = True
         EDR_CLIENT.notify_with_details("EDR audio cues", ["Enabling"])
     elif param == "off":
-        print "[EDR]Disabling audio feedback"
+        EDRLOG.log(u"Disabling audio feedback", "INFO")
         EDR_CLIENT.audio_feedback = False
         EDR_CLIENT.notify_with_details("EDR audio cues", ["Disabling"])
     elif param == "loud":
-        print "[EDR]Loud audio feedback"
+        EDRLOG.log(u"Loud audio feedback", "INFO")
         EDR_CLIENT.loudAudioFeedback()
         EDR_CLIENT.audio_feedback = True
         EDR_CLIENT.notify_with_details("EDR audio cues", ["Enabled", "Loud"])
     elif param == "soft":
-        print "[EDR]Soft audio feedback"
+        EDRLOG.log(u"Soft audio feedback", "INFO")
         EDR_CLIENT.softAudioFeedback()
         EDR_CLIENT.audio_feedback = True
         EDR_CLIENT.notify_with_details("EDR audio cues", ["Enabled", "Soft"])

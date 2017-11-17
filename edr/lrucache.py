@@ -1,6 +1,10 @@
 import collections
 import datetime
 
+import edrlog
+
+EDRLOG = edrlog.EDRLog()
+
 class LRUCache(object):
     def __init__(self, max_size, max_age_seconds):
         self.capacity = max_size
@@ -23,7 +27,7 @@ class LRUCache(object):
             if not self._is_stale(entry):
                 return entry["content"]
             else:
-                print "[EDR]Stale entry: {dt}, {content}".format(dt=entry["datetime"], content=entry["content"])
+                EDRLOG.log(u"Stale entry: {dt}, {content}".format(dt=entry["datetime"], content=entry["content"]), "DEBUG")
         except KeyError:
             pass
         

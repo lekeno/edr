@@ -177,7 +177,7 @@ class EDCmdr(object):
 
     def update_ship_if_obsolete(self, ship, ed_timestamp):
         if self._ship is None or self._ship != EDVehicles.canonicalize(ship):
-            EDRLOG.log("Updating ship info (was missing or obsolete). {self} vs. {ship}".format(self=self._ship, ship=ship), "DEBUG")
+            EDRLOG.log("Updating ship info (was missing or obsolete). {old} vs. {ship}".format(old=self._ship, ship=ship), "DEBUG")
             self._ship = EDVehicles.canonicalize(ship)
             self._timestamp.from_journal_timestamp(ed_timestamp)
             return True
@@ -187,7 +187,7 @@ class EDCmdr(object):
 
     def update_star_system_if_obsolete(self, star_system, ed_timestamp):
         if self.location.star_system is None or self.location.star_system != star_system:
-            print "[EDR]Updating system info (was missing or obsolete). {self} vs. {system}".format(self=self.location.star_system, system=star_system)
+            EDRLOG.log(u"Updating system info (was missing or obsolete). {old} vs. {system}".format(old=self.location.star_system, system=star_system), "INFO")
             self.location.star_system = star_system
             self._timestamp.from_journal_timestamp(ed_timestamp)
             return True
@@ -197,7 +197,7 @@ class EDCmdr(object):
 
     def update_place_if_obsolete(self, place, ed_timestamp):
         if self.location.place is None or self.location.place != place:
-            print "[EDR]Updating place info (was missing or obsolete). {self} vs. {place}".format(self=self.location.place, place=place)
+            EDRLOG.log(u"Updating place info (was missing or obsolete). {old} vs. {place}".format(old=self.location.place, place=place), "INFO")
             self.location.place = place
             self._timestamp.from_journal_timestamp(ed_timestamp)
             return True

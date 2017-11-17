@@ -1,9 +1,12 @@
-import requests
 import urllib
 import json
 import datetime
+import requests
 import edrcmdrprofile
 import edrconfig
+import edrlog
+
+EDRLOG = edrlog.EDRLog()
 
 class EDRInara(object):
 
@@ -22,20 +25,20 @@ class EDRInara(object):
 
         resp = requests.post(self.INARA_ENDPOINT, json=payload)
         if resp.status_code != 200:
-            print "[EDR]Failed to obtain cmdr profile from Inara. code={code}, content={content}".format(code=resp.status_code, content=resp.content)
+            EDRLOG.log(u"Failed to obtain cmdr profile from Inara. code={code}, content={content}".format(code=resp.status_code, content=resp.content), "ERROR")
             return None
         
-        print "[EDR]Obtained a response from the Inara API."
+        EDRLOG.log(u"Obtained a response from the Inara API.", "INFO")
         try:
             json_resp = json.loads(resp.content)
             if json_resp["events"][0]["eventStatus"] == 204:
-                print "[EDR]cmdr {} was not found via the Inara API.".format(cmdr_name)
+                EDRLOG.log(u"cmdr {} was not found via the Inara API.".format(cmdr_name), "INFO")
                 return None
             elif json_resp["events"][0]["eventStatus"] != 200:
-                print "[EDR]Error from Inara API. code={code}, content={content}".format(code=resp.status_code, content=resp.content)
+                EDRLOG.log(u"Error from Inara API. code={code}, content={content}".format(code=resp.status_code, content=resp.content), "ERROR")
                 return None
         except:
-            print "[EDR]Malformed cmdr profile response from Inara API? code={code}, content={content}".format(code=resp.status_code, content=resp.content)
+            EDRLOG.log(u"Malformed cmdr profile response from Inara API? code={code}, content={content}".format(code=resp.status_code, content=resp.content), "ERROR")
             return None
 
 
@@ -43,10 +46,10 @@ class EDRInara(object):
             json_resp = json.loads(resp.content)["events"][0]["eventData"]
             profile = edrcmdrprofile.EDRCmdrProfile()
             profile.from_inara_api(json_resp)
-            print "[EDR]Obtained a cmdr profile from Inara API."
+            EDRLOG.log(u"Obtained a cmdr profile from Inara API.", "INFO")
             return profile
         except:
-            print "[EDR]Malformed cmdr profile response from Inara API? code={code}, content={content}".format(code=resp.status_code, content=resp.content)
+            EDRLOG.log(u"Malformed cmdr profile response from Inara API? code={code}, content={content}".format(code=resp.status_code, content=resp.content), "ERROR")
             return None        
 
 

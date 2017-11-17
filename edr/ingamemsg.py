@@ -3,6 +3,9 @@ import sys
 
 import Tkinter as tk
 from config import config
+import edrlog
+
+EDRLOG = edrlog.EDRLog()
 
 _thisdir = os.path.abspath(os.path.dirname(__file__))
 _overlay_dir = os.path.join(_thisdir, "EDMCOverlay")
@@ -133,7 +136,7 @@ class InGameMsg(object):
             msgid = "EDR-{}".format(row) 
             self._overlay.send_message(msgid, text, color, col, row, ttl=ttl, size=size)
         except:
-            print "[EDR]In-Game Message failed."
+            EDRLOG.log(u"In-Game Message failed.", "ERROR")
             pass
 
     def shutdown(self):
