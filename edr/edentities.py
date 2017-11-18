@@ -50,7 +50,7 @@ class EDCmdr(object):
             with open(self.EDR_FRIENDS_CACHE, 'rb') as handle:
                 self.friends = pickle.load(handle)
         except IOError:
-            self.friends = lrucache.LRUCache(config.lru_max_size, config.friends_max_age)
+            self.friends = lrucache.LRUCache(config.lru_max_size(), config.friends_max_age())
 
     def persist(self):
         with open(self.EDR_FRIENDS_CACHE, 'wb') as handle:
