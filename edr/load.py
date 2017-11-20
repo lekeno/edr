@@ -460,7 +460,7 @@ def report_comms(cmdr, entry):
             else:
                 EDR_CLIENT.status = "comms origin is unclear."
                 EDRLOG.log(u"Received text from {cmdr} who might be a friend or in the wing. No guarantees about that player's location".format(cmdr=fromCmdr), "INFO")
-    elif entry["event"] == "SendText" and not entry["To"] == "local":
+    elif entry["event"] == "SendText" and not entry["To"] in ["local", "wing"]:
         toCmdr = entry["To"]
         if entry["To"].startswith("$cmdr_decorate:#name="):
             toCmdr = entry["To"][len("$cmdr_decorate:#name="):-1]

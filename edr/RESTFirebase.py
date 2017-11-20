@@ -1,7 +1,10 @@
 import datetime
 import json
-
 import requests
+
+import edrlog
+
+EDRLOG = edrlog.EDRLog()
 
 class RESTFirebaseAuth(object):
     def __init__(self):
@@ -13,7 +16,7 @@ class RESTFirebaseAuth(object):
 
     def authenticate(self):
         if self.email == "" or self.password == "" or self.api_key == "":
-            print "[EDR]can't authenticate: empty credentials and/or api key."
+            EDRLOG.log(u"can't authenticate: empty credentials and/or api key.", "ERROR")
             return False
 
         msg = {
@@ -26,7 +29,7 @@ class RESTFirebaseAuth(object):
         endpoint = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key={}".format(self.api_key)
         resp = requests.post(endpoint,json=msg)
         if resp.status_code != 200:
-            print "[EDR]Authentication failed"
+            EDRLOG.log(u"Authentication failed", "ERROR")
             self.clear_authentication()
             return False
         
@@ -38,7 +41,7 @@ class RESTFirebaseAuth(object):
         endpoint = "https://securetoken.googleapis.com/v1/token?key={}".format(self.api_key)
         resp = requests.post(endpoint,data=payload)
         if resp.status_code != 200:
-            print "[EDR]Exchange of refresh token for ID token failed. Status code={code}, content={content}".format(code=resp.status_code, content=resp.content)
+            EDRLOG.log(u"Exchange of refresh token for ID token failed. Status code={code}, content={content}".format(code=resp.status_code, content=resp.content), "ERROR")
             self.clear_authentication()
             return False
 
@@ -66,7 +69,7 @@ class RESTFirebaseAuth(object):
             return False
 
         if self.is_auth_expiring():
-            print "[EDR]Authentication token will expire soon. Clearing to renew."
+            EDRLOG.log(u"Authentication token will expire soon. Clearing to renew.", "INFO")
             self.clear_authentication()
             return self.authenticate()
 
