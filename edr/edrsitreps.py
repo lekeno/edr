@@ -16,7 +16,7 @@ class EDRSitReps(object):
 
     def updateIfStale(self):
         if self.last_updated is None or self.isRecent(self.last_updated, self.reports_max_age):
-            #TODO run query, update time
+            #TODO run query
             self.last_updated = datetime.datetime.now()
             return True
 
@@ -28,49 +28,46 @@ class EDRSitReps(object):
         return system_name in self.reports.keys()
 
     def NOTSMs(self, system_name):
-        self.updateIfStale()
+        if self.hasSitRep(system_name):
+            return self.reports[system_name].get("NOTSM", None)
 
-        if system_name not in self.reports.keys():
-            return None
-
-        system_reports = self.reports[system_name]
-        return system_reports.get("NOTSM", None)
+        return None
 
     def recentCrimes(self, system_name, max_age):
-        self.updateIfStale()
+        if self.hasSitRep(system_name):
+            system_reports = self.reports[system_name]
+            if "latestCrime" not in system_reports.keys():
+                return None
+            return self.isRecent(system_reports.get["latestCrime"], max_age)
+    
+        return None
 
-        if system_name not in self.reports.keys():
-            return None
-
-        system_reports = self.reports[system_name]
-        if "latestCrime" not in system_reports.keys():
-            return None
-
-        return self.isRecent(system_reports.get["latestCrime"], max_age)
+    def crimes(self, system_name):
+        #TODO run crimes request
+        return None
 
     def recentTraffic(self, system_name, max_age):
-        self.updateIfStale()
+        if self.hasSitRep(system_name):
+            system_reports = self.reports[system_name]
+            if "latestBlip" not in system_reports.keys():
+                return None
+            return self.isRecent(system_reports.get["latestBlip"], max_age)
 
-        if system_name not in self.reports.keys():
-            return None
+        return None
 
-        system_reports = self.reports[system_name]
-        if "latestBlip" not in system_reports.keys():
-            return None
-
-        return self.isRecent(system_reports.get["latestBlip"], max_age)
+    def traffic(self, system_name):
+        #TODO run traffic request
+        return None
 
     def recentRecon(self, system_name, max_age):
-        self.updateIfStale()
+        if self.hasSitRep(system_name):
+            system_reports = self.reports[system_name]
+            if "latestRecon" not in system_reports.keys():
+                return None
 
-        if system_name not in self.reports.keys():
-            return None
+            return self.isRecent(system_reports.get["latestRecon"], max_age)
 
-        system_reports = self.reports[system_name]
-        if "latestRecon" not in system_reports.keys():
-            return None
-
-        return self.isRecent(system_reports.get["latestRecon"], max_age)
+        return None
     
     def isRecent(self, timestamp, max_age):
         n = datetime.datetime.now()
