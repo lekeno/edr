@@ -56,8 +56,7 @@ class EDRConfig(object):
         return self.config.get('general', 'logging_level')
 
     def sitreps_max_age(self):
-        return self.config.get('sitreps', 'sitreps_max_age')
+        return int(self.config.get('sitreps', 'sitreps_max_age'))
 
     def sitreps_timespan(self):
-        return self.config.get('sitreps', 'sitreps_timespan')
-    
+        return int(self.config.get('sitreps', 'sitreps_timespan'))

@@ -152,13 +152,12 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         reason_for_update = "Jump events"
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
 
-    
-    if entry["event"] == ["StartJump"] and entry["JumpType"] == "Hyperspace":
+    if entry["event"] == "StartJump" and entry["JumpType"] == "Hyperspace":
         place = "Hyperspace"
         cmdr_status_updated |= ed_player.update_place_if_obsolete(place, entry["timestamp"])
-        reason_for_update = "Jump events"
-        EDR_CLIENT.check_system(entry["StarSystem"])
+        reason_for_update = "Hyperspace"
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
+        EDR_CLIENT.check_system(entry["StarSystem"])
     
     if entry["event"] in ["ApproachSettlement"]:
         place = entry["Name"]

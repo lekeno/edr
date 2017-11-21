@@ -14,6 +14,7 @@ import edrinara
 import audiofeedback
 import edrlog
 import ingamemsg
+import edrsitreps
 
 
 EDRLOG = edrlog.EDRLog()
@@ -69,6 +70,7 @@ class EDRClient(object):
         
         self.player = edentities.EDCmdr()
         self.server = edrserver.EDRServer()
+        self.edrsitreps = edrsitreps.EDRSitReps(self.server)
         self.inara = edrinara.EDRInara()
         self.mandatory_update = False
         self.crimes_reporting = True
@@ -265,7 +267,17 @@ class EDRClient(object):
         return None
 
     def check_system(self, star_system):
-        EDRLOG.log(u"Check system called.", "INFO")
+        EDRLOG.log(u"Check system called: {}".format(star_system), "INFO")
+        sid = self.system_id(star_system)
+        #TODO the systems cache / system ID kind of overlap with what sitreps does => merge
+        if sid is None:
+            EDRLOG.log(u"No system id found for {}".format(star_system), "DEBUG")
+            return False
+
+        if not self.edrsitreps.hasSitRep(sid):
+            EDRLOG.log(u"No sitrep for {system} with id={sid}".format(system=star_system, sid=sid), "INFO")
+            self.notify_with_details("SITREP", ["No reports for the last {d} days.".format(d=self.edrsitreps.timespan_s()), "Recon this system: tag any suspicious contacts by sending them an o7."])
+
         return False
 
     def cmdr_id(self, cmdr_name):
