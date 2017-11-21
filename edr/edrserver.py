@@ -6,6 +6,8 @@ import edrcmdrprofile
 import RESTFirebase
 import edrconfig
 import edrlog
+import calendar
+import datetime
 
 EDRLOG = edrlog.EDRLog()
 
@@ -49,6 +51,20 @@ class EDRServer(object):
         json_resp = json.loads(resp.content)
         return json_resp
 
+    def sitreps(self, timespan_seconds):
+        now_epoch_js = 1000 * calendar.timegm(datetime.datetime.now().timetuple())
+        past_epoch_js = now_epoch - (1000 * timespan_seconds)
+
+        query_params = "orderBy=\"timestamp\"&startAt={past}&endAt={now}&auth={auth}".format(past=past_epoch_js, now=now_past_js, auth=self.auth_token())
+        resp = requests.get("{server}/v1/systems.json?{query_params}".format(server=self.EDR_ENDPOINT, query_params=query_params))
+
+        if resp.status_code != 200:
+            EDRLOG.log(u"Failed to retrieve sitreps.", "ERROR")
+            return None
+        
+        sitreps = json.loads(resp.content).keys()[0]
+
+        return sitreps
 
     def system_id(self, star_system):
         query_params = "orderBy=\"name\"&equalTo={system}&limitToFirst=1&auth={auth}".format(system=json.dumps(star_system), auth=self.auth_token())

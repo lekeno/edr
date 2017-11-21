@@ -57,3 +57,7 @@ class EDRConfig(object):
 
     def sitreps_max_age(self):
         return self.config.get('sitreps', 'sitreps_max_age')
+
+    def sitreps_timespan(self):
+        return self.config.get('sitreps', 'sitreps_timespan')
+    

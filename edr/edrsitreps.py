@@ -4,64 +4,71 @@ import calendar
 import edrserver
 import edrconfig
 import edrlog
+import edrserver
 
 EDRLOG = edrlog.EDRLog()
 
 class EDRSitReps(object):
-    def __init__(self):
+    def __init__(self, server):
         config = edrconfig.EDRConfig()
         self.reports_max_age = config.sitreps_max_age()
+        self.reports_timespan = config.sitreps_timespan()
         self.last_updated = None
         self.reports = {}
+        self.server = server
 
     def updateIfStale(self):
         if self.last_updated is None or self.isRecent(self.last_updated, self.reports_max_age):
-            #TODO run query
-            self.last_updated = datetime.datetime.now()
+            now = datetime.datetime.now()
+            missing_seconds = self.reports_timespan - (now - self.last_updated).total_seconds()
+            response = self.server.sitreps(missing_seconds)
+            if not response is None:
+                self.reports.update(response)
+            self.last_updated = now
             return True
 
         return False
 
-    def hasSitRep(self, system_name):
+    def hasSitRep(self, system_id):
         self.updateIfStale()
 
-        return system_name in self.reports.keys()
+        return system_id in self.reports.keys()
 
-    def NOTSMs(self, system_name):
-        if self.hasSitRep(system_name):
-            return self.reports[system_name].get("NOTSM", None)
+    def NOTSMs(self, system_id):
+        if self.hasSitRep(system_id):
+            return self.reports[system_id].get("NOTSM", None)
 
         return None
 
-    def recentCrimes(self, system_name, max_age):
-        if self.hasSitRep(system_name):
-            system_reports = self.reports[system_name]
+    def recentCrimes(self, system_id, max_age):
+        if self.hasSitRep(system_id):
+            system_reports = self.reports[system_id]
             if "latestCrime" not in system_reports.keys():
                 return None
             return self.isRecent(system_reports.get["latestCrime"], max_age)
     
         return None
 
-    def crimes(self, system_name):
+    def crimes(self, system_id):
         #TODO run crimes request
         return None
 
-    def recentTraffic(self, system_name, max_age):
-        if self.hasSitRep(system_name):
-            system_reports = self.reports[system_name]
+    def recentTraffic(self, system_id, max_age):
+        if self.hasSitRep(system_id):
+            system_reports = self.reports[system_id]
             if "latestBlip" not in system_reports.keys():
                 return None
             return self.isRecent(system_reports.get["latestBlip"], max_age)
 
         return None
 
-    def traffic(self, system_name):
+    def traffic(self, system_id):
         #TODO run traffic request
         return None
 
-    def recentRecon(self, system_name, max_age):
-        if self.hasSitRep(system_name):
-            system_reports = self.reports[system_name]
+    def recentRecon(self, system_id, max_age):
+        if self.hasSitRep(system_id):
+            system_reports = self.reports[system_id]
             if "latestRecon" not in system_reports.keys():
                 return None
 
@@ -74,4 +81,3 @@ class EDRSitReps(object):
         js_epoch_n = calendar.timegm(n.timetuple()) * 1000
 
         return (js_epoch_n - timestamp) <= max_age / 1000
-
