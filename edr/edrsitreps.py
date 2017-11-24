@@ -33,9 +33,12 @@ class EDRSitReps(object):
         return True
 
     def timespan_s(self):
-        remaining = self.reports_timespan
+        return self.__pretty_print_timespan(self.reports_timespan)
+
+    def __pretty_print_timespan(self, timespan):
+        remaining = timespan
         days = remaining / 86400
-        remaining -= days * 86400;
+        remaining -= days * 86400
 
         hours = (remaining / 3600) % 24
         remaining -= hours * 3600
@@ -63,6 +66,15 @@ class EDRSitReps(object):
 
         return readable
 
+    def crimes_t_minus(self):
+        #TODO needs last_crime_timestamp
+        now = datetime.datetime.now()
+        return "T-01h30m"
+
+    def traffic_t_minus(self):
+        #TODO needs last_blip_timestamp
+        now = datetime.datetime.now()
+        return "T-01h30m"
 
     def hasSitRep(self, system_id):
         self.updateIfStale()

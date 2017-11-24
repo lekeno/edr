@@ -276,7 +276,14 @@ class EDRClient(object):
 
         if not self.edrsitreps.hasSitRep(sid):
             EDRLOG.log(u"No sitrep for {system} with id={sid}".format(system=star_system, sid=sid), "INFO")
-            self.notify_with_details("SITREP", ["No reports for the last {d} days.".format(d=self.edrsitreps.timespan_s()), "Recon this system: tag any suspicious contacts by sending them an o7."])
+            self.notify_with_details(u"SITREP for {}".format(star_system), ["No reports for the last {d}.".format(d=self.edrsitreps.timespan_s()), "Recon this system: tag any suspicious contacts by sending them an o7."])
+        else:
+            if self.edrsitreps.recentCrimes(sid, 432000):
+                EDRLOG.log(u"Recent crime for {system} with id={sid}".format(system=star_system, sid=sid), "INFO")
+                self.notify_with_details(u"SITREP for {}".format(star_system), ["Crime reported {}".format(self.edrsitreps.crime_t_minus())])
+            if self.edrsitreps.recentTraffic(sid, 432000):
+                EDRLOG.log(u"Recent traffic for {system} with id={sid}".format(system=star_system, sid=sid), "INFO")
+                self.notify_with_details(u"SITREP for {}".format(star_system), ["Traffic reported {}".format(self.edrsitreps.traffic_t_minus())])
 
         return False
 
@@ -292,15 +299,13 @@ class EDRClient(object):
     def cmdr(self, cmdr_name, autocreate=True, checkInaraServer=False):
         cmdr_profile = self.cmdrs_cache.get(cmdr_name)
         if not cmdr_profile is None:
-            cmdr_u = cmdr_profile.name.encode('utf-8', 'replace')
-            EDRLOG.log(u"Cmdr {cmdr} is in the cache with id={cid}".format(cmdr=cmdr_u, cid=cmdr_profile.cid), "DEBUG")
+            EDRLOG.log(u"Cmdr {cmdr} is in the cache with id={cid}".format(cmdr=cmdr_name, cid=cmdr_profile.cid), "DEBUG")
         else:
             cmdr_profile = self.server.cmdr(cmdr_name, autocreate)
         
             if not cmdr_profile is None:
-                cmdr_u = cmdr_profile.name.encode('utf-8', 'replace')
                 self.cmdrs_cache.set(cmdr_name, cmdr_profile)
-                EDRLOG.log(u"Cached {cmdr} with id={id}".format(cmdr=cmdr_u, id=cmdr_profile.cid), "DEBUG")
+                EDRLOG.log(u"Cached {cmdr} with id={id}".format(cmdr=cmdr_name, id=cmdr_profile.cid), "DEBUG")
 
         inara_profile = self.inara_cache.get(cmdr_name)
         if not inara_profile is None:
@@ -310,11 +315,8 @@ class EDRClient(object):
             inara_profile = self.inara.cmdr(cmdr_name)
 
             if not inara_profile is None:
-                inara_name_u = inara_profile.name.encode('utf-8', 'replace')
-                inara_squadron_u = inara_profile.squadron.encode('utf-8', 'replace') if not inara_profile.squadron is None else ""
-                inara_role_u = inara_profile.role.encode('utf-8', 'replace') if not inara_profile.role is None else ""
                 self.inara_cache.set(cmdr_name, inara_profile)
-                EDRLOG.log(u"Cached Inara profile for {cmdr}: {name},{squadron},{role}".format(cmdr=cmdr_name, name=inara_name_u, squadron=inara_squadron_u, role=inara_role_u), "DEBUG")
+                EDRLOG.log(u"Cached Inara profile for {cmdr}: {name},{squadron},{role}".format(cmdr=cmdr_name, name=inara_profile.name, squadron=inara_profile.squadron, role=inara_profile.role), "DEBUG")
             else:
                 self.inara_cache.set(cmdr_name, None)
                 EDRLOG.log(u"No match found on Inara, storing temporary entry to avoid hammering Inara's server.", "INFO")
