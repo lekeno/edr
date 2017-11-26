@@ -130,6 +130,7 @@ class EDRSystems(object):
         if self.has_notams(star_system):
             active_notams = []
             all_notams = self.notams[self.system_id(star_system)].get("NOTAMs", None)
+            EDRLOG.log(u"NOTAMs for {}:{}".format(star_system, all_notams), "DEBUG")
             now = datetime.datetime.now()
             js_epoch_now = calendar.timegm(now.timetuple()) * 1000
             for notam in all_notams:
@@ -139,6 +140,7 @@ class EDRSystems(object):
                 if "until" in notam:
                     active = js_epoch_now <= notam["until"]
                 if active:
+                    EDRLOG.log(u"Active NOTAM: {}".format(notam["text"]), "DEBUG")
                     active_notams.append(notam["text"])
             return active_notams
 
@@ -231,13 +233,13 @@ class EDRSystems(object):
             self.reports_last_updated = now
             updated = True
 
-        if self.__are_NOTAMs_stale():
+        if self.__are_notams_stale():
             missing_seconds = self.timespan
             now = datetime.datetime.now()
             if not self.notams_last_updated is None:
                 missing_seconds = self.timespan - (now - self.notams_last_updated).total_seconds()
 
-            response = self.server.NOTAMs(missing_seconds)
+            response = self.server.notams(missing_seconds)
             if not response is None:
                 self.notams.update(response)
             self.notams_last_updated = now

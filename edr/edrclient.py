@@ -265,25 +265,27 @@ class EDRClient(object):
 
     def check_system(self, star_system):
         EDRLOG.log(u"Check system called: {}".format(star_system), "INFO")
+        details = []
+        notams = self.edrsystems.active_notams(star_system)
+        if not notams is None:
+            EDRLOG.log(u"NOTAMs for {}: {}".format(star_system, notams), "DEBUG")
+            details += notams
+        
         if not self.edrsystems.has_sitrep(star_system):
             EDRLOG.log(u"No sitrep for {system}".format(system=star_system), "INFO")
-            details = ["No reports for the last {d}.".format(d=self.edrsystems.timespan_s()),
+            details += ["No reports for the last {d}.".format(d=self.edrsystems.timespan_s()),
                        "Recon this system: tag any suspicious contacts by sending them an o7."]
-            self.notify_with_details(u"SITREP for {}".format(star_system), details)
         else:
-            notams = self.edrsystems.active_notams(star_system)
-            if not notams is None:
-                EDRLOG.log(u"NOTAMs for {system}".format(system=star_system), "DEBUG")
-                self.notify_with_details(u"SITREP for {}".format(star_system), notams)
             if self.edrsystems.has_recent_crimes(star_system):
                 EDRLOG.log(u"Recent crime for {system}".format(system=star_system), "INFO")
-                details = [u"Crime reported {}".format(self.edrsystems.crimes_t_minus(star_system))]
-                self.notify_with_details(u"SITREP for {}".format(star_system), details)
+                details += [u"Crime reported {}".format(self.edrsystems.crimes_t_minus(star_system))]
             if self.edrsystems.has_recent_traffic(star_system):
                 EDRLOG.log(u"Recent traffic for {system}".format(system=star_system), "INFO")
                 t_minus = self.edrsystems.traffic_t_minus(star_system)
-                details = [u"Traffic reported {}".format(t_minus)]
-                self.notify_with_details(u"SITREP for {}".format(star_system), details)
+                details += [u"Traffic reported {}".format(t_minus)]
+        
+        if details:
+            self.notify_with_details(u"SITREP for {}".format(star_system), details)
 
         return False
 
@@ -480,6 +482,7 @@ class EDRClient(object):
             return
 
         self.IN_GAME_MSG.notify(notice)
+        EDRLOG.log(u"details: {}".format(details[0]), "DEBUG")
         self.IN_GAME_MSG.info_notify(details)
 
     def warn_with_details(self, warning, details):

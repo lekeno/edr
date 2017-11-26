@@ -51,7 +51,7 @@ class EDRServer(object):
         json_resp = json.loads(resp.content)
         return json_resp
     
-    def NOTAMs(self, timespan_seconds):
+    def notams(self, timespan_seconds):
         now_epoch_js = 1000 * calendar.timegm(datetime.datetime.now().timetuple())
         past_epoch_js = now_epoch_js - (1000 * timespan_seconds)
         future_epoch_js = 1511990406602L
