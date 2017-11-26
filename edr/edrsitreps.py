@@ -12,28 +12,34 @@ class EDRSitReps(object):
     def __init__(self, server):
         config = edrconfig.EDRConfig()
         self.reports_max_age = config.sitreps_max_age()
-        self.reports_timespan = config.sitreps_timespan()
+        self.timespan = config.sitreps_timespan()
         self.last_updated = None
         self.reports = {}
+        self.notams = {}
         self.server = server
 
     def updateIfStale(self):
-        if self.isRecent(self.last_updated, self.reports_max_age):
+        if not self.__isStale():
             return False
 
-        missing_seconds = self.reports_timespan
+        missing_seconds = self.timespan
         now = datetime.datetime.now()
         if not self.last_updated is None: 
-            missing_seconds = self.reports_timespan - (now - self.last_updated).total_seconds()
+            missing_seconds = self.timespan - (now - self.last_updated).total_seconds()
             
         response = self.server.sitreps(missing_seconds)
         if not response is None:
             self.reports.update(response)
+
+        response = self.server.NOTAMs(missing_seconds)
+        if not response is None:
+            self.notams.update(response)
+        
         self.last_updated = now
         return True
 
     def timespan_s(self):
-        return self.__pretty_print_timespan(self.reports_timespan)
+        return self.__pretty_print_timespan(self.timespan)
 
     def __pretty_print_timespan(self, timespan):
         remaining = timespan
@@ -81,9 +87,26 @@ class EDRSitReps(object):
 
         return system_id in self.reports.keys()
 
-    def NOTSMs(self, system_id):
-        if self.hasSitRep(system_id):
-            return self.reports[system_id].get("NOTSM", None)
+    def hasNOTAMs(self, system_id):
+        self.updateIfStale()
+
+        return system_id in self.notams.keys()
+
+    def NOTAMs(self, system_id):
+        if self.hasNOTAMs(system_id):
+            activeNOTAMs = []
+            allNOTAMs = self.notams[system_id].get("NOTAMs", None)
+            n = datetime.datetime.now()
+            js_epoch_n = calendar.timegm(n.timetuple()) * 1000
+            for NOTAM in allNOTAMs:
+                active = True
+                if "from" in NOTAM:
+                    active = NOTAM["from"] <= js_epoch_n
+                if "until" in NOTAM:
+                    active = js_epoch_n <= NOTAM["until"]
+                if active:
+                    activeNOTAMs.append(NOTAM["text"])
+            return activeNOTAMs
 
         return None
 
@@ -129,4 +152,13 @@ class EDRSitReps(object):
         n = datetime.datetime.now()
         js_epoch_n = calendar.timegm(n.timetuple()) * 1000
 
-        return (js_epoch_n - timestamp) <= max_age / 1000
+        return (js_epoch_n - timestamp) / 1000 <= max_age
+
+    def __isStale(self):
+        if self.last_updated is None:
+            return True
+        n = datetime.datetime.now()
+        epoch_n = calendar.timegm(n.timetuple())
+        epoch_updated = calendar.timegm(self.last_updated.timetuple())
+
+        return (epoch_n - epoch_updated) > self.reports_max_age

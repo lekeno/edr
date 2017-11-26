@@ -278,12 +278,17 @@ class EDRClient(object):
             EDRLOG.log(u"No sitrep for {system} with id={sid}".format(system=star_system, sid=sid), "INFO")
             self.notify_with_details(u"SITREP for {}".format(star_system), ["No reports for the last {d}.".format(d=self.edrsitreps.timespan_s()), "Recon this system: tag any suspicious contacts by sending them an o7."])
         else:
+            #TODO replace constant timespan with a configurable variable
+            NOTAMs = self.edrsitreps.NOTAMs(sid)
+            if not NOTAMs is None:
+                EDRLOG.log(u"NOTAMs for {system} with id={sid}".format(system=star_system, sid=sid), "DEBUG")
+                self.notify_with_details(u"SITREP for {}".format(star_system), NOTAMs)
             if self.edrsitreps.recentCrimes(sid, 432000):
                 EDRLOG.log(u"Recent crime for {system} with id={sid}".format(system=star_system, sid=sid), "INFO")
-                self.notify_with_details(u"SITREP for {}".format(star_system), ["Crime reported {}".format(self.edrsitreps.crime_t_minus())])
+                self.notify_with_details(u"SITREP for {}".format(star_system), [u"Crime reported {}".format(self.edrsitreps.crimes_t_minus())])
             if self.edrsitreps.recentTraffic(sid, 432000):
                 EDRLOG.log(u"Recent traffic for {system} with id={sid}".format(system=star_system, sid=sid), "INFO")
-                self.notify_with_details(u"SITREP for {}".format(star_system), ["Traffic reported {}".format(self.edrsitreps.traffic_t_minus())])
+                self.notify_with_details(u"SITREP for {}".format(star_system), [u"Traffic reported {}".format(self.edrsitreps.traffic_t_minus())])
 
         return False
 

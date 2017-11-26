@@ -50,6 +50,21 @@ class EDRServer(object):
 
         json_resp = json.loads(resp.content)
         return json_resp
+    
+    def NOTAMs(self, timespan_seconds):
+        now_epoch_js = 1000 * calendar.timegm(datetime.datetime.now().timetuple())
+        past_epoch_js = now_epoch_js - (1000 * timespan_seconds)
+        future_epoch_js = 1511990406602L
+
+        query_params = "orderBy=\"timestamp\"&startAt={past}&endAt={now}&auth={auth}".format(past=past_epoch_js, now=future_epoch_js, auth=self.auth_token())
+        resp = requests.get("{server}/v1/notams.json?{query_params}".format(server=self.EDR_ENDPOINT, query_params=query_params))
+
+        if resp.status_code != 200:
+            EDRLOG.log(u"Failed to retrieve notams.", "ERROR")
+            return None
+        
+        return json.loads(resp.content)
+
 
     def sitreps(self, timespan_seconds):
         now_epoch_js = 1000 * calendar.timegm(datetime.datetime.now().timetuple())
