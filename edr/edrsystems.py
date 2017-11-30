@@ -105,25 +105,34 @@ class EDRSystems(object):
         return readable
 
     def crimes_t_minus(self, star_system):
-        #TODO needs last_crime_timestamp
-        now = datetime.datetime.now()
-        return "T-01h30m"
+        if self.has_sitrep(star_system):
+            system_reports = self.reports[self.system_id(star_system)]
+            if "latestCrime" in system_reports:
+                return self.t_minus(system_reports["latestCrime"])
+        return None
+
 
     def traffic_t_minus(self, star_system):
-        #TODO needs last_blip_timestamp
-        now = datetime.datetime.now()
-        return "T-01h30m"
+        if self.has_sitrep(star_system):
+            system_reports = self.reports[self.system_id(star_system)]
+            if "latestTraffic" in system_reports:
+                return self.t_minus(system_reports["latestTraffic"])
+        return None
 
+    def t_minus(self, js_epoch_then):
+        now = datetime.datetime.now()
+        py_epoch_now = calendar.timegm(now.timetuple())
+        ago = int(py_epoch_now - js_epoch_then / 1000)
+        return u"T-{}".format(self.__pretty_print_timespan(ago))
+    
     def has_sitrep(self, star_system):
         self.__update_if_stale()
         sid = self.system_id(star_system)
-
         return sid in self.reports.keys()
 
     def has_notams(self, star_system):
         self.__update_if_stale()
         sid = self.system_id(star_system)
-
         return sid in self.notams.keys()
 
     def active_notams(self, star_system):
@@ -136,48 +145,81 @@ class EDRSystems(object):
             for notam in all_notams:
                 active = True
                 if "from" in notam:
-                    active = notam["from"] <= js_epoch_now
+                    active &= notam["from"] <= js_epoch_now
                 if "until" in notam:
-                    active = js_epoch_now <= notam["until"]
+                    active &= js_epoch_now <= notam["until"]
                 if active:
                     EDRLOG.log(u"Active NOTAM: {}".format(notam["text"]), "DEBUG")
                     active_notams.append(notam["text"])
             return active_notams
-
         return None
 
     def has_recent_crimes(self, star_system):
         if self.has_sitrep(star_system):
             system_reports = self.reports[self.system_id(star_system)]
-            if "latestCrime" not in system_reports.keys():
+            if "latestCrime" not in system_reports:
                 return None
 
             edr_config = edrconfig.EDRConfig()
-            return self.is_recent(system_reports.get["latestCrime"],
+            return self.is_recent(system_reports["latestCrime"],
                                   edr_config.crimes_recent_threshold())
 
         return None
 
-    def crimes(self, star_system):
-        #TODO run crimes request
+    def recent_crimes(self, star_system):
+        if self.has_recent_crimes(star_system):
+            #TODO cache crimes and only fetch the missing timespan
+            return self.server.recent_crimes(star_system, self.timespan)
         return None
 
     def has_recent_traffic(self, star_system):
         if self.has_sitrep(star_system):
             system_reports = self.reports[self.system_id(star_system)]
-            if "latestBlip" not in system_reports.keys():
+            if "latestTraffic" not in system_reports:
                 return None
 
             edr_config = edrconfig.EDRConfig()
-            return self.is_recent(system_reports.get["latestBlip"],
+            return self.is_recent(system_reports["latestTraffic"],
                                   edr_config.traffic_recent_threshold())
 
         return None
+    
+    def summarize_recent_activity(self, star_system):
+        summary_sighted = []
+        summary_destroyers = []
+        summary_interdictors = []
+        if self.has_recent_traffic(star_system):
 
-    def traffic_reports(self, star_system):
-        #TODO run traffic request
-        return None
+            #TODO cache traffic and only fetch the missing timespan
+            recent_traffic = self.server.recent_traffic(self.system_id(star_system), self.timespan)
+            if recent_traffic is not None:
+                summary_traffic = {}
+                for sid in recent_traffic:
+                    traffic = recent_traffic[sid]
+                    summary_traffic[traffic["cmdr"]] = max(traffic["timestamp"] , summary_traffic.get(traffic["cmdr"], None))
+                summary_traffic = sorted(summary_traffic.items(), key=lambda t: t[1], reverse=True)
+                for traffic in summary_traffic:
+                    summary_sighted.append(u"{} {}".format(traffic[0], self.t_minus(traffic[1])))
+        
+        if self.has_recent_crimes(star_system):
 
+            #TODO cache traffic and only fetch the missing timespan
+            recent_crimes = self.server.recent_crimes(self.system_id(star_system), self.timespan)
+            if recent_crimes is not None:
+                summary_crimes = {}
+                for sid in recent_crimes:
+                    crime = recent_crimes[sid]
+                    if crime["criminals"][0]["name"] not in summary_crimes or crime["timestamp"] > summary_crimes[crime["criminals"][0]["name"]][0]: 
+                        summary_crimes[crime["criminals"][0]["name"]] = [crime["timestamp"], crime["offence"]]
+                summary_crimes = sorted(summary_crimes.items(), key=lambda t: t[1], reverse=True)
+                for crime in summary_crimes:
+                    print crime
+                    if crime[1][1] == "Murder":
+                        summary_destroyers.append(u"{} {}".format(crime[0], self.t_minus(crime[1][0])))
+                    elif crime[1][1] in ["Interdicted", "Interdiction"]:
+                        summary_interdictors.append(u"{} {}".format(crime[0], self.t_minus(crime[1][0])))
+        return {"Sighted": summary_sighted, "Interdictors": summary_interdictors, "Destroyers": summary_destroyers}
+    
     def has_recent_recon(self, star_system):
         if self.has_sitrep(star_system):
             system_reports = self.reports[self.system_id(star_system)]

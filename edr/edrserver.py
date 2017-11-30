@@ -167,3 +167,31 @@ class EDRServer(object):
         resp = requests.post(endpoint, json=info)
 
         return resp.status_code == 200
+
+    def recent_crimes(self,  system_id, timespan_seconds):
+        EDRLOG.log(u"Recent crimes for system {sid}".format(sid=system_id), "INFO")
+        now_epoch_js = 1000 * calendar.timegm(datetime.datetime.now().timetuple())
+        past_epoch_js = now_epoch_js - (1000 * timespan_seconds)
+
+        query_params = "orderBy=\"timestamp\"&startAt={past}&endAt={now}&auth={auth}".format(past=past_epoch_js, now=now_epoch_js, auth=self.auth_token())
+        resp = requests.get("{server}/v1/crimes/{sid}/.json?{query_params}".format(server=self.EDR_ENDPOINT, sid=system_id, query_params=query_params))
+
+        if resp.status_code != 200:
+            EDRLOG.log(u"Failed to retrieve recent crimes.", "ERROR")
+            return None
+        
+        return json.loads(resp.content)
+
+    def recent_traffic(self,  system_id, timespan_seconds):
+        EDRLOG.log(u"Recent traffic for system {sid}".format(sid=system_id), "INFO")
+        now_epoch_js = 1000 * calendar.timegm(datetime.datetime.now().timetuple())
+        past_epoch_js = now_epoch_js - (1000 * timespan_seconds)
+
+        query_params = "orderBy=\"timestamp\"&startAt={past}&endAt={now}&auth={auth}".format(past=past_epoch_js, now=now_epoch_js, auth=self.auth_token())
+        resp = requests.get("{server}/v1/traffic/{sid}/.json?{query_params}".format(server=self.EDR_ENDPOINT, sid=system_id, query_params=query_params))
+
+        if resp.status_code != 200:
+            EDRLOG.log(u"Failed to retrieve recent traffic.", "ERROR")
+            return None
+        
+        return json.loads(resp.content)
