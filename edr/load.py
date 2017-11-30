@@ -431,7 +431,7 @@ def report_crime(cmdr, entry):
                     criminal_cmdr.star_system = cmdr.star_system
                     criminal_cmdr.place = cmdr.place
                     criminal_cmdr.ship = killer["Ship"]
-                    criminal_cmdr.name = killer["Name"]
+                    criminal_cmdr.name = killer["Name"][5:]
                     criminal_cmdrs.append(criminal_cmdr)
             edr_submit_crime(criminal_cmdrs, "Murder", cmdr)
         else:
