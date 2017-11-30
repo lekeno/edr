@@ -143,10 +143,11 @@ def handle_lifecycle_events(ed_player, entry):
                    "DEBUG")
 
     if entry["event"] in ["LoadGame"]:
-        EDR_CLIENT.warmup()
         ed_player.inception()
         ed_player.game_mode = entry["GameMode"]
         EDRLOG.log(u"Game mode is {}".format(ed_player.game_mode), "DEBUG")
+        if not ed_player.in_solo_or_private():
+            EDR_CLIENT.warmup()
 
 
 def journal_entry(cmdr, is_beta, system, station, entry, state):
@@ -434,15 +435,14 @@ def report_crime(cmdr, entry):
                     criminal_cmdr.name = killer["Name"][5:]
                     criminal_cmdrs.append(criminal_cmdr)
             edr_submit_crime(criminal_cmdrs, "Murder", cmdr)
-        else:
-            if "KillerName" in entry and entry["KillerName"].startswith("Cmdr "):
-                criminal_cmdr = EDCmdr()
-                criminal_cmdr.timestamp = entry["timestamp"]
-                criminal_cmdr.star_system = cmdr.star_system
-                criminal_cmdr.place = cmdr.place
-                criminal_cmdr.ship = entry["KillerShip"]
-                criminal_cmdr.name = entry["KillerName"][5:]
-                edr_submit_crime([criminal_cmdr], "Murder", cmdr)
+        elif "KillerName" in entry and entry["KillerName"].startswith("Cmdr "):
+            criminal_cmdr = EDCmdr()
+            criminal_cmdr.timestamp = entry["timestamp"]
+            criminal_cmdr.star_system = cmdr.star_system
+            criminal_cmdr.place = cmdr.place
+            criminal_cmdr.ship = entry["KillerShip"]
+            criminal_cmdr.name = entry["KillerName"][5:]
+            edr_submit_crime([criminal_cmdr], "Murder", cmdr)
         EDR_CLIENT.player.killed()
 
     if entry["event"] == "Interdiction":
