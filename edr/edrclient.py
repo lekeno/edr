@@ -287,7 +287,7 @@ class EDRClient(object):
             self.__sitrep(star_system, details)
             summary = self.edrsystems.summarize_recent_activity(star_system)
             for section in summary:
-                details.append(u"{}:{}".format(section, "; ".join(summary[section])))
+                details.append(u"{}: {}".format(section, "; ".join(summary[section])))
             self.__sitrep(star_system, details)
 
         return False
