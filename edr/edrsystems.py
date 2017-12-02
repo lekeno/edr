@@ -2,6 +2,7 @@ import os
 import pickle
 
 import datetime
+import time
 import calendar
 
 import edrconfig
@@ -121,7 +122,7 @@ class EDRSystems(object):
 
     def t_minus(self, js_epoch_then, short=False):
         now = datetime.datetime.now()
-        py_epoch_now = calendar.timegm(now.timetuple())
+        py_epoch_now = time.mktime(now.timetuple())
         ago = int(py_epoch_now - js_epoch_then / 1000)
         if short:
             return u"-{}".format(self.__pretty_print_timespan(ago, short=True))
@@ -143,7 +144,7 @@ class EDRSystems(object):
             all_notams = self.notams[self.system_id(star_system)].get("NOTAMs", None)
             EDRLOG.log(u"NOTAMs for {}:{}".format(star_system, all_notams), "DEBUG")
             now = datetime.datetime.now()
-            js_epoch_now = calendar.timegm(now.timetuple()) * 1000
+            js_epoch_now = time.mktime(now.timetuple()) * 1000
             for notam in all_notams:
                 active = True
                 if "from" in notam:
@@ -243,7 +244,7 @@ class EDRSystems(object):
         if timestamp is None:
             return False
         now = datetime.datetime.now()
-        js_epoch_now = calendar.timegm(now.timetuple()) * 1000
+        js_epoch_now = time.mktime(now.timetuple()) * 1000
 
         return (js_epoch_now - timestamp) / 1000 <= max_age
 
@@ -264,8 +265,8 @@ class EDRSystems(object):
         if updated_at is None:
             return True
         now = datetime.datetime.now()
-        epoch_now = calendar.timegm(now.timetuple())
-        epoch_updated = calendar.timegm(updated_at.timetuple())
+        epoch_now = time.mktime(now.timetuple())
+        epoch_updated = time.mktime(updated_at.timetuple())
 
         return (epoch_now - epoch_updated) > max_age
 
