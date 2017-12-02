@@ -164,11 +164,6 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if not prerequisites(EDR_CLIENT, is_beta):
         return
 
-    place = ""
-    ship = ""
-    cmdr_status_updated = False
-    reason_for_update = ""
-
     if entry["event"] in ["Music", "Resurrect", "Fileheader", "LoadGame"]:
         handle_lifecycle_events(ed_player, entry)
 

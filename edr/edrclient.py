@@ -204,7 +204,7 @@ class EDRClient(object):
         if self.mandatory_update:
             details[1] = "Mandatory update pending!"
         details += self.motd
-        self.notify_with_details("EDR v{}".format(self.edr_version), details)
+        self.__notify("EDR v{}".format(self.edr_version), details)
 
     def shutdown(self):
         self.write_caches()
@@ -284,11 +284,11 @@ class EDRClient(object):
                 t_minus = self.edrsystems.traffic_t_minus(star_system)
                 details += [u"Traffic reported {}".format(t_minus)]        
         if details:
-            self.notify_with_details(u"SITREP for {}".format(star_system), details)
+            self.__sitrep(star_system, details)
             summary = self.edrsystems.summarize_recent_activity(star_system)
             for section in summary:
-                details.append(u"{}: {}".format(section, "; ".join(summary[section])))
-            self.notify_with_details(u"SITREP for {}".format(star_system), details)
+                details.append(u"{}:{}".format(section, "; ".join(summary[section])))
+            self.__sitrep(star_system, details)
 
         return False
 
@@ -413,10 +413,10 @@ class EDRClient(object):
         if not profile is None:
             self.status = "got info about {}".format(cmdr_name)
             EDRLOG.log(u"Who {} : {}".format(cmdr_name, profile.short_profile()), "INFO")
-            self.notify_with_details("Intel", [profile.short_profile()])
+            self.__intel(cmdr_name, [profile.short_profile()])
         else:
             EDRLOG.log(u"Who {} : no info".format(cmdr_name), "INFO")
-            self.notify_with_details("Intel", ["No info about {}".format(cmdr_name)])
+            self.__intel(cmdr_name, ["No info about {}".format(cmdr_name)])
 
     def blip(self, cmdr_name, blip):
         cmdr_id = self.cmdr_id(cmdr_name)
@@ -428,7 +428,7 @@ class EDRClient(object):
         profile = self.cmdr(cmdr_name)
         if (not profile is None) and (self.player.name != cmdr_name) and profile.is_dangerous():
             self.status = "{} is bad news.".format(cmdr_name)
-            self.warn_with_details("Warning!", [profile.short_profile()])
+            self.__warning(u"Warning!", [profile.short_profile()])
 
         if not self.novel_enough_blip(cmdr_id, blip):
             self.status = "skipping blip (not novel enough)."
@@ -476,24 +476,40 @@ class EDRClient(object):
 
         return self.server.crime(sid, crime)
 
-
-    def notify_with_details(self, notice, details):
+    def __sitrep(self, star_system, details):
         if self.audio_feedback:
             self.AUDIO_FEEDBACK.notify()
-
         if not self.visual_feedback:
             return
+        EDRLOG.log(u"sitrep for {}; details: {}".format(star_system, details[0]), "DEBUG")
+        self.IN_GAME_MSG.sitrep(u"SITREP for {}".format(star_system), details)
 
-        self.IN_GAME_MSG.notify(notice)
-        EDRLOG.log(u"details: {}".format(details[0]), "DEBUG")
-        self.IN_GAME_MSG.info_notify(details)
+    def __intel(self, who, details):
+        if self.audio_feedback:
+            self.AUDIO_FEEDBACK.notify()
+        if not self.visual_feedback:
+            return
+        EDRLOG.log(u"Intel for {}; details: {}".format(who, details[0]), "DEBUG")
+        self.IN_GAME_MSG.intel(u"Intel", details)
 
-    def warn_with_details(self, warning, details):
+    def __warning(self, header, details):
         if self.audio_feedback:
             self.AUDIO_FEEDBACK.warn()
-
         if not self.visual_feedback:
             return
+        EDRLOG.log(u"Warning; details: {}".format(details[0]), "DEBUG")
+        self.IN_GAME_MSG.warning(header, details)
+    
+    def __notify(self, header, details):
+        if self.audio_feedback:
+            self.AUDIO_FEEDBACK.notify()
+        if not self.visual_feedback:
+            return
+        EDRLOG.log(u"Notify about {}; details: {}".format(header, details[0]), "DEBUG")
+        self.IN_GAME_MSG.notify(header, details)
 
-        self.IN_GAME_MSG.warn(warning)
-        self.IN_GAME_MSG.info_warning(details)
+    def notify_with_details(self, notice, details):
+        self.__notify(notice, details)
+
+    def warn_with_details(self, warning, details):
+        self.__warning(warning, details)

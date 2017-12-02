@@ -73,7 +73,7 @@ class EDRSystems(object):
     def timespan_s(self):
         return self.__pretty_print_timespan(self.timespan)
 
-    def __pretty_print_timespan(self, timespan):
+    def __pretty_print_timespan(self, timespan, short=False):
         remaining = timespan
         days = remaining / 86400
         remaining -= days * 86400
@@ -89,15 +89,15 @@ class EDRSystems(object):
         readable = ""
         if days > 0:
             readable = u"{}d".format(days)
-            if hours > 0:
+            if hours > 0 and not short:
                 readable += u":{}h".format(hours)
         elif hours > 0:
             readable = u"{}h".format(hours)
-            if minutes > 0:
+            if minutes > 0 and not short:
                 readable += ":{}m".format(minutes)
         elif minutes > 0:
             readable = u"{}m".format(minutes)
-            if seconds > 0:
+            if seconds > 0 and not short:
                 readable += ":{}s".format(seconds)
         else:
             readable = u"{}s".format(seconds)
@@ -119,10 +119,12 @@ class EDRSystems(object):
                 return self.t_minus(system_reports["latestTraffic"])
         return None
 
-    def t_minus(self, js_epoch_then):
+    def t_minus(self, js_epoch_then, short=False):
         now = datetime.datetime.now()
         py_epoch_now = calendar.timegm(now.timetuple())
         ago = int(py_epoch_now - js_epoch_then / 1000)
+        if short:
+            return u"-{}".format(self.__pretty_print_timespan(ago, short=True))
         return u"T-{}".format(self.__pretty_print_timespan(ago))
     
     def has_sitrep(self, star_system):
@@ -185,11 +187,9 @@ class EDRSystems(object):
         return None
     
     def summarize_recent_activity(self, star_system):
-        summary_sighted = []
-        summary_destroyers = []
-        summary_interdictors = []
+        summary = {}
         if self.has_recent_traffic(star_system):
-
+            summary_sighted = []
             #TODO cache traffic and only fetch the missing timespan
             recent_traffic = self.server.recent_traffic(self.system_id(star_system), self.timespan)
             if recent_traffic is not None:
@@ -199,10 +199,12 @@ class EDRSystems(object):
                     summary_traffic[traffic["cmdr"]] = max(traffic["timestamp"] , summary_traffic.get(traffic["cmdr"], None))
                 summary_traffic = sorted(summary_traffic.items(), key=lambda t: t[1], reverse=True)
                 for traffic in summary_traffic:
-                    summary_sighted.append(u"{} {}".format(traffic[0], self.t_minus(traffic[1])))
+                    summary_sighted.append(u"{} {}".format(traffic[0], self.t_minus(traffic[1], short=True)))
+                summary[u"Sighted"] = summary_sighted
         
         if self.has_recent_crimes(star_system):
-
+            summary_interdictors = []
+            summary_destroyers = []
             #TODO cache traffic and only fetch the missing timespan
             recent_crimes = self.server.recent_crimes(self.system_id(star_system), self.timespan)
             if recent_crimes is not None:
@@ -215,10 +217,15 @@ class EDRSystems(object):
                 for crime in summary_crimes:
                     print crime
                     if crime[1][1] == "Murder":
-                        summary_destroyers.append(u"{} {}".format(crime[0], self.t_minus(crime[1][0])))
+                        summary_destroyers.append(u"{} {}".format(crime[0], self.t_minus(crime[1][0], short=True)))
                     elif crime[1][1] in ["Interdicted", "Interdiction"]:
-                        summary_interdictors.append(u"{} {}".format(crime[0], self.t_minus(crime[1][0])))
-        return {"Sighted": summary_sighted, "Interdictors": summary_interdictors, "Destroyers": summary_destroyers}
+                        summary_interdictors.append(u"{} {}".format(crime[0], self.t_minus(crime[1][0], short=True)))
+                if summary_interdictors:
+                    summary[u"Interdictors"] = summary_interdictors
+                if summary_destroyers:
+                    summary[u"Destroyers"] = summary_destroyers
+
+        return summary
     
     def has_recent_recon(self, star_system):
         if self.has_sitrep(star_system):
