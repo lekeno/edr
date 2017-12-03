@@ -72,9 +72,9 @@ class EDRSystems(object):
             pickle.dump(self.notams_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     def timespan_s(self):
-        return self.__pretty_print_timespan(self.timespan)
+        return self.__pretty_print_timespan(self.timespan, short=True, verbose=True)
 
-    def __pretty_print_timespan(self, timespan, short=False):
+    def __pretty_print_timespan(self, timespan, short=False, verbose=False):
         remaining = timespan
         days = remaining / 86400
         remaining -= days * 86400
@@ -89,19 +89,19 @@ class EDRSystems(object):
 
         readable = ""
         if days > 0:
-            readable = u"{}d".format(days)
+            readable = u"{}{}".format(days, u"day(s)" if verbose else "d")
             if hours > 0 and not short:
-                readable += u":{}h".format(hours)
+                readable += u":{}{}".format(hours, u"hour(s)" if verbose else "h")
         elif hours > 0:
-            readable = u"{}h".format(hours)
+            readable = u"{}{}".format(hours, u"hour(s)" if verbose else "h")
             if minutes > 0 and not short:
-                readable += ":{}m".format(minutes)
+                readable += ":{}{}".format(minutes, u"minute(s)" if verbose else "m")
         elif minutes > 0:
             readable = u"{}m".format(minutes)
             if seconds > 0 and not short:
-                readable += ":{}s".format(seconds)
+                readable += ":{}{}".format(seconds, u"second(s)" if verbose else "s")
         else:
-            readable = u"{}s".format(seconds)
+            readable = u"{}{}".format(seconds, u"second(s)" if verbose else "s")
 
         return readable
 

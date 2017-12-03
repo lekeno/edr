@@ -503,12 +503,6 @@ def handle_commands(cmdr, entry):
     command = entry["Message"].split(" ", 1)
     if command[0] == "!overlay":
         overlay_command("" if len(command) == 1 else command[1])
-    elif command[0] == "!normal_width" and len(command) == 2:
-        EDRLOG.log(u"Setting width for normal font weight", "INFO")
-        EDR_CLIENT.IN_GAME_MSG.normal_width = float(command[1])
-    elif command[0] == "!large_width" and len(command) == 2:
-        EDRLOG.log(u"Setting width for lage font weight", "INFO")
-        EDR_CLIENT.IN_GAME_MSG.large_width = float(command[1])
     elif command[0] == "!help":
         EDRLOG.log(u"!overlay [on/off/ ] to enable/disable/test the overlay feature.", "INFO")
         EDRLOG.log(u"!audiocue [on/off/loud/soft] to enable/disable/adjust the audio feedback.",

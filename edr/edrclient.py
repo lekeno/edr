@@ -276,18 +276,12 @@ class EDRClient(object):
             details += ["No reports for the last {d}.".format(d=self.edrsystems.timespan_s()),
                        "Recon this system: tag any suspicious contacts by sending them an o7."]
         else:
-            if self.edrsystems.has_recent_crimes(star_system):
-                EDRLOG.log(u"Recent crime for {system}".format(system=star_system), "INFO")
-                details += [u"Crime reported {}".format(self.edrsystems.crimes_t_minus(star_system))]
-            if self.edrsystems.has_recent_traffic(star_system):
-                EDRLOG.log(u"Recent traffic for {system}".format(system=star_system), "INFO")
-                t_minus = self.edrsystems.traffic_t_minus(star_system)
-                details += [u"Traffic reported {}".format(t_minus)]        
+            recent_activity = self.edrsystems.has_recent_crimes(star_system) or self.edrsystems.has_recent_traffic(star_system)
+            if recent_activity:
+                summary = self.edrsystems.summarize_recent_activity(star_system)
+                for section in summary:
+                    details.append(u"{}: {}".format(section, "; ".join(summary[section])))
         if details:
-            self.__sitrep(star_system, details)
-            summary = self.edrsystems.summarize_recent_activity(star_system)
-            for section in summary:
-                details.append(u"{}: {}".format(section, "; ".join(summary[section])))
             self.__sitrep(star_system, details)
 
         return False
