@@ -3,6 +3,7 @@ import sys
 
 import igmconfig
 import edrlog
+import textwrap
 
 EDRLOG = edrlog.EDRLog()
 
@@ -87,6 +88,26 @@ class InGameMsg(object):
         self.__msg_header("sitrep", header)
         self.__msg_body("sitrep", details)
 
+    def __wrap_body(self, kind, lines):
+        if not lines:
+            return []
+        chunked_lines = []
+        rows = self.cfg[kind]["b"]["rows"]
+        rows_per_line = max(1, rows / len(lines))
+        bonus_rows = rows % len(lines)
+        for line in lines:
+            max_rows = rows_per_line
+            if bonus_rows: 
+                 max_rows += 1
+                 bonus_rows -= 1
+            chunked_lines.append(self.__wrap_text(kind, "b", line, max_rows))
+        return chunked_lines
+
+    def __wrap_text(self, kind, part, text, max_rows):
+        width = self.cfg[kind][part]["len"]
+        wrapper = textwrap.TextWrapper(width=width, subsequent_indent="  ", break_on_hyphens=False)
+        return wrapper.wrap(text)[:max_rows]
+
     def __adjust_x(self, kind, part, text):
         conf = self.cfg[kind][part]
         x = conf["x"]
@@ -106,16 +127,17 @@ class InGameMsg(object):
     def __msg_body(self, kind, body):
         conf = self.cfg[kind]["b"]
         x = conf["x"]
+        chunked_lines = self.__wrap_body(kind, body)
         
-        for line in body:
-            line = line[:conf["len"]]
-            row_nb = self.__best_body_row(kind, line)
-            y = conf["y"] + row_nb * self.cfg["general"][conf["size"]]["h"]
-            conf["cache"].set(row_nb, line)
-            x = self.__adjust_x(kind, "b", line)
-            print u"line={}, rownb={}, last_row={}, row={}, col={}, color={}, ttl={}, size={}".format(line, row_nb, conf["last_row"], y, x, conf["rgb"], conf["ttl"], conf["size"])
-            self.__display(kind, line, row=y, col=x, color=conf["rgb"], size=conf["size"], ttl=conf["ttl"])
-            self.__bump_body_row(kind)
+        for chunked_line in chunked_lines:
+            for chunk in chunked_line:
+                row_nb = self.__best_body_row(kind, chunk)
+                y = conf["y"] + row_nb * self.cfg["general"][conf["size"]]["h"]
+                conf["cache"].set(row_nb, chunk)
+                x = self.__adjust_x(kind, "b", chunk)
+                print u"line={}, rownb={}, last_row={}, row={}, col={}, color={}, ttl={}, size={}".format(chunk, row_nb, conf["last_row"], y, x, conf["rgb"], conf["ttl"], conf["size"])
+                self.__display(kind, chunk, row=y, col=x, color=conf["rgb"], size=conf["size"], ttl=conf["ttl"])
+                self.__bump_body_row(kind)
 
     def __best_body_row(self, kind, text):
         rows = range(self.cfg[kind]["b"]["rows"])
