@@ -1,11 +1,18 @@
 import os
 import ConfigParser
+import edrlog
 
 class IGMConfig(object):
-    def __init__(self, config_file='config/igm_config.ini'):
+    def __init__(self, config_file='config/igm_config.ini', user_config_file='config/user_igm_config.ini'):
         self.config = ConfigParser.ConfigParser()
-        self.config.read(os.path.join(
-            os.path.abspath(os.path.dirname(__file__)), config_file))
+        user_cfg_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), user_config_file)
+        if os.path.exists(user_cfg_path):
+            edrlog.EDRLog().log(u"Using user defined layout at {}.".format(user_config_file), "INFO")
+            self.config.read(user_cfg_path)
+        else:
+            edrlog.EDRLog().log(u"No user defined layout at {}, using {} instead.".format(user_config_file, config_file), "INFO")
+            self.config.read(os.path.join(
+                os.path.abspath(os.path.dirname(__file__)), config_file))
 
     def large_height(self):
         return self.config.getfloat('general', 'large_height')

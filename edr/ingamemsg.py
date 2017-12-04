@@ -98,8 +98,8 @@ class InGameMsg(object):
         for line in lines:
             max_rows = rows_per_line
             if bonus_rows: 
-                 max_rows += 1
-                 bonus_rows -= 1
+                max_rows += 1
+                bonus_rows -= 1
             chunked_lines.append(self.__wrap_text(kind, "b", line, max_rows))
         return chunked_lines
 
