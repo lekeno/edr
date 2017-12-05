@@ -1,9 +1,9 @@
 import os
 import sys
 
-import Tkinter as tk
-from config import config
+import igmconfig
 import edrlog
+import textwrap
 
 EDRLOG = edrlog.EDRLog()
 
@@ -21,104 +21,129 @@ except ImportError:
 
 import lrucache
 
-class InGameMsg(object):
-    VIRTUAL_WIDTH = 1280 #EDMCOverlay's virtual width
-    VIRTUAL_HEIGHT = 960 #EDMCOverlay's virtual height
-    
-    LARGE_HEIGHT = 28
-    LARGE_WIDTH = 7
-
-    NORMAL_HEIGHT = 18
-    NORMAL_WIDTH = 4
-
-    WARNING_ROW = 50
-    INFO_WARNING_ROW = WARNING_ROW + LARGE_HEIGHT
-    WARNING_TIMEOUT = 20
-    
-    NOTICE_ROW = 500
-    INFO_NOTICE_ROW = NOTICE_ROW + LARGE_HEIGHT
-
-    INFO_NB_ROWS = 8
+class InGameMsg(object):    
+    MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice"]
 
     def __init__(self):
         self._overlay = edmcoverlay.Overlay()
-        self.info_notice_row = self.INFO_NOTICE_ROW
-        self.info_warning_cache = lrucache.LRUCache(self.INFO_NB_ROWS, self.WARNING_TIMEOUT)
-        self.iw_last_row_used = 0
+        self.cfg = {}
+        self.body_cache = {}
+        self.general_config()
+        for kind in self.MESSAGE_KINDS:
+            self.message_config(kind)
 
-        tmp = config.get("EDRVisualNormalWidth")
-        self._normal_width = tk.DoubleVar(value=self.NORMAL_WIDTH if (tmp is None) else float(tmp))
-        
-        tmp = config.get("EDRVisualLargeWidth")
-        self._large_width = tk.DoubleVar(value=self.LARGE_WIDTH if (tmp is None) else float(tmp))
-
-        if self._normal_width == 0.0:
-            self.normal_width = self.NORMAL_WIDTH
-        
-        if self._large_width == 0.0:
-            self.large_width = self.LARGE_WIDTH
-
-
-    @property
-    def normal_width(self):
-        return self._normal_width.get()
-
-    @normal_width.setter
-    def normal_width(self, new_width):
-        self._normal_width.set(new_width)
-        config.set("EDRVisualNormalWidth", str(new_width))
-        
-
-    @property
-    def large_width(self):
-        return self._large_width.get()
-
-    @large_width.setter
-    def large_width(self, new_width):
-        self._large_width.set(new_width)
-        config.set("EDRVisualLargeWidth", str(new_width))
+    def general_config(self):
+        conf = igmconfig.IGMConfig()
+        self.cfg["general"] = {
+            "large" : {
+                "h": conf.large_height(),
+                "w": conf.large_width()
+            },
+            "normal" : {
+                "h": conf.normal_height(),
+                "w": conf.normal_width()
+            }
+        }
 
 
-    def notify(self, text, ttl=12):
-        self.display(text, row=self.NOTICE_ROW, col=max(0,int(self.VIRTUAL_WIDTH/2.0-len(text)*self.large_width)), color="#dd5500", ttl=ttl)
+    def message_config(self, kind):
+        conf = igmconfig.IGMConfig()
+        self.cfg[kind] = {
+            "h": {
+                "x": conf.x(kind, "header"),
+                "y": conf.y(kind, "header"),
+                "ttl": conf.ttl(kind, "header"),
+                "rgb": conf.rgb(kind, "header"),
+                "size": conf.size(kind, "header"),
+                "len": conf.len(kind, "header"),
+                "align": conf.align(kind, "header")
+            },
+            "b": {
+                "x": conf.x(kind, "body"),
+                "y": conf.y(kind, "body"),
+                "ttl": conf.ttl(kind, "body"),
+                "rgb": conf.rgb(kind, "body"),
+                "size": conf.size(kind, "body"),
+                "len": conf.len(kind, "body"),
+                "align": conf.align(kind, "body"),
+                "rows": conf.body_rows(kind),
+                "cache": lrucache.LRUCache(conf.body_rows(kind), conf.ttl(kind, "body")),
+                "last_row": 0
+            }
+        }
 
+    def intel(self, header, details):
+        self.__msg_header("intel", header)
+        self.__msg_body("intel", details)
 
-    def warn(self, text):
-        self.display(text, row=self.WARNING_ROW, col=max(0,int(self.VIRTUAL_WIDTH/2.0-len(text)*self.large_width)), color="red", ttl=self.WARNING_TIMEOUT, size="large")
+    def warning(self, header, details):
+        self.__msg_header("warning", header)
+        self.__msg_body("warning", details)
 
-
-    def info_warning(self, lines):
-        for line in lines:
-            row_nb = self.best_warning_row(line)
-            self.iw_last_row_used = self.INFO_WARNING_ROW + row_nb * self.NORMAL_HEIGHT
-            self.display(line, row=self.iw_last_row_used, col=max(0,int(self.VIRTUAL_WIDTH/2.0-len(line)*self.normal_width)), color="#ffffff", size="normal", ttl=self.WARNING_TIMEOUT)
-            self.info_warning_cache.set(row_nb, line)
-
-
-    def info_notify(self, lines, ttl=10):
-        self.info_notice_row = self.INFO_NOTICE_ROW
-        for line in lines:
-            self.display(line, row=self.info_notice_row, col=max(0,int(self.VIRTUAL_WIDTH/2.0-len(line)*self.normal_width)), color="#ffffff", size="normal", ttl=ttl)
-            self.bump_notice_row()
-
-
-    def bump_warning_row(self):
-        self.iw_last_row_used += 1
-        if self.iw_last_row_used > self.INFO_NB_ROWS:
-            self.iw_last_row_used = 0
-
+    def notify(self, header, details):
+        self.__msg_header("notice", header)
+        self.__msg_body("notice", details)
     
-    def bump_notice_row(self):
-        self.info_notice_row += self.NORMAL_HEIGHT
-        if self.info_notice_row > (self.INFO_NOTICE_ROW + self.NORMAL_HEIGHT * 8):
-            self.info_notice_row = self.INFO_NOTICE_ROW
+    def sitrep(self, header, details):
+        self.__msg_header("sitrep", header)
+        self.__msg_body("sitrep", details)
 
+    def __wrap_body(self, kind, lines):
+        if not lines:
+            return []
+        chunked_lines = []
+        rows = self.cfg[kind]["b"]["rows"]
+        rows_per_line = max(1, rows / len(lines))
+        bonus_rows = rows % len(lines)
+        for line in lines:
+            max_rows = rows_per_line
+            if bonus_rows: 
+                max_rows += 1
+                bonus_rows -= 1
+            chunked_lines.append(self.__wrap_text(kind, "b", line, max_rows))
+        return chunked_lines
 
-    def best_warning_row(self, text):
-        rows = range(self.INFO_NB_ROWS)
+    def __wrap_text(self, kind, part, text, max_rows):
+        width = self.cfg[kind][part]["len"]
+        wrapper = textwrap.TextWrapper(width=width, subsequent_indent="  ", break_on_hyphens=False)
+        return wrapper.wrap(text)[:max_rows]
+
+    def __adjust_x(self, kind, part, text):
+        conf = self.cfg[kind][part]
+        x = conf["x"]
+        if conf["align"] == "center":
+            w = self.cfg["general"][conf["size"]]["w"]
+            text_w = len(text)*w
+            return max(0,int(x-text_w/2.0))
+        return x
+
+    def __msg_header(self, kind, header):
+        conf = self.cfg[kind]["h"]
+        text = header[:conf["len"]]
+        x = self.__adjust_x(kind, "h", text)
+        print u"header={}, row={}, col={}, color={}, ttl={}, size={}".format(header, conf["y"], x, conf["rgb"], conf["ttl"], conf["size"])
+        self.__display(kind, text, row=conf["y"], col=x, color=conf["rgb"], ttl=conf["ttl"], size=conf["size"])
+
+    def __msg_body(self, kind, body):
+        conf = self.cfg[kind]["b"]
+        x = conf["x"]
+        chunked_lines = self.__wrap_body(kind, body)
+        
+        for chunked_line in chunked_lines:
+            for chunk in chunked_line:
+                row_nb = self.__best_body_row(kind, chunk)
+                y = conf["y"] + row_nb * self.cfg["general"][conf["size"]]["h"]
+                conf["cache"].set(row_nb, chunk)
+                x = self.__adjust_x(kind, "b", chunk)
+                print u"line={}, rownb={}, last_row={}, row={}, col={}, color={}, ttl={}, size={}".format(chunk, row_nb, conf["last_row"], y, x, conf["rgb"], conf["ttl"], conf["size"])
+                self.__display(kind, chunk, row=y, col=x, color=conf["rgb"], size=conf["size"], ttl=conf["ttl"])
+                self.__bump_body_row(kind)
+
+    def __best_body_row(self, kind, text):
+        rows = range(self.cfg[kind]["b"]["rows"])
         used_rows = []
         for row_nb in rows:
-            cached = self.info_warning_cache.get(row_nb)
+            cached = self.cfg[kind]["b"]["cache"].get(row_nb)
             used_rows.append(row_nb)
             if (cached is None or cached == text):
                 return row_nb
@@ -127,14 +152,19 @@ class InGameMsg(object):
         if len(remaining_rows):
             return remaining_rows.pop()
         else:
-            self.bump_warning_row()
-            return self.iw_last_row_used
+            self.__bump_body_row(kind)
+            return self.cfg[kind]["b"]["last_row"]
+
+    def __bump_body_row(self, kind):
+        self.cfg[kind]["b"]["last_row"] += 1
+        if self.cfg[kind]["b"]["last_row"] > self.cfg[kind]["b"]["rows"]:
+            self.cfg[kind]["b"]["last_row"] = 0
 
 
-    def display(self, text, row, col, color="#dd5500", size="large", ttl=5):
+    def __display(self, kind, text, row, col, color="#dd5500", size="large", ttl=5):
         try:
-            msgid = "EDR-{}".format(row) 
-            self._overlay.send_message(msgid, text, color, col, row, ttl=ttl, size=size)
+            msgid = "EDR-{}-{}".format(kind, row) 
+            self._overlay.send_message(msgid, text, color, int(col), int(row), ttl=ttl, size=size)
         except:
             EDRLOG.log(u"In-Game Message failed.", "ERROR")
             pass

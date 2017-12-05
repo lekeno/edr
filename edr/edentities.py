@@ -101,7 +101,10 @@ class EDCmdr(object):
         return name in self.wing 
 
     def remove_friend(self, name):
-        self.friends.evict(name)
+        try:
+            del self.friends.evict[name]
+        except KeyError:
+            pass
 
     def update_friend(self, name, status):
         if status == "Requested":

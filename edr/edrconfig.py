@@ -5,11 +5,11 @@ class EDRConfig(object):
     def __init__(self, config_file='config/config.ini'):
         self.config = ConfigParser.ConfigParser()
         self.config.read(os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), config_file))
+            os.path.abspath(os.path.dirname(__file__)), config_file))
 
     def edr_version(self):
         return self.config.get('general', 'version')
-    
+
     def edr_api_key(self):
         return self.config.get('edr', 'edr_api_key')
 
@@ -54,3 +54,24 @@ class EDRConfig(object):
 
     def logging_level(self):
         return self.config.get('general', 'logging_level')
+
+    def sitreps_timespan(self):
+        return int(self.config.get('sitreps', 'sitreps_timespan'))
+
+    def reports_check_interval(self):
+        return int(self.config.get('sitreps', 'reports_check_interval'))
+
+    def notams_check_interval(self):
+        return int(self.config.get('sitreps', 'notams_check_interval'))
+
+    def notams_max_age(self):
+        return int(self.config.get('sitreps', 'notams_max_age'))
+
+    def recon_recent_threshold(self):
+        return int(self.config.get('sitreps', 'recon_recent_threshold'))
+
+    def crimes_recent_threshold(self):
+        return int(self.config.get('sitreps', 'crimes_recent_threshold'))
+
+    def traffic_recent_threshold(self):
+        return int(self.config.get('sitreps', 'traffic_recent_threshold'))
