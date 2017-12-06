@@ -462,8 +462,14 @@ class EDRClient(object):
 
 
     def crime(self, star_system, crime):
-        if not self.crimes_reporting or self.player.in_anarchy():
-            EDRLOG.log(u"Crimes reporting is off either because the player turned it off or is in an anarchy.", "INFO")
+        if not self.crimes_reporting:
+            EDRLOG.log(u"Crimes reporting is off (!crimes on to re-enable).", "INFO")
+            self.status = u"Crimes reporting is off (!crimes on to re-enable)"
+            return False
+            
+        if self.player.in_anarchy():
+            EDRLOG.log(u"Crime not being reported because the player is in an anarchy.", "INFO")
+            self.status = u"Anarchy system (no crime reports/info)"
             return False
 
         sid = self.edrsystems.system_id(star_system)
