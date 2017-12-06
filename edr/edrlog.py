@@ -1,7 +1,6 @@
 import sys
 import edrconfig
 
-#TODO level from config file, class
 class EDRLog(object):
 
     LEVEL_MAPPING = {"DEBUG": 10,  "INFO": 20, "WARNING": 30, "EROR": 40}

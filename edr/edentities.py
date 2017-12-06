@@ -28,6 +28,10 @@ class EDLocation(object):
     def __init__(self):
         self.star_system = None
         self.place = None
+        self.security = None
+    
+    def is_anarchy(self):
+        return self.security == "$GAlAXY_MAP_INFO_state_anarchy;"
 
 class EDCmdr(object):
     EDR_FRIENDS_CACHE = os.path.join(
@@ -172,6 +176,16 @@ class EDCmdr(object):
     @place.setter
     def place(self, place):
         self.location.place = place
+
+    def location_security(self, ed_security_state):
+        self.location.security = ed_security_state
+
+    def in_anarchy(self):
+        return self.location.is_anarchy()
+
+    @star_system.setter
+    def star_system(self, star_system):
+        self.location.star_system = star_system
 
 
     def has_partial_status(self):

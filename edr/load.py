@@ -88,6 +88,10 @@ def handle_movement_events(ed_player, entry):
     if entry["event"] in ["FSDJump", "SupercruiseEntry"]:
         place = "Supercruise"
         outcome["updated"] |= ed_player.update_place_if_obsolete(place, entry["timestamp"])
+        if entry["event"] == "FSDJump" and entry["SystemSecurity"]:
+            ed_player.location_security(entry["SystemSecurity"])
+            if ed_player.in_anarchy():
+                EDR_CLIENT.IN_GAME_MSG.warning(u"Anarchy system", ["Crimes will not be reported."])
         outcome["reason"] = "Jump events"
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
 
