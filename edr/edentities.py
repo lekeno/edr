@@ -1,11 +1,7 @@
 import os
-import pickle
-
 import json
 
 import edtime
-import lrucache
-import edrconfig
 import edrlog
 
 EDRLOG = edrlog.EDRLog()
@@ -34,32 +30,18 @@ class EDLocation(object):
         return self.security == "$GAlAXY_MAP_INFO_state_anarchy;"
 
 class EDCmdr(object):
-    EDR_FRIENDS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/friends.p')
-
     def __init__(self):
-        config = edrconfig.EDRConfig()
-
         self.name = None
         self._ship = None
         self.location = EDLocation()
         self.game_mode = None
         self.previous_mode = None
-        self.previous_wing = []
+        self.previous_wing = set()
         self.from_birth = False
         self._timestamp = edtime.EDTime()
         self.wing = []
+        self.friends = set()
 
-        try:
-            with open(self.EDR_FRIENDS_CACHE, 'rb') as handle:
-                self.friends = pickle.load(handle)
-        except IOError:
-            self.friends = lrucache.LRUCache(config.lru_max_size(), config.friends_max_age())
-
-    def persist(self):
-        with open(self.EDR_FRIENDS_CACHE, 'wb') as handle:
-            pickle.dump(self.friends, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    
     def in_solo_or_private(self):
         return self.game_mode in ["Solo", "Group"]
 
@@ -75,14 +57,12 @@ class EDCmdr(object):
     def killed(self):
         self.previous_mode = self.game_mode 
         self.previous_wing = list(self.wing)
-
         self.game_mode = None
         self.wing = []
 
     def resurrect(self):
         self.game_mode = self.previous_mode 
         self.wing = list(self.previous_wing)
-
         self.previous_mode = None
         self.previous_wing = []
 
@@ -99,45 +79,13 @@ class EDCmdr(object):
         self.wing = self.wing.append(other)
 
     def is_in_wing(self, name):
-        if not self.wing:
-            return False
-
         return name in self.wing 
-
-    def remove_friend(self, name):
-        try:
-            del self.friends.evict[name]
-        except KeyError:
-            pass
-
-    def update_friend(self, name, status):
-        if status == "Requested":
-            return False
-
-        if status == "Lost":
-            self.remove_friend(name)
-            return True
-
-        if status in ["Accepted", "Online", "Offline"]:
-            self.friends.set(name, status)
-            return True
-
-        return False
     
-    def is_friend(self, name):
-        return not (self.friends.get(name) is None)
-
-    def is_friend_online(self, name):
-        if not self.is_friend(name):
-            return None
-
-        return self.friends.get(name) == "Online"
-
     def is_only_reachable_locally(self, interlocutor):
         if self.has_partial_social_info():
             return False
 
-        return not(self.is_friend(interlocutor) or self.is_in_wing(interlocutor))
+        return interlocutor not in self.friends and not self.is_in_wing(interlocutor)
 
     @property
     def ship(self):
