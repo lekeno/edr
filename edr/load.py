@@ -197,7 +197,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
             status_outcome["updated"] = True
             status_outcome["reason"] = outcome["reason"]
 
-    if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PvPKill"]:
+    if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PVPKill"]:
         report_crime(ed_player, entry)
 
     if entry["event"] in ["ReceiveText", "SendText"]:
@@ -467,11 +467,12 @@ def report_comms(cmdr, entry):
             from_cmdr = entry["From"]
             if entry["From"].startswith("$cmdr_decorate:#name="):
                 from_cmdr = entry["From"][len("$cmdr_decorate:#name="):-1]
-            if cmdr.is_friend_or_wing(from_cmdr):
+            if cmdr.is_friend_or_in_wing(from_cmdr):
                 EDR_CLIENT.status = "text from friends/wing: can't infer location"
                 EDRLOG.log(u"Text from {} friend / wing. Can't infer location".format(from_cmdr),
                            "INFO")
             else:
+                # TODO check has_partial_social_info
                 EDRLOG.log(u"Text from {} (not friend/wing) == same location".format(from_cmdr),
                            "INFO")
                 edr_submit_contact(from_cmdr, entry["timestamp"],
@@ -480,10 +481,11 @@ def report_comms(cmdr, entry):
         to_cmdr = entry["To"]
         if entry["To"].startswith("$cmdr_decorate:#name="):
             to_cmdr = entry["To"][len("$cmdr_decorate:#name="):-1]
-        if cmdr.is_friend_or_wing(to_cmdr):
+        if cmdr.is_friend_or_in_wing(to_cmdr):
             EDR_CLIENT.status = "comms destination is unclear."
             EDRLOG.log(u"Sent text to {} friend/wing: can't infer location".format(to_cmdr), "INFO")            
         else:
+            # TODO check has_partial_social_info
             EDRLOG.log(u"Sent text to {} (not friend/wing) == same location".format(to_cmdr),
                        "INFO")
             edr_submit_contact(to_cmdr, entry["timestamp"], "Sent text (non wing/friend player)",
