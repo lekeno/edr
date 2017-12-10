@@ -78,14 +78,8 @@ class EDCmdr(object):
     def add_to_wing(self, other):
         self.wing = self.wing.append(other)
 
-    def is_in_wing(self, name):
-        return name in self.wing 
-    
-    def is_only_reachable_locally(self, interlocutor):
-        if self.has_partial_social_info():
-            return False
-
-        return interlocutor not in self.friends and not self.is_in_wing(interlocutor)
+    def is_friend_or_in_wing(self, interlocutor):
+        return interlocutor in self.friends or interlocutor in self.wing
 
     @property
     def ship(self):
