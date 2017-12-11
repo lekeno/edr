@@ -201,7 +201,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
             status_outcome["updated"] = True
             status_outcome["reason"] = outcome["reason"]
 
-    if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PvPKill"]:
+    if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PVPKill"]:
         report_crime(ed_player, entry)
 
     if entry["event"] in ["ReceiveText", "SendText"]:
