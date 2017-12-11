@@ -159,7 +159,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     :return:
     """
     ed_player = EDR_CLIENT.player
-    ed_player.friends = state.friends
+    ed_player.friends = state["Friends"]
 
     if not prerequisites(EDR_CLIENT, is_beta):
         return
