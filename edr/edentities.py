@@ -26,8 +26,8 @@ class EDLocation(object):
         self.place = None
         self.security = None
     
-    def is_anarchy(self):
-        return self.security == "$GAlAXY_MAP_INFO_state_anarchy;"
+    def is_anarchy_or_lawless(self):
+        return self.security in ["$GAlAXY_MAP_INFO_state_anarchy;", "$GALAXY_MAP_INFO_state_lawless;"]
 
 class EDCmdr(object):
     def __init__(self):
@@ -122,8 +122,8 @@ class EDCmdr(object):
     def location_security(self, ed_security_state):
         self.location.security = ed_security_state
 
-    def in_anarchy(self):
-        return self.location.is_anarchy()
+    def in_bad_neighborhood(self):
+        return self.location.is_anarchy_or_lawless()
 
     @star_system.setter
     def star_system(self, star_system):
