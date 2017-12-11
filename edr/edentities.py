@@ -27,7 +27,7 @@ class EDLocation(object):
         self.security = None
     
     def is_anarchy_or_lawless(self):
-        return self.security in ["$GAlAXY_MAP_INFO_state_anarchy;", "$GAlAXY_MAP_INFO_state_lawless;"]
+        return self.security in ["$GAlAXY_MAP_INFO_state_anarchy;", "$GALAXY_MAP_INFO_state_lawless;"]
 
 class EDCmdr(object):
     def __init__(self):
