@@ -113,7 +113,8 @@ def handle_change_events(ed_player, entry):
             place = entry["Body"]
         outcome["updated"] |= ed_player.update_place_if_obsolete(place, entry["timestamp"])
         outcome["reason"] = "Location event"
-        EDRLOG.log(u"Place changed: {}".format(place), "INFO")
+        EDRLOG.log(u"Place changed: {} (location event)".format(place), "INFO")
+        EDR_CLIENT.check_system(entry["StarSystem"])
 
     if entry["event"] in ["Undocked", "Docked", "DockingCancelled", "DockingDenied",
                           "DockingGranted", "DockingRequested", "DockingTimeout"]:
