@@ -211,7 +211,6 @@ class EDRClient(object):
         self.edrsystems.persist()
         self.server.logout()
         self.IN_GAME_MSG.shutdown()
-        self.player.persist()
 
     def app_ui(self, parent):
         label = tk.Label(parent, text="EDR:")
