@@ -103,7 +103,7 @@ class EDRServer(object):
 
     def cmdr(self, cmdr, autocreate=True):
         cmdr_profile = edrcmdrprofile.EDRCmdrProfile()
-        query_params = "orderBy=\"cname\"&equalTo={cmdr}&limitToFirst=1&auth={auth}".format(cmdr=json.dumps(cmdr), auth=self.auth_token())
+        query_params = "orderBy=\"cname\"&equalTo={cmdr}&limitToFirst=1&auth={auth}".format(cmdr=json.dumps(cmdr.lower()), auth=self.auth_token())
         endpoint = "{server}/v1/cmdrs.json?{query_params}".format(
             server=self.EDR_ENDPOINT, query_params=query_params)
         EDRLOG.log(u"Endpoint :" + endpoint, "DEBUG")
