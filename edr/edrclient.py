@@ -167,6 +167,7 @@ class EDRClient(object):
         self._status.set(new_status)
         if self.status_ui:
             self.status_ui.url = None
+            self.status_ui.underline = False
 
     @property
     def visual_feedback(self):
@@ -260,6 +261,7 @@ class EDRClient(object):
     def __status_update_pending(self):
         self.status = "mandatory EDR update!" if self.mandatory_update else "please update EDR!"
         if self.status_ui:
+            self.status_ui.underline = True
             self.status_ui.url = "https://github.com/lekeno/edr/releases"
             
 
