@@ -3,6 +3,7 @@ import pickle
 
 import Tkinter as tk
 import ttk
+import ttkHyperlinkLabel
 import myNotebook as notebook
 from config import config
 import edrconfig
@@ -58,6 +59,7 @@ class EDRClient(object):
         self._email = tk.StringVar(value=config.get("EDREmail"))
         self._password = tk.StringVar(value=config.get("EDRPassword"))
         self._status = tk.StringVar(value="not authenticated.")
+        self.status_ui = None
 
         visual = 1 if config.get("EDRVisualFeedback") == "True" else 0
         self._visual_feedback = tk.IntVar(value=visual)
@@ -125,15 +127,15 @@ class EDRClient(object):
             return
 
         if self.is_obsolete(version_range["min"]):
-            self.status = "mandatory EDR update!"
             EDRLOG.log(u"Mandatory update! {version} vs. {min}"
                        .format(version=self.edr_version, min=version_range["min"]), "ERROR")
             self.mandatory_update = True
+            self.__status_update_pending()
         elif self.is_obsolete(version_range["latest"]):
-            self.status = "please update EDR."
             EDRLOG.log(u"EDR update available! {version} vs. {latest}"
                        .format(version=self.edr_version, latest=version_range["latest"]), "INFO")
             self.mandatory_update = False
+            self.__status_update_pending()
 
     def is_obsolete(self, advertised_version):
         client_parts = map(int, self.edr_version.split('.'))
@@ -163,6 +165,8 @@ class EDRClient(object):
     @status.setter
     def status(self, new_status):
         self._status.set(new_status)
+        if self.status_ui:
+            self.status_ui.url = None
 
     @property
     def visual_feedback(self):
@@ -214,12 +218,16 @@ class EDRClient(object):
 
     def app_ui(self, parent):
         label = tk.Label(parent, text="EDR:")
-        status = tk.Label(parent, textvariable=self._status, anchor=tk.W)
-        return (label, status)
+        #status = tk.Label(parent, textvariable=self._status, anchor=tk.W)
+        self.status_ui = ttkHyperlinkLabel.HyperlinkLabel(parent, textvariable=self._status, anchor=tk.W)
+        self.check_version()
+        return (label, self.status_ui)
 
     def prefs_ui(self, parent):
         frame = notebook.Frame(parent)
         frame.columnconfigure(1, weight=1)
+
+        ttkHyperlinkLabel.HyperlinkLabel(frame, text="EDR website", background=notebook.Label().cget('background'), url="https://github.com/lekeno/edr/", underline=True).grid(padx=10, sticky=tk.W)       
 
         notebook.Label(frame, text='Credentials').grid(padx=10, sticky=tk.W)
         ttk.Separator(frame, orient=tk.HORIZONTAL).grid(columnspan=2, padx=10, pady=2, sticky=tk.EW)
@@ -234,13 +242,14 @@ class EDRClient(object):
         notebook.Entry(frame, textvariable=self._password,
                        show=u'*').grid(padx=10, row=12, column=1, sticky=tk.EW)
 
-        notebook.Label(frame, text="EDR Feedback:").grid(padx=10, row=13, sticky=tk.W)
+        notebook.Label(frame, text="EDR Feedback:").grid(padx=10, row=14, sticky=tk.W)
+        ttk.Separator(frame, orient=tk.HORIZONTAL).grid(columnspan=2, padx=10, pady=2, sticky=tk.EW)
         notebook.Checkbutton(frame, text="Overlay (windowed/borderless)",
-                             variable=self._visual_feedback).grid(padx=10, row=14,
+                             variable=self._visual_feedback).grid(padx=10, row=16,
                                                                   sticky=tk.W)
         notebook.Checkbutton(frame, text="Sound",
-                             variable=self._audio_feedback).grid(padx=10, row=15, sticky=tk.W)
-
+                             variable=self._audio_feedback).grid(padx=10, row=17, sticky=tk.W)
+        
         if self.server.is_authenticated():
             self.status = "authenticated."
         else:
@@ -248,10 +257,16 @@ class EDRClient(object):
 
         return frame
 
+    def __status_update_pending(self):
+        self.status = "mandatory EDR update!" if self.mandatory_update else "please update EDR!"
+        if self.status_ui:
+            self.status_ui.url = "https://github.com/lekeno/edr/releases"
+            
+
     def prefs_changed(self):
         if self.mandatory_update:
             print EDRLOG.log(u"Out-of-date client, aborting.", "ERROR")
-            self.status = "mandatory EDR update!"
+            self.__status_update_pending()
             return
 
         config.set("EDREmail", self.email)

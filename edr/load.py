@@ -23,7 +23,6 @@ def plugin_start():
         EDR_CLIENT.password = ""
 
     EDR_CLIENT.login()
-    EDR_CLIENT.check_version()
 
 
 def plugin_stop():
