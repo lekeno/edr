@@ -31,6 +31,9 @@ class EDRConfig(object):
     def ship_novelty_threshold(self):
         return int(self.config.get('novelty', 'ship_novelty_threshold'))
 
+    def cognitive_novelty_threshold(self):
+        return int(self.config.get('novelty', 'cognitive_novelty_threshold'))
+
     def systems_max_age(self):
         return int(self.config.get('lrucaches', 'systems_max_age'))
 

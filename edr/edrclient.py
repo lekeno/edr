@@ -36,6 +36,7 @@ class EDRClient(object):
         self.system_novelty_threshold = edr_config.system_novelty_threshold()
         self.place_novelty_threshold = edr_config.place_novelty_threshold()
         self.ship_novelty_threshold = edr_config.ship_novelty_threshold()
+        self.cognitive_novelty_threshold = edr_config.cognitive_novelty_threshold()
 
         try:
             with open(self.EDR_CMDRS_CACHE, 'rb') as handle:
@@ -381,12 +382,16 @@ class EDRClient(object):
             pass
 
 
-    def novel_enough_blip(self, cmdr_id, blip):
+    def novel_enough_blip(self, cmdr_id, blip, cognitive = False):
         last_blip = self.blips_cache.get(cmdr_id)
         if last_blip is None:
             return True
 
         delta = blip["timestamp"] - last_blip["timestamp"]
+        
+        if cognitive:
+           return (blip["starSystem"] != last_blip["starSystem"] or blip["place"] != last_blip["place"])
+                  or delta > self.cognitive_novelty_treshold
 
         if blip["starSystem"] != last_blip["starSystem"]:
             return delta > self.system_novelty_threshold
@@ -400,6 +405,7 @@ class EDRClient(object):
             return (last_blip["ship"] == "" or
                     last_blip["ship"] == "Unknown" or
                     delta > self.ship_novelty_threshold)
+                    
 
     def novel_enough_traffic_report(self, sighted_cmdr, report):
         last_report = self.traffic_cache.get(sighted_cmdr)
@@ -441,7 +447,10 @@ class EDRClient(object):
         profile = self.cmdr(cmdr_name)
         if (not profile is None) and (self.player.name != cmdr_name) and profile.is_dangerous():
             self.status = "{} is bad news.".format(cmdr_name)
-            self.__warning(u"Warning!", [profile.short_profile()])
+            if self.novel_enough_blip(cmdr_id, blip, cognitive = True):
+                self.__warning(u"Warning!", [profile.short_profile()])
+            else:
+                EDRLOG.log("Skipping warning since a warning was recently shown.", INFO)
 
         if not self.novel_enough_blip(cmdr_id, blip):
             self.status = "skipping blip (not novel enough)."
