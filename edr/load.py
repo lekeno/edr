@@ -472,7 +472,6 @@ def report_comms(cmdr, entry):
                 EDRLOG.log(u"Text from {} friend / wing. Can't infer location".format(from_cmdr),
                            "INFO")
             else:
-                # TODO check has_partial_social_info
                 EDRLOG.log(u"Text from {} (not friend/wing) == same location".format(from_cmdr),
                            "INFO")
                 edr_submit_contact(from_cmdr, entry["timestamp"],
@@ -485,7 +484,6 @@ def report_comms(cmdr, entry):
             EDR_CLIENT.status = "comms destination is unclear."
             EDRLOG.log(u"Sent text to {} friend/wing: can't infer location".format(to_cmdr), "INFO")            
         else:
-            # TODO check has_partial_social_info
             EDRLOG.log(u"Sent text to {} (not friend/wing) == same location".format(to_cmdr),
                        "INFO")
             edr_submit_contact(to_cmdr, entry["timestamp"], "Sent text (non wing/friend player)",
@@ -493,12 +491,6 @@ def report_comms(cmdr, entry):
 
 
 def handle_commands(cmdr, entry):
-    """
-    Report a comms contact to the server
-    :param cmdr:
-    :param entry:
-    :return:
-    """
     if not entry["event"] == "SendText":
         return
 
@@ -524,6 +516,16 @@ def handle_commands(cmdr, entry):
         EDR_CLIENT.who(command[1])
     elif command[0] == "!crimes":
         crimes_command("" if len(command) == 1 else command[1])
+    elif command[0] == "!sitrep":
+        system = cmdr.star_system if len(command) == 1 else command[1]
+        EDRLOG.log(u"Sitrep command for {}".format(system), "INFO")
+        EDR_CLIENT.check_system(system)
+    elif command[0] == "!sitreps":
+        EDRLOG.log(u"Sitreps command", "INFO")
+        EDR_CLIENT.sitreps()
+    elif command[0] == "!notams":
+        EDRLOG.log(u"Notams command", "INFO")
+        EDR_CLIENT.notams()
 
 def overlay_command(param):
     if param == "":

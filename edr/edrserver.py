@@ -80,7 +80,7 @@ class EDRServer(object):
         return json.loads(resp.content)
 
     def system_id(self, star_system):
-        query_params = "orderBy=\"name\"&equalTo={system}&limitToFirst=1&auth={auth}".format(system=json.dumps(star_system), auth=self.auth_token())
+        query_params = "orderBy=\"cname\"&equalTo={system}&limitToFirst=1&auth={auth}".format(system=json.dumps(star_system.lower()), auth=self.auth_token())
         resp = requests.get("{server}/v1/systems.json?{query_params}".format(
         server=self.EDR_ENDPOINT, query_params=query_params))
 

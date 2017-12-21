@@ -51,14 +51,14 @@ class EDRSystems(object):
         self.server = server
 
     def system_id(self, star_system):
-        sid = self.systems_cache.get(star_system)
+        sid = self.systems_cache.get(star_system.lower())
         if not sid is None:
             EDRLOG.log(u"System {} is in the cache with id={}".format(star_system, sid), "DEBUG")
             return sid
 
         sid = self.server.system_id(star_system)
         if not sid is None:
-            self.systems_cache.set(star_system, sid)
+            self.systems_cache.set(star_system.lower(), sid)
             EDRLOG.log(u"Cached {}'s id={}".format(star_system, sid), "DEBUG")
             return sid
 
@@ -138,24 +138,70 @@ class EDRSystems(object):
         sid = self.system_id(star_system)
         return sid in self.notams.keys()
 
+    def __has_active_notams(self, system_id):
+        self.__update_if_stale()
+        if not system_id in self.notams.keys():
+            return False
+
+        return len(self.__active_notams_for_sid(system_id)) > 0
+
     def active_notams(self, star_system):
         if self.has_notams(star_system):
-            active_notams = []
-            all_notams = self.notams[self.system_id(star_system)].get("NOTAMs", None)
-            EDRLOG.log(u"NOTAMs for {}:{}".format(star_system, all_notams), "DEBUG")
-            now = datetime.datetime.now()
-            js_epoch_now = time.mktime(now.timetuple()) * 1000
-            for notam in all_notams:
-                active = True
-                if "from" in notam:
-                    active &= notam["from"] <= js_epoch_now
-                if "until" in notam:
-                    active &= js_epoch_now <= notam["until"]
-                if active:
-                    EDRLOG.log(u"Active NOTAM: {}".format(notam["text"]), "DEBUG")
-                    active_notams.append(notam["text"])
-            return active_notams
+            return self.__active_notams_for_sid(self.system_id(star_system))
         return None
+
+    def __active_notams_for_sid(self, system_id):
+        active_notams = []
+        all_notams = self.notams[system_id].get("NOTAMs", None)
+        now = datetime.datetime.now()
+        js_epoch_now = time.mktime(now.timetuple()) * 1000
+        for notam in all_notams:
+            active = True
+            if "from" in notam:
+                active &= notam["from"] <= js_epoch_now
+            if "until" in notam:
+                active &= js_epoch_now <= notam["until"]
+            if active:
+                EDRLOG.log(u"Active NOTAM: {}".format(notam["text"]), "DEBUG")
+                active_notams.append(notam["text"])
+        return active_notams
+
+    def systems_with_active_notams(self):
+        summary = []
+        self.__update_if_stale()
+        for sid in self.notams:
+            star_system = self.notams[sid].get("name", None)
+            if star_system and self.__has_active_notams(sid):
+                summary.append(star_system)
+
+        return summary
+
+    def systems_with_recent_activity(self):
+        systems_with_recent_crimes = {}
+        systems_with_recent_traffic = {}
+        self.__update_if_stale()
+        for sid in self.reports:
+            star_system = self.reports[sid].get("name", None)
+            if star_system:
+                if self.has_recent_crimes(star_system):
+                    systems_with_recent_crimes[star_system] = self.reports[sid]["latestCrime"]
+                elif self.has_recent_traffic(star_system):
+                    systems_with_recent_traffic[star_system] = self.reports[sid]["latestTraffic"]
+
+        summary = {}
+        summary_crimes = []
+        systems_with_recent_crimes = sorted(systems_with_recent_crimes.items(), key=lambda t: t[1], reverse=True)
+        for system in systems_with_recent_crimes:
+            summary_crimes.append(u"{} {}".format(system[0], self.t_minus(system[1], short=True)))
+        summary[u"Crimes"] = summary_crimes
+
+        summary_traffic = []
+        systems_with_recent_traffic = sorted(systems_with_recent_traffic.items(), key=lambda t: t[1], reverse=True)
+        for system in systems_with_recent_traffic:
+            summary_traffic.append(u"{} {}".format(system[0], self.t_minus(system[1], short=True)))
+        summary[u"Traffic"] = summary_traffic
+
+        return summary
 
     def has_recent_crimes(self, star_system):
         if self.has_sitrep(star_system):
@@ -188,16 +234,21 @@ class EDRSystems(object):
         return None
     
     def summarize_recent_activity(self, star_system):
+        #TODO refactor/simplify this mess ;)
         summary = {}
+        wanted_cmdrs = {}
         if self.has_recent_traffic(star_system):
             summary_sighted = []
             #TODO cache traffic and only fetch the missing timespan
             recent_traffic = self.server.recent_traffic(self.system_id(star_system), self.timespan)
             if recent_traffic is not None:
                 summary_traffic = {}
-                for sid in recent_traffic:
-                    traffic = recent_traffic[sid]
+                for tid in recent_traffic:
+                    traffic = recent_traffic[tid]
                     summary_traffic[traffic["cmdr"]] = max(traffic["timestamp"] , summary_traffic.get(traffic["cmdr"], None))
+                    karma = traffic.get("karma", None)
+                    if karma and karma < 0:
+                        wanted_cmdrs[traffic["cmdr"]] = [ traffic["timestamp"], karma ]
                 summary_traffic = sorted(summary_traffic.items(), key=lambda t: t[1], reverse=True)
                 for traffic in summary_traffic:
                     summary_sighted.append(u"{} {}".format(traffic[0], self.t_minus(traffic[1], short=True)))
@@ -214,9 +265,12 @@ class EDRSystems(object):
                     crime = recent_crimes[sid]
                     if crime["criminals"][0]["name"] not in summary_crimes or crime["timestamp"] > summary_crimes[crime["criminals"][0]["name"]][0]: 
                         summary_crimes[crime["criminals"][0]["name"]] = [crime["timestamp"], crime["offence"]]
-                summary_crimes = sorted(summary_crimes.items(), key=lambda t: t[1], reverse=True)
+                        for criminal in crime["criminals"]:
+                            karma = criminal.get("karma", None)
+                            if karma and karma < 0:
+                                wanted_cmdrs[criminal["name"]] = [ crime["timestamp"], karma]
+                summary_crimes = sorted(summary_crimes.items(), key=lambda t: t[1][0], reverse=True)
                 for crime in summary_crimes:
-                    print crime
                     if crime[1][1] == "Murder":
                         summary_destroyers.append(u"{} {}".format(crime[0], self.t_minus(crime[1][0], short=True)))
                     elif crime[1][1] in ["Interdicted", "Interdiction"]:
@@ -225,6 +279,13 @@ class EDRSystems(object):
                     summary[u"Interdictors"] = summary_interdictors
                 if summary_destroyers:
                     summary[u"Destroyers"] = summary_destroyers
+        
+        if wanted_cmdrs:
+            wanted_cmdrs = sorted(wanted_cmdrs.items(), key=lambda t: t[1][0], reverse=True)
+            summary_wanted = []
+            for wanted in wanted_cmdrs:
+                summary_wanted.append(u"{} {}".format(wanted[0], self.t_minus(wanted[1][0], short=True)))
+            summary[u"Outlaws"] = summary_wanted
 
         return summary
     

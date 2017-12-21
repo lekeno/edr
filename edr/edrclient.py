@@ -284,7 +284,7 @@ class EDRClient(object):
         EDRLOG.log(u"Check system called: {}".format(star_system), "INFO")
         details = []
         notams = self.edrsystems.active_notams(star_system)
-        if not notams is None:
+        if notams:
             EDRLOG.log(u"NOTAMs for {}: {}".format(star_system, notams), "DEBUG")
             details += notams
         
@@ -295,7 +295,7 @@ class EDRClient(object):
         else:
             if self.player.in_bad_neighborhood():
                 EDRLOG.log(u"Sitrep system is an anarchy. Crimes won't be reported.", "INFO")
-                details.append(u"Anarchy: crimes won't be reported!")
+                details.append(u"Anarchy: not all crimes are reported.")
             recent_activity = self.edrsystems.has_recent_crimes(star_system) or self.edrsystems.has_recent_traffic(star_system)
             if recent_activity:
                 summary = self.edrsystems.summarize_recent_activity(star_system)
@@ -304,7 +304,23 @@ class EDRClient(object):
         if details:
             self.__sitrep(star_system, details)
 
-        return False
+    def notams(self):
+        summary = self.edrsystems.systems_with_active_notams()
+        if summary:
+            details = []
+            details.append(u"Active NOTAMs for: {}".format("; ".join(summary)))
+            self.__sitrep(None, details)
+        else:
+            self.__sitrep(None, [u"No active NOTAMs."])
+
+    def sitreps(self):
+        details = []
+        summary = self.edrsystems.systems_with_recent_activity()
+        for section in summary:
+            details.append(u"{}: {}".format(section, "; ".join(summary[section])))
+        if details:
+            self.__sitrep(None, details)
+
 
     def cmdr_id(self, cmdr_name):
         profile = self.cmdr(cmdr_name, check_inara_server=False)
@@ -390,8 +406,7 @@ class EDRClient(object):
         delta = blip["timestamp"] - last_blip["timestamp"]
         
         if cognitive:
-           return (blip["starSystem"] != last_blip["starSystem"] or blip["place"] != last_blip["place"])
-                  or delta > self.cognitive_novelty_treshold
+           return (blip["starSystem"] != last_blip["starSystem"] or blip["place"] != last_blip["place"]) or delta > self.cognitive_novelty_treshold
 
         if blip["starSystem"] != last_blip["starSystem"]:
             return delta > self.system_novelty_threshold
@@ -511,7 +526,10 @@ class EDRClient(object):
         if not self.visual_feedback:
             return
         EDRLOG.log(u"sitrep for {}; details: {}".format(star_system, details[0]), "DEBUG")
-        self.IN_GAME_MSG.sitrep(u"SITREP for {}".format(star_system), details)
+        if star_system:
+            self.IN_GAME_MSG.sitrep(u"SITREP for {}".format(star_system), details)
+        else:
+            self.IN_GAME_MSG.sitrep(u"SITREPS".format(star_system), details)
 
     def __intel(self, who, details):
         if self.audio_feedback:
