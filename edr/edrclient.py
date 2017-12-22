@@ -293,8 +293,8 @@ class EDRClient(object):
             details += ["No reports for the last {d}.".format(d=self.edrsystems.timespan_s()),
                        "Recon this system: tag any suspicious contacts by sending them an o7."]
         else:
-            if self.player.in_bad_neighborhood():
-                EDRLOG.log(u"Sitrep system is an anarchy. Crimes won't be reported.", "INFO")
+            if star_system == self.player.star_system and self.player.in_bad_neighborhood():
+                EDRLOG.log(u"Sitrep system is known to be an anarchy. Crimes aren't reported.", "INFO")
                 details.append(u"Anarchy: not all crimes are reported.")
             recent_activity = self.edrsystems.has_recent_crimes(star_system) or self.edrsystems.has_recent_traffic(star_system)
             if recent_activity:
