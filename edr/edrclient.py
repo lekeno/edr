@@ -406,7 +406,7 @@ class EDRClient(object):
         delta = blip["timestamp"] - last_blip["timestamp"]
         
         if cognitive:
-           return (blip["starSystem"] != last_blip["starSystem"] or blip["place"] != last_blip["place"]) or delta > self.cognitive_novelty_treshold
+           return (blip["starSystem"] != last_blip["starSystem"] or blip["place"] != last_blip["place"]) or delta > self.cognitive_novelty_threshold
 
         if blip["starSystem"] != last_blip["starSystem"]:
             return delta > self.system_novelty_threshold
