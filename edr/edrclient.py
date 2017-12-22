@@ -487,7 +487,7 @@ class EDRClient(object):
             EDRLOG.log(u"Traffic report is not novel enough to warrant reporting", "INFO")
             return True
 
-        sid = self.edrsystems.system_id(star_system)
+        sid = self.edrsystems.system_id(star_system, may_create=True)
         if sid is None:
             EDRLOG.log(u"Failed to report traffic for system {} : no id found.".format(star_system),
                        "DEBUG")
@@ -512,7 +512,7 @@ class EDRClient(object):
             self.status = u"Anarchy system (no crime reports/info)"
             return False
 
-        sid = self.edrsystems.system_id(star_system)
+        sid = self.edrsystems.system_id(star_system, may_create=True)
         if sid is None:
             EDRLOG.log(u"Failed to report crime in system {} : no id found.".format(star_system),
                        "DEBUG")

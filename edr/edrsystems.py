@@ -50,13 +50,13 @@ class EDRSystems(object):
         self.notams = {}
         self.server = server
 
-    def system_id(self, star_system):
+    def system_id(self, star_system, may_create=False):
         sid = self.systems_cache.get(star_system.lower())
         if not sid is None:
             EDRLOG.log(u"System {} is in the cache with id={}".format(star_system, sid), "DEBUG")
             return sid
 
-        sid = self.server.system_id(star_system)
+        sid = self.server.system_id(star_system, may_create)
         if not sid is None:
             self.systems_cache.set(star_system.lower(), sid)
             EDRLOG.log(u"Cached {}'s id={}".format(star_system, sid), "DEBUG")

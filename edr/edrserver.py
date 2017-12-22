@@ -79,7 +79,7 @@ class EDRServer(object):
         
         return json.loads(resp.content)
 
-    def system_id(self, star_system):
+    def system_id(self, star_system, may_create):
         query_params = "orderBy=\"cname\"&equalTo={system}&limitToFirst=1&auth={auth}".format(system=json.dumps(star_system.lower()), auth=self.auth_token())
         resp = requests.get("{server}/v1/systems.json?{query_params}".format(
         server=self.EDR_ENDPOINT, query_params=query_params))
@@ -89,12 +89,15 @@ class EDRServer(object):
             return None
 
         if resp.content == 'null':
-            query_params = { "auth" : self.auth_token() }
-            resp = requests.post("{server}/v1/systems.json?{query_params}".format(server=self.EDR_ENDPOINT, query_params=urllib.urlencode(query_params)), json={"cname": star_system.lower(), "name": star_system, "uid" : self.uid()})
-            if resp.status_code != 200:
-                EDRLOG.log(u"Failed to create new star system.", "ERROR")
+            if may_create:
+                query_params = { "auth" : self.auth_token() }
+                resp = requests.post("{server}/v1/systems.json?{query_params}".format(server=self.EDR_ENDPOINT, query_params=urllib.urlencode(query_params)), json={"cname": star_system.lower(), "name": star_system, "uid" : self.uid()})
+                if resp.status_code != 200:
+                    EDRLOG.log(u"Failed to create new star system.", "ERROR")
+                    return None
+                sid = json.loads(resp.content).values()[0]
+            else:
                 return None
-            sid = json.loads(resp.content).values()[0]
         else:
             sid = json.loads(resp.content).keys()[0]
 
