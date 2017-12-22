@@ -179,27 +179,39 @@ class EDRSystems(object):
     def systems_with_recent_activity(self):
         systems_with_recent_crimes = {}
         systems_with_recent_traffic = {}
+        systems_with_recent_outlaws = {}
         self.__update_if_stale()
         for sid in self.reports:
             star_system = self.reports[sid].get("name", None)
             if star_system:
-                if self.has_recent_crimes(star_system):
+                if self.has_recent_outlaws(star_system):
+                    systems_with_recent_outlaws[star_system] = self.reports[sid]["latestOutlaw"]
+                elif self.has_recent_crimes(star_system):
                     systems_with_recent_crimes[star_system] = self.reports[sid]["latestCrime"]
                 elif self.has_recent_traffic(star_system):
                     systems_with_recent_traffic[star_system] = self.reports[sid]["latestTraffic"]
 
         summary = {}
+        summary_outlaws = []
+        systems_with_recent_outlaws = sorted(systems_with_recent_outlaws.items(), key=lambda t: t[1], reverse=True)
+        for system in systems_with_recent_outlaws:
+            summary_outlaws.append(u"{} {}".format(system[0], self.t_minus(system[1], short=True)))
+        if summary_outlaws:
+            summary[u"Outlaws"] = summary_outlaws
+
         summary_crimes = []
         systems_with_recent_crimes = sorted(systems_with_recent_crimes.items(), key=lambda t: t[1], reverse=True)
         for system in systems_with_recent_crimes:
             summary_crimes.append(u"{} {}".format(system[0], self.t_minus(system[1], short=True)))
-        summary[u"Crimes"] = summary_crimes
+        if summary_crimes:
+            summary[u"Crimes"] = summary_crimes
 
         summary_traffic = []
         systems_with_recent_traffic = sorted(systems_with_recent_traffic.items(), key=lambda t: t[1], reverse=True)
         for system in systems_with_recent_traffic:
             summary_traffic.append(u"{} {}".format(system[0], self.t_minus(system[1], short=True)))
-        summary[u"Traffic"] = summary_traffic
+        if summary_traffic:
+            summary[u"Traffic"] = summary_traffic
 
         return summary
 
@@ -212,6 +224,18 @@ class EDRSystems(object):
             edr_config = edrconfig.EDRConfig()
             return self.is_recent(system_reports["latestCrime"],
                                   edr_config.crimes_recent_threshold())
+
+        return None
+
+    def has_recent_outlaws(self, star_system):
+        if self.has_sitrep(star_system):
+            system_reports = self.reports[self.system_id(star_system)]
+            if "latestOutlaw" not in system_reports:
+                return None
+
+            edr_config = edrconfig.EDRConfig()
+            return self.is_recent(system_reports["latestOutlaw"],
+                                  edr_config.outlaws_recent_threshold())
 
         return None
 
