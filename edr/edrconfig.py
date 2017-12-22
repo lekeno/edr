@@ -73,6 +73,9 @@ class EDRConfig(object):
     def recon_recent_threshold(self):
         return int(self.config.get('sitreps', 'recon_recent_threshold'))
 
+    def outlaws_recent_threshold(self):
+        return int(self.config.get('sitreps', 'outlaws_recent_threshold'))
+
     def crimes_recent_threshold(self):
         return int(self.config.get('sitreps', 'crimes_recent_threshold'))
 
