@@ -32,6 +32,7 @@ class EDRClient(object):
         edr_config = edrconfig.EDRConfig()
 
         self.edr_version = edr_config.edr_version()
+        EDRLOG.log(u"Version {}".format(self.edr_version), "INFO")
 
         self.system_novelty_threshold = edr_config.system_novelty_threshold()
         self.place_novelty_threshold = edr_config.place_novelty_threshold()
