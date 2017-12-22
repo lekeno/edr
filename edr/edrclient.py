@@ -314,6 +314,14 @@ class EDRClient(object):
         else:
             self.__sitrep(None, [u"No active NOTAMs."])
 
+    def notam(self, star_system):
+        summary = self.edrsystems.active_notams(star_system)
+        if summary:
+            EDRLOG.log(u"NOTAMs for {}: {}".format(star_system, summary), "DEBUG")
+            self.__sitrep(star_system, summary)
+        else:
+            self.__sitrep(star_system, [u"No active NOTAMs."])
+
     def sitreps(self):
         details = []
         summary = self.edrsystems.systems_with_recent_activity()

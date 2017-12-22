@@ -526,6 +526,10 @@ def handle_commands(cmdr, entry):
     elif command[0] == "!notams":
         EDRLOG.log(u"Notams command", "INFO")
         EDR_CLIENT.notams()
+    elif command[0] == "!notam":
+        system = cmdr.star_system if len(command) == 1 else command[1]
+        EDRLOG.log(u"Notam command for {}".format(system), "INFO")
+        EDR_CLIENT.notam(system)
 
 def overlay_command(param):
     if param == "":
