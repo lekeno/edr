@@ -269,10 +269,11 @@ class EDRSystems(object):
                 summary_traffic = {}
                 for tid in recent_traffic:
                     traffic = recent_traffic[tid]
-                    summary_traffic[traffic["cmdr"]] = max(traffic["timestamp"] , summary_traffic.get(traffic["cmdr"], None))
                     karma = traffic.get("karma", None)
                     if karma and karma < 0:
                         wanted_cmdrs[traffic["cmdr"]] = [ traffic["timestamp"], karma ]
+                    else:
+                        summary_traffic[traffic["cmdr"]] = max(traffic["timestamp"] , summary_traffic.get(traffic["cmdr"], None))
                 summary_traffic = sorted(summary_traffic.items(), key=lambda t: t[1], reverse=True)
                 for traffic in summary_traffic:
                     summary_sighted.append(u"{} {}".format(traffic[0], self.t_minus(traffic[1], short=True)))
