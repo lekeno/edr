@@ -474,7 +474,7 @@ class EDRClient(object):
             if self.novel_enough_blip(cmdr_id, blip, cognitive = True):
                 self.__warning(u"Warning!", [profile.short_profile()])
             else:
-                EDRLOG.log("Skipping warning since a warning was recently shown.", INFO)
+                EDRLOG.log("Skipping warning since a warning was recently shown.", "INFO")
 
         if not self.novel_enough_blip(cmdr_id, blip):
             self.status = "skipping blip (not novel enough)."

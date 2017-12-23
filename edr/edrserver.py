@@ -89,17 +89,21 @@ class EDRServer(object):
             return None
 
         if resp.content == 'null':
+            EDRLOG.log(u"System not recorded in EDR.", "DEBUG")
             if may_create:
+                EDRLOG.log(u"Creating system in EDR.", "DEBUG")
                 query_params = { "auth" : self.auth_token() }
                 resp = requests.post("{server}/v1/systems.json?{query_params}".format(server=self.EDR_ENDPOINT, query_params=urllib.urlencode(query_params)), json={"name": star_system, "uid" : self.uid()})
                 if resp.status_code != 200:
                     EDRLOG.log(u"Failed to create new star system.", "ERROR")
                     return None
                 sid = json.loads(resp.content).values()[0]
+                EDRLOG.log(u"Created system {} in EDR with id={}.".format(star_system, sid), "DEBUG")
             else:
                 return None
         else:
             sid = json.loads(resp.content).keys()[0]
+            EDRLOG.log(u"System {} is in EDR with id={}.".format(star_system, sid), "DEBUG")
 
         return sid
 
