@@ -91,7 +91,7 @@ class EDRServer(object):
         if resp.content == 'null':
             if may_create:
                 query_params = { "auth" : self.auth_token() }
-                resp = requests.post("{server}/v1/systems.json?{query_params}".format(server=self.EDR_ENDPOINT, query_params=urllib.urlencode(query_params)), json={"cname": star_system.lower(), "name": star_system, "uid" : self.uid()})
+                resp = requests.post("{server}/v1/systems.json?{query_params}".format(server=self.EDR_ENDPOINT, query_params=urllib.urlencode(query_params)), json={"name": star_system, "uid" : self.uid()})
                 if resp.status_code != 200:
                     EDRLOG.log(u"Failed to create new star system.", "ERROR")
                     return None
@@ -121,7 +121,7 @@ class EDRServer(object):
             if autocreate:
                 query_params = { "auth" : self.auth_token() }
                 endpoint = "{server}/v1/cmdrs.json?{query_params}".format(server=self.EDR_ENDPOINT, query_params=urllib.urlencode(query_params))
-                resp = requests.post(endpoint, json={"name": cmdr, "cname": cmdr.lower(), "uid" : self.uid()})
+                resp = requests.post(endpoint, json={"name": cmdr, "uid" : self.uid()})
                 if resp.status_code != 200:
                     EDRLOG.log(u"Failed to retrieve cmdr key.", "ERROR")
                     return None

@@ -13,7 +13,6 @@ class EDRCmdrProfile(object):
     
     def __init__(self):
         self.cid = None
-        self._cname = None
         self._name = None
         self.squadron = None
         self.role = None
@@ -27,12 +26,10 @@ class EDRCmdrProfile(object):
     def name(self, new_name):
         if new_name is None:
             self._name = None
-            self._cname = None
             return
         
         self._name = new_name
-        self._cname = new_name.lower()
-
+        
     @property
     def karma(self):
         return self._karma
