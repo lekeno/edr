@@ -24,14 +24,14 @@ class EDRSystems(object):
         try:
             with open(self.EDR_SYSTEMS_CACHE, 'rb') as handle:
                 self.systems_cache = pickle.load(handle)
-        except IOError:
+        except:
             self.systems_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                    edr_config.systems_max_age())
 
         try:
             with open(self.EDR_NOTAMS_CACHE, 'rb') as handle:
                 self.notams_cache = pickle.load(handle)
-        except IOError:
+        except:
             self.notams_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                   edr_config.notams_max_age())
 

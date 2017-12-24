@@ -42,7 +42,7 @@ class EDRClient(object):
         try:
             with open(self.EDR_CMDRS_CACHE, 'rb') as handle:
                 self.cmdrs_cache = pickle.load(handle)
-        except IOError:
+        except:
             #TODO increase after there is a good set of cmdrs in the backend
             self.cmdrs_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                  edr_config.cmdrs_max_age())
@@ -50,7 +50,7 @@ class EDRClient(object):
         try:
             with open(self.EDR_INARA_CACHE, 'rb') as handle:
                 self.inara_cache = pickle.load(handle)
-        except IOError:
+        except:
             self.inara_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                  edr_config.inara_max_age())
 
