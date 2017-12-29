@@ -510,7 +510,7 @@ def handle_commands(cmdr, entry):
         to_cmdr = entry["To"]
         if entry["To"].startswith("$cmdr_decorate:#name="):
             to_cmdr = entry["To"][len("$cmdr_decorate:#name="):-1]
-        EDR_CLIENT.who(to_cmdr)
+        EDR_CLIENT.who(to_cmdr, autocreate=True)
     elif command[0] == "!who" and len(command) == 2:
         EDRLOG.log(u"Explicit who command for {}".format(command[1]), "INFO")
         EDR_CLIENT.who(command[1])

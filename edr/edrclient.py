@@ -451,8 +451,8 @@ class EDRClient(object):
                     last_report["ship"] == "Unknown" or
                     delta > self.ship_novelty_threshold)
 
-    def who(self, cmdr_name):
-        profile = self.cmdr(cmdr_name, autocreate=False, check_inara_server=True)
+    def who(self, cmdr_name, autocreate=False):
+        profile = self.cmdr(cmdr_name, autocreate, check_inara_server=True)
         if not profile is None:
             self.status = "got info about {}".format(cmdr_name)
             EDRLOG.log(u"Who {} : {}".format(cmdr_name, profile.short_profile()), "INFO")
