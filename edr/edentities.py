@@ -39,7 +39,7 @@ class EDCmdr(object):
         self.previous_wing = set()
         self.from_birth = False
         self._timestamp = edtime.EDTime()
-        self.wing = []
+        self.wing = set()
         self.friends = set()
 
     def in_solo_or_private(self):
@@ -51,32 +51,32 @@ class EDCmdr(object):
     def inception(self):
         self.from_birth = True
         self.previous_mode = None
-        self.previous_wing = []
-        self.wing = []
+        self.previous_wing = set()
+        self.wing = set()
 
     def killed(self):
         self.previous_mode = self.game_mode 
-        self.previous_wing = list(self.wing)
+        self.previous_wing = self.wing.copy()
         self.game_mode = None
-        self.wing = []
+        self.wing = set()
 
     def resurrect(self):
         self.game_mode = self.previous_mode 
-        self.wing = list(self.previous_wing)
+        self.wing = self.previous_wing.copy()
         self.previous_mode = None
-        self.previous_wing = []
+        self.previous_wing = set()
 
     def has_partial_social_info(self):
         return not self.from_birth
 
     def leave_wing(self):
-        self.wing = []
+        self.wing = set()
 
     def join_wing(self, others):
-        self.wing = others
+        self.wing = set(others)
 
     def add_to_wing(self, other):
-        self.wing = self.wing.append(other)
+        self.wing.add(other)
 
     def is_friend_or_in_wing(self, interlocutor):
         return interlocutor in self.friends or interlocutor in self.wing

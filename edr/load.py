@@ -177,7 +177,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     EDR_CLIENT.player_name(cmdr)
     ship = state["ShipType"]
-    status_outcome = {"updated": False, "reason": None}
+    status_outcome = {"updated": False, "reason": "Unspecified"}
 
     status_outcome["updated"] = ed_player.update_ship_if_obsolete(ship, entry["timestamp"])
     status_outcome["updated"] |= ed_player.update_star_system_if_obsolete(system,

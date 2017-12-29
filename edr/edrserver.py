@@ -88,6 +88,7 @@ class EDRServer(object):
             EDRLOG.log(u"Failed to retrieve star system sid.", "ERROR")
             return None
 
+        sid = None
         if resp.content == 'null':
             EDRLOG.log(u"System not recorded in EDR.", "DEBUG")
             if may_create:
@@ -151,6 +152,7 @@ class EDRServer(object):
         endpoint = "{server}/v1/blips/{cmdr_id}/.json?{query_params}".format(server=self.EDR_ENDPOINT, cmdr_id=cmdr_id, query_params=urllib.urlencode(query_params))
         EDRLOG.log(u"Endpoint :" + endpoint, "DEBUG")
         resp = requests.post(endpoint, json=info)
+        EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
 
         return resp.status_code == 200
 
