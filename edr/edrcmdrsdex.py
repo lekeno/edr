@@ -9,8 +9,8 @@ class EDRCmdrsDex(object):
 
     def __init__(self):
         try:
-            with open(self.EDR_CMDRS_DEX_PATH, 'r') as fp:
-                self.cmdrs = json.load(fp)
+            with open(self.EDR_CMDRS_DEX_PATH, 'r') as json_file:
+                self.cmdrs = json.load(json_file)
         except:
             self.cmdrs = {}
     
@@ -51,7 +51,7 @@ class EDRCmdrsDex(object):
             pass
 
     def persist(self):
-        with open(self.EDR_CMDRS_DEX_PATH, 'w') as fp:
-            json.dump(self.cmdrs, fp, sort_keys=True, indent=4)
+        with open(self.EDR_CMDRS_DEX_PATH, 'w') as json_file:
+            json.dump(self.cmdrs, json_file, sort_keys=True, indent=4)
 
 
