@@ -206,11 +206,12 @@ class EDRClient(object):
 
     def warmup(self):
         EDRLOG.log(u"Warming up client.", "INFO")
-        details = [u"Please check that ED has the focus."]
+        details = [u"(please check that ED has the focus)"]
         if self.mandatory_update:
-            details = [u"Mandatory update!"]
+            details = [u"Mandatory update!]
         details += self.motd
-        details += self.tips.tip()
+        details.append("---")
+        details.append(self.tips.tip())
         self.__notify(u"EDR v{} by LeKeno (Cobra Kai)".format(self.edr_version), details)
 
     def shutdown(self):
