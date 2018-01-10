@@ -7,7 +7,7 @@ import RESTFirebase
 import edrconfig
 import edrlog
 import calendar
-import datetime
+import time
 
 EDRLOG = edrlog.EDRLog()
 
@@ -52,7 +52,7 @@ class EDRServer(object):
         return json_resp
     
     def notams(self, timespan_seconds):
-        now_epoch_js = 1000 * calendar.timegm(datetime.datetime.now().timetuple())
+        now_epoch_js = 1000 * calendar.timegm(time.gmtime())
         past_epoch_js = now_epoch_js - (1000 * timespan_seconds)
         future_epoch_js = 1830000000000L
 
@@ -67,7 +67,7 @@ class EDRServer(object):
 
 
     def sitreps(self, timespan_seconds):
-        now_epoch_js = 1000 * calendar.timegm(datetime.datetime.now().timetuple())
+        now_epoch_js = 1000 * calendar.timegm(time.gmtime())
         past_epoch_js = now_epoch_js - (1000 * timespan_seconds)
 
         query_params = "orderBy=\"timestamp\"&startAt={past}&endAt={now}&auth={auth}".format(past=past_epoch_js, now=now_epoch_js, auth=self.auth_token())
@@ -179,7 +179,7 @@ class EDRServer(object):
 
     def recent_crimes(self,  system_id, timespan_seconds):
         EDRLOG.log(u"Recent crimes for system {sid}".format(sid=system_id), "INFO")
-        now_epoch_js = 1000 * calendar.timegm(datetime.datetime.now().timetuple())
+        now_epoch_js = 1000 * calendar.timegm(time.gmtime())
         past_epoch_js = now_epoch_js - (1000 * timespan_seconds)
 
         query_params = "orderBy=\"timestamp\"&startAt={past}&endAt={now}&auth={auth}".format(past=past_epoch_js, now=now_epoch_js, auth=self.auth_token())
@@ -193,7 +193,7 @@ class EDRServer(object):
 
     def recent_traffic(self,  system_id, timespan_seconds):
         EDRLOG.log(u"Recent traffic for system {sid}".format(sid=system_id), "INFO")
-        now_epoch_js = 1000 * calendar.timegm(datetime.datetime.now().timetuple())
+        now_epoch_js = 1000 * calendar.timegm(time.gmtime())
         past_epoch_js = now_epoch_js - (1000 * timespan_seconds)
 
         query_params = "orderBy=\"timestamp\"&startAt={past}&endAt={now}&auth={auth}".format(past=past_epoch_js, now=now_epoch_js, auth=self.auth_token())
