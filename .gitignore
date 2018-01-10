@@ -101,3 +101,4 @@ ENV/
 .mypy_cache/
 edr/config/config.ini
 .vscode/*
+edr/data/cmdrsdex.json
