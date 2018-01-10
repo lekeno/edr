@@ -208,7 +208,7 @@ class EDRClient(object):
         EDRLOG.log(u"Warming up client.", "INFO")
         details = [u"(please check that ED has the focus)"]
         if self.mandatory_update:
-            details = [u"Mandatory update!]
+            details = [u"Mandatory update!"]
         details += self.motd
         details.append("---")
         details.append(self.tips.tip())
