@@ -16,6 +16,7 @@ import audiofeedback
 import edrlog
 import ingamemsg
 import edrsystems
+import randomtips
 
 EDRLOG = edrlog.EDRLog()
 
@@ -76,6 +77,7 @@ class EDRClient(object):
         self.mandatory_update = False
         self.crimes_reporting = True
         self.motd = []
+        self.tips = randomtips.RandomTips("data/tips.json")
 
     def loud_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "loud")
@@ -204,12 +206,12 @@ class EDRClient(object):
 
     def warmup(self):
         EDRLOG.log(u"Warming up client.", "INFO")
-        details = ["Please check that ED has the focus."]
+        details = [u"Please check that ED has the focus."]
         if self.mandatory_update:
-            details += "Mandatory update!"
+            details = [u"Mandatory update!"]
         details += self.motd
-        # TODO add random tip
-        self.__notify("EDR v{} by LeKeno (Cobra Kai)".format(self.edr_version), details)
+        details += self.tips.tip()
+        self.__notify(u"EDR v{} by LeKeno (Cobra Kai)".format(self.edr_version), details)
 
     def shutdown(self):
         self.write_caches()
