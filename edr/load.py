@@ -494,40 +494,35 @@ def handle_commands(cmdr, entry):
     if not entry["event"] == "SendText":
         return
 
-    command = entry["Message"].split(" ", 1)
-    if command[0] == "!overlay":
-        overlay_command("" if len(command) == 1 else command[1])
-    elif command[0] == "!help":
-        EDRLOG.log(u"!overlay [on/off/ ] to enable/disable/test the overlay feature.", "INFO")
-        EDRLOG.log(u"!audiocue [on/off/loud/soft] to enable/disable/adjust the audio feedback.",
-                   "INFO")
-        EDRLOG.log(u"!crimes [on/off/ ] to enable/disable/check the status of crime reports.",
-                   "INFO")
-    elif command[0] == "!audiocue" and len(command) == 2:
-        audiocue_command(command[1])
-    elif command[0] == "o7" and not entry["To"] in ["local", "voicechat", "wing", "friend"]:
+    command_parts = entry["Message"].split(" ", 1)
+    command = command_parts[0].lower()
+    if command == "!overlay":
+        overlay_command("" if len(command_parts) == 1 else command_parts[1])
+    elif command == "!audiocue" and len(command_parts) == 2:
+        audiocue_command(command_parts[1])
+    elif command == "o7" and not entry["To"] in ["local", "voicechat", "wing", "friend"]:
         EDRLOG.log(u"Implicit who command for {}".format(entry["To"]), "INFO")
         to_cmdr = entry["To"]
         if entry["To"].startswith("$cmdr_decorate:#name="):
             to_cmdr = entry["To"][len("$cmdr_decorate:#name="):-1]
         EDR_CLIENT.who(to_cmdr, autocreate=True)
-    elif command[0] == "!who" and len(command) == 2:
-        EDRLOG.log(u"Explicit who command for {}".format(command[1]), "INFO")
-        EDR_CLIENT.who(command[1])
-    elif command[0] == "!crimes":
-        crimes_command("" if len(command) == 1 else command[1])
-    elif command[0] == "!sitrep":
-        system = cmdr.star_system if len(command) == 1 else command[1]
+    elif command == "!who" and len(command_parts) == 2:
+        EDRLOG.log(u"Explicit who command for {}".format(command_parts[1]), "INFO")
+        EDR_CLIENT.who(command_parts[1])
+    elif command == "!crimes":
+        crimes_command("" if len(command_parts) == 1 else command_parts[1])
+    elif command == "!sitrep":
+        system = cmdr.star_system if len(command_parts) == 1 else command_parts[1]
         EDRLOG.log(u"Sitrep command for {}".format(system), "INFO")
         EDR_CLIENT.check_system(system)
-    elif command[0] == "!sitreps":
+    elif command == "!sitreps":
         EDRLOG.log(u"Sitreps command", "INFO")
         EDR_CLIENT.sitreps()
-    elif command[0] == "!notams":
+    elif command == "!notams":
         EDRLOG.log(u"Notams command", "INFO")
         EDR_CLIENT.notams()
-    elif command[0] == "!notam":
-        system = cmdr.star_system if len(command) == 1 else command[1]
+    elif command == "!notam":
+        system = cmdr.star_system if len(command_parts) == 1 else command_parts[1]
         EDRLOG.log(u"Notam command for {}".format(system), "INFO")
         EDR_CLIENT.notam(system)
 
