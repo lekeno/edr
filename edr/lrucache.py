@@ -27,7 +27,7 @@ class LRUCache(object):
             if not self._is_stale(entry):
                 return entry["content"]
             else:
-                EDRLOG.log(u"Stale entry: {dt}, {content}".format(dt=entry["datetime"], content=entry["content"]), "DEBUG")
+                EDRLOG.log(u"Stale entry: {now}-{dt}>{mxa}, {content}".format(now=datetime.datetime.now(), dt=entry["datetime"], mxa=self.max_age, content=entry["content"]), "DEBUG")
         except KeyError:
             pass
         

@@ -57,6 +57,7 @@ class EDRServer(object):
         future_epoch_js = 1830000000000L
 
         query_params = "orderBy=\"timestamp\"&startAt={past}&endAt={now}&auth={auth}".format(past=past_epoch_js, now=future_epoch_js, auth=self.auth_token())
+        EDRLOG.log(u"query_params {}".format(query_params), "DEBUG")
         resp = requests.get("{server}/v1/notams.json?{query_params}".format(server=self.EDR_ENDPOINT, query_params=query_params))
 
         if resp.status_code != 200:
