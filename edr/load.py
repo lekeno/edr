@@ -496,16 +496,26 @@ def handle_commands(cmdr, entry):
 
     command_parts = entry["Message"].split(" ", 1)
     command = command_parts[0].lower()
-    if command == "!overlay":
-        overlay_command("" if len(command_parts) == 1 else command_parts[1])
-    elif command == "!audiocue" and len(command_parts) == 2:
-        audiocue_command(command_parts[1])
+    if command[0] == "!":
+        handle_bang_commands(cmdr, command, command_parts)
+    elif command[0] == "#":
+        handle_hash_commands(command, command_parts, entry)
+    elif command[0] == "-":
+        handle_minus_commands(command, command_parts, entry)
+    elif command[0] == "+":
+        handle_plus_commands(entry)
     elif command == "o7" and not entry["To"] in ["local", "voicechat", "wing", "friend"]:
         EDRLOG.log(u"Implicit who command for {}".format(entry["To"]), "INFO")
         to_cmdr = entry["To"]
         if entry["To"].startswith("$cmdr_decorate:#name="):
             to_cmdr = entry["To"][len("$cmdr_decorate:#name="):-1]
         EDR_CLIENT.who(to_cmdr, autocreate=True)
+
+def handle_bang_commands(cmdr, command, command_parts):
+    if command == "!overlay":
+        overlay_command("" if len(command_parts) == 1 else command_parts[1])
+    elif command == "!audiocue" and len(command_parts) == 2:
+        audiocue_command(command_parts[1])
     elif command == "!who" and len(command_parts) == 2:
         EDRLOG.log(u"Explicit who command for {}".format(command_parts[1]), "INFO")
         EDR_CLIENT.who(command_parts[1])
@@ -525,6 +535,72 @@ def handle_commands(cmdr, entry):
         system = cmdr.star_system if len(command_parts) == 1 else command_parts[1]
         EDRLOG.log(u"Notam command for {}".format(system), "INFO")
         EDR_CLIENT.notam(system)
+
+def handle_hash_commands(command, command_parts, entry):
+    target_cmdr = command_parts.get(1, None)
+    if not entry["To"] in ["local", "voicechat", "wing", "friend"]:
+        prefix = "$cmdr_decorate:#name="
+        target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
+    
+    if (command == "#!" or command == "#outlaw"):
+        EDRLOG.log(u"Tag outlaw command for {}".format(target_cmdr), "INFO")
+        EDR_CLIENT.tag_cmdr(target_cmdr, "outlaw")
+    elif (command == "#?" or command == "#neutral"):
+        EDRLOG.log(u"Tag neutral command for {}".format(target_cmdr), "INFO")
+        EDR_CLIENT.tag_cmdr(target_cmdr, "neutral")
+    elif (command == "#+" or command == "#enforcer"):
+        EDRLOG.log(u"Tag enforcer command for {}".format(target_cmdr), "INFO")
+        EDR_CLIENT.tag_cmdr(target_cmdr, "enforcer")
+    elif (command == "#=" or command == "#friend"):
+        EDRLOG.log(u"Tag friend command for {}".format(target_cmdr), "INFO")
+        EDR_CLIENT.tag_cmdr(target_cmdr, "friend")
+    elif (command[0] == "#" and len(command) > 1):
+        tag = command[1:]
+        EDRLOG.log(u"Tag command for {} with {}".format(target_cmdr, tag), "INFO")
+        EDR_CLIENT.tag_cmdr(target_cmdr, tag)
+
+def handle_minus_commands(command, command_parts, entry):
+    target_cmdr = command_parts.get(1, None)
+    if not entry["To"] in ["local", "voicechat", "wing", "friend"]:
+        prefix = "$cmdr_decorate:#name="
+        target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
+
+    if command == "-#":
+        EDRLOG.log(u"Untag command for {}".format(target_cmdr), "INFO")
+        EDR_CLIENT.untag_cmdr(target_cmdr, tag=None)
+    elif command == "-#!" or command == "-#outlaw"::
+        EDRLOG.log(u"Remove outlaw tag for {}".format(target_cmdr), "INFO")
+        EDR_CLIENT.untag_cmdr(target_cmdr, "outlaw")
+    elif command == "-#?" or command == "-#neutral":
+        EDRLOG.log(u"Remove neutral tag for {}".format(target_cmdr), "INFO")
+        EDR_CLIENT.untag_cmdr(target_cmdr, "neutral")
+    elif command == "-#+" or command == "-#enforcer"::
+        EDRLOG.log(u"Remove enforcer tag for {}".format(target_cmdr), "INFO")
+        EDR_CLIENT.untag_cmdr(target_cmdr, "enforcer")
+    elif command == "-#=" or command == "-#friend":
+        EDRLOG.log(u"Remove friend tag for {}".format(target_cmdr), "INFO")
+        EDR_CLIENT.untag_cmdr(target_cmdr, "friend")
+    elif (command[0] == "-#" and len(command) > 2):
+        tag = command[2:]
+        EDRLOG.log(u"Remove tag {} for {}".format(tag, target_cmdr), "INFO")
+        EDR_CLIENT.untag_cmdr(target_cmdr, tag)
+
+def handle_at_commands(command, command_parts, entry):
+    if not entry["event"] == "SendText":
+        return
+    command_parts = entry["Message"].split(" memo=", 1)
+    command = command_parts[0].lower()
+    
+    if command == "@#" and not entry["To"] in ["local", "voicechat", "wing", "friend"]:
+        prefix = "$cmdr_decorate:#name="
+        target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
+        EDRLOG.log(u"Memo command for tagged cmdr {}".format(target_cmdr), "INFO")
+        EDR_CLIENT.memo_cmdr(target_cmdr, command_parts[1])
+    elif command.startswith("@#") and len(command)>2:
+        target_cmdr = command[2:]
+        EDRLOG.log(u"Memo command for tagged cmdr {}".format(target_cmdr), "INFO")
+        EDR_CLIENT.memo_cmdr(target_cmdr, command_parts[1])
+
 
 def overlay_command(param):
     if param == "":

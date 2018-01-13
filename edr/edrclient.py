@@ -1,6 +1,3 @@
-import os
-import pickle
-
 import Tkinter as tk
 import ttk
 import ttkHyperlinkLabel
@@ -11,21 +8,16 @@ import edrconfig
 import lrucache
 import edentities
 import edrserver
-import edrinara
 import audiofeedback
 import edrlog
 import ingamemsg
 import edrsystems
+import edrcmdrs
 import randomtips
 
 EDRLOG = edrlog.EDRLog()
 
 class EDRClient(object):
-    EDR_CMDRS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/cmdrs.p')
-    EDR_INARA_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/inara.p')
-
     IN_GAME_MSG = ingamemsg.InGameMsg()
     AUDIO_FEEDBACK = audiofeedback.AudioFeedback()
 
@@ -39,21 +31,6 @@ class EDRClient(object):
         self.place_novelty_threshold = edr_config.place_novelty_threshold()
         self.ship_novelty_threshold = edr_config.ship_novelty_threshold()
         self.cognitive_novelty_threshold = edr_config.cognitive_novelty_threshold()
-
-        try:
-            with open(self.EDR_CMDRS_CACHE, 'rb') as handle:
-                self.cmdrs_cache = pickle.load(handle)
-        except:
-            #TODO increase after there is a good set of cmdrs in the backend
-            self.cmdrs_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                                 edr_config.cmdrs_max_age())
-
-        try:
-            with open(self.EDR_INARA_CACHE, 'rb') as handle:
-                self.inara_cache = pickle.load(handle)
-        except:
-            self.inara_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                                 edr_config.inara_max_age())
 
         self.blips_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
         self.traffic_cache = lrucache.LRUCache(edr_config.lru_max_size(),
@@ -72,8 +49,10 @@ class EDRClient(object):
 
         self.player = edentities.EDCmdr()
         self.server = edrserver.EDRServer()
+        
         self.edrsystems = edrsystems.EDRSystems(self.server)
-        self.inara = edrinara.EDRInara()
+        self.edrcmdrs = edrcmdrs.EDRCmdrs(self.server)
+
         self.mandatory_update = False
         self.crimes_reporting = True
         self.motd = []
@@ -190,7 +169,7 @@ class EDRClient(object):
         self._audio_feedback.set(new_value)
 
     def player_name(self, name):
-        self.inara.cmdr_name = name
+        self.edrcmdrs.inara.cmdr_name = name
         self.player.name = name
 
     def login(self):
@@ -215,7 +194,7 @@ class EDRClient(object):
         self.__notify(u"EDR v{} by LeKeno (Cobra Kai)".format(self.edr_version), details)
 
     def shutdown(self):
-        self.write_caches()
+        self.edrcmdrs.persist()
         self.edrsystems.persist()
         self.server.logout()
         self.IN_GAME_MSG.shutdown()
@@ -343,69 +322,13 @@ class EDRClient(object):
         return None
 
     def cmdr(self, cmdr_name, autocreate=True, check_inara_server=False):
-        profile = self.cmdrs_cache.get(cmdr_name)
-        if not profile is None:
-            EDRLOG.log(u"Cmdr {cmdr} is in the cache with id={cid}".format(cmdr=cmdr_name,
-                                                                           cid=profile.cid),
-                       "DEBUG")
-        else:
-            profile = self.server.cmdr(cmdr_name, autocreate)
-
-            if not profile is None:
-                self.cmdrs_cache.set(cmdr_name, profile)
-                EDRLOG.log(u"Cached {cmdr} with id={id}".format(cmdr=cmdr_name,
-                                                                id=profile.cid), "DEBUG")
-
-        inara_profile = self.inara_cache.get(cmdr_name)
-        if not inara_profile is None:
-            EDRLOG.log(u"Cmdr {} is in the Inara cache (name={})".format(cmdr_name,
-                                                                         inara_profile.name),
-                       "DEBUG")
-        elif check_inara_server:
-            EDRLOG.log(u"No match in Inara cache. Inara API call for {}.".format(cmdr_name), "INFO")
-            inara_profile = self.inara.cmdr(cmdr_name)
-
-            if not inara_profile is None:
-                self.inara_cache.set(cmdr_name, inara_profile)
-                EDRLOG.log(u"Cached Inara profile {}: {},{},{}".format(cmdr_name,
-                                                                       inara_profile.name,
-                                                                       inara_profile.squadron,
-                                                                       inara_profile.role), "DEBUG")
-            else:
-                self.inara_cache.set(cmdr_name, None)
-                EDRLOG.log(u"No match on Inara. Temporary entry to be nice on Inara's server.",
-                           "INFO")
-
-        if profile is None and inara_profile is None:
-            EDRLOG.log(u"Failed to retrieve/create cmdr {}".format(cmdr_name), "ERROR")
-            return None
-        elif (not profile is None) and (not inara_profile is None):
-            EDRLOG.log(u"Combining info from EDR and Inara for cmdr {}".format(cmdr_name), "INFO")
-            profile.complement(inara_profile)
-            return profile
-        return inara_profile if profile is None else profile
-
-    def write_caches(self):
-        with open(self.EDR_CMDRS_CACHE, 'wb') as handle:
-            pickle.dump(self.cmdrs_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        with open(self.EDR_INARA_CACHE, 'wb') as handle:
-            pickle.dump(self.inara_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
+        return self.edrcmdrs.cmdr(cmdr_name, autocreate, check_inara_server)
 
     def evict_system(self, star_system):
         self.edrsystems.evict(star_system)
 
     def evict_cmdr(self, cmdr):
-        try:
-            del self.cmdrs_cache[cmdr]
-        except KeyError:
-            pass
-
-        try:
-            del self.inara_cache[cmdr]
-        except KeyError:
-            pass
+        self.edrcmdrs.evict(cmdr)
 
 
     def novel_enough_blip(self, cmdr_id, blip, cognitive = False):
@@ -416,7 +339,7 @@ class EDRClient(object):
         delta = blip["timestamp"] - last_blip["timestamp"]
         
         if cognitive:
-           return (blip["starSystem"] != last_blip["starSystem"] or blip["place"] != last_blip["place"]) or delta > self.cognitive_novelty_threshold
+            return (blip["starSystem"] != last_blip["starSystem"] or blip["place"] != last_blip["place"]) or delta > self.cognitive_novelty_threshold
 
         if blip["starSystem"] != last_blip["starSystem"]:
             return delta > self.system_novelty_threshold
@@ -530,6 +453,15 @@ class EDRClient(object):
 
         return self.server.crime(sid, crime)
 
+    def tag_cmdr(self, cmdr_name, tag):
+        self.edrcmdrs.tag_cmdr(cmdr_name, tag)
+    
+    def memo_cmdr(self, cmdr_name, memo):
+        self.edrcmdrs.memo_cmdr(cmdr_name, memo)
+
+    def untag_cmdr(self, cmdr_name, tag):
+        self.edrcmdrs.untag_cmdr(cmdr_name, tag)
+
     def __sitrep(self, star_system, details):
         if self.audio_feedback:
             self.AUDIO_FEEDBACK.notify()
@@ -539,7 +471,7 @@ class EDRClient(object):
         if star_system:
             self.IN_GAME_MSG.sitrep(u"SITREP for {}".format(star_system), details)
         else:
-            self.IN_GAME_MSG.sitrep(u"SITREPS".format(star_system), details)
+            self.IN_GAME_MSG.sitrep(u"SITREPS", details)
 
     def __intel(self, who, details):
         if self.audio_feedback:

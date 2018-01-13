@@ -17,6 +17,7 @@ class EDRCmdrProfile(object):
         self.squadron = None
         self.role = None
         self._karma = 0
+        self.dex_profile = None
     
     @property
     def name(self):
@@ -61,14 +62,32 @@ class EDRCmdrProfile(object):
 
         if self.role is None or self.role == "":
             self.role = other_profile.role
+
+    def dex(self, dex_profile):
+        if self.name.lower() != dex_profile.get("name", "").lower():
+            EDRLOG.log(u"[EDR]Can't augment with CmdrDex profile since it doesn't match: {} vs. {}".format(dex_profile.get("name", ""), self.name), "DEBUG")
+            return False
+
+        self.dex_profile = dex_profile
     
     def is_dangerous(self):
+        if self.dex_profile:
+            return self.dex_profile.get("tag", None) == "outlaw"
         return self._karma <= -250
 
     def karma_title(self):
         mapped_index = int(10*(self._karma + self.max_karma()) / (2.0*self.max_karma()))
         lut = ["Most wanted", "Wanted", "Outlaw", "Henchman", "Trouble maker", "Neutral", "Sentinel", "Space Ranger", "Avenger", "Savior", "Saint"]
-        return lut[mapped_index]
+        karma = lut[mapped_index]
+
+        if self.dex_profile is None:
+            return karma
+
+        tag = self.dex_profile.get("tag", None)
+        if tag is None or tag is "":
+            return karma
+
+        return u"#{}".format(tag)
 
     def short_profile(self):
         result = u"{name}: {karma}".format(name=self.name, karma=self.karma_title())
@@ -77,5 +96,12 @@ class EDRCmdrProfile(object):
             result += ", {squadron}".format(squadron=self.squadron)
 
         if not (self.role is None or self.role == ""):
-            result += ", {role}".format(role=self.role)    
+            result += ", {role}".format(role=self.role)
+
+        if not self.dex_profile is None:
+            memo = self.dex_profile.get("memo", "")
+            date = self.dex_profile.get("date", "NA")
+            if memo:
+                result += ", {memo}({date})".format(memo=memo,date=date)
+
         return result
