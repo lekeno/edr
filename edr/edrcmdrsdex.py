@@ -14,21 +14,21 @@ class EDRCmdrsDex(object):
             self.cmdrs = {}
     
     def get(self, cmdr_name):
-        return self.cmdrs.get(cmdr_name.lower, None)
+        return self.cmdrs.get(cmdr_name.lower(), None)
     
     def short_profile(self, cmdr_name):
         cmdr_entry = self.get(cmdr_name)
         if cmdr_entry:
-            return u"{}: {} #{} ({})".format(cmdr_entry["name"], cmdr_entry["memo"], cmdr_entry["tag"], cmdr_entry["date"])
+            return u"{}: {} #{} ({})".format(cmdr_entry["name"], cmdr_entry["memo"], cmdr_entry["tags"], cmdr_entry["date"])
         return None
 
     def add(self, name, memo, tag):
-        #TODO tag array
+        tag = tag.lower()
         self.remove(name)
         cmdr_entry = {
             "name": name,
             "memo": memo,
-            "tag": tag,
+            "tags": [tag],
             "date": datetime.datetime.today().strftime('%Y-%m-%d')
         }
         self.cmdrs[name.lower()] = cmdr_entry
@@ -42,12 +42,45 @@ class EDRCmdrsDex(object):
             return True
         return False
 
-    #TODO add tag method
+    def tag(self, name, tag):
+        tag = tag.lower()
+        cmdr_entry = self.get(name)
+        if cmdr_entry is None:
+            return False
 
-    def untag_cmdr(self, name, tag):
-        if tag is None:
-            return self.remove(name)
-        #TODO remove tag if present, return result
+        if tag not in ["outlaw", "neutral", "enforcer"]:
+            cmdr_entry["tags"].append(tag)
+            self.cmdrs[name.lower()] = cmdr_entry
+            return True
+
+        if tag in cmdr_entry["tags"]:
+            return True
+
+        for karma_tag in ["outlaw", "neutral", "enforcer"]:
+            try:
+                cmdr_entry["tags"].remove(karma_tag)
+            except:
+                pass
+
+        cmdr_entry["tags"].append(tag)
+        self.cmdrs[name.lower()] = cmdr_entry
+        return True
+
+    def untag(self, name, tag):
+        tag = tag.lower()
+        cmdr_entry = self.get(name)
+        if cmdr_entry is None:
+            return False
+
+        if tag not in cmdr_entry["tags"]:
+            return True
+
+        cmdr_entry["tags"].remove(tag)
+        if cmdr_entry["tags"]:
+            self.cmdrs[name.lower()] = cmdr_entry
+        else:
+            self.remove(name)
+        return True
 
     
     def remove(self, name):
