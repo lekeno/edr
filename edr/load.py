@@ -502,8 +502,8 @@ def handle_commands(cmdr, entry):
         handle_hash_commands(command, command_parts, entry)
     elif command[0] == "-":
         handle_minus_commands(command, command_parts, entry)
-    elif command[0] == "+":
-        handle_plus_commands(entry)
+    elif command[0] == "@":
+        handle_at_commands(entry)
     elif command == "o7" and not entry["To"] in ["local", "voicechat", "wing", "friend"]:
         EDRLOG.log(u"Implicit who command for {}".format(entry["To"]), "INFO")
         to_cmdr = entry["To"]
@@ -537,7 +537,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         EDR_CLIENT.notam(system)
 
 def handle_hash_commands(command, command_parts, entry):
-    target_cmdr = command_parts.get(1, None)
+    target_cmdr = command_parts[1] if len(command_parts) > 1 else None
     if not entry["To"] in ["local", "voicechat", "wing", "friend"]:
         prefix = "$cmdr_decorate:#name="
         target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
@@ -560,7 +560,7 @@ def handle_hash_commands(command, command_parts, entry):
         EDR_CLIENT.tag_cmdr(target_cmdr, tag)
 
 def handle_minus_commands(command, command_parts, entry):
-    target_cmdr = command_parts.get(1, None)
+    target_cmdr = command_parts[1] if len(command_parts) > 1 else None
     if not entry["To"] in ["local", "voicechat", "wing", "friend"]:
         prefix = "$cmdr_decorate:#name="
         target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
@@ -568,13 +568,13 @@ def handle_minus_commands(command, command_parts, entry):
     if command == "-#":
         EDRLOG.log(u"Untag command for {}".format(target_cmdr), "INFO")
         EDR_CLIENT.untag_cmdr(target_cmdr, tag=None)
-    elif command == "-#!" or command == "-#outlaw"::
+    elif command == "-#!" or command == "-#outlaw":
         EDRLOG.log(u"Remove outlaw tag for {}".format(target_cmdr), "INFO")
         EDR_CLIENT.untag_cmdr(target_cmdr, "outlaw")
     elif command == "-#?" or command == "-#neutral":
         EDRLOG.log(u"Remove neutral tag for {}".format(target_cmdr), "INFO")
         EDR_CLIENT.untag_cmdr(target_cmdr, "neutral")
-    elif command == "-#+" or command == "-#enforcer"::
+    elif command == "-#+" or command == "-#enforcer":
         EDRLOG.log(u"Remove enforcer tag for {}".format(target_cmdr), "INFO")
         EDR_CLIENT.untag_cmdr(target_cmdr, "enforcer")
     elif command == "-#=" or command == "-#friend":
@@ -585,7 +585,7 @@ def handle_minus_commands(command, command_parts, entry):
         EDRLOG.log(u"Remove tag {} for {}".format(tag, target_cmdr), "INFO")
         EDR_CLIENT.untag_cmdr(target_cmdr, tag)
 
-def handle_at_commands(command, command_parts, entry):
+def handle_at_commands(entry):
     if not entry["event"] == "SendText":
         return
     command_parts = entry["Message"].split(" memo=", 1)

@@ -64,6 +64,9 @@ class EDRCmdrProfile(object):
             self.role = other_profile.role
 
     def dex(self, dex_profile):
+        if dex_profile is None:
+            return False
+
         if self.name.lower() != dex_profile.get("name", "").lower():
             EDRLOG.log(u"[EDR]Can't augment with CmdrDex profile since it doesn't match: {} vs. {}".format(dex_profile.get("name", ""), self.name), "DEBUG")
             return False
@@ -83,11 +86,11 @@ class EDRCmdrProfile(object):
         if self.dex_profile is None:
             return karma
 
-        tag = self.dex_profile.get("tag", None)
-        if tag is None or tag is "":
-            return karma
+        tags = self.dex_profile["tags"]
+        if tags:
+            return u"{} #{}".format(karma, " #".join(tags))
 
-        return u"#{}".format(tag)
+        return karma
 
     def short_profile(self):
         result = u"{name}: {karma}".format(name=self.name, karma=self.karma_title())

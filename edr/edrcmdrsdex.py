@@ -19,7 +19,7 @@ class EDRCmdrsDex(object):
     def short_profile(self, cmdr_name):
         cmdr_entry = self.get(cmdr_name)
         if cmdr_entry:
-            return u"{}: {} #{} ({})".format(cmdr_entry["name"], cmdr_entry["memo"], cmdr_entry["tags"], cmdr_entry["date"])
+            return u"{}: {} #{} ({})".format(cmdr_entry["name"], cmdr_entry["memo"], " ".join(cmdr_entry["tags"]), cmdr_entry["date"])
         return None
 
     def add(self, name, memo, tag):
@@ -46,7 +46,8 @@ class EDRCmdrsDex(object):
         tag = tag.lower()
         cmdr_entry = self.get(name)
         if cmdr_entry is None:
-            return False
+            self.add(name, None, tag)
+            return True
 
         if tag not in ["outlaw", "neutral", "enforcer"]:
             cmdr_entry["tags"].append(tag)

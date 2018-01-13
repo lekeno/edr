@@ -95,8 +95,9 @@ class EDRCmdrs(object):
 
     def __dex_cmdr(self, cmdr_name):
         dex_profile = self.cmdrs_dex.get(cmdr_name)
-        if not dex_profile is None:
-            EDRLOG.log(u"Cmdr {} is in the CmdrsDex".format(cmdr_name), "DEBUG")
+        if dex_profile is None:
+            EDRLOG.log(u"Cmdr {} is NOT in the CmdrsDex".format(cmdr_name), "DEBUG")
+            return None
         EDRLOG.log(u"Found a dex entry for Cmdr {}: {}".format(cmdr_name, self.cmdrs_dex.short_profile(cmdr_name)), "DEBUG")
         return dex_profile
 
@@ -116,10 +117,10 @@ class EDRCmdrs(object):
         return inara_profile if profile is None else profile
 
     def tag_cmdr(self, cmdr_name, tag):
-        self.cmdrs_dex.add(cmdr_name, tag)
+        self.cmdrs_dex.tag(cmdr_name, tag)
         #TODO EDR crowd insights
     
-    def tag_cmdr(self, cmdr_name, memo):
+    def memo_cmdr(self, cmdr_name, memo):
         self.cmdrs_dex.set_memo(cmdr_name, memo)
         #TODO EDR crowd insights
     
