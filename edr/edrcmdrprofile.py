@@ -1,4 +1,5 @@
 import edrlog
+import edtime
 
 EDRLOG = edrlog.EDRLog()
 
@@ -75,7 +76,7 @@ class EDRCmdrProfile(object):
     
     def is_dangerous(self):
         if self.dex_profile:
-            return self.dex_profile.get("tag", None) == "outlaw"
+            return self.dex_profile.get("alignment", None) == "outlaw"
         return self._karma <= -250
 
     def karma_title(self):
@@ -86,9 +87,9 @@ class EDRCmdrProfile(object):
         if self.dex_profile is None:
             return karma
 
-        tags = self.dex_profile["tags"]
-        if tags:
-            return u"{} #{}".format(karma, " #".join(tags))
+        alignment = self.dex_profile.get("alignment", None)
+        if alignment:
+            return u"{} #{}".format(karma, alignment)
 
         return karma
 
@@ -96,15 +97,27 @@ class EDRCmdrProfile(object):
         result = u"{name}: {karma}".format(name=self.name, karma=self.karma_title())
        
         if not (self.squadron is None or self.squadron == ""):
-            result += ", {squadron}".format(squadron=self.squadron)
+            result += u", {squadron}".format(squadron=self.squadron)
 
         if not (self.role is None or self.role == ""):
-            result += ", {role}".format(role=self.role)
+            result += u", {role}".format(role=self.role)
 
-        if not self.dex_profile is None:
-            memo = self.dex_profile.get("memo", "")
-            date = self.dex_profile.get("date", "NA")
+        if self.dex_profile:
+            if self.dex_profile.get("friends", False):
+                result += u" [friend]"
+
+            tags = self.dex_profile.get("tags", None)
+            if tags:
+                result += u", #{}".format(" #".join(tags))
+            
+            memo = self.dex_profile.get("memo", None)
             if memo:
-                result += ", {memo}({date})".format(memo=memo,date=date)
+                result += u", {}".format(memo)
+            
+            updated_jse = self.dex_profile.get("updated", None)
+            if updated_jse:
+                updated_edt = edtime.EDTime()
+                updated_edt.from_js_epoch(updated_jse)
+                result += u" ({})".format(updated_edt.as_immersive_date())
 
         return result

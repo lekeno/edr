@@ -121,7 +121,7 @@ class EDRCmdrs(object):
         #TODO EDR crowd insights
     
     def memo_cmdr(self, cmdr_name, memo):
-        self.cmdrs_dex.set_memo(cmdr_name, memo)
+        self.cmdrs_dex.memo(cmdr_name, memo)
         #TODO EDR crowd insights
     
     def untag_cmdr(self, cmdr_name, tag=None):

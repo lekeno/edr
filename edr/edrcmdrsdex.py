@@ -5,6 +5,8 @@ import json
 import os
 import edtime
 
+#TODO make a proper EDRCmdrDexEntry class that can be json-ified
+
 class EDRCmdrsDex(object):
     EDR_CMDRS_DEX_PATH = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'data/cmdrsdex.0.5.0.beta.3.json')
@@ -68,13 +70,18 @@ class EDRCmdrsDex(object):
             "name": name,
             "alignment": None,
             "tags": [],
-            "friend": None,
+            "friend": False,
             "memo": None,
             "created": now,
             "updated": now
         }
         self.cmdrs[name.lower()] = cmdr_entry
     
+    def alignment(self, cmdr_name):
+        if not exist(cmdr_name):
+            return None
+        return self.cmdrs[cmdr_name.lower()]["alignment"]
+
     @staticmethod 
     def alignments():
         return ["outlaw", "neutral", "enforcer"]
