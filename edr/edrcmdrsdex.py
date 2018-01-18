@@ -5,7 +5,7 @@ import json
 import os
 import edtime
 
-#TODO make a proper EDRCmdrDexEntry class that can be json-ified
+#TODO make a proper EDRCmdrDexEntry class that can be json-ified or just use pickle and the edr website for exporting lists?
 
 class EDRCmdrsDex(object):
     EDR_CMDRS_DEX_PATH = os.path.join(

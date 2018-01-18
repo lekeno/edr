@@ -110,7 +110,7 @@ class EDRCmdrs(object):
         if profile is None and inara_profile is None and dex_profile is None:
             EDRLOG.log(u"Failed to retrieve/create cmdr {}".format(cmdr_name), "ERROR")
             return None
-        elif (not profile is None) and (not inara_profile is None):
+        elif profile and inara_profile:
             EDRLOG.log(u"Combining info from EDR and Inara for cmdr {}".format(cmdr_name), "INFO")
             profile.complement(inara_profile)
             return profile
