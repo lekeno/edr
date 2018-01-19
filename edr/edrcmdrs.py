@@ -117,13 +117,19 @@ class EDRCmdrs(object):
         return inara_profile if profile is None else profile
 
     def tag_cmdr(self, cmdr_name, tag):
-        self.cmdrs_dex.tag(cmdr_name, tag)
-        #TODO EDR crowd insights
+        tagged = self.cmdrs_dex.tag(cmdr_name, tag)
+        if tagged:
+            dex_json = self.cmdrs_dex.json(cmdr_name)
+            self.server.cmdrsdex(cmdr_name, dex_json)
     
     def memo_cmdr(self, cmdr_name, memo):
-        self.cmdrs_dex.memo(cmdr_name, memo)
-        #TODO EDR crowd insights
+        noted = self.cmdrs_dex.memo(cmdr_name, memo)
+        if noted:
+            dex_json = self.cmdrs_dex.json(cmdr_name)
+            self.server.cmdrsdex(cmdr_name, dex_json)
     
-    def untag_cmdr(self, cmdr_name, tag=None):
-        self.cmdrs_dex.untag(cmdr_name, tag)
-        #TODO EDR crowd insights
+    def untag_cmdr(self, cmdr_name, tag):
+        untagged = self.cmdrs_dex.untag(cmdr_name, tag)
+        if untagged:
+            dex_json = self.cmdrs_dex.json(cmdr_name)
+            self.server.cmdrsdex(cmdr_name, dex_json)

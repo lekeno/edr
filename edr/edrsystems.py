@@ -3,7 +3,6 @@ import pickle
 
 import datetime
 import time
-import calendar
 
 import edrconfig
 import edrlog

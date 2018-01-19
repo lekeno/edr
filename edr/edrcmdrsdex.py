@@ -1,4 +1,4 @@
-import datetime
+
 import time
 import calendar
 import json
@@ -20,6 +20,12 @@ class EDRCmdrsDex(object):
     
     def get(self, cmdr_name):
         return self.cmdrs.get(cmdr_name.lower(), None)
+
+    def json(self, cmdr_name):
+        entry = self.cmdrs.get(cmdr_name.lower(), None)
+        if not entry:
+            return None
+        return json.dumps(entry)
 
     def __all_tags(self, cmdr_name):
         if not self.exists(cmdr_name):
@@ -67,24 +73,24 @@ class EDRCmdrsDex(object):
 
         now = EDRCmdrsDex.__js_epoch_now()
         cmdr_entry = {
-            "name": name,
-            "alignment": None,
-            "tags": [],
-            "friend": False,
-            "memo": None,
-            "created": now,
-            "updated": now
+            u"name": name,
+            u"alignment": None,
+            u"tags": [],
+            u"friend": False,
+            u"memo": None,
+            u"created": now,
+            u"updated": now
         }
         self.cmdrs[name.lower()] = cmdr_entry
     
     def alignment(self, cmdr_name):
-        if not exist(cmdr_name):
+        if not self.exists(cmdr_name):
             return None
         return self.cmdrs[cmdr_name.lower()]["alignment"]
 
     @staticmethod 
     def alignments():
-        return ["outlaw", "neutral", "enforcer"]
+        return [u"outlaw", u"neutral", u"enforcer"]
 
     @staticmethod
     def __js_epoch_now():
@@ -114,43 +120,54 @@ class EDRCmdrsDex(object):
     @staticmethod
     def __tagify(tag):
         tag = tag.lower()
-        return tag.replace(" ", "")
+        return tag.replace(u" ", u"")
     
     def tag(self, name, tag):
+        updated = False
         if not self.exists(name):
             self.add(name)
+            updated = True
         
         cname = name.lower()
         tag = EDRCmdrsDex.__tagify(tag)
 
-        if tag == "friend":
+        if tag == u"friend" and not self.cmdrs[cname]["friend"]:
             self.cmdrs[cname]["friend"] = True
-        elif tag in EDRCmdrsDex.alignments():
+            updated = True
+        elif tag in EDRCmdrsDex.alignments() and self.cmdrs[cname]["alignment"] != tag:
             self.cmdrs[cname]["alignment"] = tag
-        else:
+            updated = True
+        elif tag not in self.cmdrs[cname]["tags"]:
             self.cmdrs[cname]["tags"].append(tag)
+            updated = True
         
-        self.cmdrs[cname]["updated"] = EDRCmdrsDex.__js_epoch_now()
-        #TODO EDRServer update
+        if updated:
+            self.cmdrs[cname]["updated"] = EDRCmdrsDex.__js_epoch_now()
 
+        return updated
+        
     def untag(self, name, tag):
+        updated = False
         if not self.exists(name):
-            return
+            return False
         
         cname = name.lower()
         tag = EDRCmdrsDex.__tagify(tag)
 
-        if tag == "friend":
+        if tag == u"friend" and self.cmdrs[cname]["friend"]:
             self.cmdrs[cname]["friend"] = False
+            updated = True
         elif tag == self.cmdrs[cname]["alignment"]:
-             self.cmdrs[cname]["alignment"] = None
-        else:
-            if tag not in self.cmdrs[cname]["tags"]:
-                return
+            self.cmdrs[cname]["alignment"] = None
+            updated = True
+        elif tag in self.cmdrs[cname]["tags"]:
             self.cmdrs[cname]["tags"].remove(tag)
-        
-        self.cmdrs[cname]["updated"] = EDRCmdrsDex.__js_epoch_now()
-        #TODO EDRServer update
+            updated = True
+
+        if updated:
+            self.cmdrs[cname]["updated"] = EDRCmdrsDex.__js_epoch_now()
+
+        return updated
     
     def remove(self, name):
         try:
