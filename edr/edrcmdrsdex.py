@@ -21,12 +21,6 @@ class EDRCmdrsDex(object):
     def get(self, cmdr_name):
         return self.cmdrs.get(cmdr_name.lower(), None)
 
-    def json(self, cmdr_name):
-        entry = self.cmdrs.get(cmdr_name.lower(), None)
-        if not entry:
-            return None
-        return json.dumps(entry)
-
     def __all_tags(self, cmdr_name):
         if not self.exists(cmdr_name):
             return None
@@ -172,8 +166,9 @@ class EDRCmdrsDex(object):
     def remove(self, name):
         try:
             del self.cmdrs[name.lower()]
+            return True
         except KeyError:
-            pass
+            return False
 
     def persist(self):
         with open(self.EDR_CMDRS_DEX_PATH, 'w') as json_file:

@@ -207,9 +207,18 @@ class EDRServer(object):
         return json.loads(resp.content)
 
     def cmdrsdex(self, cmdr_id, dex_entry):
-        EDRLOG.log(u"CmdrDex entry for cmdr {cid} with json:{json}".format(cid=cmdr_id, json=dex_entry), "INFO")
         query_params = { "auth" : self.auth_token()}
-        endpoint = "{server}/v1/cmdrsdex/{uid}/{cmdr_id}/.json?{query_params}".format(server=self.EDR_ENDPOINT, uid=self.uid(), cmdr_id=cmdr_id, query_params=urllib.urlencode(query_params))
+        
+        if dex_entry is None:
+            EDRLOG.log(u"Removing CmdrDex entry for cmdr {cid}".format(cid=cmdr_id), "INFO")
+            endpoint = "{server}/v1/cmdrsdex/{uid}/{cid}.json?{query_params}".format(server=self.EDR_ENDPOINT, uid=self.uid(), cid=cmdr_id, query_params=urllib.urlencode(query_params))
+            EDRLOG.log(u"Endpoint :" + endpoint, "DEBUG")
+            resp = requests.delete(endpoint)
+            EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
+            return resp.status_code == 200
+        
+        EDRLOG.log(u"CmdrDex entry for cmdr {cid} with json:{json}".format(cid=cmdr_id, json=dex_entry), "INFO")
+        endpoint = "{server}/v1/cmdrsdex/{uid}/{cid}/.json?{query_params}".format(server=self.EDR_ENDPOINT, uid=self.uid(), cid=cmdr_id, query_params=urllib.urlencode(query_params))
         EDRLOG.log(u"Endpoint :" + endpoint, "DEBUG")
         resp = requests.put(endpoint, json=dex_entry)
         EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")

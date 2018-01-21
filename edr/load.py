@@ -566,7 +566,7 @@ def handle_minus_commands(command, command_parts, entry):
         target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
 
     if command == "-#":
-        EDRLOG.log(u"Untag command for {}".format(target_cmdr), "INFO")
+        EDRLOG.log(u"Remove {} from cmdrsdex".format(target_cmdr), "INFO")
         EDR_CLIENT.untag_cmdr(target_cmdr, tag=None)
     elif command == "-#!" or command == "-#outlaw":
         EDRLOG.log(u"Remove outlaw tag for {}".format(target_cmdr), "INFO")

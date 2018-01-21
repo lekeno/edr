@@ -116,20 +116,36 @@ class EDRCmdrs(object):
             return profile
         return inara_profile if profile is None else profile
 
+    def __edr_cmdrsdex(self, cmdr_name):
+        profile = self.__edr_cmdr(cmdr_name, False)
+        if profile is None:
+            return False
+
+        dex_entry = self.cmdrs_dex.get(cmdr_name)
+        if dex_entry is None:
+            return self.server.cmdrsdex(profile.cid, None)
+
+        return self.server.cmdrsdex(profile.cid, dex_entry)
+
     def tag_cmdr(self, cmdr_name, tag):
         tagged = self.cmdrs_dex.tag(cmdr_name, tag)
         if tagged:
-            dex_json = self.cmdrs_dex.json(cmdr_name)
-            self.server.cmdrsdex(cmdr_name, dex_json)
+            EDRLOG.log(u"Tagged", "DEBUG")
+            self.__edr_cmdrsdex(cmdr_name)
+        else:
+            EDRLOG.log(u"Not Tagged", "DEBUG")
     
     def memo_cmdr(self, cmdr_name, memo):
         noted = self.cmdrs_dex.memo(cmdr_name, memo)
         if noted:
-            dex_json = self.cmdrs_dex.json(cmdr_name)
-            self.server.cmdrsdex(cmdr_name, dex_json)
+            self.__edr_cmdrsdex(cmdr_name)
     
     def untag_cmdr(self, cmdr_name, tag):
-        untagged = self.cmdrs_dex.untag(cmdr_name, tag)
+        untagged = False
+        if tag is None:
+            untagged = self.cmdrs_dex.remove(cmdr_name)
+        else:
+            untagged = self.cmdrs_dex.untag(cmdr_name, tag)
+
         if untagged:
-            dex_json = self.cmdrs_dex.json(cmdr_name)
-            self.server.cmdrsdex(cmdr_name, dex_json)
+            self.__edr_cmdrsdex(cmdr_name)
