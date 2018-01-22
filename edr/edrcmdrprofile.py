@@ -18,6 +18,7 @@ class EDRCmdrProfile(object):
         self.squadron = None
         self.role = None
         self._karma = 0
+        self.alignment_hints = None
         self.dex_profile = None
     
     @property
@@ -45,13 +46,15 @@ class EDRCmdrProfile(object):
         wing = json_cmdr.get("commanderWing", None)
         self.squadron = None if wing is None else wing["wingName"] 
         self.role = json_cmdr.get("preferredGameRole", None)
-        self.karma = 0 #not supported by Inara API
+        self.karma = 0 #not supported by Inara
+        self.alignment_hints = None #not supported by Inara
 
     def from_dict(self, json_cmdr):
         self.name = json_cmdr.get("name", "")
         self.squadron = json_cmdr.get("squadron", None)
         self.role = json_cmdr.get("role", None)
         self.karma = json_cmdr.get("karma", 0)
+        self.alignment_hints = json_cmdr.get("alignment_hints", None)
 
     def complement(self, other_profile):
         if self.name.lower() != other_profile.name.lower():
@@ -77,7 +80,11 @@ class EDRCmdrProfile(object):
     def is_dangerous(self):
         if self.dex_profile:
             return self.dex_profile.get("alignment", None) == "outlaw"
-        return self._karma <= -250
+        if self._karma <= -250:
+            return True
+        if self.alignment_hints and self.alignment_hints["outlaw"] > 0:
+            total_hints = sum([hints for hints in self.alignment_hints.values()])
+            return (self.alignment_hints["outlaw"] / total_hints > .2) 
 
     def karma_title(self):
         mapped_index = int(10*(self._karma + self.max_karma()) / (2.0*self.max_karma()))
@@ -93,9 +100,21 @@ class EDRCmdrProfile(object):
 
         return karma
 
+    def alignment(self):
+        if self.alignment_hints is None:
+            return None
+
+        total_hints = float(sum([hints for hints in self.alignment_hints.values()]))
+        return u"[O:{:.0%} N:{:.0%}  E:{:.0%}]".format(self.alignment_hints["outlaw"] / total_hints, self.alignment_hints["outlaw"] / total_hints, self.alignment_hints["outlaw"] / total_hints)
+
+
     def short_profile(self):
-        result = u"{name}: {karma}".format(name=self.name, karma=self.karma_title())
-       
+        result = u"{name}: {karma}{alignment}".format(name=self.name, karma=self.karma_title(), alignment=self.alignment())
+
+        alignment = self.alignment()
+        if not (alignment is None or alignment == ""):
+            result += u" {}".format(alignment)
+
         if not (self.squadron is None or self.squadron == ""):
             result += u", {squadron}".format(squadron=self.squadron)
 
