@@ -105,11 +105,11 @@ class EDRCmdrProfile(object):
             return None
 
         total_hints = float(sum([hints for hints in self.alignment_hints.values()]))
-        return u"[!{:.0%} ={:.0%}  +{:.0%}]".format(self.alignment_hints["outlaw"] / total_hints, self.alignment_hints["outlaw"] / total_hints, self.alignment_hints["outlaw"] / total_hints)
+        return u"[!{:.0%} ?{:.0%}  +{:.0%}]".format(self.alignment_hints["outlaw"] / total_hints, self.alignment_hints["outlaw"] / total_hints, self.alignment_hints["outlaw"] / total_hints)
 
 
     def short_profile(self):
-        result = u"{name}: {karma}{alignment}".format(name=self.name, karma=self.karma_title(), alignment=self.alignment())
+        result = u"{name}: {karma}".format(name=self.name, karma=self.karma_title())
 
         alignment = self.alignment()
         if not (alignment is None or alignment == ""):
