@@ -19,6 +19,7 @@ class EDRCmdrProfile(object):
         self.role = None
         self._karma = 0
         self.alignment_hints = None
+        self.patreon = None
         self.dex_profile = None
     
     @property
@@ -48,6 +49,7 @@ class EDRCmdrProfile(object):
         self.role = json_cmdr.get("preferredGameRole", None)
         self.karma = 0 #not supported by Inara
         self.alignment_hints = None #not supported by Inara
+        self.patreon = None
 
     def from_dict(self, json_cmdr):
         self.name = json_cmdr.get("name", "")
@@ -55,6 +57,7 @@ class EDRCmdrProfile(object):
         self.role = json_cmdr.get("role", None)
         self.karma = json_cmdr.get("karma", 0)
         self.alignment_hints = json_cmdr.get("alignmentHints", None)
+        self.patreon = json_cmdr.get("patreon", None)
 
     def complement(self, other_profile):
         if self.name.lower() != other_profile.name.lower():
@@ -84,7 +87,7 @@ class EDRCmdrProfile(object):
             return True
         if self.alignment_hints and self.alignment_hints["outlaw"] > 0:
             total_hints = sum([hints for hints in self.alignment_hints.values()])
-            return (self.alignment_hints["outlaw"] / total_hints > .2) 
+            return (total_hints > 10 and self.alignment_hints["outlaw"] / total_hints > .5)
 
     def karma_title(self):
         mapped_index = int(10*(self._karma + self.max_karma()) / (2.0*self.max_karma()))
@@ -120,6 +123,9 @@ class EDRCmdrProfile(object):
 
         if not (self.role is None or self.role == ""):
             result += u", {role}".format(role=self.role)
+
+        if not (self.patreon is None or self.patreon == ""):
+            result += u", Patreon:{patreon}".format(patreon=self.patreon)
 
         if self.dex_profile:
             if self.dex_profile.get("friends", False):
