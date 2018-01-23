@@ -269,11 +269,7 @@ class EDRClient(object):
             EDRLOG.log(u"NOTAMs for {}: {}".format(star_system, notams), "DEBUG")
             details += notams
         
-        if not self.edrsystems.has_sitrep(star_system):
-            EDRLOG.log(u"No sitrep for {system}".format(system=star_system), "INFO")
-            details += ["No reports for the last {d}.".format(d=self.edrsystems.timespan_s()),
-                       "Recon this system: tag any suspicious contacts by sending them an o7."]
-        else:
+        if self.edrsystems.has_sitrep(star_system):
             if star_system == self.player.star_system and self.player.in_bad_neighborhood():
                 EDRLOG.log(u"Sitrep system is known to be an anarchy. Crimes aren't reported.", "INFO")
                 details.append(u"Anarchy: not all crimes are reported.")
