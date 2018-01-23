@@ -54,7 +54,7 @@ class EDRCmdrProfile(object):
         self.squadron = json_cmdr.get("squadron", None)
         self.role = json_cmdr.get("role", None)
         self.karma = json_cmdr.get("karma", 0)
-        self.alignment_hints = json_cmdr.get("alignment_hints", None)
+        self.alignment_hints = json_cmdr.get("alignmentHints", None)
 
     def complement(self, other_profile):
         if self.name.lower() != other_profile.name.lower():
@@ -105,7 +105,7 @@ class EDRCmdrProfile(object):
             return None
 
         total_hints = float(sum([hints for hints in self.alignment_hints.values()]))
-        return u"[!{:.0%} ?{:.0%}  +{:.0%}]".format(self.alignment_hints["outlaw"] / total_hints, self.alignment_hints["outlaw"] / total_hints, self.alignment_hints["outlaw"] / total_hints)
+        return u"[!{:.0%} ?{:.0%}  +{:.0%}]".format(self.alignment_hints["outlaw"] / total_hints, self.alignment_hints["neutral"] / total_hints, self.alignment_hints["enforcer"] / total_hints)
 
 
     def short_profile(self):
