@@ -9,7 +9,7 @@ import edtime
 
 class EDRCmdrsDex(object):
     EDR_CMDRS_DEX_PATH = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'data/cmdrsdex.0.5.0.beta.3.json')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/cmdrsdex.0.5.0.beta.3.json')
 
     def __init__(self):
         try:
