@@ -46,8 +46,8 @@
         "Tag a commander with a neutral tag if you disagree with EDR's classification.",
         "Tag a commander with a friend tag if you are like-minded and/or fly often together.",
         "Tag a commander with a custom tag for your own needs (e.g. pirate).",
-        "Sending '+# <memo>' to a contact will attach a short memo to that commander if they are in your index.",
-        "Send '+#cmdrname memo=<memo>' to attach a short memo for <cmdrname> if they are in your index.",
+        "Sending '@# <memo>' to a contact will attach a short <memo> to that commander.",
+        "Send '@# <cmdrname> memo=<memo>' to attach a short <memo> for <cmdrname>.",
         "Alignment hints in Intel: [!70% ?20% +10%] shows the distribution of outlaw (!), neutral (?) and enforcer (+) tags in percents.",
         "Alignment hints in Intel: [!3 ?0 +0] shows the number of outlaw (!), neutral (?) and enforcer (+) tags set by other EDR users."
     ],

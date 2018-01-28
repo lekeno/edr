@@ -1,13 +1,15 @@
 import json
-import requests
 import urllib
+import calendar
+import time
 
 import edrcmdrprofile
 import RESTFirebase
 import edrconfig
 import edrlog
-import calendar
-import time
+
+import requests
+
 
 EDRLOG = edrlog.EDRLog()
 
@@ -206,7 +208,7 @@ class EDRServer(object):
         
         return json.loads(resp.content)
 
-    def cmdrsdex(self, cmdr_id, dex_entry):
+    def update_cmdrdex(self, cmdr_id, dex_entry):
         query_params = { "auth" : self.auth_token()}
         
         if dex_entry is None:
@@ -224,3 +226,16 @@ class EDRServer(object):
         EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
 
         return resp.status_code == 200
+
+    def cmdrdex(self, cmdr_id):
+        EDRLOG.log(u"CmdrDex request for {}".format(cmdr_id), "DEBUG")
+        query_params = { "auth" : self.auth_token()}
+        endpoint = "{server}/v1/cmdrsdex/{uid}/{cid}/.json?{query_params}".format(server=self.EDR_ENDPOINT, uid=self.uid(), cid=cmdr_id, query_params=urllib.urlencode(query_params))
+        EDRLOG.log(u"Endpoint :" + endpoint, "DEBUG")
+        resp = requests.get(endpoint)
+        EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
+
+        if resp.status_code == 200:
+            return json.loads(resp.content)
+        else:
+            return None

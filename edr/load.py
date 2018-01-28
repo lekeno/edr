@@ -591,13 +591,13 @@ def handle_at_commands(entry):
     command_parts = entry["Message"].split(" memo=", 1)
     command = command_parts[0].lower()
     
-    if command == "@#" and not entry["To"] in ["local", "voicechat", "wing", "friend"]:
+    if command == "@# " and not entry["To"] in ["local", "voicechat", "wing", "friend"]:
         prefix = "$cmdr_decorate:#name="
         target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
         EDRLOG.log(u"Memo command for tagged cmdr {}".format(target_cmdr), "INFO")
         EDR_CLIENT.memo_cmdr(target_cmdr, command_parts[1])
-    elif command.startswith("@#") and len(command)>2:
-        target_cmdr = command[2:]
+    elif command.startswith("@# ") and len(command)>2:
+        target_cmdr = command[3:]
         EDRLOG.log(u"Memo command for tagged cmdr {}".format(target_cmdr), "INFO")
         EDR_CLIENT.memo_cmdr(target_cmdr, command_parts[1])
 

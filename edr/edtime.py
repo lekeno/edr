@@ -1,5 +1,4 @@
 import datetime
-import time
 import calendar
 import comparable
 
@@ -13,7 +12,7 @@ class EDTime(object, comparable.ComparableMixin):
         try:
             return d.replace(year = d.year + EDTime.immersive_delta())
         except ValueError:
-            return d + (date(d.year + EDTime.immersive_delta(), 1, 1) - date(d.year, 1, 1))
+            return d + (datetime.date(d.year + EDTime.immersive_delta(), 1, 1) - datetime.date(d.year, 1, 1))
 
     def __init__(self):
         self._datetime = datetime.datetime.now()

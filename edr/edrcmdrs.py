@@ -1,6 +1,5 @@
 import os
 import pickle
-import edrcmdrsdex
 import edrconfig
 import edrinara
 import lrucache
@@ -13,7 +12,7 @@ class EDRCmdrs(object):
         os.path.abspath(os.path.dirname(__file__)), 'cache/cmdrs.p')
 
     EDR_CMDRS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/cmdrs.v2.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/cmdrs.v3.p')
     EDR_INARA_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/inara.p')
 
@@ -43,8 +42,6 @@ class EDRCmdrs(object):
         except:
             self.inara_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                  edr_config.inara_max_age())
-        
-        self.cmdrs_dex = edrcmdrsdex.EDRCmdrsDex()
 
     def persist(self):
         with open(self.EDR_CMDRS_CACHE, 'wb') as handle:
@@ -52,8 +49,6 @@ class EDRCmdrs(object):
 
         with open(self.EDR_INARA_CACHE, 'wb') as handle:
             pickle.dump(self.inara_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        
-        self.cmdrs_dex.persist()
 
     def evict(self, cmdr):
         try:
@@ -76,6 +71,11 @@ class EDRCmdrs(object):
             profile = self.server.cmdr(cmdr_name, autocreate)
 
             if not profile is None:
+                dex_profile = self.server.cmdrdex(profile.cid)
+                if dex_profile:
+                    EDRLOG.log(u"EDR CmdrDex entry found for {cmdr}: {id}".format(cmdr=cmdr_name,
+                                                                id=profile.cid), "DEBUG")
+                    profile.dex(dex_profile)
                 self.cmdrs_cache.set(cmdr_name, profile)
                 EDRLOG.log(u"Cached EDR profile {cmdr}: {id}".format(cmdr=cmdr_name,
                                                                 id=profile.cid), "DEBUG")
@@ -102,21 +102,11 @@ class EDRCmdrs(object):
                 EDRLOG.log(u"No match on Inara. Temporary entry to be nice on Inara's server.",
                            "INFO")
 
-    def __dex_cmdr(self, cmdr_name):
-        dex_profile = self.cmdrs_dex.get(cmdr_name)
-        if dex_profile is None:
-            EDRLOG.log(u"Cmdr {} is NOT in the CmdrsDex".format(cmdr_name), "DEBUG")
-            return None
-        EDRLOG.log(u"Found a dex entry for Cmdr {}: {}".format(cmdr_name, self.cmdrs_dex.short_profile(cmdr_name)), "DEBUG")
-        return dex_profile
-
     def cmdr(self, cmdr_name, autocreate=True, check_inara_server=False):
         profile = self.__edr_cmdr(cmdr_name, autocreate)
         inara_profile = self.__inara_cmdr(cmdr_name, check_inara_server)
-        dex_profile = self.__dex_cmdr(cmdr_name)
-        profile.dex(dex_profile)
 
-        if profile is None and inara_profile is None and dex_profile is None:
+        if profile is None and inara_profile is None:
             EDRLOG.log(u"Failed to retrieve/create cmdr {}".format(cmdr_name), "ERROR")
             return None
         elif profile and inara_profile:
@@ -125,36 +115,49 @@ class EDRCmdrs(object):
             return profile
         return inara_profile if profile is None else profile
 
-    def __edr_cmdrsdex(self, cmdr_name):
+    def tag_cmdr(self, cmdr_name, tag):
+        EDRLOG.log(u"Tagging {} with {}".format(cmdr_name, tag), "DEBUG")
         profile = self.__edr_cmdr(cmdr_name, False)
         if profile is None:
+            EDRLOG.log(u"Couldn't find a profile for {}.".format(cmdr_name), "DEBUG")
             return False
 
-        dex_entry = self.cmdrs_dex.get(cmdr_name)
-        if dex_entry is None:
-            return self.server.cmdrsdex(profile.cid, None)
+        tagged = profile.tag(tag)
+        if not tagged:
+            EDRLOG.log(u"Couldn't tag {} with {} (e.g. already tagged)".format(cmdr_name, tag), "DEBUG")
+            return False
 
-        return self.server.cmdrsdex(profile.cid, dex_entry)
-
-    def tag_cmdr(self, cmdr_name, tag):
-        tagged = self.cmdrs_dex.tag(cmdr_name, tag)
-        if tagged:
-            EDRLOG.log(u"Tagged", "DEBUG")
-            self.__edr_cmdrsdex(cmdr_name)
-        else:
-            EDRLOG.log(u"Not Tagged", "DEBUG")
-    
+        dex_dict = profile.dex_dict()
+        EDRLOG.log(u"New dex state: {}".format(dex_dict), "DEBUG")
+        return self.server.update_cmdrdex(profile.cid, dex_dict)
+         
     def memo_cmdr(self, cmdr_name, memo):
-        noted = self.cmdrs_dex.memo(cmdr_name, memo)
-        if noted:
-            self.__edr_cmdrsdex(cmdr_name)
+        EDRLOG.log(u"Writing a note about {}: {}".format(memo, cmdr_name), "DEBUG")
+        profile = self.__edr_cmdr(cmdr_name, False)
+        if profile is None:
+            EDRLOG.log(u"Couldn't find a profile for {}.".format(cmdr_name), "DEBUG")
+            return False
+
+        noted = profile.memo(memo)
+        if not noted:
+            EDRLOG.log(u"Could't write a note about {}".format(cmdr_name), "DEBUG")
+            return False
+
+        dex_dict = profile.dex_dict()
+        return self.server.update_cmdrdex(profile.cid, dex_dict)
     
     def untag_cmdr(self, cmdr_name, tag):
-        untagged = False
-        if tag is None:
-            untagged = self.cmdrs_dex.remove(cmdr_name)
-        else:
-            untagged = self.cmdrs_dex.untag(cmdr_name, tag)
+        EDRLOG.log(u"Removing {} tag from {}".format(tag, cmdr_name), "DEBUG")
+        profile = self.__edr_cmdr(cmdr_name, False)
+        if profile is None:
+            EDRLOG.log(u"Couldn't find a profile for {}.".format(cmdr_name), "DEBUG")
+            return False
 
-        if untagged:
-            self.__edr_cmdrsdex(cmdr_name)
+        untagged = profile.untag(tag)
+        if not untagged:
+            EDRLOG.log(u"Couldn't untag {} (e.g. tag not present)".format(cmdr_name), "DEBUG")
+            return False
+
+        dex_dict = profile.dex_dict()
+        EDRLOG.log(u"New dex state: {}".format(dex_dict), "DEBUG")
+        return self.server.update_cmdrdex(profile.cid, dex_dict)

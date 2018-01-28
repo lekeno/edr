@@ -1,7 +1,119 @@
 import edrlog
 import edtime
+import calendar
+import time
 
 EDRLOG = edrlog.EDRLog()
+
+class EDRCmdrDexProfile(object):
+    @staticmethod 
+    def alignments():
+        return [u"outlaw", u"neutral", u"enforcer"]
+
+    @staticmethod # TODO should be in time module or something
+    def __js_epoch_now():
+        return 1000 * calendar.timegm(time.gmtime())
+    
+    def __init__(self, dex_dict):
+        self._alignment = dex_dict.get("alignment", None)
+        self.tags = set(dex_dict.get("tags", []))
+        self._friend = dex_dict.get("friend", False)
+        self._memo = dex_dict.get("memo", None)
+
+        now = EDRCmdrDexProfile.__js_epoch_now()
+        self.created = dex_dict.get("created", now)
+        self.updated = dex_dict.get("updated", now)
+
+    @property
+    def alignment(self):
+        return self._alignment
+
+    @alignment.setter
+    def alignment(self, new_alignment):
+        now = EDRCmdrDexProfile.__js_epoch_now()
+        if (new_alignment is None):
+            self._alignment = None
+            self.updated = now
+            return True
+
+        if (new_alignment not in EDRCmdrDexProfile.alignments()):
+            return False
+        if (new_alignment == self._alignment):
+            return False
+        self._alignment = new_alignment
+        self.updated = now
+        return True
+
+    
+    @property
+    def friend(self):
+        return self._friend
+
+    @friend.setter
+    def friend(self, is_friend):
+        if is_friend == self._friend:
+            return False
+        self._friend = is_friend
+        self.updated = EDRCmdrDexProfile.__js_epoch_now()
+        return True
+
+
+    @property
+    def memo(self):
+        return self._memo
+
+    @memo.setter
+    def memo(self, message):
+        self._memo = message
+        self.updated = EDRCmdrDexProfile.__js_epoch_now()
+        return True
+
+    def __all_tags(self):
+        all_tags = []
+        if self.alignment:
+            all_tags.append(self.alignment)
+        
+        if self.tags:
+            all_tags += self.tags
+        return all_tags
+
+
+    @staticmethod
+    def __tagify(tag):
+        tag = tag.lower()
+        return tag.replace(u" ", u"")
+
+    def tag(self, tag):
+        tag = EDRCmdrDexProfile.__tagify(tag)
+
+        if tag == u"friend" and not self._friend:
+            self.friend = True
+            return True
+        elif tag in EDRCmdrDexProfile.alignments() and self._alignment != tag:
+            self.alignment = tag
+            return True
+        elif tag not in self.tags:
+            self.tags.add(tag)
+            self.updated = EDRCmdrDexProfile.__js_epoch_now()
+            return True
+
+        return False
+
+    def untag(self, tag):
+        tag = EDRCmdrDexProfile.__tagify(tag)
+        if tag == u"friend" and self._friend:
+            self.friend = False
+            return True
+        elif tag == self._alignment:
+            self.alignment = None
+            return True
+        elif tag in self.tags:
+            self.tags.remove(tag)
+            self.updated = EDRCmdrDexProfile.__js_epoch_now()
+            return True
+
+        return False
+
 
 class EDRCmdrProfile(object):
     @staticmethod
@@ -50,6 +162,7 @@ class EDRCmdrProfile(object):
         self.karma = 0 #not supported by Inara
         self.alignment_hints = None #not supported by Inara
         self.patreon = None
+        self.dex_profile = None
 
     def from_dict(self, json_cmdr):
         self.name = json_cmdr.get("name", "")
@@ -58,6 +171,7 @@ class EDRCmdrProfile(object):
         self.karma = json_cmdr.get("karma", 0)
         self.alignment_hints = json_cmdr.get("alignmentHints", None)
         self.patreon = json_cmdr.get("patreon", None)
+        self.dex_profile = None
 
     def complement(self, other_profile):
         if self.name.lower() != other_profile.name.lower():
@@ -70,19 +184,55 @@ class EDRCmdrProfile(object):
         if self.role is None or self.role == "":
             self.role = other_profile.role
 
-    def dex(self, dex_profile):
-        if dex_profile is None:
+    def dex(self, dex_dict):
+        if dex_dict is None:
             return False
 
-        if self.name.lower() != dex_profile.get("name", "").lower():
-            EDRLOG.log(u"[EDR]Can't augment with CmdrDex profile since it doesn't match: {} vs. {}".format(dex_profile.get("name", ""), self.name), "DEBUG")
+        if self.name.lower() != dex_dict.get("name", "").lower():
+            EDRLOG.log(u"[EDR]Can't augment with CmdrDex profile since it doesn't match: {} vs. {}".format(dex_dict.get("name", ""), self.name), "DEBUG")
             return False
 
-        self.dex_profile = dex_profile
+        self.dex_profile = EDRCmdrDexProfile(dex_dict)
+
+    def dex_dict(self):
+        if self.dex_profile is None:
+            return None
+
+        json_friendly_tags = list(self.dex_profile.tags)
+        return {
+            u"name": self.name,
+            u"alignment": self.dex_profile.alignment,
+            u"tags": json_friendly_tags,
+            u"friend": self.dex_profile.friend,
+            u"memo": self.dex_profile.memo,
+            u"created": self.dex_profile.created,
+            u"updated": self.dex_profile.updated
+        }
+
+    def tag(self, tag):
+        if self.dex_profile is None:
+            self.dex_profile = EDRCmdrDexProfile({})
+
+        return self.dex_profile.tag(tag)
+
+    def untag(self, tag):
+        if self.dex_profile is None:
+            return False
+        if tag is None:
+            self.dex_profile = None
+            return True
+        return self.dex_profile.untag(tag)
+
+    def memo(self, memo):
+        if self.dex_profile is None:
+            self.dex_profile = EDRCmdrDexProfile({})
+            
+        self.dex_profile.memo = memo
+        return True
     
     def is_dangerous(self):
         if self.dex_profile:
-            return self.dex_profile.get("alignment", None) == "outlaw"
+            return self.dex_profile.alignment == "outlaw"
         if self._karma <= -250:
             return True
         if self.alignment_hints and self.alignment_hints["outlaw"] > 0:
@@ -97,18 +247,18 @@ class EDRCmdrProfile(object):
         if self.dex_profile is None:
             return karma
 
-        alignment = self.dex_profile.get("alignment", None)
+        alignment = self.dex_profile.alignment
         if alignment:
             return u"{} #{}".format(karma, alignment)
 
         return karma
 
-    def alignment(self):
+    def crowd_alignment(self):
         if self.alignment_hints is None:
             return None
 
         total_hints = float(sum([hints for hints in self.alignment_hints.values()]))
-        #TODO incrase threshold by an order of magnitude when there are more EDR users
+        #TODO increase threshold by an order of magnitude when there are more EDR users
         if (total_hints < 10):
             return u"[!{} ?{} +{}]".format(self.alignment_hints["outlaw"], self.alignment_hints["neutral"], self.alignment_hints["enforcer"])
         return u"[!{:.0%} ?{:.0%} +{:.0%}]".format(self.alignment_hints["outlaw"] / total_hints, self.alignment_hints["neutral"] / total_hints, self.alignment_hints["enforcer"] / total_hints)
@@ -117,7 +267,7 @@ class EDRCmdrProfile(object):
     def short_profile(self):
         result = u"{name}: {karma}".format(name=self.name, karma=self.karma_title())
 
-        alignment = self.alignment()
+        alignment = self.crowd_alignment()
         if not (alignment is None or alignment == ""):
             result += u" {}".format(alignment)
 
@@ -131,18 +281,18 @@ class EDRCmdrProfile(object):
             result += u", Patreon:{patreon}".format(patreon=self.patreon)
 
         if self.dex_profile:
-            if self.dex_profile.get("friends", False):
+            if self.dex_profile.friend:
                 result += u" [friend]"
 
-            tags = self.dex_profile.get("tags", None)
+            tags = self.dex_profile.tags
             if tags:
                 result += u", #{}".format(" #".join(tags))
             
-            memo = self.dex_profile.get("memo", None)
+            memo = self.dex_profile.memo
             if memo:
                 result += u", {}".format(memo)
             
-            updated_jse = self.dex_profile.get("updated", None)
+            updated_jse = self.dex_profile.updated
             if updated_jse:
                 updated_edt = edtime.EDTime()
                 updated_edt.from_js_epoch(updated_jse)
