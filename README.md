@@ -40,19 +40,63 @@ Alternatively, you can trigger an EDR + Inara cmdr profile lookup by:
  - Sending an ```o7``` to the cmdr you are wondering about.
  - Sending a ```!who <cmdrname>``` on chat (local, wing, etc.)
 
-EDR will also show a sitrep of your destination while jumping:
- - if the system has a NOTAM (e.g. Community Goal, PvP Hub, Known hot spot, etc.)
- - A list of recently sighted outlaws and cmdrs
- - A list of cmdrs who recently interdicted or killed other cmdrs
+EDR will also show a sitrep of your destination while jumping, if it had recent activity or a NOTAM. Information shown:
+ - NOTAM (e.g. Community Goal, PvP Hub, Known hot spot, etc.)
+ - List of recently sighted outlaws and cmdrs
+ - List of cmdrs who recently interdicted or killed other cmdrs
 
-Other chat commands:
+### Activity
+Send the following command via the in-game chat to get intel about recent activity or specific systems:
  - ```!sitrep``` to display a list of star systems with sitreps
  - ```!sitrep <system_name>``` to display the sitrep of a given star system
  - ```!notams``` to display a list of star systems with active NOTAMs
  - ```!notam <system_name>``` to display the NOTAM of a given star system
- - ```!crimes [on|off]``` to turn on and off EDR's crime reporting feature. For instance, type ```!crimes off``` before engaging in an agreed upon duel
+
+### CmdrDex
+Build your own personalized Commander Index (CmdrDex) to customize your EDR experience and help other EDR users make informed guesses about other commanders' intent. Your CmdrDex is personal, EDR will only show aggregated stats for the alignment tags, e.g. 79% outlaw, 25% neutral, 5% enforcer (abbreviated as ```[!70% ?25%? +5%]``` in-game). 
+
+General chat commands:
+ - ```-#``` or ```-# <cmdrname>``` to untag (remove) a contact or <cmdrname> from your commander index.
+ - ```#<tag>``` or ```#<tag> <cmdrname>``` to tag a contact or <cmdrname> with a custom <tag> in your commander index.
+ - ```-#<tag>``` or ```-#<tag> <cmdrname>``` to remove the <tag> tag from a contact or <cmdrname> in your commander index, e.g. ```#pirate jack sparrow```).
+
+#### Alignment tags
+Tag a commander with an alignment tag:
+ - outlaw tag if you see them going after a clean and non-enemy power commander.
+ - enforcer tag if you have seen them going after an outlaw.
+ - neutral tag if you disagree with EDR's classification and want to suppress its warning, or if a commander just seems to go about their own business.
+ 
+Supported chat commands:
+ - ```#outlaw``` or ```#!``` to tag a contact with an outlaw tag.
+ - ```#outlaw <cmdrname>``` or ```#! <cmdrname>``` to tag <cmdrname> with an outlaw tag.
+ - ```#neutral``` or ```#?``` to tag a contact with a neutral tag.
+ - ```#neutral <cmdrname>``` or ```#? <cmdrname>``` to tag <cmdrname> with a neutral tag.
+ - ```#enforcer``` or ```#+``` to tag a contact with an enforcer tag.
+ - ```#enforcer <cmdrname>``` or ```#+ <cmdrname>``` to tag <cmdrname> with an enforcer tag.
+ - ```-#<alignnment-tag>``` or ```-#<alignnment-tag> <cmdrname>``` to remove the <alignment-tag> from a contact or <cmdrname> in your commander index.
+ 
+ #### Friends
+ You can tag a commander with a Friend tag if you are like-minder or fly frequently together. EDR might use this information to infer a social graph.
+
+Supported chat commands:
+ - ```#=``` or ```#friend``` to tag a contact with a friend tag.
+ - ```#= <cmdrname>``` or ```#friend <cmdrname>``` to tag <cmdrname> with a friend tag.
+ - ```-#=``` or ```-#friend <cmdrname>``` to remove a friend tag from a contact or <cmdrname> in your commander index.
+ 
+#### Memo
+You can attach a note to a commander so that you remember how you met them or who they are.
+
+Supported chat commands:
+ - ```@# <memo>``` to attach a custom note to a contact with <memo> in your commanders index.",
+ - ```@# <cmdrname> memo=<memo>``` to attach a custom note to <cmdrname> with <memo> in your commanders index.",
+ - ```-@#```` or ```-@# <cmdrname>``` to remove the custom note from a contact or <cmdrname> in your commander index
+
+### Misc.
+Control EDR settings by sending the following commands via the in-game chat:
+- ```!crimes [on|off]``` to turn on and off EDR's crime reporting feature. For instance, type ```!crimes off``` before engaging in an agreed upon duel
  - ```!audiocue [on/off/loud/soft]``` to control the audio cues
  - ```!overlay [on|off|]``` to enable/disable or verify the overlay
+
 
 # FAQ
 ## What does EDR stand for?
