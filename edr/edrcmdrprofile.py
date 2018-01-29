@@ -57,6 +57,8 @@ class EDRCmdrDexProfile(object):
         self.updated = EDRCmdrDexProfile.__js_epoch_now()
         return True
 
+    def is_useless(self):
+        return self.friend = False and self.alignment = None and self.memo = None and not self.tags
 
     @property
     def memo(self):
@@ -228,6 +230,15 @@ class EDRCmdrProfile(object):
             self.dex_profile = EDRCmdrDexProfile({})
             
         self.dex_profile.memo = memo
+        return True
+
+    def remove_memo(self):
+        if self.dex_profile is None:
+            return False
+            
+        self.dex_profile.memo = None
+        if self.dex_profile.is_useless():
+            self.dex_profile = None
         return True
     
     def is_dangerous(self):

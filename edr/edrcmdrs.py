@@ -138,7 +138,7 @@ class EDRCmdrs(object):
             EDRLOG.log(u"Couldn't find a profile for {}.".format(cmdr_name), "DEBUG")
             return False
 
-        noted = profile.memo(memo)
+        noted = profile.memo(memo) if memo else profile.remove_memo()
         if not noted:
             EDRLOG.log(u"Could't write a note about {}".format(cmdr_name), "DEBUG")
             return False

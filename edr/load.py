@@ -584,6 +584,10 @@ def handle_minus_commands(command, command_parts, entry):
         tag = command[2:]
         EDRLOG.log(u"Remove tag {} for {}".format(tag, target_cmdr), "INFO")
         EDR_CLIENT.untag_cmdr(target_cmdr, tag)
+    elif command == "-@":
+        EDRLOG.log(u"Remove memo for {}".format(target_cmdr), "INFO")
+        EDR_CLIENT.memo_cmdr(target_cmdr, None)
+    
 
 def handle_at_commands(entry):
     if not entry["event"] == "SendText":
