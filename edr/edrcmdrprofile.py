@@ -58,7 +58,7 @@ class EDRCmdrDexProfile(object):
         return True
 
     def is_useless(self):
-        return self.friend = False and self.alignment = None and self.memo = None and not self.tags
+        return (not self.friend) and (self.alignment is None) and (self.memo is None) and (not self.tags)
 
     @property
     def memo(self):
