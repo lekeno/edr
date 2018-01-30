@@ -47,7 +47,8 @@ EDR will also show a sitrep of your destination while jumping, if it had recent 
 
 ### Activity
 Send the following command via the in-game chat to get intel about recent activity or specific systems:
- - ```!sitrep``` to display a list of star systems with sitreps
+ - ```!sitreps``` to display a list of star systems with sitreps
+ - ```!sitrep``` to display the sitrep for the current system
  - ```!sitrep <system_name>``` to display the sitrep of a given star system
  - ```!notams``` to display a list of star systems with active NOTAMs
  - ```!notam <system_name>``` to display the NOTAM of a given star system
