@@ -111,7 +111,7 @@ class EDCmdr(object):
     @property
     def place(self):
         if self.location.place is None:
-            return "Unknown"
+            return u"Unknown"
 
         return self.location.place
 
