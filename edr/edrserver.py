@@ -147,38 +147,37 @@ class EDRServer(object):
 
         return cmdr_profile
 
+    def __post_json(self, endpoint, json_payload):
+        query_params = { "auth" : self.auth_token()}
+        endpoint = "{server}{endpoint}.json?{query_params}".format(server=self.EDR_ENDPOINT, endpoint=endpoint, query_params=urllib.urlencode(query_params))
+        EDRLOG.log(u"Post JSON to {}".format(endpoint), "DEBUG")
+        resp = requests.post(endpoint, json=json_payload)
+        EDRLOG.log(u" resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
+        return resp.status_code == 200
 
     def blip(self, cmdr_id, info):
         info["uid"] = self.uid()
         EDRLOG.log(u"Blip for cmdr {cid} with json:{json}".format(cid=cmdr_id, json=info), "INFO")
-        query_params = { "auth" : self.auth_token()}
-        endpoint = "{server}/v1/blips/{cmdr_id}/.json?{query_params}".format(server=self.EDR_ENDPOINT, cmdr_id=cmdr_id, query_params=urllib.urlencode(query_params))
-        EDRLOG.log(u"Endpoint :" + endpoint, "DEBUG")
-        resp = requests.post(endpoint, json=info)
-        EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
-
-        return resp.status_code == 200
-
+        endpoint = "/v1/blips/{cmdr_id}/".format(cmdr_id=cmdr_id)
+        return self.__post_json(endpoint, info)
 
     def traffic(self, system_id, info):
         info["uid"] = self.uid()
         EDRLOG.log(u"Traffic report for system {sid} with json:{json}".format(sid=system_id, json=info), "INFO")
-        query_params = { "auth" : self.auth_token()}
-        endpoint = "{server}/v1/traffic/{system_id}/.json?{query_params}".format(server=self.EDR_ENDPOINT, system_id=system_id, query_params=urllib.urlencode(query_params))
-        EDRLOG.log(u"Endpoint :" + endpoint, "DEBUG")
-        resp = requests.post(endpoint, json=info)
+        endpoint = "/v1/traffic/{system_id}/".format(system_id=system_id)
+        return self.__post_json(endpoint, info)
 
-        return resp.status_code == 200
-
+    def scanned(self, cmdr_id, info):
+        info["uid"] = self.uid()
+        EDRLOG.log(u"Scan for cmdr {cid} with json:{json}".format(cid=cmdr_id, json=info), "INFO")
+        endpoint = "/v1/scans/{cmdr_id}/".format(cmdr_id=cmdr_id)
+        return self.__post_json(endpoint, info)
 
     def crime(self,  system_id, info):
         info["uid"] = self.uid()
         EDRLOG.log(u"Crime report for system {sid} with json:{json}".format(sid=system_id, json=info), "INFO")
-        query_params = { "auth" : self.auth_token()}
-        endpoint = "{server}/v1/crimes/{system_id}/.json?{query_params}".format(server=self.EDR_ENDPOINT, system_id=system_id, query_params=urllib.urlencode(query_params))
-        resp = requests.post(endpoint, json=info)
-
-        return resp.status_code == 200
+        endpoint = "/v1/crimes/{system_id}/".format(system_id=system_id)
+        return self.__post_json(endpoint, info)
 
     def recent_crimes(self,  system_id, timespan_seconds):
         EDRLOG.log(u"Recent crimes for system {sid}".format(sid=system_id), "INFO")

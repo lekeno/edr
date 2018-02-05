@@ -35,6 +35,7 @@ class EDRClient(object):
         self.blips_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
         self.traffic_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                edr_config.traffic_max_age())
+        self.scans_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.scans_max_age())
 
         self._email = tk.StringVar(value=config.get("EDREmail"))
         self._password = tk.StringVar(value=config.get("EDRPassword"))
@@ -249,7 +250,7 @@ class EDRClient(object):
 
     def prefs_changed(self):
         if self.mandatory_update:
-            print EDRLOG.log(u"Out-of-date client, aborting.", "ERROR")
+            EDRLOG.log(u"Out-of-date client, aborting.", "ERROR")
             self.__status_update_pending()
             return
 
@@ -326,50 +327,45 @@ class EDRClient(object):
     def evict_cmdr(self, cmdr):
         self.edrcmdrs.evict(cmdr)
 
+    def __novel_enough_situation(self, new, old, cognitive = False):
+        if old is None:
+            return True
+
+        delta = new["timestamp"] - old["timestamp"]
+        
+        if cognitive:
+            return (new["starSystem"] != old["starSystem"] or new["place"] != old["place"]) or delta > self.cognitive_novelty_threshold
+
+        if new["starSystem"] != old["starSystem"]:
+            return delta > self.system_novelty_threshold
+
+        if new["place"] != old["place"]:
+            return (old["place"] == "" or
+                    old["place"] == "Unknown" or
+                    delta > self.place_novelty_threshold)
+
+        if new["ship"] != old["ship"]:
+            return (old["ship"] == "" or
+                    old["ship"] == "Unknown" or
+                    delta > self.ship_novelty_threshold)
 
     def novel_enough_blip(self, cmdr_id, blip, cognitive = False):
         last_blip = self.blips_cache.get(cmdr_id)
-        if last_blip is None:
-            return True
+        return self.__novel_enough_situation(blip, last_blip, cognitive)
 
-        delta = blip["timestamp"] - last_blip["timestamp"]
-        
-        if cognitive:
-            return (blip["starSystem"] != last_blip["starSystem"] or blip["place"] != last_blip["place"]) or delta > self.cognitive_novelty_threshold
-
-        if blip["starSystem"] != last_blip["starSystem"]:
-            return delta > self.system_novelty_threshold
-
-        if blip["place"] != last_blip["place"]:
-            return (last_blip["place"] == "" or
-                    last_blip["place"] == "Unknown" or
-                    delta > self.place_novelty_threshold)
-
-        if blip["ship"] != last_blip["ship"]:
-            return (last_blip["ship"] == "" or
-                    last_blip["ship"] == "Unknown" or
-                    delta > self.ship_novelty_threshold)
-                    
+    def novel_enough_scan(self, cmdr_id, scan, cognitive = False):
+        last_scan = self.scans_cache.get(cmdr_id)
+        novel_situation = self.__novel_enough_situation(scan, last_scan, cognitive)
+        if not novel_situation:
+            if scan["wanted"] != last_scan["wanted"]:
+                return True
+            if scan["bounty"] != last_scan["bounty"]:
+                return True
+        return novel_situation
 
     def novel_enough_traffic_report(self, sighted_cmdr, report):
         last_report = self.traffic_cache.get(sighted_cmdr)
-        if last_report is None:
-            return True
-
-        delta = report["timestamp"] - last_report["timestamp"]
-
-        if report["starSystem"] != last_report["starSystem"]:
-            return delta > self.system_novelty_threshold
-
-        if report["place"] != last_report["place"]:
-            return (last_report["place"] == "" or
-                    last_report["place"] == "Unknown" or
-                    delta > self.place_novelty_threshold)
-
-        if report["ship"] != last_report["ship"]:
-            return (last_report["ship"] == "" or
-                    last_report["ship"] == "Unknown" or
-                    delta > self.ship_novelty_threshold)
+        return self.__novel_enough_situation(report, last_report)
 
     def who(self, cmdr_name, autocreate=False):
         profile = self.cmdr(cmdr_name, autocreate, check_inara_server=True)
@@ -407,6 +403,25 @@ class EDRClient(object):
             self.blips_cache.set(cmdr_id, blip)
 
         return success
+
+    def scanned(self, cmdr_name, scan):
+        cmdr_id = self.cmdr_id(cmdr_name)
+        if cmdr_id is None:
+            self.status = "no cmdr id (scan)."
+            EDRLOG.log(u"Can't submit scan (no cmdr id for {}).".format(cmdr_name), "ERROR")
+            return
+
+        if not self.novel_enough_scan(cmdr_id, scan):
+            self.status = "skipping scan (not novel enough)."
+            EDRLOG.log(u"Scan is not novel enough to warrant reporting", "INFO")
+            return True
+
+        success = self.server.scanned(cmdr_id, scan)
+        if success:
+            self.status = "scan reported for {}.".format(cmdr_name)
+            self.scans_cache.set(cmdr_id, scan)
+
+        return success        
 
 
     def traffic(self, star_system, traffic):

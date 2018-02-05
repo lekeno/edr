@@ -366,6 +366,31 @@ def edr_submit_contact(cmdr_name, ship, timestamp, source, witness):
 
     edr_submit_traffic(cmdr_name, ship, timestamp, source, witness)
 
+def edr_submit_scan(scan, timestamp, source, witness):
+    edt = EDTime()
+    edt.from_journal_timestamp(timestamp)
+
+    report = scan
+    report["starSystem"] = witness.star_system
+    report["place"] = witness.place
+    report["timestamp"] = edt.as_js_epoch()
+    report["source"] = source
+    report["reportedBy"] = witness.name
+
+    if not witness.in_open():
+        EDRLOG.log(u"Scan not submitted due to unconfirmed Open mode", "INFO")
+        EDR_CLIENT.status = "not in Open? Start EDR before Elite."
+        return
+
+    if witness.has_partial_status():
+        EDR_CLIENT.status = "partial status."
+        EDRLOG.log(u"Scan not submitted due to partial status", "INFO")
+        return
+
+    if not EDR_CLIENT.scanned(cmdr_name, report):
+        # TODO push to /v1/scans/{cmdrid}/ ['cmdr', 'starSystem', 'place', 'timestamp', 'source', 'reportedBy', 'ship', 'wanted', 'bounty', 'uid']
+        EDR_CLIENT.status = "failed to report scan."
+        EDR_CLIENT.evict_cmdr(cmdr_name)
 
 def edr_submit_traffic(cmdr_name, ship, timestamp, source, witness):
     """
@@ -498,14 +523,23 @@ def handle_scan_events(cmdr, entry):
     if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0 and entry["PilotName"].startswith("$cmdr_decorate:#name="])):
         return False
 
-    if entry["ScanStage"] == 3:
-        #TODO karma blip
-        return True
-    else:
-        cmdr_name = entry["From"][len("$cmdr_decorate:#name="):-1]
-        ship = entry["Ship"]
+    cmdr_name = entry["From"][len("$cmdr_decorate:#name="):-1]
+    ship = entry["Ship"]
+
+    if entry["ScanStage"] == 1
         edr_submit_contact(cmdr_name, ship, entry["timestamp"], "Ship targeted", cmdr)
         return True
+    elif entry["ScanStage"] == 3:
+        wanted = entry["LegalStatus"] == "Wanted"
+        scan = {
+            "cmdr": cmdr_name,
+            "ship": ship,
+            "wanted": wanted,
+            "bounty": entry["bounty"] if wanted else 0
+        }
+        edr_submit_scan(scan, entry["timestamp"], "Ship targeted", cmdr)
+        return True
+    return False
 
 def handle_commands(cmdr, entry):
     if not entry["event"] == "SendText":
