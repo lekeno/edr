@@ -1,7 +1,5 @@
 import edrlog
 import edtime
-import calendar
-import time
 
 EDRLOG = edrlog.EDRLog()
 
@@ -9,10 +7,6 @@ class EDRCmdrDexProfile(object):
     @staticmethod 
     def alignments():
         return [u"outlaw", u"neutral", u"enforcer"]
-
-    @staticmethod # TODO should be in time module or something
-    def __js_epoch_now():
-        return 1000 * calendar.timegm(time.gmtime())
     
     def __init__(self, dex_dict):
         self._alignment = dex_dict.get("alignment", None)
@@ -20,7 +14,7 @@ class EDRCmdrDexProfile(object):
         self._friend = dex_dict.get("friend", False)
         self._memo = dex_dict.get("memo", None)
 
-        now = EDRCmdrDexProfile.__js_epoch_now()
+        now = edtime.EDTime.__js_epoch_now()
         self.created = dex_dict.get("created", now)
         self.updated = dex_dict.get("updated", now)
 
@@ -30,7 +24,7 @@ class EDRCmdrDexProfile(object):
 
     @alignment.setter
     def alignment(self, new_alignment):
-        now = EDRCmdrDexProfile.__js_epoch_now()
+        now = edtime.EDTime.__js_epoch_now()
         if (new_alignment is None):
             self._alignment = None
             self.updated = now
@@ -54,7 +48,7 @@ class EDRCmdrDexProfile(object):
         if is_friend == self._friend:
             return False
         self._friend = is_friend
-        self.updated = EDRCmdrDexProfile.__js_epoch_now()
+        self.updated = edtime.EDTime.__js_epoch_now()
         return True
 
     def is_useless(self):
@@ -67,7 +61,7 @@ class EDRCmdrDexProfile(object):
     @memo.setter
     def memo(self, message):
         self._memo = message
-        self.updated = EDRCmdrDexProfile.__js_epoch_now()
+        self.updated = edtime.EDTime.__js_epoch_now()
         return True
 
     def __all_tags(self):
@@ -96,7 +90,7 @@ class EDRCmdrDexProfile(object):
             return True
         elif tag not in self.tags:
             self.tags.add(tag)
-            self.updated = EDRCmdrDexProfile.__js_epoch_now()
+            self.updated = edtime.EDTime.__js_epoch_now()
             return True
 
         return False
@@ -111,7 +105,7 @@ class EDRCmdrDexProfile(object):
             return True
         elif tag in self.tags:
             self.tags.remove(tag)
-            self.updated = EDRCmdrDexProfile.__js_epoch_now()
+            self.updated = edtime.EDTime.__js_epoch_now()
             return True
 
         return False
@@ -274,8 +268,17 @@ class EDRCmdrProfile(object):
             return u"[!{} ?{} +{}]".format(self.alignment_hints["outlaw"], self.alignment_hints["neutral"], self.alignment_hints["enforcer"])
         return u"[!{:.0%} ?{:.0%} +{:.0%}]".format(self.alignment_hints["outlaw"] / total_hints, self.alignment_hints["neutral"] / total_hints, self.alignment_hints["enforcer"] / total_hints)
 
-
     def short_profile(self):
+        # TODO scan history as a graph made of ■ (wanted) □ (clean) and median
+        # zzz chars, showing legal status for the most zzz recent scans, resolution of xx minutes
+        # wanted ■:xx%; bounty median: max:
+        # T-xD→ ■□□■□□□□□□□□■■■□□□■■□□■■■□□■□□■□□■□■■□■□□■■□■□■■■■□■□■■■□■■□■□■□■□■■■□■□□□□■■■■□□■□■■□□■■■■□
+        # zzz chars, showing legal and bounty for the most zzz recent scans, resolution of xx minutes
+        # T-xD→ ▒□□░□□□□□□□□░░▓□□□▒▒□□▓▓▓□□█□□▓□□░□░█□░□□░░□▓□░▒░█□░□░░░□█▓□░□▓□▓□█░░□▒□□□□████□□░□▓▓□□▓░░▓□ →T-yD
+        # structure scan_history, option 1: circle buffer
+        #  start: 4
+        #  [ 0: {timestamp, bounty}, 1: {timestamp, bounty}, 2: {...}, 3: {}, 4: {}, 5: {}, 6: {}]
+        
         result = u"{name}: {karma}".format(name=self.name, karma=self.karma_title())
 
         alignment = self.crowd_alignment()
