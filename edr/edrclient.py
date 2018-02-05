@@ -202,7 +202,6 @@ class EDRClient(object):
 
     def app_ui(self, parent):
         label = tk.Label(parent, text="EDR:")
-        #status = tk.Label(parent, textvariable=self._status, anchor=tk.W)
         self.status_ui = ttkHyperlinkLabel.HyperlinkLabel(parent, textvariable=self._status, anchor=tk.W)
         self.check_version()
         return (label, self.status_ui)
@@ -245,7 +244,7 @@ class EDRClient(object):
         self.status = "mandatory EDR update!" if self.mandatory_update else "please update EDR!"
         if self.status_ui:
             self.status_ui.underline = True
-            self.status_ui.url = "https://github.com/lekeno/edr/releases"
+            self.status_ui.url = "https://github.com/lekeno/edr/releases/latest"
             
 
     def prefs_changed(self):
