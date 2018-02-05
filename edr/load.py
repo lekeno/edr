@@ -388,7 +388,6 @@ def edr_submit_scan(scan, timestamp, source, witness):
         return
 
     if not EDR_CLIENT.scanned(cmdr_name, report):
-        # TODO push to /v1/scans/{cmdrid}/ ['cmdr', 'starSystem', 'place', 'timestamp', 'source', 'reportedBy', 'ship', 'wanted', 'bounty', 'uid']
         EDR_CLIENT.status = "failed to report scan."
         EDR_CLIENT.evict_cmdr(cmdr_name)
 
