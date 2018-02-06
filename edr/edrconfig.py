@@ -34,6 +34,9 @@ class EDRConfig(object):
     def cognitive_novelty_threshold(self):
         return int(self.config.get('novelty', 'cognitive_novelty_threshold'))
 
+    def edr_needs_u_novelty_threshold(self):
+        return int(self.config.get('novelty', 'edr_needs_u_novelty_threshold'))
+
     def systems_max_age(self):
         return int(self.config.get('lrucaches', 'systems_max_age'))
 

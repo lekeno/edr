@@ -1,3 +1,5 @@
+import datetime
+
 import Tkinter as tk
 import ttk
 import ttkHyperlinkLabel
@@ -31,6 +33,9 @@ class EDRClient(object):
         self.place_novelty_threshold = edr_config.place_novelty_threshold()
         self.ship_novelty_threshold = edr_config.ship_novelty_threshold()
         self.cognitive_novelty_threshold = edr_config.cognitive_novelty_threshold()
+
+        self.edr_needs_u_novelty_threshold = edr_config.edr_needs_u_novelty_threshold()
+        self.previous_ad = None
 
         self.blips_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
         self.traffic_cache = lrucache.LRUCache(edr_config.lru_max_size(),
@@ -556,9 +561,11 @@ class EDRClient(object):
         self.__warning(warning, details)
     
     def advertise_full_account(self, context, passive=True):
-        if passive:
-            #TODO throttle to avoid spamming
-            return False
+        now = datetime.datetime.now()            
+        if passive and self.previous_ad:
+            if (now - self.previous_ad) <= self.edr_needs_u_novelty_threshold:
+                return False
 
         self.__notify(u"EDR needs you!", [context, u"--", u"Register an account at https://github.com/lekeno/edr/signup.md", u"It's free, no strings attached."])
+        self.previous_ad = now
         return True
