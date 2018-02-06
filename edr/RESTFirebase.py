@@ -15,18 +15,22 @@ class RESTFirebaseAuth(object):
         self.api_key = ""
 
     def authenticate(self):
-        if self.email == "" or self.password == "" or self.api_key == "":
-            EDRLOG.log(u"can't authenticate: empty credentials and/or api key.", "ERROR")
+        if self.api_key == "":
+            EDRLOG.log(u"can't authenticate: empty api key.", "ERROR")
             return False
 
-        msg = {
-            "email": self.email,
-            "password": self.password,
+        payload = {
             "returnSecureToken": True
         }
 
+        endpoint = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key={}".format(self.api_key)
+
+        if self.email != "" and self.password != "":
+            payload["email"] = self.email
+            payload["password"] = self.password
+            endpoint = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key={}".format(self.api_key)
+            
         requestTime = datetime.datetime.now()
-        endpoint = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key={}".format(self.api_key)
         resp = requests.post(endpoint,json=msg)
         if resp.status_code != 200:
             EDRLOG.log(u"Authentication failed", "ERROR")
@@ -50,10 +54,7 @@ class RESTFirebaseAuth(object):
         return True
 
     def is_valid_auth_token(self):
-        if self.auth is None or not 'expiresIn' in self.auth: 
-            return True
-
-        return 'idToken' in self.auth
+        return ('expires_in' in self.auth and 'id_token' in self.auth)
 
     def is_auth_expiring(self):
         if not self.is_valid_auth_token():
@@ -65,7 +66,7 @@ class RESTFirebaseAuth(object):
 
 
     def renew_auth_if_needed(self):
-        if self.email == "" or self.password == "":
+        if self.api_key == "":
             return False
 
         if self.is_auth_expiring():
