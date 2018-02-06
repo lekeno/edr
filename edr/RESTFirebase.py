@@ -31,7 +31,7 @@ class RESTFirebaseAuth(object):
             endpoint = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key={}".format(self.api_key)
             
         requestTime = datetime.datetime.now()
-        resp = requests.post(endpoint,json=msg)
+        resp = requests.post(endpoint,json=payload)
         if resp.status_code != 200:
             EDRLOG.log(u"Authentication failed", "ERROR")
             self.clear_authentication()
