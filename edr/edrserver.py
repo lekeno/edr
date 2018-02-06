@@ -35,6 +35,9 @@ class EDRServer(object):
     def is_authenticated(self):
         return self.REST_firebase.is_valid_auth_token()
 
+    def is_anonymous(self):
+        return self.REST_firebase.anonymous
+
     def uid(self):
         return self.REST_firebase.uid()
 

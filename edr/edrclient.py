@@ -184,6 +184,9 @@ class EDRClient(object):
     def is_logged_in(self):
         return self.server.is_authenticated()
 
+    def is_anonymous(self):
+        return (self.is_logged_in() and self.server.is_anonymous())
+
     def warmup(self):
         EDRLOG.log(u"Warming up client.", "INFO")
         details = [u"(please check that ED has the focus)"]
@@ -389,6 +392,8 @@ class EDRClient(object):
             self.status = "{} is bad news.".format(cmdr_name)
             if self.novel_enough_blip(cmdr_id, blip, cognitive = True):
                 self.__warning(u"Warning!", [profile.short_profile()])
+                if self.is_anonymous():
+                    self.advertise_full_account("You could have helped other EDR users by reporting this outlaw.")
             else:
                 EDRLOG.log("Skipping warning since a warning was recently shown.", "INFO")
 
@@ -396,6 +401,11 @@ class EDRClient(object):
             self.status = "skipping blip (not novel enough)."
             EDRLOG.log(u"Blip is not novel enough to warrant reporting", "INFO")
             return True
+
+        if self.is_anonymous():
+            EDRLOG.log("Skipping blip since the user is anonymous.", "INFO")
+            self.blips_cache.set(cmdr_id, blip)
+            return False
 
         success = self.server.blip(cmdr_id, blip)
         if success:
@@ -405,6 +415,12 @@ class EDRClient(object):
         return success
 
     def scanned(self, cmdr_name, scan):
+        if self.is_anonymous():
+            EDRLOG.log(u"Skipping scan report since the user is anonymous.", "INFO")
+            if scan["wanted"]:
+                self.advertise_full_account("You could have helped other EDR users by reporting this outlaw!")
+            return False
+
         cmdr_id = self.cmdr_id(cmdr_name)
         if cmdr_id is None:
             self.status = "no cmdr id (scan)."
@@ -425,6 +441,10 @@ class EDRClient(object):
 
 
     def traffic(self, star_system, traffic):
+        if self.is_anonymous():
+            EDRLOG.log(u"Skipping traffic report since the user is anonymous.", "INFO")
+            return False
+
         sigthed_cmdr = traffic["cmdr"]
         if not self.novel_enough_traffic_report(sigthed_cmdr, traffic):
             self.status = "traffic report isn't novel enough."
@@ -456,6 +476,12 @@ class EDRClient(object):
             self.status = u"Anarchy system (no crime reports/info)"
             return False
 
+        if self.is_anonymous():
+            EDRLOG.log(u"Skipping crime report since the user is anonymous.", "INFO")
+            if crime["victim"] == self.player.name:
+                self.advertise_full_account("You could have helped other EDR users or get help by reporting this crime!")
+            return False
+
         sid = self.edrsystems.system_id(star_system, may_create=True)
         if sid is None:
             EDRLOG.log(u"Failed to report crime in system {} : no id found.".format(star_system),
@@ -465,12 +491,27 @@ class EDRClient(object):
         return self.server.crime(sid, crime)
 
     def tag_cmdr(self, cmdr_name, tag):
-        self.edrcmdrs.tag_cmdr(cmdr_name, tag)
+        if self.is_anonymous():
+            EDRLOG.log(u"Skipping tag cmdr since the user is anonymous.", "INFO")
+            self.advertise_full_account("Sorry, this feature only works with a proper EDR account.", passive=False)
+            return False
+
+        return self.edrcmdrs.tag_cmdr(cmdr_name, tag)
     
     def memo_cmdr(self, cmdr_name, memo):
+        if self.is_anonymous():
+            EDRLOG.log(u"Skipping memo cmdr since the user is anonymous.", "INFO")
+            self.advertise_full_account("Sorry, this feature only works with a proper EDR account.", passive=False)
+            return False
+
         self.edrcmdrs.memo_cmdr(cmdr_name, memo)
 
     def untag_cmdr(self, cmdr_name, tag):
+        if self.is_anonymous():
+            EDRLOG.log(u"Skipping untag cmdr since the user is anonymous.", "INFO")
+            self.advertise_full_account("Sorry, this feature only works with a proper EDR account.", passive=False)
+            return False
+
         self.edrcmdrs.untag_cmdr(cmdr_name, tag)
 
     def __sitrep(self, star_system, details):
@@ -513,3 +554,11 @@ class EDRClient(object):
 
     def warn_with_details(self, warning, details):
         self.__warning(warning, details)
+    
+    def advertise_full_account(self, context, passive=True):
+        if passive:
+            #TODO throttle to avoid spamming
+            return False
+
+        self.__notify(u"EDR needs you!", [context, u"--", u"Register an account at https://github.com/lekeno/edr/signup.md", u"It's free, no strings attached."])
+        return True
