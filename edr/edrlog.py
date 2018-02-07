@@ -3,7 +3,7 @@ import edrconfig
 
 class EDRLog(object):
 
-    LEVEL_MAPPING = {"DEBUG": 10,  "INFO": 20, "WARNING": 30, "EROR": 40}
+    LEVEL_MAPPING = {"DEBUG": 10,  "INFO": 20, "WARNING": 30, "ERROR": 40}
 
     def __init__(self):
         config = edrconfig.EDRConfig()

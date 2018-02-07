@@ -42,15 +42,15 @@ def prefs_changed():
 
 def prerequisites(edr_client, is_beta):
     if edr_client.mandatory_update:
-        EDRLOG.log(u"[EDR]Out-of-date client, aborting.", "ERROR")
+        EDRLOG.log(u"Out-of-date client, aborting.", "ERROR")
         return False
 
     if not edr_client.is_logged_in():
-        EDRLOG.log(u"[EDR]Not logged in, aborting.", "ERROR")
+        EDRLOG.log(u"Not logged in, aborting.", "ERROR")
         return False
 
     if is_beta:
-        EDRLOG.log(u"[EDR]Player is in beta: skip!", "INFO")
+        EDRLOG.log(u"Player is in beta: skip!", "INFO")
         return False
     return True
 
@@ -127,12 +127,12 @@ def handle_lifecycle_events(ed_player, entry):
     if entry["event"] in ["Music"] and entry["MusicTrack"] == "MainMenu":
         ed_player.game_mode = None
         ed_player.leave_wing()
-        EDRLOG.log(u"[EDR]Player is on the main menu.", "DEBUG")
+        EDRLOG.log(u"Player is on the main menu.", "DEBUG")
         return
 
     if entry["event"] == "Resurrect":
         ed_player.resurrect()
-        EDRLOG.log(u"[EDR]Player has been resurrected.", "DEBUG")
+        EDRLOG.log(u"Player has been resurrected.", "DEBUG")
         return
 
     if entry["event"] in ["Fileheader"] and entry["part"] == 1:
