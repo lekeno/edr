@@ -128,7 +128,7 @@ class EDRSystems(object):
         return None
 
     def t_minus(self, js_epoch_then, short=False):
-        ago = int((edtime.EDTime.__js_epoch_now() - js_epoch_then) / 1000)
+        ago = int((edtime.EDTime.js_epoch_now() - js_epoch_then) / 1000)
         if short:
             return u"-{}".format(self.__pretty_print_timespan(ago, short=True))
         return u"T-{}".format(self.__pretty_print_timespan(ago))
@@ -159,7 +159,7 @@ class EDRSystems(object):
         active_notams = []
         all_notams = self.notams[system_id].get("NOTAMs", None)
         now = datetime.datetime.now()
-        js_epoch_now = edtime.EDTime.__js_epoch_now()
+        js_epoch_now = edtime.EDTime.js_epoch_now()
         for notam in all_notams:
             active = True
             if "from" in notam:
@@ -334,7 +334,7 @@ class EDRSystems(object):
     def is_recent(self, timestamp, max_age):
         if timestamp is None:
             return False
-        return (edtime.EDTime.__js_epoch_now() - timestamp) / 1000 <= max_age
+        return (edtime.EDTime.js_epoch_now() - timestamp) / 1000 <= max_age
 
     def evict(self, star_system):
         try:

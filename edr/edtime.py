@@ -5,7 +5,7 @@ import comparable
 
 class EDTime(object, comparable.ComparableMixin):
     @staticmethod
-    def __js_epoch_now():
+    def js_epoch_now():
         return 1000 * calendar.timegm(time.gmtime())
     
     @staticmethod

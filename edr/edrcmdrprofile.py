@@ -14,7 +14,7 @@ class EDRCmdrDexProfile(object):
         self._friend = dex_dict.get("friend", False)
         self._memo = dex_dict.get("memo", None)
 
-        now = edtime.EDTime.__js_epoch_now()
+        now = edtime.EDTime.js_epoch_now()
         self.created = dex_dict.get("created", now)
         self.updated = dex_dict.get("updated", now)
 
@@ -24,7 +24,7 @@ class EDRCmdrDexProfile(object):
 
     @alignment.setter
     def alignment(self, new_alignment):
-        now = edtime.EDTime.__js_epoch_now()
+        now = edtime.EDTime.js_epoch_now()
         if (new_alignment is None):
             self._alignment = None
             self.updated = now
@@ -48,7 +48,7 @@ class EDRCmdrDexProfile(object):
         if is_friend == self._friend:
             return False
         self._friend = is_friend
-        self.updated = edtime.EDTime.__js_epoch_now()
+        self.updated = edtime.EDTime.js_epoch_now()
         return True
 
     def is_useless(self):
@@ -61,7 +61,7 @@ class EDRCmdrDexProfile(object):
     @memo.setter
     def memo(self, message):
         self._memo = message
-        self.updated = edtime.EDTime.__js_epoch_now()
+        self.updated = edtime.EDTime.js_epoch_now()
         return True
 
     def __all_tags(self):
@@ -90,7 +90,7 @@ class EDRCmdrDexProfile(object):
             return True
         elif tag not in self.tags:
             self.tags.add(tag)
-            self.updated = edtime.EDTime.__js_epoch_now()
+            self.updated = edtime.EDTime.js_epoch_now()
             return True
 
         return False
@@ -105,7 +105,7 @@ class EDRCmdrDexProfile(object):
             return True
         elif tag in self.tags:
             self.tags.remove(tag)
-            self.updated = edtime.EDTime.__js_epoch_now()
+            self.updated = edtime.EDTime.js_epoch_now()
             return True
 
         return False
@@ -269,12 +269,12 @@ class EDRCmdrProfile(object):
         return u"[!{:.0%} ?{:.0%} +{:.0%}]".format(self.alignment_hints["outlaw"] / total_hints, self.alignment_hints["neutral"] / total_hints, self.alignment_hints["enforcer"] / total_hints)
 
     def short_profile(self):
-        # TODO scan history as a graph made of ■ (wanted) □ (clean) and median
+        # TODO scan history as a graph made of block characters
         # zzz chars, showing legal status for the most zzz recent scans, resolution of xx minutes
-        # wanted ■:xx%; bounty median: max:
-        # T-xD→ ■□□■□□□□□□□□■■■□□□■■□□■■■□□■□□■□□■□■■□■□□■■□■□■■■■□■□■■■□■■□■□■□■□■■■□■□□□□■■■■□□■□■■□□■■■■□
+        # wanted []:xx%; bounty median: max:
+        # T-xD blocks T-yD
         # zzz chars, showing legal and bounty for the most zzz recent scans, resolution of xx minutes
-        # T-xD→ ▒□□░□□□□□□□□░░▓□□□▒▒□□▓▓▓□□█□□▓□□░□░█□░□□░░□▓□░▒░█□░□░░░□█▓□░□▓□▓□█░░□▒□□□□████□□░□▓▓□□▓░░▓□ →T-yD
+        # T-xD shaded blocks T-yD
         # structure scan_history, option 1: circle buffer
         #  start: 4
         #  [ 0: {timestamp, bounty}, 1: {timestamp, bounty}, 2: {...}, 3: {}, 4: {}, 5: {}, 6: {}]
