@@ -1,4 +1,5 @@
 import datetime
+import time
 
 import Tkinter as tk
 import ttk
@@ -561,11 +562,12 @@ class EDRClient(object):
         self.__warning(warning, details)
     
     def advertise_full_account(self, context, passive=True):
-        now = datetime.datetime.now()            
+        now = datetime.datetime.now()
+        now_epoch = time.mktime(now.timetuple())            
         if passive and self.previous_ad:
-            if (now - self.previous_ad) <= self.edr_needs_u_novelty_threshold:
+            if (now_epoch - self.previous_ad) <= self.edr_needs_u_novelty_threshold:
                 return False
 
-        self.__notify(u"EDR needs you!", [context, u"--", u"Register an account at https://github.com/lekeno/edr/signup.md", u"It's free, no strings attached."])
-        self.previous_ad = now
+        self.__notify(u"EDR needs you!", [context, u"--", u"Create an account at https://lekeno.github.io/", u"It's free, no strings attached."])
+        self.previous_ad = now_epoch
         return True

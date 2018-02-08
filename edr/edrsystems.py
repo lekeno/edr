@@ -158,7 +158,6 @@ class EDRSystems(object):
     def __active_notams_for_sid(self, system_id):
         active_notams = []
         all_notams = self.notams[system_id].get("NOTAMs", None)
-        now = datetime.datetime.now()
         js_epoch_now = edtime.EDTime.js_epoch_now()
         for notam in all_notams:
             active = True

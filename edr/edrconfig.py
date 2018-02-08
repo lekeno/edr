@@ -16,6 +16,9 @@ class EDRConfig(object):
     def edr_endpoint(self):
         return self.config.get('edr', 'edr_endpoint')
 
+    def edr_needs_u_novelty_threshold(self):
+        return int(self.config.get('edr', 'edr_needs_u_novelty_threshold'))
+
     def inara_api_key(self):
         return self.config.get('inara', 'inara_api_key')
 
@@ -33,9 +36,6 @@ class EDRConfig(object):
 
     def cognitive_novelty_threshold(self):
         return int(self.config.get('novelty', 'cognitive_novelty_threshold'))
-
-    def edr_needs_u_novelty_threshold(self):
-        return int(self.config.get('novelty', 'edr_needs_u_novelty_threshold'))
 
     def systems_max_age(self):
         return int(self.config.get('lrucaches', 'systems_max_age'))
