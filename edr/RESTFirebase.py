@@ -91,7 +91,7 @@ class RESTFirebaseAuth(object):
         return True
 
     def is_valid_auth_token(self):
-        return ('expires_in' in self.auth and 'id_token' in self.auth)
+        return (self.auth and 'expires_in' in self.auth and 'id_token' in self.auth)
 
     def is_auth_expiring(self):
         if not self.is_valid_auth_token():
