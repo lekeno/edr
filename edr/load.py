@@ -585,6 +585,13 @@ def handle_bang_commands(cmdr, command, command_parts):
         system = cmdr.star_system if len(command_parts) == 1 else command_parts[1]
         EDRLOG.log(u"Notam command for {}".format(system), "INFO")
         EDR_CLIENT.notam(system)
+    elif command == "!outlaws":
+        EDRLOG.log(u"Outlaws command", "INFO")
+        EDR_CLIENT.outlaws()
+    elif command == "!where" and len(command_parts) == 2:
+        EDRLOG.log(u"Explicit where command for {}".format(command_parts[1]), "INFO")
+        EDR_CLIENT.where(command_parts[1])
+    
 
 def handle_hash_commands(command, command_parts, entry):
     target_cmdr = command_parts[1] if len(command_parts) > 1 else None

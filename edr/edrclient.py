@@ -42,6 +42,7 @@ class EDRClient(object):
         self.traffic_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                edr_config.traffic_max_age())
         self.scans_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.scans_max_age())
+        self.outlaws_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.outlaws_max_age())
 
         self._email = tk.StringVar(value=config.get("EDREmail"))
         self._password = tk.StringVar(value=config.get("EDRPassword"))
@@ -518,6 +519,33 @@ class EDRClient(object):
             return False
 
         self.edrcmdrs.untag_cmdr(cmdr_name, tag)
+
+    def where(self, cmdr_name):
+        cname = cmdr_name.lower()
+        sighted = self.outlaws_cache.get(cname)
+        if not sighted:
+            sighted = self.server.where(cmdr_name)
+        
+        if sighted:
+            self.outlaws_cache.set(cname, sighted)
+            self.status = "got info about {}".format(cmdr_name)
+            EDRLOG.log(u"Where {} : {}".format(cmdr_name, sighted), "INFO")
+            self.__intel(cmdr_name, [sighted["system"]])
+        else:
+            EDRLOG.log(u"Where {} : no info".format(cmdr_name), "INFO")
+            self.__intel(cmdr_name, [u"No info about {}".format(cmdr_name), u"Not an outlaw?"])
+
+    def outlaws(self):
+        #TODO proper threshold edr_config.crimes_recent_threshold()
+        #TODO cache
+        recent_outlaws = self.server.recent_outlaws(60*60*24*3)
+        if recent_outlaws:
+            self.status = "recently sighted outlaws"
+            EDRLOG.log(u"Got recently sighted outlaws", "INFO")
+            #TODO iterate self.__intel("test", [sighted["system"]])
+        else:
+            EDRLOG.log(u"No info about recently sighted outlaws", "INFO")
+            #TODO self.__intel(cmdr_name, [u"No info about {}".format(cmdr_name), u"Not an outlaw?"])
 
     def __sitrep(self, star_system, details):
         if self.audio_feedback:
