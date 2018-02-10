@@ -49,6 +49,9 @@ class EDRConfig(object):
     def blips_max_age(self):
         return int(self.config.get('lrucaches', 'blips_max_age'))
 
+    def scans_max_age(self):
+        return int(self.config.get('lrucaches', 'scans_max_age'))
+
     def traffic_max_age(self):
         return int(self.config.get('lrucaches', 'traffic_max_age'))
 

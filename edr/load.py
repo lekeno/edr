@@ -200,6 +200,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PVPKill"]:
         report_crime(ed_player, entry)
 
+    if entry["event"] in ["ShipTargeted"] and entry["ScanStage"] > 0:
+        handle_scan_events(ed_player, entry)
+
     if entry["event"] in ["ReceiveText", "SendText"]:
         report_comms(ed_player, entry)
 
@@ -324,11 +327,12 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim):
     EDR_CLIENT.status = "crime reported!"
 
 
-def edr_submit_contact(cmdr_name, timestamp, source, witness):
+def edr_submit_contact(cmdr_name, ship, timestamp, source, witness):
     """
     Report a contact with a cmdr
     :param cmdr:
     :param timestamp:
+    :param ship:
     :param source:
     :param witness:
     :return:
@@ -341,7 +345,7 @@ def edr_submit_contact(cmdr_name, timestamp, source, witness):
         "starSystem": witness.star_system,
         "place": witness.place,
         "timestamp": edt.as_js_epoch(),
-        "ship" : u"Unknown",
+        "ship" : ship if ship else u"Unknown",
         "source": source,
         "reportedBy": witness.name
     }
@@ -360,13 +364,38 @@ def edr_submit_contact(cmdr_name, timestamp, source, witness):
         EDR_CLIENT.status = "failed to report contact."
         EDR_CLIENT.evict_cmdr(cmdr_name)
 
-    edr_submit_traffic(cmdr_name, timestamp, source, witness)
+    edr_submit_traffic(cmdr_name, ship, timestamp, source, witness)
 
+def edr_submit_scan(scan, timestamp, source, witness):
+    edt = EDTime()
+    edt.from_journal_timestamp(timestamp)
 
-def edr_submit_traffic(cmdr_name, timestamp, source, witness):
+    report = scan
+    report["starSystem"] = witness.star_system
+    report["place"] = witness.place
+    report["timestamp"] = edt.as_js_epoch()
+    report["source"] = source
+    report["reportedBy"] = witness.name
+
+    if not witness.in_open():
+        EDRLOG.log(u"Scan not submitted due to unconfirmed Open mode", "INFO")
+        EDR_CLIENT.status = "not in Open? Start EDR before Elite."
+        return
+
+    if witness.has_partial_status():
+        EDR_CLIENT.status = "partial status."
+        EDRLOG.log(u"Scan not submitted due to partial status", "INFO")
+        return
+
+    if not EDR_CLIENT.scanned(cmdr_name, report):
+        EDR_CLIENT.status = "failed to report scan."
+        EDR_CLIENT.evict_cmdr(cmdr_name)
+
+def edr_submit_traffic(cmdr_name, ship, timestamp, source, witness):
     """
     Report a contact with a cmdr
     :param cmdr:
+    :param ship:
     :param timestamp:
     :param source:
     :param witness:
@@ -380,7 +409,7 @@ def edr_submit_traffic(cmdr_name, timestamp, source, witness):
         "starSystem": witness.star_system,
         "place": witness.place,
         "timestamp": edt.as_js_epoch(),
-        "ship" : u"Unknown",
+        "ship" : ship if ship else u"Unknown",
         "source": source,
         "reportedBy": witness.name
     }
@@ -462,7 +491,7 @@ def report_comms(cmdr, entry):
             from_cmdr = entry["From"]
             if entry["From"].startswith("$cmdr_decorate:#name="):
                 from_cmdr = entry["From"][len("$cmdr_decorate:#name="):-1]
-            edr_submit_contact(from_cmdr, entry["timestamp"], "Received text (local)", cmdr)
+            edr_submit_contact(from_cmdr, ship=None, entry["timestamp"], "Received text (local)", cmdr)
         elif entry["Channel"] in ["player"]:
             from_cmdr = entry["From"]
             if entry["From"].startswith("$cmdr_decorate:#name="):
@@ -474,7 +503,7 @@ def report_comms(cmdr, entry):
             else:
                 EDRLOG.log(u"Text from {} (not friend/wing) == same location".format(from_cmdr),
                            "INFO")
-                edr_submit_contact(from_cmdr, entry["timestamp"],
+                edr_submit_contact(from_cmdr, ship=None, entry["timestamp"],
                                    "Received text (non wing/friend player)", cmdr)
     elif entry["event"] == "SendText" and not entry["To"] in ["local", "wing"]:
         to_cmdr = entry["To"]
@@ -486,9 +515,30 @@ def report_comms(cmdr, entry):
         else:
             EDRLOG.log(u"Sent text to {} (not friend/wing) == same location".format(to_cmdr),
                        "INFO")
-            edr_submit_contact(to_cmdr, entry["timestamp"], "Sent text (non wing/friend player)",
+            edr_submit_contact(to_cmdr, ship=None, entry["timestamp"], "Sent text (non wing/friend player)",
                                cmdr)
 
+def handle_scan_events(cmdr, entry):
+    if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0 and entry["PilotName"].startswith("$cmdr_decorate:#name="])):
+        return False
+
+    cmdr_name = entry["From"][len("$cmdr_decorate:#name="):-1]
+    ship = entry["Ship"]
+
+    if entry["ScanStage"] == 1
+        edr_submit_contact(cmdr_name, ship, entry["timestamp"], "Ship targeted", cmdr)
+        return True
+    elif entry["ScanStage"] == 3:
+        wanted = entry["LegalStatus"] == "Wanted"
+        scan = {
+            "cmdr": cmdr_name,
+            "ship": ship,
+            "wanted": wanted,
+            "bounty": entry["bounty"] if wanted else 0
+        }
+        edr_submit_scan(scan, entry["timestamp"], "Ship targeted", cmdr)
+        return True
+    return False
 
 def handle_commands(cmdr, entry):
     if not entry["event"] == "SendText":

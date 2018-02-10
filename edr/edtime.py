@@ -1,8 +1,13 @@
 import datetime
 import calendar
+import time
 import comparable
 
 class EDTime(object, comparable.ComparableMixin):
+    @staticmethod
+    def __js_epoch_now():
+        return 1000 * calendar.timegm(time.gmtime())
+    
     @staticmethod
     def immersive_delta():
         return 1286 # Elite Dangerous is set 1286 years in the future
