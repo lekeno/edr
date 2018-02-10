@@ -1,59 +1,97 @@
 import datetime
 import json
 import requests
+import pickle
+import os
 
 import edrlog
 
 EDRLOG = edrlog.EDRLog()
 
 class RESTFirebaseAuth(object):
+    FIREBASE_ANON_AUTH_CACHE = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'private/fbaa.p')
+
     def __init__(self):
         self.email = ""
         self.password = ""
         self.auth = None
+        self.anonymous = True
+        try:
+            with open(self.FIREBASE_ANON_AUTH_CACHE, 'rb') as handle:
+                self.refresh_token = pickle.load(handle)
+        except:
+            self.refresh_token = None
         self.timestamp = None
         self.api_key = ""
 
     def authenticate(self):
-        if self.email == "" or self.password == "" or self.api_key == "":
-            EDRLOG.log(u"can't authenticate: empty credentials and/or api key.", "ERROR")
+        if self.api_key == "":
+            EDRLOG.log(u"can't authenticate: empty api key.", "ERROR")
             return False
 
-        msg = {
-            "email": self.email,
-            "password": self.password,
+        if not self.__login():
+            EDRLOG.log(u"Authentication failed (login)", "ERROR")
+            self.__reset()
+            return False
+
+        if not self.__refresh_fb_token():
+            EDRLOG.log(u"Authentication failed (FB token)", "ERROR")
+            self.__reset()
+            return False
+        return True
+
+    def __login(self):
+        payload = {
             "returnSecureToken": True
         }
 
+        endpoint = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key={}".format(self.api_key)
+        self.anonymous = True
+
+        if self.email != "" and self.password != "":
+            payload["email"] = self.email
+            payload["password"] = self.password
+            self.anonymous = False
+            self.refresh_token = None
+            endpoint = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key={}".format(self.api_key)
+
+        if self.refresh_token:
+            return True
+
         requestTime = datetime.datetime.now()
-        endpoint = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key={}".format(self.api_key)
-        resp = requests.post(endpoint,json=msg)
+        resp = requests.post(endpoint,json=payload)
         if resp.status_code != 200:
-            EDRLOG.log(u"Authentication failed", "ERROR")
-            self.clear_authentication()
             return False
         
-        self.timestamp= requestTime
-        self.auth = json.loads(resp.content)
+        self.timestamp = requestTime
+        auth = json.loads(resp.content)
+        self.refresh_token = auth['refreshToken']
+        if self.anonymous:
+            try:
+                with open(self.FIREBASE_ANON_AUTH_CACHE, 'wb') as handle:
+                    pickle.dump(self.refresh_token, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            except:
+                return False
+        return True
 
-        refresh_token = self.auth['refreshToken']
-        payload = { "grant_type": "refresh_token", "refresh_token": refresh_token}
+    def __refresh_fb_token(self):
+        payload = { "grant_type": "refresh_token", "refresh_token": self.refresh_token}
         endpoint = "https://securetoken.googleapis.com/v1/token?key={}".format(self.api_key)
+        requestTime = datetime.datetime.now()
         resp = requests.post(endpoint,data=payload)
         if resp.status_code != 200:
-            EDRLOG.log(u"Exchange of refresh token for ID token failed. Status code={code}, content={content}".format(code=resp.status_code, content=resp.content), "ERROR")
-            self.clear_authentication()
+            EDRLOG.log(u"Refresh of FB token failed. Status code={code}, content={content}".format(code=resp.status_code, content=resp.content), "ERROR")
             return False
 
         self.auth = json.loads(resp.content)
+        self.timestamp = requestTime
+        self.refresh_token = self.auth["refresh_token"]
 
         return True
 
     def is_valid_auth_token(self):
-        if self.auth is None or not 'expiresIn' in self.auth: 
-            return True
-
-        return 'idToken' in self.auth
+        return (self.auth and 'expires_in' in self.auth and 'id_token' in self.auth)
 
     def is_auth_expiring(self):
         if not self.is_valid_auth_token():
@@ -65,16 +103,14 @@ class RESTFirebaseAuth(object):
 
 
     def renew_auth_if_needed(self):
-        if self.email == "" or self.password == "":
+        if self.api_key == "":
             return False
 
         if self.is_auth_expiring():
-            EDRLOG.log(u"Authentication token will expire soon. Clearing to renew.", "INFO")
+            EDRLOG.log(u"Renewing authentication since the token will expire soon.", "INFO")
             self.clear_authentication()
             return self.authenticate()
-
         return True
-
 
     def id_token(self):
         if not self.renew_auth_if_needed():
@@ -96,4 +132,12 @@ class RESTFirebaseAuth(object):
         
     def clear_authentication(self):
         self.auth = None
-        self.timestamp = None 
+        self.timestamp = None
+
+    def __reset(self):
+        self.clear_authentication()
+        try:
+            with open(self.FIREBASE_ANON_AUTH_CACHE, 'rb') as handle:
+                self.refresh_token = pickle.load(handle)
+        except:
+            self.refresh_token = None

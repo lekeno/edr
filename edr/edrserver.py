@@ -35,6 +35,9 @@ class EDRServer(object):
     def is_authenticated(self):
         return self.REST_firebase.is_valid_auth_token()
 
+    def is_anonymous(self):
+        return self.REST_firebase.anonymous
+
     def uid(self):
         return self.REST_firebase.uid()
 
@@ -208,6 +211,8 @@ class EDRServer(object):
         return json.loads(resp.content)
 
     def update_cmdrdex(self, cmdr_id, dex_entry):
+        if self.is_anonymous():
+            return False
         query_params = { "auth" : self.auth_token()}
         
         if dex_entry is None:
@@ -227,6 +232,8 @@ class EDRServer(object):
         return resp.status_code == 200
 
     def cmdrdex(self, cmdr_id):
+        if self.is_anonymous():
+            return None
         EDRLOG.log(u"CmdrDex request for {}".format(cmdr_id), "DEBUG")
         query_params = { "auth" : self.auth_token()}
         endpoint = "{server}/v1/cmdrsdex/{uid}/{cid}/.json?{query_params}".format(server=self.EDR_ENDPOINT, uid=self.uid(), cid=cmdr_id, query_params=urllib.urlencode(query_params))

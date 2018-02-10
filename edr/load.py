@@ -42,15 +42,15 @@ def prefs_changed():
 
 def prerequisites(edr_client, is_beta):
     if edr_client.mandatory_update:
-        EDRLOG.log(u"[EDR]Out-of-date client, aborting.", "ERROR")
+        EDRLOG.log(u"Out-of-date client, aborting.", "ERROR")
         return False
 
     if not edr_client.is_logged_in():
-        EDRLOG.log(u"[EDR]Not logged in, aborting.", "ERROR")
+        EDRLOG.log(u"Not logged in, aborting.", "ERROR")
         return False
 
     if is_beta:
-        EDRLOG.log(u"[EDR]Player is in beta: skip!", "INFO")
+        EDRLOG.log(u"Player is in beta: skip!", "INFO")
         return False
     return True
 
@@ -127,12 +127,12 @@ def handle_lifecycle_events(ed_player, entry):
     if entry["event"] in ["Music"] and entry["MusicTrack"] == "MainMenu":
         ed_player.game_mode = None
         ed_player.leave_wing()
-        EDRLOG.log(u"[EDR]Player is on the main menu.", "DEBUG")
+        EDRLOG.log(u"Player is on the main menu.", "DEBUG")
         return
 
     if entry["event"] == "Resurrect":
         ed_player.resurrect()
-        EDRLOG.log(u"[EDR]Player has been resurrected.", "DEBUG")
+        EDRLOG.log(u"Player has been resurrected.", "DEBUG")
         return
 
     if entry["event"] in ["Fileheader"] and entry["part"] == 1:
@@ -387,9 +387,9 @@ def edr_submit_scan(scan, timestamp, source, witness):
         EDRLOG.log(u"Scan not submitted due to partial status", "INFO")
         return
 
-    if not EDR_CLIENT.scanned(cmdr_name, report):
+    if not EDR_CLIENT.scanned(scan["cmdr"], report):
         EDR_CLIENT.status = "failed to report scan."
-        EDR_CLIENT.evict_cmdr(cmdr_name)
+        EDR_CLIENT.evict_cmdr(scan["cmdr"])
 
 def edr_submit_traffic(cmdr_name, ship, timestamp, source, witness):
     """
@@ -491,7 +491,7 @@ def report_comms(cmdr, entry):
             from_cmdr = entry["From"]
             if entry["From"].startswith("$cmdr_decorate:#name="):
                 from_cmdr = entry["From"][len("$cmdr_decorate:#name="):-1]
-            edr_submit_contact(from_cmdr, ship=None, entry["timestamp"], "Received text (local)", cmdr)
+            edr_submit_contact(from_cmdr, None, entry["timestamp"], "Received text (local)", cmdr)
         elif entry["Channel"] in ["player"]:
             from_cmdr = entry["From"]
             if entry["From"].startswith("$cmdr_decorate:#name="):
@@ -503,7 +503,7 @@ def report_comms(cmdr, entry):
             else:
                 EDRLOG.log(u"Text from {} (not friend/wing) == same location".format(from_cmdr),
                            "INFO")
-                edr_submit_contact(from_cmdr, ship=None, entry["timestamp"],
+                edr_submit_contact(from_cmdr, None, entry["timestamp"],
                                    "Received text (non wing/friend player)", cmdr)
     elif entry["event"] == "SendText" and not entry["To"] in ["local", "wing"]:
         to_cmdr = entry["To"]
@@ -515,17 +515,17 @@ def report_comms(cmdr, entry):
         else:
             EDRLOG.log(u"Sent text to {} (not friend/wing) == same location".format(to_cmdr),
                        "INFO")
-            edr_submit_contact(to_cmdr, ship=None, entry["timestamp"], "Sent text (non wing/friend player)",
+            edr_submit_contact(to_cmdr, None, entry["timestamp"], "Sent text (non wing/friend player)",
                                cmdr)
 
 def handle_scan_events(cmdr, entry):
-    if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0 and entry["PilotName"].startswith("$cmdr_decorate:#name="])):
+    if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0 and entry["PilotName"].startswith("$cmdr_decorate:#name=")):
         return False
 
     cmdr_name = entry["From"][len("$cmdr_decorate:#name="):-1]
     ship = entry["Ship"]
 
-    if entry["ScanStage"] == 1
+    if entry["ScanStage"] == 1:
         edr_submit_contact(cmdr_name, ship, entry["timestamp"], "Ship targeted", cmdr)
         return True
     elif entry["ScanStage"] == 3:

@@ -101,6 +101,7 @@ class EDRCmdrs(object):
                 self.inara_cache.set(cmdr_name, None)
                 EDRLOG.log(u"No match on Inara. Temporary entry to be nice on Inara's server.",
                            "INFO")
+        return inara_profile
 
     def cmdr(self, cmdr_name, autocreate=True, check_inara_server=False):
         profile = self.__edr_cmdr(cmdr_name, autocreate)
