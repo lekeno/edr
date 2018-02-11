@@ -175,6 +175,12 @@ class EDRServer(object):
         endpoint = "/v1/scans/{cmdr_id}/".format(cmdr_id=cmdr_id)
         return self.__post_json(endpoint, info)
 
+    def legal_record(self, cmdr_id):
+        info["uid"] = self.uid()
+        EDRLOG.log(u"Fetching legal record for cmdr {cid}".format(cid=cmdr_id), "INFO")
+        endpoint = "/v1/legal/{cmdr_id}/".format(cmdr_id=cmdr_id)
+        return self.__get_recent(endpoint, 60*60*24*7) #TODO proper parameter
+
     def crime(self,  system_id, info):
         info["uid"] = self.uid()
         EDRLOG.log(u"Crime report for system {sid} with json:{json}".format(sid=system_id, json=info), "INFO")
@@ -215,9 +221,6 @@ class EDRServer(object):
         query_params = "orderBy=\"cname\"&equalTo={name}&limitToFirst=1&auth={auth}".format(name=json.dumps(name), auth=self.auth_token())
         endpoint = "{server}/v1/outlaws.json?{query_params}".format(server=self.EDR_SERVER, query_params=query_params)
         resp = requests.get(endpoint)
-        EDRLOG.log(endpoint, "DEBUG")
-        EDRLOG.log(u"code: {}".format(resp.status_code), "DEBUG")
-        EDRLOG.log(resp.content, "DEBUG")
         if resp.status_code != 200:
             EDRLOG.log(u"Failed to retrieve location of outlaw.", "ERROR")
             return None

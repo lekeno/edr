@@ -17,6 +17,7 @@ import ingamemsg
 import edrsystems
 import edrcmdrs
 import randomtips
+import edtime
 
 EDRLOG = edrlog.EDRLog()
 
@@ -423,7 +424,7 @@ class EDRClient(object):
     def scanned(self, cmdr_name, scan):
         if self.is_anonymous():
             EDRLOG.log(u"Skipping scan report since the user is anonymous.", "INFO")
-            if scan["wanted"]:
+            if scan["wanted"] and scan["bounty"] >= 5000:
                 self.advertise_full_account("You could have helped other EDR users by reporting this outlaw!")
             return False
 
@@ -520,32 +521,76 @@ class EDRClient(object):
 
         self.edrcmdrs.untag_cmdr(cmdr_name, tag)
 
+    def __pretty_print_bounty(self, bounty):
+        readable = ""
+        if bounty >= 10000000000:
+            readable = u"{}b".format(bounty / 1000000000)
+        elif bounty >= 1000000000:
+            readable = u"{:.1f}b".format(bounty / 1000000000.0)
+        elif bounty >= 10000000:
+            readable = u"{}m".format(bounty / 1000000)
+        elif bounty > 1000000:
+            readable = u"{:.1f}m".format(bounty / 1000000.0)
+        elif bounty >= 10000:
+            readable = u"{}k".format(bounty / 1000)
+        elif bounty >= 1000:
+            readable = u"{:.1f}k".format(bounty / 1000.0)
+        else:
+            readable = u"{}".format(bounty)
+        return readable
+
+    def __readable_outlaw_sighting(self, sighting, verbose=True):
+        t_minus = edtime.EDTime.t_minus(sighting["timestamp"])
+        location = u"{} sighted in {}".format(sighting["cmdr"], sighting["system"])
+        if verbose:
+            if sighting["place"] and sighting["place"] != sighting["system"]:
+                if sighting["place"].startswith(sighting["system"]+" "):
+                    location += u", {}".format(sighting["place"].partition(sighting["system"]+" ")[2])
+                else
+                    location += u", {}".format(sighting["place"])
+            location += u" @{}".format(t_minus)
+            ship = u"Spaceship: {}".format(sighting["ship"]) if sighting["ship"] != "Unknown" else None
+            neat_bounty = self.__pretty_print_bounty(sighting["bounty"]) if sighting["bounty"] > 0 else None 
+            bounty = u"Wanted for {} credits".format(neat_bounty) if neat_bounty else u"" #TODO verify than __intel/... can handle ""
+            return [location, ship, bounty]
+        else:
+            neat_bounty = self.__pretty_print_bounty(sighting["bounty"]) if sighting["bounty"] > 0 else None 
+            bounty = u" wanted for {} credits".format(neat_bounty) if neat_bounty else u"" #TODO verify than __intel/... can handle ""
+            return [u"{} @{}{}".format(location, t_minus, bounty)]
+
     def where(self, cmdr_name):
         cname = cmdr_name.lower()
-        sighted = self.outlaws_cache.get(cname)
-        if not sighted:
-            sighted = self.server.where(cmdr_name)
-        
-        if sighted:
-            self.outlaws_cache.set(cname, sighted)
+        report = self.outlaws_cache.get(cname)
+        if not report:
+            report = self.server.where(cmdr_name)
+            if report:
+                 self.outlaws_cache.set(cname, report)
+
+        if report:
             self.status = "got info about {}".format(cmdr_name)
-            EDRLOG.log(u"Where {} : {}".format(cmdr_name, sighted), "INFO")
-            self.__intel(cmdr_name, [sighted["system"]])
+            EDRLOG.log(u"Where {} : {}".format(cmdr_name, report), "INFO")
+            self.__intel(u"Intel for {}".format(cmdr_name), self.__readable_outlaw_sighting(report))
         else:
             EDRLOG.log(u"Where {} : no info".format(cmdr_name), "INFO")
-            self.__intel(cmdr_name, [u"No info about {}".format(cmdr_name), u"Not an outlaw?"])
+            self.__intel(u"Intel for {}".format(cmdr_name), [u"Not recently sighted or not an outlaw."])
 
     def outlaws(self):
         #TODO proper threshold edr_config.crimes_recent_threshold()
         #TODO cache
         recent_outlaws = self.server.recent_outlaws(60*60*24*3)
-        if recent_outlaws:
-            self.status = "recently sighted outlaws"
-            EDRLOG.log(u"Got recently sighted outlaws", "INFO")
-            #TODO iterate self.__intel("test", [sighted["system"]])
-        else:
+        if not recent_outlaws:
             EDRLOG.log(u"No info about recently sighted outlaws", "INFO")
             #TODO self.__intel(cmdr_name, [u"No info about {}".format(cmdr_name), u"Not an outlaw?"])
+            return False
+        
+        self.status = "recently sighted outlaws"
+        EDRLOG.log(u"Got recently sighted outlaws", "INFO")
+        summary = []
+        for oid in recent_outlaws:
+            summary.append(self.__readable_outlaw_sighting(recent_outlaws[oid], verbose=False))
+        self.__intel(u"Outlaws Intel", summary)
+
+
 
     def __sitrep(self, star_system, details):
         if self.audio_feedback:
