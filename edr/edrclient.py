@@ -541,11 +541,11 @@ class EDRClient(object):
 
     def __readable_outlaw_sighting(self, sighting, verbose=True):
         t_minus = edtime.EDTime.t_minus(sighting["timestamp"])
-        location = u"{} sighted in {}".format(sighting["cmdr"], sighting["system"])
+        location = u"{} sighted in {}".format(sighting["cmdr"], sighting["starSystem"])
         if verbose:
-            if sighting["place"] and sighting["place"] != sighting["system"]:
-                if sighting["place"].startswith(sighting["system"]+" "):
-                    location += u", {}".format(sighting["place"].partition(sighting["system"]+" ")[2])
+            if sighting["place"] and sighting["place"] != sighting["starSystem"]:
+                if sighting["place"].startswith(sighting["starSystem"]+" "):
+                    location += u", {}".format(sighting["place"].partition(sighting["starSystem"]+" ")[2])
                 else:
                     location += u", {}".format(sighting["place"])
             location += u" @{}".format(t_minus)
