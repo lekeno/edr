@@ -525,10 +525,8 @@ def handle_scan_events(cmdr, entry):
     cmdr_name = entry["From"][len("$cmdr_decorate:#name="):-1]
     ship = entry["Ship"]
 
-    if entry["ScanStage"] == 1:
-        edr_submit_contact(cmdr_name, ship, entry["timestamp"], "Ship targeted", cmdr)
-        return True
-    elif entry["ScanStage"] == 3:
+    edr_submit_contact(cmdr_name, ship, entry["timestamp"], "Ship targeted", cmdr)
+    if entry["ScanStage"] == 3:
         wanted = entry["LegalStatus"] == "Wanted"
         scan = {
             "cmdr": cmdr_name,
@@ -537,8 +535,7 @@ def handle_scan_events(cmdr, entry):
             "bounty": entry["bounty"] if wanted else 0
         }
         edr_submit_scan(scan, entry["timestamp"], "Ship targeted", cmdr)
-        return True
-    return False
+    return True
 
 def handle_commands(cmdr, entry):
     if not entry["event"] == "SendText":
