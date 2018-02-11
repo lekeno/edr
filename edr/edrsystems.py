@@ -72,51 +72,13 @@ class EDRSystems(object):
             pickle.dump(self.notams_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     def timespan_s(self):
-        return self.__pretty_print_timespan(self.timespan, short=True, verbose=True)
-
-    def __pretty_print_timespan(self, timespan, short=False, verbose=False):
-        remaining = timespan
-        days = remaining / 86400
-        remaining -= days * 86400
-
-        hours = (remaining / 3600) % 24
-        remaining -= hours * 3600
-
-        minutes = (remaining / 60) % 60
-        remaining -= minutes * 60
-
-        seconds = (remaining % 60)
-
-        readable = ""
-        if days > 0:
-            suffix = (u" days" if days > 1 else u" day") if verbose else "d"            
-            readable = u"{}{}".format(days, suffix)
-            if hours > 0 and not short:
-                suffix = (u" hours" if hours > 1 else u" hour") if verbose else "h"
-                readable += u":{}{}".format(hours, suffix)
-        elif hours > 0:
-            suffix = (u" hours" if hours > 1 else u" hour") if verbose else "h"
-            readable = u"{}{}".format(hours, suffix)
-            if minutes > 0 and not short:
-                suffix = (u" minutes" if minutes > 1 else u" minute") if verbose else "m"
-                readable += u":{}{}".format(minutes, suffix)
-        elif minutes > 0:
-            suffix = (u" minutes" if minutes > 1 else u" minute") if verbose else "m"
-            readable = u"{}{}".format(minutes, suffix)
-            if seconds > 0 and not short:
-                suffix = (u" seconds" if seconds > 1 else u" second") if verbose else "s"
-                readable += u":{}{}".format(seconds, suffix)
-        else:
-            suffix = (u" seconds" if seconds > 1 else u" second") if verbose else "s"
-            readable = u"{}{}".format(seconds, suffix)
-
-        return readable
+        return edtime.EDTime.pretty_print_timespan(self.timespan, short=True, verbose=True)
 
     def crimes_t_minus(self, star_system):
         if self.has_sitrep(star_system):
             system_reports = self.reports[self.system_id(star_system)]
             if "latestCrime" in system_reports:
-                return self.t_minus(system_reports["latestCrime"])
+                return edtime.EDTime.t_minus(system_reports["latestCrime"])
         return None
 
 
@@ -124,14 +86,8 @@ class EDRSystems(object):
         if self.has_sitrep(star_system):
             system_reports = self.reports[self.system_id(star_system)]
             if "latestTraffic" in system_reports:
-                return self.t_minus(system_reports["latestTraffic"])
+                return edtime.EDTime.t_minus(system_reports["latestTraffic"])
         return None
-
-    def t_minus(self, js_epoch_then, short=False):
-        ago = int((edtime.EDTime.js_epoch_now() - js_epoch_then) / 1000)
-        if short:
-            return u"-{}".format(self.__pretty_print_timespan(ago, short=True))
-        return u"T-{}".format(self.__pretty_print_timespan(ago))
     
     def has_sitrep(self, star_system):
         self.__update_if_stale()
@@ -199,21 +155,21 @@ class EDRSystems(object):
         summary_outlaws = []
         systems_with_recent_outlaws = sorted(systems_with_recent_outlaws.items(), key=lambda t: t[1], reverse=True)
         for system in systems_with_recent_outlaws:
-            summary_outlaws.append(u"{} {}".format(system[0], self.t_minus(system[1], short=True)))
+            summary_outlaws.append(u"{} {}".format(system[0], edtime.EDTime.t_minus(system[1], short=True)))
         if summary_outlaws:
             summary[u"Outlaws"] = summary_outlaws
 
         summary_crimes = []
         systems_with_recent_crimes = sorted(systems_with_recent_crimes.items(), key=lambda t: t[1], reverse=True)
         for system in systems_with_recent_crimes:
-            summary_crimes.append(u"{} {}".format(system[0], self.t_minus(system[1], short=True)))
+            summary_crimes.append(u"{} {}".format(system[0], edtime.EDTime.t_minus(system[1], short=True)))
         if summary_crimes:
             summary[u"Crimes"] = summary_crimes
 
         summary_traffic = []
         systems_with_recent_traffic = sorted(systems_with_recent_traffic.items(), key=lambda t: t[1], reverse=True)
         for system in systems_with_recent_traffic:
-            summary_traffic.append(u"{} {}".format(system[0], self.t_minus(system[1], short=True)))
+            summary_traffic.append(u"{} {}".format(system[0], edtime.EDTime.t_minus(system[1], short=True)))
         if summary_traffic:
             summary[u"Traffic"] = summary_traffic
 
@@ -280,7 +236,7 @@ class EDRSystems(object):
                         summary_traffic[traffic["cmdr"]] = max(traffic["timestamp"] , summary_traffic.get(traffic["cmdr"], None))
                 summary_traffic = sorted(summary_traffic.items(), key=lambda t: t[1], reverse=True)
                 for traffic in summary_traffic:
-                    summary_sighted.append(u"{} {}".format(traffic[0], self.t_minus(traffic[1], short=True)))
+                    summary_sighted.append(u"{} {}".format(traffic[0], edtime.EDTime.t_minus(traffic[1], short=True)))
                 summary[u"Sighted"] = summary_sighted
         
         if self.has_recent_crimes(star_system):
@@ -301,9 +257,9 @@ class EDRSystems(object):
                 summary_crimes = sorted(summary_crimes.items(), key=lambda t: t[1][0], reverse=True)
                 for crime in summary_crimes:
                     if crime[1][1] == "Murder":
-                        summary_destroyers.append(u"{} {}".format(crime[0], self.t_minus(crime[1][0], short=True)))
+                        summary_destroyers.append(u"{} {}".format(crime[0], edtime.EDTime.t_minus(crime[1][0], short=True)))
                     elif crime[1][1] in ["Interdicted", "Interdiction"]:
-                        summary_interdictors.append(u"{} {}".format(crime[0], self.t_minus(crime[1][0], short=True)))
+                        summary_interdictors.append(u"{} {}".format(crime[0], edtime.EDTime.t_minus(crime[1][0], short=True)))
                 if summary_interdictors:
                     summary[u"Interdictors"] = summary_interdictors
                 if summary_destroyers:
@@ -313,7 +269,7 @@ class EDRSystems(object):
             wanted_cmdrs = sorted(wanted_cmdrs.items(), key=lambda t: t[1][0], reverse=True)
             summary_wanted = []
             for wanted in wanted_cmdrs:
-                summary_wanted.append(u"{} {}".format(wanted[0], self.t_minus(wanted[1][0], short=True)))
+                summary_wanted.append(u"{} {}".format(wanted[0], edtime.EDTime.t_minus(wanted[1][0], short=True)))
             summary[u"Outlaws"] = summary_wanted
 
         return summary

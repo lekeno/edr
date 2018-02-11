@@ -12,6 +12,52 @@ class EDTime(object, comparable.ComparableMixin):
     def immersive_delta():
         return 1286 # Elite Dangerous is set 1286 years in the future
 
+    @staticmethod
+    def t_minus(js_epoch_then, short=False):
+        ago = int((EDTime.js_epoch_now() - js_epoch_then) / 1000)
+        if short:
+            return u"-{}".format(EDTime.pretty_print_timespan(ago, short=True))
+        return u"T-{}".format(EDTime.pretty_print_timespan(ago))
+
+    @staticmethod
+    def pretty_print_timespan(timespan, short=False, verbose=False):
+        remaining = timespan
+        days = remaining / 86400
+        remaining -= days * 86400
+
+        hours = (remaining / 3600) % 24
+        remaining -= hours * 3600
+
+        minutes = (remaining / 60) % 60
+        remaining -= minutes * 60
+
+        seconds = (remaining % 60)
+
+        readable = ""
+        if days > 0:
+            suffix = (u" days" if days > 1 else u" day") if verbose else "d"            
+            readable = u"{}{}".format(days, suffix)
+            if hours > 0 and not short:
+                suffix = (u" hours" if hours > 1 else u" hour") if verbose else "h"
+                readable += u":{}{}".format(hours, suffix)
+        elif hours > 0:
+            suffix = (u" hours" if hours > 1 else u" hour") if verbose else "h"
+            readable = u"{}{}".format(hours, suffix)
+            if minutes > 0 and not short:
+                suffix = (u" minutes" if minutes > 1 else u" minute") if verbose else "m"
+                readable += u":{}{}".format(minutes, suffix)
+        elif minutes > 0:
+            suffix = (u" minutes" if minutes > 1 else u" minute") if verbose else "m"
+            readable = u"{}{}".format(minutes, suffix)
+            if seconds > 0 and not short:
+                suffix = (u" seconds" if seconds > 1 else u" second") if verbose else "s"
+                readable += u":{}{}".format(seconds, suffix)
+        else:
+            suffix = (u" seconds" if seconds > 1 else u" second") if verbose else "s"
+            readable = u"{}{}".format(seconds, suffix)
+
+        return readable
+
     def __immmersive(self):
         d = self._datetime
         try:
