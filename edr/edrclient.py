@@ -546,7 +546,7 @@ class EDRClient(object):
             if sighting["place"] and sighting["place"] != sighting["system"]:
                 if sighting["place"].startswith(sighting["system"]+" "):
                     location += u", {}".format(sighting["place"].partition(sighting["system"]+" ")[2])
-                else
+                else:
                     location += u", {}".format(sighting["place"])
             location += u" @{}".format(t_minus)
             ship = u"Spaceship: {}".format(sighting["ship"]) if sighting["ship"] != "Unknown" else None

@@ -176,7 +176,6 @@ class EDRServer(object):
         return self.__post_json(endpoint, info)
 
     def legal_record(self, cmdr_id):
-        info["uid"] = self.uid()
         EDRLOG.log(u"Fetching legal record for cmdr {cid}".format(cid=cmdr_id), "INFO")
         endpoint = "/v1/legal/{cmdr_id}/".format(cmdr_id=cmdr_id)
         return self.__get_recent(endpoint, 60*60*24*7) #TODO proper parameter
