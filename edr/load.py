@@ -592,7 +592,7 @@ def handle_bang_commands(cmdr, command, command_parts):
 
 def handle_hash_commands(command, command_parts, entry):
     target_cmdr = command_parts[1] if len(command_parts) > 1 else None
-    if not entry["To"] in ["local", "voicechat", "wing", "friend"]:
+    if target_cmdr is None and not entry["To"] in ["local", "voicechat", "wing", "friend"]:
         prefix = "$cmdr_decorate:#name="
         target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
     
@@ -615,7 +615,7 @@ def handle_hash_commands(command, command_parts, entry):
 
 def handle_minus_commands(command, command_parts, entry):
     target_cmdr = command_parts[1] if len(command_parts) > 1 else None
-    if not entry["To"] in ["local", "voicechat", "wing", "friend"]:
+    if target_cmdr is None and not entry["To"] in ["local", "voicechat", "wing", "friend"]:
         prefix = "$cmdr_decorate:#name="
         target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
 
