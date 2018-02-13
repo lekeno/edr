@@ -224,7 +224,9 @@ class EDRServer(object):
             EDRLOG.log(u"Failed to retrieve location of outlaw.", "ERROR")
             return None
         
-        return json.loads(resp.content)
+        sighting = json.loads(resp.content)
+        sid = sighting.keys()[0]
+        return sighting[sid]
 
     def update_cmdrdex(self, cmdr_id, dex_entry):
         if self.is_anonymous():
