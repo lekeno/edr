@@ -1,3 +1,4 @@
+# coding= utf-8
 import datetime
 import time
 
@@ -35,6 +36,7 @@ class EDRClient(object):
         self.place_novelty_threshold = edr_config.place_novelty_threshold()
         self.ship_novelty_threshold = edr_config.ship_novelty_threshold()
         self.cognitive_novelty_threshold = edr_config.cognitive_novelty_threshold()
+        self.outlaws_recent_threshold = edr_config.outlaws_recent_threshold()
 
         self.edr_needs_u_novelty_threshold = edr_config.edr_needs_u_novelty_threshold()
         self.previous_ad = None
@@ -290,24 +292,24 @@ class EDRClient(object):
                 for section in summary:
                     details.append(u"{}: {}".format(section, "; ".join(summary[section])))
         if details:
-            self.__sitrep(star_system, details)
+            self.__sitrep(u"SITREP for {}".format(star_system), details)
 
     def notams(self):
         summary = self.edrsystems.systems_with_active_notams()
         if summary:
             details = []
             details.append(u"Active NOTAMs for: {}".format("; ".join(summary)))
-            self.__sitrep(None, details)
+            self.__sitrep(u"NOTAMs", details)
         else:
-            self.__sitrep(None, [u"No active NOTAMs."])
+            self.__sitrep(u"NOTAMs", [u"No active NOTAMs."])
 
     def notam(self, star_system):
         summary = self.edrsystems.active_notams(star_system)
         if summary:
             EDRLOG.log(u"NOTAMs for {}: {}".format(star_system, summary), "DEBUG")
-            self.__sitrep(star_system, summary)
+            self.__sitrep(u"NOTAM for {}".format(star_system), summary)
         else:
-            self.__sitrep(star_system, [u"No active NOTAMs."])
+            self.__sitrep(u"NOTAM for {}".format(star_system), [u"No active NOTAMs."])
 
     def sitreps(self):
         details = []
@@ -315,7 +317,7 @@ class EDRClient(object):
         for section in summary:
             details.append(u"{}: {}".format(section, "; ".join(summary[section])))
         if details:
-            self.__sitrep(None, details)
+            self.__sitrep(u"SITREPS", details)
 
 
     def cmdr_id(self, cmdr_name):
@@ -539,24 +541,33 @@ class EDRClient(object):
             readable = u"{}".format(bounty)
         return readable
 
-    def __readable_outlaw_sighting(self, sighting, verbose=True):
-        t_minus = edtime.EDTime.t_minus(sighting["timestamp"])
+    def __readable_outlaw_sighting(self, sighting, one_liner=False):
+        EDRLOG.log(u"sighting: {}".format(sighting), "DEBUG")
+        t_minus = edtime.EDTime.t_minus(sighting["timestamp"], short=True)
+        if one_liner:
+            cmdr = (sighting["cmdr"][:29] + u'…') if len(sighting["cmdr"]) > 30 else sighting["cmdr"]
+            starSystem = (sighting["starSystem"][:50] + u'…') if len(sighting["starSystem"]) > 50 else sighting["starSystem"]    
+            if sighting.get("bounty", None) > 0:
+                neat_bounty = self.__pretty_print_bounty(sighting["bounty"])
+                return u"{:<2} {} {} {}".format(t_minus, cmdr, starSystem, neat_bounty)
+            else:
+                return u"{:<2} {} {}".format(t_minus, cmdr, starSystem)
+        
+        readable = []
         location = u"{} sighted in {}".format(sighting["cmdr"], sighting["starSystem"])
-        if verbose:
-            if sighting["place"] and sighting["place"] != sighting["starSystem"]:
-                if sighting["place"].startswith(sighting["starSystem"]+" "):
-                    location += u", {}".format(sighting["place"].partition(sighting["starSystem"]+" ")[2])
-                else:
-                    location += u", {}".format(sighting["place"])
-            location += u" @{}".format(t_minus)
-            ship = u"Spaceship: {}".format(sighting["ship"]) if sighting["ship"] != "Unknown" else None
-            neat_bounty = self.__pretty_print_bounty(sighting["bounty"]) if sighting["bounty"] > 0 else None 
-            bounty = u"Wanted for {} credits".format(neat_bounty) if neat_bounty else u"" #TODO verify than __intel/... can handle ""
-            return [location, ship, bounty]
-        else:
-            neat_bounty = self.__pretty_print_bounty(sighting["bounty"]) if sighting["bounty"] > 0 else None 
-            bounty = u" wanted for {} credits".format(neat_bounty) if neat_bounty else u"" #TODO verify than __intel/... can handle ""
-            return [u"{} @{}{}".format(location, t_minus, bounty)]
+        if sighting["place"] and sighting["place"] != sighting["starSystem"]:
+            if sighting["place"].startswith(sighting["starSystem"]+" "):
+                location += u", {}".format(sighting["place"].partition(sighting["starSystem"]+" ")[2])
+            else:
+                location += u", {}".format(sighting["place"])
+        location += u" @{}".format(t_minus)
+        readable.append(location)
+        if sighting["ship"] != "Unknown":
+            readable.append(u"Spaceship: {}".format(sighting["ship"]))
+        if sighting.get("bounty", None) > 0:
+            neat_bounty = self.__pretty_print_bounty(sighting["bounty"]) 
+            readable.append(u"Wanted for {} credits".format(neat_bounty))
+        return readable
 
     def where(self, cmdr_name):
         cname = cmdr_name.lower()
@@ -575,33 +586,27 @@ class EDRClient(object):
             self.__intel(u"Intel for {}".format(cmdr_name), [u"Not recently sighted or not an outlaw."])
 
     def outlaws(self):
-        #TODO proper threshold edr_config.crimes_recent_threshold()
         #TODO cache
-        recent_outlaws = self.server.recent_outlaws(60*60*24*3)
+        recent_outlaws = self.server.recent_outlaws(self.outlaws_recent_threshold)
         if not recent_outlaws:
-            EDRLOG.log(u"No info about recently sighted outlaws", "INFO")
-            #TODO self.__intel(cmdr_name, [u"No info about {}".format(cmdr_name), u"Not an outlaw?"])
+            EDRLOG.log(u"No recently sighted outlaws", "INFO")
+            self.__sitrep(u"Recently Sighted Outlaws", [u"No outlaws sighted in the last {}".format(edtime.EDTime.pretty_print_timespan(self.outlaws_recent_threshold))])
             return False
         
         self.status = "recently sighted outlaws"
         EDRLOG.log(u"Got recently sighted outlaws", "INFO")
         summary = []
         for oid in recent_outlaws:
-            summary.append(self.__readable_outlaw_sighting(recent_outlaws[oid], verbose=False))
-        self.__intel(u"Outlaws Intel", summary)
+            summary.append(self.__readable_outlaw_sighting(recent_outlaws[oid], one_liner=True))
+        self.__sitrep(u"Recently Sighted Outlaws", summary)
 
-
-
-    def __sitrep(self, star_system, details):
+    def __sitrep(self, header, details):
         if self.audio_feedback:
             self.AUDIO_FEEDBACK.notify()
         if not self.visual_feedback:
             return
-        EDRLOG.log(u"sitrep for {}; details: {}".format(star_system, details[0]), "DEBUG")
-        if star_system:
-            self.IN_GAME_MSG.sitrep(u"SITREP for {}".format(star_system), details)
-        else:
-            self.IN_GAME_MSG.sitrep(u"SITREPS", details)
+        EDRLOG.log(u"sitrep with header: {}; details: {}".format(header, details[0]), "DEBUG")
+        self.IN_GAME_MSG.sitrep(header, details)
 
     def __intel(self, who, details):
         if self.audio_feedback:
