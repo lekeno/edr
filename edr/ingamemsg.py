@@ -10,13 +10,13 @@ EDRLOG = edrlog.EDRLog()
 _thisdir = os.path.abspath(os.path.dirname(__file__))
 _overlay_dir = os.path.join(_thisdir, "EDMCOverlay")
 if _overlay_dir not in sys.path:
-    print "adding {} to sys.path".format(_overlay_dir)
+    EDRLOG.log(u"adding {} to sys.path".format(_overlay_dir), "DEBUG")
     sys.path.append(_overlay_dir)
 
 try:
     import edmcoverlay
 except ImportError:
-    print sys.path
+    EDRLOG.log(sys.path, "DEBUG")
     raise Exception(str(sys.path))
 
 import lrucache
@@ -101,9 +101,12 @@ class InGameMsg(object):
                 max_rows += 1
                 bonus_rows -= 1
             chunked_lines.append(self.__wrap_text(kind, "b", line, max_rows))
+            if len(chunked_lines) >= rows:
+                break
         return chunked_lines
 
     def __wrap_text(self, kind, part, text, max_rows):
+        EDRLOG.log(u"text: {}".format(text), "DEBUG")
         width = self.cfg[kind][part]["len"]
         wrapper = textwrap.TextWrapper(width=width, subsequent_indent="  ", break_on_hyphens=False)
         return wrapper.wrap(text)[:max_rows]
@@ -121,7 +124,7 @@ class InGameMsg(object):
         conf = self.cfg[kind]["h"]
         text = header[:conf["len"]]
         x = self.__adjust_x(kind, "h", text)
-        print u"header={}, row={}, col={}, color={}, ttl={}, size={}".format(header, conf["y"], x, conf["rgb"], conf["ttl"], conf["size"])
+        EDRLOG.log(u"header={}, row={}, col={}, color={}, ttl={}, size={}".format(header, conf["y"], x, conf["rgb"], conf["ttl"], conf["size"]), "DEBUG")
         self.__display(kind, text, row=conf["y"], col=x, color=conf["rgb"], ttl=conf["ttl"], size=conf["size"])
 
     def __msg_body(self, kind, body):
@@ -135,7 +138,7 @@ class InGameMsg(object):
                 y = conf["y"] + row_nb * self.cfg["general"][conf["size"]]["h"]
                 conf["cache"].set(row_nb, chunk)
                 x = self.__adjust_x(kind, "b", chunk)
-                print u"line={}, rownb={}, last_row={}, row={}, col={}, color={}, ttl={}, size={}".format(chunk, row_nb, conf["last_row"], y, x, conf["rgb"], conf["ttl"], conf["size"])
+                EDRLOG.log(u"line={}, rownb={}, last_row={}, row={}, col={}, color={}, ttl={}, size={}".format(chunk, row_nb, conf["last_row"], y, x, conf["rgb"], conf["ttl"], conf["size"]), "DEBUG")
                 self.__display(kind, chunk, row=y, col=x, color=conf["rgb"], size=conf["size"], ttl=conf["ttl"])
                 self.__bump_body_row(kind)
 
