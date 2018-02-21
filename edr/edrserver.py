@@ -175,6 +175,7 @@ class EDRServer(object):
         endpoint = "/v1/scans/{cmdr_id}/".format(cmdr_id=cmdr_id)
         return self.__post_json(endpoint, info)
 
+    # TODO connnect to load => client => ...
     def legal_record(self, cmdr_id):
         EDRLOG.log(u"Fetching legal record for cmdr {cid}".format(cid=cmdr_id), "INFO")
         endpoint = "/v1/legal/{cmdr_id}/".format(cmdr_id=cmdr_id)
@@ -190,7 +191,6 @@ class EDRServer(object):
         now_epoch_js = 1000 * calendar.timegm(time.gmtime())
         past_epoch_js = now_epoch_js - (1000 * timespan_seconds)
 
-        #TODO rtimestamp after sometime
         query_params = "orderBy=\"timestamp\"&startAt={past}&endAt={now}&auth={auth}".format(past=past_epoch_js, now=now_epoch_js, auth=self.auth_token())
         resp = requests.get("{server}{endpoint}.json?{query_params}".format(server=self.EDR_SERVER, endpoint=endpoint, query_params=query_params))
 
@@ -198,7 +198,11 @@ class EDRServer(object):
             EDRLOG.log(u"Failed to retrieve recent items.", "ERROR")
             return None
         
-        return json.loads(resp.content)
+        results = json.loads(resp.content)
+        # When using Firebase's REST API, the filtered results are returned in an undefined order since JSON interpreters don't enforce any ordering.
+        # So, sorting has to be done on the client side
+        sorted_results = sorted(results.values(), key=lambda t: t["timestamp"], reverse=True)
+        return sorted_results
 
     def recent_crimes(self,  system_id, timespan_seconds):
         EDRLOG.log(u"Recent crimes for system {sid}".format(sid=system_id), "INFO")
@@ -216,6 +220,7 @@ class EDRServer(object):
         return self.__get_recent(endpoint, timespan_seconds)
     
     def where(self, name):
+        #TODO fix the backend to only keep the latest sighting
         EDRLOG.log(u"Where query for outlaw named '{}'".format(name), "INFO")
         query_params = "orderBy=\"cname\"&equalTo={name}&limitToFirst=1&auth={auth}".format(name=json.dumps(name), auth=self.auth_token())
         endpoint = "{server}/v1/outlaws.json?{query_params}".format(server=self.EDR_SERVER, query_params=query_params)

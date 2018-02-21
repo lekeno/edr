@@ -3,6 +3,7 @@ import pickle
 
 import datetime
 import time
+import collections
 
 import edtime
 import edrconfig
@@ -220,56 +221,57 @@ class EDRSystems(object):
     def summarize_recent_activity(self, star_system):
         #TODO refactor/simplify this mess ;)
         summary = {}
-        wanted_cmdrs = {}
+        wanted_cmdrs = collections.OrderedDict()
         if self.has_recent_traffic(star_system):
             summary_sighted = []
             #TODO cache traffic and only fetch the missing timespan
             recent_traffic = self.server.recent_traffic(self.system_id(star_system), self.timespan)
             if recent_traffic is not None:
-                summary_traffic = {}
-                for tid in recent_traffic:
-                    traffic = recent_traffic[tid]
+                summary_traffic = collections.OrderedDict()
+                for traffic in recent_traffic:
+                    previous_timestamp = summary_traffic.get(traffic["cmdr"], None)
+                    if traffic["timestamp"] < previous_timestamp:
+                        continue
                     karma = traffic.get("karma", None)
                     if karma and karma < 0:
                         wanted_cmdrs[traffic["cmdr"]] = [ traffic["timestamp"], karma ]
                     else:
-                        summary_traffic[traffic["cmdr"]] = max(traffic["timestamp"] , summary_traffic.get(traffic["cmdr"], None))
-                summary_traffic = sorted(summary_traffic.items(), key=lambda t: t[1], reverse=True)
-                for traffic in summary_traffic:
-                    summary_sighted.append(u"{} {}".format(traffic[0], edtime.EDTime.t_minus(traffic[1], short=True)))
+                        summary_traffic[traffic["cmdr"]] = traffic["timestamp"]
+                for cmdr in summary_traffic:
+                    summary_sighted.append(u"{} {}".format(cmdr, edtime.EDTime.t_minus(summary_traffic[cmdr], short=True)))
                 summary[u"Sighted"] = summary_sighted
         
         if self.has_recent_crimes(star_system):
             summary_interdictors = []
             summary_destroyers = []
-            #TODO cache traffic and only fetch the missing timespan
             recent_crimes = self.server.recent_crimes(self.system_id(star_system), self.timespan)
             if recent_crimes is not None:
-                summary_crimes = {}
-                for sid in recent_crimes:
-                    crime = recent_crimes[sid]
-                    if crime["criminals"][0]["name"] not in summary_crimes or crime["timestamp"] > summary_crimes[crime["criminals"][0]["name"]][0]: 
-                        summary_crimes[crime["criminals"][0]["name"]] = [crime["timestamp"], crime["offence"]]
+                summary_crimes = collections.OrderedDict()
+                for crime in recent_crimes:
+                    lead_name = crime["criminals"][0]["name"]
+                    if lead_name not in summary_crimes or crime["timestamp"] > summary_crimes[lead_name][0]: 
+                        summary_crimes[lead_name] = [crime["timestamp"], crime["offence"]]
                         for criminal in crime["criminals"]:
+                            previous_timestamp = wanted_cmdrs[criminal["name"]][0] if criminal["name"] in wanted_cmdrs else None
+                            if previous_timestamp > crime["timestamp"]:
+                                continue
                             karma = criminal.get("karma", None)
                             if karma and karma < 0:
                                 wanted_cmdrs[criminal["name"]] = [ crime["timestamp"], karma]
-                summary_crimes = sorted(summary_crimes.items(), key=lambda t: t[1][0], reverse=True)
-                for crime in summary_crimes:
-                    if crime[1][1] == "Murder":
-                        summary_destroyers.append(u"{} {}".format(crime[0], edtime.EDTime.t_minus(crime[1][0], short=True)))
-                    elif crime[1][1] in ["Interdicted", "Interdiction"]:
-                        summary_interdictors.append(u"{} {}".format(crime[0], edtime.EDTime.t_minus(crime[1][0], short=True)))
+                for criminal in summary_crimes:
+                    if summary_crimes[criminal][1] == "Murder":
+                        summary_destroyers.append(u"{} {}".format(criminal, edtime.EDTime.t_minus(summary_crimes[criminal][0], short=True)))
+                    elif summary_crimes[criminal][1] in ["Interdicted", "Interdiction"]:
+                        summary_interdictors.append(u"{} {}".format(criminal, edtime.EDTime.t_minus(summary_crimes[criminal][0], short=True)))
                 if summary_interdictors:
                     summary[u"Interdictors"] = summary_interdictors
                 if summary_destroyers:
                     summary[u"Destroyers"] = summary_destroyers
         
         if wanted_cmdrs:
-            wanted_cmdrs = sorted(wanted_cmdrs.items(), key=lambda t: t[1][0], reverse=True)
             summary_wanted = []
             for wanted in wanted_cmdrs:
-                summary_wanted.append(u"{} {}".format(wanted[0], edtime.EDTime.t_minus(wanted[1][0], short=True)))
+                summary_wanted.append(u"{} {}".format(wanted, edtime.EDTime.t_minus(wanted_cmdrs[wanted][0], short=True)))
             summary[u"Outlaws"] = summary_wanted
 
         return summary
@@ -319,7 +321,7 @@ class EDRSystems(object):
             missing_seconds = self.timespan
             now = datetime.datetime.now()
             if not self.reports_last_updated is None:
-                missing_seconds = self.timespan - (now - self.reports_last_updated).total_seconds()
+                missing_seconds = min(self.timespan, (now - self.reports_last_updated).total_seconds())
             response = self.server.sitreps(missing_seconds)
             if not response is None:
                 self.reports.update(response)
@@ -330,7 +332,7 @@ class EDRSystems(object):
             missing_seconds = self.timespan
             now = datetime.datetime.now()
             if not self.notams_last_updated is None:
-                missing_seconds = self.timespan - (now - self.notams_last_updated).total_seconds()
+                missing_seconds = min(self.timespan, (now - self.notams_last_updated).total_seconds())
 
             response = self.server.notams(missing_seconds)
             if not response is None:
