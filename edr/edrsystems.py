@@ -15,12 +15,14 @@ EDRLOG = edrlog.EDRLog()
 class EDRSystems(object):
     EDR_SYSTEMS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/systems.p')
-
     EDR_NOTAMS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/notams.p')
-
     EDR_SITREPS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/sitreps.p')
+    EDR_TRAFFIC_CACHE = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'cache/traffic.p')
+    EDR_CRIMES_CACHE = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'cache/crimes.p')
 
     def __init__(self, server):
         edr_config = edrconfig.EDRConfig()
@@ -46,13 +48,26 @@ class EDRSystems(object):
             self.sitreps_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                   edr_config.sitreps_max_age())
 
+        try:
+            with open(self.EDR_CRIMES_CACHE, 'rb') as handle:
+                self.crimes_cache = pickle.load(handle)
+        except:
+            self.crimes_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.crimes_max_age())
+
+        try:
+            with open(self.EDR_TRAFFIC_CACHE, 'rb') as handle:
+                self.traffic_cache = pickle.load(handle)
+        except:
+            self.traffic_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.traffic_max_age())
+
 
         self.reports_check_interval = edr_config.reports_check_interval()
         self.notams_check_interval = edr_config.notams_check_interval()
         self.timespan = edr_config.sitreps_timespan()
         self.reports_last_updated = None
         self.notams_last_updated = None
-        
         self.server = server
 
     def system_id(self, star_system, may_create=False):
@@ -78,6 +93,12 @@ class EDRSystems(object):
         
         with open(self.EDR_SITREPS_CACHE, 'wb') as handle:
             pickle.dump(self.sitreps_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        
+        with open(self.EDR_TRAFFIC_CACHE, 'wb') as handle:
+            pickle.dump(self.traffic_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        with open(self.EDR_CRIMES_CACHE, 'wb') as handle:
+            pickle.dump(self.crimes_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     def timespan_s(self):
         return edtime.EDTime.pretty_print_timespan(self.timespan, short=True, verbose=True)
@@ -213,10 +234,18 @@ class EDRSystems(object):
         return None
 
     def recent_crimes(self, star_system):
+        sid = self.system_id(star_system)
+        if not sid:
+            return None
+        recent_crimes = None
         if self.has_recent_crimes(star_system):
-            #TODO cache crimes and only fetch the missing timespan
-            return self.server.recent_crimes(star_system, self.timespan)
-        return None
+            if not self.crimes_cache.has_key(sid) or (self.crimes_cache.has_key(sid) and self.crimes_cache.is_stale(sid)):
+                recent_crimes = self.server.recent_crimes(sid, self.timespan)
+                if recent_crimes:
+                    self.crimes_cache.set(sid, recent_crimes)
+            else:
+                recent_crimes = self.crimes_cache.get(sid)
+        return recent_crimes
 
     def has_recent_traffic(self, star_system):
         if self.has_sitrep(star_system):
@@ -229,15 +258,28 @@ class EDRSystems(object):
                                   edr_config.traffic_recent_threshold())
 
         return None
-    
+
+    def recent_traffic(self, star_system):
+        sid = self.system_id(star_system)
+        if not sid:
+            return None
+        recent_traffic = None
+        if self.has_recent_traffic(star_system):
+            if not self.traffic_cache.has_key(sid) or (self.traffic_cache.has_key(sid) and self.traffic_cache.is_stale(sid)):
+                recent_traffic = self.server.recent_traffic(sid, self.timespan)
+                if recent_traffic:
+                    self.traffic_cache.set(sid, recent_traffic)
+            else:
+                recent_traffic = self.traffic_cache.get(sid)
+        return recent_traffic
+
     def summarize_recent_activity(self, star_system):
         #TODO refactor/simplify this mess ;)
         summary = {}
         wanted_cmdrs = collections.OrderedDict()
         if self.has_recent_traffic(star_system):
             summary_sighted = []
-            #TODO cache traffic and only fetch the missing timespan
-            recent_traffic = self.server.recent_traffic(self.system_id(star_system), self.timespan)
+            recent_traffic = self.recent_traffic(star_system)
             if recent_traffic is not None:
                 summary_traffic = collections.OrderedDict()
                 for traffic in recent_traffic:
@@ -256,7 +298,7 @@ class EDRSystems(object):
         if self.has_recent_crimes(star_system):
             summary_interdictors = []
             summary_destroyers = []
-            recent_crimes = self.server.recent_crimes(self.system_id(star_system), self.timespan)
+            recent_crimes = self.recent_crimes(star_system)
             if recent_crimes is not None:
                 summary_crimes = collections.OrderedDict()
                 for crime in recent_crimes:

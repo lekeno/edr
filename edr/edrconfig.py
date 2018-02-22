@@ -61,6 +61,9 @@ class EDRConfig(object):
     def traffic_max_age(self):
         return int(self.config.get('lrucaches', 'traffic_max_age'))
 
+    def crimes_max_age(self):
+        return int(self.config.get('lrucaches', 'crimes_max_age'))
+
     def lru_max_size(self):
         return int(self.config.get('lrucaches', 'lru_max_size'))
 
