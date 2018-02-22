@@ -17,6 +17,12 @@ class LRUCache(object):
     def values(self):
         return self.cache.values()
 
+    def keys(self):
+        return self.cache.keys()
+
+    def has_key(self, key):
+        return key in self.cache
+
     def get(self, key):
         if self.capacity <= 0:
             return None

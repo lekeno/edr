@@ -19,6 +19,9 @@ class EDRSystems(object):
     EDR_NOTAMS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/notams.p')
 
+    EDR_SITREPS_CACHE = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'cache/sitreps.p')
+
     def __init__(self, server):
         edr_config = edrconfig.EDRConfig()
 
@@ -36,19 +39,20 @@ class EDRSystems(object):
             self.notams_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                   edr_config.notams_max_age())
 
-        #TODO use notams_cache
-        #TODO keep track of last updated from the cache instead of always starting from scratch
+        try:
+            with open(self.EDR_SITREPS_CACHE, 'rb') as handle:
+                self.sitreps_cache = pickle.load(handle)
+        except:
+            self.sitreps_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.sitreps_max_age())
 
-        #TODO use a cache for reports, probably repurpose the systems_cache
-        #TODO keep track of last updated from the cache instead of always starting from scratch
 
         self.reports_check_interval = edr_config.reports_check_interval()
         self.notams_check_interval = edr_config.notams_check_interval()
         self.timespan = edr_config.sitreps_timespan()
         self.reports_last_updated = None
         self.notams_last_updated = None
-        self.reports = {}
-        self.notams = {}
+        
         self.server = server
 
     def system_id(self, star_system, may_create=False):
@@ -71,13 +75,16 @@ class EDRSystems(object):
 
         with open(self.EDR_NOTAMS_CACHE, 'wb') as handle:
             pickle.dump(self.notams_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        
+        with open(self.EDR_SITREPS_CACHE, 'wb') as handle:
+            pickle.dump(self.sitreps_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     def timespan_s(self):
         return edtime.EDTime.pretty_print_timespan(self.timespan, short=True, verbose=True)
 
     def crimes_t_minus(self, star_system):
         if self.has_sitrep(star_system):
-            system_reports = self.reports[self.system_id(star_system)]
+            system_reports = self.sitreps_cache.get(self.system_id(star_system))
             if "latestCrime" in system_reports:
                 return edtime.EDTime.t_minus(system_reports["latestCrime"])
         return None
@@ -85,7 +92,7 @@ class EDRSystems(object):
 
     def traffic_t_minus(self, star_system):
         if self.has_sitrep(star_system):
-            system_reports = self.reports[self.system_id(star_system)]
+            system_reports = self.sitreps_cache.get(self.system_id(star_system))
             if "latestTraffic" in system_reports:
                 return edtime.EDTime.t_minus(system_reports["latestTraffic"])
         return None
@@ -93,16 +100,16 @@ class EDRSystems(object):
     def has_sitrep(self, star_system):
         self.__update_if_stale()
         sid = self.system_id(star_system)
-        return sid in self.reports.keys()
+        return self.sitreps_cache.has_key(sid)
 
     def has_notams(self, star_system):
         self.__update_if_stale()
         sid = self.system_id(star_system)
-        return sid in self.notams.keys()
+        return self.notams_cache.has_key(sid)
 
     def __has_active_notams(self, system_id):
         self.__update_if_stale()
-        if not system_id in self.notams.keys():
+        if not self.notams_cache.has_key(system_id):
             return False
 
         return len(self.__active_notams_for_sid(system_id)) > 0
@@ -114,7 +121,8 @@ class EDRSystems(object):
 
     def __active_notams_for_sid(self, system_id):
         active_notams = []
-        all_notams = self.notams[system_id].get("NOTAMs", None)
+        entry = self.notams_cache.get(system_id)
+        all_notams = entry.get("NOTAMs", None)
         js_epoch_now = edtime.EDTime.js_epoch_now()
         for notam in all_notams:
             active = True
@@ -130,8 +138,10 @@ class EDRSystems(object):
     def systems_with_active_notams(self):
         summary = []
         self.__update_if_stale()
-        for sid in self.notams:
-            star_system = self.notams[sid].get("name", None)
+        systems_ids = self.notams_cache.keys()
+        for sid in systems_ids:
+            entry = self.notams_cache.get(sid)
+            star_system = entry.get("name", None)
             if star_system and self.__has_active_notams(sid):
                 summary.append(star_system)
 
@@ -142,15 +152,17 @@ class EDRSystems(object):
         systems_with_recent_traffic = {}
         systems_with_recent_outlaws = {}
         self.__update_if_stale()
-        for sid in self.reports:
-            star_system = self.reports[sid].get("name", None)
+        systems_ids = self.sitreps_cache.keys()
+        for sid in systems_ids:
+            sitrep = self.sitreps_cache.get(sid)
+            star_system = sitrep.get("name", None)
             if star_system:
                 if self.has_recent_outlaws(star_system):
-                    systems_with_recent_outlaws[star_system] = self.reports[sid]["latestOutlaw"]
+                    systems_with_recent_outlaws[star_system] = sitrep["latestOutlaw"]
                 elif self.has_recent_crimes(star_system):
-                    systems_with_recent_crimes[star_system] = self.reports[sid]["latestCrime"]
+                    systems_with_recent_crimes[star_system] = sitrep["latestCrime"]
                 elif self.has_recent_traffic(star_system):
-                    systems_with_recent_traffic[star_system] = self.reports[sid]["latestTraffic"]
+                    systems_with_recent_traffic[star_system] = sitrep["latestTraffic"]
 
         summary = {}
         summary_outlaws = []
@@ -178,7 +190,7 @@ class EDRSystems(object):
 
     def has_recent_crimes(self, star_system):
         if self.has_sitrep(star_system):
-            system_reports = self.reports[self.system_id(star_system)]
+            system_reports = self.sitreps_cache.get(self.system_id(star_system))
             if "latestCrime" not in system_reports:
                 return None
 
@@ -190,7 +202,7 @@ class EDRSystems(object):
 
     def has_recent_outlaws(self, star_system):
         if self.has_sitrep(star_system):
-            system_reports = self.reports[self.system_id(star_system)]
+            system_reports = self.sitreps_cache.get(self.system_id(star_system))
             if "latestOutlaw" not in system_reports:
                 return None
 
@@ -208,7 +220,7 @@ class EDRSystems(object):
 
     def has_recent_traffic(self, star_system):
         if self.has_sitrep(star_system):
-            system_reports = self.reports[self.system_id(star_system)]
+            system_reports = self.sitreps_cache.get(self.system_id(star_system))
             if "latestTraffic" not in system_reports:
                 return None
 
@@ -275,18 +287,6 @@ class EDRSystems(object):
             summary[u"Outlaws"] = summary_wanted
 
         return summary
-    
-    def has_recent_recon(self, star_system):
-        if self.has_sitrep(star_system):
-            system_reports = self.reports[self.system_id(star_system)]
-            if "latestRecon" not in system_reports.keys():
-                return None
-
-            edr_config = edrconfig.EDRConfig()
-            return self.is_recent(system_reports.get["latestRecon"],
-                                  edr_config.recon_recent_threshold())
-
-        return None
 
     def is_recent(self, timestamp, max_age):
         if timestamp is None:
@@ -320,23 +320,25 @@ class EDRSystems(object):
         if self.__are_reports_stale():
             missing_seconds = self.timespan
             now = datetime.datetime.now()
-            if not self.reports_last_updated is None:
+            if self.reports_last_updated:
                 missing_seconds = min(self.timespan, (now - self.reports_last_updated).total_seconds())
-            response = self.server.sitreps(missing_seconds)
-            if not response is None:
-                self.reports.update(response)
+            sitreps = self.server.sitreps(missing_seconds)
+            if sitreps:
+                for system_id in sitreps:
+                    self.sitreps_cache.set(system_id, sitreps[system_id])
             self.reports_last_updated = now
             updated = True
 
         if self.__are_notams_stale():
             missing_seconds = self.timespan
             now = datetime.datetime.now()
-            if not self.notams_last_updated is None:
+            if self.notams_last_updated:
                 missing_seconds = min(self.timespan, (now - self.notams_last_updated).total_seconds())
 
-            response = self.server.notams(missing_seconds)
-            if not response is None:
-                self.notams.update(response)
+            notams = self.server.notams(missing_seconds)
+            if notams:
+                for system_id in notams:
+                    self.notams_cache.set(system_id, notams[system_id])
             self.notams_last_updated = now
             updated = True
 

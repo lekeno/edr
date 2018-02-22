@@ -32,7 +32,6 @@ class EDRCmdrs(object):
             with open(self.EDR_CMDRS_CACHE, 'rb') as handle:
                 self.cmdrs_cache = pickle.load(handle)
         except:
-            #TODO increase after there is a good set of cmdrs in the backend
             self.cmdrs_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                  edr_config.cmdrs_max_age())
 

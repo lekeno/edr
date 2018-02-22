@@ -19,7 +19,6 @@ class EDROutlaws(object):
     def __init__(self, server):
         self.server = server
         
-        
         self.sightings = None
         self.recents = None
         self.timespan = None
@@ -48,7 +47,6 @@ class EDROutlaws(object):
             pickle.dump(self, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     def where(self, cmdr_name):
-        # TODO apparently this doesn't pick the most recent sighting...
         cname = cmdr_name.lower()
         report = self.sightings.get(cname)
         if not report:
@@ -131,11 +129,12 @@ class EDROutlaws(object):
         updated = False
         if self.__are_reports_stale():
             sightings = self.server.recent_outlaws(self.timespan)
+            now = datetime.datetime.now()
             self.recents = sightings
             for sighting in sightings:
                 previous = self.sightings.get(sighting["cmdr"].lower())
                 if not previous or (previous and previous["timestamp"] < sighting["timestamp"]):
                     self.sightings.set(sighting["cmdr"].lower(), sighting)
-            self.reports_last_updated = datetime.datetime.now()
+            self.reports_last_updated = now
             updated = True
         return updated
