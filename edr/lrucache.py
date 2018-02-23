@@ -14,7 +14,7 @@ class LRUCache(object):
     def is_stale(self, key):
         if not self.has_key(key):
             return True
-        entry = self.get(key)
+        entry = self.cache[key]
         return (datetime.datetime.now() - entry["datetime"]) > self.max_age
 
     def values(self):
