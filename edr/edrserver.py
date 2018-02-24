@@ -220,7 +220,6 @@ class EDRServer(object):
         return self.__get_recent(endpoint, timespan_seconds)
     
     def where(self, name):
-        #TODO fix the backend to only keep the latest sighting
         EDRLOG.log(u"Where query for outlaw named '{}'".format(name), "INFO")
         query_params = "orderBy=\"cname\"&equalTo={name}&limitToFirst=1&auth={auth}".format(name=json.dumps(name), auth=self.auth_token())
         endpoint = "{server}/v1/outlaws.json?{query_params}".format(server=self.EDR_SERVER, query_params=query_params)
@@ -230,8 +229,10 @@ class EDRServer(object):
             return None
         
         sighting = json.loads(resp.content)
-        sid = sighting.keys()[0]
-        return sighting[sid]
+        if sighting:
+            sid = sighting.keys()[0]
+            return sighting[sid]
+        return None
 
     def update_cmdrdex(self, cmdr_id, dex_entry):
         if self.is_anonymous():
