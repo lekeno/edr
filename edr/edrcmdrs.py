@@ -61,7 +61,7 @@ class EDRCmdrs(object):
             pass
 
     def __edr_cmdr(self, cmdr_name, autocreate):
-        profile = self.cmdrs_cache.get(cmdr_name)
+        profile = self.cmdrs_cache.get(cmdr_name.lower())
         if not profile is None:
             EDRLOG.log(u"Cmdr {cmdr} is in the EDR cache with id={cid}".format(cmdr=cmdr_name,
                                                                            cid=profile.cid),
@@ -75,13 +75,13 @@ class EDRCmdrs(object):
                     EDRLOG.log(u"EDR CmdrDex entry found for {cmdr}: {id}".format(cmdr=cmdr_name,
                                                                 id=profile.cid), "DEBUG")
                     profile.dex(dex_profile)
-                self.cmdrs_cache.set(cmdr_name, profile)
+                self.cmdrs_cache.set(cmdr_name.lower(), profile)
                 EDRLOG.log(u"Cached EDR profile {cmdr}: {id}".format(cmdr=cmdr_name,
                                                                 id=profile.cid), "DEBUG")
         return profile
 
     def __inara_cmdr(self, cmdr_name, check_inara_server):
-        inara_profile = self.inara_cache.get(cmdr_name)
+        inara_profile = self.inara_cache.get(cmdr_name.lower())
         if not inara_profile is None:
             EDRLOG.log(u"Cmdr {} is in the Inara cache (name={})".format(cmdr_name,
                                                                          inara_profile.name),
@@ -91,13 +91,13 @@ class EDRCmdrs(object):
             inara_profile = self.inara.cmdr(cmdr_name)
 
             if not inara_profile is None:
-                self.inara_cache.set(cmdr_name, inara_profile)
+                self.inara_cache.set(cmdr_name.lower(), inara_profile)
                 EDRLOG.log(u"Cached Inara profile {}: {},{},{}".format(cmdr_name,
                                                                        inara_profile.name,
                                                                        inara_profile.squadron,
                                                                        inara_profile.role), "DEBUG")
             else:
-                self.inara_cache.set(cmdr_name, None)
+                self.inara_cache.set(cmdr_name.lower(), None)
                 EDRLOG.log(u"No match on Inara. Temporary entry to be nice on Inara's server.",
                            "INFO")
         return inara_profile
