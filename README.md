@@ -15,7 +15,7 @@ If you would like to participate:
  - Platform: Windows (the overlay doesn't work on Mac OS).
  - Have [EDMC installed and configured](https://github.com/Marginal/EDMarketConnector/#installation)
  - Playing [Elite: Dangerous](https://www.elitedangerous.com/) in Open
- - EDR credentials (i.e. user email and password)
+ - EDR credentials (i.e. user email and password) for full access to all features.
 
 ## Install
  1. Donwload and install [EDMC](https://github.com/Marginal/EDMarketConnector/#installation)
@@ -25,7 +25,7 @@ If you would like to participate:
  5. On the Plugins settings tab press the “Open” button. This will reveal the plugins folder where EDMC looks for plugins.
  6. Open EDR's .zip archive and move its content inside an EDR subfolder of the plugins folder.
  7. Re-Launch EDMC, open File > Settings and click on the EDR tab.
- 8. Enter your EDR credentials (i.e. email and password)
+ 8. Enter your EDR credentials (i.e. email and password) if you got them, or leave blank otherwise.
  9. Click OK, launch Elite, look at the EDR status line. It should say authenticated and then a bunch of things depending on what happens in the game.
  
 ## Options
@@ -45,6 +45,11 @@ EDR will also show a sitrep of your destination while jumping, if it had recent 
  - List of recently sighted outlaws and cmdrs
  - List of cmdrs who recently interdicted or killed other cmdrs
 
+### Limited access vs. full access
+If you don't have an EDR account, you can still use EDR to get insights about cmdrs and systems. Essentially, any feature that only access existing data should work, e.g. ```!who <cmdrname>```, ```!sitreps```, ```!outlaws```.
+
+With an EDR account, you will be able to report sightings and crimes which will help every EDR users.
+
 ### Activity
 Send the following command via the in-game chat to get intel about recent activity or specific systems:
  - ```!sitreps``` to display a list of star systems with sitreps
@@ -52,6 +57,11 @@ Send the following command via the in-game chat to get intel about recent activi
  - ```!sitrep <system_name>``` to display the sitrep of a given star system
  - ```!notams``` to display a list of star systems with active NOTAMs
  - ```!notam <system_name>``` to display the NOTAM of a given star system
+
+### Bounty hunting
+Send the following command via the in-game chat to get intel about outlaws:
+ - ```!outlaws``` to display a list of most recently sighted outlaws and their locations.
+ - ```!where <cmdrname>``` to display the last sighting of ```<cmdrname>``` provided that EDR considers them as outlaws.
 
 ### CmdrDex
 Build your own personalized Commander Index (CmdrDex) to customize your EDR experience and help other EDR users make informed guesses about other commanders' intent. Your CmdrDex is personal, EDR will only show aggregated stats for the alignment tags, e.g. 79% outlaw, 25% neutral, 5% enforcer (abbreviated as ```[!70% ?25%? +5%]``` in-game). 
@@ -76,7 +86,7 @@ Supported chat commands:
  - ```#enforcer <cmdrname>``` or ```#+ <cmdrname>``` to tag <cmdrname> with an enforcer tag.
  - ```-#<alignnment-tag>``` or ```-#<alignnment-tag> <cmdrname>``` to remove the <alignment-tag> from a contact or <cmdrname> in your commander index.
  
- #### Friends
+#### Friends
  You can tag a commander with a Friend tag if you are like-minder or fly frequently together. EDR might use this information to infer a social graph.
 
 Supported chat commands:
@@ -127,7 +137,7 @@ Currently, the following information is collected:
  - player status: EDR sends a blip whenever your location changes.
 
 ## The overlay layout is a bit off-centered. Can I tweak it?
-Yes. You can change the layout by editing the igm_config.ini file in config/ and test with the following command (after re-launching EDR). Read the instructions in config/config.ini.
+Yes. You can change the layout by editing the igm_config.ini file in config/ and test with the ```!overlay``` command (after re-launching EDR). Read the instructions in config/config.ini.
 
 ## Can I turn off the audio cues?
 Yes. You have 2 options.
@@ -144,10 +154,10 @@ Send !audiocue soft on local/wing/... chat to pick a softer set of sound. To rev
 The server gives EDR a cmdr profile which contains a karma value. The karma value has been set for a small set of cmdr who have been known to behave as outlaws.
 
 ## EDR didn’t warn me about cmdr X. Why?
-Dynamic karma is still a work in progress. Early take is that there isn't enough information in the player journal. I'm considering supporting personal / wing / shared lists (e.g. hostile, neutral, friendly, custom).
+Dynamic karma is still a work in progress. Early take is that there isn't enough information in the player journal. In the meantime, mark them as outlaws (```#! <cmdrname>```) if they attacked you for no legal reason, i.e. you weren't wanted nor pledged to an enemy power. 
 
 ## EDR wrongly called out cmdr X as an outlaw / …
-File an issue in this repository with details.
+Mark them as neutral with ```#= <cmdrname>```.
 
 ## EDR’s status displays the status of my friends. Is this information sent as well?
 No. The plugin only keeps track of your friends locally. This information is used to determine if a direct message is to one of your friend or a stranger. In the latter case, the plugin can infer that the stranger is in the same location as you are and can report a blip. In the former case, your friend could be anywhere in space so the plugin does not report a blip.
@@ -163,7 +173,7 @@ No. It doesn't include dependencies like [EDMC Overlay](https://github.com/inort
 This is a known issue with [EDMC Overlay](https://github.com/inorton/EDMCOverlay). The author is aware of it. In the meantime, switch back to Elite and wait until the overlay disappear.
 
 ## The audio cue stutters when multiple warnings are sent at once.
-The audio cue implementation is a bit simplistic. It shouldn’t occur too often.
+The audio cue implementation is a bit simplistic. It shouldn’t occur too often though.
 
 # Acknowledgements
 Special thanks to:
