@@ -13,8 +13,8 @@ class EDRConfig(object):
     def edr_api_key(self):
         return self.config.get('edr', 'edr_api_key')
 
-    def edr_endpoint(self):
-        return self.config.get('edr', 'edr_endpoint')
+    def edr_server(self):
+        return self.config.get('edr', 'edr_server')
 
     def edr_needs_u_novelty_threshold(self):
         return int(self.config.get('edr', 'edr_needs_u_novelty_threshold'))
@@ -55,11 +55,14 @@ class EDRConfig(object):
     def scans_max_age(self):
         return int(self.config.get('lrucaches', 'scans_max_age'))
 
+    def outlaws_max_age(self):
+        return int(self.config.get('lrucaches', 'outlaws_max_age'))
+
     def traffic_max_age(self):
         return int(self.config.get('lrucaches', 'traffic_max_age'))
 
-    def friends_max_age(self):
-        return int(self.config.get('lrucaches', 'friends_max_age'))
+    def crimes_max_age(self):
+        return int(self.config.get('lrucaches', 'crimes_max_age'))
 
     def lru_max_size(self):
         return int(self.config.get('lrucaches', 'lru_max_size'))
@@ -69,6 +72,9 @@ class EDRConfig(object):
 
     def sitreps_timespan(self):
         return int(self.config.get('sitreps', 'sitreps_timespan'))
+
+    def sitreps_max_age(self):
+        return int(self.config.get('sitreps', 'sitreps_max_age'))
 
     def reports_check_interval(self):
         return int(self.config.get('sitreps', 'reports_check_interval'))

@@ -1,3 +1,4 @@
+# coding= utf-8
 import datetime
 import time
 
@@ -16,7 +17,9 @@ import edrlog
 import ingamemsg
 import edrsystems
 import edrcmdrs
+import edroutlaws
 import randomtips
+import edtime
 
 EDRLOG = edrlog.EDRLog()
 
@@ -34,6 +37,7 @@ class EDRClient(object):
         self.place_novelty_threshold = edr_config.place_novelty_threshold()
         self.ship_novelty_threshold = edr_config.ship_novelty_threshold()
         self.cognitive_novelty_threshold = edr_config.cognitive_novelty_threshold()
+        self.outlaws_recent_threshold = edr_config.outlaws_recent_threshold()
 
         self.edr_needs_u_novelty_threshold = edr_config.edr_needs_u_novelty_threshold()
         self.previous_ad = None
@@ -42,6 +46,7 @@ class EDRClient(object):
         self.traffic_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                edr_config.traffic_max_age())
         self.scans_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.scans_max_age())
+        self.outlaws_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.outlaws_max_age())
 
         self._email = tk.StringVar(value=config.get("EDREmail"))
         self._password = tk.StringVar(value=config.get("EDRPassword"))
@@ -59,6 +64,7 @@ class EDRClient(object):
         
         self.edrsystems = edrsystems.EDRSystems(self.server)
         self.edrcmdrs = edrcmdrs.EDRCmdrs(self.server)
+        self.edroutlaws = edroutlaws.EDROutlaws(self.server)
 
         self.mandatory_update = False
         self.crimes_reporting = True
@@ -206,6 +212,7 @@ class EDRClient(object):
     def shutdown(self):
         self.edrcmdrs.persist()
         self.edrsystems.persist()
+        self.edroutlaws.persist()
         self.server.logout()
         self.IN_GAME_MSG.shutdown()
 
@@ -288,24 +295,24 @@ class EDRClient(object):
                 for section in summary:
                     details.append(u"{}: {}".format(section, "; ".join(summary[section])))
         if details:
-            self.__sitrep(star_system, details)
+            self.__sitrep(u"SITREP for {}".format(star_system), details)
 
     def notams(self):
         summary = self.edrsystems.systems_with_active_notams()
         if summary:
             details = []
             details.append(u"Active NOTAMs for: {}".format("; ".join(summary)))
-            self.__sitrep(None, details)
+            self.__sitrep(u"NOTAMs", details)
         else:
-            self.__sitrep(None, [u"No active NOTAMs."])
+            self.__sitrep(u"NOTAMs", [u"No active NOTAMs."])
 
     def notam(self, star_system):
         summary = self.edrsystems.active_notams(star_system)
         if summary:
             EDRLOG.log(u"NOTAMs for {}: {}".format(star_system, summary), "DEBUG")
-            self.__sitrep(star_system, summary)
+            self.__sitrep(u"NOTAM for {}".format(star_system), summary)
         else:
-            self.__sitrep(star_system, [u"No active NOTAMs."])
+            self.__sitrep(u"NOTAM for {}".format(star_system), [u"No active NOTAMs."])
 
     def sitreps(self):
         details = []
@@ -313,7 +320,7 @@ class EDRClient(object):
         for section in summary:
             details.append(u"{}: {}".format(section, "; ".join(summary[section])))
         if details:
-            self.__sitrep(None, details)
+            self.__sitrep(u"SITREPS", details)
 
 
     def cmdr_id(self, cmdr_name):
@@ -422,7 +429,7 @@ class EDRClient(object):
     def scanned(self, cmdr_name, scan):
         if self.is_anonymous():
             EDRLOG.log(u"Skipping scan report since the user is anonymous.", "INFO")
-            if scan["wanted"]:
+            if scan["wanted"] and scan["bounty"] >= 5000:
                 self.advertise_full_account("You could have helped other EDR users by reporting this outlaw!")
             return False
 
@@ -519,16 +526,33 @@ class EDRClient(object):
 
         self.edrcmdrs.untag_cmdr(cmdr_name, tag)
 
-    def __sitrep(self, star_system, details):
+    def where(self, cmdr_name):
+        report = self.edroutlaws.where(cmdr_name)
+        if report:
+            self.status = "got info about {}".format(cmdr_name)
+            self.__intel(u"Intel for {}".format(cmdr_name), report)
+        else:
+            EDRLOG.log(u"Where {} : no info".format(cmdr_name), "INFO")
+            self.__intel(u"Intel for {}".format(cmdr_name), [u"Not recently sighted or not an outlaw."])
+
+    def outlaws(self):
+        outlaws_report = self.edroutlaws.recent_sightings()
+        if not outlaws_report:
+            EDRLOG.log(u"No recently sighted outlaws", "INFO")
+            self.__sitrep(u"Recently Sighted Outlaws", [u"No outlaws sighted in the last {}".format(edtime.EDTime.pretty_print_timespan(self.edroutlaws.timespan))])
+            return False
+        
+        self.status = "recently sighted outlaws"
+        EDRLOG.log(u"Got recently sighted outlaws", "INFO")
+        self.__sitrep(u"Recently Sighted Outlaws", outlaws_report)
+
+    def __sitrep(self, header, details):
         if self.audio_feedback:
             self.AUDIO_FEEDBACK.notify()
         if not self.visual_feedback:
             return
-        EDRLOG.log(u"sitrep for {}; details: {}".format(star_system, details[0]), "DEBUG")
-        if star_system:
-            self.IN_GAME_MSG.sitrep(u"SITREP for {}".format(star_system), details)
-        else:
-            self.IN_GAME_MSG.sitrep(u"SITREPS", details)
+        EDRLOG.log(u"sitrep with header: {}; details: {}".format(header, details[0]), "DEBUG")
+        self.IN_GAME_MSG.sitrep(header, details)
 
     def __intel(self, who, details):
         if self.audio_feedback:

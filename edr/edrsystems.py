@@ -3,6 +3,8 @@ import pickle
 
 import datetime
 import time
+import collections
+import operator
 
 import edtime
 import edrconfig
@@ -14,9 +16,14 @@ EDRLOG = edrlog.EDRLog()
 class EDRSystems(object):
     EDR_SYSTEMS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/systems.p')
-
     EDR_NOTAMS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/notams.p')
+    EDR_SITREPS_CACHE = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'cache/sitreps.p')
+    EDR_TRAFFIC_CACHE = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'cache/traffic.p')
+    EDR_CRIMES_CACHE = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'cache/crimes.p')
 
     def __init__(self, server):
         edr_config = edrconfig.EDRConfig()
@@ -35,19 +42,33 @@ class EDRSystems(object):
             self.notams_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                   edr_config.notams_max_age())
 
-        #TODO use notams_cache
-        #TODO keep track of last updated from the cache instead of always starting from scratch
+        try:
+            with open(self.EDR_SITREPS_CACHE, 'rb') as handle:
+                self.sitreps_cache = pickle.load(handle)
+        except:
+            self.sitreps_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.sitreps_max_age())
 
-        #TODO use a cache for reports, probably repurpose the systems_cache
-        #TODO keep track of last updated from the cache instead of always starting from scratch
+        try:
+            with open(self.EDR_CRIMES_CACHE, 'rb') as handle:
+                self.crimes_cache = pickle.load(handle)
+        except:
+            self.crimes_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.crimes_max_age())
+
+        try:
+            with open(self.EDR_TRAFFIC_CACHE, 'rb') as handle:
+                self.traffic_cache = pickle.load(handle)
+        except:
+            self.traffic_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.traffic_max_age())
+
 
         self.reports_check_interval = edr_config.reports_check_interval()
         self.notams_check_interval = edr_config.notams_check_interval()
         self.timespan = edr_config.sitreps_timespan()
         self.reports_last_updated = None
         self.notams_last_updated = None
-        self.reports = {}
-        self.notams = {}
         self.server = server
 
     def system_id(self, star_system, may_create=False):
@@ -70,82 +91,47 @@ class EDRSystems(object):
 
         with open(self.EDR_NOTAMS_CACHE, 'wb') as handle:
             pickle.dump(self.notams_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        
+        with open(self.EDR_SITREPS_CACHE, 'wb') as handle:
+            pickle.dump(self.sitreps_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        
+        with open(self.EDR_TRAFFIC_CACHE, 'wb') as handle:
+            pickle.dump(self.traffic_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        with open(self.EDR_CRIMES_CACHE, 'wb') as handle:
+            pickle.dump(self.crimes_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     def timespan_s(self):
-        return self.__pretty_print_timespan(self.timespan, short=True, verbose=True)
-
-    def __pretty_print_timespan(self, timespan, short=False, verbose=False):
-        remaining = timespan
-        days = remaining / 86400
-        remaining -= days * 86400
-
-        hours = (remaining / 3600) % 24
-        remaining -= hours * 3600
-
-        minutes = (remaining / 60) % 60
-        remaining -= minutes * 60
-
-        seconds = (remaining % 60)
-
-        readable = ""
-        if days > 0:
-            suffix = (u" days" if days > 1 else u" day") if verbose else "d"            
-            readable = u"{}{}".format(days, suffix)
-            if hours > 0 and not short:
-                suffix = (u" hours" if hours > 1 else u" hour") if verbose else "h"
-                readable += u":{}{}".format(hours, suffix)
-        elif hours > 0:
-            suffix = (u" hours" if hours > 1 else u" hour") if verbose else "h"
-            readable = u"{}{}".format(hours, suffix)
-            if minutes > 0 and not short:
-                suffix = (u" minutes" if minutes > 1 else u" minute") if verbose else "m"
-                readable += u":{}{}".format(minutes, suffix)
-        elif minutes > 0:
-            suffix = (u" minutes" if minutes > 1 else u" minute") if verbose else "m"
-            readable = u"{}{}".format(minutes, suffix)
-            if seconds > 0 and not short:
-                suffix = (u" seconds" if seconds > 1 else u" second") if verbose else "s"
-                readable += u":{}{}".format(seconds, suffix)
-        else:
-            suffix = (u" seconds" if seconds > 1 else u" second") if verbose else "s"
-            readable = u"{}{}".format(seconds, suffix)
-
-        return readable
+        return edtime.EDTime.pretty_print_timespan(self.timespan, short=True, verbose=True)
 
     def crimes_t_minus(self, star_system):
         if self.has_sitrep(star_system):
-            system_reports = self.reports[self.system_id(star_system)]
+            system_reports = self.sitreps_cache.get(self.system_id(star_system))
             if "latestCrime" in system_reports:
-                return self.t_minus(system_reports["latestCrime"])
+                return edtime.EDTime.t_minus(system_reports["latestCrime"])
         return None
 
 
     def traffic_t_minus(self, star_system):
         if self.has_sitrep(star_system):
-            system_reports = self.reports[self.system_id(star_system)]
+            system_reports = self.sitreps_cache.get(self.system_id(star_system))
             if "latestTraffic" in system_reports:
-                return self.t_minus(system_reports["latestTraffic"])
+                return edtime.EDTime.t_minus(system_reports["latestTraffic"])
         return None
-
-    def t_minus(self, js_epoch_then, short=False):
-        ago = int((edtime.EDTime.js_epoch_now() - js_epoch_then) / 1000)
-        if short:
-            return u"-{}".format(self.__pretty_print_timespan(ago, short=True))
-        return u"T-{}".format(self.__pretty_print_timespan(ago))
     
     def has_sitrep(self, star_system):
         self.__update_if_stale()
         sid = self.system_id(star_system)
-        return sid in self.reports.keys()
+        return self.sitreps_cache.has_key(sid)
 
     def has_notams(self, star_system):
         self.__update_if_stale()
         sid = self.system_id(star_system)
-        return sid in self.notams.keys()
+        return self.notams_cache.has_key(sid)
 
     def __has_active_notams(self, system_id):
         self.__update_if_stale()
-        if not system_id in self.notams.keys():
+        if not self.notams_cache.has_key(system_id):
             return False
 
         return len(self.__active_notams_for_sid(system_id)) > 0
@@ -157,7 +143,8 @@ class EDRSystems(object):
 
     def __active_notams_for_sid(self, system_id):
         active_notams = []
-        all_notams = self.notams[system_id].get("NOTAMs", None)
+        entry = self.notams_cache.get(system_id)
+        all_notams = entry.get("NOTAMs", None)
         js_epoch_now = edtime.EDTime.js_epoch_now()
         for notam in all_notams:
             active = True
@@ -173,8 +160,10 @@ class EDRSystems(object):
     def systems_with_active_notams(self):
         summary = []
         self.__update_if_stale()
-        for sid in self.notams:
-            star_system = self.notams[sid].get("name", None)
+        systems_ids = self.notams_cache.keys()
+        for sid in systems_ids:
+            entry = self.notams_cache.get(sid)
+            star_system = entry.get("name", None)
             if star_system and self.__has_active_notams(sid):
                 summary.append(star_system)
 
@@ -185,35 +174,37 @@ class EDRSystems(object):
         systems_with_recent_traffic = {}
         systems_with_recent_outlaws = {}
         self.__update_if_stale()
-        for sid in self.reports:
-            star_system = self.reports[sid].get("name", None)
+        systems_ids = self.sitreps_cache.keys()
+        for sid in systems_ids:
+            sitrep = self.sitreps_cache.get(sid)
+            star_system = sitrep.get("name", None)
             if star_system:
                 if self.has_recent_outlaws(star_system):
-                    systems_with_recent_outlaws[star_system] = self.reports[sid]["latestOutlaw"]
+                    systems_with_recent_outlaws[star_system] = sitrep["latestOutlaw"]
                 elif self.has_recent_crimes(star_system):
-                    systems_with_recent_crimes[star_system] = self.reports[sid]["latestCrime"]
+                    systems_with_recent_crimes[star_system] = sitrep["latestCrime"]
                 elif self.has_recent_traffic(star_system):
-                    systems_with_recent_traffic[star_system] = self.reports[sid]["latestTraffic"]
+                    systems_with_recent_traffic[star_system] = sitrep["latestTraffic"]
 
         summary = {}
         summary_outlaws = []
         systems_with_recent_outlaws = sorted(systems_with_recent_outlaws.items(), key=lambda t: t[1], reverse=True)
         for system in systems_with_recent_outlaws:
-            summary_outlaws.append(u"{} {}".format(system[0], self.t_minus(system[1], short=True)))
+            summary_outlaws.append(u"{} {}".format(system[0], edtime.EDTime.t_minus(system[1], short=True)))
         if summary_outlaws:
             summary[u"Outlaws"] = summary_outlaws
 
         summary_crimes = []
         systems_with_recent_crimes = sorted(systems_with_recent_crimes.items(), key=lambda t: t[1], reverse=True)
         for system in systems_with_recent_crimes:
-            summary_crimes.append(u"{} {}".format(system[0], self.t_minus(system[1], short=True)))
+            summary_crimes.append(u"{} {}".format(system[0], edtime.EDTime.t_minus(system[1], short=True)))
         if summary_crimes:
             summary[u"Crimes"] = summary_crimes
 
         summary_traffic = []
         systems_with_recent_traffic = sorted(systems_with_recent_traffic.items(), key=lambda t: t[1], reverse=True)
         for system in systems_with_recent_traffic:
-            summary_traffic.append(u"{} {}".format(system[0], self.t_minus(system[1], short=True)))
+            summary_traffic.append(u"{} {}".format(system[0], edtime.EDTime.t_minus(system[1], short=True)))
         if summary_traffic:
             summary[u"Traffic"] = summary_traffic
 
@@ -221,7 +212,7 @@ class EDRSystems(object):
 
     def has_recent_crimes(self, star_system):
         if self.has_sitrep(star_system):
-            system_reports = self.reports[self.system_id(star_system)]
+            system_reports = self.sitreps_cache.get(self.system_id(star_system))
             if "latestCrime" not in system_reports:
                 return None
 
@@ -233,7 +224,7 @@ class EDRSystems(object):
 
     def has_recent_outlaws(self, star_system):
         if self.has_sitrep(star_system):
-            system_reports = self.reports[self.system_id(star_system)]
+            system_reports = self.sitreps_cache.get(self.system_id(star_system))
             if "latestOutlaw" not in system_reports:
                 return None
 
@@ -244,14 +235,22 @@ class EDRSystems(object):
         return None
 
     def recent_crimes(self, star_system):
+        sid = self.system_id(star_system)
+        if not sid:
+            return None
+        recent_crimes = None
         if self.has_recent_crimes(star_system):
-            #TODO cache crimes and only fetch the missing timespan
-            return self.server.recent_crimes(star_system, self.timespan)
-        return None
+            if not self.crimes_cache.has_key(sid) or (self.crimes_cache.has_key(sid) and self.crimes_cache.is_stale(sid)):
+                recent_crimes = self.server.recent_crimes(sid, self.timespan)
+                if recent_crimes:
+                    self.crimes_cache.set(sid, recent_crimes)
+            else:
+                recent_crimes = self.crimes_cache.get(sid)
+        return recent_crimes
 
     def has_recent_traffic(self, star_system):
         if self.has_sitrep(star_system):
-            system_reports = self.reports[self.system_id(star_system)]
+            system_reports = self.sitreps_cache.get(self.system_id(star_system))
             if "latestTraffic" not in system_reports:
                 return None
 
@@ -260,75 +259,80 @@ class EDRSystems(object):
                                   edr_config.traffic_recent_threshold())
 
         return None
-    
+
+    def recent_traffic(self, star_system):
+        sid = self.system_id(star_system)
+        if not sid:
+            return None
+        recent_traffic = None
+        if self.has_recent_traffic(star_system):
+            if not self.traffic_cache.has_key(sid) or (self.traffic_cache.has_key(sid) and self.traffic_cache.is_stale(sid)):
+                recent_traffic = self.server.recent_traffic(sid, self.timespan)
+                if recent_traffic:
+                    self.traffic_cache.set(sid, recent_traffic)
+            else:
+                recent_traffic = self.traffic_cache.get(sid)
+        return recent_traffic
+
     def summarize_recent_activity(self, star_system):
         #TODO refactor/simplify this mess ;)
         summary = {}
         wanted_cmdrs = {}
         if self.has_recent_traffic(star_system):
             summary_sighted = []
-            #TODO cache traffic and only fetch the missing timespan
-            recent_traffic = self.server.recent_traffic(self.system_id(star_system), self.timespan)
+            recent_traffic = self.recent_traffic(star_system)
             if recent_traffic is not None:
-                summary_traffic = {}
-                for tid in recent_traffic:
-                    traffic = recent_traffic[tid]
+                summary_traffic = collections.OrderedDict()
+                for traffic in recent_traffic:
+                    previous_timestamp = summary_traffic.get(traffic["cmdr"], None)
+                    if traffic["timestamp"] < previous_timestamp:
+                        continue
                     karma = traffic.get("karma", None)
                     if karma and karma < 0:
                         wanted_cmdrs[traffic["cmdr"]] = [ traffic["timestamp"], karma ]
                     else:
-                        summary_traffic[traffic["cmdr"]] = max(traffic["timestamp"] , summary_traffic.get(traffic["cmdr"], None))
-                summary_traffic = sorted(summary_traffic.items(), key=lambda t: t[1], reverse=True)
-                for traffic in summary_traffic:
-                    summary_sighted.append(u"{} {}".format(traffic[0], self.t_minus(traffic[1], short=True)))
-                summary[u"Sighted"] = summary_sighted
+                        summary_traffic[traffic["cmdr"]] = traffic["timestamp"]
+                for cmdr in summary_traffic:
+                    summary_sighted.append(u"{} {}".format(cmdr, edtime.EDTime.t_minus(summary_traffic[cmdr], short=True)))
+                if summary_sighted:
+                    summary[u"Sighted"] = summary_sighted
         
         if self.has_recent_crimes(star_system):
             summary_interdictors = []
             summary_destroyers = []
-            #TODO cache traffic and only fetch the missing timespan
-            recent_crimes = self.server.recent_crimes(self.system_id(star_system), self.timespan)
+            recent_crimes = self.recent_crimes(star_system)
             if recent_crimes is not None:
-                summary_crimes = {}
-                for sid in recent_crimes:
-                    crime = recent_crimes[sid]
-                    if crime["criminals"][0]["name"] not in summary_crimes or crime["timestamp"] > summary_crimes[crime["criminals"][0]["name"]][0]: 
-                        summary_crimes[crime["criminals"][0]["name"]] = [crime["timestamp"], crime["offence"]]
+                summary_crimes = collections.OrderedDict()
+                for crime in recent_crimes:
+                    lead_name = crime["criminals"][0]["name"]
+                    if lead_name not in summary_crimes or crime["timestamp"] > summary_crimes[lead_name][0]: 
+                        summary_crimes[lead_name] = [crime["timestamp"], crime["offence"]]
                         for criminal in crime["criminals"]:
+                            previous_timestamp = wanted_cmdrs[criminal["name"]][0] if criminal["name"] in wanted_cmdrs else None
+                            if previous_timestamp > crime["timestamp"]:
+                                continue
                             karma = criminal.get("karma", None)
                             if karma and karma < 0:
                                 wanted_cmdrs[criminal["name"]] = [ crime["timestamp"], karma]
-                summary_crimes = sorted(summary_crimes.items(), key=lambda t: t[1][0], reverse=True)
-                for crime in summary_crimes:
-                    if crime[1][1] == "Murder":
-                        summary_destroyers.append(u"{} {}".format(crime[0], self.t_minus(crime[1][0], short=True)))
-                    elif crime[1][1] in ["Interdicted", "Interdiction"]:
-                        summary_interdictors.append(u"{} {}".format(crime[0], self.t_minus(crime[1][0], short=True)))
+                for criminal in summary_crimes:
+                    if summary_crimes[criminal][1] == "Murder":
+                        summary_destroyers.append(u"{} {}".format(criminal, edtime.EDTime.t_minus(summary_crimes[criminal][0], short=True)))
+                    elif summary_crimes[criminal][1] in ["Interdicted", "Interdiction"]:
+                        summary_interdictors.append(u"{} {}".format(criminal, edtime.EDTime.t_minus(summary_crimes[criminal][0], short=True)))
                 if summary_interdictors:
                     summary[u"Interdictors"] = summary_interdictors
                 if summary_destroyers:
                     summary[u"Destroyers"] = summary_destroyers
         
+        wanted_cmdrs = sorted(wanted_cmdrs.items(), key=operator.itemgetter(1), reverse=True)
         if wanted_cmdrs:
-            wanted_cmdrs = sorted(wanted_cmdrs.items(), key=lambda t: t[1][0], reverse=True)
             summary_wanted = []
             for wanted in wanted_cmdrs:
-                summary_wanted.append(u"{} {}".format(wanted[0], self.t_minus(wanted[1][0], short=True)))
-            summary[u"Outlaws"] = summary_wanted
+                summary_wanted.append(u"{} {}".format(wanted[0], edtime.EDTime.t_minus(wanted[1][0], short=True)))
+            if summary_wanted:
+                summary[u"Outlaws"] = summary_wanted
 
         return summary
-    
-    def has_recent_recon(self, star_system):
-        if self.has_sitrep(star_system):
-            system_reports = self.reports[self.system_id(star_system)]
-            if "latestRecon" not in system_reports.keys():
-                return None
-
-            edr_config = edrconfig.EDRConfig()
-            return self.is_recent(system_reports.get["latestRecon"],
-                                  edr_config.recon_recent_threshold())
-
-        return None
 
     def is_recent(self, timestamp, max_age):
         if timestamp is None:
@@ -362,23 +366,25 @@ class EDRSystems(object):
         if self.__are_reports_stale():
             missing_seconds = self.timespan
             now = datetime.datetime.now()
-            if not self.reports_last_updated is None:
-                missing_seconds = self.timespan - (now - self.reports_last_updated).total_seconds()
-            response = self.server.sitreps(missing_seconds)
-            if not response is None:
-                self.reports.update(response)
+            if self.reports_last_updated:
+                missing_seconds = min(self.timespan, (now - self.reports_last_updated).total_seconds())
+            sitreps = self.server.sitreps(missing_seconds)
+            if sitreps:
+                for system_id in sitreps:
+                    self.sitreps_cache.set(system_id, sitreps[system_id])
             self.reports_last_updated = now
             updated = True
 
         if self.__are_notams_stale():
             missing_seconds = self.timespan
             now = datetime.datetime.now()
-            if not self.notams_last_updated is None:
-                missing_seconds = self.timespan - (now - self.notams_last_updated).total_seconds()
+            if self.notams_last_updated:
+                missing_seconds = min(self.timespan, (now - self.notams_last_updated).total_seconds())
 
-            response = self.server.notams(missing_seconds)
-            if not response is None:
-                self.notams.update(response)
+            notams = self.server.notams(missing_seconds)
+            if notams:
+                for system_id in notams:
+                    self.notams_cache.set(system_id, notams[system_id])
             self.notams_last_updated = now
             updated = True
 

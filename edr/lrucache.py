@@ -11,11 +11,20 @@ class LRUCache(object):
         self.max_age = datetime.timedelta(seconds=max_age_seconds)
         self.cache = collections.OrderedDict()
     
-    def _is_stale(self, entry):
+    def is_stale(self, key):
+        if not self.has_key(key):
+            return True
+        entry = self.cache[key]
         return (datetime.datetime.now() - entry["datetime"]) > self.max_age
 
     def values(self):
         return self.cache.values()
+
+    def keys(self):
+        return self.cache.keys()
+
+    def has_key(self, key):
+        return key in self.cache
 
     def get(self, key):
         if self.capacity <= 0:
@@ -24,7 +33,7 @@ class LRUCache(object):
         try:
             self.cache[key] = self.cache.pop(key)
             entry = self.cache[key]
-            if not self._is_stale(entry):
+            if not self.is_stale(key):
                 return entry["content"]
             else:
                 EDRLOG.log(u"Stale entry: {now}-{dt}>{mxa}, {content}".format(now=datetime.datetime.now(), dt=entry["datetime"], mxa=self.max_age, content=entry["content"]), "DEBUG")
