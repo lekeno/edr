@@ -4,6 +4,7 @@ import pickle
 import datetime
 import time
 import collections
+import operator
 
 import edtime
 import edrconfig
@@ -276,7 +277,7 @@ class EDRSystems(object):
     def summarize_recent_activity(self, star_system):
         #TODO refactor/simplify this mess ;)
         summary = {}
-        wanted_cmdrs = collections.OrderedDict()
+        wanted_cmdrs = {}
         if self.has_recent_traffic(star_system):
             summary_sighted = []
             recent_traffic = self.recent_traffic(star_system)
@@ -323,10 +324,11 @@ class EDRSystems(object):
                 if summary_destroyers:
                     summary[u"Destroyers"] = summary_destroyers
         
+        wanted_cmdrs = sorted(wanted_cmdrs.items(), key=operator.itemgetter(1), reverse=True)
         if wanted_cmdrs:
             summary_wanted = []
             for wanted in wanted_cmdrs:
-                summary_wanted.append(u"{} {}".format(wanted, edtime.EDTime.t_minus(wanted_cmdrs[wanted][0], short=True)))
+                summary_wanted.append(u"{} {}".format(wanted[0], edtime.EDTime.t_minus(wanted[1][0], short=True)))
             if summary_wanted:
                 summary[u"Outlaws"] = summary_wanted
 
