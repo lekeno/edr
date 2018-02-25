@@ -114,7 +114,7 @@ Control EDR settings by sending the following commands via the in-game chat:
 Ed’s Didn’t Rebuy plugin ;) ED Recon is the original meaning.
 
 ## What is Cobra Kai?
-Cobra Kai is a group of cmdrs whose goal is to protect non-combatants and disrupt the players who are on the "wrong side" of the law. Our main focus is on Community Goals, but we perform our duties at other places in the Galaxy as well.
+[Cobra Kai](https://inara.cz/wing/2035/) is a group of cmdrs whose goal is to protect non-combatants and disrupt the players who are on the "wrong side" of the law. Our main focus is on Community Goals, but we perform our duties at other places in the Galaxy as well.
 
 ## How does EDR work?
 EDR is composed of a plugin and a server.
