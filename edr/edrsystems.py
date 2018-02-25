@@ -293,7 +293,8 @@ class EDRSystems(object):
                         summary_traffic[traffic["cmdr"]] = traffic["timestamp"]
                 for cmdr in summary_traffic:
                     summary_sighted.append(u"{} {}".format(cmdr, edtime.EDTime.t_minus(summary_traffic[cmdr], short=True)))
-                summary[u"Sighted"] = summary_sighted
+                if summary_sighted:
+                    summary[u"Sighted"] = summary_sighted
         
         if self.has_recent_crimes(star_system):
             summary_interdictors = []
@@ -326,7 +327,8 @@ class EDRSystems(object):
             summary_wanted = []
             for wanted in wanted_cmdrs:
                 summary_wanted.append(u"{} {}".format(wanted, edtime.EDTime.t_minus(wanted_cmdrs[wanted][0], short=True)))
-            summary[u"Outlaws"] = summary_wanted
+            if summary_wanted:
+                summary[u"Outlaws"] = summary_wanted
 
         return summary
 
