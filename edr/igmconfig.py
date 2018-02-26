@@ -26,17 +26,29 @@ class IGMConfig(object):
     def normal_width(self):
         return self.config.getfloat('general', 'normal_width')
 
+    def panel(self, kind):
+        return self.config.getboolean(kind, 'panel')
+
     def x(self, kind, part):
         return self.config.getint(kind, '{}_x'.format(part))
 
     def y(self, kind, part):
         return self.config.getint(kind, '{}_y'.format(part))
 
+    def w(self, kind, part):
+        return self.config.getint(kind, '{}_w'.format(part))
+
+    def h(self, kind, part):
+        return self.config.getint(kind, '{}_h'.format(part))
+
     def ttl(self, kind, part):
         return self.config.getint(kind, '{}_ttl'.format(part))
 
     def rgb(self, kind, part):
         return "#{}".format(self.config.get(kind, '{}_rgb'.format(part)))
+
+    def fill(self, kind, part):
+        return "#{}".format(self.config.get(kind, '{}_fill'.format(part)))
 
     def size(self, kind, part):
         return self.config.get(kind, '{}_size'.format(part))

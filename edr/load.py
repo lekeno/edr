@@ -125,23 +125,27 @@ def handle_change_events(ed_player, entry):
 
 def handle_lifecycle_events(ed_player, entry):
     if entry["event"] in ["Music"] and entry["MusicTrack"] == "MainMenu":
+        EDR_CLIENT.clear()
         ed_player.game_mode = None
         ed_player.leave_wing()
         EDRLOG.log(u"Player is on the main menu.", "DEBUG")
         return
 
     if entry["event"] == "Resurrect":
+        EDR_CLIENT.clear()
         ed_player.resurrect()
         EDRLOG.log(u"Player has been resurrected.", "DEBUG")
         return
 
     if entry["event"] in ["Fileheader"] and entry["part"] == 1:
+        EDR_CLIENT.clear()
         ed_player.inception()
         EDR_CLIENT.status = "friends & wing: OK!"
         EDRLOG.log(u"Journal player got created: accurate picture of friends/wings.",
                    "DEBUG")
 
     if entry["event"] in ["LoadGame"]:
+        EDR_CLIENT.clear()
         ed_player.inception()
         ed_player.game_mode = entry["GameMode"]
         EDRLOG.log(u"Game mode is {}".format(ed_player.game_mode), "DEBUG")

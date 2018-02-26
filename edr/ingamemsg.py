@@ -196,6 +196,15 @@ class InGameMsg(object):
             EDRLOG.log(u"In-Game Message failed.", "ERROR")
             pass
 
+    def __shape(self, kind, shape, x, y, w, h, color="#dd5500", fill="#33bbbbbb", ttl=5):
+        try:
+            shape_id = "EDR-shape-{}-{}-{}-{}-{}".format(kind, x, y, w, h)
+            self._overlay.send_shape(shape_id, shape, color, fill, int(x), int(y), int(w), int(h), ttl=ttl)
+            self.msg_ids.set(shape_id, ttl)
+        except:
+            EDRLOG.log(u"In-Game Message failed.", "ERROR")
+            pass
+
     def __clear(self, msg_id):
         try:
             self._overlay.send_message(msg_id, "", "", 0, 0, 0, 0)
