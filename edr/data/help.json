@@ -2,14 +2,18 @@
     "": {
         "header": "Help sections",
         "details": [
-            "!help about: what is EDR, who is behind it, etc.",
-            "!help basics: getting started with EDR.",
-            "!help system: star system related features.",
-            "!help cmdr: commander related features.",
-            "!help cmdrdex: personalizing EDR's commanders database.",
-            "!help config: configuration options."
-        ],
-        "timeout": 20
+            " - !help about: what is EDR, who is behind it, etc.",
+            " - !help basics: getting started with EDR.",
+            " - !help account: doing more with an EDR account (free)",
+            " - !help system: star system related features.",
+            " - !help cmdr: commander related features.",
+            " - !help cmdrdex: personalizing EDR's commanders database.",
+            " - !help config: configuration options.",
+            " - !help faq: frequently asked questions.",
+            " - !help feedback: for reporting bugs or sharing a feature request.",
+            "",
+            "Send !clear in chat to clear everything on the overlay"
+        ]
     },
     "about": {
         "header": "About EDR",
@@ -18,24 +22,81 @@
             " - Developed by LeKeno from Cobra Kai and uses Ian Norton's EDMCOverlay for the overlay.",
             " - It uses Elite Dangerous's player journal which has been designed for third party consumption, i.e. TOS compliant.",
             " - EDR is free to use. Latest release and source code available at github.com/lekeno/edr.",
-            " - You can support EDR's development and hosting costs at patreon.com/lekeno."
-        ],
-        "timeout": 40
+            " - You can support EDR's development and hosting costs at patreon.com/lekeno.",
+            "",
+            "Send !clear in chat to clear everything on the overlay"
+        ]
     },
     "basics": {
         "header": "Getting started with EDR",
         "details": [
-            "TODO"
-        ],
-        "timeout": 60
+            "TODO",
+            "",
+            "Send !clear in chat to clear everything on the overlay"
+        ]
+    },
+    "account": {
+        "header": "EDR account",
+        "details": [
+            "While EDR provides usueful information without any credentials, it has a lot more to offer with an account.",
+            "An EDR account is free and unlocks all of EDR's features. For instance:",
+            " - personalizing / augmenting EDR's commanders database",
+            " - reporting of traffic, outlaws and crimes",
+            " - reporting scans of commanders with legal status and bounties",
+            "",
+            "These insights also help other EDR users so consider applying for an EDR account at https://lekeno.github.io/",
+            "",
+            "Send !clear in chat to clear everything on the overlay"
+        ]
     },
     "system": {
-        "header": "Star system related commands",
+        "header": "Star system related features",
         "details": [
-            "TODO"
-        ],
-        "timeout": 60
-
+            "When jumping to a system, EDR will show a sitrep for the system: active notices, i.e. NOTAM, summary of recent activity, etc.",
+            "Send the following command via the in-game chat to get intel about recent activity or specific systems:",
+            " - '!sitreps': to display a list of star systems with sitreps",
+            " - '!sitrep': to display the sitrep for the current system",
+            " - '!sitrep system_name': to display the sitrep for the star system called system_name",
+            " - '!notams': to display a list of star systems with active notices, i.e. *NO*tice *T*o *A*ir *M*en.",
+            " - '!notam system_name': to display any active notice the star system called system_name",
+            "",
+            "Send !clear in chat to clear everything on the overlay"
+        ]
+    },
+    "cmdr": {
+        "header": "Commander related features",
+        "details": [
+            "Use the following chat commands to lookup a commander's profile:",
+            " - 'o7': direct message a commander with a salute emoji to see their EDR and Inara profile",
+            " - '!who cmdr_name': to see cmdr_name's EDR and Inara profile",
+            "",
+            "Chat commands for bounty hunters:",
+            " - '!outlaws': to display a list of most recently sighted outlaws and their locations",
+            " - '!where cmdr_name': to display the last sighting of the cmdr called cmdr_name provided that EDR considers them an outlaw",
+            "",
+            "Send !clear in chat to clear everything on the overlay"
+        ]
+    },
+    "cmdrdex": {
+        "header": "Personalizing EDR's commanders database",
+        "details": [
+            "The CmdrDex allows you to customize EDR and helps EDR users make informed guesses about other commanders.",
+            "Your CmdrDex is personal, EDR will only show aggregated stats for the alignment tags.",
+            "General rules for the cmdrdex chat commands:",
+            " - '#something' or '#something cmdr_name': to tag a contact or cmdr_name with the 'something' tag, e.g. #pirate jack sparrow",
+            " - '-#something' or '-#something cmdr_name': to remove the 'something' tag from a contact or cmdr_name",
+            " - '-#' or '-# cmdr_name': to remove a contact or cmdr_name from your cmdrdex",
+            "EDR pre-defined tags:",
+            " - 'outlaw' or '!': for cmdrs who either attacked you or someone despite being clean and non pledged to an enemy power",
+            " - 'enforcer' or '+': for cmdrs who are on the good side of the law and hunt outlaws",
+            " - 'neutral' or '?': if you disagree with EDR's classification and want to suppress its warning, or if a commander just seems to go about their own business",
+            " - 'friend' or '=': to tag like-minded cmdrs, EDR may infer a social graph from these in the future",
+            "Attaching a note:",
+            " - '@# <memo>' or '@# cmdr_name memo=something': to attach a note to a contact or cmdr_name, e.g. '@# friendly trader",
+            " - '-@#` or '-@# cmdr_name': to remove the custom note from a contact or cmdr_name",
+            "",
+            "Send !clear in chat to clear everything on the overlay"
+        ]
     },
     "config": {
         "header": "Configuration options",
@@ -44,8 +105,9 @@
             " - !crimes [off|on]: to disable/enable crime reporting, e.g. '!crimes off' before an agreed upon duel.",
             " - !audiocue [on|off|loud|soft] to control the audio cues, e.g. '!audiocue soft' for soft cues.",
             " - !overlay [on|off|] to enable/disable or verify the overlay, e.g. '!overlay' to check if it is enabled/working.",
-            " - check the instructions in config/igm_config.ini to customize the layout and timeouts"
-        ],
-        "timeout": 20
+            " - check the instructions in config/igm_config.ini to customize the layout and timeouts",
+            "",
+            "Send !clear in chat to clear everything on the overlay"
+        ]
     }
 }
