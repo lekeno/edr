@@ -200,9 +200,14 @@ class InGameMsg(object):
         try:
             self._overlay.send_message(msg_id, "", "", 0, 0, 0, 0)
             self.msg_ids.evict(msg_id)
+            self.__reset_caches()
         except:
             EDRLOG.log(u"In-Game Message failed to clear {}.".format(msg_id), "ERROR")
             pass
+    
+    def __reset_caches(self):
+        for kind in self.MESSAGE_KINDS:
+            self.cfg[kind]["b"]["cache"].reset()    
 
     def shutdown(self):
         # TODO self._overlay.shutdown() or something
