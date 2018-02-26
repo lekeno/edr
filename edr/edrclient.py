@@ -203,11 +203,11 @@ class EDRClient(object):
 
     def warmup(self):
         EDRLOG.log(u"Warming up client.", "INFO")
-        details = [u"(please check that ED has the focus)"]
+        details = [u"Feeling lost? Send !help via the in-game chat"]
         if self.mandatory_update:
             details = [u"Mandatory update!"]
         details += self.motd
-        details.append("---")
+        details.append("-- Random Tip --")
         details.append(self.tips.tip())
         self.__notify(u"EDR v{} by LeKeno (Cobra Kai)".format(self.edr_version), details)
 
