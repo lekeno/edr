@@ -554,7 +554,7 @@ class EDRClient(object):
             return False
 
         EDRLOG.log(u"Show help for {} with header: {} and details: {}".format(section, content["header"], content["details"][0]), "DEBUG")
-        self.IN_GAME_MSG.notify(content["header"], content["details"], content["timeout"]) #TODO that wont work for recycling lines...
+        self.IN_GAME_MSG.help(content["header"], content["details"])
         return True
 
     def clear(self):

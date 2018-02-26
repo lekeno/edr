@@ -22,12 +22,13 @@ except ImportError:
 import lrucache
 
 class InGameMsg(object):   
-    MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice"]
+    MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice", "help"]
 
     def __init__(self):
         self._overlay = edmcoverlay.Overlay()
         self.cfg = {}
         self.general_config()
+        self.must_clear = False
         for kind in self.MESSAGE_KINDS:
             self.message_config(kind)
         self.msg_ids = lrucache.LRUCache(1000, 60*5)
@@ -73,22 +74,28 @@ class InGameMsg(object):
         }
 
     def intel(self, header, details):
+        self.__clear_if_needed()
         self.__msg_header("intel", header)
         self.__msg_body("intel", details)
 
     def warning(self, header, details):
+        self.__clear_if_needed()
         self.__msg_header("warning", header)
         self.__msg_body("warning", details)
 
-    def notify(self, header, details, timeout=None):
-        if timeout:
-            self.__msg_header("notice", header, timeout)
-            self.__msg_body("notice", details, timeout)
-            return                
+    def notify(self, header, details):
+        self.__clear_if_needed()
         self.__msg_header("notice", header)
         self.__msg_body("notice", details)
     
+    def help(self, header, details):
+        self.__clear_if_needed()
+        self.__msg_header("help", header)
+        self.__msg_body("help", details)
+        self.must_clear = True
+
     def sitrep(self, header, details):
+        self.__clear_if_needed()
         self.__msg_header("sitrep", header)
         self.__msg_body("sitrep", details)
 
@@ -96,7 +103,11 @@ class InGameMsg(object):
         for msg_id in self.msg_ids.keys():
             self.__clear(msg_id)
         self.msg_ids.reset()
-        
+        self.must_clear = False
+
+    def __clear_if_needed(self):
+        if self.must_clear:
+            self.clear()
     
     def __wrap_body(self, kind, lines):
         if not lines:
