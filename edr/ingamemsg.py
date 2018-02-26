@@ -21,16 +21,16 @@ except ImportError:
 
 import lrucache
 
-class InGameMsg(object):    
+class InGameMsg(object):   
     MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice"]
 
     def __init__(self):
         self._overlay = edmcoverlay.Overlay()
         self.cfg = {}
-        self.body_cache = {}
         self.general_config()
         for kind in self.MESSAGE_KINDS:
             self.message_config(kind)
+        self.msg_ids = lrucache.LRUCache(1000, 60*5)
 
     def general_config(self):
         conf = igmconfig.IGMConfig()
@@ -47,7 +47,7 @@ class InGameMsg(object):
 
 
     def message_config(self, kind):
-        conf = igmconfig.IGMConfig()
+        conf = igmconfig.IGMConfig() 
         self.cfg[kind] = {
             "h": {
                 "x": conf.x(kind, "header"),
@@ -80,7 +80,11 @@ class InGameMsg(object):
         self.__msg_header("warning", header)
         self.__msg_body("warning", details)
 
-    def notify(self, header, details):
+    def notify(self, header, details, timeout=None):
+        if timeout:
+            self.__msg_header("notice", header, timeout)
+            self.__msg_body("notice", details, timeout)
+            return                
         self.__msg_header("notice", header)
         self.__msg_body("notice", details)
     
@@ -88,6 +92,12 @@ class InGameMsg(object):
         self.__msg_header("sitrep", header)
         self.__msg_body("sitrep", details)
 
+    def clear(self):
+        for msg_id in self.msg_ids.keys():
+            self.__clear(msg_id)
+        self.msg_ids.reset()
+        
+    
     def __wrap_body(self, kind, lines):
         if not lines:
             return []
@@ -120,15 +130,17 @@ class InGameMsg(object):
             return max(0,int(x-text_w/2.0))
         return x
 
-    def __msg_header(self, kind, header):
+    def __msg_header(self, kind, header, timeout=None):
         conf = self.cfg[kind]["h"]
+        ttl = timeout if timeout else conf["ttl"]
         text = header[:conf["len"]]
         x = self.__adjust_x(kind, "h", text)
-        EDRLOG.log(u"header={}, row={}, col={}, color={}, ttl={}, size={}".format(header, conf["y"], x, conf["rgb"], conf["ttl"], conf["size"]), "DEBUG")
-        self.__display(kind, text, row=conf["y"], col=x, color=conf["rgb"], ttl=conf["ttl"], size=conf["size"])
+        EDRLOG.log(u"header={}, row={}, col={}, color={}, ttl={}, size={}".format(header, conf["y"], x, conf["rgb"], ttl, conf["size"]), "DEBUG")
+        self.__display(kind, text, row=conf["y"], col=x, color=conf["rgb"], ttl=ttl, size=conf["size"])
 
-    def __msg_body(self, kind, body):
+    def __msg_body(self, kind, body, timeout=None):
         conf = self.cfg[kind]["b"]
+        ttl = timeout if timeout else conf["ttl"]
         x = conf["x"]
         chunked_lines = self.__wrap_body(kind, body)
         
@@ -138,8 +150,8 @@ class InGameMsg(object):
                 y = conf["y"] + row_nb * self.cfg["general"][conf["size"]]["h"]
                 conf["cache"].set(row_nb, chunk)
                 x = self.__adjust_x(kind, "b", chunk)
-                EDRLOG.log(u"line={}, rownb={}, last_row={}, row={}, col={}, color={}, ttl={}, size={}".format(chunk, row_nb, conf["last_row"], y, x, conf["rgb"], conf["ttl"], conf["size"]), "DEBUG")
-                self.__display(kind, chunk, row=y, col=x, color=conf["rgb"], size=conf["size"], ttl=conf["ttl"])
+                EDRLOG.log(u"line={}, rownb={}, last_row={}, row={}, col={}, color={}, ttl={}, size={}".format(chunk, row_nb, conf["last_row"], y, x, conf["rgb"], ttl, conf["size"]), "DEBUG")
+                self.__display(kind, chunk, row=y, col=x, color=conf["rgb"], size=conf["size"], ttl=ttl)
                 self.__bump_body_row(kind)
 
     def __best_body_row(self, kind, text):
@@ -166,10 +178,19 @@ class InGameMsg(object):
 
     def __display(self, kind, text, row, col, color="#dd5500", size="large", ttl=5):
         try:
-            msgid = "EDR-{}-{}".format(kind, row) 
-            self._overlay.send_message(msgid, text, color, int(col), int(row), ttl=ttl, size=size)
+            msg_id = "EDR-{}-{}".format(kind, row)
+            self._overlay.send_message(msg_id, text, color, int(col), int(row), ttl=ttl, size=size)
+            self.msg_ids.set(msg_id, ttl)
         except:
             EDRLOG.log(u"In-Game Message failed.", "ERROR")
+            pass
+
+    def __clear(self, msg_id):
+        try:
+            self._overlay.send_message(msg_id, "", "", 0, 0, 0, 0)
+            self.msg_ids.evict(msg_id)
+        except:
+            EDRLOG.log(u"In-Game Message failed to clear {}.".format(msg_id), "ERROR")
             pass
 
     def shutdown(self):

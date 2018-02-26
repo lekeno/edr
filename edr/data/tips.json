@@ -57,7 +57,8 @@
         "Have a feature request? File an issue at https://github.com/lekeno/edr/issues",
         "Do you like EDR? Consider supporting its development and hosting costs at https://patreon.com/lekeno",
         "Send '!where <cmdrname>' to find out where an outlaw was last sighted",
-        "Send '!outlaws' to find out where outlaws were last sighted"
+        "Send '!outlaws' to find out where outlaws were last sighted",
+        "Send '!clear' to clear all the messages on EDR's overlay"
     ],
     "OPEN tips": [
         "Never fly what you can't afford to lose. Check your rebuy and credit balance on your right panel.",

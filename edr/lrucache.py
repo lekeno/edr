@@ -59,3 +59,12 @@ class LRUCache(object):
     def __delitem__(self, key):
         del self.cache[key]
 
+    def evict(self, key):
+        try:
+            self.cache.pop(key)
+        except KeyError:
+            pass
+
+    def reset(self):
+        self.cache = collections.OrderedDict()
+

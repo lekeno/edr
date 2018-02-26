@@ -19,6 +19,7 @@ import edrsystems
 import edrcmdrs
 import edroutlaws
 import randomtips
+import helpcontent
 import edtime
 
 EDRLOG = edrlog.EDRLog()
@@ -70,6 +71,7 @@ class EDRClient(object):
         self.crimes_reporting = True
         self.motd = []
         self.tips = randomtips.RandomTips("data/tips.json")
+        self.help_content = helpcontent.HelpContent("data/help.json")
 
     def loud_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "loud")
@@ -546,8 +548,18 @@ class EDRClient(object):
         EDRLOG.log(u"Got recently sighted outlaws", "INFO")
         self.__sitrep(u"Recently Sighted Outlaws", outlaws_report)
 
-    def help(self):
-        self.__notify("EDR Help", "Test.")
+    def help(self, section):
+        content = self.help_content.get(section)
+        if not content:
+            return False
+
+        EDRLOG.log(u"Show help for {} with header: {} and details: {}".format(section, content["header"], content["details"][0]), "DEBUG")
+        self.IN_GAME_MSG.notify(content["header"], content["details"], content["timeout"]) #TODO that wont work for recycling lines...
+        return True
+
+    def clear(self):
+        self.IN_GAME_MSG.clear()
+           
 
     def __sitrep(self, header, details):
         if self.audio_feedback:

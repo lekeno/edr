@@ -588,8 +588,13 @@ def handle_bang_commands(cmdr, command, command_parts):
     elif command == "!where" and len(command_parts) == 2:
         EDRLOG.log(u"Explicit where command for {}".format(command_parts[1]), "INFO")
         EDR_CLIENT.where(command_parts[1])
+    elif command == "!help":
+        EDRLOG.log(u"Help command", "INFO")
+        EDR_CLIENT.help("" if len(command_parts) == 1 else command_parts[1])
+    elif command == "!clear":
+        EDRLOG.log(u"Clear command", "INFO")
+        EDR_CLIENT.clear()
     
-
 def handle_hash_commands(command, command_parts, entry):
     target_cmdr = command_parts[1] if len(command_parts) > 1 else None
     if target_cmdr is None and not entry["To"] in ["local", "voicechat", "wing", "friend"]:
