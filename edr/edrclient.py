@@ -546,6 +546,9 @@ class EDRClient(object):
         EDRLOG.log(u"Got recently sighted outlaws", "INFO")
         self.__sitrep(u"Recently Sighted Outlaws", outlaws_report)
 
+    def help(self):
+        self.__notify("EDR Help", "Test.")
+
     def __sitrep(self, header, details):
         if self.audio_feedback:
             self.AUDIO_FEEDBACK.notify()

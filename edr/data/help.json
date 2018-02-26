@@ -1,0 +1,51 @@
+{
+    "": {
+        "header": "Help sections",
+        "details": [
+            "!help about: what is EDR, who is behind it, etc.",
+            "!help basics: getting started with EDR.",
+            "!help system: star system related features.",
+            "!help cmdr: commander related features.",
+            "!help cmdrdex: personalizing EDR's commanders database.",
+            "!help config: configuration options."
+        ],
+        "timeout": 20
+    },
+    "about": {
+        "header": "About EDR",
+        "details": [
+            "ED Recon is a third party plugin for Elite Dangerous. Its purpose is to provide insights about outlaws to traders, explorers, and bounty hunters.",
+            " - Developed by LeKeno from Cobra Kai and uses Ian Norton's EDMCOverlay for the overlay.",
+            " - It uses Elite Dangerous's player journal which has been designed for third party consumption, i.e. TOS compliant.",
+            " - EDR is free to use. Latest release and source code available at github.com/lekeno/edr.",
+            " - You can support EDR's development and hosting costs at patreon.com/lekeno."
+        ],
+        "timeout": 40
+    },
+    "basics": {
+        "header": "Getting started with EDR",
+        "details": [
+            "TODO"
+        ],
+        "timeout": 60
+    },
+    "system": {
+        "header": "Star system related commands",
+        "details": [
+            "TODO"
+        ],
+        "timeout": 60
+
+    },
+    "config": {
+        "header": "Configuration options",
+        "details": [
+            "EDR offers the following configuration options:",
+            " - !crimes [off|on]: to disable/enable crime reporting, e.g. '!crimes off' before an agreed upon duel.",
+            " - !audiocue [on|off|loud|soft] to control the audio cues, e.g. '!audiocue soft' for soft cues.",
+            " - !overlay [on|off|] to enable/disable or verify the overlay, e.g. '!overlay' to check if it is enabled/working.",
+            " - check the instructions in config/igm_config.ini to customize the layout and timeouts"
+        ],
+        "timeout": 20
+    }
+}
