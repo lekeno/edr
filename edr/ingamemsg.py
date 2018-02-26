@@ -72,30 +72,52 @@ class InGameMsg(object):
                 "last_row": 0
             }
         }
+        if not conf.panel(kind):
+            return
+        self.cfg[kind]["panel"] = {
+            "x": conf.x(kind, "panel"),
+            "y": conf.y(kind, "panel"),
+            "w": conf.w(kind, "panel"),
+            "h": conf.h(kind, "panel"),
+            "ttl": conf.ttl(kind, "panel"),
+            "rgb": conf.rgb(kind, "panel"),
+            "fill": conf.fill(kind, "panel")
+        }
+
 
     def intel(self, header, details):
         self.__clear_if_needed()
+        if "panel" in self.cfg["intel"]:
+            self.__shape("intel", self.cfg["intel"]["panel"])
         self.__msg_header("intel", header)
         self.__msg_body("intel", details)
 
     def warning(self, header, details):
         self.__clear_if_needed()
+        if "panel" in self.cfg["warning"]:
+            self.__shape("warning", self.cfg["warning"]["panel"])
         self.__msg_header("warning", header)
         self.__msg_body("warning", details)
 
     def notify(self, header, details):
         self.__clear_if_needed()
+        if "panel" in self.cfg["notice"]:
+            self.__shape("notify", self.cfg["notify"]["panel"])
         self.__msg_header("notice", header)
         self.__msg_body("notice", details)
     
     def help(self, header, details):
         self.__clear_if_needed()
+        if "panel" in self.cfg["help"]:
+            self.__shape("help", self.cfg["help"]["panel"])
         self.__msg_header("help", header)
         self.__msg_body("help", details)
         self.must_clear = True
 
     def sitrep(self, header, details):
         self.__clear_if_needed()
+        if "panel" in self.cfg["sitrep"]:
+            self.__shape("sitrep", self.cfg["sitrep"]["panel"])
         self.__msg_header("sitrep", header)
         self.__msg_body("sitrep", details)
 
@@ -196,13 +218,13 @@ class InGameMsg(object):
             EDRLOG.log(u"In-Game Message failed.", "ERROR")
             pass
 
-    def __shape(self, kind, shape, x, y, w, h, color="#dd5500", fill="#33bbbbbb", ttl=5):
+    def __shape(self, kind, panel):
         try:
-            shape_id = "EDR-shape-{}-{}-{}-{}-{}".format(kind, x, y, w, h)
-            self._overlay.send_shape(shape_id, shape, color, fill, int(x), int(y), int(w), int(h), ttl=ttl)
-            self.msg_ids.set(shape_id, ttl)
+            shape_id = "EDR-shape-{}-{}-{}-{}-{}".format(kind, panel["x"], panel["y"], panel["w"], panel["h"])
+            self._overlay.send_shape(shape_id, "rect", panel["rgb"], panel["fill"], panel["x"], panel["y"], panel["w"], panel["h"], ttl=panel["ttl"])
+            self.msg_ids.set(shape_id, panel["ttl"])
         except:
-            EDRLOG.log(u"In-Game Message failed.", "ERROR")
+            EDRLOG.log(u"In-Game Shape failed.", "ERROR")
             pass
 
     def __clear(self, msg_id):
