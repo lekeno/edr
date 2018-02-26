@@ -137,7 +137,7 @@ Currently, the following information is collected:
  - player status: EDR sends a blip whenever your location changes.
 
 ## The overlay layout is a bit off-centered. Can I tweak it?
-Yes. You can change the layout by editing the igm_config.ini file in config/ and test with the ```!overlay``` command (after re-launching EDR). Read the instructions in config/config.ini.
+Yes. You can change the layout by editing the igm_config.ini file in config/ and test with the ```!overlay``` command (after re-launching EDR). Read the instructions in config/igm_config.ini.
 
 ## Can I turn off the audio cues?
 Yes. You have 2 options.
@@ -165,7 +165,7 @@ No. The plugin only keeps track of your friends locally. This information is use
 ## Does EDR send the content of text comms?
 No. EDR has no interest in the content of text comms. It would also be a lot of data to deal with.
 
-## Does this repository contains all the files and depedencies?
+## Does this repository contains all the files and dependencies?
 No. It doesn't include dependencies like [EDMC Overlay](https://github.com/inorton/EDMCOverlay) nor the configuration info (e.g. API keys, hosts).
 
 # Known bugs
