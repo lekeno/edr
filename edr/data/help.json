@@ -9,8 +9,6 @@
             " - !help cmdr: commander related features.",
             " - !help cmdrdex: personalizing EDR's commanders database.",
             " - !help config: configuration options.",
-            " - !help faq: frequently asked questions.",
-            " - !help feedback: for reporting bugs or sharing a feature request.",
             "",
             "Send !clear in chat to clear everything on the overlay"
         ]
@@ -23,6 +21,7 @@
             " - It uses Elite Dangerous's player journal which has been designed for third party consumption, i.e. TOS compliant.",
             " - EDR is free to use. Latest release and source code available at github.com/lekeno/edr.",
             " - You can support EDR's development and hosting costs at patreon.com/lekeno.",
+            " - Got feedback or questions? Please file bugs, feature requests or questions at https://github.com/lekeno/edr/issues/",
             "",
             "Send !clear in chat to clear everything on the overlay"
         ]
@@ -30,7 +29,16 @@
     "basics": {
         "header": "Getting started with EDR",
         "details": [
-            "TODO",
+            "EDR will proactively show various insights as you fly around and scan other commanders:",
+            " - A summary of recent activity as you jump into a system,",
+            " - EDR and Inara profile for known outlaws as they are sighted (e.g. scanned) or detected (e.g. chat)", 
+            "",
+            "You can also ask EDR for insights by issuing various commands via the in-game chat:",
+            " - '!sitrep Lave' to find out if Lave has seen some recent activity",
+            " - '!notams' to find out which systems are considered hotspots",
+            "Learn more with '!help system' and '!help cmdr'",
+            "",
+            "You can also customize EDR to your needs with the cmdrdex features, send '!help cmdrdex' to learn more.",
             "",
             "Send !clear in chat to clear everything on the overlay"
         ]
@@ -38,13 +46,13 @@
     "account": {
         "header": "EDR account",
         "details": [
-            "While EDR provides usueful information without any credentials, it has a lot more to offer with an account.",
+            "While EDR provides useful information without any credentials, it has a lot more to offer with an account.",
             "An EDR account is free and unlocks all of EDR's features. For instance:",
             " - personalizing / augmenting EDR's commanders database",
             " - reporting of traffic, outlaws and crimes",
             " - reporting scans of commanders with legal status and bounties",
             "",
-            "These insights also help other EDR users so consider applying for an EDR account at https://lekeno.github.io/",
+            "These insights will also help other EDR users so consider applying for an EDR account at https://lekeno.github.io/",
             "",
             "Send !clear in chat to clear everything on the overlay"
         ]
@@ -93,7 +101,7 @@
             " - 'friend' or '=': to tag like-minded cmdrs, EDR may infer a social graph from these in the future",
             "Attaching a note:",
             " - '@# <memo>' or '@# cmdr_name memo=something': to attach a note to a contact or cmdr_name, e.g. '@# friendly trader",
-            " - '-@#` or '-@# cmdr_name': to remove the custom note from a contact or cmdr_name",
+            " - '-@#' or '-@# cmdr_name': to remove the custom note from a contact or cmdr_name",
             "",
             "Send !clear in chat to clear everything on the overlay"
         ]
