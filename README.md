@@ -67,9 +67,9 @@ Send the following command via the in-game chat to get intel about outlaws:
 Build your own personalized Commander Index (CmdrDex) to customize your EDR experience and help other EDR users make informed guesses about other commanders' intent. Your CmdrDex is personal, EDR will only show aggregated stats for the alignment tags, e.g. 79% outlaw, 25% neutral, 5% enforcer (abbreviated as ```[!70% ?25%? +5%]``` in-game). 
 
 General chat commands:
- - ```-#``` or ```-# <cmdrname>``` to untag (remove) a contact or <cmdrname> from your commander index.
- - ```#<tag>``` or ```#<tag> <cmdrname>``` to tag a contact or <cmdrname> with a custom <tag> in your commander index.
- - ```-#<tag>``` or ```-#<tag> <cmdrname>``` to remove the <tag> tag from a contact or <cmdrname> in your commander index, e.g. ```#pirate jack sparrow```).
+ - ```-#``` or ```-# <cmdrname>``` to untag (remove) a contact or ```<cmdrname>``` from your commander index.
+ - ```#<tag>``` or ```#<tag> <cmdrname>``` to tag a contact or ```<cmdrname>``` with a custom ```<tag>``` in your commander index.
+ - ```-#<tag>``` or ```-#<tag> <cmdrname>``` to remove the ```<tag>``` tag from a contact or ```<cmdrname>``` in your commander index, e.g. ```#pirate jack sparrow```).
 
 #### Alignment tags
 Tag a commander with an alignment tag:
@@ -79,28 +79,28 @@ Tag a commander with an alignment tag:
  
 Supported chat commands:
  - ```#outlaw``` or ```#!``` to tag a contact with an outlaw tag.
- - ```#outlaw <cmdrname>``` or ```#! <cmdrname>``` to tag <cmdrname> with an outlaw tag.
+ - ```#outlaw <cmdrname>``` or ```#! <cmdrname>``` to tag ```<cmdrname>``` with an outlaw tag.
  - ```#neutral``` or ```#?``` to tag a contact with a neutral tag.
- - ```#neutral <cmdrname>``` or ```#? <cmdrname>``` to tag <cmdrname> with a neutral tag.
+ - ```#neutral <cmdrname>``` or ```#? <cmdrname>``` to tag ```<cmdrname>``` with a neutral tag.
  - ```#enforcer``` or ```#+``` to tag a contact with an enforcer tag.
- - ```#enforcer <cmdrname>``` or ```#+ <cmdrname>``` to tag <cmdrname> with an enforcer tag.
- - ```-#<alignnment-tag>``` or ```-#<alignnment-tag> <cmdrname>``` to remove the <alignment-tag> from a contact or <cmdrname> in your commander index.
+ - ```#enforcer <cmdrname>``` or ```#+ <cmdrname>``` to tag ```<cmdrname>``` with an enforcer tag.
+ - ```-#<alignnment-tag>``` or ```-#<alignnment-tag> <cmdrname>``` to remove the ```<alignment-tag>``` from a contact or ```<cmdrname>``` in your commander index.
  
 #### Friends
  You can tag a commander with a Friend tag if you are like-minder or fly frequently together. EDR might use this information to infer a social graph.
 
 Supported chat commands:
  - ```#=``` or ```#friend``` to tag a contact with a friend tag.
- - ```#= <cmdrname>``` or ```#friend <cmdrname>``` to tag <cmdrname> with a friend tag.
- - ```-#=``` or ```-#friend <cmdrname>``` to remove a friend tag from a contact or <cmdrname> in your commander index.
+ - ```#= <cmdrname>``` or ```#friend <cmdrname>``` to tag ```<cmdrname>``` with a friend tag.
+ - ```-#=``` or ```-#friend <cmdrname>``` to remove a friend tag from a contact or ```<cmdrname>``` in your commander index.
  
 #### Memo
 You can attach a note to a commander so that you remember how you met them or who they are.
 
 Supported chat commands:
- - ```@# <memo>``` to attach a custom note to a contact with <memo> in your commanders index.",
- - ```@# <cmdrname> memo=<memo>``` to attach a custom note to <cmdrname> with <memo> in your commanders index.",
- - ```-@#```` or ```-@# <cmdrname>``` to remove the custom note from a contact or <cmdrname> in your commander index
+ - ```@# <memo>``` to attach a custom note to a contact with ```<memo>``` in your commanders index.",
+ - ```@# <cmdrname> memo=<memo>``` to attach a custom note to ```<cmdrname>``` with ```<memo>``` in your commanders index.",
+ - ```-@#```` or ```-@# <cmdrname>``` to remove the custom note from a contact or ```<cmdrname>``` in your commander index
 
 ### Misc.
 Control EDR settings by sending the following commands via the in-game chat:
