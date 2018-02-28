@@ -77,8 +77,8 @@ class InGameMsg(object):
         self.cfg[kind]["panel"] = {
             "x": conf.x(kind, "panel"),
             "y": conf.y(kind, "panel"),
-            "w": conf.w(kind, "panel"),
-            "h": conf.h(kind, "panel"),
+            "x2": conf.x2(kind, "panel"),
+            "y2": conf.y2(kind, "panel"),
             "ttl": conf.ttl(kind, "panel"),
             "rgb": conf.rgb(kind, "panel"),
             "fill": conf.fill(kind, "panel")
@@ -220,8 +220,8 @@ class InGameMsg(object):
 
     def __shape(self, kind, panel):
         try:
-            shape_id = "EDR-shape-{}-{}-{}-{}-{}".format(kind, panel["x"], panel["y"], panel["w"], panel["h"])
-            self._overlay.send_shape(shape_id, "rect", panel["rgb"], panel["fill"], panel["x"], panel["y"], panel["w"], panel["h"], ttl=panel["ttl"])
+            shape_id = "EDR-shape-{}-{}-{}-{}-{}".format(kind, panel["x"], panel["y"], panel["x2"], panel["y2"])
+            self._overlay.send_shape(shape_id, "rect", panel["rgb"], panel["fill"], panel["x"], panel["y"], panel["x2"], panel["y2"], ttl=panel["ttl"])
             self.msg_ids.set(shape_id, panel["ttl"])
         except:
             EDRLOG.log(u"In-Game Shape failed.", "ERROR")

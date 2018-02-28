@@ -3,7 +3,7 @@ import ConfigParser
 import edrlog
 
 class IGMConfig(object):
-    def __init__(self, config_file='config/igm_config.ini', user_config_file='config/user_igm_config.ini'):
+    def __init__(self, config_file='config/igm_config.v2.ini', user_config_file='config/user_igm_config.v2.ini'):
         self.config = ConfigParser.ConfigParser()
         user_cfg_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), user_config_file)
         if os.path.exists(user_cfg_path):
@@ -35,11 +35,11 @@ class IGMConfig(object):
     def y(self, kind, part):
         return self.config.getint(kind, '{}_y'.format(part))
 
-    def w(self, kind, part):
-        return self.config.getint(kind, '{}_w'.format(part))
+    def x2(self, kind, part):
+        return self.config.getint(kind, '{}_x2'.format(part))
 
-    def h(self, kind, part):
-        return self.config.getint(kind, '{}_h'.format(part))
+    def y2(self, kind, part):
+        return self.config.getint(kind, '{}_y2'.format(part))
 
     def ttl(self, kind, part):
         return self.config.getint(kind, '{}_ttl'.format(part))
