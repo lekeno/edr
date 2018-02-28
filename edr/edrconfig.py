@@ -25,6 +25,12 @@ class EDRConfig(object):
     def inara_endpoint(self):
         return self.config.get('inara', 'inara_endpoint')
 
+    def intel_even_if_clean(self):
+        return self.config.getboolean('scans', 'intel_even_if_clean')
+
+    def intel_bounty_threshold(self):
+        return self.config.getint('scans', 'intel_bounty_threshold')
+
     def system_novelty_threshold(self):
         return int(self.config.get('novelty', 'system_novelty_threshold'))
 
