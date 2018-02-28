@@ -35,7 +35,8 @@ Setup the type of feedback that suits you best:
  3. Click OK.
 
 ## Usage
-EDR will warn you when dangerous cmdrs make themselves known to the player journal: comms, interdiction, etc.
+EDR will warn you when dangerous cmdrs make themselves known to the player journal: comms, interdiction, etc. You can also scan contacts with your ship's regular scanner to report them to EDR for the benefit of other EDR users and to get warnings / profiles for known outlaws or wanted commanders with a bounty of at least 10k credits.
+
 Alternatively, you can trigger an EDR + Inara cmdr profile lookup by:
  - Sending an ```o7``` to the cmdr you are wondering about.
  - Sending a ```!who <cmdrname>``` on chat (local, wing, etc.)
