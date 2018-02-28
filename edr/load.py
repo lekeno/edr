@@ -126,23 +126,27 @@ def handle_change_events(ed_player, entry):
 
 def handle_lifecycle_events(ed_player, entry):
     if entry["event"] in ["Music"] and entry["MusicTrack"] == "MainMenu":
+        EDR_CLIENT.clear()
         ed_player.game_mode = None
         ed_player.leave_wing()
         EDRLOG.log(u"Player is on the main menu.", "DEBUG")
         return
 
     if entry["event"] == "Resurrect":
+        EDR_CLIENT.clear()
         ed_player.resurrect()
         EDRLOG.log(u"Player has been resurrected.", "DEBUG")
         return
 
     if entry["event"] in ["Fileheader"] and entry["part"] == 1:
+        EDR_CLIENT.clear()
         ed_player.inception()
         EDR_CLIENT.status = "friends & wing: OK!"
         EDRLOG.log(u"Journal player got created: accurate picture of friends/wings.",
                    "DEBUG")
 
     if entry["event"] in ["LoadGame"]:
+        EDR_CLIENT.clear()
         ed_player.inception()
         ed_player.game_mode = entry["GameMode"]
         EDRLOG.log(u"Game mode is {}".format(ed_player.game_mode), "DEBUG")
@@ -589,6 +593,12 @@ def handle_bang_commands(cmdr, command, command_parts):
     elif command == "!where" and len(command_parts) == 2:
         EDRLOG.log(u"Explicit where command for {}".format(command_parts[1]), "INFO")
         EDR_CLIENT.where(command_parts[1])
+    elif command == "!help":
+        EDRLOG.log(u"Help command", "INFO")
+        EDR_CLIENT.help("" if len(command_parts) == 1 else command_parts[1])
+    elif command == "!clear":
+        EDRLOG.log(u"Clear command", "INFO")
+        EDR_CLIENT.clear()
     
 def handle_hash_commands(command, command_parts, entry):
     target_cmdr = command_parts[1] if len(command_parts) > 1 else None

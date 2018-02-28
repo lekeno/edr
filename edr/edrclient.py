@@ -19,6 +19,7 @@ import edrsystems
 import edrcmdrs
 import edroutlaws
 import randomtips
+import helpcontent
 import edtime
 
 EDRLOG = edrlog.EDRLog()
@@ -72,6 +73,7 @@ class EDRClient(object):
         self.crimes_reporting = True
         self.motd = []
         self.tips = randomtips.RandomTips("data/tips.json")
+        self.help_content = helpcontent.HelpContent("data/help.json")
 
     def loud_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "loud")
@@ -203,11 +205,11 @@ class EDRClient(object):
 
     def warmup(self):
         EDRLOG.log(u"Warming up client.", "INFO")
-        details = [u"(please check that ED has the focus)"]
+        details = [u"Feeling lost? Send !help via the in-game chat"]
         if self.mandatory_update:
             details = [u"Mandatory update!"]
         details += self.motd
-        details.append("---")
+        details.append("-- Random Tip --")
         details.append(self.tips.tip())
         self.__notify(u"EDR v{} by LeKeno (Cobra Kai)".format(self.edr_version), details)
 
@@ -559,6 +561,19 @@ class EDRClient(object):
         self.status = "recently sighted outlaws"
         EDRLOG.log(u"Got recently sighted outlaws", "INFO")
         self.__sitrep(u"Recently Sighted Outlaws", outlaws_report)
+
+    def help(self, section):
+        content = self.help_content.get(section)
+        if not content:
+            return False
+
+        EDRLOG.log(u"Show help for {} with header: {} and details: {}".format(section, content["header"], content["details"][0]), "DEBUG")
+        self.IN_GAME_MSG.help(content["header"], content["details"])
+        return True
+
+    def clear(self):
+        self.IN_GAME_MSG.clear()
+           
 
     def __sitrep(self, header, details):
         if self.audio_feedback:
