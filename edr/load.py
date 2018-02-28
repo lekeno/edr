@@ -5,6 +5,7 @@ from edentities import EDCmdr
 from edrclient import EDRClient
 from edtime import EDTime
 from edrlog import EDRLog
+import edentities
 
 EDR_CLIENT = EDRClient()
 EDRLOG = EDRLog()
@@ -204,7 +205,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PVPKill"]:
         report_crime(ed_player, entry)
 
-    if entry["event"] in ["ShipTargeted"] and entry["ScanStage"] > 0:
+    if entry["event"] in ["ShipTargeted"] and "ScanStage" in entry and entry["ScanStage"] > 0:
         handle_scan_events(ed_player, entry)
 
     if entry["event"] in ["ReceiveText", "SendText"]:
@@ -526,8 +527,8 @@ def handle_scan_events(cmdr, entry):
     if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0 and entry["PilotName"].startswith("$cmdr_decorate:#name=")):
         return False
 
-    cmdr_name = entry["From"][len("$cmdr_decorate:#name="):-1]
-    ship = entry["Ship"]
+    cmdr_name = entry["PilotName"][len("$cmdr_decorate:#name="):-1]
+    ship = edentities.EDVehicles.canonicalize(entry["Ship"])
 
     edr_submit_contact(cmdr_name, ship, entry["timestamp"], "Ship targeted", cmdr)
     if entry["ScanStage"] == 3:
