@@ -9,7 +9,7 @@
             " - !help cmdr: commander related features.",
             " - !help cmdrdex: personalizing EDR's commanders database.",
             " - !help config: configuration options.",
-            "",
+            "⚶",
             "Send !clear in chat to clear everything on the overlay"
         ]
     },
@@ -17,12 +17,11 @@
         "header": "About EDR",
         "details": [
             "ED Recon is a third party plugin for Elite Dangerous. Its purpose is to provide insights about outlaws to traders, explorers, and bounty hunters.",
-            " - Developed by LeKeno from Cobra Kai and uses Ian Norton's EDMCOverlay for the overlay.",
-            " - It uses Elite Dangerous's player journal which has been designed for third party consumption, i.e. TOS compliant.",
-            " - EDR is free to use. Latest release and source code available at github.com/lekeno/edr.",
-            " - You can support EDR's development and hosting costs at patreon.com/lekeno.",
+            " - Developed by LeKeno from Cobra Kai and uses Ian Norton's EDMCOverlay for the overlay",
+            " - It is TOS compliant because it uses Elite Dangerous's player journal which has been designed for third party consumption",
+            " - EDR is free to use but you can support EDR's development and hosting costs at https://patreon.com/lekeno",
             " - Got feedback or questions? Please file bugs, feature requests or questions at https://github.com/lekeno/edr/issues/",
-            "",
+            "⚶",
             "Send !clear in chat to clear everything on the overlay"
         ]
     },
@@ -32,14 +31,14 @@
             "EDR will proactively show various insights as you fly around and scan other commanders:",
             " - A summary of recent activity as you jump into a system,",
             " - EDR and Inara profile for known outlaws as they are sighted (e.g. scanned) or detected (e.g. chat)", 
-            "",
+            "⚶",
             "You can also ask EDR for insights by issuing various commands via the in-game chat:",
             " - '!sitrep Lave' to find out if Lave has seen some recent activity",
             " - '!notams' to find out which systems are considered hotspots",
             "Learn more with '!help system' and '!help cmdr'",
-            "",
+            "⚶",
             "You can also customize EDR to your needs with the cmdrdex features, send '!help cmdrdex' to learn more.",
-            "",
+            "⚶",
             "Send !clear in chat to clear everything on the overlay"
         ]
     },
@@ -51,9 +50,9 @@
             " - personalizing / augmenting EDR's commanders database",
             " - reporting of traffic, outlaws and crimes",
             " - reporting scans of commanders with legal status and bounties",
-            "",
+            "⚶",
             "These insights will also help other EDR users so consider applying for an EDR account at https://lekeno.github.io/",
-            "",
+            "⚶",
             "Send !clear in chat to clear everything on the overlay"
         ]
     },
@@ -65,9 +64,9 @@
             " - '!sitreps': to display a list of star systems with sitreps",
             " - '!sitrep': to display the sitrep for the current system",
             " - '!sitrep system_name': to display the sitrep for the star system called system_name",
-            " - '!notams': to display a list of star systems with active notices, i.e. *NO*tice *T*o *A*ir *M*en.",
+            " - '!notams': to display a list of star systems with active notices, i.e. Notice To Air Men",
             " - '!notam system_name': to display any active notice the star system called system_name",
-            "",
+            "⚶",
             "Send !clear in chat to clear everything on the overlay"
         ]
     },
@@ -77,11 +76,11 @@
             "Use the following chat commands to lookup a commander's profile:",
             " - 'o7': direct message a commander with a salute emoji to see their EDR and Inara profile",
             " - '!who cmdr_name': to see cmdr_name's EDR and Inara profile",
-            "",
+            "⚶",
             "Chat commands for bounty hunters:",
             " - '!outlaws': to display a list of most recently sighted outlaws and their locations",
             " - '!where cmdr_name': to display the last sighting of the cmdr called cmdr_name provided that EDR considers them an outlaw",
-            "",
+            "⚶",
             "Send !clear in chat to clear everything on the overlay"
         ]
     },
@@ -94,15 +93,17 @@
             " - '#something' or '#something cmdr_name': to tag a contact or cmdr_name with the 'something' tag, e.g. #pirate jack sparrow",
             " - '-#something' or '-#something cmdr_name': to remove the 'something' tag from a contact or cmdr_name",
             " - '-#' or '-# cmdr_name': to remove a contact or cmdr_name from your cmdrdex",
+            "⚶",
             "EDR pre-defined tags:",
             " - 'outlaw' or '!': for cmdrs who either attacked you or someone despite being clean and non pledged to an enemy power",
             " - 'enforcer' or '+': for cmdrs who are on the good side of the law and hunt outlaws",
             " - 'neutral' or '?': if you disagree with EDR's classification and want to suppress its warning, or if a commander just seems to go about their own business",
             " - 'friend' or '=': to tag like-minded cmdrs, EDR may infer a social graph from these in the future",
+            "⚶",
             "Attaching a note:",
             " - '@# <memo>' or '@# cmdr_name memo=something': to attach a note to a contact or cmdr_name, e.g. '@# friendly trader",
             " - '-@#' or '-@# cmdr_name': to remove the custom note from a contact or cmdr_name",
-            "",
+            "⚶",
             "Send !clear in chat to clear everything on the overlay"
         ]
     },
@@ -114,7 +115,7 @@
             " - !audiocue [on|off|loud|soft] to control the audio cues, e.g. '!audiocue soft' for soft cues.",
             " - !overlay [on|off|] to enable/disable or verify the overlay, e.g. '!overlay' to check if it is enabled/working.",
             " - check the instructions in config/igm_config.ini to customize the layout and timeouts",
-            "",
+            "⚶",
             "Send !clear in chat to clear everything on the overlay"
         ]
     }
