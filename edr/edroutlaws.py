@@ -19,16 +19,16 @@ class EDROutlaws(object):
     def __init__(self, server):
         self.server = server
         
-        self.sightings = None
         self.recents = None
         self.timespan = None
         self.reports_last_updated = None
         self.reports_check_interval = None
+        config = edrconfig.EDRConfig()
+        self.sightings = lrucache.LRUCache(config.lru_max_size(), config.outlaws_max_age())
         self.__apply_config()
     
     def __apply_config(self):
         config = edrconfig.EDRConfig()
-        self.sightings = lrucache.LRUCache(config.lru_max_size(), config.outlaws_max_age())
         self.timespan = config.outlaws_recent_threshold()
         self.reports_check_interval = config.reports_check_interval()
 

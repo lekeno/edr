@@ -31,6 +31,15 @@ class EDRConfig(object):
     def intel_bounty_threshold(self):
         return self.config.getint('scans', 'intel_bounty_threshold')
 
+    def legal_records_recent_threshold(self):
+        return int(self.config.get('scans', 'legal_records_recent_threshold'))
+    
+    def legal_records_check_interval(self):
+        return int(self.config.get('scans', 'legal_records_check_interval'))
+
+    def legal_records_max_age(self):
+        return int(self.config.get('scans', 'legal_records_max_age'))
+
     def system_novelty_threshold(self):
         return int(self.config.get('novelty', 'system_novelty_threshold'))
 
