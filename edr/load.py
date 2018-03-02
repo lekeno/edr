@@ -537,7 +537,7 @@ def handle_scan_events(cmdr, entry):
             "cmdr": cmdr_name,
             "ship": ship,
             "wanted": wanted,
-            "bounty": entry["bounty"] if wanted else 0
+            "bounty": entry["Bounty"] if wanted and "Bounty" in entry else 0
         }
         edr_submit_scan(scan, entry["timestamp"], "Ship targeted", cmdr)
     return True
