@@ -33,6 +33,7 @@ class EDROutlaws(object):
         self.reports_check_interval = config.reports_check_interval()
 
     def load(self):
+        #TODO this doesn't really work
         try:
             with open(self.EDR_OUTLAWS_CACHE, 'rb') as handle:
                 tmp_edr_outlaws = pickle.load(handle)
@@ -43,6 +44,7 @@ class EDROutlaws(object):
             pass
 
     def persist(self):
+        #TODO this doesn't really work
         with open(self.EDR_OUTLAWS_CACHE, 'wb') as handle:
             pickle.dump(self, handle, protocol=pickle.HIGHEST_PROTOCOL)
 

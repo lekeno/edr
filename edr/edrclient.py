@@ -21,6 +21,7 @@ import edroutlaws
 import randomtips
 import helpcontent
 import edtime
+import edrlegalrecords
 
 EDRLOG = edrlog.EDRLog()
 
@@ -68,6 +69,7 @@ class EDRClient(object):
         self.edrsystems = edrsystems.EDRSystems(self.server)
         self.edrcmdrs = edrcmdrs.EDRCmdrs(self.server)
         self.edroutlaws = edroutlaws.EDROutlaws(self.server)
+        self.edrlegal = edrlegalrecords.EDRLegalRecords(self.server)
 
         self.mandatory_update = False
         self.crimes_reporting = True
@@ -212,11 +214,14 @@ class EDRClient(object):
         details.append("-- Random Tip --")
         details.append(self.tips.tip())
         self.__notify(u"EDR v{} by LeKeno (Cobra Kai)".format(self.edr_version), details)
+        self.edroutlaws.load()
+        self.edrlegal.load()
 
     def shutdown(self):
         self.edrcmdrs.persist()
         self.edrsystems.persist()
         self.edroutlaws.persist()
+        self.edrlegal.persist()
         self.server.logout()
         self.IN_GAME_MSG.shutdown()
 
@@ -391,7 +396,11 @@ class EDRClient(object):
         if not profile is None:
             self.status = "got info about {}".format(cmdr_name)
             EDRLOG.log(u"Who {} : {}".format(cmdr_name, profile.short_profile()), "INFO")
-            self.__intel(cmdr_name, [profile.short_profile()])
+            legal = self.edrlegal.summarize_recents(profile.cid)
+            if legal:
+                self.__intel(cmdr_name, [profile.short_profile(), legal])
+            else:
+                self.__intel(cmdr_name, [profile.short_profile()])
         else:
             EDRLOG.log(u"Who {} : no info".format(cmdr_name), "INFO")
             self.__intel(cmdr_name, ["No info about {}".format(cmdr_name)])

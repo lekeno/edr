@@ -175,7 +175,6 @@ class EDRServer(object):
         endpoint = "/v1/scans/{cmdr_id}/".format(cmdr_id=cmdr_id)
         return self.__post_json(endpoint, info)
 
-    # TODO connnect to load => client => ...
     def legal_records(self, cmdr_id, timespan_seconds):
         EDRLOG.log(u"Fetching legal record for cmdr {cid}".format(cid=cmdr_id), "INFO")
         endpoint = "/v1/legal/{cmdr_id}/".format(cmdr_id=cmdr_id)

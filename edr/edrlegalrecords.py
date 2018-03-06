@@ -33,6 +33,7 @@ class EDRLegalRecords(object):
         self.reports_check_interval = config.legal_records_check_interval()
 
     def load(self):
+        #TODO this doesn't really work
         try:
             with open(self.EDR_LEGAL_RECORDS_CACHE, 'rb') as handle:
                 tmp_edr_legal_records = pickle.load(handle)
@@ -43,9 +44,11 @@ class EDRLegalRecords(object):
             pass
 
     def persist(self):
+        #TODO this doesn't really work
         with open(self.EDR_LEGAL_RECORDS_CACHE, 'wb') as handle:
             pickle.dump(self, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+    #TODO cache summaries
     def summarize_recents(self, cmdr_id):
         self.__update_records_if_stale(cmdr_id)
         records = self.records.get(cmdr_id)
@@ -53,17 +56,25 @@ class EDRLegalRecords(object):
             EDRLOG.log(u"No recent legal records for {}".format(cmdr_id), "INFO")
             return None
         
-        self.status = "Got recent legal records"
-        EDRLOG.log(u"Got recent legal records for {}".format(cmdr_id), "INFO")
-        summary = []
+        self.status = "Got legal records"
+        EDRLOG.log(u"Got legal records for {}".format(cmdr_id), "INFO")
+        summary = None
         counters = {"clean": 0, "wanted": 0}
-        legal_history = u""
+        bounties = { "max": None, "last": {"value": None, "starSystem": None, "timestamp": None}}
         for record in records:
             counters["wanted"] += record["counters"]["wanted"]
             counters["clean"] += record["counters"]["clean"]
-            legal_history += u"■" if record["counters"]["wanted"] else u"□"
-        summary.append(u"Wanted ■ scans: {0:.0f}%".format(float(counters["wanted"]) / (counters["wanted"] + counters["clean"])*100.0))
-        summary.append(u"Scan history: {}".format(legal_history))
+            bounties["max"] = max(record["bounties"]["max"], bounties["max"])
+            if (record["bounties"]["last"]["timestamp"] >= bounties["last"]["timestamp"]):
+                bounties["last"] = record["bounties"]["last"]
+        timespan = edtime.EDTime.pretty_print_timespan(self.timespan, short=True, verbose=True)
+        if bounties["last"]["value"]:
+            tminus = edtime.EDTime.t_minus(bounties["last"]["timestamp"], short=True)
+            max_bounty = self.__pretty_print_bounty(bounties["max"])
+            last_bounty = self.__pretty_print_bounty(bounties["last"]["value"])
+            summary = u"[Last {}] clean/wanted: {}/{} - max={} cr, last={} in {} {}".format(timespan, counters["clean"], counters["wanted"], max_bounty, last_bounty, bounties["last"]["starSystem"], tminus)
+        else:
+            summary = u"[Last {}] clean/wanted: {}/{}".format(timespan, counters["clean"], counters["wanted"])
         return summary
 
     def __pretty_print_bounty(self, bounty):
@@ -98,14 +109,13 @@ class EDRLegalRecords(object):
         if self.__are_records_stale():
             missing_seconds = self.timespan
             now = datetime.datetime.now()
-            if self.records_last_updated:
-                missing_seconds = min(self.timespan, (now - self.records_last_updated).total_seconds())
+            #TODO smaller updates
+            # if self.records_last_updated:
+            #    missing_seconds = min(self.timespan, (now - self.records_last_updated).total_seconds())
             
             records = self.server.legal_records(cmdr_id, missing_seconds)
-            prev_records = self.records.get(cmdr_id)
-            if prev_records:
-                records.update(prev_records)
+            #TODO smaller updates
             self.records.set(cmdr_id, records)
-            self.reports_last_updated = now
+            self.records_last_updated = now
             updated = True
         return updated
