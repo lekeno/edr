@@ -137,13 +137,15 @@ class InGameMsg(object):
         chunked_lines = []
         rows = self.cfg[kind]["b"]["rows"]
         rows_per_line = max(1, rows / len(lines))
-        bonus_rows = rows % len(lines)
+        bonus_rows = rows % len(lines) #TODO, hmm something is wrong here, not using all the lines for !who hyperlethal
         for line in lines:
             max_rows = rows_per_line
-            if bonus_rows: 
+            if bonus_rows:
                 max_rows += 1
-                bonus_rows -= 1
-            chunked_lines.append(self.__wrap_text(kind, "b", line, max_rows))
+            wrapped_text = self.__wrap_text(kind, "b", line, max_rows)
+            if bonus_rows and wrapped_text == max_rows:
+               bonus_rows -= 1
+            chunked_lines.append(wrapped_text)
             if len(chunked_lines) >= rows:
                 break
         return chunked_lines
