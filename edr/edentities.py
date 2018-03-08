@@ -66,9 +66,6 @@ class EDCmdr(object):
         self.previous_mode = None
         self.previous_wing = set()
 
-    def has_partial_social_info(self):
-        return not self.from_birth
-
     def leave_wing(self):
         self.wing = set()
 
