@@ -31,7 +31,7 @@ class InGameMsg(object):
         self.must_clear = False
         for kind in self.MESSAGE_KINDS:
             self.message_config(kind)
-        self.msg_ids = lrucache.LRUCache(1000, 60*5)
+        self.msg_ids = lrucache.LRUCache(1000, 60*15)
 
     def general_config(self):
         conf = igmconfig.IGMConfig()
@@ -152,6 +152,8 @@ class InGameMsg(object):
 
     def __wrap_text(self, kind, part, text, max_rows):
         EDRLOG.log(u"text: {}".format(text), "DEBUG")
+        if text is None:
+            return None
         width = self.cfg[kind][part]["len"]
         wrapper = textwrap.TextWrapper(width=width, subsequent_indent="  ", break_on_hyphens=False)
         return wrapper.wrap(text)[:max_rows]
@@ -180,6 +182,8 @@ class InGameMsg(object):
         chunked_lines = self.__wrap_body(kind, body)
         
         for chunked_line in chunked_lines:
+            if chunked_line is None:
+                continue
             for chunk in chunked_line:
                 row_nb = self.__best_body_row(kind, chunk)
                 y = conf["y"] + row_nb * self.cfg["general"][conf["size"]]["h"]

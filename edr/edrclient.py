@@ -39,7 +39,6 @@ class EDRClient(object):
         self.place_novelty_threshold = edr_config.place_novelty_threshold()
         self.ship_novelty_threshold = edr_config.ship_novelty_threshold()
         self.cognitive_novelty_threshold = edr_config.cognitive_novelty_threshold()
-        self.outlaws_recent_threshold = edr_config.outlaws_recent_threshold()
         self.intel_even_if_clean = edr_config.intel_even_if_clean()
         self.intel_bounty_threshold = edr_config.intel_bounty_threshold()
 
@@ -50,7 +49,6 @@ class EDRClient(object):
         self.traffic_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                edr_config.traffic_max_age())
         self.scans_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.scans_max_age())
-        self.outlaws_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.outlaws_max_age())
 
         self._email = tk.StringVar(value=config.get("EDREmail"))
         self._password = tk.StringVar(value=config.get("EDRPassword"))
@@ -214,8 +212,6 @@ class EDRClient(object):
         details.append("-- Random Tip --")
         details.append(self.tips.tip())
         self.__notify(u"EDR v{} by LeKeno (Cobra Kai)".format(self.edr_version), details)
-        self.edroutlaws.load()
-        self.edrlegal.load()
 
     def shutdown(self):
         self.edrcmdrs.persist()

@@ -23,32 +23,19 @@ class EDRLegalRecords(object):
         self.records_last_updated = None
         self.records_check_interval = None
         config = edrconfig.EDRConfig()
-        self.records = lrucache.LRUCache(config.lru_max_size(), config.legal_records_max_age())
-        self.summaries = lrucache.LRUCache(config.lru_max_size(), config.legal_records_max_age())
-        self.__apply_config()
-    
-    def __apply_config(self):
-        config = edrconfig.EDRConfig()
-        self.timespan = config.legal_records_recent_threshold()
-        self.reports_check_interval = config.legal_records_check_interval()
-
-    def load(self):
-        #TODO this doesn't really work
         try:
             with open(self.EDR_LEGAL_RECORDS_CACHE, 'rb') as handle:
-                tmp_edr_legal_records = pickle.load(handle)
-                self.__dict__.clear()
-                self.__dict__.update(tmp_edr_legal_records)
-                self.__apply_config()
+                self.records = pickle.load(handle)
         except:
-            pass
-
+            self.records = lrucache.LRUCache(config.lru_max_size(), config.legal_records_max_age())
+        
+        self.timespan = config.legal_records_recent_threshold()
+        self.reports_check_interval = config.legal_records_check_interval()
+    
     def persist(self):
-        #TODO this doesn't really work
         with open(self.EDR_LEGAL_RECORDS_CACHE, 'wb') as handle:
-            pickle.dump(self, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(self.records, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    #TODO cache summaries
     def summarize_recents(self, cmdr_id):
         self.__update_records_if_stale(cmdr_id)
         records = self.records.get(cmdr_id)
@@ -96,11 +83,11 @@ class EDRLegalRecords(object):
         return readable
 
     def __are_records_stale(self):
-        if self.records_last_updated is None:
+        if self.records.last_updated is None:
             return True
         now = datetime.datetime.now()
         epoch_now = time.mktime(now.timetuple())
-        epoch_updated = time.mktime(self.records_last_updated.timetuple())
+        epoch_updated = time.mktime(self.records.last_updated.timetuple())
         return (epoch_now - epoch_updated) > self.records_check_interval
 
     
@@ -110,12 +97,12 @@ class EDRLegalRecords(object):
             missing_seconds = self.timespan
             now = datetime.datetime.now()
             #TODO smaller updates
-            # if self.records_last_updated:
-            #    missing_seconds = min(self.timespan, (now - self.records_last_updated).total_seconds())
+            #if self.records.last_updated:
+            #    missing_seconds = min(self.timespan, (now - self.records.last_updated).total_seconds())
             
             records = self.server.legal_records(cmdr_id, missing_seconds)
             #TODO smaller updates
             self.records.set(cmdr_id, records)
-            self.records_last_updated = now
+            self.records.last_updated = now
             updated = True
         return updated

@@ -10,7 +10,7 @@ EDRLOG = edrlog.EDRLog()
 
 class RESTFirebaseAuth(object):
     FIREBASE_ANON_AUTH_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'private/fbaa.p')
+        os.path.abspath(os.path.dirname(__file__)), 'private/fbaa.v2.p')
 
     def __init__(self):
         self.email = ""

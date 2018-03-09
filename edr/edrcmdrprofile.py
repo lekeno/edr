@@ -168,7 +168,7 @@ class EDRCmdrProfile(object):
         self.alignment_hints = json_cmdr.get("alignmentHints", None)
         self.patreon = json_cmdr.get("patreon", None)
         self.dex_profile = None
-
+    
     def complement(self, other_profile):
         if self.name.lower() != other_profile.name.lower():
             EDRLOG.log(u"Can't complement profile since it doesn't match: {} vs. {}".format(other_profile.name, self.name), "DEBUG")
