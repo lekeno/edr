@@ -24,7 +24,7 @@
         "Follow the instructions in igm_config.ini to customize EDR's layout.",
         "EDR will automatically report other commanders if they say something on local chat.",
         "EDR will automatically report other commanders if they direct message you (unless they are on your friends list).",
-        "EDR will warn you about outlaws if they reveal themselves or if you report themm",
+        "EDR will warn you about outlaws if they reveal themselves or if you report them",
         "Your EDR account is tied to your cmdr name, do NOT share your credentials with someone else or a different cmdr account.",
         "Sending '-#' to a contact will remove them from your commanders index.",
         "Send '-# <cmdrname>' to remove <cmdrname> from your commanders index.",
