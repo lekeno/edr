@@ -85,9 +85,11 @@ class EDRServer(object):
         return json.loads(resp.content)
 
     def system_id(self, star_system, may_create):
-        query_params = "orderBy=\"cname\"&equalTo={system}&limitToFirst=1&auth={auth}".format(system=json.dumps(star_system.lower()), auth=self.auth_token())
-        resp = requests.get("{server}/v1/systems.json?{query_params}".format(
-        server=self.EDR_SERVER, query_params=query_params))
+        # Firebase rest API needs double quoted params (fixes issues with queries for systems with a "+")
+        query_params = "orderBy=\"cname\"&equalTo=\"{system}\"&limitToFirst=1&auth={auth}".format(system=urllib.quote(urllib.quote(star_system.lower())), auth=self.auth_token())
+        endpoint = "{server}/v1/systems.json?{query_params}".format(server=self.EDR_SERVER, query_params=query_params)
+        EDRLOG.log(u"system_id endpoint: {}".format(endpoint), "DEBUG")
+        resp = requests.get(endpoint)
 
         if resp.status_code != 200:
             EDRLOG.log(u"Failed to retrieve star system sid.", "ERROR")
@@ -95,7 +97,7 @@ class EDRServer(object):
 
         sid = None
         if resp.content == 'null':
-            EDRLOG.log(u"System not recorded in EDR.", "DEBUG")
+            EDRLOG.log(u"System {} is not recorded in EDR.".format(star_system), "DEBUG")
             if may_create:
                 EDRLOG.log(u"Creating system in EDR.", "DEBUG")
                 query_params = { "auth" : self.auth_token() }
@@ -116,9 +118,8 @@ class EDRServer(object):
 
     def cmdr(self, cmdr, autocreate=True):
         cmdr_profile = edrcmdrprofile.EDRCmdrProfile()
-        query_params = "orderBy=\"cname\"&equalTo={cmdr}&limitToFirst=1&auth={auth}".format(cmdr=json.dumps(cmdr.lower()), auth=self.auth_token())
-        endpoint = "{server}/v1/cmdrs.json?{query_params}".format(
-            server=self.EDR_SERVER, query_params=query_params)
+        query_params = "orderBy=\"cname\"&equalTo=\"{cmdr}\"&limitToFirst=1&auth={auth}".format(cmdr=urllib.quote(urllib.quote(cmdr.lower())), auth=self.auth_token())
+        endpoint = "{server}/v1/cmdrs.json?{query_params}".format(server=self.EDR_SERVER, query_params=query_params)
         EDRLOG.log(u"Endpoint :" + endpoint, "DEBUG")
         resp = requests.get(endpoint)
 
@@ -220,11 +221,11 @@ class EDRServer(object):
     
     def where(self, name):
         EDRLOG.log(u"Where query for outlaw named '{}'".format(name), "INFO")
-        query_params = "orderBy=\"cname\"&equalTo={name}&limitToFirst=1&auth={auth}".format(name=json.dumps(name), auth=self.auth_token())
+        query_params = "orderBy=\"cname\"&equalTo=\"{name}\"&limitToFirst=1&auth={auth}".format(name=urllib.quote(urllib.quote(name.lower())), auth=self.auth_token())
         endpoint = "{server}/v1/outlaws.json?{query_params}".format(server=self.EDR_SERVER, query_params=query_params)
         resp = requests.get(endpoint)
         if resp.status_code != 200:
-            EDRLOG.log(u"Failed to retrieve location of outlaw.", "ERROR")
+            EDRLOG.log(u"Failed to retrieve location of an outlaw.", "ERROR")
             return None
         
         sighting = json.loads(resp.content)
