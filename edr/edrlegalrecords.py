@@ -60,7 +60,7 @@ class EDRLegalRecords(object):
             tminus = edtime.EDTime.t_minus(bounties["last"]["timestamp"], short=True)
             max_bounty = self.__pretty_print_bounty(bounties["max"])
             last_bounty = self.__pretty_print_bounty(bounties["last"]["value"])
-            summary = u"[Last {}] clean:{} / wanted:{} - max={} cr, last={} in {} {}".format(timespan, counters["clean"], counters["wanted"], max_bounty, last_bounty, bounties["last"]["starSystem"], tminus)
+            summary = u"[Last {}] clean:{} / wanted:{} max={} cr, last={} in {} {}".format(timespan, counters["clean"], counters["wanted"], max_bounty, last_bounty, bounties["last"]["starSystem"], tminus)
         else:
             summary = u"[Last {}] clean:{} / wanted:{}".format(timespan, counters["clean"], counters["wanted"])
         return summary
