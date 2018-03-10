@@ -8,9 +8,11 @@ class EDRCmdrDexProfile(object):
     def alignments():
         return [u"outlaw", u"neutral", u"enforcer"]
     
-    def __init__(self, dex_dict):
+    def __init__(self, dex_dict=None):
+        if dex_dict is None:
+            dex_dict = {}
         self._alignment = dex_dict.get("alignment", None)
-        self.tags = set(dex_dict.get("tags", []))
+        self.tags = set([self.__tagify(t) for t in dex_dict.get("tags", [])])
         self._friend = dex_dict.get("friend", False)
         self._memo = dex_dict.get("memo", None)
 
@@ -28,15 +30,14 @@ class EDRCmdrDexProfile(object):
         if (new_alignment is None):
             self._alignment = None
             self.updated = now
-            return True
+            return
 
         if (new_alignment not in EDRCmdrDexProfile.alignments()):
-            return False
+            return
         if (new_alignment == self._alignment):
-            return False
+            return
         self._alignment = new_alignment
         self.updated = now
-        return True
 
     
     @property
@@ -246,7 +247,7 @@ class EDRCmdrProfile(object):
 
     def karma_title(self):
         mapped_index = int(10*(self._karma + self.max_karma()) / (2.0*self.max_karma()))
-        lut = ["Most wanted", "Wanted", "Outlaw", "Henchman", "Trouble maker", "Neutral", "Sentinel", "Space Ranger", "Avenger", "Savior", "Saint"]
+        lut = ["Wanted ++++", "Wanted +++", "Wanted ++", "Wanted +", "Wanted", "Neutral", "Enforcer", "Enforcer +", "Enforcer ++", "Enforcer +++", "Enforcer ++++"]
         karma = lut[mapped_index]
 
         if self.dex_profile is None:
@@ -269,16 +270,6 @@ class EDRCmdrProfile(object):
         return u"[!{:.0%} ?{:.0%} +{:.0%}]".format(self.alignment_hints["outlaw"] / total_hints, self.alignment_hints["neutral"] / total_hints, self.alignment_hints["enforcer"] / total_hints)
 
     def short_profile(self):
-        # TODO scan history as a graph made of block characters
-        # zzz chars, showing legal status for the most zzz recent scans, resolution of xx minutes
-        # wanted []:xx%; bounty median: max:
-        # T-xD blocks T-yD
-        # zzz chars, showing legal and bounty for the most zzz recent scans, resolution of xx minutes
-        # T-xD shaded blocks T-yD
-        # structure scan_history, option 1: circle buffer
-        #  start: 4
-        #  [ 0: {timestamp, bounty}, 1: {timestamp, bounty}, 2: {...}, 3: {}, 4: {}, 5: {}, 6: {}]
-        
         result = u"{name}: {karma}".format(name=self.name, karma=self.karma_title())
 
         alignment = self.crowd_alignment()
