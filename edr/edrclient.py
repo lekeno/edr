@@ -211,7 +211,7 @@ class EDRClient(object):
         details += self.motd
         details.append("-- Random Tip --")
         details.append(self.tips.tip())
-        self.__notify(u"EDR v{} by LeKeno (Cobra Kai)".format(self.edr_version), details)
+        self.__notify(u"EDR v{} by LeKeno (Cobra Kai)".format(self.edr_version), details, clear_before=True)
 
     def shutdown(self):
         self.edrcmdrs.persist()
@@ -586,30 +586,37 @@ class EDRClient(object):
         if not self.visual_feedback:
             return
         EDRLOG.log(u"sitrep with header: {}; details: {}".format(header, details[0]), "DEBUG")
+        self.IN_GAME_MSG.clear_sitrep()
         self.IN_GAME_MSG.sitrep(header, details)
 
-    def __intel(self, who, details):
+    def __intel(self, who, details, clear_before=False):
         if self.audio_feedback:
             self.AUDIO_FEEDBACK.notify()
         if not self.visual_feedback:
             return
         EDRLOG.log(u"Intel for {}; details: {}".format(who, details[0]), "DEBUG")
+        if clear_before:
+            self.IN_GAME_MSG.clear_intel()
         self.IN_GAME_MSG.intel(u"Intel", details)
 
-    def __warning(self, header, details):
+    def __warning(self, header, details, clear_before=False):
         if self.audio_feedback:
             self.AUDIO_FEEDBACK.warn()
         if not self.visual_feedback:
             return
         EDRLOG.log(u"Warning; details: {}".format(details[0]), "DEBUG")
+        if clear_before:
+            self.IN_GAME_MSG.clear_warning()
         self.IN_GAME_MSG.warning(header, details)
     
-    def __notify(self, header, details):
+    def __notify(self, header, details, clear_before=False):
         if self.audio_feedback:
             self.AUDIO_FEEDBACK.notify()
         if not self.visual_feedback:
             return
         EDRLOG.log(u"Notify about {}; details: {}".format(header, details[0]), "DEBUG")
+        if clear_before:
+            self.IN_GAME_MSG.clear_notice()
         self.IN_GAME_MSG.notify(header, details)
 
     def notify_with_details(self, notice, details):
@@ -625,6 +632,6 @@ class EDRClient(object):
             if (now_epoch - self.previous_ad) <= self.edr_needs_u_novelty_threshold:
                 return False
 
-        self.__notify(u"EDR needs you!", [context, u"--", u"Create an account at https://lekeno.github.io/", u"It's free, no strings attached."])
+        self.__notify(u"EDR needs you!", [context, u"--", u"Create an account at https://lekeno.github.io/", u"It's free, no strings attached."], clear_before=True)
         self.previous_ad = now_epoch
         return True

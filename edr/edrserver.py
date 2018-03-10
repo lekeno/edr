@@ -187,15 +187,17 @@ class EDRServer(object):
         endpoint = "/v1/crimes/{system_id}/".format(system_id=system_id)
         return self.__post_json(endpoint, info)
 
-    def __get_recent(self, endpoint, timespan_seconds):
-        now_epoch_js = 1000 * calendar.timegm(time.gmtime())
-        past_epoch_js = now_epoch_js - (1000 * timespan_seconds)
+    def __get_recent(self, path, timespan_seconds):
+        now_epoch_js = int(1000 * calendar.timegm(time.gmtime()))
+        past_epoch_js = int(now_epoch_js - (1000 * timespan_seconds))
 
         query_params = "orderBy=\"timestamp\"&startAt={past}&endAt={now}&auth={auth}".format(past=past_epoch_js, now=now_epoch_js, auth=self.auth_token())
-        resp = requests.get("{server}{endpoint}.json?{query_params}".format(server=self.EDR_SERVER, endpoint=endpoint, query_params=query_params))
+        endpoint = "{server}{path}.json?{query_params}".format(server=self.EDR_SERVER, path=path, query_params=query_params)
+        EDRLOG.log(u"Get recent; endpoint: {}".format(endpoint), "DEBUG")
+        resp = requests.get(endpoint)
 
         if resp.status_code != 200:
-            EDRLOG.log(u"Failed to retrieve recent items.", "ERROR")
+            EDRLOG.log(u"Failed to retrieve recent items. Errorc code: {}".format(resp.status_code), "ERROR")
             return None
         
         results = json.loads(resp.content)

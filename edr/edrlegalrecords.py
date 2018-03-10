@@ -9,6 +9,7 @@ import edrconfig
 import edrserver
 import edrlog
 import edtime
+from collections import deque
 
 EDRLOG = edrlog.EDRLog()
 
@@ -96,13 +97,18 @@ class EDRLegalRecords(object):
         if self.__are_records_stale():
             missing_seconds = self.timespan
             now = datetime.datetime.now()
-            #TODO smaller updates
-            #if self.records.last_updated:
-            #    missing_seconds = min(self.timespan, (now - self.records.last_updated).total_seconds())
+            if self.records.last_updated:
+                missing_seconds = min(self.timespan, (now - self.records.last_updated).total_seconds())
             
             records = self.server.legal_records(cmdr_id, missing_seconds)
-            #TODO smaller updates
-            self.records.set(cmdr_id, records)
+            records = sorted(records, key=lambda t: t["timestamp"], reverse=False)
+            recent_records = self.records.get(cmdr_id)
+            if recent_records is None:
+                recent_records = deque(maxlen=10)
+            for record in records:
+                recent_records.appendleft(record)
+
+            self.records.set(cmdr_id, recent_records)
             self.records.last_updated = now
             updated = True
         return updated

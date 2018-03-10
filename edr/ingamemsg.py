@@ -116,6 +116,7 @@ class InGameMsg(object):
 
     def sitrep(self, header, details):
         self.__clear_if_needed()
+        self.__clear_kind("sitrep")
         if "panel" in self.cfg["sitrep"]:
             self.__shape("sitrep", self.cfg["sitrep"]["panel"])
         self.__msg_header("sitrep", header)
@@ -126,6 +127,25 @@ class InGameMsg(object):
             self.__clear(msg_id)
         self.msg_ids.reset()
         self.must_clear = False
+
+    def clear_intel(self):
+        self.__clear_kind("intel")
+    
+    def clear_sitrep(self):
+        self.__clear_kind("sitrep")
+
+    def clear_notice(self):
+        self.__clear_kind("notice")
+    
+    def clear_warning(self):
+        self.__clear_kind("warning")
+
+    def __clear_kind(self, kind):
+        tag = "EDR-{}".format(kind)
+        for msg_id in self.msg_ids.keys():
+            if msg_id.startswith(tag):
+                self.__clear(msg_id)
+                self.msg_ids.evict(msg_id)
 
     def __clear_if_needed(self):
         if self.must_clear:
