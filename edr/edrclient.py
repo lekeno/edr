@@ -534,7 +534,12 @@ class EDRClient(object):
             self.advertise_full_account("Sorry, this feature only works with a proper EDR account.", passive=False)
             return False
 
-        return self.edrcmdrs.tag_cmdr(cmdr_name, tag)
+        success = self.edrcmdrs.tag_cmdr(cmdr_name, tag)
+        if success:
+            self.__notify(u"Cmdr Dex", [u"Succesfully tagged cmdr {} with {}".format(cmdr_name, tag)])
+        else:
+            self.__notify(u"Cmdr Dex", [u"Could not tag cmdr {} with {}".format(cmdr_name, tag)])
+        return success
     
     def memo_cmdr(self, cmdr_name, memo):
         if self.is_anonymous():
@@ -542,7 +547,12 @@ class EDRClient(object):
             self.advertise_full_account("Sorry, this feature only works with a proper EDR account.", passive=False)
             return False
 
-        self.edrcmdrs.memo_cmdr(cmdr_name, memo)
+        success = self.edrcmdrs.memo_cmdr(cmdr_name, memo)
+        if success:
+            self.__notify(u"Cmdr Dex", [u"Succesfully attached a note to cmdr {}".format(cmdr_name)])
+        else:
+            self.__notify(u"Cmdr Dex", [u"Could not attach a note to cmdr {}".format(cmdr_name)])
+        return success
 
     def untag_cmdr(self, cmdr_name, tag):
         if self.is_anonymous():
@@ -550,7 +560,12 @@ class EDRClient(object):
             self.advertise_full_account("Sorry, this feature only works with a proper EDR account.", passive=False)
             return False
 
-        self.edrcmdrs.untag_cmdr(cmdr_name, tag)
+        success = self.edrcmdrs.untag_cmdr(cmdr_name, tag)
+        if success:
+            self.__notify(u"Cmdr Dex", [u"Succesfully removed tag {} from cmdr {}".format(tag, cmdr_name)])
+        else:
+            self.__notify(u"Cmdr Dex", [u"Could not remove tag {} from cmdr {}".format(tag, cmdr_name)])
+        return success
 
     def where(self, cmdr_name):
         report = self.edroutlaws.where(cmdr_name)
