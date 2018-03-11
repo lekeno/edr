@@ -40,8 +40,7 @@ class EDRClient(object):
         self.ship_novelty_threshold = edr_config.ship_novelty_threshold()
         self.cognitive_novelty_threshold = edr_config.cognitive_novelty_threshold()
         self.intel_even_if_clean = edr_config.intel_even_if_clean()
-        self.intel_bounty_threshold = edr_config.intel_bounty_threshold()
-
+        
         self.edr_needs_u_novelty_threshold = edr_config.edr_needs_u_novelty_threshold()
         self.previous_ad = None
 
@@ -438,7 +437,8 @@ class EDRClient(object):
     def scanned(self, cmdr_name, scan):
         if self.is_anonymous():
             EDRLOG.log(u"Skipping scan report since the user is anonymous.", "INFO")
-            if (scan["wanted"] and scan["bounty"] >= self.intel_bounty_threshold):
+            bounty = EDBounty(scan["bounty"]) if scan["bounty"] else None
+            if (scan["wanted"] and bounty.is_significant()):
                 self.advertise_full_account("You could have helped other EDR users by reporting this outlaw!")
             return False
 
@@ -450,15 +450,20 @@ class EDRClient(object):
 
         if self.novel_enough_scan(cmdr_id, scan, cognitive = True):
             profile = self.cmdr(cmdr_name)
+            bounty = EDBounty(scan["bounty"]) if scan["bounty"] else None
             if (not profile is None) and (self.player.name != cmdr_name):
                 if profile.is_dangerous():
                     self.status = "{} is bad news.".format(cmdr_name)
-                    self.__warning(u"Warning!", [profile.short_profile()])
-                    if self.is_anonymous():
-                        self.advertise_full_account("You could have helped other EDR users by reporting this outlaw.")
-                elif self.intel_even_if_clean or (scan["wanted"] and scan["bounty"] >= self.intel_bounty_threshold):
-                    self.status = "Intel for wanted cmdr {}.".format(cmdr_name)
-                    self.__intel(u"Intel for {} (wanted; >={})".format(cmdr_name, self.intel_bounty_threshold), [profile.short_profile()])
+                    details = [profile.short_profile()]
+                    if bounty:
+                        details.append(u"Wanted for {} cr".format(EDBounty(scan["bounty"]).pretty_print())
+                    self.__warning(u"Warning!", details)
+                elif self.intel_even_if_clean or (scan["wanted"] and bounty.is_significant()):
+                    self.status = "Intel for cmdr {}.".format(cmdr_name)
+                    details = [profile.short_profile()]
+                    if bounty:
+                        details.append(u"Wanted for {} cr".format(EDBounty(scan["bounty"]).pretty_print()))
+                    self.__intel(u"Intel", details)
 
         if not self.novel_enough_scan(cmdr_id, scan):
             self.status = "skipping scan (not novel enough)."
