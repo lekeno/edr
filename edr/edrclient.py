@@ -45,9 +45,11 @@ class EDRClient(object):
         self.previous_ad = None
 
         self.blips_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
+        self.cognitive_blips_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
         self.traffic_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                edr_config.traffic_max_age())
         self.scans_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.scans_max_age())
+        self.cognitive_scans_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
 
         self._email = tk.StringVar(value=config.get("EDREmail"))
         self._password = tk.StringVar(value=config.get("EDRPassword"))
@@ -369,18 +371,13 @@ class EDRClient(object):
                     delta > self.ship_novelty_threshold)
 
     def novel_enough_blip(self, cmdr_id, blip, cognitive = False):
-        last_blip = self.blips_cache.get(cmdr_id)
+        last_blip = self.cognitive_blips_cache.get(cmdr_id) if cognitive else self.blips_cache.get(cmdr_id)
         return self.__novel_enough_situation(blip, last_blip, cognitive)
 
     def novel_enough_scan(self, cmdr_id, scan, cognitive = False):
-        last_scan = self.scans_cache.get(cmdr_id)
+        last_scan = self.cognitive_scans_cache.get(cmdr_id) if cognitive else self.scans_cache.get(cmdr_id)
         novel_situation = self.__novel_enough_situation(scan, last_scan, cognitive)
-        if not novel_situation:
-            if scan["wanted"] != last_scan["wanted"]:
-                return True
-            if scan["bounty"] != last_scan["bounty"]:
-                return True
-        return novel_situation
+        return novel_situation or (scan["wanted"] != last_scan["wanted"]) or (scan["bounty"] != last_scan["bounty"])
 
     def novel_enough_traffic_report(self, sighted_cmdr, report):
         last_report = self.traffic_cache.get(sighted_cmdr)
@@ -412,7 +409,7 @@ class EDRClient(object):
             self.status = "{} is bad news.".format(cmdr_name)
             if self.novel_enough_blip(cmdr_id, blip, cognitive = True):
                 self.__warning(u"Warning!", [profile.short_profile()])
-                self.blips_cache.set(cmdr_id, blip)
+                self.cognitive_blips_cache.set(cmdr_id, blip)
                 if self.is_anonymous():
                     self.advertise_full_account("You could have helped other EDR users by reporting this outlaw.")
             else:
@@ -436,13 +433,6 @@ class EDRClient(object):
         return success
 
     def scanned(self, cmdr_name, scan):
-        if self.is_anonymous():
-            EDRLOG.log(u"Skipping scan report since the user is anonymous.", "INFO")
-            bounty = edentities.EDBounty(scan["bounty"]) if scan["bounty"] else None
-            if (scan["wanted"] and bounty.is_significant()):
-                self.advertise_full_account("You could have helped other EDR users by reporting this outlaw!")
-            return False
-
         cmdr_id = self.cmdr_id(cmdr_name)
         if cmdr_id is None:
             self.status = "no cmdr id (scan)."
@@ -452,7 +442,7 @@ class EDRClient(object):
         if self.novel_enough_scan(cmdr_id, scan, cognitive = True):
             profile = self.cmdr(cmdr_name)
             bounty = edentities.EDBounty(scan["bounty"]) if scan["bounty"] else None
-            if (not profile is None) and (self.player.name != cmdr_name):
+            if profile and (self.player.name != cmdr_name):
                 if profile.is_dangerous():
                     self.status = "{} is bad news.".format(cmdr_name)
                     details = [profile.short_profile()]
@@ -465,11 +455,19 @@ class EDRClient(object):
                     if bounty:
                         details.append(u"Wanted for {} cr".format(edentities.EDBounty(scan["bounty"]).pretty_print()))
                     self.__intel(u"Intel", details)
+                if (scan["wanted"] and bounty.is_significant()):
+                    self.advertise_full_account("You could have helped other EDR users by reporting this outlaw!")
+                self.cognitive_scans_cache.set(cmdr_id, scan)
 
         if not self.novel_enough_scan(cmdr_id, scan):
             self.status = "skipping scan (not novel enough)."
             EDRLOG.log(u"Scan is not novel enough to warrant reporting", "INFO")
             return True
+
+        if self.is_anonymous():
+            EDRLOG.log("Skipping reporting scan since the user is anonymous.", "INFO")
+            self.scans_cache.set(cmdr_id, blip)
+            return False
 
         success = self.server.scanned(cmdr_id, scan)
         if success:
