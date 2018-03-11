@@ -58,30 +58,12 @@ class EDRLegalRecords(object):
         timespan = edtime.EDTime.pretty_print_timespan(self.timespan, short=True, verbose=True)
         if bounties["last"]["value"]:
             tminus = edtime.EDTime.t_minus(bounties["last"]["timestamp"], short=True)
-            max_bounty = self.__pretty_print_bounty(bounties["max"])
-            last_bounty = self.__pretty_print_bounty(bounties["last"]["value"])
-            summary = u"[Last {}] clean:{} / wanted:{} max={} cr, last={} in {} {}".format(timespan, counters["clean"], counters["wanted"], max_bounty, last_bounty, bounties["last"]["starSystem"], tminus)
+            max_bounty = EDBounty(bounties["max"]).pretty_print()
+            last_bounty = EDBounty(bounties["last"]["value"]).pretty_print()
+            summary = u"[Last {}] clean:{} / wanted:{} max={} cr, {} cr in {} {}".format(timespan, counters["clean"], counters["wanted"], max_bounty, last_bounty, bounties["last"]["starSystem"], tminus)
         else:
             summary = u"[Last {}] clean:{} / wanted:{}".format(timespan, counters["clean"], counters["wanted"])
         return summary
-
-    def __pretty_print_bounty(self, bounty):
-        readable = ""
-        if bounty >= 10000000000:
-            readable = u"{}b".format(bounty / 1000000000)
-        elif bounty >= 1000000000:
-            readable = u"{:.1f}b".format(bounty / 1000000000.0)
-        elif bounty >= 10000000:
-            readable = u"{}m".format(bounty / 1000000)
-        elif bounty > 1000000:
-            readable = u"{:.1f}m".format(bounty / 1000000.0)
-        elif bounty >= 10000:
-            readable = u"{}k".format(bounty / 1000)
-        elif bounty >= 1000:
-            readable = u"{:.1f}k".format(bounty / 1000.0)
-        else:
-            readable = u"{}".format(bounty)
-        return readable
 
     def __are_records_stale(self):
         if self.records.last_updated is None:
