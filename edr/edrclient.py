@@ -456,7 +456,7 @@ class EDRClient(object):
                     self.status = "{} is bad news.".format(cmdr_name)
                     details = [profile.short_profile()]
                     if bounty:
-                        details.append(u"Wanted for {} cr".format(EDBounty(scan["bounty"]).pretty_print())
+                        details.append(u"Wanted for {} cr".format(EDBounty(scan["bounty"]).pretty_print()))
                     self.__warning(u"Warning!", details)
                 elif self.intel_even_if_clean or (scan["wanted"] and bounty.is_significant()):
                     self.status = "Intel for cmdr {}.".format(cmdr_name)
