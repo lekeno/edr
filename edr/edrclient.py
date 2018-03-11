@@ -531,7 +531,6 @@ class EDRClient(object):
 
         success = self.edrcmdrs.tag_cmdr(cmdr_name, tag)
         if success:
-            #TODO friendly name for shortcut tags?
             self.__notify(u"Cmdr Dex", [u"Succesfully tagged cmdr {} with {}".format(cmdr_name, tag)])
         else:
             self.__notify(u"Cmdr Dex", [u"Could not tag cmdr {} with {}".format(cmdr_name, tag)])
