@@ -120,22 +120,48 @@ class EDRCmdrs(object):
 
         dex_dict = profile.dex_dict()
         EDRLOG.log(u"New dex state: {}".format(dex_dict), "DEBUG")
-        return self.server.update_cmdrdex(profile.cid, dex_dict)
+        success = self.server.update_cmdrdex(profile.cid, dex_dict)
+        if success:
+            self.evict(cmdr_name)
+        return success
          
     def memo_cmdr(self, cmdr_name, memo):
+        if memo is None:
+            return self.clear_memo_cmdr(cmdr_name)
         EDRLOG.log(u"Writing a note about {}: {}".format(memo, cmdr_name), "DEBUG")
         profile = self.__edr_cmdr(cmdr_name, False)
         if profile is None:
             EDRLOG.log(u"Couldn't find a profile for {}.".format(cmdr_name), "DEBUG")
             return False
 
-        noted = profile.memo(memo) if memo else profile.remove_memo()
+        noted = profile.memo(memo)
         if not noted:
-            EDRLOG.log(u"Could't write a note about {}".format(cmdr_name), "DEBUG")
+            EDRLOG.log(u"Couldn't write a note about {}".format(cmdr_name), "DEBUG")
             return False
 
         dex_dict = profile.dex_dict()
-        return self.server.update_cmdrdex(profile.cid, dex_dict)
+        success = self.server.update_cmdrdex(profile.cid, dex_dict)
+        if success:
+            self.evict(cmdr_name)
+        return success
+
+    def clear_memo_cmdr(self, cmdr_name):
+        EDRLOG.log(u"Removing a note from {}".format(cmdr_name), "DEBUG")
+        profile = self.__edr_cmdr(cmdr_name, False)
+        if profile is None:
+            EDRLOG.log(u"Couldn't find a profile for {}.".format(cmdr_name), "DEBUG")
+            return False
+
+        noted = profile.remove_memo()
+        if not noted:
+            EDRLOG.log(u"Couldn't remove a note from {}".format(cmdr_name), "DEBUG")
+            return False
+
+        dex_dict = profile.dex_dict()
+        success = self.server.update_cmdrdex(profile.cid, dex_dict)
+        if success:
+            self.evict(cmdr_name)
+        return success
     
     def untag_cmdr(self, cmdr_name, tag):
         EDRLOG.log(u"Removing {} tag from {}".format(tag, cmdr_name), "DEBUG")
@@ -151,4 +177,7 @@ class EDRCmdrs(object):
 
         dex_dict = profile.dex_dict()
         EDRLOG.log(u"New dex state: {}".format(dex_dict), "DEBUG")
-        return self.server.update_cmdrdex(profile.cid, dex_dict)
+        success = self.server.update_cmdrdex(profile.cid, dex_dict)
+        if success:
+            self.evict(cmdr_name)
+        return success

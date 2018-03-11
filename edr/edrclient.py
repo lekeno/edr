@@ -536,7 +536,7 @@ class EDRClient(object):
 
         success = self.edrcmdrs.tag_cmdr(cmdr_name, tag)
         if success:
-            self.__notify(u"Cmdr Dex", [u"Succesfully tagged cmdr {} with {}".format(cmdr_name, tag)])
+            self.__notify(u"Cmdr Dex", [u"Successfully tagged cmdr {} with {}".format(cmdr_name, tag)])
         else:
             self.__notify(u"Cmdr Dex", [u"Could not tag cmdr {} with {}".format(cmdr_name, tag)])
         return success
@@ -549,9 +549,22 @@ class EDRClient(object):
 
         success = self.edrcmdrs.memo_cmdr(cmdr_name, memo)
         if success:
-            self.__notify(u"Cmdr Dex", [u"Succesfully attached a note to cmdr {}".format(cmdr_name)])
+            self.__notify(u"Cmdr Dex", [u"Successfully attached a memo to cmdr {}".format(cmdr_name)])
         else:
-            self.__notify(u"Cmdr Dex", [u"Could not attach a note to cmdr {}".format(cmdr_name)])
+            self.__notify(u"Cmdr Dex", [u"Failed to attach a memo to cmdr {}".format(cmdr_name)])       
+        return success
+
+    def clear_memo_cmdr(self, cmdr_name):
+        if self.is_anonymous():
+            EDRLOG.log(u"Skipping clear_memo_cmdr since the user is anonymous.", "INFO")
+            self.advertise_full_account("Sorry, this feature only works with a proper EDR account.", passive=False)
+            return False
+
+        success = self.edrcmdrs.clear_memo_cmdr(cmdr_name)
+        if success:
+            self.__notify(u"Cmdr Dex",[u"Successfully removed memo from cmdr {}".format(cmdr_name)])
+        else:
+            self.__notify(u"Cmdr Dex", [u"Failed to remove memo from cmdr {}".format(cmdr_name)])        
         return success
 
     def untag_cmdr(self, cmdr_name, tag):
@@ -562,9 +575,12 @@ class EDRClient(object):
 
         success = self.edrcmdrs.untag_cmdr(cmdr_name, tag)
         if success:
-            self.__notify(u"Cmdr Dex", [u"Succesfully removed tag {} from cmdr {}".format(tag, cmdr_name)])
+            if tag is None:
+                self.__notify(u"Cmdr Dex", [u"Successfully removed all tags from cmdr {}".format(cmdr_name)])
+            else:
+                self.__notify(u"Cmdr Dex", [u"Successfully removed tag {} from cmdr {}".format(tag, cmdr_name)])
         else:
-            self.__notify(u"Cmdr Dex", [u"Could not remove tag {} from cmdr {}".format(tag, cmdr_name)])
+            self.__notify(u"Cmdr Dex", [u"Could not remove tag(s) from cmdr {}".format(cmdr_name)])
         return success
 
     def where(self, cmdr_name):
@@ -652,6 +668,6 @@ class EDRClient(object):
             if (now_epoch - self.previous_ad) <= self.edr_needs_u_novelty_threshold:
                 return False
 
-        self.__notify(u"EDR needs you!", [context, u"--", u"Create an account at https://lekeno.github.io/", u"It's free, no strings attached."], clear_before=True)
+        self.__notify(u"EDR needs you!", [context, u"--", u"Apply for an account at https://lekeno.github.io/", u"It's free, no strings attached."], clear_before=True)
         self.previous_ad = now_epoch
         return True

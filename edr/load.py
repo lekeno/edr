@@ -132,6 +132,11 @@ def handle_lifecycle_events(ed_player, entry):
         EDRLOG.log(u"Player is on the main menu.", "DEBUG")
         return
 
+    if entry["event"] == "Shutdown":
+        EDRLOG.log(u"Shutting down.", "DEBUG")
+        EDR_CLIENT.shutdown()
+        return
+
     if entry["event"] == "Resurrect":
         EDR_CLIENT.clear()
         ed_player.resurrect()
@@ -648,9 +653,9 @@ def handle_minus_commands(command, command_parts, entry):
         tag = command[2:]
         EDRLOG.log(u"Remove tag {} for {}".format(tag, target_cmdr), "INFO")
         EDR_CLIENT.untag_cmdr(target_cmdr, tag)
-    elif command == "-@":
+    elif command == "-@#":
         EDRLOG.log(u"Remove memo for {}".format(target_cmdr), "INFO")
-        EDR_CLIENT.memo_cmdr(target_cmdr, None)
+        EDR_CLIENT.clear_memo_cmdr(target_cmdr)
     
 
 def handle_at_commands(entry):

@@ -61,7 +61,7 @@ class RESTFirebaseAuth(object):
 
         requestTime = datetime.datetime.now()
         resp = requests.post(endpoint,json=payload)
-        if resp.status_code != 200:
+        if resp.status_code != requests.codes.ok:
             return False
         
         self.timestamp = requestTime
@@ -80,7 +80,7 @@ class RESTFirebaseAuth(object):
         endpoint = "https://securetoken.googleapis.com/v1/token?key={}".format(self.api_key)
         requestTime = datetime.datetime.now()
         resp = requests.post(endpoint,data=payload)
-        if resp.status_code != 200:
+        if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Refresh of FB token failed. Status code={code}, content={content}".format(code=resp.status_code, content=resp.content), "ERROR")
             return False
 

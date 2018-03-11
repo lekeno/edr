@@ -24,7 +24,7 @@ class EDRInara(object):
         payload = { "header": self.__api_header(), "events" : [self.__api_cmdrprofile(cmdr_name)] }
 
         resp = requests.post(self.INARA_ENDPOINT, json=payload)
-        if resp.status_code != 200:
+        if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Failed to obtain cmdr profile from Inara. code={code}, content={content}".format(code=resp.status_code, content=resp.content), "ERROR")
             return None
         
@@ -34,7 +34,7 @@ class EDRInara(object):
             if json_resp["events"][0]["eventStatus"] == 204:
                 EDRLOG.log(u"cmdr {} was not found via the Inara API.".format(cmdr_name), "INFO")
                 return None
-            elif json_resp["events"][0]["eventStatus"] != 200:
+            elif json_resp["events"][0]["eventStatus"] != requests.codes.ok:
                 EDRLOG.log(u"Error from Inara API. code={code}, content={content}".format(code=resp.status_code, content=resp.content), "ERROR")
                 return None
         except:
