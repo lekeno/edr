@@ -3,7 +3,7 @@ import ConfigParser
 import edrlog
 
 class IGMConfig(object):
-    def __init__(self, config_file='config/igm_config.ini', user_config_file='config/user_igm_config.ini'):
+    def __init__(self, config_file='config/igm_config.v2.ini', user_config_file='config/user_igm_config.v2.ini'):
         self.config = ConfigParser.ConfigParser()
         user_cfg_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), user_config_file)
         if os.path.exists(user_cfg_path):
@@ -26,17 +26,29 @@ class IGMConfig(object):
     def normal_width(self):
         return self.config.getfloat('general', 'normal_width')
 
+    def panel(self, kind):
+        return self.config.getboolean(kind, 'panel')
+
     def x(self, kind, part):
         return self.config.getint(kind, '{}_x'.format(part))
 
     def y(self, kind, part):
         return self.config.getint(kind, '{}_y'.format(part))
 
+    def x2(self, kind, part):
+        return self.config.getint(kind, '{}_x2'.format(part))
+
+    def y2(self, kind, part):
+        return self.config.getint(kind, '{}_y2'.format(part))
+
     def ttl(self, kind, part):
         return self.config.getint(kind, '{}_ttl'.format(part))
 
     def rgb(self, kind, part):
         return "#{}".format(self.config.get(kind, '{}_rgb'.format(part)))
+
+    def fill(self, kind, part):
+        return "#{}".format(self.config.get(kind, '{}_fill'.format(part)))
 
     def size(self, kind, part):
         return self.config.get(kind, '{}_size'.format(part))

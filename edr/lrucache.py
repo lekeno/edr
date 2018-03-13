@@ -10,6 +10,7 @@ class LRUCache(object):
         self.capacity = max_size
         self.max_age = datetime.timedelta(seconds=max_age_seconds)
         self.cache = collections.OrderedDict()
+        self.last_updated = None
     
     def is_stale(self, key):
         if not self.has_key(key):
@@ -54,8 +55,20 @@ class LRUCache(object):
         while len(self.cache) >= self.capacity:
             self.cache.popitem(last=False)
         
-        self.cache[key] = { "datetime": datetime.datetime.now(), "content": value}
+        now = datetime.datetime.now()
+        self.cache[key] = { "datetime": now, "content": value}
+        self.last_updated = now
 
     def __delitem__(self, key):
         del self.cache[key]
+
+    def evict(self, key):
+        try:
+            self.cache.pop(key)
+        except KeyError:
+            pass
+
+    def reset(self):
+        self.cache = collections.OrderedDict()
+        self.last_updated = None
 

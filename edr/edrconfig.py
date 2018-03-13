@@ -31,6 +31,15 @@ class EDRConfig(object):
     def intel_bounty_threshold(self):
         return self.config.getint('scans', 'intel_bounty_threshold')
 
+    def legal_records_recent_threshold(self):
+        return int(self.config.get('scans', 'legal_records_recent_threshold'))
+    
+    def legal_records_check_interval(self):
+        return int(self.config.get('scans', 'legal_records_check_interval'))
+
+    def legal_records_max_age(self):
+        return int(self.config.get('scans', 'legal_records_max_age'))
+
     def system_novelty_threshold(self):
         return int(self.config.get('novelty', 'system_novelty_threshold'))
 
@@ -61,9 +70,6 @@ class EDRConfig(object):
     def scans_max_age(self):
         return int(self.config.get('lrucaches', 'scans_max_age'))
 
-    def outlaws_max_age(self):
-        return int(self.config.get('lrucaches', 'outlaws_max_age'))
-
     def traffic_max_age(self):
         return int(self.config.get('lrucaches', 'traffic_max_age'))
 
@@ -72,6 +78,12 @@ class EDRConfig(object):
 
     def lru_max_size(self):
         return int(self.config.get('lrucaches', 'lru_max_size'))
+
+    def outlaws_max_age(self):
+        return int(self.config.get('outlaws', 'outlaws_max_age'))
+
+    def outlaws_max_recents(self):
+        return int(self.config.get('outlaws', 'outlaws_max_recents'))
 
     def logging_level(self):
         return self.config.get('general', 'logging_level')

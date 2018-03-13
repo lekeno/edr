@@ -19,7 +19,9 @@ import edrsystems
 import edrcmdrs
 import edroutlaws
 import randomtips
+import helpcontent
 import edtime
+import edrlegalrecords
 
 EDRLOG = edrlog.EDRLog()
 
@@ -37,7 +39,6 @@ class EDRClient(object):
         self.place_novelty_threshold = edr_config.place_novelty_threshold()
         self.ship_novelty_threshold = edr_config.ship_novelty_threshold()
         self.cognitive_novelty_threshold = edr_config.cognitive_novelty_threshold()
-        self.outlaws_recent_threshold = edr_config.outlaws_recent_threshold()
         self.intel_even_if_clean = edr_config.intel_even_if_clean()
         self.intel_bounty_threshold = edr_config.intel_bounty_threshold()
 
@@ -48,7 +49,6 @@ class EDRClient(object):
         self.traffic_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                edr_config.traffic_max_age())
         self.scans_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.scans_max_age())
-        self.outlaws_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.outlaws_max_age())
 
         self._email = tk.StringVar(value=config.get("EDREmail"))
         self._password = tk.StringVar(value=config.get("EDRPassword"))
@@ -67,11 +67,13 @@ class EDRClient(object):
         self.edrsystems = edrsystems.EDRSystems(self.server)
         self.edrcmdrs = edrcmdrs.EDRCmdrs(self.server)
         self.edroutlaws = edroutlaws.EDROutlaws(self.server)
+        self.edrlegal = edrlegalrecords.EDRLegalRecords(self.server)
 
         self.mandatory_update = False
         self.crimes_reporting = True
         self.motd = []
         self.tips = randomtips.RandomTips("data/tips.json")
+        self.help_content = helpcontent.HelpContent("data/help.json")
 
     def loud_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "loud")
@@ -203,18 +205,19 @@ class EDRClient(object):
 
     def warmup(self):
         EDRLOG.log(u"Warming up client.", "INFO")
-        details = [u"(please check that ED has the focus)"]
+        details = [u"Feeling lost? Send !help via the in-game chat"]
         if self.mandatory_update:
             details = [u"Mandatory update!"]
         details += self.motd
-        details.append("---")
+        details.append("-- Random Tip --")
         details.append(self.tips.tip())
-        self.__notify(u"EDR v{} by LeKeno (Cobra Kai)".format(self.edr_version), details)
+        self.__notify(u"EDR v{} by LeKeno (Cobra Kai)".format(self.edr_version), details, clear_before=True)
 
     def shutdown(self):
         self.edrcmdrs.persist()
         self.edrsystems.persist()
         self.edroutlaws.persist()
+        self.edrlegal.persist()
         self.server.logout()
         self.IN_GAME_MSG.shutdown()
 
@@ -389,7 +392,11 @@ class EDRClient(object):
         if not profile is None:
             self.status = "got info about {}".format(cmdr_name)
             EDRLOG.log(u"Who {} : {}".format(cmdr_name, profile.short_profile()), "INFO")
-            self.__intel(cmdr_name, [profile.short_profile()])
+            legal = self.edrlegal.summarize_recents(profile.cid)
+            if legal:
+                self.__intel(cmdr_name, [profile.short_profile(), legal])
+            else:
+                self.__intel(cmdr_name, [profile.short_profile()])
         else:
             EDRLOG.log(u"Who {} : no info".format(cmdr_name), "INFO")
             self.__intel(cmdr_name, ["No info about {}".format(cmdr_name)])
@@ -560,36 +567,56 @@ class EDRClient(object):
         EDRLOG.log(u"Got recently sighted outlaws", "INFO")
         self.__sitrep(u"Recently Sighted Outlaws", outlaws_report)
 
+    def help(self, section):
+        content = self.help_content.get(section)
+        if not content:
+            return False
+
+        EDRLOG.log(u"Show help for {} with header: {} and details: {}".format(section, content["header"], content["details"][0]), "DEBUG")
+        self.IN_GAME_MSG.help(content["header"], content["details"])
+        return True
+
+    def clear(self):
+        self.IN_GAME_MSG.clear()
+           
+
     def __sitrep(self, header, details):
         if self.audio_feedback:
             self.AUDIO_FEEDBACK.notify()
         if not self.visual_feedback:
             return
         EDRLOG.log(u"sitrep with header: {}; details: {}".format(header, details[0]), "DEBUG")
+        self.IN_GAME_MSG.clear_sitrep()
         self.IN_GAME_MSG.sitrep(header, details)
 
-    def __intel(self, who, details):
+    def __intel(self, who, details, clear_before=False):
         if self.audio_feedback:
             self.AUDIO_FEEDBACK.notify()
         if not self.visual_feedback:
             return
         EDRLOG.log(u"Intel for {}; details: {}".format(who, details[0]), "DEBUG")
+        if clear_before:
+            self.IN_GAME_MSG.clear_intel()
         self.IN_GAME_MSG.intel(u"Intel", details)
 
-    def __warning(self, header, details):
+    def __warning(self, header, details, clear_before=False):
         if self.audio_feedback:
             self.AUDIO_FEEDBACK.warn()
         if not self.visual_feedback:
             return
         EDRLOG.log(u"Warning; details: {}".format(details[0]), "DEBUG")
+        if clear_before:
+            self.IN_GAME_MSG.clear_warning()
         self.IN_GAME_MSG.warning(header, details)
     
-    def __notify(self, header, details):
+    def __notify(self, header, details, clear_before=False):
         if self.audio_feedback:
             self.AUDIO_FEEDBACK.notify()
         if not self.visual_feedback:
             return
         EDRLOG.log(u"Notify about {}; details: {}".format(header, details[0]), "DEBUG")
+        if clear_before:
+            self.IN_GAME_MSG.clear_notice()
         self.IN_GAME_MSG.notify(header, details)
 
     def notify_with_details(self, notice, details):
@@ -605,6 +632,6 @@ class EDRClient(object):
             if (now_epoch - self.previous_ad) <= self.edr_needs_u_novelty_threshold:
                 return False
 
-        self.__notify(u"EDR needs you!", [context, u"--", u"Create an account at https://lekeno.github.io/", u"It's free, no strings attached."])
+        self.__notify(u"EDR needs you!", [context, u"--", u"Create an account at https://lekeno.github.io/", u"It's free, no strings attached."], clear_before=True)
         self.previous_ad = now_epoch
         return True

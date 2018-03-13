@@ -1,7 +1,6 @@
 import os
 import json
 import random
-import edrlog
 
 class RandomTips(object):
     def __init__(self, tips_file):

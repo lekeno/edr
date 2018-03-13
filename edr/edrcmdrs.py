@@ -8,13 +8,10 @@ import edrlog
 EDRLOG = edrlog.EDRLog()
 
 class EDRCmdrs(object):
-    OBSOLETE_EDR_CMDRS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/cmdrs.p')
-
     EDR_CMDRS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/cmdrs.v3.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/cmdrs.v4.p')
     EDR_INARA_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/inara.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/inara.v2.p')
 
     def __init__(self, server):
         self.server = server
@@ -22,12 +19,6 @@ class EDRCmdrs(object):
  
         edr_config = edrconfig.EDRConfig()
  
-        try:
-            if os.path.exists(self.OBSOLETE_EDR_CMDRS_CACHE):
-                os.remove(self.OBSOLETE_EDR_CMDRS_CACHE)
-        except:
-            EDRLOG.log(u"Failed to remove obsolete cmdr cache at {}".format(self.OBSOLETE_EDR_CMDRS_CACHE), "DEBUG")
-
         try:
             with open(self.EDR_CMDRS_CACHE, 'rb') as handle:
                 self.cmdrs_cache = pickle.load(handle)

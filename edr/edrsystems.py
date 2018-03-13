@@ -15,15 +15,15 @@ EDRLOG = edrlog.EDRLog()
 
 class EDRSystems(object):
     EDR_SYSTEMS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/systems.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/systems.v2.p')
     EDR_NOTAMS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/notams.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/notams.v2.p')
     EDR_SITREPS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/sitreps.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/sitreps.v2.p')
     EDR_TRAFFIC_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/traffic.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/traffic.v2.p')
     EDR_CRIMES_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/crimes.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/crimes.v2.p')
 
     def __init__(self, server):
         edr_config = edrconfig.EDRConfig()
@@ -67,8 +67,6 @@ class EDRSystems(object):
         self.reports_check_interval = edr_config.reports_check_interval()
         self.notams_check_interval = edr_config.notams_check_interval()
         self.timespan = edr_config.sitreps_timespan()
-        self.reports_last_updated = None
-        self.notams_last_updated = None
         self.server = server
 
     def system_id(self, star_system, may_create=False):
@@ -347,10 +345,10 @@ class EDRSystems(object):
 
 
     def __are_reports_stale(self):
-        return self.__is_stale(self.reports_last_updated, self.reports_check_interval)
+        return self.__is_stale(self.sitreps_cache.last_updated, self.reports_check_interval)
 
     def __are_notams_stale(self):
-        return self.__is_stale(self.notams_last_updated, self.notams_check_interval)
+        return self.__is_stale(self.notams_cache.last_updated, self.notams_check_interval)
 
     def __is_stale(self, updated_at, max_age):
         if updated_at is None:
@@ -366,26 +364,26 @@ class EDRSystems(object):
         if self.__are_reports_stale():
             missing_seconds = self.timespan
             now = datetime.datetime.now()
-            if self.reports_last_updated:
-                missing_seconds = min(self.timespan, (now - self.reports_last_updated).total_seconds())
+            if self.sitreps_cache.last_updated:
+                missing_seconds = min(self.timespan, (now - self.sitreps_cache.last_updated).total_seconds())
             sitreps = self.server.sitreps(missing_seconds)
             if sitreps:
                 for system_id in sitreps:
                     self.sitreps_cache.set(system_id, sitreps[system_id])
-            self.reports_last_updated = now
+            self.sitreps_cache.last_updated = now
             updated = True
 
         if self.__are_notams_stale():
             missing_seconds = self.timespan
             now = datetime.datetime.now()
-            if self.notams_last_updated:
-                missing_seconds = min(self.timespan, (now - self.notams_last_updated).total_seconds())
+            if self.notams_cache.last_updated:
+                missing_seconds = min(self.timespan, (now - self.notams_cache.last_updated).total_seconds())
 
             notams = self.server.notams(missing_seconds)
             if notams:
                 for system_id in notams:
                     self.notams_cache.set(system_id, notams[system_id])
-            self.notams_last_updated = now
+            self.notams_cache.last_updated = now
             updated = True
 
         return updated
