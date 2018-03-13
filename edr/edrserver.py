@@ -48,7 +48,7 @@ class EDRServer(object):
         endpoint = "{server}/version/.json".format(server=self.EDR_SERVER)
         resp = requests.get(endpoint)
         
-        if resp.status_code != 200:
+        if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Failed to check for version update. code={code}, content={content}".format(code=resp.status_code, content=resp.content), "ERROR")
             return None
 
@@ -64,7 +64,7 @@ class EDRServer(object):
         EDRLOG.log(u"query_params {}".format(query_params), "DEBUG")
         resp = requests.get("{server}/v1/notams.json?{query_params}".format(server=self.EDR_SERVER, query_params=query_params))
 
-        if resp.status_code != 200:
+        if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Failed to retrieve notams.", "ERROR")
             return None
         
@@ -78,7 +78,7 @@ class EDRServer(object):
         query_params = "orderBy=\"timestamp\"&startAt={past}&endAt={now}&auth={auth}".format(past=past_epoch_js, now=now_epoch_js, auth=self.auth_token())
         resp = requests.get("{server}/v1/systems.json?{query_params}".format(server=self.EDR_SERVER, query_params=query_params))
 
-        if resp.status_code != 200:
+        if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Failed to retrieve sitreps.", "ERROR")
             return None
         
@@ -91,7 +91,7 @@ class EDRServer(object):
         EDRLOG.log(u"system_id endpoint: {}".format(endpoint), "DEBUG")
         resp = requests.get(endpoint)
 
-        if resp.status_code != 200:
+        if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Failed to retrieve star system sid.", "ERROR")
             return None
 
@@ -102,7 +102,7 @@ class EDRServer(object):
                 EDRLOG.log(u"Creating system in EDR.", "DEBUG")
                 query_params = { "auth" : self.auth_token() }
                 resp = requests.post("{server}/v1/systems.json?{query_params}".format(server=self.EDR_SERVER, query_params=urllib.urlencode(query_params)), json={"name": star_system, "uid" : self.uid()})
-                if resp.status_code != 200:
+                if resp.status_code != requests.codes.ok:
                     EDRLOG.log(u"Failed to create new star system.", "ERROR")
                     return None
                 sid = json.loads(resp.content).values()[0]
@@ -123,7 +123,7 @@ class EDRServer(object):
         EDRLOG.log(u"Endpoint :" + endpoint, "DEBUG")
         resp = requests.get(endpoint)
 
-        if resp.status_code != 200:
+        if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Failed to retrieve cmdr id.", "ERROR")
             EDRLOG.log(u"{error}, {content}".format(error=resp.status_code, content=resp.content), "DEBUG")
             return None
@@ -133,7 +133,7 @@ class EDRServer(object):
                 query_params = { "auth" : self.auth_token() }
                 endpoint = "{server}/v1/cmdrs.json?{query_params}".format(server=self.EDR_SERVER, query_params=urllib.urlencode(query_params))
                 resp = requests.post(endpoint, json={"name": cmdr, "uid" : self.uid()})
-                if resp.status_code != 200:
+                if resp.status_code != requests.codes.ok:
                     EDRLOG.log(u"Failed to retrieve cmdr key.", "ERROR")
                     return None
                 json_cmdr = json.loads(resp.content)
@@ -156,7 +156,7 @@ class EDRServer(object):
         EDRLOG.log(u"Post JSON to {}".format(endpoint), "DEBUG")
         resp = requests.post(endpoint, json=json_payload)
         EDRLOG.log(u" resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
-        return resp.status_code == 200
+        return resp.status_code == requests.codes.ok
 
     def blip(self, cmdr_id, info):
         info["uid"] = self.uid()
@@ -196,7 +196,7 @@ class EDRServer(object):
         EDRLOG.log(u"Get recent; endpoint: {}".format(endpoint), "DEBUG")
         resp = requests.get(endpoint)
 
-        if resp.status_code != 200:
+        if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Failed to retrieve recent items. Errorc code: {}".format(resp.status_code), "ERROR")
             return None
         
@@ -226,7 +226,7 @@ class EDRServer(object):
         query_params = "orderBy=\"cname\"&equalTo=\"{name}\"&limitToFirst=1&auth={auth}".format(name=urllib.quote(urllib.quote(name.lower())), auth=self.auth_token())
         endpoint = "{server}/v1/outlaws.json?{query_params}".format(server=self.EDR_SERVER, query_params=query_params)
         resp = requests.get(endpoint)
-        if resp.status_code != 200:
+        if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Failed to retrieve location of an outlaw.", "ERROR")
             return None
         
@@ -247,15 +247,14 @@ class EDRServer(object):
             EDRLOG.log(u"Endpoint :" + endpoint, "DEBUG")
             resp = requests.delete(endpoint)
             EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
-            return resp.status_code == 200
+            return resp.status_code == requests.codes.ok
         
         EDRLOG.log(u"CmdrDex entry for cmdr {cid} with json:{json}".format(cid=cmdr_id, json=dex_entry), "INFO")
         endpoint = "{server}/v1/cmdrsdex/{uid}/{cid}/.json?{query_params}".format(server=self.EDR_SERVER, uid=self.uid(), cid=cmdr_id, query_params=urllib.urlencode(query_params))
         EDRLOG.log(u"Endpoint :" + endpoint, "DEBUG")
         resp = requests.put(endpoint, json=dex_entry)
         EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
-
-        return resp.status_code == 200
+        return resp.status_code == requests.codes.ok
 
     def cmdrdex(self, cmdr_id):
         if self.is_anonymous():
@@ -267,7 +266,7 @@ class EDRServer(object):
         resp = requests.get(endpoint)
         EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
 
-        if resp.status_code == 200:
+        if resp.status_code == requests.codes.ok:
             return json.loads(resp.content)
         else:
             return None

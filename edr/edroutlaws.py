@@ -10,6 +10,7 @@ import edrconfig
 import edrserver
 import edrlog
 import edtime
+from edentities import EDBounty
 
 EDRLOG = edrlog.EDRLog()
 
@@ -71,24 +72,6 @@ class EDROutlaws(object):
             summary.append(self.__readable_outlaw_sighting(sighting, one_liner=True))
         return summary
 
-    def __pretty_print_bounty(self, bounty):
-        readable = ""
-        if bounty >= 10000000000:
-            readable = u"{}b".format(bounty / 1000000000)
-        elif bounty >= 1000000000:
-            readable = u"{:.1f}b".format(bounty / 1000000000.0)
-        elif bounty >= 10000000:
-            readable = u"{}m".format(bounty / 1000000)
-        elif bounty > 1000000:
-            readable = u"{:.1f}m".format(bounty / 1000000.0)
-        elif bounty >= 10000:
-            readable = u"{}k".format(bounty / 1000)
-        elif bounty >= 1000:
-            readable = u"{:.1f}k".format(bounty / 1000.0)
-        else:
-            readable = u"{}".format(bounty)
-        return readable
-
     def __readable_outlaw_sighting(self, sighting, one_liner=False):
         EDRLOG.log(u"sighting: {}".format(sighting), "DEBUG")
         if not sighting:
@@ -98,7 +81,7 @@ class EDROutlaws(object):
             cmdr = (sighting["cmdr"][:29] + u'…') if len(sighting["cmdr"]) > 30 else sighting["cmdr"]
             starSystem = (sighting["starSystem"][:50] + u'…') if len(sighting["starSystem"]) > 50 else sighting["starSystem"]    
             if sighting.get("bounty", None) > 0:
-                neat_bounty = self.__pretty_print_bounty(sighting["bounty"])
+                neat_bounty = EDBounty(sighting["bounty"]).pretty_print()
                 return u"T{:<2}: {} in {}, wanted for {}".format(t_minus, cmdr, starSystem, neat_bounty)
             else:
                 return u"T{:<2}: {} in {}".format(t_minus, cmdr, starSystem)
@@ -115,7 +98,7 @@ class EDROutlaws(object):
         if sighting["ship"] != "Unknown":
             readable.append(u"Spaceship: {}".format(sighting["ship"]))
         if sighting.get("bounty", None) > 0:
-            neat_bounty = self.__pretty_print_bounty(sighting["bounty"]) 
+            neat_bounty = EDBounty(sighting["bounty"]).pretty_print()
             readable.append(u"Wanted for {} credits".format(neat_bounty))
         return readable
 

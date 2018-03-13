@@ -3,8 +3,36 @@ import json
 
 import edtime
 import edrlog
+import edrconfig
 
 EDRLOG = edrlog.EDRLog()
+
+class EDBounty(object):
+    def __init__(self, value):
+        self.value = value
+        config = edrconfig.EDRConfig()
+        self.threshold = config.intel_bounty_threshold()
+    
+    def is_significant():
+        return self.value >= self.threshold
+
+    def pretty_print(self):
+        readable = ""
+        if self.value >= 10000000000:
+            readable = u"{} b".format(self.value / 1000000000)
+        elif self.value >= 1000000000:
+            readable = u"{:.1f} b".format(self.value / 1000000000.0)
+        elif self.value >= 10000000:
+            readable = u"{} m".format(self.value / 1000000)
+        elif self.value > 1000000:
+            readable = u"{:.1f} m".format(self.value / 1000000.0)
+        elif self.value >= 10000:
+            readable = u"{} k".format(self.value / 1000)
+        elif self.value >= 1000:
+            readable = u"{:.1f} k".format(self.value / 1000.0)
+        else:
+            readable = u"{}".format(self.value)
+        return readable
 
 class EDVehicles(object):
     CANONICAL_SHIP_NAMES = json.loads(open(os.path.join(

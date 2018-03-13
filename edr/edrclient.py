@@ -40,15 +40,16 @@ class EDRClient(object):
         self.ship_novelty_threshold = edr_config.ship_novelty_threshold()
         self.cognitive_novelty_threshold = edr_config.cognitive_novelty_threshold()
         self.intel_even_if_clean = edr_config.intel_even_if_clean()
-        self.intel_bounty_threshold = edr_config.intel_bounty_threshold()
-
+        
         self.edr_needs_u_novelty_threshold = edr_config.edr_needs_u_novelty_threshold()
         self.previous_ad = None
 
         self.blips_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
+        self.cognitive_blips_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
         self.traffic_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                edr_config.traffic_max_age())
         self.scans_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.scans_max_age())
+        self.cognitive_scans_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
 
         self._email = tk.StringVar(value=config.get("EDREmail"))
         self._password = tk.StringVar(value=config.get("EDRPassword"))
@@ -370,18 +371,13 @@ class EDRClient(object):
                     delta > self.ship_novelty_threshold)
 
     def novel_enough_blip(self, cmdr_id, blip, cognitive = False):
-        last_blip = self.blips_cache.get(cmdr_id)
+        last_blip = self.cognitive_blips_cache.get(cmdr_id) if cognitive else self.blips_cache.get(cmdr_id)
         return self.__novel_enough_situation(blip, last_blip, cognitive)
 
     def novel_enough_scan(self, cmdr_id, scan, cognitive = False):
-        last_scan = self.scans_cache.get(cmdr_id)
+        last_scan = self.cognitive_scans_cache.get(cmdr_id) if cognitive else self.scans_cache.get(cmdr_id)
         novel_situation = self.__novel_enough_situation(scan, last_scan, cognitive)
-        if not novel_situation:
-            if scan["wanted"] != last_scan["wanted"]:
-                return True
-            if scan["bounty"] != last_scan["bounty"]:
-                return True
-        return novel_situation
+        return novel_situation or (scan["wanted"] != last_scan["wanted"]) or (scan["bounty"] != last_scan["bounty"])
 
     def novel_enough_traffic_report(self, sighted_cmdr, report):
         last_report = self.traffic_cache.get(sighted_cmdr)
@@ -409,10 +405,11 @@ class EDRClient(object):
             return
 
         profile = self.cmdr(cmdr_name)
-        if (not profile is None) and (self.player.name != cmdr_name) and profile.is_dangerous():
+        if profile and (self.player.name != cmdr_name) and profile.is_dangerous():
             self.status = "{} is bad news.".format(cmdr_name)
             if self.novel_enough_blip(cmdr_id, blip, cognitive = True):
                 self.__warning(u"Warning!", [profile.short_profile()])
+                self.cognitive_blips_cache.set(cmdr_id, blip)
                 if self.is_anonymous():
                     self.advertise_full_account("You could have helped other EDR users by reporting this outlaw.")
             else:
@@ -436,12 +433,6 @@ class EDRClient(object):
         return success
 
     def scanned(self, cmdr_name, scan):
-        if self.is_anonymous():
-            EDRLOG.log(u"Skipping scan report since the user is anonymous.", "INFO")
-            if (scan["wanted"] and scan["bounty"] >= self.intel_bounty_threshold):
-                self.advertise_full_account("You could have helped other EDR users by reporting this outlaw!")
-            return False
-
         cmdr_id = self.cmdr_id(cmdr_name)
         if cmdr_id is None:
             self.status = "no cmdr id (scan)."
@@ -450,20 +441,33 @@ class EDRClient(object):
 
         if self.novel_enough_scan(cmdr_id, scan, cognitive = True):
             profile = self.cmdr(cmdr_name)
-            if (not profile is None) and (self.player.name != cmdr_name):
+            bounty = edentities.EDBounty(scan["bounty"]) if scan["bounty"] else None
+            if profile and (self.player.name != cmdr_name):
                 if profile.is_dangerous():
                     self.status = "{} is bad news.".format(cmdr_name)
-                    self.__warning(u"Warning!", [profile.short_profile()])
-                    if self.is_anonymous():
-                        self.advertise_full_account("You could have helped other EDR users by reporting this outlaw.")
-                elif self.intel_even_if_clean or (scan["wanted"] and scan["bounty"] >= self.intel_bounty_threshold):
-                    self.status = "Intel for wanted cmdr {}.".format(cmdr_name)
-                    self.__intel(u"Intel for {} (wanted; >={})".format(cmdr_name, self.intel_bounty_threshold), [profile.short_profile()])
+                    details = [profile.short_profile()]
+                    if bounty:
+                        details.append(u"Wanted for {} cr".format(edentities.EDBounty(scan["bounty"]).pretty_print()))
+                    self.__warning(u"Warning!", details)
+                elif self.intel_even_if_clean or (scan["wanted"] and bounty.is_significant()):
+                    self.status = "Intel for cmdr {}.".format(cmdr_name)
+                    details = [profile.short_profile()]
+                    if bounty:
+                        details.append(u"Wanted for {} cr".format(edentities.EDBounty(scan["bounty"]).pretty_print()))
+                    self.__intel(u"Intel", details)
+                if (scan["wanted"] and bounty.is_significant()):
+                    self.advertise_full_account("You could have helped other EDR users by reporting this outlaw!")
+                self.cognitive_scans_cache.set(cmdr_id, scan)
 
         if not self.novel_enough_scan(cmdr_id, scan):
             self.status = "skipping scan (not novel enough)."
             EDRLOG.log(u"Scan is not novel enough to warrant reporting", "INFO")
             return True
+
+        if self.is_anonymous():
+            EDRLOG.log("Skipping reporting scan since the user is anonymous.", "INFO")
+            self.scans_cache.set(cmdr_id, blip)
+            return False
 
         success = self.server.scanned(cmdr_id, scan)
         if success:
@@ -529,7 +533,12 @@ class EDRClient(object):
             self.advertise_full_account("Sorry, this feature only works with a proper EDR account.", passive=False)
             return False
 
-        return self.edrcmdrs.tag_cmdr(cmdr_name, tag)
+        success = self.edrcmdrs.tag_cmdr(cmdr_name, tag)
+        if success:
+            self.__notify(u"Cmdr Dex", [u"Successfully tagged cmdr {} with {}".format(cmdr_name, tag)])
+        else:
+            self.__notify(u"Cmdr Dex", [u"Could not tag cmdr {} with {}".format(cmdr_name, tag)])
+        return success
     
     def memo_cmdr(self, cmdr_name, memo):
         if self.is_anonymous():
@@ -537,7 +546,25 @@ class EDRClient(object):
             self.advertise_full_account("Sorry, this feature only works with a proper EDR account.", passive=False)
             return False
 
-        self.edrcmdrs.memo_cmdr(cmdr_name, memo)
+        success = self.edrcmdrs.memo_cmdr(cmdr_name, memo)
+        if success:
+            self.__notify(u"Cmdr Dex", [u"Successfully attached a memo to cmdr {}".format(cmdr_name)])
+        else:
+            self.__notify(u"Cmdr Dex", [u"Failed to attach a memo to cmdr {}".format(cmdr_name)])       
+        return success
+
+    def clear_memo_cmdr(self, cmdr_name):
+        if self.is_anonymous():
+            EDRLOG.log(u"Skipping clear_memo_cmdr since the user is anonymous.", "INFO")
+            self.advertise_full_account("Sorry, this feature only works with a proper EDR account.", passive=False)
+            return False
+
+        success = self.edrcmdrs.clear_memo_cmdr(cmdr_name)
+        if success:
+            self.__notify(u"Cmdr Dex",[u"Successfully removed memo from cmdr {}".format(cmdr_name)])
+        else:
+            self.__notify(u"Cmdr Dex", [u"Failed to remove memo from cmdr {}".format(cmdr_name)])        
+        return success
 
     def untag_cmdr(self, cmdr_name, tag):
         if self.is_anonymous():
@@ -545,7 +572,15 @@ class EDRClient(object):
             self.advertise_full_account("Sorry, this feature only works with a proper EDR account.", passive=False)
             return False
 
-        self.edrcmdrs.untag_cmdr(cmdr_name, tag)
+        success = self.edrcmdrs.untag_cmdr(cmdr_name, tag)
+        if success:
+            if tag is None:
+                self.__notify(u"Cmdr Dex", [u"Successfully removed all tags from cmdr {}".format(cmdr_name)])
+            else:
+                self.__notify(u"Cmdr Dex", [u"Successfully removed tag {} from cmdr {}".format(tag, cmdr_name)])
+        else:
+            self.__notify(u"Cmdr Dex", [u"Could not remove tag(s) from cmdr {}".format(cmdr_name)])
+        return success
 
     def where(self, cmdr_name):
         report = self.edroutlaws.where(cmdr_name)
@@ -632,6 +667,6 @@ class EDRClient(object):
             if (now_epoch - self.previous_ad) <= self.edr_needs_u_novelty_threshold:
                 return False
 
-        self.__notify(u"EDR needs you!", [context, u"--", u"Create an account at https://lekeno.github.io/", u"It's free, no strings attached."], clear_before=True)
+        self.__notify(u"EDR needs you!", [context, u"--", u"Apply for an account at https://lekeno.github.io/", u"It's free, no strings attached."], clear_before=True)
         self.previous_ad = now_epoch
         return True
