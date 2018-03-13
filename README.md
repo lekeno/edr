@@ -35,7 +35,7 @@ Setup the type of feedback that suits you best:
  3. Click OK.
 
 ## Usage
-EDR will warn you when dangerous cmdrs make themselves known to the player journal: comms, interdiction, etc. You can also scan contacts with your ship's regular scanner to report them to EDR for the benefit of other EDR users and to get warnings / profiles for known outlaws or wanted commanders with a bounty of at least 10k credits.
+EDR will warn you when dangerous cmdrs make themselves known to the player journal: comms, interdiction, etc. You can also **scan contacts** with your ship's regular scanner to report them to EDR for the benefit of other EDR users and to get warnings / profiles for known outlaws or wanted commanders with a bounty of at least 10k credits.
 
 Alternatively, you can trigger an EDR + Inara cmdr profile lookup by:
  - Sending an ```o7``` to the cmdr you are wondering about.
@@ -45,6 +45,8 @@ EDR will also show a sitrep of your destination while jumping, if it had recent 
  - NOTAM (e.g. Community Goal, PvP Hub, Known hot spot, etc.)
  - List of recently sighted outlaws and cmdrs
  - List of cmdrs who recently interdicted or killed other cmdrs
+ 
+To learn more, you can also send ```!help``` via the in-game chat.
 
 ### Limited access vs. full access
 If you don't have an EDR account, you can still use EDR to get insights about cmdrs and systems. Essentially, any feature that only access existing data should work, e.g. ```!who <cmdrname>```, ```!sitreps```, ```!outlaws```.
@@ -108,6 +110,7 @@ Control EDR settings by sending the following commands via the in-game chat:
 - ```!crimes [on|off]``` to turn on and off EDR's crime reporting feature. For instance, type ```!crimes off``` before engaging in an agreed upon duel
  - ```!audiocue [on/off/loud/soft]``` to control the audio cues
  - ```!overlay [on|off|]``` to enable/disable or verify the overlay
+ - ```!clear``` to clear the overlay
 
 
 # FAQ
@@ -167,7 +170,7 @@ No. The plugin only keeps track of your friends locally. This information is use
 No. EDR has no interest in the content of text comms. It would also be a lot of data to deal with.
 
 ## Does this repository contains all the files and dependencies?
-No. It doesn't include dependencies like [EDMC Overlay](https://github.com/inorton/EDMCOverlay) nor the configuration info (e.g. API keys, hosts).
+No. It doesn't include the configuration info (e.g. API keys, hosts).
 
 # Known bugs
 ## The overlay stays on top when I switch away from Elite.
@@ -183,4 +186,4 @@ Special thanks to:
  - The Elite Dangerous Developers Community.
  
  # Support
- If you like EDR and want to help, consider [becoming a patron](https://www.patreon.com/lekeno/) for as low as 1$ per month. In case you wondered, EDR currently costs me 25$ per month (Firebase's Flame plan).
+ If you like EDR and want to help, consider [becoming a patron](https://www.patreon.com/lekeno/) for as low as 1$ per month.
