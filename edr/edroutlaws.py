@@ -66,10 +66,13 @@ class EDROutlaws(object):
         summary = []
         now = datetime.datetime.now()
         js_epoch_now = 1000 * time.mktime(now.timetuple())
+        processed = []
         for sighting in self.recents:
             if (js_epoch_now - sighting["timestamp"]) / 1000 > self.timespan:
                 continue
-            summary.append(self.__readable_outlaw_sighting(sighting, one_liner=True))
+            if sighting["cname"] not in processed:
+                summary.append(self.__readable_outlaw_sighting(sighting, one_liner=True))
+                processed.append(sighting["cname"])
         return summary
 
     def __readable_outlaw_sighting(self, sighting, one_liner=False):
