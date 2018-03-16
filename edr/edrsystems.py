@@ -10,6 +10,7 @@ import edtime
 import edrconfig
 import edrlog
 import lrucache
+from edentities import EDBounty
 
 EDRLOG = edrlog.EDRLog()
 
@@ -70,13 +71,15 @@ class EDRSystems(object):
         self.server = server
 
     def system_id(self, star_system, may_create=False):
+        if not star_system:
+            return None
         sid = self.systems_cache.get(star_system.lower())
-        if not sid is None:
+        if sid:
             EDRLOG.log(u"System {} is in the cache with id={}".format(star_system, sid), "DEBUG")
             return sid
 
         sid = self.server.system_id(star_system, may_create)
-        if not sid is None:
+        if sid:
             self.systems_cache.set(star_system.lower(), sid)
             EDRLOG.log(u"Cached {}'s id={}".format(star_system, sid), "DEBUG")
             return sid
@@ -118,6 +121,8 @@ class EDRSystems(object):
         return None
     
     def has_sitrep(self, star_system):
+        if not star_system:
+            return False
         self.__update_if_stale()
         sid = self.system_id(star_system)
         return self.sitreps_cache.has_key(sid)
@@ -131,7 +136,6 @@ class EDRSystems(object):
         self.__update_if_stale()
         if not self.notams_cache.has_key(system_id):
             return False
-
         return len(self.__active_notams_for_sid(system_id)) > 0
 
     def active_notams(self, star_system):
@@ -167,6 +171,9 @@ class EDRSystems(object):
 
         return summary
 
+    def has_recent_activity(self, system_name):
+        return self.has_recent_traffic(system_name) or self.has_recent_crimes(system_name) or self.has_recent_outlaws(system_name)
+
     def systems_with_recent_activity(self):
         systems_with_recent_crimes = {}
         systems_with_recent_traffic = {}
@@ -176,13 +183,12 @@ class EDRSystems(object):
         for sid in systems_ids:
             sitrep = self.sitreps_cache.get(sid)
             star_system = sitrep.get("name", None)
-            if star_system:
-                if self.has_recent_outlaws(star_system):
-                    systems_with_recent_outlaws[star_system] = sitrep["latestOutlaw"]
-                elif self.has_recent_crimes(star_system):
-                    systems_with_recent_crimes[star_system] = sitrep["latestCrime"]
-                elif self.has_recent_traffic(star_system):
-                    systems_with_recent_traffic[star_system] = sitrep["latestTraffic"]
+            if self.has_recent_outlaws(star_system):
+                systems_with_recent_outlaws[star_system] = sitrep["latestOutlaw"]
+            elif self.has_recent_crimes(star_system):
+                systems_with_recent_crimes[star_system] = sitrep["latestCrime"]
+            elif self.has_recent_traffic(star_system):
+                systems_with_recent_traffic[star_system] = sitrep["latestTraffic"]
 
         summary = {}
         summary_outlaws = []
@@ -212,25 +218,23 @@ class EDRSystems(object):
         if self.has_sitrep(star_system):
             system_reports = self.sitreps_cache.get(self.system_id(star_system))
             if "latestCrime" not in system_reports:
-                return None
+                return False
 
             edr_config = edrconfig.EDRConfig()
             return self.is_recent(system_reports["latestCrime"],
                                   edr_config.crimes_recent_threshold())
-
-        return None
+        return False
 
     def has_recent_outlaws(self, star_system):
         if self.has_sitrep(star_system):
             system_reports = self.sitreps_cache.get(self.system_id(star_system))
             if "latestOutlaw" not in system_reports:
-                return None
+                return False
 
             edr_config = edrconfig.EDRConfig()
             return self.is_recent(system_reports["latestOutlaw"],
                                   edr_config.outlaws_recent_threshold())
-
-        return None
+        return False
 
     def recent_crimes(self, star_system):
         sid = self.system_id(star_system)
@@ -250,13 +254,12 @@ class EDRSystems(object):
         if self.has_sitrep(star_system):
             system_reports = self.sitreps_cache.get(self.system_id(star_system))
             if "latestTraffic" not in system_reports:
-                return None
+                return False
 
             edr_config = edrconfig.EDRConfig()
             return self.is_recent(system_reports["latestTraffic"],
                                   edr_config.traffic_recent_threshold())
-
-        return None
+        return False
 
     def recent_traffic(self, star_system):
         sid = self.system_id(star_system)
@@ -285,8 +288,9 @@ class EDRSystems(object):
                     previous_timestamp = summary_traffic.get(traffic["cmdr"], None)
                     if traffic["timestamp"] < previous_timestamp:
                         continue
-                    karma = traffic.get("karma", None)
-                    if karma and karma < 0:
+                    karma = traffic.get("karma", 0)
+                    bounty = EDBounty(traffic.get("bounty", 0))
+                    if karma < 0 or bounty.is_significant():
                         wanted_cmdrs[traffic["cmdr"]] = [ traffic["timestamp"], karma ]
                     else:
                         summary_traffic[traffic["cmdr"]] = traffic["timestamp"]
@@ -309,8 +313,9 @@ class EDRSystems(object):
                             previous_timestamp = wanted_cmdrs[criminal["name"]][0] if criminal["name"] in wanted_cmdrs else None
                             if previous_timestamp > crime["timestamp"]:
                                 continue
-                            karma = criminal.get("karma", None)
-                            if karma and karma < 0:
+                            karma = criminal.get("karma", 0)
+                            bounty = EDBounty(traffic.get("bounty", 0))
+                            if karma < 0 or bounty.is_significant():
                                 wanted_cmdrs[criminal["name"]] = [ crime["timestamp"], karma]
                 for criminal in summary_crimes:
                     if summary_crimes[criminal][1] == "Murder":

@@ -295,8 +295,7 @@ class EDRClient(object):
             if star_system == self.player.star_system and self.player.in_bad_neighborhood():
                 EDRLOG.log(u"Sitrep system is known to be an anarchy. Crimes aren't reported.", "INFO")
                 details.append(u"Anarchy: not all crimes are reported.")
-            recent_activity = self.edrsystems.has_recent_crimes(star_system) or self.edrsystems.has_recent_traffic(star_system)
-            if recent_activity:
+            if self.edrsystems.has_recent_activity(star_system):
                 summary = self.edrsystems.summarize_recent_activity(star_system)
                 for section in summary:
                     details.append(u"{}: {}".format(section, "; ".join(summary[section])))
@@ -455,7 +454,7 @@ class EDRClient(object):
                     if bounty:
                         details.append(u"Wanted for {} cr".format(edentities.EDBounty(scan["bounty"]).pretty_print()))
                     self.__intel(u"Intel", details)
-                if (scan["wanted"] and bounty.is_significant()):
+                if (self.is_anonymous() and (profile.is_dangerous() or (scan["wanted"] and bounty.is_significant()))):
                     self.advertise_full_account("You could have helped other EDR users by reporting this outlaw!")
                 self.cognitive_scans_cache.set(cmdr_id, scan)
 
