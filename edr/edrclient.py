@@ -447,12 +447,16 @@ class EDRClient(object):
                     details = [profile.short_profile()]
                     if bounty:
                         details.append(u"Wanted for {} cr".format(edentities.EDBounty(scan["bounty"]).pretty_print()))
+                    elif scan["wanted"]:
+                        details.append(u"Wanted somewhere. A Kill-Warrant-Scan will reveal their highest bounty.")
                     self.__warning(u"Warning!", details)
                 elif self.intel_even_if_clean or (scan["wanted"] and bounty.is_significant()):
                     self.status = "Intel for cmdr {}.".format(cmdr_name)
                     details = [profile.short_profile()]
                     if bounty:
                         details.append(u"Wanted for {} cr".format(edentities.EDBounty(scan["bounty"]).pretty_print()))
+                    elif scan["wanted"]:
+                        details.append(u"Wanted somewhere but it could be minor offenses.")
                     self.__intel(u"Intel", details)
                 if (self.is_anonymous() and (profile.is_dangerous() or (scan["wanted"] and bounty.is_significant()))):
                     self.advertise_full_account("You could have helped other EDR users by reporting this outlaw!")
