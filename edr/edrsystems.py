@@ -282,7 +282,7 @@ class EDRSystems(object):
         if self.has_recent_traffic(star_system):
             summary_sighted = []
             recent_traffic = self.recent_traffic(star_system)
-            if recent_traffic is not None:
+            if recent_traffic is not None: # Should always be true... simplify. TODO
                 summary_traffic = collections.OrderedDict()
                 for traffic in recent_traffic:
                     previous_timestamp = summary_traffic.get(traffic["cmdr"], None)
@@ -303,7 +303,7 @@ class EDRSystems(object):
             summary_interdictors = []
             summary_destroyers = []
             recent_crimes = self.recent_crimes(star_system)
-            if recent_crimes is not None:
+            if recent_crimes is not None: # Should always be true... simplify. TODO
                 summary_crimes = collections.OrderedDict()
                 for crime in recent_crimes:
                     lead_name = crime["criminals"][0]["name"]
