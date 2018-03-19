@@ -13,7 +13,7 @@ class EDBounty(object):
         config = edrconfig.EDRConfig()
         self.threshold = config.intel_bounty_threshold()
     
-    def is_significant():
+    def is_significant(self):
         return self.value >= self.threshold
 
     def pretty_print(self):

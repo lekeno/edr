@@ -46,5 +46,16 @@ class TestLRUCache(TestCase):
         self.assertTrue(cache.is_stale(key))
         self.assertEqual(cache.get("a"), None)
 
+    def test_reset(self):
+        cache = LRUCache(3,60)
+        cache.set("a", 34)
+        cache.reset()
+        self.assertEqual(cache.keys(), [])
+        self.assertEqual(cache.values(), [])
+        self.assertEqual(cache.last_updated, None)
+
+
+
+
 if __name__ == '__main__':
     main()

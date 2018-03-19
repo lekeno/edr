@@ -56,8 +56,8 @@ class EDRServer(object):
         return json_resp
     
     def notams(self, timespan_seconds):
-        now_epoch_js = 1000 * calendar.timegm(time.gmtime())
-        past_epoch_js = now_epoch_js - (1000 * timespan_seconds)
+        now_epoch_js = int(1000 * calendar.timegm(time.gmtime()))
+        past_epoch_js = int(now_epoch_js - (1000 * timespan_seconds))
         future_epoch_js = 1830000000000L
 
         query_params = "orderBy=\"timestamp\"&startAt={past}&endAt={now}&auth={auth}".format(past=past_epoch_js, now=future_epoch_js, auth=self.auth_token())
@@ -72,8 +72,8 @@ class EDRServer(object):
 
 
     def sitreps(self, timespan_seconds):
-        now_epoch_js = 1000 * calendar.timegm(time.gmtime())
-        past_epoch_js = now_epoch_js - (1000 * timespan_seconds)
+        now_epoch_js = int(1000 * calendar.timegm(time.gmtime()))
+        past_epoch_js = int(now_epoch_js - (1000 * timespan_seconds))
 
         query_params = "orderBy=\"timestamp\"&startAt={past}&endAt={now}&auth={auth}".format(past=past_epoch_js, now=now_epoch_js, auth=self.auth_token())
         resp = requests.get("{server}/v1/systems.json?{query_params}".format(server=self.EDR_SERVER, query_params=query_params))

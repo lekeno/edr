@@ -140,6 +140,12 @@ Currently, the following information is collected:
  - crimes information: EDR sends a crime report for interdictions and death. It currently does not report stations rams, stray shots and other events without casualties.
  - player status: EDR sends a blip whenever your location changes.
 
+## My antivirus blocked the execution of EDMCOverlay.exe What's going on?
+EDR relies on EDMCOverlay to show you information in-game. It's an overlay made for EDMC plugins. I've fixed an issue with scaling, you can [check the code if you want](https://github.com/lekeno/EDMCOverlay). I also [got it scanned by popular antivirus engines](https://www.virustotal.com/#/file/7c6194f7df06f746d1ed076deb63429da837dd2719e888e534f40860e052e61a/detection) and none of them found it to be a threat. Recommendations:
+ 1. Scan EDMCOverlay.exe and file a bug if it's flagged as a threat by your antivirus software.
+ 2. Run EDMCOverlay.exe once, and if your antivirus complains, tell it that the file is fine.
+ 3. Relaunch EDMC.
+
 ## The overlay layout is a bit off-centered. Can I tweak it?
 Yes. You can change the layout by editing the igm_config.ini file in config/ and test with the ```!overlay``` command (after re-launching EDR). Read the instructions in config/igm_config.ini.
 
