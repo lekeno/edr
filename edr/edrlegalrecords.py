@@ -41,7 +41,7 @@ class EDRLegalRecords(object):
     def summarize_recents(self, cmdr_id):
         self.__update_records_if_stale(cmdr_id)
         records = self.records.get(cmdr_id)["records"] if self.records.has_key(cmdr_id) else None
-        if records is None:
+        if not records:
             EDRLOG.log(u"No recent legal records for {}".format(cmdr_id), "INFO")
             return None
         

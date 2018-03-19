@@ -440,6 +440,7 @@ class EDRClient(object):
 
         if self.novel_enough_scan(cmdr_id, scan, cognitive = True):
             profile = self.cmdr(cmdr_name)
+            legal = self.edrlegal.summarize_recents(profile.cid)
             bounty = edentities.EDBounty(scan["bounty"]) if scan["bounty"] else None
             if profile and (self.player.name != cmdr_name):
                 if profile.is_dangerous():
@@ -449,6 +450,8 @@ class EDRClient(object):
                         details.append(u"Wanted for {} cr".format(edentities.EDBounty(scan["bounty"]).pretty_print()))
                     elif scan["wanted"]:
                         details.append(u"Wanted somewhere. A Kill-Warrant-Scan will reveal their highest bounty.")
+                    if legal:
+                        details.append(legal)
                     self.__warning(u"Warning!", details)
                 elif self.intel_even_if_clean or (scan["wanted"] and bounty.is_significant()):
                     self.status = "Intel for cmdr {}.".format(cmdr_name)
@@ -457,6 +460,8 @@ class EDRClient(object):
                         details.append(u"Wanted for {} cr".format(edentities.EDBounty(scan["bounty"]).pretty_print()))
                     elif scan["wanted"]:
                         details.append(u"Wanted somewhere but it could be minor offenses.")
+                    if legal:
+                        details.append(legal)
                     self.__intel(u"Intel", details)
                 if (self.is_anonymous() and (profile.is_dangerous() or (scan["wanted"] and bounty.is_significant()))):
                     self.advertise_full_account("You could have helped other EDR users by reporting this outlaw!")
