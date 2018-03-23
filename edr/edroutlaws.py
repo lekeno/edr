@@ -10,7 +10,7 @@ import edrconfig
 import edrserver
 import edrlog
 import edtime
-from edentities import EDBounty
+from edentities import EDBounty, EDLocation
 
 EDRLOG = edrlog.EDRLog()
 
@@ -91,12 +91,8 @@ class EDROutlaws(object):
         
         readable = []
         
-        location = u"T{} {} sighted in {}".format(t_minus, sighting["cmdr"], sighting["starSystem"])
-        if sighting["place"] and sighting["place"] != sighting["starSystem"]:
-            if sighting["place"].startswith(sighting["starSystem"]+" "):
-                location += u", {}".format(sighting["place"].partition(sighting["starSystem"]+" ")[2])
-            else:
-                location += u", {}".format(sighting["place"])
+        edloc = EDLocation(sighting["star_system"], sighting["place"])
+        location = u"T{} {} sighted in {}".format(t_minus, sighting["cmdr"], edloc)
         readable.append(location)
         if sighting["ship"] != "Unknown":
             readable.append(u"Spaceship: {}".format(sighting["ship"]))

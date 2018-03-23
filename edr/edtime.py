@@ -60,6 +60,16 @@ class EDTime(object, comparable.ComparableMixin):
 
         return readable
 
+    @staticmethod
+    def from_js_epoch(js_epoch):
+        a_datetime = datetime.datetime.fromtimestamp(js_epoch / 1000)
+        return EDTime(a_datetime)
+
+    @staticmethod
+    def from_journal_timestamp(journal_timestamp):
+        a_datetime = datetime.datetime.strptime(journal_timestamp, '%Y-%m-%dT%H:%M:%SZ')
+        return EDTime(a_datetime)
+
     def __immmersive(self):
         d = self._datetime
         try:
@@ -67,20 +77,15 @@ class EDTime(object, comparable.ComparableMixin):
         except ValueError:
             return d + (datetime.date(d.year + EDTime.immersive_delta(), 1, 1) - datetime.date(d.year, 1, 1))
 
-    def __init__(self):
-        self._datetime = datetime.datetime.now()
+    def __init__(self, a_datetime=None):
+        if datetime:
+            self._datetime = a_datetime
+        else:
+            self._datetime = datetime.datetime.now()
 
-    def from_datetime(self, datetimestamp):
-        self._datetime = datetimestamp
-
-    def from_js_epoch(self, js_epoch):
-        self._datetime = datetime.datetime.fromtimestamp(js_epoch / 1000)
-
-    def from_journal_timestamp(self, journal_timestamp):
-        self._datetime = datetime.datetime.strptime(journal_timestamp, '%Y-%m-%dT%H:%M:%SZ')
-    
+         
     def as_js_epoch(self):
-        return int(calendar.timegm(self._datetime.timetuple()) * 1000) # JavaScript expects milliseconds while Python uses seconds for Epoch
+        return int(calendar.timegm(self._datetime.timetuple()) * 1000)
 
     def as_py_epoch(self):
         return int(calendar.timegm(self._datetime.timetuple()))
@@ -95,6 +100,17 @@ class EDTime(object, comparable.ComparableMixin):
         immersive_datetime = self.__immmersive()
         return immersive_datetime.strftime('%Y-%m-%d')
 
+    def is_upcoming(self, time_horizon_days):
+        if self.is_past():
+            return False
+        delta  = self._datetime - datetime.datetime.now()
+        return delta <= datetime.timedelta(days=time_horizon_days)
+
+    def is_past(self):
+        return self._datetime < datetime.datetime.now()
+
+    def is_future(self):
+        return self._datetime > datetime.datetime.now()
 
     def __lt__(self, other):
         if isinstance(other, EDTime):
@@ -103,8 +119,7 @@ class EDTime(object, comparable.ComparableMixin):
             return NotImplemented
 
     def elapsed_threshold(self, journal_timestamp, threshold_timedelta):
-        edt= EDTime()
-        edt.from_journal_timestamp(journal_timestamp)
+        edt= EDTime.from_journal_timestamp(journal_timestamp)
 
         if edt < self:
             return False
@@ -113,5 +128,12 @@ class EDTime(object, comparable.ComparableMixin):
 
     def __str__(self):
         return str(self.as_journal_timestamp())
+
+    def t_notation(self, short=False):
+        delta = int((EDTime.js_epoch_now() - self.as_js_epoch()) / 1000)
+        prefix = u"+" if delta < 0 else u"-"
+        if short:
+            return u"{}{}".format(prefix, EDTime.pretty_print_timespan(abs(delta), short=True))
+        return u"T{}{}".format(prefix, EDTime.pretty_print_timespan(abs(delta)))
 
     __repr__ = __str__ 

@@ -1,7 +1,7 @@
 import config_tests
 from unittest import TestCase, main
 from edtime import EDTime
-import calendar, time
+import calendar, time, datetime
 
 class TestEDTime(TestCase):
     def test_pretty_print_timespan(self):
@@ -74,6 +74,53 @@ class TestEDTime(TestCase):
     def test_js_epoch_now(self):
         epoch_nowish = calendar.timegm(time.gmtime())
         self.assertTrue(int(EDTime.js_epoch_now() / 1000) - epoch_nowish <= 1)
+    
+    # TODO timezone issue here
+    def test_future_past(self):
+        one_day_later = datetime.datetime.now() + datetime.timedelta(days=1)
+        sample = EDTime(one_day_later)
+        self.assertTrue(sample.is_future())
+        self.assertFalse(sample.is_past())
+
+        one_minute_later = datetime.datetime.now() + datetime.timedelta(minutes=1)
+        sample = EDTime(one_minute_later)
+        self.assertTrue(sample.is_future())
+        self.assertFalse(sample.is_past())
+
+        one_day_before = datetime.datetime.now() - datetime.timedelta(days=1)
+        sample = EDTime(one_day_before)
+        self.assertFalse(sample.is_future())
+        self.assertTrue(sample.is_past())
+
+        one_minute_before = datetime.datetime.now() - datetime.timedelta(minutes=1)
+        sample = EDTime(one_minute_before)
+        self.assertFalse(sample.is_future())
+        self.assertTrue(sample.is_past())
+
+    def test_upcoming(self):
+        one_day_later = datetime.datetime.now() + datetime.timedelta(days=1)
+        sample = EDTime(one_day_later)
+        self.assertFalse(sample.is_upcoming(0))
+        self.assertTrue(sample.is_upcoming(1))
+        self.assertTrue(sample.is_upcoming(7))
+
+        one_day_before = datetime.datetime.now() - datetime.timedelta(days=1)
+        sample = EDTime(one_day_before)
+        self.assertFalse(sample.is_upcoming(1))
+        self.assertFalse(sample.is_upcoming(7))
+
+        seven_days_later = datetime.datetime.now() + datetime.timedelta(days=7)
+        sample = EDTime(seven_days_later)
+        self.assertFalse(sample.is_upcoming(1))
+        self.assertFalse(sample.is_upcoming(6))
+        self.assertTrue(sample.is_upcoming(7))
+        self.assertTrue(sample.is_upcoming(23))
+
+    def test_t_notation(self):
+        one_hour_later = datetime.datetime.now() + datetime.timedelta(minutes=60)
+        sample = EDTime(one_hour_later)
+        self.assertEquals(sample.t_notation(short=True), u"+1h")
+        self.assertEquals(sample.t_notation(short=False), u"T+1h")
 
 if __name__ == '__main__':
     main()

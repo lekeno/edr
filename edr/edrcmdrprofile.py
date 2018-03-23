@@ -299,8 +299,7 @@ class EDRCmdrProfile(object):
             
             updated_jse = self.dex_profile.updated
             if updated_jse:
-                updated_edt = edtime.EDTime()
-                updated_edt.from_js_epoch(updated_jse)
+                updated_edt = edtime.EDTime.from_js_epoch(updated_jse)
                 result += u" ({})".format(updated_edt.as_immersive_date())
 
         return result

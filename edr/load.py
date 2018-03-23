@@ -347,8 +347,7 @@ def edr_submit_contact(cmdr_name, ship, timestamp, source, witness):
     :param witness:
     :return:
     """
-    edt = EDTime()
-    edt.from_journal_timestamp(timestamp)
+    edt = EDTime.from_journal_timestamp(timestamp)
 
     report = {
         "cmdr" : cmdr_name,
@@ -377,8 +376,7 @@ def edr_submit_contact(cmdr_name, ship, timestamp, source, witness):
     edr_submit_traffic(cmdr_name, ship, timestamp, source, witness)
 
 def edr_submit_scan(scan, timestamp, source, witness):
-    edt = EDTime()
-    edt.from_journal_timestamp(timestamp)
+    edt = EDTime.from_journal_timestamp(timestamp)
 
     report = scan
     report["starSystem"] = witness.star_system
@@ -411,8 +409,7 @@ def edr_submit_traffic(cmdr_name, ship, timestamp, source, witness):
     :param witness:
     :return:
     """
-    edt = EDTime()
-    edt.from_journal_timestamp(timestamp)
+    edt = EDTime.from_journal_timestamp(timestamp)
 
     report = {
         "cmdr" : cmdr_name,

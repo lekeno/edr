@@ -49,13 +49,26 @@ class EDVehicles(object):
         return name.lower()
 
 class EDLocation(object):
-    def __init__(self):
-        self.star_system = None
-        self.place = None
-        self.security = None
+    def __init__(self, star_system=None, place=None, security=None):
+        self.star_system = star_system
+        self.place = place
+        self.security = security
     
     def is_anarchy_or_lawless(self):
         return self.security in ["$GAlAXY_MAP_INFO_state_anarchy;", "$GALAXY_MAP_INFO_state_lawless;"]
+
+    def __str__(self):
+        location = None
+        if not self.star_system:
+            return None
+        if self.place and self.place != self.star_system:
+            place = self.place[len(self.star_system)+1:] if self.place.startswith(self.star_system) else self.place
+            location = u"{}, {}".format(self.star_system, place)
+        else:
+            location = self.star_system
+        return location
+
+    __repr__ = __str__ 
 
 class EDCmdr(object):
     def __init__(self):
