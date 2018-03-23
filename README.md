@@ -7,7 +7,6 @@ If you would like to participate:
  - fill up [this form](https://docs.google.com/forms/d/e/1FAIpQLSeUikUIbKdcjMsWpzB4kX-iPIFvUIaBO2qHD00NveMDvpAnow/viewform)
  - wait for LeKeno to contact you (in-game or over the official forums) with your credentials
  - download the [latest release](https://github.com/lekeno/edr/releases/latest)
- - bookmark [EDR's companion website](https://blistering-inferno-4028.firebaseapp.com/) (early stage)
  - follow the instructions in the **How to** section of this readme.
 
 # How to
