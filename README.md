@@ -1,8 +1,8 @@
 # EDR
 ED Recon is an [EDMC](https://github.com/Marginal/EDMarketConnector/) plugin for [Elite: Dangerous](https://www.elitedangerous.com/) whose purpose is to warn you about other dangerous commanders and help bounty hunters chase them. Main developer: LeKeno from Cobra Kai.
 
-# Private beta
-EDR is currently in a private beta phase.
+# Beta
+EDR is currently in a beta phase.
 If you would like to participate:
  - fill up [this form](https://docs.google.com/forms/d/e/1FAIpQLSeUikUIbKdcjMsWpzB4kX-iPIFvUIaBO2qHD00NveMDvpAnow/viewform)
  - wait for LeKeno to contact you (in-game or over the official forums) with your credentials
