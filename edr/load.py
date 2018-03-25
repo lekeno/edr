@@ -544,7 +544,7 @@ def handle_scan_events(cmdr, entry):
         return False
 
     cmdr_name = entry["PilotName"][len(prefix):-1]
-    if cmdr_name == ed_player.name:
+    if cmdr_name == cmdr.name:
         # Happens when scanning one's unmanned ship, etc.
         return False
 
