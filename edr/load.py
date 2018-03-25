@@ -537,6 +537,8 @@ def handle_scan_events(cmdr, entry):
         prefix = "$cmdr_decorate:#name="
     elif entry["PilotName"].startswith("$RolePanel2_unmanned; $cmdr_decorate:#name="):
         prefix = "$RolePanel2_unmanned; $cmdr_decorate:#name="
+    elif entry["PilotName"].startswith("$RolePanel2_crew; $cmdr_decorate:#name="):
+        prefix = "$RolePanel2_crew; $cmdr_decorate:#name="
     
     if not prefix:
         return False
