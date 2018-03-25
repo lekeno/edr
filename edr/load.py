@@ -531,7 +531,7 @@ def report_comms(cmdr, entry):
 def handle_scan_events(cmdr, entry):
     if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0):
         return False
-    
+
     prefix = None
     if entry["PilotName"].startswith("$cmdr_decorate:#name="):
         prefix = "$cmdr_decorate:#name="
@@ -544,6 +544,10 @@ def handle_scan_events(cmdr, entry):
         return False
 
     cmdr_name = entry["PilotName"][len(prefix):-1]
+    if cmdr_name == ed_player.name:
+        # Happens when scanning one's unmanned ship, etc.
+        return False
+
     ship = edentities.EDVehicles.canonicalize(entry["Ship"])
 
     edr_submit_contact(cmdr_name, ship, entry["timestamp"], "Ship targeted", cmdr)
