@@ -45,7 +45,7 @@ class EDRServer(object):
 
 
     def server_version(self):
-        endpoint = "{server}/version/.json".format(server=self.EDR_SERVER)
+        endpoint = "{}/version/.json".format(self.EDR_SERVER)
         resp = requests.get(endpoint)
         
         if resp.status_code != requests.codes.ok:
@@ -60,9 +60,8 @@ class EDRServer(object):
         past_epoch_js = int(now_epoch_js - (1000 * timespan_seconds))
         future_epoch_js = 1830000000000L
 
-        query_params = "orderBy=\"timestamp\"&startAt={past}&endAt={now}&auth={auth}".format(past=past_epoch_js, now=future_epoch_js, auth=self.auth_token())
-        EDRLOG.log(u"query_params {}".format(query_params), "DEBUG")
-        resp = requests.get("{server}/v1/notams.json?{query_params}".format(server=self.EDR_SERVER, query_params=query_params))
+        params = {"orderBy": '"timestamp"', "startAt": past_epoch_js, "endAt": future_epoch_js, "auth": self.auth_token()}
+        resp = requests.get("{}/v1/notams.json".format(self.EDR_SERVER), params=params)
 
         if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Failed to retrieve notams.", "ERROR")
@@ -75,8 +74,8 @@ class EDRServer(object):
         now_epoch_js = int(1000 * calendar.timegm(time.gmtime()))
         past_epoch_js = int(now_epoch_js - (1000 * timespan_seconds))
 
-        query_params = "orderBy=\"timestamp\"&startAt={past}&endAt={now}&auth={auth}".format(past=past_epoch_js, now=now_epoch_js, auth=self.auth_token())
-        resp = requests.get("{server}/v1/systems.json?{query_params}".format(server=self.EDR_SERVER, query_params=query_params))
+        params = {"orderBy": '"timestamp"', "startAt": past_epoch_js, "endAt": now_epoch_js, "auth": self.auth_token()}
+        resp = requests.get("{}/v1/systems.json".format(self.EDR_SERVER), params=params)
 
         if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Failed to retrieve sitreps.", "ERROR")
@@ -86,10 +85,10 @@ class EDRServer(object):
 
     def system_id(self, star_system, may_create):
         # Firebase rest API needs double quoted params (fixes issues with queries for systems with a "+")
-        query_params = "orderBy=\"cname\"&equalTo=\"{system}\"&limitToFirst=1&auth={auth}".format(system=urllib.quote(urllib.quote(star_system.lower())), auth=self.auth_token())
-        endpoint = "{server}/v1/systems.json?{query_params}".format(server=self.EDR_SERVER, query_params=query_params)
+        params = {"orderBy": '"cname"', "equalTo": json.dumps(star_system.lower()), "limitToFirst": 1, "auth": self.auth_token()}
+        endpoint = "{}/v1/systems.json".format(self.EDR_SERVER)
         EDRLOG.log(u"system_id endpoint: {}".format(endpoint), "DEBUG")
-        resp = requests.get(endpoint)
+        resp = requests.get(endpoint, params= params)
 
         if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Failed to retrieve star system sid.", "ERROR")
@@ -100,8 +99,8 @@ class EDRServer(object):
             EDRLOG.log(u"System {} is not recorded in EDR.".format(star_system), "DEBUG")
             if may_create:
                 EDRLOG.log(u"Creating system in EDR.", "DEBUG")
-                query_params = { "auth" : self.auth_token() }
-                resp = requests.post("{server}/v1/systems.json?{query_params}".format(server=self.EDR_SERVER, query_params=urllib.urlencode(query_params)), json={"name": star_system, "uid" : self.uid()})
+                params = { "auth" : self.auth_token() }
+                resp = requests.post("{}/v1/systems.json".format(self.EDR_SERVER), params=params, json={"name": star_system, "uid" : self.uid()})
                 if resp.status_code != requests.codes.ok:
                     EDRLOG.log(u"Failed to create new star system.", "ERROR")
                     return None
@@ -118,10 +117,11 @@ class EDRServer(object):
 
     def cmdr(self, cmdr, autocreate=True):
         cmdr_profile = edrcmdrprofile.EDRCmdrProfile()
-        query_params = "orderBy=\"cname\"&equalTo=\"{cmdr}\"&limitToFirst=1&auth={auth}".format(cmdr=urllib.quote(urllib.quote(cmdr.lower())), auth=self.auth_token())
-        endpoint = "{server}/v1/cmdrs.json?{query_params}".format(server=self.EDR_SERVER, query_params=query_params)
-        EDRLOG.log(u"Endpoint :" + endpoint, "DEBUG")
-        resp = requests.get(endpoint)
+
+        params = { "orderBy": '"cname"', "equalTo": json.dumps(cmdr.lower()), "limitToFirst": 1, "auth": self.auth_token() }
+        endpoint = "{}/v1/cmdrs.json".format(self.EDR_SERVER)
+        EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
+        resp = requests.get(endpoint, params=params)
 
         if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Failed to retrieve cmdr id.", "ERROR")
@@ -130,9 +130,9 @@ class EDRServer(object):
 
         if resp.content == 'null':
             if autocreate:
-                query_params = { "auth" : self.auth_token() }
-                endpoint = "{server}/v1/cmdrs.json?{query_params}".format(server=self.EDR_SERVER, query_params=urllib.urlencode(query_params))
-                resp = requests.post(endpoint, json={"name": cmdr, "uid" : self.uid()})
+                params = { "auth" : self.auth_token() }
+                endpoint = "{}/v1/cmdrs.json".format(self.EDR_SERVER)
+                resp = requests.post(endpoint, params=params, json={"name": cmdr, "uid" : self.uid()})
                 if resp.status_code != requests.codes.ok:
                     EDRLOG.log(u"Failed to retrieve cmdr key.", "ERROR")
                     return None
@@ -151,10 +151,10 @@ class EDRServer(object):
         return cmdr_profile
 
     def __post_json(self, endpoint, json_payload):
-        query_params = { "auth" : self.auth_token()}
-        endpoint = "{server}{endpoint}.json?{query_params}".format(server=self.EDR_SERVER, endpoint=endpoint, query_params=urllib.urlencode(query_params))
-        EDRLOG.log(u"Post JSON to {}".format(endpoint), "DEBUG")
-        resp = requests.post(endpoint, json=json_payload)
+        params = { "auth" : self.auth_token()}
+        endpoint = "{server}{endpoint}.json".format(server=self.EDR_SERVER, endpoint=endpoint)
+        EDRLOG.log(u"Post JSON {} to {}".format(json_payload, endpoint), "DEBUG")
+        resp = requests.post(endpoint, params=params, json=json_payload)
         EDRLOG.log(u" resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
         return resp.status_code == requests.codes.ok
 
@@ -191,13 +191,13 @@ class EDRServer(object):
         now_epoch_js = int(1000 * calendar.timegm(time.gmtime()))
         past_epoch_js = int(now_epoch_js - (1000 * timespan_seconds))
 
-        query_params = "orderBy=\"timestamp\"&startAt={past}&endAt={now}&auth={auth}".format(past=past_epoch_js, now=now_epoch_js, auth=self.auth_token())
-        endpoint = "{server}{path}.json?{query_params}".format(server=self.EDR_SERVER, path=path, query_params=query_params)
+        params = { "orderBy": '"timestamp"', "startAt": past_epoch_js, "endAt": now_epoch_js, "auth": self.auth_token()}
+        endpoint = "{server}{path}.json".format(server=self.EDR_SERVER, path=path)
         EDRLOG.log(u"Get recent; endpoint: {}".format(endpoint), "DEBUG")
-        resp = requests.get(endpoint)
+        resp = requests.get(endpoint, params=params)
 
         if resp.status_code != requests.codes.ok:
-            EDRLOG.log(u"Failed to retrieve recent items. Errorc code: {}".format(resp.status_code), "ERROR")
+            EDRLOG.log(u"Failed to retrieve recent items. Error code: {}".format(resp.status_code), "ERROR")
             return None
         
         results = json.loads(resp.content)
@@ -223,9 +223,9 @@ class EDRServer(object):
     
     def where(self, name):
         EDRLOG.log(u"Where query for outlaw named '{}'".format(name), "INFO")
-        query_params = "orderBy=\"cname\"&equalTo=\"{name}\"&limitToFirst=1&auth={auth}".format(name=urllib.quote(urllib.quote(name.lower())), auth=self.auth_token())
-        endpoint = "{server}/v1/outlaws.json?{query_params}".format(server=self.EDR_SERVER, query_params=query_params)
-        resp = requests.get(endpoint)
+        params = {"orderBy": '"cname"', "equalTo": json.dumps(name.lower()), "limitToFirst": 1, "auth": self.auth_token() }
+        endpoint = "{}/v1/outlaws.json".format(self.EDR_SERVER)
+        resp = requests.get(endpoint, params=params)
         if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Failed to retrieve location of an outlaw.", "ERROR")
             return None
@@ -239,20 +239,20 @@ class EDRServer(object):
     def update_cmdrdex(self, cmdr_id, dex_entry):
         if self.is_anonymous():
             return False
-        query_params = { "auth" : self.auth_token()}
+        params = { "auth" : self.auth_token()}
         
         if dex_entry is None:
             EDRLOG.log(u"Removing CmdrDex entry for cmdr {cid}".format(cid=cmdr_id), "INFO")
-            endpoint = "{server}/v1/cmdrsdex/{uid}/{cid}.json?{query_params}".format(server=self.EDR_SERVER, uid=self.uid(), cid=cmdr_id, query_params=urllib.urlencode(query_params))
-            EDRLOG.log(u"Endpoint :" + endpoint, "DEBUG")
-            resp = requests.delete(endpoint)
+            endpoint = "{server}/v1/cmdrsdex/{uid}/{cid}.json".format(server=self.EDR_SERVER, uid=self.uid(), cid=cmdr_id)
+            EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
+            resp = requests.delete(endpoint, params=params)
             EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
             return resp.status_code == requests.codes.ok
         
         EDRLOG.log(u"CmdrDex entry for cmdr {cid} with json:{json}".format(cid=cmdr_id, json=dex_entry), "INFO")
-        endpoint = "{server}/v1/cmdrsdex/{uid}/{cid}/.json?{query_params}".format(server=self.EDR_SERVER, uid=self.uid(), cid=cmdr_id, query_params=urllib.urlencode(query_params))
-        EDRLOG.log(u"Endpoint :" + endpoint, "DEBUG")
-        resp = requests.put(endpoint, json=dex_entry)
+        endpoint = "{server}/v1/cmdrsdex/{uid}/{cid}/.json".format(server=self.EDR_SERVER, uid=self.uid(), cid=cmdr_id)
+        EDRLOG.log(u"Endpoint: {} with {}".format(endpoint, dex_entry), "DEBUG")
+        resp = requests.put(endpoint, params=params, json=dex_entry)
         EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
         return resp.status_code == requests.codes.ok
 
@@ -260,10 +260,10 @@ class EDRServer(object):
         if self.is_anonymous():
             return None
         EDRLOG.log(u"CmdrDex request for {}".format(cmdr_id), "DEBUG")
-        query_params = { "auth" : self.auth_token()}
-        endpoint = "{server}/v1/cmdrsdex/{uid}/{cid}/.json?{query_params}".format(server=self.EDR_SERVER, uid=self.uid(), cid=cmdr_id, query_params=urllib.urlencode(query_params))
-        EDRLOG.log(u"Endpoint :" + endpoint, "DEBUG")
-        resp = requests.get(endpoint)
+        params = { "auth" : self.auth_token()}
+        endpoint = "{server}/v1/cmdrsdex/{uid}/{cid}/.json".format(server=self.EDR_SERVER, uid=self.uid(), cid=cmdr_id)
+        EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
+        resp = requests.get(endpoint, params=params)
         EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
 
         if resp.status_code == requests.codes.ok:
