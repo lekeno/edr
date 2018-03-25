@@ -217,7 +217,7 @@ class EDRSystems(object):
     def has_recent_crimes(self, star_system):
         if self.has_sitrep(star_system):
             system_reports = self.sitreps_cache.get(self.system_id(star_system))
-            if "latestCrime" not in system_reports:
+            if system_reports is None or "latestCrime" not in system_reports:
                 return False
 
             edr_config = edrconfig.EDRConfig()
@@ -228,7 +228,7 @@ class EDRSystems(object):
     def has_recent_outlaws(self, star_system):
         if self.has_sitrep(star_system):
             system_reports = self.sitreps_cache.get(self.system_id(star_system))
-            if "latestOutlaw" not in system_reports:
+            if system_reports is None or "latestOutlaw" not in system_reports:
                 return False
 
             edr_config = edrconfig.EDRConfig()
@@ -253,7 +253,7 @@ class EDRSystems(object):
     def has_recent_traffic(self, star_system):
         if self.has_sitrep(star_system):
             system_reports = self.sitreps_cache.get(self.system_id(star_system))
-            if "latestTraffic" not in system_reports:
+            if system_reports is None or "latestTraffic" not in system_reports:
                 return False
 
             edr_config = edrconfig.EDRConfig()
