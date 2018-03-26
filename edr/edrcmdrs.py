@@ -73,7 +73,7 @@ class EDRCmdrs(object):
 
     def __inara_cmdr(self, cmdr_name, check_inara_server):
         inara_profile = self.inara_cache.get(cmdr_name.lower())
-        if not inara_profile is None:
+        if inara_profile:
             EDRLOG.log(u"Cmdr {} is in the Inara cache (name={})".format(cmdr_name,
                                                                          inara_profile.name),
                        "DEBUG")
@@ -81,13 +81,14 @@ class EDRCmdrs(object):
             EDRLOG.log(u"No match in Inara cache. Inara API call for {}.".format(cmdr_name), "INFO")
             inara_profile = self.inara.cmdr(cmdr_name)
 
-            if not inara_profile is None:
+            if inara_profile and inara_profile.name.lower() == cmdr_name.lower():
                 self.inara_cache.set(cmdr_name.lower(), inara_profile)
                 EDRLOG.log(u"Cached Inara profile {}: {},{},{}".format(cmdr_name,
                                                                        inara_profile.name,
                                                                        inara_profile.squadron,
                                                                        inara_profile.role), "DEBUG")
             else:
+                inara_profile = None
                 self.inara_cache.set(cmdr_name.lower(), None)
                 EDRLOG.log(u"No match on Inara. Temporary entry to be nice on Inara's server.",
                            "INFO")

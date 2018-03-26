@@ -7,6 +7,7 @@
         "Send '!notams' in chat to get a list of systems with Notice to Airmen, i.e. NOTAM.",
         "Send '!notam <system>' in chat to see the NOTAMs associated with a given system, e.g. !notam Lave.",
         "EDR does NOT report crimes committed in Anarchy or Lawless systems.",
+        "Scans of SRV are not reported by Elite Dangerous. So, direct message an o7 to run a profile lookup on SRV contacts.",
         "EDR disables itself in Solo, Private Groups and Beta.",
         "Send '!crimes off' in chat to disable EDR's crime reporting, e.g. arranged duel.",
         "Send '!crimes on' in chat to re-enable EDR's crime reporting.",

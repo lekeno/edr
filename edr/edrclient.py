@@ -79,12 +79,12 @@ class EDRClient(object):
     def loud_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "loud")
         self.AUDIO_FEEDBACK.loud()
-        self.status = "loud audio cues."
+        self.status = u"loud audio cues."
 
     def soft_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "soft")
         self.AUDIO_FEEDBACK.soft()
-        self.status = "soft audio cues."
+        self.status = u"soft audio cues."
 
     def apply_config(self):
         c_email = config.get("EDREmail")
@@ -124,7 +124,7 @@ class EDRClient(object):
         self.motd = version_range["motd"]
 
         if version_range is None:
-            self.status = "check for version update has failed."
+            self.status = u"check for version update has failed."
             return
 
         if self.is_obsolete(version_range["min"]):
@@ -193,9 +193,9 @@ class EDRClient(object):
     def login(self):
         self.server.logout()
         if self.server.login(self.email, self.password):
-            self.status = "authenticated."
+            self.status = u"authenticated."
             return True
-        self.status = "not authenticated."
+        self.status = u"not authenticated."
         return False
 
     def is_logged_in(self):
@@ -256,14 +256,14 @@ class EDRClient(object):
                              variable=self._audio_feedback).grid(padx=10, row=17, sticky=tk.W)
         
         if self.server.is_authenticated():
-            self.status = "authenticated."
+            self.status = u"authenticated."
         else:
-            self.status = "not authenticated."
+            self.status = u"not authenticated."
 
         return frame
 
     def __status_update_pending(self):
-        self.status = "mandatory EDR update!" if self.mandatory_update else "please update EDR!"
+        self.status = u"mandatory EDR update!" if self.mandatory_update else "please update EDR!"
         if self.status_ui:
             self.status_ui.underline = True
             self.status_ui.url = "https://github.com/lekeno/edr/releases/latest"
@@ -385,7 +385,7 @@ class EDRClient(object):
     def who(self, cmdr_name, autocreate=False):
         profile = self.cmdr(cmdr_name, autocreate, check_inara_server=True)
         if not profile is None:
-            self.status = "got info about {}".format(cmdr_name)
+            self.status = u"got info about {}".format(cmdr_name)
             EDRLOG.log(u"Who {} : {}".format(cmdr_name, profile.short_profile()), "INFO")
             legal = self.edrlegal.summarize_recents(profile.cid)
             if legal:
@@ -399,13 +399,13 @@ class EDRClient(object):
     def blip(self, cmdr_name, blip):
         cmdr_id = self.cmdr_id(cmdr_name)
         if cmdr_id is None:
-            self.status = "no cmdr id (contact)."
+            self.status = u"no cmdr id (contact)."
             EDRLOG.log(u"Can't submit blip (no cmdr id for {}).".format(cmdr_name), "ERROR")
             return
 
         profile = self.cmdr(cmdr_name)
         if profile and (self.player.name != cmdr_name) and profile.is_dangerous():
-            self.status = "{} is bad news.".format(cmdr_name)
+            self.status = u"{} is bad news.".format(cmdr_name)
             if self.novel_enough_blip(cmdr_id, blip, cognitive = True):
                 self.__warning(u"Warning!", [profile.short_profile()])
                 self.cognitive_blips_cache.set(cmdr_id, blip)
@@ -415,7 +415,7 @@ class EDRClient(object):
                 EDRLOG.log("Skipping warning since a warning was recently shown.", "INFO")
 
         if not self.novel_enough_blip(cmdr_id, blip):
-            self.status = "skipping blip (not novel enough)."
+            self.status = u"skipping blip (not novel enough)."
             EDRLOG.log(u"Blip is not novel enough to warrant reporting", "INFO")
             return True
 
@@ -426,7 +426,7 @@ class EDRClient(object):
 
         success = self.server.blip(cmdr_id, blip)
         if success:
-            self.status = "blip reported for {}.".format(cmdr_name)
+            self.status = u"blip reported for {}.".format(cmdr_name)
             self.blips_cache.set(cmdr_id, blip)
 
         return success
@@ -434,7 +434,7 @@ class EDRClient(object):
     def scanned(self, cmdr_name, scan):
         cmdr_id = self.cmdr_id(cmdr_name)
         if cmdr_id is None:
-            self.status = "no cmdr id (scan)."
+            self.status = u"no cmdr id (scan)."
             EDRLOG.log(u"Can't submit scan (no cmdr id for {}).".format(cmdr_name), "ERROR")
             return
 
@@ -444,7 +444,7 @@ class EDRClient(object):
             bounty = edentities.EDBounty(scan["bounty"]) if scan["bounty"] else None
             if profile and (self.player.name != cmdr_name):
                 if profile.is_dangerous():
-                    self.status = "{} is bad news.".format(cmdr_name)
+                    self.status = u"{} is bad news.".format(cmdr_name)
                     details = [profile.short_profile()]
                     if bounty:
                         details.append(u"Wanted for {} cr".format(edentities.EDBounty(scan["bounty"]).pretty_print()))
@@ -454,7 +454,7 @@ class EDRClient(object):
                         details.append(legal)
                     self.__warning(u"Warning!", details)
                 elif self.intel_even_if_clean or (scan["wanted"] and bounty.is_significant()):
-                    self.status = "Intel for cmdr {}.".format(cmdr_name)
+                    self.status = u"Intel for cmdr {}.".format(cmdr_name)
                     details = [profile.short_profile()]
                     if bounty:
                         details.append(u"Wanted for {} cr".format(edentities.EDBounty(scan["bounty"]).pretty_print()))
@@ -468,7 +468,7 @@ class EDRClient(object):
                 self.cognitive_scans_cache.set(cmdr_id, scan)
 
         if not self.novel_enough_scan(cmdr_id, scan):
-            self.status = "skipping scan (not novel enough)."
+            self.status = u"skipping scan (not novel enough)."
             EDRLOG.log(u"Scan is not novel enough to warrant reporting", "INFO")
             return True
 
@@ -479,7 +479,7 @@ class EDRClient(object):
 
         success = self.server.scanned(cmdr_id, scan)
         if success:
-            self.status = "scan reported for {}.".format(cmdr_name)
+            self.status = u"scan reported for {}.".format(cmdr_name)
             self.scans_cache.set(cmdr_id, scan)
 
         return success        
@@ -492,7 +492,7 @@ class EDRClient(object):
 
         sigthed_cmdr = traffic["cmdr"]
         if not self.novel_enough_traffic_report(sigthed_cmdr, traffic):
-            self.status = "traffic report isn't novel enough."
+            self.status = u"traffic report isn't novel enough."
             EDRLOG.log(u"Traffic report is not novel enough to warrant reporting", "INFO")
             return True
 
@@ -504,7 +504,7 @@ class EDRClient(object):
 
         success = self.server.traffic(sid, traffic)
         if success:
-            self.status = "traffic reported."
+            self.status = u"traffic reported."
             self.traffic_cache.set(sigthed_cmdr, traffic)
 
         return success
@@ -593,7 +593,7 @@ class EDRClient(object):
     def where(self, cmdr_name):
         report = self.edroutlaws.where(cmdr_name)
         if report:
-            self.status = "got info about {}".format(cmdr_name)
+            self.status = u"got info about {}".format(cmdr_name)
             self.__intel(u"Intel for {}".format(cmdr_name), report)
         else:
             EDRLOG.log(u"Where {} : no info".format(cmdr_name), "INFO")
@@ -606,7 +606,7 @@ class EDRClient(object):
             self.__sitrep(u"Recently Sighted Outlaws", [u"No outlaws sighted in the last {}".format(edtime.EDTime.pretty_print_timespan(self.edroutlaws.timespan))])
             return False
         
-        self.status = "recently sighted outlaws"
+        self.status = u"recently sighted outlaws"
         EDRLOG.log(u"Got recently sighted outlaws", "INFO")
         self.__sitrep(u"Recently Sighted Outlaws", outlaws_report)
 
