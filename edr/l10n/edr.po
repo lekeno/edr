@@ -1,0 +1,158 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: EDR\n"
+"POT-Creation-Date: 2018-03-28 12:07+0900\n"
+"PO-Revision-Date: 2018-03-28 19:18+0900\n"
+"Last-Translator: \n"
+"Language-Team: Alpha\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.0.6\n"
+"X-Poedit-Basepath: .\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Poedit-KeywordsList: _;_c\n"
+"X-Poedit-Flags-xgettext: --add-comments=Translators: --from-code=utf-8\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: edentities.py:23
+msgid "{} b"
+msgstr "{} mm"
+
+#: edentities.py:26
+msgid "{:.1f} b"
+msgstr "{:.1f} mm"
+
+#: edentities.py:29
+msgid "{} m"
+msgstr "{} m"
+
+#: edentities.py:32
+msgid "{:.1f} m"
+msgstr "{:.1f} m"
+
+#: edentities.py:35
+msgid "{} k"
+msgstr "{} k"
+
+#: edentities.py:38
+msgid "{:.1f} k"
+msgstr "{:.1f} k"
+
+#: edentities.py:41
+msgid "{}"
+msgstr "{}"
+
+#: edentities.py:53
+msgid "For an unknown or missing vehicle|Unknown"
+msgstr "Indéterminé"
+
+#: edentities.py:149
+msgid "For an unknown or missing place|Unknown"
+msgstr "Indéterminé"
+
+#: edrclient.py:58 edrclient.py:205 edrclient.py:277
+msgid "not authenticated."
+msgstr "identité non confirmée"
+
+#: edrclient.py:85
+msgid "loud audio cues."
+msgstr "retour audio à fond"
+
+#: edrclient.py:91
+msgid "soft audio cues."
+msgstr "retour audio subtile"
+
+#: edrclient.py:132
+msgid "check for version update has failed."
+msgstr "impossible de vérifier la mise à jour"
+
+#: edrclient.py:202 edrclient.py:275
+msgid "authenticated."
+msgstr "identité confirmée"
+
+#: edrclient.py:217
+msgid "Feeling lost? Send !help via the in-game chat"
+msgstr "Un peu perdu? Envoyer !help dans le chat"
+
+#: edrclient.py:220
+msgid "Mandatory update!"
+msgstr "Mise à jour obligatoire!"
+
+#: edrclient.py:223
+msgid "-- Random Tip --"
+msgstr "-- Bon à savoir --"
+
+#: edrclient.py:226
+msgid "EDR v{} by LeKeno (Cobra Kai)"
+msgstr "EDR v{} par LeKeno (Cobra Kai)"
+
+#: edrclient.py:247
+msgid "EDR website"
+msgstr "Site web pour EDR"
+
+#: edrclient.py:250
+msgid "Credentials"
+msgstr "Identifiants"
+
+#: edrclient.py:253
+msgid "Log in with your EDR account for full access"
+msgstr "Identifiez-vous avec un compte EDR pour un accès complet"
+
+#: edrclient.py:256
+msgid "Email"
+msgstr "Email"
+
+#: edrclient.py:265
+msgid "EDR Feedback:"
+msgstr "Retour EDR"
+
+#: edrclient.py:268
+msgid "Overlay"
+msgstr "Super-imposition"
+
+#: edrclient.py:271
+msgid "Sound"
+msgstr "Audio"
+
+#: edrclient.py:283
+msgid "mandatory EDR update!"
+msgstr "Mise à jour d'EDR obligatoire!"
+
+#: edrclient.py:283
+msgid "please update EDR!"
+msgstr "veuillez mettre à jour EDR!"
+
+#: edrclient.py:315
+msgid "Sitrep|Anarchy: not all crimes are reported."
+msgstr "Anarchie: les crimes ne seront pas tous rapportés."
+
+#: edrclient.py:322
+msgid "SITREP for {}"
+msgstr "SITREP pour {}"
+
+#: edrclient.py:329
+msgid "Active NOTAMs for: {}"
+msgstr "NOTAMs en vigueur pour: {}"
+
+#: edrclient.py:331 edrclient.py:333
+msgid "NOTAMs"
+msgstr "NOTAMs"
+
+#: edrclient.py:333 edrclient.py:342
+msgid "No active NOTAMs."
+msgstr "Aucun NOTAM en vigueur."
+
+#: edrclient.py:340 edrclient.py:342
+msgid "NOTAM for {}"
+msgstr "NOTAM pour {}"
+
+#: edrclient.py:350
+msgid "SITREPS"
+msgstr "SITREPS"
+
+#: edrclient.py:410
+msgid "got info about {}"
+msgstr "profile reçu pour {}"
