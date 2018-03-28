@@ -4,7 +4,7 @@ import json
 import edtime
 import edrlog
 import edrconfig
-import edri18n
+import _, _c from edri18n
 EDRLOG = edrlog.EDRLog()
 
 class EDBounty(object):
@@ -50,7 +50,7 @@ class EDVehicles(object):
     def canonicalize(name):
         if name is None:
             # Translators: this is a fallback name for when the ship isn't recognized or is not known
-            return edri18n._c(u"For an unknown or missing vehicle|Unknown")
+            return _c(u"For an unknown or missing vehicle|Unknown")
 
         if name.lower() in EDVehicles.CANONICAL_SHIP_NAMES:
             return EDVehicles.CANONICAL_SHIP_NAMES[name.lower()]
@@ -146,7 +146,7 @@ class EDCmdr(object):
     def place(self):
         if self.location.place is None:
             # Translators: this is used when a location, comprised of a system and a place (e.g. Alpha Centauri & Hutton Orbital), has no place specified
-            return edri18n._c(u"For an unknown or missing place|Unknown")
+            return _c(u"For an unknown or missing place|Unknown")
         return self.location.place
 
     @place.setter

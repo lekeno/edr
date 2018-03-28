@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2018-03-28 12:07+0900\n"
-"PO-Revision-Date: 2018-03-28 19:18+0900\n"
+"POT-Creation-Date: 2018-03-28 20:23+0900\n"
+"PO-Revision-Date: 2018-03-28 20:25+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -10,93 +10,136 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 2.0.6\n"
-"X-Poedit-Basepath: .\n"
+"X-Poedit-Basepath: ..\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Poedit-KeywordsList: _;_c\n"
 "X-Poedit-Flags-xgettext: --add-comments=Translators: --from-code=utf-8\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPath-0: audiofeedback.py\n"
+"X-Poedit-SearchPath-1: comparable.py\n"
+"X-Poedit-SearchPath-2: edentities.py\n"
+"X-Poedit-SearchPath-3: edrclient.py\n"
+"X-Poedit-SearchPath-4: edrcmdrprofile.py\n"
+"X-Poedit-SearchPath-5: edrcmdrs.py\n"
+"X-Poedit-SearchPath-6: edrconfig.py\n"
+"X-Poedit-SearchPath-7: edri18n.py\n"
+"X-Poedit-SearchPath-8: edrinara.py\n"
+"X-Poedit-SearchPath-9: edrlegalrecords.py\n"
+"X-Poedit-SearchPath-10: edrlog.py\n"
+"X-Poedit-SearchPath-11: edroutlaws.py\n"
+"X-Poedit-SearchPath-12: edrserver.py\n"
+"X-Poedit-SearchPath-13: edrsystems.py\n"
+"X-Poedit-SearchPath-14: edtime.py\n"
+"X-Poedit-SearchPath-15: helpcontent.py\n"
+"X-Poedit-SearchPath-16: igmconfig.py\n"
+"X-Poedit-SearchPath-17: ingamemsg.py\n"
+"X-Poedit-SearchPath-18: load.py\n"
+"X-Poedit-SearchPath-19: lrucache.py\n"
+"X-Poedit-SearchPath-20: randomtips.py\n"
+"X-Poedit-SearchPath-21: RESTFirebase.py\n"
 
+#. Translators: this is a short representation for a bounty >= 10 000 000 000 credits (b stands for billion)
 #: edentities.py:23
 msgid "{} b"
 msgstr "{} mm"
 
+#. Translators: this is a short representation for a bounty >= 1 000 000 000 credits (b stands for billion)
 #: edentities.py:26
 msgid "{:.1f} b"
 msgstr "{:.1f} mm"
 
+#. Translators: this is a short representation for a bounty >= 10 000 000 credits (m stands for million)
 #: edentities.py:29
 msgid "{} m"
 msgstr "{} m"
 
+#. Translators: this is a short representation for a bounty >= 1 000 000 credits (m stands for million)
 #: edentities.py:32
 msgid "{:.1f} m"
 msgstr "{:.1f} m"
 
+#. Translators: this is a short representation for a bounty >= 10 000 credits (k stands for kilo, i.e. thousand)
 #: edentities.py:35
 msgid "{} k"
 msgstr "{} k"
 
+#. Translators: this is a short representation for a bounty >= 1000 credits (k stands for kilo, i.e. thousand)
 #: edentities.py:38
 msgid "{:.1f} k"
 msgstr "{:.1f} k"
 
+#. Translators: this is a short representation for a bounty < 1000 credits (i.e. shows the whole bounty, unabbreviated)
 #: edentities.py:41
 msgid "{}"
 msgstr "{}"
 
+#. Translators: this is a fallback name for when the ship isn't recognized or is not known
 #: edentities.py:53
 msgid "For an unknown or missing vehicle|Unknown"
 msgstr "Indéterminé"
 
+#. Translators: this is used when a location, comprised of a system and a place (e.g. Alpha Centauri & Hutton Orbital), has no place specified
 #: edentities.py:149
 msgid "For an unknown or missing place|Unknown"
 msgstr "Indéterminé"
 
+#. Translators: this is shown on the EDMC's status line
+#. Translators: this is shown on EDMC's status bar when the authentication fails
 #: edrclient.py:58 edrclient.py:205 edrclient.py:277
 msgid "not authenticated."
-msgstr "identité non confirmée"
+msgstr "identité non confirmée."
 
+#. Translators: this is shown on EDMC's status bar when a user enables loud audio cues
 #: edrclient.py:85
 msgid "loud audio cues."
-msgstr "retour audio à fond"
+msgstr "retour audio à fond."
 
+#. Translators: this is shown on EDMC's status bar when a user enables soft audio cues
 #: edrclient.py:91
 msgid "soft audio cues."
-msgstr "retour audio subtile"
+msgstr "retour audio subtile."
 
+#. Translators: this is shown on EDMC's status bar when the version check fails
 #: edrclient.py:132
 msgid "check for version update has failed."
-msgstr "impossible de vérifier la mise à jour"
+msgstr "impossible de vérifier la mise à jour."
 
+#. Translators: this is shown on EDMC's status bar when the authentication succeeds
 #: edrclient.py:202 edrclient.py:275
 msgid "authenticated."
-msgstr "identité confirmée"
+msgstr "identité confirmée."
 
+#. Translators: this is shown when EDR warms-up via the overlay
 #: edrclient.py:217
 msgid "Feeling lost? Send !help via the in-game chat"
 msgstr "Un peu perdu? Envoyer !help dans le chat"
 
+#. Translators: this is shown when EDR warms-up via the overlay if there is a mandatory update pending
 #: edrclient.py:220
 msgid "Mandatory update!"
 msgstr "Mise à jour obligatoire!"
 
+#. Translators: this is shown when EDR warms-up via the overlay, the -- are for presentation purpose
 #: edrclient.py:223
 msgid "-- Random Tip --"
 msgstr "-- Bon à savoir --"
 
+#. Translators: this is shown when EDR warms-up via the overlay
 #: edrclient.py:226
 msgid "EDR v{} by LeKeno (Cobra Kai)"
 msgstr "EDR v{} par LeKeno (Cobra Kai)"
 
+#. Translators: this is shown in the preferences panel
 #: edrclient.py:247
 msgid "EDR website"
 msgstr "Site web pour EDR"
 
+#. Translators: this is shown in the preferences panel
 #: edrclient.py:250
 msgid "Credentials"
 msgstr "Identifiants"
 
+#. Translators: this is shown in the preferences panel
 #: edrclient.py:253
 msgid "Log in with your EDR account for full access"
 msgstr "Identifiez-vous avec un compte EDR pour un accès complet"
@@ -105,9 +148,14 @@ msgstr "Identifiez-vous avec un compte EDR pour un accès complet"
 msgid "Email"
 msgstr "Email"
 
+#: edrclient.py:260
+msgid "Password"
+msgstr "Mot de passe"
+
+#. Translators: this is shown in the preferences panel as a heading for feedback options (e.g. overlay, audio cues)
 #: edrclient.py:265
 msgid "EDR Feedback:"
-msgstr "Retour EDR"
+msgstr "Retour EDR:"
 
 #: edrclient.py:268
 msgid "Overlay"
@@ -117,26 +165,31 @@ msgstr "Super-imposition"
 msgid "Sound"
 msgstr "Audio"
 
+#. Translators: this is shown in EDMC's status
 #: edrclient.py:283
 msgid "mandatory EDR update!"
-msgstr "Mise à jour d'EDR obligatoire!"
+msgstr "mise à jour d'EDR obligatoire!"
 
 #: edrclient.py:283
 msgid "please update EDR!"
 msgstr "veuillez mettre à jour EDR!"
 
+#. Translators: this is shown via the overlay if the system of interest is an Anarchy (current system or !sitrep <system>)
 #: edrclient.py:315
 msgid "Sitrep|Anarchy: not all crimes are reported."
 msgstr "Anarchie: les crimes ne seront pas tous rapportés."
 
+#. Translators: this is the heading for the sitrep of a given system {}; shown via the overlay
 #: edrclient.py:322
 msgid "SITREP for {}"
 msgstr "SITREP pour {}"
 
+#. Translators: this shows a ist of systems {} with active NOtice To Air Men via the overlay
 #: edrclient.py:329
 msgid "Active NOTAMs for: {}"
 msgstr "NOTAMs en vigueur pour: {}"
 
+#. Translators: this is the heading for the active NOTAMs overlay
 #: edrclient.py:331 edrclient.py:333
 msgid "NOTAMs"
 msgstr "NOTAMs"
@@ -145,6 +198,7 @@ msgstr "NOTAMs"
 msgid "No active NOTAMs."
 msgstr "Aucun NOTAM en vigueur."
 
+#. Translators: this is the heading to show any active NOTAM for a given system {}
 #: edrclient.py:340 edrclient.py:342
 msgid "NOTAM for {}"
 msgstr "NOTAM pour {}"
@@ -153,6 +207,162 @@ msgstr "NOTAM pour {}"
 msgid "SITREPS"
 msgstr "SITREPS"
 
-#: edrclient.py:410
+#: edrclient.py:410 edrclient.py:620
 msgid "got info about {}"
 msgstr "profile reçu pour {}"
+
+#: edrclient.py:459
+msgid "cmdr unknown to EDR."
+msgstr "Cmdr inconnu des services EDR."
+
+#. Translators: this is shown via EDMC's EDR status line upon contact with a known outlaw
+#: edrclient.py:470
+msgid "{} is bad news."
+msgstr ""
+
+#: edrclient.py:473 edrclient.py:483
+msgid "Wanted for {} cr"
+msgstr ""
+
+#: edrclient.py:475
+msgid "Wanted somewhere. A Kill-Warrant-Scan will reveal their highest bounty."
+msgstr ""
+
+#: edrclient.py:478
+msgid "Warning!"
+msgstr ""
+
+#: edrclient.py:480
+msgid "Intel for cmdr {}."
+msgstr ""
+
+#: edrclient.py:485
+msgid "Wanted somewhere but it could be minor offenses."
+msgstr ""
+
+#: edrclient.py:488 edrclient.py:668
+msgid "Intel"
+msgstr ""
+
+#. Translators: this is shown to users who don't yet have an EDR account
+#: edrclient.py:491
+msgid "You could have helped other EDR users by reporting this outlaw!"
+msgstr ""
+
+#: edrclient.py:495
+msgid "not novel enough (scan)."
+msgstr ""
+
+#: edrclient.py:506
+msgid "scan reported for {}."
+msgstr ""
+
+#: edrclient.py:519
+msgid "not novel enough (traffic)."
+msgstr ""
+
+#: edrclient.py:531
+msgid "traffic reported."
+msgstr ""
+
+#: edrclient.py:540
+msgid "Crimes reporting is off (!crimes on to re-enable)"
+msgstr ""
+
+#: edrclient.py:545
+#, fuzzy
+#| msgid "Sitrep|Anarchy: not all crimes are reported."
+msgid "Anarchy system (crimes not reported)."
+msgstr "Anarchie: les crimes ne seront pas tous rapportés."
+
+#: edrclient.py:551
+msgid "You could have helped other EDR users or get help by reporting this crime!"
+msgstr ""
+
+#: edrclient.py:565 edrclient.py:578 edrclient.py:591 edrclient.py:604
+msgid "Sorry, this feature only works with an EDR account."
+msgstr ""
+
+#: edrclient.py:570 edrclient.py:572 edrclient.py:583 edrclient.py:585
+#: edrclient.py:596 edrclient.py:598 edrclient.py:610 edrclient.py:612
+#: edrclient.py:614
+msgid "Cmdr Dex"
+msgstr ""
+
+#: edrclient.py:570
+#, python-brace-format
+msgid "Successfully tagged cmdr {name} with {tag}"
+msgstr ""
+
+#: edrclient.py:572
+#, python-brace-format
+msgid "Could not tag cmdr {name} with {tag}"
+msgstr ""
+
+#: edrclient.py:583
+msgid "Successfully attached a memo to cmdr {}"
+msgstr ""
+
+#: edrclient.py:585
+msgid "Failed to attach a memo to cmdr {}"
+msgstr ""
+
+#: edrclient.py:596
+msgid "Successfully removed memo from cmdr {}"
+msgstr ""
+
+#: edrclient.py:598
+msgid "Failed to remove memo from cmdr {}"
+msgstr ""
+
+#: edrclient.py:610
+msgid "Successfully removed all tags from cmdr {}"
+msgstr ""
+
+#: edrclient.py:612
+msgid "Successfully removed tag {} from cmdr {}"
+msgstr ""
+
+#: edrclient.py:614
+msgid "Could not remove tag(s) from cmdr {}"
+msgstr ""
+
+#: edrclient.py:621 edrclient.py:625
+#, fuzzy
+#| msgid "SITREP for {}"
+msgid "Intel for {}"
+msgstr "SITREP pour {}"
+
+#: edrclient.py:624
+#, fuzzy
+#| msgid "got info about {}"
+msgid "no info about {}"
+msgstr "profile reçu pour {}"
+
+#: edrclient.py:625
+msgid "Not recently sighted or not an outlaw."
+msgstr ""
+
+#: edrclient.py:631 edrclient.py:636
+msgid "Recently Sighted Outlaws"
+msgstr ""
+
+#: edrclient.py:631
+msgid "No outlaws sighted in the last {}"
+msgstr ""
+
+#: edrclient.py:634
+msgid "recently sighted outlaws"
+msgstr ""
+
+#: edrclient.py:703
+msgid "EDR needs you!"
+msgstr ""
+
+#: edrclient.py:703
+msgid "Apply for an account at https://lekeno.github.io/"
+msgstr ""
+
+#: edrclient.py:703
+msgid "It's free, no strings attached."
+msgstr ""
