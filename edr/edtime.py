@@ -55,11 +55,11 @@ class EDTime(object, comparable.ComparableMixin):
             suffix = (_c(u"suffix| minutes") if minutes > 1 else _c(u"suffix| minute")) if verbose else _c(u"short suffix|m")
             readable = _(u"{nb_minutes}{suffix}").format(nb_minutes=minutes, suffix=suffix)
             if seconds > 0 and not short:
-                suffix = (_c(u"suffix| seconds") if seconds > 1 else _c(u"suffix| second") if verbose else _c(u"short suffix|s")
+                suffix = (_c(u"suffix| seconds") if seconds > 1 else _c(u"suffix| second")) if verbose else _c(u"short suffix|s")
                 readable += _(u":{nb_seconds}{suffix}").format(nb_seconds=seconds, suffix=suffix)
         else:
             suffix = (_c(u"suffix| seconds") if seconds > 1 else _c(u"suffix| second")) if verbose else _c(u"short suffix|s")
-            readable = _(u"{nb_seconds}{suffix}".format(nb_seconds=seconds, suffix=suffix)
+            readable = _(u"{nb_seconds}{suffix}").format(nb_seconds=seconds, suffix=suffix)
 
         return readable
 
