@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2018-03-29 14:47+0900\n"
-"PO-Revision-Date: 2018-03-29 14:58+0900\n"
+"POT-Creation-Date: 2018-03-29 22:30+0900\n"
+"PO-Revision-Date: 2018-03-29 22:30+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -507,171 +507,166 @@ msgstr "Hors-la-loi"
 #. Translators: this is to show how long ago an event took place, keep it ultra-short, e.g. -{} would show something like -3H
 #: edtime.py:21
 msgid "short notation for t-minus|-{}"
-msgstr ""
+msgstr "-{}"
 
 #: edtime.py:43
 msgid "suffix| days"
-msgstr ""
+msgstr " jours"
 
 #: edtime.py:43
 msgid "suffix| day"
-msgstr ""
+msgstr " jour"
 
 #: edtime.py:43
 msgid "short suffix|d"
-msgstr ""
+msgstr " d"
 
 #: edtime.py:44
 #, python-brace-format
 msgid "{nb_days}{suffix}"
-msgstr ""
+msgstr "{nb_days}{suffix}"
 
 #: edtime.py:46 edtime.py:49
 msgid "suffix| hours"
-msgstr ""
+msgstr " heures"
 
 #: edtime.py:46 edtime.py:49
 msgid "suffix| hour"
-msgstr ""
+msgstr " heure"
 
 #: edtime.py:46 edtime.py:49
 msgid "short suffix|h"
-msgstr ""
+msgstr " h"
 
 #: edtime.py:47
 #, python-brace-format
 msgid ":{nb_hours}{suffix}"
-msgstr ""
+msgstr ":{nb_hours}{suffix}"
 
 #: edtime.py:50
 #, python-brace-format
 msgid "{nb_hours}{suffix}"
-msgstr ""
+msgstr "{nb_hours}{suffix}"
 
 #: edtime.py:52 edtime.py:55
 msgid "suffix| minutes"
-msgstr ""
+msgstr " minutes"
 
 #: edtime.py:52 edtime.py:55
 msgid "suffix| minute"
-msgstr ""
+msgstr " minute"
 
 #: edtime.py:52 edtime.py:55
 msgid "short suffix|m"
-msgstr ""
+msgstr "m"
 
 #: edtime.py:53
 #, python-brace-format
 msgid ":{nb_minutes}{suffix}"
-msgstr ""
+msgstr ":{nb_minutes}{suffix}"
 
 #: edtime.py:56
 #, python-brace-format
 msgid "{nb_minutes}{suffix}"
-msgstr ""
+msgstr "{nb_minutes}{suffix}"
 
 #: edtime.py:58 edtime.py:61
 msgid "suffix| seconds"
-msgstr ""
+msgstr " secondes"
 
 #: edtime.py:58 edtime.py:61
 msgid "suffix| second"
-msgstr ""
+msgstr "seconde"
 
 #: edtime.py:58 edtime.py:61
 msgid "short suffix|s"
-msgstr ""
+msgstr "s"
 
 #: edtime.py:59
 #, python-brace-format
 msgid ":{nb_seconds}{suffix}"
-msgstr ""
+msgstr ":{nb_seconds}{suffix}"
 
 #: edtime.py:99
 msgid "%Y-%m-%d"
-msgstr ""
+msgstr "%d-%m-%Y"
 
 #: edtime.py:62
 #, python-brace-format
 msgid "{nb_seconds}{suffix}"
-msgstr ""
+msgstr "{nb_seconds}{suffix}"
 
 #: load.py:62
 msgid "added to wing: "
-msgstr ""
+msgstr "a rejoint le squadron: "
 
 #: load.py:67
 msgid "joined wing."
-msgstr ""
+msgstr "en formation."
 
 #: load.py:72
 msgid "left wing."
-msgstr ""
+msgstr "hors formation."
 
 #: load.py:90
 msgid "Anarchy system"
-msgstr ""
+msgstr "Système Anarchiste"
 
 #: load.py:90
 msgid "Crimes will not be reported."
-msgstr ""
+msgstr "Les crimes ne seront pas rapportés."
 
 #: load.py:150
 msgid "initialized."
-msgstr ""
+msgstr "initialisé."
 
 #: load.py:182
 msgid "disabled in Solo/Private."
-msgstr ""
+msgstr "désactivé en mode Solo/Privé."
 
 #: load.py:236 load.py:274 load.py:313 load.py:365 load.py:392 load.py:429
 msgid "not in Open? Start EDMC before Elite."
-msgstr ""
+msgstr "Pas en Open? Avez vous bien lancé EDMC avant Elite?"
 
 #: load.py:257
 msgid "blip failed."
-msgstr ""
+msgstr "echec d'un blip"
 
 #: load.py:261
 msgid "blip succeeded!"
-msgstr ""
+msgstr "blip rapporté!"
 
 #: load.py:296 load.py:333
 msgid "failed to report crime."
-msgstr ""
+msgstr "crime non rapporté (échec)."
 
 #: load.py:300 load.py:337
-#, fuzzy
-#| msgid "traffic reported."
 msgid "crime reported!"
-msgstr "trafic rapport."
+msgstr "crime rapporté!"
 
 #: load.py:373
 msgid "failed to report contact."
-msgstr ""
+msgstr "contact non rapporté (échec)."
 
 #: load.py:376
-#, fuzzy, python-brace-format
-#| msgid "scan reported for {}."
+#, python-brace-format
 msgid "contact reported (cmdr {name})."
-msgstr "scan de {} rapport."
+msgstr "contact rapporté (cmd {name})."
 
 #: load.py:400
 msgid "failed to report scan."
-msgstr ""
+msgstr "scan non rapporté (échec)."
 
 #: load.py:402
-#, fuzzy, python-brace-format
-#| msgid "scan reported for {}."
+#, python-brace-format
 msgid "scan reported (cmdr {name})."
-msgstr "scan de {} rapport."
+msgstr "scan rapporté (cmd {name})."
 
 #: load.py:437
 msgid "failed to report traffic."
-msgstr ""
+msgstr "trafic non rapporté (échec)."
 
 #: load.py:439
-#, fuzzy, python-brace-format
-#| msgid "traffic reported."
+#, python-brace-format
 msgid "traffic reported (cmdr {name})."
-msgstr "trafic rapport."
+msgstr "trafic rapporté (cmd {name})."

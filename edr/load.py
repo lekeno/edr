@@ -13,7 +13,7 @@ EDRLOG = EDRLog()
 
 def plugin_start():
     """
-    Start up EDR, check for updates
+    Start up EDR, try to login
     :return:
     """
     EDR_CLIENT.apply_config()
