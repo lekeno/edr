@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2018-03-28 20:23+0900\n"
-"PO-Revision-Date: 2018-03-29 10:31+0900\n"
+"POT-Creation-Date: 2018-03-29 10:41+0900\n"
+"PO-Revision-Date: 2018-03-29 10:44+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -247,7 +247,8 @@ msgstr "Renseignements"
 #. Translators: this is shown to users who don't yet have an EDR account
 #: edrclient.py:491
 msgid "You could have helped other EDR users by reporting this outlaw!"
-msgstr "Vous auriez pu aider d'autres utilisateurs EDR en rapportant cet hors-la-loi!"
+msgstr ""
+"Vous auriez pu aider d'autres utilisateurs EDR en rapportant cet hors-la-loi!"
 
 #: edrclient.py:495
 msgid "not novel enough (scan)."
@@ -274,8 +275,11 @@ msgid "Anarchy system (crimes not reported)."
 msgstr "Anarchie (crimes non rapportés)"
 
 #: edrclient.py:551
-msgid "You could have helped other EDR users or get help by reporting this crime!"
-msgstr "Vous auriez pu aider d'autres utilisateurs EDR ou alerter les vigiles en rapportant ce crime!"
+msgid ""
+"You could have helped other EDR users or get help by reporting this crime!"
+msgstr ""
+"Vous auriez pu aider d'autres utilisateurs EDR ou alerter les vigiles en "
+"rapportant ce crime!"
 
 #: edrclient.py:565 edrclient.py:578 edrclient.py:591 edrclient.py:604
 msgid "Sorry, this feature only works with an EDR account."
@@ -360,3 +364,63 @@ msgstr "Demandez un compte EDR depuis https://lekeno.github.io/"
 #: edrclient.py:703
 msgid "It's free, no strings attached."
 msgstr "C'est gratuit et sans obligations."
+
+#: edrcmdrprofile.py:26
+msgid "outlaw"
+msgstr "hors-la-loi"
+
+#: edrcmdrprofile.py:26
+msgid "neutral"
+msgstr "neutre"
+
+#: edrcmdrprofile.py:26
+msgid "enforcer"
+msgstr "vigile"
+
+#: edrcmdrprofile.py:252
+msgid "Wanted ++++"
+msgstr "Recherché ++++"
+
+#: edrcmdrprofile.py:252
+msgid "Wanted +++"
+msgstr "Recherché +++"
+
+#: edrcmdrprofile.py:252
+msgid "Wanted ++"
+msgstr "Recherché ++"
+
+#: edrcmdrprofile.py:252
+msgid "Wanted +"
+msgstr "Recherché +"
+
+#: edrcmdrprofile.py:252
+msgid "Wanted"
+msgstr "Recherché"
+
+#: edrcmdrprofile.py:252
+msgid "Neutral"
+msgstr "Neutre"
+
+#: edrcmdrprofile.py:252
+msgid "Enforcer"
+msgstr "Vigile"
+
+#: edrcmdrprofile.py:252
+msgid "Enforcer +"
+msgstr "Vigile +"
+
+#: edrcmdrprofile.py:252
+msgid "Enforcer ++"
+msgstr "Vigile ++"
+
+#: edrcmdrprofile.py:252
+msgid "Enforcer +++"
+msgstr "Vigile +++"
+
+#: edrcmdrprofile.py:252
+msgid "Enforcer ++++"
+msgstr "Vigile ++++"
+
+#: edrcmdrprofile.py:292
+msgid " [friend]"
+msgstr " [ami]"

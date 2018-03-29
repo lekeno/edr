@@ -157,7 +157,7 @@ class InGameMsg(object):
         chunked_lines = []
         rows = self.cfg[kind]["b"]["rows"]
         rows_per_line = max(1, rows / len(lines))
-        bonus_rows = rows % len(lines) #TODO, hmm something is wrong here, not using all the lines for !who hyperlethal
+        bonus_rows = rows % len(lines)
         for line in lines:
             max_rows = rows_per_line
             if bonus_rows:

@@ -11,6 +11,7 @@ import edrlog
 import edtime
 from collections import deque
 from edentities import EDBounty
+from edri18n import _, _c
 
 EDRLOG = edrlog.EDRLog()
 
@@ -45,7 +46,6 @@ class EDRLegalRecords(object):
             EDRLOG.log(u"No recent legal records for {}".format(cmdr_id), "INFO")
             return None
         
-        self.status = "Got legal records"
         EDRLOG.log(u"Got legal records for {}".format(cmdr_id), "INFO")
         summary = None
         counters = {"clean": 0, "wanted": 0}
@@ -61,9 +61,11 @@ class EDRLegalRecords(object):
             tminus = edtime.EDTime.t_minus(bounties["last"]["timestamp"], short=True)
             max_bounty = EDBounty(bounties["max"]).pretty_print()
             last_bounty = EDBounty(bounties["last"]["value"]).pretty_print()
-            summary = u"[Last {}] clean:{} / wanted:{} max={} cr, {} cr in {} {}".format(timespan, counters["clean"], counters["wanted"], max_bounty, last_bounty, bounties["last"]["starSystem"], tminus)
+            # Translators: this is a summary of a cmdr's recent legal history for the 'last {}' days, number of clean and wanted scans, max and last bounties
+            summary = _(u"[Last {}] clean:{} / wanted:{} max={} cr, {} cr in {} {}").format(timespan, counters["clean"], counters["wanted"], max_bounty, last_bounty, bounties["last"]["starSystem"], tminus)
         else:
-            summary = u"[Last {}] clean:{} / wanted:{}".format(timespan, counters["clean"], counters["wanted"])
+            # Translators: this is a summary of a cmdr's recent legal history for the 'last {}' days, number of clean and wanted scans
+            summary = _(u"[Last {}] clean:{} / wanted:{}").format(timespan, counters["clean"], counters["wanted"])
         return summary
 
     def __are_records_stale(self):

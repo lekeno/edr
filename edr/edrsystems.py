@@ -11,6 +11,7 @@ import edrconfig
 import edrlog
 import lrucache
 from edentities import EDBounty
+from edri18n import _, _c
 
 EDRLOG = edrlog.EDRLog()
 
@@ -196,21 +197,24 @@ class EDRSystems(object):
         for system in systems_with_recent_outlaws:
             summary_outlaws.append(u"{} {}".format(system[0], edtime.EDTime.t_minus(system[1], short=True)))
         if summary_outlaws:
-            summary[u"Outlaws"] = summary_outlaws
+            # Translators: this is for the sitreps feature; it's the title of a section to show systems with sighted outlaws 
+            summary[_c(u"systems with recent activity; section|Outlaws")] = summary_outlaws
 
         summary_crimes = []
         systems_with_recent_crimes = sorted(systems_with_recent_crimes.items(), key=lambda t: t[1], reverse=True)
         for system in systems_with_recent_crimes:
             summary_crimes.append(u"{} {}".format(system[0], edtime.EDTime.t_minus(system[1], short=True)))
         if summary_crimes:
-            summary[u"Crimes"] = summary_crimes
+            # Translators: this is for the sitreps feature; it's the title of a section to show systems with reported crimes
+            summary[_c(u"sysems with recent activity; section|Crimes")] = summary_crimes
 
         summary_traffic = []
         systems_with_recent_traffic = sorted(systems_with_recent_traffic.items(), key=lambda t: t[1], reverse=True)
         for system in systems_with_recent_traffic:
             summary_traffic.append(u"{} {}".format(system[0], edtime.EDTime.t_minus(system[1], short=True)))
         if summary_traffic:
-            summary[u"Traffic"] = summary_traffic
+            # Translators: this is for the sitreps feature; it's the title of a section to show systems with traffic
+            summary[_(u"systems with recent activity; section|Traffic")] = summary_traffic
 
         return summary
 
@@ -297,7 +301,8 @@ class EDRSystems(object):
                 for cmdr in summary_traffic:
                     summary_sighted.append(u"{} {}".format(cmdr, edtime.EDTime.t_minus(summary_traffic[cmdr], short=True)))
                 if summary_sighted:
-                    summary[u"Sighted"] = summary_sighted
+                    # Translators: this is for the sitrep feature; it's a section to show sighted cmdrs in the system of interest
+                    summary[_c(u"recent activity for a given system; section|Sighted")] = summary_sighted
         
         if self.has_recent_crimes(star_system):
             summary_interdictors = []
@@ -323,9 +328,11 @@ class EDRSystems(object):
                     elif summary_crimes[criminal][1] in ["Interdicted", "Interdiction"]:
                         summary_interdictors.append(u"{} {}".format(criminal, edtime.EDTime.t_minus(summary_crimes[criminal][0], short=True)))
                 if summary_interdictors:
-                    summary[u"Interdictors"] = summary_interdictors
+                    # Translators: this is for the sitrep feature; it's a section to show cmdrs who have been reported as interdicting another cmdr in the system of interest
+                    summary[_c(u"recent activity for a given system; section|Interdictors")] = summary_interdictors
                 if summary_destroyers:
-                    summary[u"Destroyers"] = summary_destroyers
+                    # Translators: this is for the sitrep feature; it's a section to show cmdrs who have been reported as responsible for destroying the ship of another cmdr in the system of interest; use a judgement-neutral term
+                    summary[_c(u"recent activity for a given system; section|Destroyers")] = summary_destroyers
         
         wanted_cmdrs = sorted(wanted_cmdrs.items(), key=operator.itemgetter(1), reverse=True)
         if wanted_cmdrs:
@@ -333,7 +340,8 @@ class EDRSystems(object):
             for wanted in wanted_cmdrs:
                 summary_wanted.append(u"{} {}".format(wanted[0], edtime.EDTime.t_minus(wanted[1][0], short=True)))
             if summary_wanted:
-                summary[u"Outlaws"] = summary_wanted
+                # Translators: this is for the sitrep feature; it's a section to show wanted cmdrs who have been sighted in the system of interest
+                summary[_c(u"recent activity for a given system; section|Outlaws")] = summary_wanted
 
         return summary
 
