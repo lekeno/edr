@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2018-03-29 10:41+0900\n"
-"PO-Revision-Date: 2018-03-29 10:44+0900\n"
+"POT-Creation-Date: 2018-03-29 14:47+0900\n"
+"PO-Revision-Date: 2018-03-29 14:58+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -424,3 +424,254 @@ msgstr "Vigile ++++"
 #: edrcmdrprofile.py:292
 msgid " [friend]"
 msgstr " [ami]"
+
+#. Translators: this is a summary of a cmdr's recent legal history for the 'last {}' days, number of clean and wanted scans, max and last bounties
+#: edrlegalrecords.py:65
+msgid "[Last {}] clean:{} / wanted:{} max={} cr, {} cr in {} {}"
+msgstr "[Derniers {}] vierge:{} / recherché:{} max={} cr, {} cr à {} {}"
+
+#. Translators: this is a summary of a cmdr's recent legal history for the 'last {}' days, number of clean and wanted scans
+#: edrlegalrecords.py:68
+msgid "[Last {}] clean:{} / wanted:{}"
+msgstr "[Derniers {}] vierge:{} / recherché:{}"
+
+#. Translators: this is a one-liner for the recently sighted outlaws; Keep it short! T{t:<2} is to show how long ago e.g. T-4H (4 hours ago)
+#: edroutlaws.py:89
+#, python-brace-format
+msgid "T{t:<2}: {name} in {system}, wanted for {bounty}"
+msgstr "T{t:<2}: {name} à {system}, recherché pour {bounty}"
+
+#. Translators: this is a one-liner for the recently sighted outlaws; Keep it short! T{t:<2} is to show how long ago e.g. T-4H (4 hours ago)
+#: edroutlaws.py:92
+#, python-brace-format
+msgid "T{t:<2}: {name} in {system}"
+msgstr "T{t:<2}: {name} à {system}"
+
+#. Translators: this is for a recently sighted outlaw; T{t} is to show how long ago, e.g. T-2h43m
+#: edroutlaws.py:97
+#, python-brace-format
+msgid "T{t} {name} sighted in {system}"
+msgstr "T{t} {name} repéré à {system}"
+
+#. Translators: this is a continuation of the previous item (location of recently sighted outlaw) and shows a place in the system (e.g. supercruise, Cleve Hub)
+#: edroutlaws.py:101 edroutlaws.py:103
+#, python-brace-format
+msgid ", {place}"
+msgstr ", {place}"
+
+#. Translators: this is for the recently sighted outlaw feature; it shows which ship they were flying at the time
+#: edroutlaws.py:107
+msgid "Spaceship: {}"
+msgstr "Vaisseau: {}"
+
+#. Translators: this is for the recently sighted outlaw feature; it shows their bounty if any
+#: edroutlaws.py:111
+msgid "Wanted for {} credits"
+msgstr "Recherché pour {} cr"
+
+#. Translators: this is for the sitreps feature; it's the title of a section to show systems with sighted outlaws
+#: edrsystems.py:201
+msgid "systems with recent activity; section|Outlaws"
+msgstr "Hors-la-loi"
+
+#. Translators: this is for the sitreps feature; it's the title of a section to show systems with reported crimes
+#: edrsystems.py:209
+msgid "sysems with recent activity; section|Crimes"
+msgstr "Crimes"
+
+#. Translators: this is for the sitreps feature; it's the title of a section to show systems with traffic
+#: edrsystems.py:217
+msgid "systems with recent activity; section|Traffic"
+msgstr "Traffic"
+
+#. Translators: this is for the sitrep feature; it's a section to show sighted cmdrs in the system of interest
+#: edrsystems.py:305
+msgid "recent activity for a given system; section|Sighted"
+msgstr "Repéré"
+
+#. Translators: this is for the sitrep feature; it's a section to show cmdrs who have been reported as interdicting another cmdr in the system of interest
+#: edrsystems.py:332
+msgid "recent activity for a given system; section|Interdictors"
+msgstr "Interdicteurs"
+
+#. Translators: this is for the sitrep feature; it's a section to show cmdrs who have been reported as responsible for destroying the ship of another cmdr in the system of interest; use a judgement-neutral term
+#: edrsystems.py:335
+msgid "recent activity for a given system; section|Destroyers"
+msgstr "Destructeurs"
+
+#. Translators: this is for the sitrep feature; it's a section to show wanted cmdrs who have been sighted in the system of interest
+#: edrsystems.py:344
+msgid "recent activity for a given system; section|Outlaws"
+msgstr "Hors-la-loi"
+
+#. Translators: this is to show how long ago an event took place, keep it ultra-short, e.g. -{} would show something like -3H
+#: edtime.py:21
+msgid "short notation for t-minus|-{}"
+msgstr ""
+
+#: edtime.py:43
+msgid "suffix| days"
+msgstr ""
+
+#: edtime.py:43
+msgid "suffix| day"
+msgstr ""
+
+#: edtime.py:43
+msgid "short suffix|d"
+msgstr ""
+
+#: edtime.py:44
+#, python-brace-format
+msgid "{nb_days}{suffix}"
+msgstr ""
+
+#: edtime.py:46 edtime.py:49
+msgid "suffix| hours"
+msgstr ""
+
+#: edtime.py:46 edtime.py:49
+msgid "suffix| hour"
+msgstr ""
+
+#: edtime.py:46 edtime.py:49
+msgid "short suffix|h"
+msgstr ""
+
+#: edtime.py:47
+#, python-brace-format
+msgid ":{nb_hours}{suffix}"
+msgstr ""
+
+#: edtime.py:50
+#, python-brace-format
+msgid "{nb_hours}{suffix}"
+msgstr ""
+
+#: edtime.py:52 edtime.py:55
+msgid "suffix| minutes"
+msgstr ""
+
+#: edtime.py:52 edtime.py:55
+msgid "suffix| minute"
+msgstr ""
+
+#: edtime.py:52 edtime.py:55
+msgid "short suffix|m"
+msgstr ""
+
+#: edtime.py:53
+#, python-brace-format
+msgid ":{nb_minutes}{suffix}"
+msgstr ""
+
+#: edtime.py:56
+#, python-brace-format
+msgid "{nb_minutes}{suffix}"
+msgstr ""
+
+#: edtime.py:58 edtime.py:61
+msgid "suffix| seconds"
+msgstr ""
+
+#: edtime.py:58 edtime.py:61
+msgid "suffix| second"
+msgstr ""
+
+#: edtime.py:58 edtime.py:61
+msgid "short suffix|s"
+msgstr ""
+
+#: edtime.py:59
+#, python-brace-format
+msgid ":{nb_seconds}{suffix}"
+msgstr ""
+
+#: edtime.py:99
+msgid "%Y-%m-%d"
+msgstr ""
+
+#: edtime.py:62
+#, python-brace-format
+msgid "{nb_seconds}{suffix}"
+msgstr ""
+
+#: load.py:62
+msgid "added to wing: "
+msgstr ""
+
+#: load.py:67
+msgid "joined wing."
+msgstr ""
+
+#: load.py:72
+msgid "left wing."
+msgstr ""
+
+#: load.py:90
+msgid "Anarchy system"
+msgstr ""
+
+#: load.py:90
+msgid "Crimes will not be reported."
+msgstr ""
+
+#: load.py:150
+msgid "initialized."
+msgstr ""
+
+#: load.py:182
+msgid "disabled in Solo/Private."
+msgstr ""
+
+#: load.py:236 load.py:274 load.py:313 load.py:365 load.py:392 load.py:429
+msgid "not in Open? Start EDMC before Elite."
+msgstr ""
+
+#: load.py:257
+msgid "blip failed."
+msgstr ""
+
+#: load.py:261
+msgid "blip succeeded!"
+msgstr ""
+
+#: load.py:296 load.py:333
+msgid "failed to report crime."
+msgstr ""
+
+#: load.py:300 load.py:337
+#, fuzzy
+#| msgid "traffic reported."
+msgid "crime reported!"
+msgstr "trafic rapport."
+
+#: load.py:373
+msgid "failed to report contact."
+msgstr ""
+
+#: load.py:376
+#, fuzzy, python-brace-format
+#| msgid "scan reported for {}."
+msgid "contact reported (cmdr {name})."
+msgstr "scan de {} rapport."
+
+#: load.py:400
+msgid "failed to report scan."
+msgstr ""
+
+#: load.py:402
+#, fuzzy, python-brace-format
+#| msgid "scan reported for {}."
+msgid "scan reported (cmdr {name})."
+msgstr "scan de {} rapport."
+
+#: load.py:437
+msgid "failed to report traffic."
+msgstr ""
+
+#: load.py:439
+#, fuzzy, python-brace-format
+#| msgid "traffic reported."
+msgid "traffic reported (cmdr {name})."
+msgstr "trafic rapport."
