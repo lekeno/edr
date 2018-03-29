@@ -4,7 +4,7 @@ import json
 import edtime
 import edrlog
 import edrconfig
-import _, _c from edri18n
+from edri18n import _, _c
 EDRLOG = edrlog.EDRLog()
 
 class EDBounty(object):

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
 "POT-Creation-Date: 2018-03-28 20:23+0900\n"
-"PO-Revision-Date: 2018-03-28 20:25+0900\n"
+"PO-Revision-Date: 2018-03-29 10:31+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -213,156 +213,150 @@ msgstr "profile reçu pour {}"
 
 #: edrclient.py:459
 msgid "cmdr unknown to EDR."
-msgstr "Cmdr inconnu des services EDR."
+msgstr "cmd inconnu des services EDR."
 
 #. Translators: this is shown via EDMC's EDR status line upon contact with a known outlaw
 #: edrclient.py:470
 msgid "{} is bad news."
-msgstr ""
+msgstr "{} est une mauvaise nouvelle."
 
 #: edrclient.py:473 edrclient.py:483
 msgid "Wanted for {} cr"
-msgstr ""
+msgstr "Recherché pour {} cr"
 
 #: edrclient.py:475
 msgid "Wanted somewhere. A Kill-Warrant-Scan will reveal their highest bounty."
-msgstr ""
+msgstr "Recherché par une autorité. Un scan révèlera la plus grosse prime."
 
 #: edrclient.py:478
 msgid "Warning!"
-msgstr ""
+msgstr "Attention!"
 
 #: edrclient.py:480
 msgid "Intel for cmdr {}."
-msgstr ""
+msgstr "Renseignements sur {}."
 
 #: edrclient.py:485
 msgid "Wanted somewhere but it could be minor offenses."
-msgstr ""
+msgstr "Recherché par une autorité. Possibilité d'un délit mineur."
 
 #: edrclient.py:488 edrclient.py:668
 msgid "Intel"
-msgstr ""
+msgstr "Renseignements"
 
 #. Translators: this is shown to users who don't yet have an EDR account
 #: edrclient.py:491
 msgid "You could have helped other EDR users by reporting this outlaw!"
-msgstr ""
+msgstr "Vous auriez pu aider d'autres utilisateurs EDR en rapportant cet hors-la-loi!"
 
 #: edrclient.py:495
 msgid "not novel enough (scan)."
-msgstr ""
+msgstr "situation pas assez nouvelle (scan)"
 
 #: edrclient.py:506
 msgid "scan reported for {}."
-msgstr ""
+msgstr "scan de {} rapport."
 
 #: edrclient.py:519
 msgid "not novel enough (traffic)."
-msgstr ""
+msgstr "situation pas assez nouvelle (trafic)"
 
 #: edrclient.py:531
 msgid "traffic reported."
-msgstr ""
+msgstr "trafic rapport."
 
 #: edrclient.py:540
 msgid "Crimes reporting is off (!crimes on to re-enable)"
-msgstr ""
+msgstr "Rapport de crimes désactivé (envoyez '!crimes on' pour activer)"
 
 #: edrclient.py:545
-#, fuzzy
-#| msgid "Sitrep|Anarchy: not all crimes are reported."
 msgid "Anarchy system (crimes not reported)."
-msgstr "Anarchie: les crimes ne seront pas tous rapportés."
+msgstr "Anarchie (crimes non rapportés)"
 
 #: edrclient.py:551
 msgid "You could have helped other EDR users or get help by reporting this crime!"
-msgstr ""
+msgstr "Vous auriez pu aider d'autres utilisateurs EDR ou alerter les vigiles en rapportant ce crime!"
 
 #: edrclient.py:565 edrclient.py:578 edrclient.py:591 edrclient.py:604
 msgid "Sorry, this feature only works with an EDR account."
-msgstr ""
+msgstr "Désolé, cette fonctionnalité nécessite un compte EDR."
 
 #: edrclient.py:570 edrclient.py:572 edrclient.py:583 edrclient.py:585
 #: edrclient.py:596 edrclient.py:598 edrclient.py:610 edrclient.py:612
 #: edrclient.py:614
 msgid "Cmdr Dex"
-msgstr ""
+msgstr "Cmdr Dex"
 
 #: edrclient.py:570
 #, python-brace-format
 msgid "Successfully tagged cmdr {name} with {tag}"
-msgstr ""
+msgstr "Cmdr {name} a bien été tagué avec {tag}"
 
 #: edrclient.py:572
 #, python-brace-format
 msgid "Could not tag cmdr {name} with {tag}"
-msgstr ""
+msgstr "Impossible de tagguer Cmdr {name} avec {tag}"
 
 #: edrclient.py:583
 msgid "Successfully attached a memo to cmdr {}"
-msgstr ""
+msgstr "Le mémo à-propos du cmd {} a bien été enregistré"
 
 #: edrclient.py:585
 msgid "Failed to attach a memo to cmdr {}"
-msgstr ""
+msgstr "Impossible d'enregistrer le mémo à-propos du cmd {}"
 
 #: edrclient.py:596
 msgid "Successfully removed memo from cmdr {}"
-msgstr ""
+msgstr "Le mémo à-propos du cmd {} a bien été supprimé"
 
 #: edrclient.py:598
 msgid "Failed to remove memo from cmdr {}"
-msgstr ""
+msgstr "Impossible de supprimer le mémo à-propos du cmd {}"
 
 #: edrclient.py:610
 msgid "Successfully removed all tags from cmdr {}"
-msgstr ""
+msgstr "Tous les tags ont bien été supprimés pour le cmd {}"
 
 #: edrclient.py:612
 msgid "Successfully removed tag {} from cmdr {}"
-msgstr ""
+msgstr "Le tag {} a bien été supprimé pour le cmd {}"
 
 #: edrclient.py:614
 msgid "Could not remove tag(s) from cmdr {}"
-msgstr ""
+msgstr "Impossible de supprimer les tags pour le cmd {}"
 
 #: edrclient.py:621 edrclient.py:625
-#, fuzzy
-#| msgid "SITREP for {}"
 msgid "Intel for {}"
-msgstr "SITREP pour {}"
+msgstr "Renseignements pour {}"
 
 #: edrclient.py:624
-#, fuzzy
-#| msgid "got info about {}"
 msgid "no info about {}"
-msgstr "profile reçu pour {}"
+msgstr "aucune info sur {}"
 
 #: edrclient.py:625
 msgid "Not recently sighted or not an outlaw."
-msgstr ""
+msgstr "Aucun récent contact, ou non recherché."
 
 #: edrclient.py:631 edrclient.py:636
 msgid "Recently Sighted Outlaws"
-msgstr ""
+msgstr "Récents contacts avec des hors-la-loi"
 
 #: edrclient.py:631
 msgid "No outlaws sighted in the last {}"
-msgstr ""
+msgstr "Pas de contact avec des hors-la-loi depuis {}"
 
 #: edrclient.py:634
 msgid "recently sighted outlaws"
-msgstr ""
+msgstr "récent contacts avec des hors-la-loi"
 
 #: edrclient.py:703
 msgid "EDR needs you!"
-msgstr ""
+msgstr "EDR a besoin de vous!"
 
 #: edrclient.py:703
 msgid "Apply for an account at https://lekeno.github.io/"
-msgstr ""
+msgstr "Demandez un compte EDR depuis https://lekeno.github.io/"
 
 #: edrclient.py:703
 msgid "It's free, no strings attached."
-msgstr ""
+msgstr "C'est gratuit et sans obligations."

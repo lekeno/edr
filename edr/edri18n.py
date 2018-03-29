@@ -1,9 +1,10 @@
 import gettext
 import os
+from config import config
 
 l10ndir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'l10n')
-translate = gettext.translation('edr', l10ndir, fallback=True, languages=['fr'])
-print translate
+# TODO find a way to update when preferences have changed
+translate = gettext.translation('edr', l10ndir, fallback=True, languages=[config.get('language')])
 _ = translate.ugettext
 
 CONTEXT_SEPARATOR = u"|"
