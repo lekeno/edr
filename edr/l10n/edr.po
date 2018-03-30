@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2018-03-29 22:30+0900\n"
-"PO-Revision-Date: 2018-03-29 22:30+0900\n"
+"POT-Creation-Date: 2018-03-30 14:46+0900\n"
+"PO-Revision-Date: 2018-03-30 14:48+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -470,39 +470,35 @@ msgid "Wanted for {} credits"
 msgstr "Recherché pour {} cr"
 
 #. Translators: this is for the sitreps feature; it's the title of a section to show systems with sighted outlaws
-#: edrsystems.py:201
-msgid "systems with recent activity; section|Outlaws"
+#. Translators: this is for the sitrep feature; it's a section to show wanted cmdrs who have been sighted in the system of interest
+#: edrsystems.py:204 edrsystems.py:347
+msgid "sitreps section|Outlaws"
 msgstr "Hors-la-loi"
 
 #. Translators: this is for the sitreps feature; it's the title of a section to show systems with reported crimes
-#: edrsystems.py:209
-msgid "sysems with recent activity; section|Crimes"
+#: edrsystems.py:212
+msgid "sitreps section|Crimes"
 msgstr "Crimes"
 
 #. Translators: this is for the sitreps feature; it's the title of a section to show systems with traffic
-#: edrsystems.py:217
-msgid "systems with recent activity; section|Traffic"
+#: edrsystems.py:220
+msgid "sitreps section|Traffic"
 msgstr "Traffic"
 
 #. Translators: this is for the sitrep feature; it's a section to show sighted cmdrs in the system of interest
-#: edrsystems.py:305
-msgid "recent activity for a given system; section|Sighted"
-msgstr "Repéré"
+#: edrsystems.py:308
+msgid "sitrep section|Sighted"
+msgstr "Repérés"
 
 #. Translators: this is for the sitrep feature; it's a section to show cmdrs who have been reported as interdicting another cmdr in the system of interest
-#: edrsystems.py:332
-msgid "recent activity for a given system; section|Interdictors"
+#: edrsystems.py:335
+msgid "sitrep section|Interdictors"
 msgstr "Interdicteurs"
 
 #. Translators: this is for the sitrep feature; it's a section to show cmdrs who have been reported as responsible for destroying the ship of another cmdr in the system of interest; use a judgement-neutral term
-#: edrsystems.py:335
-msgid "recent activity for a given system; section|Destroyers"
+#: edrsystems.py:338
+msgid "sitreps section|Destroyers"
 msgstr "Destructeurs"
-
-#. Translators: this is for the sitrep feature; it's a section to show wanted cmdrs who have been sighted in the system of interest
-#: edrsystems.py:344
-msgid "recent activity for a given system; section|Outlaws"
-msgstr "Hors-la-loi"
 
 #. Translators: this is to show how long ago an event took place, keep it ultra-short, e.g. -{} would show something like -3H
 #: edtime.py:21
@@ -587,14 +583,14 @@ msgstr "s"
 msgid ":{nb_seconds}{suffix}"
 msgstr ":{nb_seconds}{suffix}"
 
-#: edtime.py:99
-msgid "%Y-%m-%d"
-msgstr "%d-%m-%Y"
-
 #: edtime.py:62
 #, python-brace-format
 msgid "{nb_seconds}{suffix}"
 msgstr "{nb_seconds}{suffix}"
+
+#: edtime.py:99
+msgid "%Y-%m-%d"
+msgstr "%d-%m-%Y"
 
 #: load.py:62
 msgid "added to wing: "
@@ -670,3 +666,27 @@ msgstr "trafic non rapporté (échec)."
 #, python-brace-format
 msgid "traffic reported (cmdr {name})."
 msgstr "trafic rapporté (cmd {name})."
+
+#~ msgid "Outlaws"
+#~ msgstr "Hors-la-loi"
+
+#~ msgid "Crimes"
+#~ msgstr "Crimes"
+
+#~ msgid "Traffic"
+#~ msgstr "Trafic"
+
+#~ msgid "Sighted"
+#~ msgstr "Repérés"
+
+#~ msgid "Destroyers"
+#~ msgstr "Destructeurs"
+
+#~ msgid "recent activity for a given system; section|Sighted"
+#~ msgstr "Repéré"
+
+#~ msgid "recent activity for a given system; section|Interdictors"
+#~ msgstr "Interdicteurs"
+
+#~ msgid "recent activity for a given system; section|Outlaws"
+#~ msgstr "Hors-la-loi"

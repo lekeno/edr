@@ -373,7 +373,7 @@ def edr_submit_contact(cmdr_name, ship, timestamp, source, witness):
         EDR_CLIENT.status = _(u"failed to report contact.")
         EDR_CLIENT.evict_cmdr(cmdr_name)
 
-    EDR_CLIENT.status = _(u"contact reported (cmdr {name}).").format(cmdr_name)
+    EDR_CLIENT.status = _(u"contact reported (cmdr {name}).").format(name=cmdr_name)
     edr_submit_traffic(cmdr_name, ship, timestamp, source, witness)
 
 def edr_submit_scan(scan, timestamp, source, witness):
