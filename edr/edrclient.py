@@ -75,8 +75,8 @@ class EDRClient(object):
         self.mandatory_update = False
         self.crimes_reporting = True
         self.motd = []
-        self.tips = randomtips.RandomTips("data/tips.json")
-        self.help_content = helpcontent.HelpContent("data/help.json")
+        self.tips = randomtips.RandomTips()
+        self.help_content = helpcontent.HelpContent()
 
     def loud_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "loud")

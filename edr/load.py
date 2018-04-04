@@ -399,7 +399,7 @@ def edr_submit_scan(scan, timestamp, source, witness):
     if not EDR_CLIENT.scanned(scan["cmdr"], report):
         EDR_CLIENT.status = _(u"failed to report scan.")
         EDR_CLIENT.evict_cmdr(scan["cmdr"])
-    EDR_CLIENT.status = _(u"scan reported (cmdr {name}).").format(scan["cmdr"])
+    EDR_CLIENT.status = _(u"scan reported (cmdr {name}).").format(name=scan["cmdr"])
 
 def edr_submit_traffic(cmdr_name, ship, timestamp, source, witness):
     """
@@ -436,7 +436,7 @@ def edr_submit_traffic(cmdr_name, ship, timestamp, source, witness):
     if not EDR_CLIENT.traffic(witness.star_system, report):
         EDR_CLIENT.status = _(u"failed to report traffic.")
         EDR_CLIENT.evict_system(witness.star_system)
-    EDR_CLIENT.status = _(u"traffic reported (cmdr {name}).").format(cmdr_name)
+    EDR_CLIENT.status = _(u"traffic reported (cmdr {name}).").format(name=cmdr_name)
 
 def report_crime(cmdr, entry):
     """
