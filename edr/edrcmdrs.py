@@ -11,7 +11,7 @@ class EDRCmdrs(object):
     EDR_CMDRS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/cmdrs.v4.p')
     EDR_INARA_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/inara.v2.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/inara.v3.p')
 
     def __init__(self, server):
         self.server = server
@@ -83,10 +83,11 @@ class EDRCmdrs(object):
 
             if inara_profile and inara_profile.name.lower() == cmdr_name.lower():
                 self.inara_cache.set(cmdr_name.lower(), inara_profile)
-                EDRLOG.log(u"Cached Inara profile {}: {},{},{}".format(cmdr_name,
-                                                                       inara_profile.name,
-                                                                       inara_profile.squadron,
-                                                                       inara_profile.role), "DEBUG")
+                EDRLOG.log(u"Cached Inara profile {}: {},{},{},{}".format(cmdr_name,
+                                                                          inara_profile.name,
+                                                                          inara_profile.squadron,
+                                                                          inara_profile.role,
+                                                                          inara_profile.powerplay), "DEBUG")
             else:
                 inara_profile = None
                 self.inara_cache.set(cmdr_name.lower(), None)

@@ -132,6 +132,7 @@ class EDRCmdrProfile(object):
         self.alignment_hints = None
         self.patreon = None
         self.dex_profile = None
+        self.powerplay = None
     
     @property
     def name(self):
@@ -158,6 +159,7 @@ class EDRCmdrProfile(object):
         wing = json_cmdr.get("commanderWing", None)
         self.squadron = None if wing is None else wing["wingName"] 
         self.role = json_cmdr.get("preferredGameRole", None)
+        self.powerplay = json_cmdr.get("preferredPowerName", None)
         self.karma = 0 #not supported by Inara
         self.alignment_hints = None #not supported by Inara
         self.patreon = None
@@ -171,6 +173,7 @@ class EDRCmdrProfile(object):
         self.alignment_hints = json_cmdr.get("alignmentHints", None)
         self.patreon = json_cmdr.get("patreon", None)
         self.dex_profile = None
+        self.powerplay = None
     
     def complement(self, other_profile):
         if self.name.lower() != other_profile.name.lower():
@@ -182,6 +185,9 @@ class EDRCmdrProfile(object):
 
         if self.role is None or self.role == "":
             self.role = other_profile.role
+
+        if self.powerplay is None or self.powerplay == "":
+            self.powerplay = other_profile.powerplay
 
     def dex(self, dex_dict):
         if dex_dict is None:
@@ -283,6 +289,9 @@ class EDRCmdrProfile(object):
 
         if not (self.role is None or self.role == ""):
             result += u", {role}".format(role=self.role)
+
+        if not (self.powerplay is None or self.powerplay == ""):
+            result += u", {powerplay}".format(powerplay=self.powerplay)
 
         if not (self.patreon is None or self.patreon == ""):
             result += u", Patreon:{patreon}".format(patreon=self.patreon)
