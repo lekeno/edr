@@ -91,7 +91,11 @@ class EDRLegalRecords(object):
         if self.__are_records_stale_for_cmdr(cmdr_id):
             missing_seconds = self.timespan
             now = datetime.datetime.now()
-            last_updated = self.records.get(cmdr_id)["last_updated"] if self.records.has_key(cmdr_id) else None
+            last_updated = None
+            if self.records.has_key(cmdr_id):
+                existing_record = self.records.get(cmdr_id)
+                last_updated = existing_record["last_updated"] if existing_record and "last_updated" in existing_record else None
+
             if last_updated:
                 missing_seconds = min(self.timespan, (now - last_updated).total_seconds())
             
