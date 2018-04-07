@@ -206,7 +206,7 @@ class EDRCmdrProfile(object):
         json_friendly_tags = list(self.dex_profile.tags)
         return {
             u"name": self.name,
-            u"alignment": self.dex_profile.alignment,
+            u"alignment": self.dex_profile._alignment,
             u"tags": json_friendly_tags,
             u"friend": self.dex_profile.friend,
             u"memo": self.dex_profile.memo,
