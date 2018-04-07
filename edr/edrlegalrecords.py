@@ -101,9 +101,13 @@ class EDRLegalRecords(object):
             
             records = self.server.legal_records(cmdr_id, missing_seconds)
             records = sorted(records, key=lambda t: t["timestamp"], reverse=False)
-            recent_records = self.records.get(cmdr_id)["records"] if self.records.has_key(cmdr_id) else deque(maxlen=10)
-            for record in records:
-                recent_records.appendleft(record)
+            recent_records =  deque(maxlen=10)
+            if self.records.has_key(cmdr_id):
+                existing_record = self.records.get(cmdr_id)
+                if existing_record and "records" in existing_record:
+                    recent_records = existing_record["records"]
+                for record in records:
+                    recent_records.appendleft(record)
 
             self.records.set(cmdr_id, {"last_updated": now, "records": recent_records})
             updated = True
