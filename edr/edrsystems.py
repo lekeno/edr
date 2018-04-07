@@ -14,7 +14,7 @@ import edrconfig
 import edrlog
 import lrucache
 from edentities import EDBounty
-from edri18n import _, _c
+from edri18n import _, _c, _edr
 
 EDRLOG = edrlog.EDRLog()
 
@@ -116,7 +116,6 @@ class EDRSystems(object):
                 return edtime.EDTime.t_minus(system_reports["latestCrime"])
         return None
 
-
     def traffic_t_minus(self, star_system):
         if self.has_sitrep(star_system):
             system_reports = self.sitreps_cache.get(self.system_id(star_system))
@@ -158,9 +157,12 @@ class EDRSystems(object):
                 active &= notam["from"] <= js_epoch_now
             if "until" in notam:
                 active &= js_epoch_now <= notam["until"]
-            if active:
+            if active and "text" in notam:
                 EDRLOG.log(u"Active NOTAM: {}".format(notam["text"]), "DEBUG")
-                active_notams.append(notam["text"])
+                active_notams.append(_edr(notam["text"]))
+            elif active and "l10n" in notam:
+                EDRLOG.log(u"Active NOTAM: {}".format(notam["l10n"]["default"]), "DEBUG")
+                active_notams.append(_edr(notam["l10n"]))
         return active_notams
 
     def systems_with_active_notams(self):

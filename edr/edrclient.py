@@ -22,7 +22,7 @@ import randomtips
 import helpcontent
 import edtime
 import edrlegalrecords
-from edri18n import _, _c
+from edri18n import _, _c, _edr, set_language
 
 EDRLOG = edrlog.EDRLog()
 
@@ -32,6 +32,7 @@ class EDRClient(object):
 
     def __init__(self):
         edr_config = edrconfig.EDRConfig()
+        set_language(config.get("language"))
 
         self.edr_version = edr_config.edr_version()
         EDRLOG.log(u"Version {}".format(self.edr_version), "INFO")
@@ -125,7 +126,7 @@ class EDRClient(object):
 
     def check_version(self):
         version_range = self.server.server_version()
-        self.motd = version_range["motd"]
+        self.motd = _edr(version_range["l10n_motd"])
 
         if version_range is None:
             # Translators: this is shown on EDMC's status bar when the version check fails
@@ -287,6 +288,7 @@ class EDRClient(object):
             
 
     def prefs_changed(self):
+        set_language(config.get("language"))
         if self.mandatory_update:
             EDRLOG.log(u"Out-of-date client, aborting.", "ERROR")
             self.__status_update_pending()
@@ -498,7 +500,7 @@ class EDRClient(object):
 
         if self.is_anonymous():
             EDRLOG.log("Skipping reporting scan since the user is anonymous.", "INFO")
-            self.scans_cache.set(cmdr_id, blip)
+            self.scans_cache.set(cmdr_id, scan)
             return False
 
         success = self.server.scanned(cmdr_id, scan)

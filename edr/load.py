@@ -1,8 +1,8 @@
 """
 Plugin for "EDR"
 """
-from edentities import EDCmdr
 from edrclient import EDRClient
+from edentities import EDCmdr
 from edtime import EDTime
 from edrlog import EDRLog
 import edentities
