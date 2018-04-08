@@ -1,5 +1,6 @@
 import edrlog
 import edtime
+from edri18n import _, _c
 
 EDRLOG = edrlog.EDRLog()
 
@@ -22,7 +23,8 @@ class EDRCmdrDexProfile(object):
 
     @property
     def alignment(self):
-        return self._alignment
+        lut = { u"outlaw": _(u"outlaw"), u"neutral": _(u"neutral"), u"enforcer": _(u"enforcer") }
+        return lut.get(self._alignment, None)
 
     @alignment.setter
     def alignment(self, new_alignment):
@@ -130,6 +132,7 @@ class EDRCmdrProfile(object):
         self.alignment_hints = None
         self.patreon = None
         self.dex_profile = None
+        self.powerplay = None
     
     @property
     def name(self):
@@ -156,6 +159,7 @@ class EDRCmdrProfile(object):
         wing = json_cmdr.get("commanderWing", None)
         self.squadron = None if wing is None else wing["wingName"] 
         self.role = json_cmdr.get("preferredGameRole", None)
+        self.powerplay = json_cmdr.get("preferredPowerName", None)
         self.karma = 0 #not supported by Inara
         self.alignment_hints = None #not supported by Inara
         self.patreon = None
@@ -169,6 +173,7 @@ class EDRCmdrProfile(object):
         self.alignment_hints = json_cmdr.get("alignmentHints", None)
         self.patreon = json_cmdr.get("patreon", None)
         self.dex_profile = None
+        self.powerplay = None
     
     def complement(self, other_profile):
         if self.name.lower() != other_profile.name.lower():
@@ -180,6 +185,9 @@ class EDRCmdrProfile(object):
 
         if self.role is None or self.role == "":
             self.role = other_profile.role
+
+        if self.powerplay is None or self.powerplay == "":
+            self.powerplay = other_profile.powerplay
 
     def dex(self, dex_dict):
         if dex_dict is None:
@@ -198,7 +206,7 @@ class EDRCmdrProfile(object):
         json_friendly_tags = list(self.dex_profile.tags)
         return {
             u"name": self.name,
-            u"alignment": self.dex_profile.alignment,
+            u"alignment": self.dex_profile._alignment,
             u"tags": json_friendly_tags,
             u"friend": self.dex_profile.friend,
             u"memo": self.dex_profile.memo,
@@ -238,7 +246,7 @@ class EDRCmdrProfile(object):
     
     def is_dangerous(self):
         if self.dex_profile:
-            return self.dex_profile.alignment == "outlaw"
+            return self.dex_profile._alignment == "outlaw"
         if self._karma <= -250:
             return True
         if self.alignment_hints and self.alignment_hints["outlaw"] > 0:
@@ -247,7 +255,7 @@ class EDRCmdrProfile(object):
 
     def karma_title(self):
         mapped_index = int(10*(self._karma + self.max_karma()) / (2.0*self.max_karma()))
-        lut = ["Wanted ++++", "Wanted +++", "Wanted ++", "Wanted +", "Wanted", "Neutral", "Enforcer", "Enforcer +", "Enforcer ++", "Enforcer +++", "Enforcer ++++"]
+        lut = [_(u"Wanted ++++"), _(u"Wanted +++"), _(u"Wanted ++"), _(u"Wanted +"), _(u"Wanted"), _(u"Neutral"), _(u"Enforcer"), _(u"Enforcer +"), _(u"Enforcer ++"), _(u"Enforcer +++"), _(u"Enforcer ++++")]
         karma = lut[mapped_index]
 
         if self.dex_profile is None:
@@ -282,12 +290,15 @@ class EDRCmdrProfile(object):
         if not (self.role is None or self.role == ""):
             result += u", {role}".format(role=self.role)
 
+        if not (self.powerplay is None or self.powerplay == ""):
+            result += u", {powerplay}".format(powerplay=self.powerplay)
+
         if not (self.patreon is None or self.patreon == ""):
             result += u", Patreon:{patreon}".format(patreon=self.patreon)
 
         if self.dex_profile:
             if self.dex_profile.friend:
-                result += u" [friend]"
+                result += _(u" [friend]")
 
             tags = self.dex_profile.tags
             if tags:

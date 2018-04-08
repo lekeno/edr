@@ -1,18 +1,19 @@
 """
 Plugin for "EDR"
 """
-from edentities import EDCmdr
 from edrclient import EDRClient
+from edentities import EDCmdr
 from edtime import EDTime
 from edrlog import EDRLog
 import edentities
+from edri18n import _, _c
 
 EDR_CLIENT = EDRClient()
 EDRLOG = EDRLog()
 
 def plugin_start():
     """
-    Start up EDR, check for updates
+    Start up EDR, try to login
     :return:
     """
     EDR_CLIENT.apply_config()
@@ -58,17 +59,17 @@ def prerequisites(edr_client, is_beta):
 def handle_wing_events(ed_player, entry):
     if entry["event"] in ["WingAdd"]:
         ed_player.add_to_wing(entry["Name"])
-        EDR_CLIENT.status = "added to wing: " + entry["Name"]
+        EDR_CLIENT.status = _(u"added to wing: ").format(entry["Name"])
         EDRLOG.log(u"Addition to wing: {}".format(ed_player.wing), "INFO")
 
     if entry["event"] in ["WingJoin"]:
         ed_player.join_wing(entry["Others"])
-        EDR_CLIENT.status = "joined wing."
+        EDR_CLIENT.status = _(u"joined wing.")
         EDRLOG.log(u"Joined a wing: {}".format(ed_player.wing), "INFO")
 
     if entry["event"] in ["WingLeave"]:
         ed_player.leave_wing()
-        EDR_CLIENT.status = "left wing."
+        EDR_CLIENT.status = _(u"left wing.")
         EDRLOG.log(u" Left the wing.", "INFO")
 
 def handle_movement_events(ed_player, entry):
@@ -86,7 +87,7 @@ def handle_movement_events(ed_player, entry):
         if entry["event"] == "FSDJump" and entry["SystemSecurity"]:
             ed_player.location_security(entry["SystemSecurity"])
             if ed_player.in_bad_neighborhood():
-                EDR_CLIENT.IN_GAME_MSG.warning(u"Anarchy / Lawless system", ["Crimes will not be reported."])
+                EDR_CLIENT.IN_GAME_MSG.warning(_(u"Anarchy system"), [_(u"Crimes will not be reported.")])
         outcome["reason"] = "Jump events"
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
 
@@ -146,7 +147,7 @@ def handle_lifecycle_events(ed_player, entry):
     if entry["event"] in ["Fileheader"] and entry["part"] == 1:
         EDR_CLIENT.clear()
         ed_player.inception()
-        EDR_CLIENT.status = "friends & wing: OK!"
+        EDR_CLIENT.status = _(u"initialized.")
         EDRLOG.log(u"Journal player got created: accurate picture of friends/wings.",
                    "DEBUG")
 
@@ -178,7 +179,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         handle_lifecycle_events(ed_player, entry)
 
     if ed_player.in_solo_or_private():
-        EDR_CLIENT.status = "disabled in Solo/Private."
+        EDR_CLIENT.status = _(u"disabled in Solo/Private.")
         EDRLOG.log(u"Game mode is {}: skip!".format(ed_player.game_mode), "INFO")
         return
 
@@ -232,12 +233,11 @@ def edr_update_cmdr_status(cmdr, reason_for_update):
     """
 
     if not cmdr.in_open():
-        EDR_CLIENT.status = "not in Open? Start EDR before Elite."
+        EDR_CLIENT.status = _(u"not in Open? Start EDMC before Elite.")
         EDRLOG.log(u"Skipping cmdr update due to unconfirmed Open mode", "ERROR")
         return
 
     if cmdr.has_partial_status():
-        EDR_CLIENT.status = "partial status."
         EDRLOG.log(u"Skipping cmdr update due to partial status", "ERROR")
         return
 
@@ -254,11 +254,11 @@ def edr_update_cmdr_status(cmdr, reason_for_update):
     EDRLOG.log(u"report: {}".format(report), "DEBUG")
 
     if not EDR_CLIENT.blip(cmdr.name, report):
-        EDR_CLIENT.status = "status update failed."
+        EDR_CLIENT.status = _(u"blip failed.")
         EDR_CLIENT.evict_cmdr(cmdr.name)
         return
 
-    EDR_CLIENT.status = "status updated!"
+    EDR_CLIENT.status = _(u"blip succeeded!")
 
 
 def edr_submit_crime(criminal_cmdrs, offence, victim):
@@ -271,7 +271,7 @@ def edr_submit_crime(criminal_cmdrs, offence, victim):
     """
     if not victim.in_open():
         EDRLOG.log(u"Skipping submit crime (wing) due to unconfirmed Open mode", "INFO")
-        EDR_CLIENT.status = "not in Open? Start EDR before Elite."
+        EDR_CLIENT.status = _(u"not in Open? Start EDMC before Elite.")
         return
 
     criminals = []
@@ -293,11 +293,11 @@ def edr_submit_crime(criminal_cmdrs, offence, victim):
     }
 
     if not EDR_CLIENT.crime(victim.star_system, report):
-        EDR_CLIENT.status = "failed to report crime."
+        EDR_CLIENT.status = _(u"failed to report crime.")
         EDR_CLIENT.evict_system(victim.star_system)
         return
 
-    EDR_CLIENT.status = "crime reported!"
+    EDR_CLIENT.status = _(u"crime reported!")
 
 
 def edr_submit_crime_self(criminal_cmdr, offence, victim):
@@ -310,7 +310,7 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim):
     """
     if not criminal_cmdr.in_open():
         EDRLOG.log(u"Skipping submit crime (self) due to unconfirmed Open mode", "INFO")
-        EDR_CLIENT.status = "not in Open? Start EDR before Elite."
+        EDR_CLIENT.status = _(u"not in Open? Start EDMC before Elite.")
         return
 
     report = {
@@ -330,11 +330,11 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim):
     EDRLOG.log(u"Perpetrated crime: {}".format(report), "DEBUG")
 
     if not EDR_CLIENT.crime(criminal_cmdr.star_system, report):
-        EDR_CLIENT.status = "failed to report crime (self)."
+        EDR_CLIENT.status = _(u"failed to report crime.")
         EDR_CLIENT.evict_system(criminal_cmdr.star_system)
         return
 
-    EDR_CLIENT.status = "crime reported!"
+    EDR_CLIENT.status = _(u"crime reported!")
 
 
 def edr_submit_contact(cmdr_name, ship, timestamp, source, witness):
@@ -362,18 +362,18 @@ def edr_submit_contact(cmdr_name, ship, timestamp, source, witness):
 
     if not witness.in_open():
         EDRLOG.log(u"Skipping submit contact due to unconfirmed Open mode", "INFO")
-        EDR_CLIENT.status = "not in Open? Start EDR before Elite."
+        EDR_CLIENT.status = _(u"not in Open? Start EDMC before Elite.")
         return
 
     if witness.has_partial_status():
-        EDR_CLIENT.status = "partial status."
         EDRLOG.log(u"Skipping cmdr update due to partial status", "INFO")
         return
 
     if not EDR_CLIENT.blip(cmdr_name, report):
-        EDR_CLIENT.status = "failed to report contact."
+        EDR_CLIENT.status = _(u"failed to report contact.")
         EDR_CLIENT.evict_cmdr(cmdr_name)
 
+    EDR_CLIENT.status = _(u"contact reported (cmdr {name}).").format(name=cmdr_name)
     edr_submit_traffic(cmdr_name, ship, timestamp, source, witness)
 
 def edr_submit_scan(scan, timestamp, source, witness):
@@ -389,17 +389,17 @@ def edr_submit_scan(scan, timestamp, source, witness):
 
     if not witness.in_open():
         EDRLOG.log(u"Scan not submitted due to unconfirmed Open mode", "INFO")
-        EDR_CLIENT.status = "not in Open? Start EDR before Elite."
+        EDR_CLIENT.status = _(u"not in Open? Start EDMC before Elite.")
         return
 
     if witness.has_partial_status():
-        EDR_CLIENT.status = "partial status."
         EDRLOG.log(u"Scan not submitted due to partial status", "INFO")
         return
 
     if not EDR_CLIENT.scanned(scan["cmdr"], report):
-        EDR_CLIENT.status = "failed to report scan."
+        EDR_CLIENT.status = _(u"failed to report scan.")
         EDR_CLIENT.evict_cmdr(scan["cmdr"])
+    EDR_CLIENT.status = _(u"scan reported (cmdr {name}).").format(name=scan["cmdr"])
 
 def edr_submit_traffic(cmdr_name, ship, timestamp, source, witness):
     """
@@ -426,18 +426,17 @@ def edr_submit_traffic(cmdr_name, ship, timestamp, source, witness):
 
     if not witness.in_open():
         EDRLOG.log(u"Skipping submit traffic due to unconfirmed Open mode", "INFO")
-        EDR_CLIENT.status = "not in Open? Start EDR before Elite."
+        EDR_CLIENT.status = _(u"not in Open? Start EDMC before Elite.")
         return
 
     if witness.has_partial_status():
-        EDR_CLIENT.status = "partial status."
         EDRLOG.log(u"Skipping traffic update due to partial status", "INFO")
         return
 
     if not EDR_CLIENT.traffic(witness.star_system, report):
-        EDR_CLIENT.status = "failed to report traffic."
+        EDR_CLIENT.status = _(u"failed to report traffic.")
         EDR_CLIENT.evict_system(witness.star_system)
-
+    EDR_CLIENT.status = _(u"traffic reported (cmdr {name}).").format(name=cmdr_name)
 
 def report_crime(cmdr, entry):
     """
@@ -507,7 +506,6 @@ def report_comms(cmdr, entry):
             if entry["From"].startswith("$cmdr_decorate:#name="):
                 from_cmdr = entry["From"][len("$cmdr_decorate:#name="):-1]
             if cmdr.is_friend_or_in_wing(from_cmdr):
-                EDR_CLIENT.status = "text from friends/wing: can't infer location"
                 EDRLOG.log(u"Text from {} friend / wing. Can't infer location".format(from_cmdr),
                            "INFO")
             else:
@@ -520,7 +518,6 @@ def report_comms(cmdr, entry):
         if entry["To"].startswith("$cmdr_decorate:#name="):
             to_cmdr = entry["To"][len("$cmdr_decorate:#name="):-1]
         if cmdr.is_friend_or_in_wing(to_cmdr):
-            EDR_CLIENT.status = "comms destination is unclear."
             EDRLOG.log(u"Sent text to {} friend/wing: can't infer location".format(to_cmdr), "INFO")            
         else:
             EDRLOG.log(u"Sent text to {} (not friend/wing) == same location".format(to_cmdr),
@@ -552,7 +549,7 @@ def handle_scan_events(cmdr, entry):
 
     edr_submit_contact(cmdr_name, ship, entry["timestamp"], "Ship targeted", cmdr)
     if entry["ScanStage"] == 3:
-        wanted = entry["LegalStatus"] == "Wanted"
+        wanted = entry["LegalStatus"] in ["Wanted", "WantedEnemy"]
         scan = {
             "cmdr": cmdr_name,
             "ship": ship,

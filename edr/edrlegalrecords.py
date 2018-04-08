@@ -11,6 +11,7 @@ import edrlog
 import edtime
 from collections import deque
 from edentities import EDBounty
+from edri18n import _, _c
 
 EDRLOG = edrlog.EDRLog()
 
@@ -45,7 +46,6 @@ class EDRLegalRecords(object):
             EDRLOG.log(u"No recent legal records for {}".format(cmdr_id), "INFO")
             return None
         
-        self.status = "Got legal records"
         EDRLOG.log(u"Got legal records for {}".format(cmdr_id), "INFO")
         summary = None
         counters = {"clean": 0, "wanted": 0}
@@ -61,9 +61,11 @@ class EDRLegalRecords(object):
             tminus = edtime.EDTime.t_minus(bounties["last"]["timestamp"], short=True)
             max_bounty = EDBounty(bounties["max"]).pretty_print()
             last_bounty = EDBounty(bounties["last"]["value"]).pretty_print()
-            summary = u"[Last {}] clean:{} / wanted:{} max={} cr, {} cr in {} {}".format(timespan, counters["clean"], counters["wanted"], max_bounty, last_bounty, bounties["last"]["starSystem"], tminus)
+            # Translators: this is a summary of a cmdr's recent legal history for the 'last {}' days, number of clean and wanted scans, max and last bounties
+            summary = _(u"[Last {}] clean:{} / wanted:{} max={} cr, {} cr in {} {}").format(timespan, counters["clean"], counters["wanted"], max_bounty, last_bounty, bounties["last"]["starSystem"], tminus)
         else:
-            summary = u"[Last {}] clean:{} / wanted:{}".format(timespan, counters["clean"], counters["wanted"])
+            # Translators: this is a summary of a cmdr's recent legal history for the 'last {}' days, number of clean and wanted scans
+            summary = _(u"[Last {}] clean:{} / wanted:{}").format(timespan, counters["clean"], counters["wanted"])
         return summary
 
     def __are_records_stale(self):
@@ -89,15 +91,23 @@ class EDRLegalRecords(object):
         if self.__are_records_stale_for_cmdr(cmdr_id):
             missing_seconds = self.timespan
             now = datetime.datetime.now()
-            last_updated = self.records.get(cmdr_id)["last_updated"] if self.records.has_key(cmdr_id) else None
+            last_updated = None
+            if self.records.has_key(cmdr_id):
+                existing_record = self.records.get(cmdr_id)
+                last_updated = existing_record["last_updated"] if existing_record and "last_updated" in existing_record else None
+
             if last_updated:
                 missing_seconds = min(self.timespan, (now - last_updated).total_seconds())
             
             records = self.server.legal_records(cmdr_id, missing_seconds)
             records = sorted(records, key=lambda t: t["timestamp"], reverse=False)
-            recent_records = self.records.get(cmdr_id)["records"] if self.records.has_key(cmdr_id) else deque(maxlen=10)
-            for record in records:
-                recent_records.appendleft(record)
+            recent_records =  deque(maxlen=10)
+            if self.records.has_key(cmdr_id):
+                existing_record = self.records.get(cmdr_id)
+                if existing_record and "records" in existing_record:
+                    recent_records = existing_record["records"]
+                for record in records:
+                    recent_records.appendleft(record)
 
             self.records.set(cmdr_id, {"last_updated": now, "records": recent_records})
             updated = True

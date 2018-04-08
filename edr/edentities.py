@@ -4,7 +4,7 @@ import json
 import edtime
 import edrlog
 import edrconfig
-
+from edri18n import _, _c
 EDRLOG = edrlog.EDRLog()
 
 class EDBounty(object):
@@ -19,29 +19,38 @@ class EDBounty(object):
     def pretty_print(self):
         readable = ""
         if self.value >= 10000000000:
-            readable = u"{} b".format(self.value / 1000000000)
+            # Translators: this is a short representation for a bounty >= 10 000 000 000 credits (b stands for billion)  
+            readable = _(u"{} b").format(self.value / 1000000000)
         elif self.value >= 1000000000:
-            readable = u"{:.1f} b".format(self.value / 1000000000.0)
+            # Translators: this is a short representation for a bounty >= 1 000 000 000 credits (b stands for billion)
+            readable = _(u"{:.1f} b").format(self.value / 1000000000.0)
         elif self.value >= 10000000:
-            readable = u"{} m".format(self.value / 1000000)
+            # Translators: this is a short representation for a bounty >= 10 000 000 credits (m stands for million)
+            readable = _(u"{} m").format(self.value / 1000000)
         elif self.value > 1000000:
-            readable = u"{:.1f} m".format(self.value / 1000000.0)
+            # Translators: this is a short representation for a bounty >= 1 000 000 credits (m stands for million)
+            readable = _(u"{:.1f} m").format(self.value / 1000000.0)
         elif self.value >= 10000:
-            readable = u"{} k".format(self.value / 1000)
+            # Translators: this is a short representation for a bounty >= 10 000 credits (k stands for kilo, i.e. thousand)
+            readable = _(u"{} k").format(self.value / 1000)
         elif self.value >= 1000:
-            readable = u"{:.1f} k".format(self.value / 1000.0)
+            # Translators: this is a short representation for a bounty >= 1000 credits (k stands for kilo, i.e. thousand)
+            readable = _(u"{:.1f} k").format(self.value / 1000.0)
         else:
-            readable = u"{}".format(self.value)
+            # Translators: this is a short representation for a bounty < 1000 credits (i.e. shows the whole bounty, unabbreviated)
+            readable = _(u"{}").format(self.value)
         return readable
 
 class EDVehicles(object):
+    # TODO I imagine that the ship name are also translated...
     CANONICAL_SHIP_NAMES = json.loads(open(os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'data/shipnames.json')).read())
 
     @staticmethod
     def canonicalize(name):
         if name is None:
-            return u"Unknown"
+            # Translators: this is a fallback name for when the ship isn't recognized or is not known
+            return _c(u"For an unknown or missing vehicle|Unknown")
 
         if name.lower() in EDVehicles.CANONICAL_SHIP_NAMES:
             return EDVehicles.CANONICAL_SHIP_NAMES[name.lower()]
@@ -136,8 +145,8 @@ class EDCmdr(object):
     @property
     def place(self):
         if self.location.place is None:
-            return u"Unknown"
-
+            # Translators: this is used when a location, comprised of a system and a place (e.g. Alpha Centauri & Hutton Orbital), has no place specified
+            return _c(u"For an unknown or missing place|Unknown")
         return self.location.place
 
     @place.setter
@@ -161,7 +170,7 @@ class EDCmdr(object):
 
     def update_ship_if_obsolete(self, ship, ed_timestamp):
         if self._ship is None or self._ship != EDVehicles.canonicalize(ship):
-            EDRLOG.log("Updating ship info (was missing or obsolete). {old} vs. {ship}".format(old=self._ship, ship=ship), "DEBUG")
+            EDRLOG.log(u"Updating ship info (was missing or obsolete). {old} vs. {ship}".format(old=self._ship, ship=ship), "DEBUG")
             self._ship = EDVehicles.canonicalize(ship)
             self._timestamp.from_journal_timestamp(ed_timestamp)
             return True
