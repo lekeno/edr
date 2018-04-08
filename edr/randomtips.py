@@ -8,6 +8,9 @@ from edri18n import _, _c
 
 class RandomTips(object):
 
+    @staticmethod
+    def _(message): return message
+
     DEFAULT_TIPS = {
         "EDR tips": [
             _(u"Situation reports (SITREPs) provide a summary of recent activity at a location."),
@@ -123,6 +126,8 @@ class RandomTips(object):
         ]
     }
 
+    del _
+
     def __init__(self, tips_file=None):
         if tips_file:
             self.tips = json.loads(open(os.path.join(
@@ -132,4 +137,4 @@ class RandomTips(object):
 
     def tip(self):
         category = random.choice(self.tips.keys())
-        return random.choice(self.tips[category])
+        return _(random.choice(self.tips[category]))
