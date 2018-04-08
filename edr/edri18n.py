@@ -31,7 +31,6 @@ def pgettext(contextual_message):
 
 def edrgettext(message_maybe_localized):
     global language
-    print language
     try:
         return message_maybe_localized[language]
     except:
