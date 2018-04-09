@@ -32,5 +32,8 @@
   "asp_scout": "Asp Scout",
   "testbuggy": "SRV",
   "typex": "Alliance Chieftain",
+  "empire_fighter": "Imperial Fighter",
+  "federation_fighter": "F63 Condor",
+  "independent_fighter" : "Taipan Fighter",
   "unknown": "Unknown"
 }
