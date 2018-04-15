@@ -416,11 +416,20 @@ class EDRClient(object):
     def _realtime_callback(self, kind, events):
         summary = []
         if kind == "outlaws":
-            for event in events.values():
-                EDRLOG.log(u"realtime callback handling {}".format(event), "DEBUG")
-                summary.append(_(u"Outlaw {cmdr} ({ship}) sighted in {system}, {place}").format(cmdr=event["cmdr"], ship=event["ship"], system=event["starSystem"], place=event["place"]))
+            summary = self._summarize_realtime_outlaws(events)
         if summary:
             self.notify_with_details(_(u"Realtime alerts"), summary)
+
+    def _summarize_realtime_outlaws(self, events):
+        summary =  []
+        for event in events.values():
+            EDRLOG.log(u"realtime outlaws, handling {}".format(event), "DEBUG")
+            if event["uid"] is not self.server.uid():
+                # Only add reports that didn't come from this user
+                summary.append(_(u"Outlaw {cmdr} ({ship}) sighted in {system}, {place}").format(cmdr=event["cmdr"], ship=event["ship"], system=event["starSystem"], place=event["place"]))
+            else:
+                EDRLOG.log(u"skipped realtime event because it came from this user", "DEBUG")
+        return summary
 
     def who(self, cmdr_name, autocreate=False):
         profile = self.cmdr(cmdr_name, autocreate, check_inara_server=True)

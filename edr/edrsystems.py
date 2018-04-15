@@ -190,13 +190,7 @@ class EDRSystems(object):
         systems_ids = self.sitreps_cache.keys()
         for sid in systems_ids:
             sitrep = self.sitreps_cache.get(sid)
-<<<<<<< HEAD
-            if not sitrep:
-                continue
-            star_system = sitrep.get("name", None)
-=======
             star_system = sitrep.get("name", None) if sitrep else None
->>>>>>> dea048eb6b90f54d9e05beca106cd01fe674f301
             if self.has_recent_outlaws(star_system):
                 systems_with_recent_outlaws[star_system] = sitrep["latestOutlaw"]
             elif self.has_recent_crimes(star_system):
