@@ -1,4 +1,6 @@
-# coding= utf-8
+#!/usr/bin/env python
+# coding=utf-8
+
 import datetime
 import time
 import os
@@ -11,6 +13,7 @@ import edrserver
 import edrlog
 import edtime
 from edentities import EDBounty
+from edri18n import _, _c
 
 EDRLOG = edrlog.EDRLog()
 
@@ -61,7 +64,6 @@ class EDROutlaws(object):
             EDRLOG.log(u"No recently sighted outlaws", "INFO")
             return None
         
-        self.status = "recently sighted outlaws"
         EDRLOG.log(u"Got recently sighted outlaws", "INFO")
         summary = []
         now = datetime.datetime.now()
@@ -85,24 +87,30 @@ class EDROutlaws(object):
             starSystem = (sighting["starSystem"][:50] + u'…') if len(sighting["starSystem"]) > 50 else sighting["starSystem"]    
             if sighting.get("bounty", None) > 0:
                 neat_bounty = EDBounty(sighting["bounty"]).pretty_print()
-                return u"T{:<2}: {} in {}, wanted for {}".format(t_minus, cmdr, starSystem, neat_bounty)
+                # Translators: this is a one-liner for the recently sighted outlaws; Keep it short! T{t:<2} is to show how long ago e.g. T-4H (4 hours ago) 
+                return _(u"T{t:<2}: {name} in {system}, wanted for {bounty}").format(t=t_minus, name=cmdr, system=starSystem, bounty=neat_bounty)
             else:
-                return u"T{:<2}: {} in {}".format(t_minus, cmdr, starSystem)
+                # Translators: this is a one-liner for the recently sighted outlaws; Keep it short! T{t:<2} is to show how long ago e.g. T-4H (4 hours ago) 
+                return _(u"T{t:<2}: {name} in {system}").format(t=t_minus, name=cmdr, system=starSystem)
         
         readable = []
         
-        location = u"T{} {} sighted in {}".format(t_minus, sighting["cmdr"], sighting["starSystem"])
+        # Translators: this is for a recently sighted outlaw; T{t} is to show how long ago, e.g. T-2h43m 
+        location = _(u"T{t} {name} sighted in {system}").format(t=t_minus, name=sighting["cmdr"], system=sighting["starSystem"])
         if sighting["place"] and sighting["place"] != sighting["starSystem"]:
             if sighting["place"].startswith(sighting["starSystem"]+" "):
-                location += u", {}".format(sighting["place"].partition(sighting["starSystem"]+" ")[2])
+                # Translators: this is a continuation of the previous item (location of recently sighted outlaw) and shows a place in the system (e.g. supercruise, Cleve Hub) 
+                location += _(u", {place}").format(place=sighting["place"].partition(sighting["starSystem"]+" ")[2])
             else:
-                location += u", {}".format(sighting["place"])
+                location += _(u", {place}").format(place=sighting["place"])
         readable.append(location)
         if sighting["ship"] != "Unknown":
-            readable.append(u"Spaceship: {}".format(sighting["ship"]))
+            # Translators: this is for the recently sighted outlaw feature; it shows which ship they were flying at the time
+            readable.append(_(u"Spaceship: {}").format(sighting["ship"]))
         if sighting.get("bounty", None) > 0:
             neat_bounty = EDBounty(sighting["bounty"]).pretty_print()
-            readable.append(u"Wanted for {} credits".format(neat_bounty))
+            # Translators: this is for the recently sighted outlaw feature; it shows their bounty if any
+            readable.append(_(u"Wanted for {} credits").format(neat_bounty))
         return readable
 
     def __are_sightings_stale(self):

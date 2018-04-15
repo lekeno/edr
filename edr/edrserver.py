@@ -9,6 +9,7 @@ import edrconfig
 import edrlog
 
 import requests
+import urllib
 
 
 EDRLOG = edrlog.EDRLog()
@@ -117,7 +118,7 @@ class EDRServer(object):
     def cmdr(self, cmdr, autocreate=True):
         cmdr_profile = edrcmdrprofile.EDRCmdrProfile()
 
-        params = { "orderBy": '"cname"', "equalTo": json.dumps(cmdr.lower()), "limitToFirst": 1, "auth": self.auth_token() }
+        params = { "orderBy": '"cname"', "equalTo": json.dumps(urllib.quote_plus(cmdr.lower().encode('utf-8'))), "limitToFirst": 1, "auth": self.auth_token() }
         endpoint = "{}/v1/cmdrs.json".format(self.EDR_SERVER)
         EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = requests.get(endpoint, params=params)

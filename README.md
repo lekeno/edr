@@ -4,7 +4,7 @@ ED Recon is an [EDMC](https://github.com/Marginal/EDMarketConnector/) plugin for
 # Beta
 EDR is currently in a beta phase.
 If you would like to participate:
- - Read this whole document and make sure you understand and agree with its contents. If you have any question, please [file an issue](https://github.com/lekeno/edr/issues/new) to get an anwser.
+ - Read this whole document and make sure you understand and agree with its contents. If you have any question, please [file an issue](https://github.com/lekeno/edr/issues/new) to get an answer.
  - fill up [this form](https://docs.google.com/forms/d/e/1FAIpQLSeUikUIbKdcjMsWpzB4kX-iPIFvUIaBO2qHD00NveMDvpAnow/viewform)
  - wait for LeKeno to contact you (in-game or over the official forums) with your credentials
  - download the [latest release](https://github.com/lekeno/edr/releases/latest)

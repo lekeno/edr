@@ -2,6 +2,7 @@ import datetime
 import calendar
 import time
 import comparable
+from edri18n import _, _c
 
 class EDTime(object, comparable.ComparableMixin):
     @staticmethod
@@ -16,7 +17,9 @@ class EDTime(object, comparable.ComparableMixin):
     def t_minus(js_epoch_then, short=False):
         ago = int((EDTime.js_epoch_now() - js_epoch_then) / 1000)
         if short:
-            return u"-{}".format(EDTime.pretty_print_timespan(ago, short=True))
+            # Translators: this is to show how long ago an event took place, keep it ultra-short, e.g. -{} would show something like -3H
+            return _c(u"short notation for t-minus|-{}").format(EDTime.pretty_print_timespan(ago, short=True))
+        # Translators: this is to show how long ago an event took place, keep it short, e.g. T-{} would show something like T-3H
         return u"T-{}".format(EDTime.pretty_print_timespan(ago))
 
     @staticmethod
@@ -37,26 +40,26 @@ class EDTime(object, comparable.ComparableMixin):
 
         readable = ""
         if days > 0:
-            suffix = (u" days" if days > 1 else u" day") if verbose else "d"            
-            readable = u"{}{}".format(days, suffix)
+            suffix = (_c(u"suffix| days") if days > 1 else _c(u"suffix| day")) if verbose else _c(u"short suffix|d")            
+            readable = _(u"{nb_days}{suffix}").format(nb_days=days, suffix=suffix)
             if hours > 0 and not short:
-                suffix = (u" hours" if hours > 1 else u" hour") if verbose else "h"
-                readable += u":{}{}".format(hours, suffix)
+                suffix = (_c(u"suffix| hours") if hours > 1 else _c(u"suffix| hour")) if verbose else _c(u"short suffix|h")
+                readable += _(u":{nb_hours}{suffix}").format(nb_hours=hours, suffix=suffix)
         elif hours > 0:
-            suffix = (u" hours" if hours > 1 else u" hour") if verbose else "h"
-            readable = u"{}{}".format(hours, suffix)
+            suffix = (_c(u"suffix| hours") if hours > 1 else _c(u"suffix| hour")) if verbose else _c(u"short suffix|h")
+            readable = _(u"{nb_hours}{suffix}").format(nb_hours=hours, suffix=suffix)
             if minutes > 0 and not short:
-                suffix = (u" minutes" if minutes > 1 else u" minute") if verbose else "m"
-                readable += u":{}{}".format(minutes, suffix)
+                suffix = (_c(u"suffix| minutes") if minutes > 1 else _c(u"suffix| minute")) if verbose else _c(u"short suffix|m")
+                readable += _(u":{nb_minutes}{suffix}").format(nb_minutes=minutes, suffix=suffix)
         elif minutes > 0:
-            suffix = (u" minutes" if minutes > 1 else u" minute") if verbose else "m"
-            readable = u"{}{}".format(minutes, suffix)
+            suffix = (_c(u"suffix| minutes") if minutes > 1 else _c(u"suffix| minute")) if verbose else _c(u"short suffix|m")
+            readable = _(u"{nb_minutes}{suffix}").format(nb_minutes=minutes, suffix=suffix)
             if seconds > 0 and not short:
-                suffix = (u" seconds" if seconds > 1 else u" second") if verbose else "s"
-                readable += u":{}{}".format(seconds, suffix)
+                suffix = (_c(u"suffix| seconds") if seconds > 1 else _c(u"suffix| second")) if verbose else _c(u"short suffix|s")
+                readable += _(u":{nb_seconds}{suffix}").format(nb_seconds=seconds, suffix=suffix)
         else:
-            suffix = (u" seconds" if seconds > 1 else u" second") if verbose else "s"
-            readable = u"{}{}".format(seconds, suffix)
+            suffix = (_c(u"suffix| seconds") if seconds > 1 else _c(u"suffix| second")) if verbose else _c(u"short suffix|s")
+            readable = _(u"{nb_seconds}{suffix}").format(nb_seconds=seconds, suffix=suffix)
 
         return readable
 
@@ -93,7 +96,7 @@ class EDTime(object, comparable.ComparableMixin):
         
     def as_immersive_date(self):
         immersive_datetime = self.__immmersive()
-        return immersive_datetime.strftime('%Y-%m-%d')
+        return immersive_datetime.strftime(_('%Y-%m-%d'))
 
     def __lt__(self, other):
         if isinstance(other, EDTime):
