@@ -165,6 +165,8 @@ class EDRSystems(object):
         systems_ids = self.notams_cache.keys()
         for sid in systems_ids:
             entry = self.notams_cache.get(sid)
+            if not entry:
+                continue 
             star_system = entry.get("name", None)
             if star_system and self.__has_active_notams(sid):
                 summary.append(star_system)
@@ -182,6 +184,8 @@ class EDRSystems(object):
         systems_ids = self.sitreps_cache.keys()
         for sid in systems_ids:
             sitrep = self.sitreps_cache.get(sid)
+            if not sitrep:
+                continue
             star_system = sitrep.get("name", None)
             if self.has_recent_outlaws(star_system):
                 systems_with_recent_outlaws[star_system] = sitrep["latestOutlaw"]

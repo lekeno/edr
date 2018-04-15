@@ -22,6 +22,7 @@ import randomtips
 import helpcontent
 import edtime
 import edrlegalrecords
+import edrrealtime
 
 EDRLOG = edrlog.EDRLog()
 
@@ -64,6 +65,7 @@ class EDRClient(object):
 
         self.player = edentities.EDCmdr()
         self.server = edrserver.EDRServer()
+        self.realtime = edrrealtime.EDRRealtimeUpdates(self._realtime_callback, "outlaws", "https://blistering-inferno-4028.firebaseio.com/v1/outlaws/.json")
         
         self.edrsystems = edrsystems.EDRSystems(self.server)
         self.edrcmdrs = edrcmdrs.EDRCmdrs(self.server)
@@ -194,8 +196,12 @@ class EDRClient(object):
         self.server.logout()
         if self.server.login(self.email, self.password):
             self.status = u"authenticated."
+            self.realtime.update_auth(self.server.auth_token)
+            self.realtime.start()
             return True
         self.status = u"not authenticated."
+        self.realtime.update_auth(None)
+        self.realtime.reset()
         return False
 
     def is_logged_in(self):
@@ -220,6 +226,7 @@ class EDRClient(object):
         self.edroutlaws.persist()
         self.edrlegal.persist()
         self.server.logout()
+        self.realtime.shutdown()
         self.IN_GAME_MSG.shutdown()
 
     def app_ui(self, parent):
@@ -382,6 +389,15 @@ class EDRClient(object):
         last_report = self.traffic_cache.get(sighted_cmdr)
         return self.__novel_enough_situation(report, last_report)
 
+    def _realtime_callback(self, kind, events):
+        summary = []
+        if kind == "outlaws":
+            for event in events.values():
+                EDRLOG.log(u"realtime callback handling {}".format(event), "DEBUG")
+                summary.append(_(u"Outlaw {cmdr} ({ship}) sighted in {system}, {place}").format(cmdr=event["cmdr"], ship=event["ship"], system=event["starSystem"], place=event["place"]))
+        if summary:
+            self.notify_with_details(_(u"Realtime alerts"), summary)
+
     def who(self, cmdr_name, autocreate=False):
         profile = self.cmdr(cmdr_name, autocreate, check_inara_server=True)
         if not profile is None:
@@ -474,7 +490,7 @@ class EDRClient(object):
 
         if self.is_anonymous():
             EDRLOG.log("Skipping reporting scan since the user is anonymous.", "INFO")
-            self.scans_cache.set(cmdr_id, blip)
+            self.scans_cache.set(cmdr_id, scan)
             return False
 
         success = self.server.scanned(cmdr_id, scan)
