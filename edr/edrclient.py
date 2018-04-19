@@ -230,15 +230,16 @@ class EDRClient(object):
         # Translators: this is shown when EDR warms-up via the overlay
         self.__notify(_(u"EDR v{} by LeKeno (Cobra Kai)").format(self.edr_version), details, clear_before=True)
 
-    def shutdown(self):
+    def shutdown(self, everything=False):
         self.edrcmdrs.persist()
         self.edrsystems.persist()
         self.edroutlaws.persist()
         self.edrlegal.persist()
-        self.server.logout()
         if self.realtime_outlaws["commslink"]:
             self.realtime_outlaws["commslink"].shutdown()
         self.IN_GAME_MSG.shutdown()
+        if everything:
+            self.server.logout()
 
     def app_ui(self, parent):
         label = tk.Label(parent, text=u"EDR:")

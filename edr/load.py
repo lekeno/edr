@@ -28,7 +28,8 @@ def plugin_start():
 
 
 def plugin_stop():
-    EDR_CLIENT.shutdown()
+    EDRLOG.log(u"Stopping the plugin...", "INFO")
+    EDR_CLIENT.shutdown(everything=True)
 
 
 def plugin_app(parent):
@@ -133,8 +134,8 @@ def handle_lifecycle_events(ed_player, entry):
         EDRLOG.log(u"Player is on the main menu.", "DEBUG")
         return
 
-    if entry["event"] == "ShutDown":
-        EDRLOG.log(u"Shutting down.", "DEBUG")
+    if entry["event"] == "Shutdown":
+        EDRLOG.log(u"Shutting down in-game features...", "INFO")
         EDR_CLIENT.shutdown()
         return
 
@@ -175,7 +176,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if not prerequisites(EDR_CLIENT, is_beta):
         return
 
-    if entry["event"] in ["Music", "Resurrect", "Fileheader", "LoadGame"]:
+    if entry["event"] in ["Shutdown", "ShutDown", "Music", "Resurrect", "Fileheader", "LoadGame"]:
         handle_lifecycle_events(ed_player, entry)
 
     if ed_player.in_solo_or_private():

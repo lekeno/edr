@@ -71,7 +71,7 @@ class ClosableSSEClient(SSEClient):
 
 class RemoteThread(threading.Thread):
 
-    def __init__(self, message_queue, endpoint, authenticator, minutes_ago=30):
+    def __init__(self, message_queue, endpoint, authenticator, minutes_ago=5):
         self.message_queue = message_queue
         self.endpoint = endpoint
         self.sse = None
