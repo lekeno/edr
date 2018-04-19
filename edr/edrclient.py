@@ -49,10 +49,10 @@ class EDRClient(object):
 
         self.blips_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
         self.cognitive_blips_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
-        self.traffic_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                               edr_config.traffic_max_age())
+        self.traffic_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.traffic_max_age())
         self.scans_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.scans_max_age())
         self.cognitive_scans_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
+        self.alerts_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.alerts_max_age())
 
         self._email = tk.StringVar(value=config.get("EDREmail"))
         self._password = tk.StringVar(value=config.get("EDRPassword"))
@@ -68,7 +68,9 @@ class EDRClient(object):
 
         self.player = edentities.EDCmdr()
         self.server = edrserver.EDRServer()
-        self.realtime = edrrealtime.EDRRealtimeUpdates(self._realtime_callback, "outlaws", "https://blistering-inferno-4028.firebaseio.com/v1/outlaws/.json")
+        min_bounty =  None if config.get("EDROutlawsAlertsMinBounty") == "None" else config.getint("EDROutlawsAlertsMinBounty")
+        max_distance = None if config.get("EDROutlawsAlertsMaxDistance") == "None" else config.getint("EDROutlawsAlertsMaxDistance")
+        self.realtime_outlaws = { "commslink": None, "min_bounty": min_bounty, "max_distance": max_distance}
         
         self.edrsystems = edrsystems.EDRSystems(self.server)
         self.edrcmdrs = edrcmdrs.EDRCmdrs(self.server)
@@ -203,13 +205,9 @@ class EDRClient(object):
         if self.server.login(self.email, self.password):
             # Translators: this is shown on EDMC's status bar when the authentication succeeds
             self.status = _(u"authenticated.")
-            self.realtime.update_auth(self.server.auth_token)
-            self.realtime.start()
             return True
         # Translators: this is shown on EDMC's status bar when the authentication fails
         self.status = _(u"not authenticated.")
-        self.realtime.update_auth(None)
-        self.realtime.reset()
         return False
 
     def is_logged_in(self):
@@ -238,7 +236,8 @@ class EDRClient(object):
         self.edroutlaws.persist()
         self.edrlegal.persist()
         self.server.logout()
-        self.realtime.shutdown()
+        if self.realtime_outlaws["commslink"]:
+            self.realtime_outlaws["commslink"].shutdown()
         self.IN_GAME_MSG.shutdown()
 
     def app_ui(self, parent):
@@ -399,6 +398,19 @@ class EDRClient(object):
             return (old["ship"] == "" or
                     old["ship"] == "Unknown" or
                     delta > self.ship_novelty_threshold)
+        
+        if "wanted" in new:
+            return ("wanted" not in old or
+                    new["wanted"] > old["wanted"])
+        
+        if "bounty" in new:
+            return ("bounty" not in old or
+                    new["bounty"] > old["bounty"])
+        return False
+
+    def novel_enough_alert(self, alert_for_cmdr, alert):
+        last_alert = self.alerts_cache.get(alert_for_cmdr)
+        return self.__novel_enough_situation(alert, last_alert)
 
     def novel_enough_blip(self, cmdr_id, blip, cognitive = False):
         last_blip = self.cognitive_blips_cache.get(cmdr_id) if cognitive else self.blips_cache.get(cmdr_id)
@@ -413,22 +425,137 @@ class EDRClient(object):
         last_report = self.traffic_cache.get(sighted_cmdr)
         return self.__novel_enough_situation(report, last_report)
 
+    def outlaws_alerts_enabled(self, silent=True):
+        enabled = False
+        if self.realtime_outlaws["commslink"]:
+            enabled = self.realtime_outlaws["commslink"].is_live()
+        if not silent:
+            details = [_(u"Enabled") if enabled else _(u"Disabled")]
+            if self.realtime_outlaws["max_distance"]:
+                details.append(_(u" <={max_distance}ly").format(max_distance=self.realtime_outlaws["max_distance"]))
+            if self.realtime_outlaws["min_bounty"]:
+                details.append(_(u" >={min_bounty}cr").format(min_bounty=self.realtime_outlaws["min_bounty"]))
+            self.notify_with_details(_(u"Outlaws Alerts"), details)
+        return enabled
+    
+    def enable_outlaws_alerts(self, silent=False):
+        details = ""
+        if self.outlaws_alerts_enabled(silent=True):
+            details = _(u"Already enabled")
+        else:
+            details = _(u"Enabling")
+            self.disable_outlaws_alerts(silent=True)
+            self.realtime_outlaws["commslink"] = edrrealtime.EDRRealtimeUpdates(self._realtime_callback, "outlaws", "https://blistering-inferno-4028.firebaseio.com/v1/outlaws/.json", self.server.auth_token)
+            self.realtime_outlaws["commslink"].start()
+        if not silent:
+            if self.realtime_outlaws["max_distance"]:
+                details += _(u" <={max_distance}ly").format(max_distance=self.realtime_outlaws["max_distance"])
+            if self.realtime_outlaws["min_bounty"]:
+                details += _(u" >={min_bounty}cr").format(min_bounty=self.realtime_outlaws["min_bounty"])
+            self.notify_with_details(_(u"Outlaws Alerts"), [details])
+        
+    
+    def disable_outlaws_alerts(self, silent=False):
+        details = ""
+        if self.realtime_outlaws["commslink"]:
+            self.realtime_outlaws["commslink"].shutdown()
+            details = _(u"Disabling")
+        else:
+            details = _(u"Already disabled")
+        if not silent:
+            self.notify_with_details(_(u"Outlaws Alerts"), [details])
+
+    def min_bounty_outlaws_alerts(self, min_bounty):
+        #TODO set config too
+        new_value = self.realtime_outlaws["min_bounty"]
+        if min_bounty:
+            try:
+                new_value = int(min_bounty)
+                self.notify_with_details(_(u"Outlaws Alerts"), [_(u"minimum bounty set to {min_bounty} cr").format(min_bounty=edentities.EDBounty(new_value).pretty_print())])
+            except ValueError:
+                self.notify_with_details(_(u"Outlaws Alerts"), [_(u"invalid value for minimum bounty")])
+                new_value = None
+        else:
+            self.notify_with_details(_(u"Outlaws Alerts"), [_(u"no minimum bounty required")])
+        self.realtime_outlaws["min_bounty"] = new_value
+        if new_value is None:
+            config.set("EDROutlawsAlertsMinBounty", "None")
+        else:
+            config.set("EDROutlawsAlertsMinBounty", new_value)
+
+    
+    def max_distance_outlaws_alerts(self, max_distance):
+        new_value = self.realtime_outlaws["max_distance"]
+        if max_distance:
+            try:
+                new_value = int(max_distance)
+                self.notify_with_details(_(u"Outlaws Alerts"), [_(u"maximum distance set to {max_distance} ly").format(max_distance=new_value)])
+            except ValueError:
+                self.notify_with_details(_(u"Outlaws Alerts"), [_(u"invalid value, removing maximal distance")])
+                new_value = None
+        else:
+            self.notify_with_details(_(u"Outlaws Alerts"), [_(u"no limits on distance")])
+
+        self.realtime_outlaws["max_distance"] = new_value
+        if new_value is None:
+            config.set("EDROutlawsAlertsMaxDistance", "None")
+        else:
+            config.set("EDROutlawsAlertsMaxDistance", new_value)
+
     def _realtime_callback(self, kind, events):
         summary = []
         if kind == "outlaws":
-            summary = self._summarize_realtime_outlaws(events)
+            if events in ["cancel", "auth_revoked"]:
+                summary = [_(u"Comms link interrupted. Send '?outlaws on' to re-establish.")]
+            else:
+                summary = self._summarize_realtime_outlaws(events)
         if summary:
             self.notify_with_details(_(u"Realtime alerts"), summary)
+
+    def _worthy_outlaws_alert(self, event):
+        if event["uid"] is self.server.uid():
+            return False
+        if self.realtime_outlaws["max_distance"]:
+            try:
+                origin = self.player.star_system
+                distance = self.edrsystems.distance(origin, event["starSystem"])
+                threshold = self.realtime_outlaws["max_distance"]
+                if distance > threshold:
+                    EDRLOG.log(u"Outlaw alert not worthy. Distance {} between systems {} and {} exceeds threshold {}".format(distance, origin, event["starSystem"], threshold), "DEBUG")
+                    return False
+            except ValueError:
+                EDRLOG.log(u"Can't compute distance between systems {} and {}: unknown system(s)".format(self.player.star_system, event["starSystem"]), "WARNING")
+                pass
+        if self.realtime_outlaws["min_bounty"]:
+            if "bounty" not in event:
+                return False
+            if event["bounty"] >= self.realtime_outlaws["min_bounty"]:
+                EDRLOG.log(u"Outlaw alert not worthy. Bounty {} does not exceeds threshold {}".format(event["bounty"], self.realtime_outlaws["min_bounty"]), "DEBUG")
+                return False
+        return self.novel_enough_alert(event["cmdr"].lower(), event)
 
     def _summarize_realtime_outlaws(self, events):
         summary =  []
         for event in events.values():
             EDRLOG.log(u"realtime outlaws, handling {}".format(event), "DEBUG")
-            if event["uid"] is not self.server.uid():
-                # Only add reports that didn't come from this user
-                summary.append(_(u"Outlaw {cmdr} ({ship}) sighted in {system}, {place}").format(cmdr=event["cmdr"], ship=event["ship"], system=event["starSystem"], place=event["place"]))
+            if self._worthy_outlaws_alert(event):
+                location = edentities.EDLocation(event["starSystem"], event["place"])
+                distance = None
+                try:
+                    distance = self.edrsystems.distance(self.player.star_system, location.star_system)
+                except ValueError:
+                    pass
+                oneliner = _(u"{cmdr} ({ship}) sighted in {location}").format(cmdr=event["cmdr"], ship=event["ship"], location=location.pretty_print())
+                if distance:
+                    oneliner += _(u" [{distance} ly]").format(distance=distance)
+                if "wanted" in event and event["wanted"]:
+                    if event["bounty"] > 0:
+                        oneliner += _(u" wanted for {bounty} cr").format(bounty=edentities.EDBounty(event["bounty"]).pretty_print())
+                    else:
+                        oneliner += _(u" wanted somewhere")
+                summary.append(oneliner)
             else:
-                EDRLOG.log(u"skipped realtime event because it came from this user", "DEBUG")
+                EDRLOG.log(u"Skipped realtime event because it wasn't worth alerting about: {}.".format(event), "DEBUG")
         return summary
 
     def who(self, cmdr_name, autocreate=False):
@@ -443,25 +570,25 @@ class EDRClient(object):
                 self.__intel(cmdr_name, [profile.short_profile()])
         else:
             EDRLOG.log(u"Who {} : no info".format(cmdr_name), "INFO")
-            self.__intel(cmdr_name, ["No info about {}".format(cmdr_name)])
+            self.__intel(cmdr_name, [_("No info about {cmdr}").format(cmdr=cmdr_name)])
 
     def blip(self, cmdr_name, blip):
         cmdr_id = self.cmdr_id(cmdr_name)
         if cmdr_id is None:
-            self.status = u"no cmdr id (contact)."
+            self.status = _(u"no cmdr id (contact).")
             EDRLOG.log(u"Can't submit blip (no cmdr id for {}).".format(cmdr_name), "ERROR")
             return
 
         profile = self.cmdr(cmdr_name)
         if profile and (self.player.name != cmdr_name) and profile.is_dangerous():
-            self.status = u"{} is bad news.".format(cmdr_name)
+            self.status = _(u"{} is bad news.").format(cmdr_name)
             if self.novel_enough_blip(cmdr_id, blip, cognitive = True):
-                self.__warning(u"Warning!", [profile.short_profile()])
+                self.__warning(_(u"Warning!"), [profile.short_profile()])
                 self.cognitive_blips_cache.set(cmdr_id, blip)
                 if self.is_anonymous():
-                    self.advertise_full_account("You could have helped other EDR users by reporting this outlaw.")
+                    self.advertise_full_account(_("You could have helped other EDR users by reporting this outlaw."))
             else:
-                EDRLOG.log("Skipping warning since a warning was recently shown.", "INFO")
+                EDRLOG.log(u"Skipping warning since a warning was recently shown.", "INFO")
 
         if not self.novel_enough_blip(cmdr_id, blip):
             self.status = u"skipping blip (not novel enough)."
@@ -515,7 +642,7 @@ class EDRClient(object):
                     self.__intel(_(u"Intel"), details)
                 if (self.is_anonymous() and (profile.is_dangerous() or (scan["wanted"] and bounty.is_significant()))):
                     # Translators: this is shown to users who don't yet have an EDR account
-                    self.advertise_full_account(_(u"You could have helped other EDR users by reporting this outlaw!"))
+                    self.advertise_full_account(_(u"You could have helped other EDR users by reporting this outlaw."))
                 self.cognitive_scans_cache.set(cmdr_id, scan)
 
         if not self.novel_enough_scan(cmdr_id, scan):

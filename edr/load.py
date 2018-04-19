@@ -133,7 +133,7 @@ def handle_lifecycle_events(ed_player, entry):
         EDRLOG.log(u"Player is on the main menu.", "DEBUG")
         return
 
-    if entry["event"] == "Shutdown":
+    if entry["event"] == "ShutDown":
         EDRLOG.log(u"Shutting down.", "DEBUG")
         EDR_CLIENT.shutdown()
         return
@@ -567,6 +567,8 @@ def handle_commands(cmdr, entry):
     command = command_parts[0].lower()
     if command[0] == "!":
         handle_bang_commands(cmdr, command, command_parts)
+    elif command[0] == "?":
+        handle_query_commands(cmdr, command, command_parts)
     elif command[0] == "#":
         handle_hash_commands(command, command_parts, entry)
     elif command[0] == "-":
@@ -616,6 +618,26 @@ def handle_bang_commands(cmdr, command, command_parts):
     elif command == "!clear":
         EDRLOG.log(u"Clear command", "INFO")
         EDR_CLIENT.clear()
+
+def handle_query_commands(cmdr, command, command_parts):
+    #TODO document this new feature in help, readme, etc.
+    if command == "?outlaws":
+        EDRLOG.log(u"Outlaws alerts command", "INFO")
+        param = "" if len(command_parts) == 1 else command_parts[1]
+        if param == "":
+            EDR_CLIENT.outlaws_alerts_enabled(silent=False)
+        elif param == "on": 
+            EDRLOG.log(u"Enabling Outlaws alerts", "INFO")
+            EDR_CLIENT.enable_outlaws_alerts()
+        elif param == "off":
+            EDRLOG.log(u"Disabling Outlaws alerts", "INFO")
+            EDR_CLIENT.disable_outlaws_alerts()
+        elif param.startswith("ly "):
+            EDRLOG.log(u"Max distance for Outlaws alerts", "INFO")
+            EDR_CLIENT.max_distance_outlaws_alerts(param[3:])
+        elif param.startswith("cr "):
+            EDRLOG.log(u"Min bounty for Outlaws alerts", "INFO")
+            EDR_CLIENT.min_bounty_outlaws_alerts(param[3:])
     
 def handle_hash_commands(command, command_parts, entry):
     target_cmdr = command_parts[1] if len(command_parts) > 1 else None
@@ -716,7 +738,6 @@ def crimes_command(param):
         EDRLOG.log(u"Disabling crimes reporting", "INFO")
         EDR_CLIENT.crimes_reporting = False
         EDR_CLIENT.notify_with_details("EDR crimes report", ["Disabling"])
-
 
 def audiocue_command(param):
     if param == "on":

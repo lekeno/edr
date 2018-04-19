@@ -42,15 +42,13 @@ class EDBounty(object):
         return readable
 
 class EDVehicles(object):
-    # TODO I imagine that the ship name are also translated...
     CANONICAL_SHIP_NAMES = json.loads(open(os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'data/shipnames.json')).read())
 
     @staticmethod
     def canonicalize(name):
         if name is None:
-            # Translators: this is a fallback name for when the ship isn't recognized or is not known
-            return _c(u"For an unknown or missing vehicle|Unknown")
+            return u"Unknown"
 
         if name.lower() in EDVehicles.CANONICAL_SHIP_NAMES:
             return EDVehicles.CANONICAL_SHIP_NAMES[name.lower()]
@@ -58,13 +56,23 @@ class EDVehicles(object):
         return name.lower()
 
 class EDLocation(object):
-    def __init__(self):
-        self.star_system = None
-        self.place = None
-        self.security = None
+    def __init__(self, star_system=None, place=None, security=None):
+        self.star_system = star_system
+        self.place = place
+        self.security = security
     
     def is_anarchy_or_lawless(self):
         return self.security in ["$GAlAXY_MAP_INFO_state_anarchy;", "$GALAXY_MAP_INFO_state_lawless;"]
+
+    def pretty_print(self):
+        location = u"{system}".format(system=self.star_system)
+        if self.place and self.place != self.star_system:
+            if self.place.startswith(self.star_system + " "):
+                # Translators: this is a continuation of the previous item (location of recently sighted outlaw) and shows a place in the system (e.g. supercruise, Cleve Hub) 
+                location += u", {place}".format(place=self.place.partition(self.star_system + " ")[2])
+            else:
+                location += u", {place}".format(place=self.place)
+        return location
 
 class EDCmdr(object):
     def __init__(self):

@@ -49,6 +49,9 @@ class SSEClient(object):
         # attribute on Events like the Javascript spec requires.
         self.resp.raise_for_status()
 
+    def disconnect(self):
+        self.resp.close()
+
     def _event_complete(self):
         return re.search(end_of_field, self.buf) is not None
 
