@@ -53,8 +53,7 @@ class EDRServer(object):
             EDRLOG.log(u"Failed to check for version update. code={code}, content={content}".format(code=resp.status_code, content=resp.content), "ERROR")
             return None
 
-        json_resp = json.loads(resp.content)
-        return json_resp
+        return  json.loads(resp.content)
     
     def notams(self, timespan_seconds):
         now_epoch_js = int(1000 * calendar.timegm(time.gmtime()))

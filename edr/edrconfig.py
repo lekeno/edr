@@ -25,6 +25,12 @@ class EDRConfig(object):
     def inara_endpoint(self):
         return self.config.get('inara', 'inara_endpoint')
 
+    def edsm_api_key(self):
+        return self.config.get('edsm', 'edsm_api_key')
+
+    def edsm_server(self):
+        return self.config.get('edsm', 'edsm_server')
+
     def intel_even_if_clean(self):
         return self.config.getboolean('scans', 'intel_even_if_clean')
 
@@ -76,6 +82,12 @@ class EDRConfig(object):
     def crimes_max_age(self):
         return int(self.config.get('lrucaches', 'crimes_max_age'))
 
+    def alerts_max_age(self):
+        return int(self.config.get('lrucaches', 'alerts_max_age'))
+
+    def edsm_systems_max_age(self):
+        return int(self.config.get('lrucaches', 'edsm_systems_max_age'))
+
     def lru_max_size(self):
         return int(self.config.get('lrucaches', 'lru_max_size'))
 
@@ -84,6 +96,7 @@ class EDRConfig(object):
 
     def outlaws_max_recents(self):
         return int(self.config.get('outlaws', 'outlaws_max_recents'))
+
 
     def logging_level(self):
         return self.config.get('general', 'logging_level')

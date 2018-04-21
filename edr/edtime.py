@@ -98,7 +98,6 @@ class EDTime(object, comparable.ComparableMixin):
         immersive_datetime = self.__immmersive()
         return immersive_datetime.strftime(_('%Y-%m-%d'))
 
-
     def __lt__(self, other):
         if isinstance(other, EDTime):
             return self._datetime < other._datetime

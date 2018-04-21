@@ -69,6 +69,13 @@ DEFAULT_TIPS = {
         _(u"Do you like EDR? Consider supporting its development and hosting costs at https://patreon.com/lekeno"),
         _(u"Send '!where <cmdrname>' to find out where an outlaw was last sighted"),
         _(u"Send '!outlaws' to find out where outlaws were last sighted"),
+        _(u"Send '?outlaws on': to enable realtime alerts for sighted outlaws."),
+        _(u"Send '?outlaws off': to disable realtime alerts for sighted outlaws."),
+        _(u"Send '?outlaws': to check the state and configuration of the realtime alerts for sighted outlaws."),
+        _(u"Send '?outlaws ly 150': to configure a maximal distance of 150 ly for the outlaws realtime alerts."),
+        _(u"Send '?outlaws cr 10000': to configure a minimal bounty of 10k cr for the outlaws realtime alerts."),
+        _(u"Send '?outlaws cr -': to remove the minimal bounty for the realtime alerts."),
+        _(u"Send '?outlaws ly -': to remove the maximal distance for the realtime alerts."),
         _(u"Send '!clear' to clear everything on EDR's overlay")
     ],
     "OPEN tips": [

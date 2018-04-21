@@ -3,6 +3,7 @@
 
 import os
 import pickle
+from math import sqrt
 
 import datetime
 import time
@@ -13,6 +14,7 @@ import edtime
 import edrconfig
 import edrlog
 import lrucache
+import edsmserver
 from edentities import EDBounty
 from edri18n import _, _c, _edr
 
@@ -21,6 +23,8 @@ EDRLOG = edrlog.EDRLog()
 class EDRSystems(object):
     EDR_SYSTEMS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/systems.v2.p')
+    EDSM_SYSTEMS_CACHE = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_systems.v2.p')
     EDR_NOTAMS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/notams.v2.p')
     EDR_SITREPS_CACHE = os.path.join(
@@ -68,11 +72,18 @@ class EDRSystems(object):
             self.traffic_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                   edr_config.traffic_max_age())
 
+        try:
+            with open(self.EDSM_SYSTEMS_CACHE, 'rb') as handle:
+                self.edsm_systems_cache = pickle.load(handle)
+        except:
+            self.edsm_systems_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.edsm_systems_max_age())
 
         self.reports_check_interval = edr_config.reports_check_interval()
         self.notams_check_interval = edr_config.notams_check_interval()
         self.timespan = edr_config.sitreps_timespan()
         self.server = server
+        self.edsm_server = edsmserver.EDSMServer()
 
     def system_id(self, star_system, may_create=False):
         if not star_system:
@@ -105,6 +116,28 @@ class EDRSystems(object):
 
         with open(self.EDR_CRIMES_CACHE, 'wb') as handle:
             pickle.dump(self.crimes_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        with open(self.EDSM_SYSTEMS_CACHE, 'wb') as handle:
+            pickle.dump(self.edsm_systems_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    def distance(self, source_system, destination_system):
+        if source_system == destination_system:
+            return 0
+        source = self.edsm_systems_cache.get(source_system.lower())
+        destination = self.edsm_systems_cache.get(destination_system.lower())
+        if not source:
+            source = self.edsm_server.system(source_system)
+            if source:
+                self.edsm_systems_cache.set(source_system.lower(), source)
+        if not destination:
+            destination = self.edsm_server.system(destination_system)
+            if destination:
+                self.edsm_systems_cache.set(destination_system.lower(), destination)
+        if source and destination:
+            source_coords = source[0]["coords"]
+            dest_coords = destination[0]["coords"] 
+            return sqrt((dest_coords["x"] - source_coords["x"])^2 + (dest_coords["y"] - source_coords["y"])^2 + (dest_coords["z"] - source_coords["z"])^2)
+        raise ValueError('Unknown system')
 
     def timespan_s(self):
         return edtime.EDTime.pretty_print_timespan(self.timespan, short=True, verbose=True)
@@ -171,6 +204,8 @@ class EDRSystems(object):
         systems_ids = self.notams_cache.keys()
         for sid in systems_ids:
             entry = self.notams_cache.get(sid)
+            if not entry:
+                continue 
             star_system = entry.get("name", None)
             if star_system and self.__has_active_notams(sid):
                 summary.append(star_system)

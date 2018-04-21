@@ -108,6 +108,10 @@ class HelpContent(object):
             "details": [
                 _(u"Chat commands for enforcers:"),
                 _(u" - '!outlaws': to display a list of most recently sighted outlaws and their locations."),
+                _(u" - '?outlaws [on|off]': to enable/disable realtime alerts for sighted outlaws."),
+                _(u" - '?outlaws cr 10000': to configure a minimal bounty of 10k cr for the realtime alerts."),
+                _(u" - '?outlaws ly 150': to configure a maximal distance of 150 ly for the realtime alerts."),
+                _(u" - '?outlaws [cr|ly] -': to remove the [minimal bounty|maximal distance] for the realtime alerts."),
                 _(u" - '!where cmdr_name': to display the last sighting of the cmdr called cmdr_name provided that EDR considers them an outlaw."),
                 _(u" - '#!' or '#?' or '#+': to mark a cmdr as an outlaw, neutral or enforcer (see !help cmdrdex for more details)."),
                 u"⚶",
