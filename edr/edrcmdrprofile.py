@@ -244,11 +244,13 @@ class EDRCmdrProfile(object):
             self.dex_profile = None
         return True
     
-    def is_dangerous(self):
+    def is_dangerous(self, pledged_to=None):
         if self.dex_profile:
             return self.dex_profile._alignment == "outlaw"
         if self._karma <= -250:
             return True
+        if pledged_to and self.powerplay:
+            return pledged_to.lower() != self.powerplay.lower()
         if self.alignment_hints and self.alignment_hints["outlaw"] > 0:
             total_hints = sum([hints for hints in self.alignment_hints.values()])
             return (total_hints > 10 and self.alignment_hints["outlaw"] / total_hints > .5)

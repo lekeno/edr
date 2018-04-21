@@ -86,6 +86,7 @@ class EDCmdr(object):
         self._timestamp = edtime.EDTime()
         self.wing = set()
         self.friends = set()
+        self.powerplay = None
 
     def in_solo_or_private(self):
         return self.game_mode in ["Solo", "Group"]
@@ -122,6 +123,12 @@ class EDCmdr(object):
 
     def is_friend_or_in_wing(self, interlocutor):
         return interlocutor in self.friends or interlocutor in self.wing
+
+    def is_enemy_with(self, power):
+        if self.powerplay and power:
+            # TODO confirm that any power is enemy with any other power
+            return power != self.powerplay
+        return False
 
     @property
     def ship(self):

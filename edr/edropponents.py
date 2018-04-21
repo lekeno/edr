@@ -10,6 +10,7 @@ import lrucache
 from collections import deque 
 import edrconfig
 import edrserver
+import edrrealtime
 import edrlog
 import edtime
 from edentities import EDBounty
@@ -17,54 +18,93 @@ from edri18n import _, _c
 
 EDRLOG = edrlog.EDRLog()
 
-class EDROutlaws(object):
-    EDR_OUTLAWS_SIGHTINGS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/outlaws_sigthings.p')
+class EDROpponents(object):
+    OUTLAWS = "Outlaws"
+    ENEMIES = "Enemies"
 
-    EDR_OUTLAWS_RECENTS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/outlaws_recents.p')
+    EDR_OPPONENTS_SIGHTINGS_CACHES = {
+        "outlaws": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/outlaws_sigthings.p'),
+        "enemies": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/enemies_sigthings.p')
+    }
 
-    def __init__(self, server):
+    EDR_OPPONENTS_RECENTS_CACHES = {
+        "outlaws": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/outlaws_recents.p'),
+        "enemies": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/enemies_recents.p')
+    }
+
+    def __init__(self, server, opponent_kind, client_callback):
         self.server = server
+        self.kind = opponent_kind
+        self.powerplay = None
+        self.realtime_callback = client_callback
+        self.realtime = None
+
         config = edrconfig.EDRConfig()
         try:
-            with open(self.EDR_OUTLAWS_SIGHTINGS_CACHE, 'rb') as handle:
+            with open(self.EDR_OPPONENTS_SIGHTINGS_CACHES[opponent_kind], 'rb') as handle:
                 self.sightings = pickle.load(handle)
         except:
-            self.sightings = lrucache.LRUCache(config.lru_max_size(), config.outlaws_max_age())
+            self.sightings = lrucache.LRUCache(config.lru_max_size(), config.opponents_max_age(self.kind))
 
         try:
-            with open(self.EDR_OUTLAWS_RECENTS_CACHE, 'rb') as handle:
+            with open(self.EDR_OPPONENTS_RECENTS_CACHES[opponent_kind], 'rb') as handle:
                 self.recents = pickle.load(handle)
         except:
-            self.recents = deque(maxlen=config.outlaws_max_recents())
+            self.recents = deque(maxlen=config.opponents_max_recents(self.kind))
 
-        self.timespan = config.outlaws_recent_threshold()
+        self.timespan = config.opponents_recent_threshold(self.kind)
         self.reports_check_interval = config.reports_check_interval()
 
     def persist(self):
-        with open(self.EDR_OUTLAWS_SIGHTINGS_CACHE, 'wb') as handle:
+        with open(self.EDR_OPPONENTS_SIGHTINGS_CACHES[self.kind], 'wb') as handle:
             pickle.dump(self.sightings, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        with open(self.EDR_OUTLAWS_RECENTS_CACHE, 'wb') as handle:
+        with open(self.EDR_OPPONENTS_RECENTS_CACHES[self.kind], 'wb') as handle:
             pickle.dump(self.recents, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+    def pledged_to(self, power):
+        if self.kind is not EDROpponents.ENEMIES:
+            return
+        if not power or self.powerplay is not power:
+            config = edrconfig.EDRConfig()
+            self.recents = deque(maxlen=config.opponents_max_recents(self.kind))
+            self.sightings = lrucache.LRUCache(config.lru_max_size(), config.opponents_max_age(self.kind))
+        self.powerplay = power
+
+    def is_comms_link_up(self):
+        return self.realtime and self.realtime.is_live()
+
+    def establish_comms_link(self):
+        self.shutdown_comms_link()
+        if self._invalid_state():
+            return False
+        endpoint = "{}{}".format(self.server.EDR_SERVER, self._node())
+        self.realtime = edrrealtime.EDRRealtimeUpdates(self.realtime_callback, self.kind, endpoint, self.server.auth_token)
+        self.realtime.start()
+        return True
+
+    def shutdown_comms_link(self):
+        if self.realtime and self.realtime.is_live():
+            self.realtime.shutdown()
+
     def where(self, cmdr_name):
-        self.__update_outlaws_if_stale()
+        if self._invalid_state():
+            return None
+        self.__update_opponents_if_stale()
         cname = cmdr_name.lower()
         report = self.sightings.get(cname)
         if not report:
-            report = self.server.where(cmdr_name)
+            report = self.server.where(cmdr_name, self.powerplay)
             if report:
                  self.sightings.set(cname, report)
-        return self.__readable_outlaw_sighting(report)
+        return self.__readable_opponent_sighting(report)
 
     def recent_sightings(self):
-        self.__update_outlaws_if_stale()
+        self.__update_opponents_if_stale()
         if not self.recents:
-            EDRLOG.log(u"No recently sighted outlaws", "INFO")
+            EDRLOG.log(u"No recently sighted {}".format(self.kind), "INFO")
             return None
         
-        EDRLOG.log(u"Got recently sighted outlaws", "INFO")
+        EDRLOG.log(u"Got recently sighted {}".format(self.kind), "INFO")
         summary = []
         now = datetime.datetime.now()
         js_epoch_now = 1000 * time.mktime(now.timetuple())
@@ -73,11 +113,11 @@ class EDROutlaws(object):
             if (js_epoch_now - sighting["timestamp"]) / 1000 > self.timespan:
                 continue
             if sighting["cmdr"] not in processed:
-                summary.append(self.__readable_outlaw_sighting(sighting, one_liner=True))
+                summary.append(self.__readable_opponent_sighting(sighting, one_liner=True))
                 processed.append(sighting["cmdr"])
         return summary
 
-    def __readable_outlaw_sighting(self, sighting, one_liner=False):
+    def __readable_opponent_sighting(self, sighting, one_liner=False):
         EDRLOG.log(u"sighting: {}".format(sighting), "DEBUG")
         if not sighting:
             return None
@@ -87,10 +127,10 @@ class EDROutlaws(object):
             starSystem = (sighting["starSystem"][:50] + u'…') if len(sighting["starSystem"]) > 50 else sighting["starSystem"]    
             if sighting.get("bounty", None) > 0:
                 neat_bounty = EDBounty(sighting["bounty"]).pretty_print()
-                # Translators: this is a one-liner for the recently sighted outlaws; Keep it short! T{t:<2} is to show how long ago e.g. T-4H (4 hours ago) 
+                # Translators: this is a one-liner for the recently sighted opponents; Keep it short! T{t:<2} is to show how long ago e.g. T-4H (4 hours ago) 
                 return _(u"T{t:<2}: {name} in {system}, wanted for {bounty}").format(t=t_minus, name=cmdr, system=starSystem, bounty=neat_bounty)
             else:
-                # Translators: this is a one-liner for the recently sighted outlaws; Keep it short! T{t:<2} is to show how long ago e.g. T-4H (4 hours ago) 
+                # Translators: this is a one-liner for the recently sighted opponents; Keep it short! T{t:<2} is to show how long ago e.g. T-4H (4 hours ago) 
                 return _(u"T{t:<2}: {name} in {system}").format(t=t_minus, name=cmdr, system=starSystem)
         
         readable = []
@@ -121,14 +161,18 @@ class EDROutlaws(object):
         epoch_updated = time.mktime(self.sightings.last_updated.timetuple())
         return (epoch_now - epoch_updated) > self.reports_check_interval
    
-    def __update_outlaws_if_stale(self):
+    def __update_opponents_if_stale(self):
         updated = False
         if self.__are_sightings_stale():
             now = datetime.datetime.now()
             missing_seconds = self.timespan
             if self.sightings.last_updated:
                 missing_seconds = int(min(self.timespan, (now - self.sightings.last_updated).total_seconds()))
-            sightings = self.server.recent_outlaws(missing_seconds)
+            sightings = None
+            if self.kind is EDROpponents.OUTLAWS:
+                sightings = self.server.recent_outlaws(missing_seconds)
+            elif self.kind is EDROpponents.OUTLAWS:
+                sightings = self.server.recent_enemies(missing_seconds, self.powerplay)
             self.sightings.last_updated = now
             if sightings:
                 updated = True
@@ -140,3 +184,24 @@ class EDROutlaws(object):
                         self.sightings.set(sighting["cmdr"].lower(), sighting)
                     self.recents.appendleft(sighting)
         return updated
+
+    def _realtime_callback(self, kind, events):
+        if events not in ["cancel", "auth_revoked"]:
+            for report in events.values():
+                previous = self.sightings.get(report["cmdr"].lower())
+                if not previous or (previous and previous["timestamp"] < report["timestamp"]):
+                    self.sightings.set(report["cmdr"].lower(), report)
+                self.recents.appendleft(report)
+            self.sightings.last_updated = datetime.datetime.now()
+        self.realtime_callback(kind, events)
+
+    def _node(self):
+        if self.kind is "outlaws":
+            return "/v1/outlaws/.json"
+        elif self.kind is "enemies" and self.powerplay:
+            return "/v1/powerplay/{}/.json".format(self.server.nodify(self.powerplay))
+        else:
+            return None
+
+    def _invalid_state(self):
+        return self.kind is EDROpponents.ENEMIES and not self.powerplay

@@ -319,10 +319,11 @@ class EDRSystems(object):
                 recent_traffic = self.traffic_cache.get(sid)
         return recent_traffic
 
-    def summarize_recent_activity(self, star_system):
+    def summarize_recent_activity(self, star_system, powerplay=None):
         #TODO refactor/simplify this mess ;)
         summary = {}
         wanted_cmdrs = {}
+        enemies = {}
         if self.has_recent_traffic(star_system):
             summary_sighted = []
             recent_traffic = self.recent_traffic(star_system)
@@ -334,8 +335,12 @@ class EDRSystems(object):
                         continue
                     karma = traffic.get("karma", 0)
                     bounty = EDBounty(traffic.get("bounty", 0))
+                    enemy = traffic.get("enemy", False)
+                    by_pledge = traffic.get("byPledge", None)
                     if karma < 0 or bounty.is_significant():
                         wanted_cmdrs[traffic["cmdr"]] = [ traffic["timestamp"], karma ]
+                    elif powerplay and enemy and powerplay == by_pledge:
+                        enemies[traffic["cmdr"]] = [traffic["timestamp"], karma]
                     else:
                         summary_traffic[traffic["cmdr"]] = traffic["timestamp"]
                 for cmdr in summary_traffic:
@@ -356,12 +361,17 @@ class EDRSystems(object):
                         summary_crimes[lead_name] = [crime["timestamp"], crime["offence"]]
                         for criminal in crime["criminals"]:
                             previous_timestamp = wanted_cmdrs[criminal["name"]][0] if criminal["name"] in wanted_cmdrs else None
+                            previous_timestamp = max(previous_timestamp, enemies[criminal["name"]][0] if criminal["name"] in enemies else None
                             if previous_timestamp > crime["timestamp"]:
                                 continue
                             karma = criminal.get("karma", 0)
                             bounty = EDBounty(traffic.get("bounty", 0))
+                            enemy = traffic.get("enemy", False)
+                            by_pledge = traffic.get("byPledge", None)
                             if karma < 0 or bounty.is_significant():
                                 wanted_cmdrs[criminal["name"]] = [ crime["timestamp"], karma]
+                            elif powerplay and enemy and powerplay == by_pledge:
+                                enemies[traffic["cmdr"]] = [traffic["timestamp"], karma]
                 for criminal in summary_crimes:
                     if summary_crimes[criminal][1] == "Murder":
                         summary_destroyers.append(u"{} {}".format(criminal, edtime.EDTime.t_minus(summary_crimes[criminal][0], short=True)))
@@ -382,6 +392,15 @@ class EDRSystems(object):
             if summary_wanted:
                 # Translators: this is for the sitrep feature; it's a section to show wanted cmdrs who have been sighted in the system of interest
                 summary[_c(u"sitreps section|Outlaws")] = summary_wanted
+        
+        enemies = sorted(enemies.items(), key=operator.itemgetter(1), reverse=True)
+        if enemies:
+            summary_enemies = []
+            for enemy in enemies:
+                summary_enemies.append(u"{} {}".format(enemies[0], edtime.EDTime.t_minus(enemies[1][0], short=True)))
+            if summary_enemies:
+                # Translators: this is for the sitrep feature; it's a section to show wanted cmdrs who have been sighted in the system of interest
+                summary[_c(u"sitreps section|Enemies")] = summary_enemies
 
         return summary
 
