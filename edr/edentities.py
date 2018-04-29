@@ -126,7 +126,6 @@ class EDCmdr(object):
 
     def is_enemy_with(self, power):
         if self.powerplay and power:
-            # TODO confirm that any power is enemy with any other power
             return power != self.powerplay
         return False
 

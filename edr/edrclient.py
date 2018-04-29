@@ -69,9 +69,9 @@ class EDRClient(object):
         self.server = edrserver.EDRServer()
         
         self.realtime_params = {
-            "outlaws": { "min_bounty": None if config.get("EDROutlawsAlertsMinBounty") == "None" else config.getint("EDROutlawsAlertsMinBounty"),
+            EDROpponents.OUTLAWS: { "min_bounty": None if config.get("EDROutlawsAlertsMinBounty") == "None" else config.getint("EDROutlawsAlertsMinBounty"),
                          "max_distance": None if config.get("EDROutlawsAlertsMaxDistance") == "None" else config.getint("EDROutlawsAlertsMaxDistance")},
-            "enemies": { "min_bounty": None if config.get("EDREnemiesAlertsMinBounty") == "None" else config.getint("EDREnemiesAlertsMinBounty"),
+            EDROpponents.ENEMIES: { "min_bounty": None if config.get("EDREnemiesAlertsMinBounty") == "None" else config.getint("EDREnemiesAlertsMinBounty"),
                          "max_distance": None if config.get("EDREnemiesAlertsMaxDistance") == "None" else config.getint("EDREnemiesAlertsMaxDistance")}
         }
         
@@ -206,10 +206,12 @@ class EDRClient(object):
         self.edrcmdrs.inara.cmdr_name = name
         self.player.name = name
 
-    def pledged_to(self, power):
+    def pledged_to(self, power, time_pledged):
         self.player.powerplay = power
-        for opponents in self.edropponents:
-            opponents.pledged_to(power)
+        for kind in self.edropponents:
+            self.edropponents[kind].pledged_to(power, time_pledged)
+        since = edtime.EDTime.js_epoch_now() - (time_pledged * 1000)
+        self.server.pledged_to(power, since)
 
     def login(self):
         self.server.logout()
@@ -244,9 +246,9 @@ class EDRClient(object):
     def shutdown(self, everything=False):
         self.edrcmdrs.persist()
         self.edrsystems.persist()
-        for opponents in self.edropponents:
-            opponents.persist()
-            opponents.shutdown_comms_link()
+        for kind in self.edropponents:
+            self.edropponents[kind].persist()
+            self.edropponents[kind].shutdown_comms_link()
         self.edrlegal.persist()
         self.IN_GAME_MSG.shutdown()
         if everything:
@@ -438,10 +440,10 @@ class EDRClient(object):
         return self.__novel_enough_situation(report, last_report)
 
     def outlaws_alerts_enabled(self, silent=True):
-        return self._alerts_enabled(self, EDROpponents.OUTLAWS)
+        return self._alerts_enabled(EDROpponents.OUTLAWS, silent)
     
     def enemies_alerts_enabled(self, silent=True):
-        return self._alerts_enabled(self, EDROpponents.ENEMIES)
+        return self._alerts_enabled(EDROpponents.ENEMIES, silent)
 
     def _alerts_enabled(self, kind, silent=True):
         enabled = self.edropponents[kind].is_comms_link_up()
@@ -545,7 +547,8 @@ class EDRClient(object):
             summary = [_(u"Comms link interrupted. Send '?{} on' to re-establish.").format(kind.lower())]
         else:
             summary = self._summarize_realtime_alerts(kind, events)
-        self.notify_with_details(_(u"EDR Alerts"), summary)
+        if summary:
+            self.notify_with_details(_(u"EDR Alerts"), summary)
 
     def _worthy_alert(self, kind, event):
         if event["uid"] is self.server.uid():
@@ -817,8 +820,8 @@ class EDRClient(object):
 
     def where(self, cmdr_name):
         report = {}
-        for opponents in self.edropponents:
-            candidate_report = opponents.where(cmdr_name)
+        for kind in self.edropponents:
+            candidate_report = self.edropponents[kind].where(cmdr_name)
             if candidate_report and (not report or report["timestamp"] < candidate_report["timestamp"]):
                 report = candidate_report
         

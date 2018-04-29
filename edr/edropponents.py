@@ -23,13 +23,13 @@ class EDROpponents(object):
     ENEMIES = "Enemies"
 
     EDR_OPPONENTS_SIGHTINGS_CACHES = {
-        "outlaws": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/outlaws_sigthings.p'),
-        "enemies": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/enemies_sigthings.p')
+        "Outlaws": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/outlaws_sigthings.p'),
+        "Enemies": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/enemies_sigthings.p')
     }
 
     EDR_OPPONENTS_RECENTS_CACHES = {
-        "outlaws": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/outlaws_recents.p'),
-        "enemies": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/enemies_recents.p')
+        "Outlaws": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/outlaws_recents.p'),
+        "Enemies": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/enemies_recents.p')
     }
 
     def __init__(self, server, opponent_kind, client_callback):
@@ -61,7 +61,7 @@ class EDROpponents(object):
         with open(self.EDR_OPPONENTS_RECENTS_CACHES[self.kind], 'wb') as handle:
             pickle.dump(self.recents, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    def pledged_to(self, power):
+    def pledged_to(self, power, time_pledged):
         if self.kind is not EDROpponents.ENEMIES:
             return
         if not power or self.powerplay is not power:
@@ -196,10 +196,10 @@ class EDROpponents(object):
         self.realtime_callback(kind, events)
 
     def _node(self):
-        if self.kind is "outlaws":
+        if self.kind is self.OUTLAWS:
             return "/v1/outlaws/.json"
-        elif self.kind is "enemies" and self.powerplay:
-            return "/v1/powerplay/{}/.json".format(self.server.nodify(self.powerplay))
+        elif self.kind is self.ENEMIES and self.powerplay:
+            return "/v1/powerplay/{}/enemies/.json".format(self.server.nodify(self.powerplay))
         else:
             return None
 

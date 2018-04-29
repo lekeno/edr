@@ -178,6 +178,15 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     if entry["event"] in ["Shutdown", "ShutDown", "Music", "Resurrect", "Fileheader", "LoadGame"]:
         handle_lifecycle_events(ed_player, entry)
+    
+    if entry["event"] == "Powerplay":
+        EDRLOG.log(u"Powerplay event: {}".format(entry), "INFO")
+        EDR_CLIENT.pledged_to(entry["Power"], entry["TimePledged"])
+        #TODO unpledged, not pledge??
+        # { "timestamp":"2016-06-10T14:32:03Z","event":"PowerplayDefect", "FromPower":"Zachary Hudson", "ToPower":"Li Yong-Rui" } 
+        # { "timestamp":"2016-06-10T14:32:03Z","event":"PowerplayJoin", "Power":"Zachary Hudson" } 
+        # { "timestamp":"2016-06-10T14:32:03Z","event":"PowerplayLeave", "Power":"Li Yong-Rui" } 
+        # if no powerplay event before statistics event then consider unpledged
 
     if ed_player.in_solo_or_private():
         EDR_CLIENT.status = _(u"disabled in Solo/Private.")
@@ -186,10 +195,6 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     if entry["event"] in ["WingAdd", "WingJoin", "WingLeave"]:
         handle_wing_events(ed_player, entry)
-
-    if entry["event"] == "PowerPlay":
-        EDR_CLIENT.pledged_to(entry["Power"])
-        #TODO unpledged, not pledge??
 
     EDR_CLIENT.player_name(cmdr)
     ship = state["ShipType"]
@@ -295,7 +300,7 @@ def edr_submit_crime(criminal_cmdrs, offence, victim):
         "victim": victim.name,
         "victimShip": victim.ship,
         "reportedBy": victim.name,
-        "byPledge": victim.powerplay if victim.powerplay else ""
+        "byPledge": victim.powerplay.lower().replace(" ", "_") if victim.powerplay else ""
     }
 
     if not EDR_CLIENT.crime(victim.star_system, report):
@@ -331,7 +336,7 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim):
         "victim": victim,
         "victimShip": u"Unknown",
         "reportedBy": criminal_cmdr.name,
-        "byPledge": criminal_cmdr.powerplay if criminal_cmdr.powerplay else ""
+        "byPledge": criminal_cmdr.powerplay.lower().replace(" ", "_") if criminal_cmdr.powerplay else ""
     }
 
     EDRLOG.log(u"Perpetrated crime: {}".format(report), "DEBUG")
@@ -365,7 +370,7 @@ def edr_submit_contact(cmdr_name, ship, timestamp, source, witness):
         "ship" : ship if ship else u"Unknown",
         "source": source,
         "reportedBy": witness.name,
-        "byPledge": witness.powerplay if witness.powerplay else ""
+        "byPledge": witness.powerplay.lower().replace(" ", "_") if witness.powerplay else ""
     }
 
     if not witness.in_open():
@@ -395,7 +400,7 @@ def edr_submit_scan(scan, timestamp, source, witness):
     report["source"] = source
     report["reportedBy"] = witness.name
     # TODO pledgee? pledge?
-    report["byPledge"] = witness.powerplay if witness.powerplay else ""
+    report["byPledge"] = witness.powerplay.lower().replace(" ", "_") if witness.powerplay else ""
 
     if not witness.in_open():
         EDRLOG.log(u"Scan not submitted due to unconfirmed Open mode", "INFO")
@@ -432,7 +437,7 @@ def edr_submit_traffic(cmdr_name, ship, timestamp, source, witness):
         "ship" : ship if ship else u"Unknown",
         "source": source,
         "reportedBy": witness.name,
-        "byPledge": witness.powerplay if witness.powerplay else ""
+        "byPledge": witness.powerplay.lower().replace(" ", "_") if witness.powerplay else ""
     }
 
     if not witness.in_open():

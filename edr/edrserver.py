@@ -118,42 +118,24 @@ class EDRServer(object):
 
         return sid
 
-    def pledged_to(self, powerplay):
-
+    def pledged_to(self, powerplay, since):
+        params = { "auth": self.auth_token() }
         if powerplay is None:
             EDRLOG.log(u"Removing pledge info for uid {uid}".format(uid=self.uid), "INFO")
-            endpoint = "{server}/v1/powerplay/{power}/pledges/{uid}/.json".format(server=self.EDR_SERVER, power=self.nodify(powerplay), uid=self.uid())
-            params = { "auth": self.auth_token() }
+            endpoint = "{server}/v1/pledges/{uid}/.json".format(server=self.EDR_SERVER, uid=self.uid())
             EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
             resp = requests.delete(endpoint, params=params)
             EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
             return resp.status_code == requests.codes.ok
         
         EDRLOG.log(u"Pledge info for uid {uid} with power:{power}".format(uid=self.uid(), power=powerplay), "INFO")
-        endpoint = "{server}/v1/powerplay/{power}/pledges/{uid}/.json".format(server=self.EDR_SERVER, power=self.nodify(powerplay), uid=self.uid())
-        json = { "" } #TODO
+        endpoint = "{server}/v1/pledges/{uid}/.json".format(server=self.EDR_SERVER, uid=self.uid())
+        json = { "cpower": self.nodify(powerplay), "since": since }
+        print json
         EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = requests.put(endpoint, params=params, json=json)
         EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
         return resp.status_code == requests.codes.ok
-
-
-        if powerplay:            
-            #TODO if same then update last confirmed, ?
-            params = { "auth" : self.auth_token() }
-            json = { "power" : self.nodify(powerplay) }
-            # TODO server time
-            resp = requests.post(endpoint, params=params, json=json)
-            if resp.status_code != requests.codes.ok:
-                EDRLOG.log(u"Failed to update pledge info.", "ERROR")
-                return False
-            else:
-                return True
-        else:
-            #TODO delete if none
-            return False
-        
-                
             
     
     def cmdr(self, cmdr, autocreate=True):

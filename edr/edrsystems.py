@@ -136,7 +136,7 @@ class EDRSystems(object):
         if source and destination:
             source_coords = source[0]["coords"]
             dest_coords = destination[0]["coords"] 
-            return sqrt((dest_coords["x"] - source_coords["x"])^2 + (dest_coords["y"] - source_coords["y"])^2 + (dest_coords["z"] - source_coords["z"])^2)
+            return sqrt((dest_coords["x"] - source_coords["x"])**2 + (dest_coords["y"] - source_coords["y"])**2 + (dest_coords["z"] - source_coords["z"])**2)
         raise ValueError('Unknown system')
 
     def timespan_s(self):
@@ -277,7 +277,7 @@ class EDRSystems(object):
 
             edr_config = edrconfig.EDRConfig()
             return self.is_recent(system_reports["latestOutlaw"],
-                                  edr_config.outlaws_recent_threshold())
+                                  edr_config.opponents_recent_threshold("outlaws"))
         return False
 
     def recent_crimes(self, star_system):
@@ -361,7 +361,7 @@ class EDRSystems(object):
                         summary_crimes[lead_name] = [crime["timestamp"], crime["offence"]]
                         for criminal in crime["criminals"]:
                             previous_timestamp = wanted_cmdrs[criminal["name"]][0] if criminal["name"] in wanted_cmdrs else None
-                            previous_timestamp = max(previous_timestamp, enemies[criminal["name"]][0] if criminal["name"] in enemies else None
+                            previous_timestamp = max(previous_timestamp, enemies[criminal["name"]][0]) if criminal["name"] in enemies else None
                             if previous_timestamp > crime["timestamp"]:
                                 continue
                             karma = criminal.get("karma", 0)
