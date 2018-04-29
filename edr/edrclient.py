@@ -206,8 +206,9 @@ class EDRClient(object):
         self.edrcmdrs.inara.cmdr_name = name
         self.player.name = name
 
-    def pledged_to(self, power, time_pledged):
+    def pledged_to(self, power, time_pledged=0):
         self.player.powerplay = power
+        self.player.time_pledged = time_pledged
         for kind in self.edropponents:
             self.edropponents[kind].pledged_to(power, time_pledged)
         since = edtime.EDTime.js_epoch_now() - (time_pledged * 1000)
@@ -466,8 +467,16 @@ class EDRClient(object):
         details = ""
         if self._alerts_enabled(kind, silent=True):
             details = _(u"{} alerts already enabled").format(kind)
-        else:
-            details = _(u"Enabling {} alerts").format(kind) if self.edropponents[kind].establish_comms_link() else _(u"Couldn't enable {} alerts").format(kind)
+        elif kind == EDROpponents.ENEMIES:
+            if not self.player.powerplay:
+                details = _(u"Pledge to a power to access enemy alerts")
+            elif self.player.time_pledged < 24*60*60*7: #TODO  30 days parameterize
+                details = _(u"Remain loyal for 30 days to access enemy alerts")
+            else:
+                self.edropponents[kind].establish_comms_link()
+                details = _(u"Enabling {} alerts").format(kind)
+        else:            
+            details = _(u"Enabling {} alerts").format(kind) if self.edropponents[kind].establish_comms_link() else _(u"Couldn't enable {kind} alterts").format(kind=kind)
         if not silent:
             if self.realtime_params[kind]["max_distance"]:
                 details += _(u" <={max_distance}ly").format(max_distance=self.realtime_params[kind]["max_distance"])
@@ -847,7 +856,7 @@ class EDRClient(object):
         opponents_report = self.edropponents[kind].recent_sightings()
         if not opponents_report:
             EDRLOG.log(u"No recently sighted {}".format(kind), "INFO")
-            self.__sitrep(_(u"Recently Sighted {kind}").format(kind), [_(u"No {kind} sighted in the last {timespan}").format(kind=kind.lower(), timespan=edtime.EDTime.pretty_print_timespan(self.edropponents[kind].timespan))])
+            self.__sitrep(_(u"Recently Sighted {kind}").format(kind=kind), [_(u"No {kind} sighted in the last {timespan}").format(kind=kind.lower(), timespan=edtime.EDTime.pretty_print_timespan(self.edropponents[kind].timespan))])
             return False
         
         self.status = _(u"recently sighted {kind}").format(kind=kind)

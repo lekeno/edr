@@ -87,6 +87,7 @@ class EDCmdr(object):
         self.wing = set()
         self.friends = set()
         self.powerplay = None
+        self.time_pledged = None
 
     def in_solo_or_private(self):
         return self.game_mode in ["Solo", "Group"]

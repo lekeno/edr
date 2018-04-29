@@ -130,8 +130,7 @@ class EDRServer(object):
         
         EDRLOG.log(u"Pledge info for uid {uid} with power:{power}".format(uid=self.uid(), power=powerplay), "INFO")
         endpoint = "{server}/v1/pledges/{uid}/.json".format(server=self.EDR_SERVER, uid=self.uid())
-        json = { "cpower": self.nodify(powerplay), "since": since }
-        print json
+        json = { "cpower": self.nodify(powerplay), "since": since, "heartbeat": {".sv": "timestamp"} }
         EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = requests.put(endpoint, params=params, json=json)
         EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
@@ -246,7 +245,7 @@ class EDRServer(object):
 
     def recent_enemies(self, powerplay, timespan_seconds):
         EDRLOG.log(u"Recently sighted enemies", "INFO")                
-        endpoint = "/v1/{}/enemies/".format(self.nodify(powerplay))
+        endpoint = "/v1/powerplay/{}/enemies/".format(self.nodify(powerplay))
         return self.__get_recent(endpoint, timespan_seconds)
     
     def where(self, name, powerplay=None):

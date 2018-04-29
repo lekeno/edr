@@ -160,6 +160,16 @@ def handle_lifecycle_events(ed_player, entry):
         if not ed_player.in_solo_or_private():
             EDR_CLIENT.warmup()
 
+def handle_powerplay_events(ed_player, entry):
+    if entry["event"] == "Powerplay":
+        EDRLOG.log(u"Initial powerplay event: {}".format(entry), "DEBUG")
+        EDR_CLIENT.pledged_to(entry["Power"], entry["TimePledged"])
+    elif entry["event"] == "PowerplayDefect":
+        EDR_CLIENT.pledged_to(entry["ToPower"])
+    elif entry["event"] == "PowerplayJoin":
+        EDR_CLIENT.pledged_to(entry["Power"])
+    elif entry["event"] == "PowerplayLeave":
+        EDR_CLIENT.pledged_to(None)
 
 def journal_entry(cmdr, is_beta, system, station, entry, state):
     """
@@ -179,14 +189,14 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["Shutdown", "ShutDown", "Music", "Resurrect", "Fileheader", "LoadGame"]:
         handle_lifecycle_events(ed_player, entry)
     
-    if entry["event"] == "Powerplay":
+    if entry["event"].startswith("Powerplay"):
         EDRLOG.log(u"Powerplay event: {}".format(entry), "INFO")
-        EDR_CLIENT.pledged_to(entry["Power"], entry["TimePledged"])
-        #TODO unpledged, not pledge??
-        # { "timestamp":"2016-06-10T14:32:03Z","event":"PowerplayDefect", "FromPower":"Zachary Hudson", "ToPower":"Li Yong-Rui" } 
-        # { "timestamp":"2016-06-10T14:32:03Z","event":"PowerplayJoin", "Power":"Zachary Hudson" } 
-        # { "timestamp":"2016-06-10T14:32:03Z","event":"PowerplayLeave", "Power":"Li Yong-Rui" } 
-        # if no powerplay event before statistics event then consider unpledged
+        handle_powerplay_events(ed_player, entry)
+    
+    if entry["event"] == "Statistics" and not ed_player.powerplay:
+        # There should be a Powerplay event before the Statistics event
+        # if not then the player is not pledged and we should reflect that on the server
+        EDR_CLIENT.pledged_to(None)
 
     if ed_player.in_solo_or_private():
         EDR_CLIENT.status = _(u"disabled in Solo/Private.")
@@ -399,7 +409,6 @@ def edr_submit_scan(scan, timestamp, source, witness):
     report["timestamp"] = edt.as_js_epoch()
     report["source"] = source
     report["reportedBy"] = witness.name
-    # TODO pledgee? pledge?
     report["byPledge"] = witness.powerplay.lower().replace(" ", "_") if witness.powerplay else ""
 
     if not witness.in_open():
