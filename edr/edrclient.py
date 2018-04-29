@@ -468,15 +468,16 @@ class EDRClient(object):
         if self._alerts_enabled(kind, silent=True):
             details = _(u"{} alerts already enabled").format(kind)
         elif kind == EDROpponents.ENEMIES:
-            if not self.player.powerplay:
+            if self.is_anonymous():
+                details = _(u"Request an EDR account to access enemy alerts (https://lekeno.github.io)")
+            elif not self.player.powerplay:
                 details = _(u"Pledge to a power to access enemy alerts")
-            elif self.player.time_pledged < 24*60*60*7: #TODO  30 days parameterize
-                details = _(u"Remain loyal for 30 days to access enemy alerts")
+            elif self.player.time_pledged < 24*60*60*7: #TODO 30 days
+                details = _(u"Remain loyal for at least 30 days to access enemy alerts")
             else:
-                self.edropponents[kind].establish_comms_link()
-                details = _(u"Enabling {} alerts").format(kind)
+                details = _(u"Enabling Enemy alerts") if self.edropponents[kind].establish_comms_link() else _(u"Couldn't enable Enemy alerts")
         else:            
-            details = _(u"Enabling {} alerts").format(kind) if self.edropponents[kind].establish_comms_link() else _(u"Couldn't enable {kind} alterts").format(kind=kind)
+            details = _(u"Enabling {kind} alerts").format(kind) if self.edropponents[kind].establish_comms_link() else _(u"Couldn't enable {kind} alterts").format(kind=kind)
         if not silent:
             if self.realtime_params[kind]["max_distance"]:
                 details += _(u" <={max_distance}ly").format(max_distance=self.realtime_params[kind]["max_distance"])
