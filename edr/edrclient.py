@@ -595,15 +595,15 @@ class EDRClient(object):
                     pass
                 
                 oneliner = _(u"{cmdr} ({ship}) sighted in {location}")
-                if kind is EDROpponents.ENEMIES and "enemy" in event and event["enemy"]:
+                if kind is EDROpponents.ENEMIES and event.get("enemy", None):
                     oneliner = _(u"Enemy {cmdr} ({ship}) sighted in {location}")
                 elif kind is EDROpponents.OUTLAWS:
                     oneliner = _(u"Outlaw {cmdr} ({ship}) sighted in {location}")
                 oneliner = oneliner.format(cmdr=event["cmdr"], ship=event["ship"], location=location.pretty_print())
                 
                 if distance:
-                    oneliner += _(u" [{distance} ly]").format(distance=distance)
-                if "wanted" in event and event["wanted"]:
+                    oneliner += _(u" [{distance:.3g} ly]").format(distance=distance) if distance < 50.0 else _(u" [{distance} ly]").format(distance=int(distance))
+                if event.get("wanted", None):
                     if event["bounty"] > 0:
                         oneliner += _(u" wanted for {bounty} cr").format(bounty=edentities.EDBounty(event["bounty"]).pretty_print())
                     else:
