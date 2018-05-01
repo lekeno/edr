@@ -477,7 +477,7 @@ class EDRClient(object):
             else:
                 details = _(u"Enabling Enemy alerts") if self.edropponents[kind].establish_comms_link() else _(u"Couldn't enable Enemy alerts")
         else:            
-            details = _(u"Enabling {kind} alerts").format(kind) if self.edropponents[kind].establish_comms_link() else _(u"Couldn't enable {kind} alterts").format(kind=kind)
+            details = _(u"Enabling {kind} alerts").format(kind=kind) if self.edropponents[kind].establish_comms_link() else _(u"Couldn't enable {kind} alterts").format(kind=kind)
         if not silent:
             if self.realtime_params[kind]["max_distance"]:
                 details += _(u" <={max_distance}ly").format(max_distance=self.realtime_params[kind]["max_distance"])
@@ -563,6 +563,8 @@ class EDRClient(object):
     def _worthy_alert(self, kind, event):
         if event["uid"] is self.server.uid():
             return False
+        print "uid in event: " + event["uid"]
+        print "uid in edrserver: " + self.server.uid()
         if self.realtime_params[kind]["max_distance"]:
             try:
                 origin = self.player.star_system
@@ -634,7 +636,7 @@ class EDRClient(object):
             EDRLOG.log(u"Can't submit blip (no cmdr id for {}).".format(cmdr_name), "ERROR")
             return
 
-        profile = self.cmdr(cmdr_name)
+        profile = self.cmdr(cmdr_name, check_inara_server=True)
         if profile and (self.player.name != cmdr_name) and profile.is_dangerous(self.player.powerplay):
             self.status = _(u"{} is bad news.").format(cmdr_name)
             if self.novel_enough_blip(cmdr_id, blip, cognitive = True):
@@ -672,7 +674,7 @@ class EDRClient(object):
             return
 
         if self.novel_enough_scan(cmdr_id, scan, cognitive = True):
-            profile = self.cmdr(cmdr_name)
+            profile = self.cmdr(cmdr_name, check_inara_server=True)
             legal = self.edrlegal.summarize_recents(profile.cid)
             bounty = edentities.EDBounty(scan["bounty"]) if scan["bounty"] else None
             if profile and (self.player.name != cmdr_name):
