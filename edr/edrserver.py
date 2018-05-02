@@ -243,7 +243,7 @@ class EDRServer(object):
         endpoint = "/v1/outlaws/"
         return self.__get_recent(endpoint, timespan_seconds)
 
-    def recent_enemies(self, powerplay, timespan_seconds):
+    def recent_enemies(self, timespan_seconds, powerplay):
         EDRLOG.log(u"Recently sighted enemies", "INFO")                
         endpoint = "/v1/powerplay/{}/enemies/".format(self.nodify(powerplay))
         return self.__get_recent(endpoint, timespan_seconds)
@@ -253,7 +253,7 @@ class EDRServer(object):
         params = {"orderBy": '"cname"', "equalTo": json.dumps(name.lower()), "limitToFirst": 1, "auth": self.auth_token() }
         endpoint = "{}/v1/".format(self.EDR_SERVER)
         if powerplay:
-            endpoint += "{}/enemies.json".format(self.nodify(powerplay))
+            endpoint += "powerplay/{}/enemies.json".format(self.nodify(powerplay))
         else:
             endpoint += "outlaws.json"
         resp = requests.get(endpoint, params=params)
