@@ -574,7 +574,7 @@ def handle_scan_events(cmdr, entry):
 
     edr_submit_contact(cmdr_name, ship, entry["timestamp"], "Ship targeted", cmdr)
     if entry["ScanStage"] == 3:
-        wanted = entry["LegalStatus"] in ["Wanted", "WantedEnemy"]
+        wanted = entry["LegalStatus"] in ["Wanted", "WantedEnemy", "Warrant"]
         enemy = entry["LegalStatus"] in ["Enemy", "WantedEnemy"]
         scan = {
             "cmdr": cmdr_name,
@@ -583,7 +583,7 @@ def handle_scan_events(cmdr, entry):
             "enemy": enemy,
             "bounty": entry["Bounty"] if wanted and "Bounty" in entry else 0
         }
-        edr_submit_scan(scan, entry["timestamp"], "Ship targeted", cmdr)
+        edr_submit_scan(scan, entry["timestamp"], "Ship targeted [{}]".format(entry["LegalStatus"]), cmdr)
     return True
 
 def handle_commands(cmdr, entry):
