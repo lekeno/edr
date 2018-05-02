@@ -106,8 +106,8 @@ class EDRLegalRecords(object):
                 existing_record = self.records.get(cmdr_id)
                 if existing_record and "records" in existing_record:
                     recent_records = existing_record["records"]
-                for record in records:
-                    recent_records.appendleft(record)
+            for record in records:
+                recent_records.appendleft(record)
 
             self.records.set(cmdr_id, {"last_updated": now, "records": recent_records})
             updated = True
