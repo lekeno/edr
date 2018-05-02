@@ -94,7 +94,7 @@ class HelpContent(object):
                 _(u" - 'o7': direct message a commander with a salute emoji to see their EDR and Inara profile."),
                 _(u" - '!who cmdr_name': to see cmdr_name's EDR and Inara profile."),
                 _(u"These commands will show the following information:"),
-                _(u" - EDR alignment: wanted, neutral, enforcer with grades, e.g. wanted ++++."),
+                _(u" - EDR alignment: outlaw, neutral, enforcer with grades, e.g. outlaw ++++."),
                 _(u" - User tags: [!12, ?1, +0], i.e. 12 users marked that commander as an outlaw, 1 as neutral, 0 as enforcer."),
                 _(u" - Inara info: squadron and role if any (sometimes superseded by EDR)."),
                 _(u" - Personal tags/info from your CmdrDex if any (see !help cmdrdex)."),
