@@ -257,7 +257,7 @@ class EDRCmdrProfile(object):
 
     def karma_title(self):
         mapped_index = int(10*(self._karma + self.max_karma()) / (2.0*self.max_karma()))
-        lut = [_(u"Wanted ++++"), _(u"Wanted +++"), _(u"Wanted ++"), _(u"Wanted +"), _(u"Wanted"), _(u"Neutral"), _(u"Enforcer"), _(u"Enforcer +"), _(u"Enforcer ++"), _(u"Enforcer +++"), _(u"Enforcer ++++")]
+        lut = [_(u"Outlaw ++++"), _(u"Outlaw +++"), _(u"Outlaw ++"), _(u"Outlaw +"), _(u"Outlaw"), _(u"Neutral"), _(u"Enforcer"), _(u"Enforcer +"), _(u"Enforcer ++"), _(u"Enforcer +++"), _(u"Enforcer ++++")]
         karma = lut[mapped_index]
 
         if self.dex_profile is None:
