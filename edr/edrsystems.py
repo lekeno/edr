@@ -212,13 +212,14 @@ class EDRSystems(object):
 
         return summary
 
-    def has_recent_activity(self, system_name):
-        return self.has_recent_traffic(system_name) or self.has_recent_crimes(system_name) or self.has_recent_outlaws(system_name)
+    def has_recent_activity(self, system_name, pledged_to=None):
+        return self.has_recent_traffic(system_name) or self.has_recent_crimes(system_name) or self.has_recent_outlaws(system_name) or pledged_to and self.has_recent_enemies(system_name, pledged_to)
 
-    def systems_with_recent_activity(self):
+    def systems_with_recent_activity(self, pledged_to=None):
         systems_with_recent_crimes = {}
         systems_with_recent_traffic = {}
         systems_with_recent_outlaws = {}
+        systems_with_recent_enemies = {}
         self.__update_if_stale()
         systems_ids = self.sitreps_cache.keys()
         for sid in systems_ids:
@@ -226,6 +227,9 @@ class EDRSystems(object):
             star_system = sitrep.get("name", None) if sitrep else None
             if self.has_recent_outlaws(star_system):
                 systems_with_recent_outlaws[star_system] = sitrep["latestOutlaw"]
+            elif pledged_to and self.has_recent_enemies(star_system, pledged_to):
+                latestEnemy = "latestEnemy_{}".format(self.server.nodify(pledged_to))
+                systems_with_recent_enemies[star_system] = sitrep[latestEnemy]
             elif self.has_recent_crimes(star_system):
                 systems_with_recent_crimes[star_system] = sitrep["latestCrime"]
             elif self.has_recent_traffic(star_system):
@@ -239,6 +243,15 @@ class EDRSystems(object):
         if summary_outlaws:
             # Translators: this is for the sitreps feature; it's the title of a section to show systems with sighted outlaws 
             summary[_c(u"sitreps section|Outlaws")] = summary_outlaws
+        
+        if pledged_to:
+            summary_enemies = []
+            systems_with_recent_enemies = sorted(systems_with_recent_enemies.items(), key=lambda t: t[1], reverse=True)
+            for system in systems_with_recent_enemies:
+                summary_enemies.append(u"{} {}".format(system[0], edtime.EDTime.t_minus(system[1], short=True)))
+            if summary_enemies:
+                # Translators: this is for the sitreps feature; it's the title of a section to show systems with sighted enemies (powerplay) 
+                summary[_c(u"sitreps section|Enemies")] = summary_enemies
 
         summary_crimes = []
         systems_with_recent_crimes = sorted(systems_with_recent_crimes.items(), key=lambda t: t[1], reverse=True)
@@ -278,6 +291,18 @@ class EDRSystems(object):
             edr_config = edrconfig.EDRConfig()
             return self.is_recent(system_reports["latestOutlaw"],
                                   edr_config.opponents_recent_threshold("outlaws"))
+        return False
+    
+    def has_recent_enemies(self, star_system, pledged_to):
+        if self.has_sitrep(star_system):
+            system_reports = self.sitreps_cache.get(self.system_id(star_system))
+            latestEnemy = "latestEnemy_{}".format(self.server.nodify(pledged_to))
+            if system_reports is None or latestEnemy not in system_reports:
+                return False
+
+            edr_config = edrconfig.EDRConfig()
+            return self.is_recent(system_reports[latestEnemy],
+                                  edr_config.opponents_recent_threshold("enemies"))
         return False
 
     def recent_crimes(self, star_system):
@@ -399,7 +424,7 @@ class EDRSystems(object):
             for enemy in enemies:
                 summary_enemies.append(u"{} {}".format(enemies[0], edtime.EDTime.t_minus(enemies[1][0], short=True)))
             if summary_enemies:
-                # Translators: this is for the sitrep feature; it's a section to show wanted cmdrs who have been sighted in the system of interest
+                # Translators: this is for the sitrep feature; it's a section to show enemy cmdrs who have been sighted in the system of interest
                 summary[_c(u"sitreps section|Enemies")] = summary_enemies
 
         return summary
