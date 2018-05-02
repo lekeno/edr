@@ -237,13 +237,13 @@ class EDRClient(object):
     def warmup(self):
         EDRLOG.log(u"Warming up client.", "INFO")
         # Translators: this is shown when EDR warms-up via the overlay
-        details = [_(u"Feeling lost? Send !help via the in-game chat")]
+        details = [_(u"Check that Elite still has the focus!")]
         if self.mandatory_update:
             # Translators: this is shown when EDR warms-up via the overlay if there is a mandatory update pending
             details = [_(u"Mandatory update!")]
         details += self.motd
         # Translators: this is shown when EDR warms-up via the overlay, the -- are for presentation purpose
-        details.append(_(u"-- Random Tip --"))
+        details.append(_(u"-- Feeling lost? Send !help via the in-game chat --"))
         details.append(self.tips.tip())
         # Translators: this is shown when EDR warms-up via the overlay
         self.__notify(_(u"EDR v{} by LeKeno (Cobra Kai)").format(self.edr_version), details, clear_before=True)
