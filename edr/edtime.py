@@ -25,7 +25,7 @@ class EDTime(object, comparable.ComparableMixin):
     @staticmethod
     def pretty_print_timespan(timespan, short=False, verbose=False):
         if timespan < 0:
-            raise ValueError('Invalid input')
+            return u"0"
         remaining = timespan
         days = remaining / 86400
         remaining -= days * 86400
