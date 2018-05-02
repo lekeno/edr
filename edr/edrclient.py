@@ -565,10 +565,9 @@ class EDRClient(object):
             self.notify_with_details(_(u"EDR Alerts"), summary)
 
     def _worthy_alert(self, kind, event):
-        if event["uid"] is self.server.uid():
+        self_uid = self.server.uid()
+        if event["uid"] == self_uid:
             return False
-        print "uid in event: " + event["uid"]
-        print "uid in edrserver: " + self.server.uid()
         if self.realtime_params[kind]["max_distance"]:
             try:
                 origin = self.player.star_system
@@ -848,7 +847,7 @@ class EDRClient(object):
         
         if report:
             self.status = _(u"got info about {}").format(cmdr_name)
-            self.__intel(_(u"Intel for {}").format(cmdr_name), report)
+            self.__intel(_(u"Intel for {}").format(cmdr_name), report["readable"])
         else:
             EDRLOG.log(u"Where {} : no info".format(cmdr_name), "INFO")
             self.status = _(u"no info about {}").format(cmdr_name)

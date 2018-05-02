@@ -96,7 +96,7 @@ class EDROpponents(object):
             report = self.server.where(cmdr_name, self.powerplay)
             if report:
                  self.sightings.set(cname, report)
-        return self.__readable_opponent_sighting(report)
+        return { "timestamp": report.get("timestamp", None), "readable": self.__readable_opponent_sighting(report)}
 
     def recent_sightings(self):
         self.__update_opponents_if_stale()
@@ -171,7 +171,7 @@ class EDROpponents(object):
             sightings = None
             if self.kind is EDROpponents.OUTLAWS:
                 sightings = self.server.recent_outlaws(missing_seconds)
-            elif self.kind is EDROpponents.OUTLAWS:
+            elif self.kind is EDROpponents.ENEMIES:
                 sightings = self.server.recent_enemies(missing_seconds, self.powerplay)
             self.sightings.last_updated = now
             if sightings:
