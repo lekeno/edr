@@ -207,6 +207,10 @@ class EDRClient(object):
         self.player.name = name
 
     def pledged_to(self, power, time_pledged=0):
+        delta = time_pledged - self.player.time_pledged if self.player.time_pledged else time_pledged 
+        if power == self.player.powerplay and delta <= 60*60*6:
+            EDRLOG.log(u"Skipping pledged_to (not noteworthy): current vs. proposed {} vs. {}; {} vs {}".format(self.player.powerplay, power, self.player.time_pledged, time_pledged), "DEBUG")
+            return
         self.player.powerplay = power
         self.player.time_pledged = time_pledged
         for kind in self.edropponents:
