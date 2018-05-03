@@ -96,7 +96,10 @@ class EDROpponents(object):
             report = self.server.where(cmdr_name, self.powerplay)
             if report:
                  self.sightings.set(cname, report)
-        return { "timestamp": report.get("timestamp", None), "readable": self.__readable_opponent_sighting(report)}
+        if report:
+            return { "timestamp": report.get("timestamp", None), "readable": self.__readable_opponent_sighting(report)}
+        else:
+            return None
 
     def recent_sightings(self):
         self.__update_opponents_if_stale()
