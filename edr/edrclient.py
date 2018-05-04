@@ -476,7 +476,7 @@ class EDRClient(object):
                 details = _(u"Request an EDR account to access enemy alerts (https://lekeno.github.io)")
             elif not self.player.powerplay:
                 details = _(u"Pledge to a power to access enemy alerts")
-            elif self.player.time_pledged < 24*60*60*30:
+            elif self.player.time_pledged < 24*60*60*7: #TODO 30 days after the beta phase
                 details = _(u"Remain loyal for at least 30 days to access enemy alerts")
             else:
                 details = _(u"Enabling Enemy alerts") if self.edropponents[kind].establish_comms_link() else _(u"Couldn't enable Enemy alerts")
