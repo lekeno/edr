@@ -17,6 +17,7 @@ class HelpContent(object):
                 _(u" - !help system: star system related features"),
                 _(u" - !help cmdr: commander related features"),
                 _(u" - !help enforcers: features for enforcers / bounty hunters"),
+                _(u" - !help powerplay: features for commanders pledged to a power"),
                 _(u" - !help cmdrdex: personalizing EDR's commanders database"),
                 _(u" - !help config: configuration options"),
                 u"⚶",
@@ -67,6 +68,7 @@ class HelpContent(object):
                 _(u" - personalizing / augmenting EDR's commanders database."),
                 _(u" - reporting of traffic, outlaws and crimes."),
                 _(u" - reporting scans of commanders with legal status and bounties."),
+                _(u" - reporting and getting insights about powerplay enemies."),
                 u"⚶",
                 _(u"These insights will also help other EDR users so consider applying for an EDR account at https://lekeno.github.io/"),
                 u"⚶",
@@ -94,7 +96,7 @@ class HelpContent(object):
                 _(u" - 'o7': direct message a commander with a salute emoji to see their EDR and Inara profile."),
                 _(u" - '!who cmdr_name': to see cmdr_name's EDR and Inara profile."),
                 _(u"These commands will show the following information:"),
-                _(u" - EDR alignment: wanted, neutral, enforcer with grades, e.g. wanted ++++."),
+                _(u" - EDR alignment: outlaw, neutral, enforcer with grades, e.g. outlaw ++++."),
                 _(u" - User tags: [!12, ?1, +0], i.e. 12 users marked that commander as an outlaw, 1 as neutral, 0 as enforcer."),
                 _(u" - Inara info: squadron and role if any (sometimes superseded by EDR)."),
                 _(u" - Personal tags/info from your CmdrDex if any (see !help cmdrdex)."),
@@ -114,6 +116,22 @@ class HelpContent(object):
                 _(u" - '?outlaws [cr|ly] -': to remove the [minimal bounty|maximal distance] for the realtime alerts."),
                 _(u" - '!where cmdr_name': to display the last sighting of the cmdr called cmdr_name provided that EDR considers them an outlaw."),
                 _(u" - '#!' or '#?' or '#+': to mark a cmdr as an outlaw, neutral or enforcer (see !help cmdrdex for more details)."),
+                u"⚶",
+                _(u"Send !clear in chat to clear everything on the overlay.")
+            ]
+        },
+        "powerplay": {
+            "header": _(u"Powerplay"),
+            "details": [
+                _(u"When pledged to a power, your EDR module will also report powerplay enemies."),
+                _(u"Sitreps will also show any sighted enemies in a dedicated section."),
+                _(u"Chat commands for commanders who have been loyal to their allegiance for more than 30 days:"),
+                _(u" - '!enemies': to display a list of most recently sighted enemies and their locations."),
+                _(u" - '?enemies [on|off]': to enable/disable realtime alerts for sighted enemies."),
+                _(u" - '?enemies cr 10000': to configure a minimal bounty of 10k cr for the realtime alerts."),
+                _(u" - '?enemies ly 150': to configure a maximal distance of 150 ly for the realtime alerts."),
+                _(u" - '?enemies [cr|ly] -': to remove the [minimal bounty|maximal distance] for the realtime alerts."),
+                _(u" - '!where cmdr_name': to display the last sighting of cmdr_name provided that they are an enemy or outlaw."),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
             ]

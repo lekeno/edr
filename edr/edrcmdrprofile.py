@@ -244,18 +244,20 @@ class EDRCmdrProfile(object):
             self.dex_profile = None
         return True
     
-    def is_dangerous(self):
+    def is_dangerous(self, pledged_to=None):
         if self.dex_profile:
             return self.dex_profile._alignment == "outlaw"
         if self._karma <= -250:
             return True
+        if pledged_to and self.powerplay:
+            return pledged_to.lower() != self.powerplay.lower()
         if self.alignment_hints and self.alignment_hints["outlaw"] > 0:
             total_hints = sum([hints for hints in self.alignment_hints.values()])
             return (total_hints > 10 and self.alignment_hints["outlaw"] / total_hints > .5)
 
     def karma_title(self):
         mapped_index = int(10*(self._karma + self.max_karma()) / (2.0*self.max_karma()))
-        lut = [_(u"Wanted ++++"), _(u"Wanted +++"), _(u"Wanted ++"), _(u"Wanted +"), _(u"Wanted"), _(u"Neutral"), _(u"Enforcer"), _(u"Enforcer +"), _(u"Enforcer ++"), _(u"Enforcer +++"), _(u"Enforcer ++++")]
+        lut = [_(u"Outlaw ++++"), _(u"Outlaw +++"), _(u"Outlaw ++"), _(u"Outlaw +"), _(u"Outlaw"), _(u"Neutral"), _(u"Enforcer"), _(u"Enforcer +"), _(u"Enforcer ++"), _(u"Enforcer +++"), _(u"Enforcer ++++")]
         karma = lut[mapped_index]
 
         if self.dex_profile is None:

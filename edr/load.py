@@ -160,6 +160,16 @@ def handle_lifecycle_events(ed_player, entry):
         if not ed_player.in_solo_or_private():
             EDR_CLIENT.warmup()
 
+def handle_powerplay_events(ed_player, entry):
+    if entry["event"] == "Powerplay":
+        EDRLOG.log(u"Initial powerplay event: {}".format(entry), "DEBUG")
+        EDR_CLIENT.pledged_to(entry["Power"], entry["TimePledged"])
+    elif entry["event"] == "PowerplayDefect":
+        EDR_CLIENT.pledged_to(entry["ToPower"])
+    elif entry["event"] == "PowerplayJoin":
+        EDR_CLIENT.pledged_to(entry["Power"])
+    elif entry["event"] == "PowerplayLeave":
+        EDR_CLIENT.pledged_to(None)
 
 def journal_entry(cmdr, is_beta, system, station, entry, state):
     """
@@ -178,6 +188,15 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     if entry["event"] in ["Shutdown", "ShutDown", "Music", "Resurrect", "Fileheader", "LoadGame"]:
         handle_lifecycle_events(ed_player, entry)
+    
+    if entry["event"].startswith("Powerplay"):
+        EDRLOG.log(u"Powerplay event: {}".format(entry), "INFO")
+        handle_powerplay_events(ed_player, entry)
+    
+    if entry["event"] == "Statistics" and not ed_player.powerplay:
+        # There should be a Powerplay event before the Statistics event
+        # if not then the player is not pledged and we should reflect that on the server
+        EDR_CLIENT.pledged_to(None)
 
     if ed_player.in_solo_or_private():
         EDR_CLIENT.status = _(u"disabled in Solo/Private.")
@@ -290,7 +309,8 @@ def edr_submit_crime(criminal_cmdrs, offence, victim):
         "offence": offence,
         "victim": victim.name,
         "victimShip": victim.ship,
-        "reportedBy": victim.name
+        "reportedBy": victim.name,
+        "byPledge": victim.powerplay.lower().replace(" ", "_") if victim.powerplay else ""
     }
 
     if not EDR_CLIENT.crime(victim.star_system, report):
@@ -325,7 +345,8 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim):
         "offence": offence,
         "victim": victim,
         "victimShip": u"Unknown",
-        "reportedBy": criminal_cmdr.name
+        "reportedBy": criminal_cmdr.name,
+        "byPledge": criminal_cmdr.powerplay.lower().replace(" ", "_") if criminal_cmdr.powerplay else ""
     }
 
     EDRLOG.log(u"Perpetrated crime: {}".format(report), "DEBUG")
@@ -358,7 +379,8 @@ def edr_submit_contact(cmdr_name, ship, timestamp, source, witness):
         "timestamp": edt.as_js_epoch(),
         "ship" : ship if ship else u"Unknown",
         "source": source,
-        "reportedBy": witness.name
+        "reportedBy": witness.name,
+        "byPledge": witness.powerplay.lower().replace(" ", "_") if witness.powerplay else ""
     }
 
     if not witness.in_open():
@@ -387,6 +409,7 @@ def edr_submit_scan(scan, timestamp, source, witness):
     report["timestamp"] = edt.as_js_epoch()
     report["source"] = source
     report["reportedBy"] = witness.name
+    report["byPledge"] = witness.powerplay.lower().replace(" ", "_") if witness.powerplay else ""
 
     if not witness.in_open():
         EDRLOG.log(u"Scan not submitted due to unconfirmed Open mode", "INFO")
@@ -422,7 +445,8 @@ def edr_submit_traffic(cmdr_name, ship, timestamp, source, witness):
         "timestamp": edt.as_js_epoch(),
         "ship" : ship if ship else u"Unknown",
         "source": source,
-        "reportedBy": witness.name
+        "reportedBy": witness.name,
+        "byPledge": witness.powerplay.lower().replace(" ", "_") if witness.powerplay else ""
     }
 
     if not witness.in_open():
@@ -550,14 +574,16 @@ def handle_scan_events(cmdr, entry):
 
     edr_submit_contact(cmdr_name, ship, entry["timestamp"], "Ship targeted", cmdr)
     if entry["ScanStage"] == 3:
-        wanted = entry["LegalStatus"] in ["Wanted", "WantedEnemy"]
+        wanted = entry["LegalStatus"] in ["Wanted", "WantedEnemy", "Warrant"]
+        enemy = entry["LegalStatus"] in ["Enemy", "WantedEnemy"]
         scan = {
             "cmdr": cmdr_name,
             "ship": ship,
             "wanted": wanted,
+            "enemy": enemy,
             "bounty": entry["Bounty"] if wanted and "Bounty" in entry else 0
         }
-        edr_submit_scan(scan, entry["timestamp"], "Ship targeted", cmdr)
+        edr_submit_scan(scan, entry["timestamp"], "Ship targeted [{}]".format(entry["LegalStatus"]), cmdr)
     return True
 
 def handle_commands(cmdr, entry):
@@ -610,6 +636,9 @@ def handle_bang_commands(cmdr, command, command_parts):
     elif command == "!outlaws":
         EDRLOG.log(u"Outlaws command", "INFO")
         EDR_CLIENT.outlaws()
+    elif command == "!enemies":
+        EDRLOG.log(u"Enemies command", "INFO")
+        EDR_CLIENT.enemies()
     elif command == "!where" and len(command_parts) == 2:
         EDRLOG.log(u"Explicit where command for {}".format(command_parts[1]), "INFO")
         EDR_CLIENT.where(command_parts[1])
@@ -621,7 +650,6 @@ def handle_bang_commands(cmdr, command, command_parts):
         EDR_CLIENT.clear()
 
 def handle_query_commands(cmdr, command, command_parts):
-    #TODO document this new feature in help, readme, etc.
     if command == "?outlaws":
         EDRLOG.log(u"Outlaws alerts command", "INFO")
         param = "" if len(command_parts) == 1 else command_parts[1]
@@ -639,6 +667,20 @@ def handle_query_commands(cmdr, command, command_parts):
         elif param.startswith("cr "):
             EDRLOG.log(u"Min bounty for Outlaws alerts", "INFO")
             EDR_CLIENT.min_bounty_outlaws_alerts(param[3:])
+    elif command == "?enemies":
+        EDRLOG.log(u"Enemies alerts command", "INFO")
+        param = "" if len(command_parts) == 1 else command_parts[1]
+        if param == "":
+            EDR_CLIENT.enemies_alerts_enabled(silent=False)
+        elif param == "on": 
+            EDRLOG.log(u"Enabling enemies alerts", "INFO")
+            EDR_CLIENT.enable_enemies_alerts()
+        elif param == "off":
+            EDRLOG.log(u"Disabling enemies alerts", "INFO")
+            EDR_CLIENT.disable_enemies_alerts()
+        elif param.startswith("ly "):
+            EDRLOG.log(u"Max distance for Enemies alerts", "INFO")
+            EDR_CLIENT.max_distance_enemies_alerts(param[3:])
     
 def handle_hash_commands(command, command_parts, entry):
     target_cmdr = command_parts[1] if len(command_parts) > 1 else None

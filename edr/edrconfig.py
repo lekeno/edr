@@ -91,12 +91,13 @@ class EDRConfig(object):
     def lru_max_size(self):
         return int(self.config.get('lrucaches', 'lru_max_size'))
 
-    def outlaws_max_age(self):
-        return int(self.config.get('outlaws', 'outlaws_max_age'))
+    def opponents_max_age(self, kind):
+        ckind = kind.lower()
+        return int(self.config.get(ckind, '{}_max_age'.format(ckind)))
 
-    def outlaws_max_recents(self):
-        return int(self.config.get('outlaws', 'outlaws_max_recents'))
-
+    def opponents_max_recents(self, kind):
+        ckind = kind.lower()
+        return int(self.config.get(ckind, '{}_max_recents'.format(ckind)))
 
     def logging_level(self):
         return self.config.get('general', 'logging_level')
@@ -119,8 +120,9 @@ class EDRConfig(object):
     def recon_recent_threshold(self):
         return int(self.config.get('sitreps', 'recon_recent_threshold'))
 
-    def outlaws_recent_threshold(self):
-        return int(self.config.get('sitreps', 'outlaws_recent_threshold'))
+    def opponents_recent_threshold(self, kind):
+        ckind = kind.lower()
+        return int(self.config.get('sitreps', '{}_recent_threshold'.format(ckind)))
 
     def crimes_recent_threshold(self):
         return int(self.config.get('sitreps', 'crimes_recent_threshold'))

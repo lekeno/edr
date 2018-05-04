@@ -57,7 +57,7 @@ class EDRLegalRecords(object):
             if (record["bounties"]["last"]["timestamp"] >= bounties["last"]["timestamp"]):
                 bounties["last"] = record["bounties"]["last"]
         timespan = edtime.EDTime.pretty_print_timespan(self.timespan, short=True, verbose=True)
-        if bounties["last"]["value"]:
+        if bounties["max"] or bounties["last"]["value"]:
             tminus = edtime.EDTime.t_minus(bounties["last"]["timestamp"], short=True)
             max_bounty = EDBounty(bounties["max"]).pretty_print()
             last_bounty = EDBounty(bounties["last"]["value"]).pretty_print()
@@ -106,8 +106,8 @@ class EDRLegalRecords(object):
                 existing_record = self.records.get(cmdr_id)
                 if existing_record and "records" in existing_record:
                     recent_records = existing_record["records"]
-                for record in records:
-                    recent_records.appendleft(record)
+            for record in records:
+                recent_records.appendleft(record)
 
             self.records.set(cmdr_id, {"last_updated": now, "records": recent_records})
             updated = True
