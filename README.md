@@ -1,6 +1,10 @@
 # ED Recon (aka EDR)
 EDR is an [EDMC](https://github.com/Marginal/EDMarketConnector/) plugin for [Elite: Dangerous](https://www.elitedangerous.com/) whose purpose is to warn you about dangerous commanders and help bounty or powerplay hunters to chase them. 
 
+See this [short video showcasing some of EDR's features](https://www.youtube.com/watch?v=KhWTyeE-s7E)
+
+![One of EDR's many commands: !where to find out the last sighting of an outlaw or enemy](https://i.imgur.com/mTM9vRC.png)
+
 Author: LeKeno from [Cobra Kai](https://inara.cz/wing/2035/).
 
 # Getting started
