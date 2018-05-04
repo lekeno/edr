@@ -7,7 +7,7 @@ Author: LeKeno from [Cobra Kai](https://inara.cz/wing/2035/).
 See this [short video showcasing some of EDR's features](https://www.youtube.com/watch?v=KhWTyeE-s7E)
 
 ## Sample screenshot
-Here is one example of what EDR provides (note: the layout can be customized).
+Here is one of EDR's many commands in action. `!where` shows the last known sighting of an outlaw or enemy player. Note: the layout can be customized.
 
 ![One of EDR's many commands: !where to find out the last sighting of an outlaw or enemy](https://i.imgur.com/mTM9vRC.png)
 
