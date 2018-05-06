@@ -582,7 +582,7 @@ class EDRClient(object):
         if self.realtime_params[kind]["min_bounty"]:
             if "bounty" not in event:
                 return False
-            if event["bounty"] >= self.realtime_params[kind]["min_bounty"]:
+            if event["bounty"] < self.realtime_params[kind]["min_bounty"]:
                 EDRLOG.log(u"EDR alert not worthy. Bounty {} does not exceeds threshold {}".format(event["bounty"], self.realtime_params[kind]["min_bounty"]), "DEBUG")
                 return False
         return self.novel_enough_alert(event["cmdr"].lower(), event)
