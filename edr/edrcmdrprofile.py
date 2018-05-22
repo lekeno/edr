@@ -5,14 +5,19 @@ from edri18n import _, _c
 EDRLOG = edrlog.EDRLog()
 
 class EDRCmdrDexProfile(object):
-    @staticmethod 
+    @staticmethod
     def alignments():
         return [u"outlaw", u"neutral", u"enforcer"]
+    
+    @staticmethod
+    def iffs():
+        return [u"enemy", u"ally"]
     
     def __init__(self, dex_dict=None):
         if dex_dict is None:
             dex_dict = {}
         self._alignment = dex_dict.get("alignment", None)
+        self._iff = dex_dict.get("iff", None)
         self.tags = set([self.__tagify(t) for t in dex_dict.get("tags", [])])
         self._friend = dex_dict.get("friend", False)
         self._memo = dex_dict.get("memo", None)
@@ -41,6 +46,25 @@ class EDRCmdrDexProfile(object):
         self._alignment = new_alignment
         self.updated = now
 
+    @property
+    def iff(self):
+        lut = { u"enemy": _(u"enemy"), u"ally": _(u"ally") }
+        return lut.get(self._iff, None)
+
+    @iff.setter
+    def iff(self, new_iff):
+        now = edtime.EDTime.js_epoch_now()
+        if (new_iff is None):
+            self._iff = None
+            self.updated = now
+            return
+
+        if (new_iff not in EDRCmdrDexProfile.iffs()):
+            return
+        if (new_iff == self._iff):
+            return
+        self._iff = new_iff
+        self.updated = now
     
     @property
     def friend(self):
@@ -55,7 +79,7 @@ class EDRCmdrDexProfile(object):
         return True
 
     def is_useless(self):
-        return (not self.friend) and (self.alignment is None) and (self.memo is None) and (not self.tags)
+        return (not self.friend) and (self.alignment is None) and (self.iff is None) and (self.memo is None) and (not self.tags)
 
     @property
     def memo(self):
@@ -71,6 +95,9 @@ class EDRCmdrDexProfile(object):
         all_tags = []
         if self.alignment:
             all_tags.append(self.alignment)
+
+        if self.iff:
+            all_tags.append(self.iff)
         
         if self.tags:
             all_tags += self.tags
@@ -91,6 +118,9 @@ class EDRCmdrDexProfile(object):
         elif tag in EDRCmdrDexProfile.alignments() and self._alignment != tag:
             self.alignment = tag
             return True
+        elif tag in EDRCmdrDexProfile.iffs() and self._iff != tag:
+            self.iff = tag
+            return True
         elif tag not in self.tags:
             self.tags.add(tag)
             self.updated = edtime.EDTime.js_epoch_now()
@@ -105,6 +135,9 @@ class EDRCmdrDexProfile(object):
             return True
         elif tag == self._alignment:
             self.alignment = None
+            return True
+        elif tag == self._iff:
+            self.iff = None
             return True
         elif tag in self.tags:
             self.tags.remove(tag)
@@ -127,11 +160,14 @@ class EDRCmdrProfile(object):
         self.cid = None
         self._name = None
         self.squadron = None
+        self.squadron_id = None
+        self.squadron_rank = None
         self.role = None
         self._karma = 0
         self.alignment_hints = None
         self.patreon = None
         self.dex_profile = None
+        self.sqdrdex_profile = None
         self.powerplay = None
     
     @property
@@ -157,31 +193,38 @@ class EDRCmdrProfile(object):
     def from_inara_api(self, json_cmdr):
         self.name = json_cmdr.get("userName", "")
         wing = json_cmdr.get("commanderWing", None)
-        self.squadron = None if wing is None else wing["wingName"] 
+        self.squadron = wing["wingName"] if wing else None
+        self.squadron_id = wing["wingID"] if wing else None
+        self.squadron_rank = wing["wingMemberRank"] if wing else None
         self.role = json_cmdr.get("preferredGameRole", None)
         self.powerplay = json_cmdr.get("preferredPowerName", None)
         self.karma = 0 #not supported by Inara
         self.alignment_hints = None #not supported by Inara
         self.patreon = None
         self.dex_profile = None
+        self.sqdrdex_profile = None
 
     def from_dict(self, json_cmdr):
         self.name = json_cmdr.get("name", "")
         self.squadron = json_cmdr.get("squadron", None)
+        self.squadron_id = json_cmdr.get("squadronID", None)
+        self.squadron_rank = json_cmdr.get("squadronRank", None)
         self.role = json_cmdr.get("role", None)
         self.karma = json_cmdr.get("karma", 0)
         self.alignment_hints = json_cmdr.get("alignmentHints", None)
         self.patreon = json_cmdr.get("patreon", None)
         self.dex_profile = None
         self.powerplay = None
+        self.sqdrdex_profile = None
     
     def complement(self, other_profile):
         if self.name.lower() != other_profile.name.lower():
             EDRLOG.log(u"Can't complement profile since it doesn't match: {} vs. {}".format(other_profile.name, self.name), "DEBUG")
             return False
 
-        if self.squadron is None or self.squadron == "":
-            self.squadron = other_profile.squadron
+        self.squadron = self.squadron if self.squadron else other_profile.squadron
+        self.squadron_id = self.squadron_id if self.squadron_id else other_profile.squadron_id
+        self.squadron_rank = self.squadron_rank if self.squadron_rank else other_profile.squadron_rank
 
         if self.role is None or self.role == "":
             self.role = other_profile.role
@@ -214,6 +257,16 @@ class EDRCmdrProfile(object):
             u"updated": self.dex_profile.updated
         }
 
+    def sqdrdex(self, dex_dict):
+        if dex_dict is None:
+            return False
+
+        if self.name.lower() != dex_dict.get("name", "").lower():
+            EDRLOG.log(u"Can't augment with CmdrDex profile since it doesn't match: {} vs. {}".format(dex_dict.get("name", ""), self.name), "DEBUG")
+            return False
+
+        self.sqdrdex_profile = EDRCmdrDexProfile(dex_dict)
+
     def tag(self, tag):
         if self.dex_profile is None:
             self.dex_profile = EDRCmdrDexProfile({})
@@ -245,6 +298,8 @@ class EDRCmdrProfile(object):
         return True
     
     def is_dangerous(self, pledged_to=None):
+        if self.sqdrdex_profile:
+            return self.sqdrdex_profile._iff == "enemy"
         if self.dex_profile:
             return self.dex_profile._alignment == "outlaw"
         if self._karma <= -250:

@@ -65,6 +65,7 @@ class EDRServer(object):
         future_epoch_js = 1830000000000L
 
         params = {"orderBy": '"timestamp"', "startAt": past_epoch_js, "endAt": future_epoch_js, "auth": self.auth_token()}
+        print params
         resp = requests.get("{}/v1/notams.json".format(self.EDR_SERVER), params=params)
 
         if resp.status_code != requests.codes.ok:
@@ -134,8 +135,7 @@ class EDRServer(object):
         EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = requests.put(endpoint, params=params, json=json)
         EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
-        return resp.status_code == requests.codes.ok
-            
+        return resp.status_code == requests.codes.ok            
     
     def cmdr(self, cmdr, autocreate=True):
         cmdr_profile = edrcmdrprofile.EDRCmdrProfile()
@@ -271,29 +271,55 @@ class EDRServer(object):
     def update_cmdrdex(self, cmdr_id, dex_entry):
         if self.is_anonymous():
             return False
-        params = { "auth" : self.auth_token()}
-        
+        dex_path = "/v1/cmdrsdex/{}/".format(self.uid())
         if dex_entry is None:
-            EDRLOG.log(u"Removing CmdrDex entry for cmdr {cid}".format(cid=cmdr_id), "INFO")
-            endpoint = "{server}/v1/cmdrsdex/{uid}/{cid}.json".format(server=self.EDR_SERVER, uid=self.uid(), cid=cmdr_id)
-            EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
-            resp = requests.delete(endpoint, params=params)
-            EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
-            return resp.status_code == requests.codes.ok
+            return self.__remove_dex(dex_path, cmdr_id)
         
-        EDRLOG.log(u"CmdrDex entry for cmdr {cid} with json:{json}".format(cid=cmdr_id, json=dex_entry), "INFO")
-        endpoint = "{server}/v1/cmdrsdex/{uid}/{cid}/.json".format(server=self.EDR_SERVER, uid=self.uid(), cid=cmdr_id)
+        return self.__update_dex(dex_path, cmdr_id, dex_entry)    
+
+    def cmdrdex(self, cmdr_id):
+        if self.is_anonymous():
+            return None
+        dex_path = "/v1/cmdrsdex/{}/".format(self.uid())
+        return self.__dex(dex_path, cmdr_id)
+
+    def update_sqdrdex(self, sqdr_id, cmdr_id, dex_entry):
+        if self.is_anonymous():
+            return False
+        dex_path = "/v1/sqdrsdex/{}/".format(sqdr_id)
+        if dex_entry is None:
+            return self.__remove_dex(dex_path, cmdr_id)
+        
+        return self.__update_dex(dex_path, cmdr_id, dex_entry)
+
+    def sqdrdex(self, sqdr_id, cmdr_id):
+        if self.is_anonymous():
+            return None
+        dex_path = "/v1/sqdrsdex/{}/".format(sqdr_id)
+        return self.__dex(dex_path, cmdr_id)
+
+    def __update_dex(self, dex_path, cmdr_id, dex_entry):
+        params = { "auth" : self.auth_token()}
+        EDRLOG.log(u"Dex entry for cmdr {cid} with json:{json}".format(cid=cmdr_id, json=dex_entry), "INFO")
+        endpoint = "{server}{dex}{cid}/.json".format(server=self.EDR_SERVER, dex=dex_path, cid=cmdr_id)
         EDRLOG.log(u"Endpoint: {} with {}".format(endpoint, dex_entry), "DEBUG")
         resp = requests.put(endpoint, params=params, json=dex_entry)
         EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
         return resp.status_code == requests.codes.ok
 
-    def cmdrdex(self, cmdr_id):
-        if self.is_anonymous():
-            return None
-        EDRLOG.log(u"CmdrDex request for {}".format(cmdr_id), "DEBUG")
+    def __remove_dex(self, dex_path, cmdr_id):
         params = { "auth" : self.auth_token()}
-        endpoint = "{server}/v1/cmdrsdex/{uid}/{cid}/.json".format(server=self.EDR_SERVER, uid=self.uid(), cid=cmdr_id)
+        EDRLOG.log(u"Removing Dex entry for cmdr {cid}".format(cid=cmdr_id), "INFO")
+        endpoint = "{server}{dex}{cid}.json".format(server=self.EDR_SERVER, dex=dex_path, cid=cmdr_id)
+        EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
+        resp = requests.delete(endpoint, params=params)
+        EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
+        return resp.status_code == requests.codes.ok
+    
+    def __dex(self, dex_path, cmdr_id):
+        EDRLOG.log(u"Dex request for {}".format(cmdr_id), "DEBUG")
+        params = { "auth" : self.auth_token()}
+        endpoint = "{server}{dex}{cid}/.json".format(server=self.EDR_SERVER, dex=dex_path, cid=cmdr_id)
         EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = requests.get(endpoint, params=params)
         EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")

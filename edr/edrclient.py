@@ -203,7 +203,7 @@ class EDRClient(object):
         self._audio_feedback.set(new_value)
 
     def player_name(self, name):
-        self.edrcmdrs.inara.cmdr_name = name
+        self.edrcmdrs.player_name = name
         self.player.name = name
 
     def pledged_to(self, power, time_pledged=0):
@@ -620,7 +620,7 @@ class EDRClient(object):
 
     def who(self, cmdr_name, autocreate=False):
         profile = self.cmdr(cmdr_name, autocreate, check_inara_server=True)
-        if not profile is None:
+        if profile:
             self.status = _(u"got info about {}").format(cmdr_name)
             EDRLOG.log(u"Who {} : {}".format(cmdr_name, profile.short_profile()), "INFO")
             legal = self.edrlegal.summarize_recents(profile.cid)
