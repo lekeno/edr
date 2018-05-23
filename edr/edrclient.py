@@ -788,6 +788,11 @@ class EDRClient(object):
             EDRLOG.log(u"Skipping tag cmdr since the user is anonymous.", "INFO")
             self.advertise_full_account(_(u"Sorry, this feature only works with an EDR account."), passive=False)
             return False
+        
+        if not self.player.squadron and tag in ["enemy", "ally"]:
+            EDRLOG.log(u"Skipping squadron tag since the user isn't a member of a squadron.", "INFO")
+            self.notify_with_details(_(u"Unlock by joining a squadron on Inara", ["Sorry, you need to join a squadron on https://inara.cz to use this feature."]))
+            return False
 
         success = self.edrcmdrs.tag_cmdr(cmdr_name, tag)
         if success:

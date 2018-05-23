@@ -19,7 +19,7 @@ class EDRCmdrs(object):
     def __init__(self, server):
         self.server = server
         self.inara = edrinara.EDRInara()
-        self.player_name = None
+        self._player = { "name": None, "squadron_id": None}
  
         edr_config = edrconfig.EDRConfig()
  
@@ -46,12 +46,15 @@ class EDRCmdrs(object):
 
     @property
     def player_name(self):
-        return self._player_name
+        return self._player["name"]
 
     @player_name.setter
     def player_name(self, new_player_name):
-        self._player_name = new_player_name
         self.inara.cmdr_name = new_player_name
+        self._player["name"] = new_player_name
+        squadron = self.inara.squadron()
+        self._player["squadron_id"] = squadron["id"] if squadron else None
+
 
     def persist(self):
         with open(self.EDR_CMDRS_CACHE, 'wb') as handle:
@@ -100,27 +103,31 @@ class EDRCmdrs(object):
         return profile
 
     
-    def __edr_sqdrdex(self, cmdr_id):
-        player_inara = self.__inara_cmdr(self.player_name, check_inara_server=True)
-        if player_inara is None or player_inara.squadron_id is None:
+    def __edr_sqdrdex(self, cmdr_name):
+        sqdr_id = self._player["squadrond_id"]
+        if not sqdr_id:
             return None
-        sqdr_id = player_inara.squadron_id
-        sqdrdex = self.sqdrdex_cache.get(u"{}:{}".format(sqdr_id, cmdr_id))
+        sqdrdex = self.sqdrdex_cache.get(u"{}:{}".format(sqdr_id, cmdr_name.lower()))
         if sqdrdex:
-            EDRLOG.log(u"Cmdr {cid} is in the EDR IFF cache for squadron {sqid}".format(cid=profile.cid,
+            EDRLOG.log(u"Cmdr {cmdr} is in the EDR IFF cache for squadron {sqid}".format(cmdr=cmdr_name,
                                                                                     sqid=sqdr_id),
                                                                                     "DEBUG")
             return sqdrdex
 
+ #       profile = self.server.cmdr(cmdr_name, autocreate)
+#
+ #       if profile:
+  #          dex_profile = self.server.cmdrdex(profile.cid)
+        cmdr_id = None #TODO
         sqdrdex = self.server.sqdrdex(sqdr_id, cmdr_id)
         if sqdrdex is None:
-            EDRLOG.log(u"No EDR SqdrDex {sqid} entry for {cid}".format(sqid=sqdr_id,
-                                                                    cid=cmdr_id
+            EDRLOG.log(u"No EDR SqdrDex {sqid} entry for {cmdr}@{cid}".format(sqid=sqdr_id,
+                                                                    cmdr=cmdr_name, cid=sqdrdex.cmdr_id
                                                                     ), "DEBUG")
             return None
-        self.sqdrdex_cache.set(u"{}:{}".format(sqdr_id, cmdr_id), sqdrdex)
-        EDRLOG.log(u"Cached EDR SqdrDex {sqid} entry for {cid}".format(sqid=sqdr_id,
-                                                                cid=cmdr_id), "DEBUG")
+        self.sqdrdex_cache.set(u"{}:{}".format(sqdr_id, cmdr_name.lower()), sqdrdex)
+        EDRLOG.log(u"Cached EDR SqdrDex {sqid} entry for {cmdr}@{cid}".format(sqid=sqdr_id,
+                                                                cmdr=cmdr_name, cid=sqdrdex.cmdr_id), "DEBUG")
         return sqdrdex
 
 
@@ -171,6 +178,12 @@ class EDRCmdrs(object):
         return profile
 
     def tag_cmdr(self, cmdr_name, tag):
+        if tag in ["enemy", "ally"]:
+            return self.__squadron_tag_cmdr(cmdr_name, tag)
+        else:
+            return self.__tag_cmdr(cmdr_name, tag)
+
+    def __tag_cmdr(self, cmdr_name, tag):
         EDRLOG.log(u"Tagging {} with {}".format(cmdr_name, tag), "DEBUG")
         profile = self.__edr_cmdr(cmdr_name, False)
         if profile is None:
@@ -185,6 +198,30 @@ class EDRCmdrs(object):
         dex_dict = profile.dex_dict()
         EDRLOG.log(u"New dex state: {}".format(dex_dict), "DEBUG")
         success = self.server.update_cmdrdex(profile.cid, dex_dict)
+        if success:
+            self.evict(cmdr_name)
+        return success
+
+    def __squadron_tag_cmdr(self, cmdr_name, tag):
+        squadron_id = self._player["squadron_id"] 
+        if not squadron_id:
+            EDRLOG.log(u"Can't tag: not a member of a squadron", "DEBUG")
+            return False
+
+        EDRLOG.log(u"Tagging {} with {} for squadron".format(cmdr_name, tag), "DEBUG")
+        profile = self.__edr_sqdrdex(cmdr_name)
+        if profile is None:
+            EDRLOG.log(u"Couldn't find a squadron profile for {}.".format(cmdr_name), "DEBUG")
+            return False
+
+        tagged = profile.tag(tag)
+        if not tagged:
+            EDRLOG.log(u"Couldn't tag {} with {} (e.g. already tagged)".format(cmdr_name, tag), "DEBUG")
+            return False
+
+        dex_dict = profile.dex_dict()
+        EDRLOG.log(u"New dex state: {}".format(dex_dict), "DEBUG")
+        success = self.server.update_sqdrdex(squadron_id, profile.cid, dex_dict)
         if success:
             self.evict(cmdr_name)
         return success
@@ -228,6 +265,31 @@ class EDRCmdrs(object):
         return success
     
     def untag_cmdr(self, cmdr_name, tag):
+        if tag in ["enemy", "ally"]:
+            return self.__squadron_untag_cmdr(cmdr_name, tag)
+        else:
+            return self.__untag_cmdr(cmdr_name, tag)
+
+    def __untag_cmdr(self, cmdr_name, tag):
+        EDRLOG.log(u"Removing {} tag from {}".format(tag, cmdr_name), "DEBUG")
+        profile = self.__edr_cmdr(cmdr_name, False)
+        if profile is None:
+            EDRLOG.log(u"Couldn't find a profile for {}.".format(cmdr_name), "DEBUG")
+            return False
+
+        untagged = profile.untag(tag)
+        if not untagged:
+            EDRLOG.log(u"Couldn't untag {} (e.g. tag not present)".format(cmdr_name), "DEBUG")
+            return False
+
+        dex_dict = profile.dex_dict()
+        EDRLOG.log(u"New dex state: {}".format(dex_dict), "DEBUG")
+        success = self.server.update_cmdrdex(profile.cid, dex_dict)
+        if success:
+            self.evict(cmdr_name)
+        return success
+    
+    def __squadron_untag_cmdr(self, cmdr_name, tag):
         EDRLOG.log(u"Removing {} tag from {}".format(tag, cmdr_name), "DEBUG")
         profile = self.__edr_cmdr(cmdr_name, False)
         if profile is None:

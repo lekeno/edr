@@ -697,6 +697,12 @@ def handle_hash_commands(command, command_parts, entry):
     elif (command == "#+" or command == "#enforcer"):
         EDRLOG.log(u"Tag enforcer command for {}".format(target_cmdr), "INFO")
         EDR_CLIENT.tag_cmdr(target_cmdr, "enforcer")
+    elif (command == "#s!" or command == "#enemy"):
+        EDRLOG.log(u"Tag squadron enemy command for {}".format(target_cmdr), "INFO")
+        EDR_CLIENT.tag_cmdr(target_cmdr, "enemy")
+    elif (command == "#s+" or command == "#ally"):
+        EDRLOG.log(u"Tag squadron ally command for {}".format(target_cmdr), "INFO")
+        EDR_CLIENT.tag_cmdr(target_cmdr, "ally")
     elif (command == "#=" or command == "#friend"):
         EDRLOG.log(u"Tag friend command for {}".format(target_cmdr), "INFO")
         EDR_CLIENT.tag_cmdr(target_cmdr, "friend")
@@ -712,7 +718,7 @@ def handle_minus_commands(command, command_parts, entry):
         target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
 
     if command == "-#":
-        EDRLOG.log(u"Remove {} from cmdrsdex".format(target_cmdr), "INFO")
+        EDRLOG.log(u"Remove {} from dex".format(target_cmdr), "INFO")
         EDR_CLIENT.untag_cmdr(target_cmdr, tag=None)
     elif command == "-#!" or command == "-#outlaw":
         EDRLOG.log(u"Remove outlaw tag for {}".format(target_cmdr), "INFO")
@@ -723,6 +729,12 @@ def handle_minus_commands(command, command_parts, entry):
     elif command == "-#+" or command == "-#enforcer":
         EDRLOG.log(u"Remove enforcer tag for {}".format(target_cmdr), "INFO")
         EDR_CLIENT.untag_cmdr(target_cmdr, "enforcer")
+    elif command == "-#s!" or command == "-#enemy":
+        EDRLOG.log(u"Remove squadron enemy tag for {}".format(target_cmdr), "INFO")
+        EDR_CLIENT.untag_cmdr(target_cmdr, "enemy")
+    elif command == "-#s+" or command == "-#ally":
+        EDRLOG.log(u"Remove squadron ally tag for {}".format(target_cmdr), "INFO")
+        EDR_CLIENT.untag_cmdr(target_cmdr, "ally")    
     elif command == "-#=" or command == "-#friend":
         EDRLOG.log(u"Remove friend tag for {}".format(target_cmdr), "INFO")
         EDR_CLIENT.untag_cmdr(target_cmdr, "friend")
