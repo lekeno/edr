@@ -67,6 +67,9 @@ class EDRConfig(object):
     def cmdrsdex_max_age(self):
         return int(self.config.get('lrucaches', 'cmdrsdex_max_age'))
 
+    def sqdrdex_max_age(self):
+        return int(self.config.get('lrucaches', 'sqdrdex_max_age'))
+
     def inara_max_age(self):
         return int(self.config.get('lrucaches', 'inara_max_age'))
 
