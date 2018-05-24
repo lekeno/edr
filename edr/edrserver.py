@@ -247,6 +247,8 @@ class EDRServer(object):
         EDRLOG.log(u"Recently sighted enemies", "INFO")                
         endpoint = "/v1/powerplay/{}/enemies/".format(self.nodify(powerplay))
         return self.__get_recent(endpoint, timespan_seconds)
+
+    # TODO mayupdateinara call
     
     def where(self, name, powerplay=None):
         EDRLOG.log(u"Where query for opponent named '{}'".format(name), "INFO")

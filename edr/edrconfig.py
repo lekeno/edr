@@ -19,6 +19,9 @@ class EDRConfig(object):
     def edr_needs_u_novelty_threshold(self):
         return int(self.config.get('edr', 'edr_needs_u_novelty_threshold'))
 
+    def edr_heartbeat(self):
+        return int(self.config.get('edr', 'edr_heartbeat'))
+
     def inara_api_key(self):
         return self.config.get('inara', 'inara_api_key')
 

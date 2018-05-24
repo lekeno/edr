@@ -22,6 +22,7 @@ class EDRCmdrs(object):
         self._player = { "name": None, "squadron_id": None}
  
         edr_config = edrconfig.EDRConfig()
+        self._edr_heartbeat = edr_config.edr_heartbeat()
  
         try:
             with open(self.EDR_CMDRS_CACHE, 'rb') as handle:
@@ -52,9 +53,15 @@ class EDRCmdrs(object):
     def player_name(self, new_player_name):
         self.inara.cmdr_name = new_player_name
         self._player["name"] = new_player_name
-        squadron = self.inara.squadron()
-        self._player["squadron_id"] = squadron["id"] if squadron else None
+        self.__squadron_id(force_update=True)
 
+    def __squadron_id(self, force_update=False):
+        mark_twain_flag = (datetime.datetime.now() - self._player["hearbeat"]) >= self._edr_heartbeat
+        if force_update or mark_twain_flag:
+            squadron = self.inara.squadron() #TODO replace with EDR function call to update backend and get result from that instead
+            self._player["squadron_id"] = squadron["id"] if squadron else None
+            self._player["hearbeat"] = datetime.datetime.now()
+        return self._player["squadron_id"]
 
     def persist(self):
         with open(self.EDR_CMDRS_CACHE, 'wb') as handle:
@@ -106,7 +113,7 @@ class EDRCmdrs(object):
 
     
     def __edr_sqdrdex(self, cmdr_name, autocreate):
-        sqdr_id = self._player["squadrond_id"]
+        sqdr_id = self.__squadron_id()
         if not sqdr_id:
             return None
         sqdrdex = self.sqdrdex_cache.get(u"{}:{}".format(sqdr_id, cmdr_name.lower()))
@@ -204,7 +211,7 @@ class EDRCmdrs(object):
         return success
 
     def __squadron_tag_cmdr(self, cmdr_name, tag):
-        sqdr_id = self._player["squadron_id"] 
+        sqdr_id = self.__squadron_id() 
         if not sqdr_id:
             EDRLOG.log(u"Can't tag: not a member of a squadron", "DEBUG")
             return False
@@ -291,7 +298,7 @@ class EDRCmdrs(object):
         return success
 
     def __squadron_untag_cmdr(self, cmdr_name, tag):
-        sqdr_id = self._player["squadron_id"]
+        sqdr_id = self.__squadron_id()
         if not sqdr_id:
             EDRLOG.log(u"Can't untag: not a member of a squadron", "DEBUG")
             return False
