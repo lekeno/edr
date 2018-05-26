@@ -15,7 +15,6 @@ import urllib
 EDRLOG = edrlog.EDRLog()
 
 class EDRServer(object):
-
     @staticmethod
     def nodify(name):
         return name.lower().replace(" ", "_")
@@ -248,7 +247,16 @@ class EDRServer(object):
         endpoint = "/v1/powerplay/{}/enemies/".format(self.nodify(powerplay))
         return self.__get_recent(endpoint, timespan_seconds)
 
-    # TODO mayupdateinara call
+    def heartbeat(self):
+        EDRLOG.log(u"EDR heartbeat", "INFO")                
+        endpoint = "https://us-central1-blistering-inferno-4028.cloudfunctions.net/heartbeat"
+        params = {"uid": self.uid() }
+        resp = requests.get(endpoint, params=params)
+
+        if resp.status_code != requests.codes.ok:
+            EDRLOG.log(u"Heartbeat failed. Error code: {}".format(resp.status_code), "ERROR")
+            return None
+        return json.loads(resp.content)
     
     def where(self, name, powerplay=None):
         EDRLOG.log(u"Where query for opponent named '{}'".format(name), "INFO")

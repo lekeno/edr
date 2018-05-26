@@ -1,5 +1,6 @@
 import os
 import pickle
+import datetime
 import edrconfig
 import edrinara
 import lrucache
@@ -58,8 +59,8 @@ class EDRCmdrs(object):
     def __squadron_id(self, force_update=False):
         mark_twain_flag = (datetime.datetime.now() - self._player["hearbeat"]) >= self._edr_heartbeat
         if force_update or mark_twain_flag:
-            squadron = self.inara.squadron() #TODO replace with EDR function call to update backend and get result from that instead
-            self._player["squadron_id"] = squadron["id"] if squadron else None
+            info = self.server.heartbeat()
+            self._player["squadron_id"] = info["squadronId"] if info else None
             self._player["hearbeat"] = datetime.datetime.now()
         return self._player["squadron_id"]
 
