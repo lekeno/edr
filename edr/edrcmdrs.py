@@ -58,7 +58,6 @@ class EDRCmdrs(object):
         self.inara.cmdr_name = new_player_name
 
     def __squadron_id(self, force_update=False):
-        print self._player["heartbeat"]
         mark_twain_flag = (EDTime.js_epoch_now() - self._player["heartbeat"]) >= self._edr_heartbeat if self._player["heartbeat"] else True
         if force_update or mark_twain_flag:
             info = self.server.heartbeat()
@@ -103,17 +102,17 @@ class EDRCmdrs(object):
 
         profile = self.server.cmdr(cmdr_name, autocreate)
 
-        if profile:
-            dex_profile = self.server.cmdrdex(profile.cid)
-            if dex_profile:
-                EDRLOG.log(u"EDR CmdrDex entry found for {cmdr}: {id}".format(cmdr=cmdr_name,
-                                                            id=profile.cid), "DEBUG")
-                profile.dex(dex_profile)
-            self.cmdrs_cache.set(cmdr_name.lower(), profile)
-            EDRLOG.log(u"Cached EDR profile {cmdr}: {id}".format(cmdr=cmdr_name,
-                                                            id=profile.cid), "DEBUG")
-            return profile
-        return None
+        if not profile:
+            return None
+        dex_profile = self.server.cmdrdex(profile.cid)
+        if dex_profile:
+            EDRLOG.log(u"EDR CmdrDex entry found for {cmdr}: {id}".format(cmdr=cmdr_name,
+                                                        id=profile.cid), "DEBUG")
+            profile.dex(dex_profile)
+        self.cmdrs_cache.set(cmdr_name.lower(), profile)
+        EDRLOG.log(u"Cached EDR profile {cmdr}: {id}".format(cmdr=cmdr_name,
+                                                        id=profile.cid), "DEBUG")
+        return profile
 
     
     def __edr_sqdrdex(self, cmdr_name, autocreate):
@@ -132,16 +131,15 @@ class EDRCmdrs(object):
             return None
 
         sqdrdex = self.server.sqdrdex(sqdr_id, profile.cid)
-        if not sqdrdex:
-            EDRLOG.log(u"No EDR SqdrDex {sqid} entry for {cmdr}@{cid}".format(sqid=sqdr_id,
+        if sqdrdex:
+            EDRLOG.log(u"EDR SqdrDex {sqid} entry found for {cmdr}@{cid}".format(sqid=sqdr_id,
                                                                     cmdr=cmdr_name, cid=profile.cid
                                                                     ), "DEBUG")
-            return None
-        self.sqdrdex_cache.set(u"{}:{}".format(sqdr_id, cmdr_name.lower()), sqdrdex)
+            profile.sqdrdex(sqdrdex)
+        self.sqdrdex_cache.set(u"{}:{}".format(sqdr_id, cmdr_name.lower()), profile)
         EDRLOG.log(u"Cached EDR SqdrDex {sqid} entry for {cmdr}@{cid}".format(sqid=sqdr_id,
                                                                 cmdr=cmdr_name, cid=profile.cid), "DEBUG")
-        return sqdrdex
-
+        return profile
 
     def __inara_cmdr(self, cmdr_name, check_inara_server):
         inara_profile = self.inara_cache.get(cmdr_name.lower())
@@ -182,7 +180,7 @@ class EDRCmdrs(object):
             EDRLOG.log(u"Combining info from EDR and Inara for cmdr {}".format(cmdr_name), "INFO")
             profile.complement(inara_profile)
         
-        sqdrdex = self.__edr_sqdrdex(profile.cid, autocreate)
+        sqdrdex = self.__edr_sqdrdex(cmdr_name, autocreate)
         if sqdrdex:
             EDRLOG.log(u"Combining info from Squadron for cmdr {}".format(cmdr_name), "INFO")
             profile.sqdrdex(sqdrdex)
