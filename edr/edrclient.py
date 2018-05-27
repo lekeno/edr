@@ -205,6 +205,7 @@ class EDRClient(object):
     def player_name(self, name):
         self.edrcmdrs.player_name = name
         self.player.name = name
+        self.player.squadron = True #TODO dummy, rework the whole player thing to avoid having bits of info everywhere.
 
     def pledged_to(self, power, time_pledged=0):
         delta = time_pledged - self.player.time_pledged if self.player.time_pledged else time_pledged 
@@ -791,7 +792,7 @@ class EDRClient(object):
         
         if not self.player.squadron and tag in ["enemy", "ally"]:
             EDRLOG.log(u"Skipping squadron tag since the user isn't a member of a squadron.", "INFO")
-            self.notify_with_details(_(u"Unlock by joining a squadron on Inara", ["Sorry, you need to join a squadron on https://inara.cz to use this feature.", "Then, restart EDR to reflect changes."]))
+            self.notify_with_details(_(u"Unlock by joining a squadron on Inara"), ["Sorry, you need to join a squadron on https://inara.cz to use this feature.", "Then, restart EDR to reflect changes."])
             return False
 
         success = self.edrcmdrs.tag_cmdr(cmdr_name, tag)
@@ -835,7 +836,7 @@ class EDRClient(object):
 
         if not self.player.squadron and tag in ["enemy", "ally"]:
             EDRLOG.log(u"Skipping squadron untag since the user isn't a member of a squadron.", "INFO")
-            self.notify_with_details(_(u"Unlock by joining a squadron on Inara", ["Sorry, you need to join a squadron on https://inara.cz to use this feature.", "Then, restart EDR to reflect changes."]))
+            self.notify_with_details(_(u"Unlock by joining a squadron on Inara"), ["Sorry, you need to join a squadron on https://inara.cz to use this feature.", "Then, reboot EDR to reflect these changes."])
             return False
 
         success = self.edrcmdrs.untag_cmdr(cmdr_name, tag)
