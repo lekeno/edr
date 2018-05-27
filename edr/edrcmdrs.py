@@ -1,6 +1,6 @@
 import os
 import pickle
-import datetime
+from edtime import EDTime
 import edrconfig
 import edrinara
 import lrucache
@@ -20,7 +20,7 @@ class EDRCmdrs(object):
     def __init__(self, server):
         self.server = server
         self.inara = edrinara.EDRInara()
-        self._player = { "name": None, "squadron_id": None}
+        self._player = { "name": None, "squadron_id": None, "squadron_level": None, "heartbeat": None}
  
         edr_config = edrconfig.EDRConfig()
         self._edr_heartbeat = edr_config.edr_heartbeat()
@@ -52,16 +52,19 @@ class EDRCmdrs(object):
 
     @player_name.setter
     def player_name(self, new_player_name):
+        if (new_player_name != self._player["name"]):
+            self._player["name"] = new_player_name
+            self.__squadron_id(force_update=True)
         self.inara.cmdr_name = new_player_name
-        self._player["name"] = new_player_name
-        self.__squadron_id(force_update=True)
 
     def __squadron_id(self, force_update=False):
-        mark_twain_flag = (datetime.datetime.now() - self._player["hearbeat"]) >= self._edr_heartbeat
+        print self._player["heartbeat"]
+        mark_twain_flag = (EDTime.js_epoch_now() - self._player["heartbeat"]) >= self._edr_heartbeat if self._player["heartbeat"] else True
         if force_update or mark_twain_flag:
             info = self.server.heartbeat()
             self._player["squadron_id"] = info["squadronId"] if info else None
-            self._player["hearbeat"] = datetime.datetime.now()
+            self._player["squadron_level"] = info["squadronLevel"] if info else None
+            self._player["heartbeat"] = info["heartbeat"]
         return self._player["squadron_id"]
 
     def persist(self):
