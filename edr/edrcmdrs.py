@@ -229,9 +229,9 @@ class EDRCmdrs(object):
             EDRLOG.log(u"Couldn't tag {} with {} (e.g. already tagged)".format(cmdr_name, tag), "DEBUG")
             return False
 
-        dex_dict = profile.dex_dict()
-        EDRLOG.log(u"New dex state: {}".format(dex_dict), "DEBUG")
-        success = self.server.update_sqdrdex(sqdr_id, profile.cid, dex_dict)
+        sqdrdex_dict = profile.sqdrdex_dict()
+        EDRLOG.log(u"New dex state: {}".format(sqdrdex_dict), "DEBUG")
+        success = self.server.update_sqdrdex(sqdr_id, profile.cid, sqdrdex_dict)
         if success:
             self.evict(cmdr_name)
         return success
@@ -316,9 +316,9 @@ class EDRCmdrs(object):
             EDRLOG.log(u"Couldn't untag {} (e.g. tag not present)".format(cmdr_name), "DEBUG")
             return False
 
-        dex_dict = profile.sqdrdex_dict()
-        EDRLOG.log(u"New dex state: {}".format(dex_dict), "DEBUG")
-        success = self.server.update_sqdrdex(sqdr_id, profile.cid, dex_dict)
+        sqdr_dict = profile.sqdrdex_dict()
+        EDRLOG.log(u"New dex state: {}".format(sqdrdex_dict), "DEBUG")
+        success = self.server.update_sqdrdex(sqdr_id, profile.cid, sqdrdex_dict)
         if success:
             self.evict(cmdr_name)
         return success

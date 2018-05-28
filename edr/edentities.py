@@ -7,6 +7,90 @@ import edrconfig
 from edri18n import _, _c
 EDRLOG = edrlog.EDRLog()
 
+class class EDRSquadron(object):
+    SOMEWHAT_TRUSTED_LEVEL = 100
+    FULLY_TRUSTED_LEVEL = 300
+
+    def __init__(self, name, inara_id):
+        self.name = name
+        self.inara_id = inara_id
+
+    @staticmethod
+    def rank_to_level(rank):
+        RANK_LEVEL_LUT = {
+            "wing commander": 1000,
+            "deputy wing commander": 999,
+            "chief of staff": 800,
+            "operations officer": 700, 
+            "squadron leader": 600,
+            "flight leader": 500,
+            "senior wingman": 400,
+            "wingman": 300,
+            "pilot": 200,
+            "co-pilot": 100,
+            "reserve": 50,
+            "recruit": 0 
+        }
+        return RANK_LEVEL_LUT.get(rank, -1000)
+    
+    @staticmethod
+    def is_somewhat_trusted(rank):
+        return EDRSquadron.rank_to_level(rank) >= EDRSquadron.SOMEWHAT_TRUSTED_LEVEL
+
+    @staticmethod
+    def is_fully_trusted(rank):
+        return EDRSquadron.rank_to_level(rank) >= EDRSquadron.FULLY_TRUSTED_LEVEL
+
+
+class EDRPowerplay(object):
+    def __init__(self, pledged_to, time_pledged):
+        self.pledged_to = pledged_to
+        self.time_pledged = time_pledged
+
+    def pledged_since(self):
+        return edtime.EDTime.py_epoch_now() - self.time_pledged
+
+    def is_enemy(self, power): 
+        POWERS_AFFILIATION = {
+            "a_lavigny-duval": "Empire",
+            "aisling_duval": "Empire",
+            "archon_delaine": None,
+            "denton_patreus": "Empire",
+            "edmund_mahon": "Alliance",
+            "felicia_winters": "Federation",
+            "li_yong-rui": None,
+            "pranav_antal": None,
+            "yuri_grom": None,
+            "zachary_hudson": "Federation",
+            "zemina_torval": "Empire",   
+        }
+
+        if not (self.power in POWERS_AFFILIATION and power in POWERS_AFFILIATION):
+            return False
+        my_affiliation = POWERS_AFFILIATION[self.power]
+        their_affiliation = POWERS_AFFILIATION[power]
+        return my_affiliation != their_affiliation if my_affiliation else True
+
+    def pretty_print(self):
+        POWERS_AFFILIATION = {
+            "a_lavigny-duval": "Lavigny",
+            "aisling_duval": "Aisling",
+            "archon_delaine": "Archon",
+            "denton_patreus": "Patreus",
+            "edmund_mahon": "Mahon",
+            "felicia_winters": "Winters",
+            "li_yong-rui": "Li Yong-rui",
+            "pranav_antal": "Antal",
+            "yuri_grom": "Yuri",
+            "zachary_hudson": "Zachary",
+            "zemina_torval": "Zemina",   
+        }
+
+        if self.power in POWERS_AFFILIATION:
+            return POWERS_AFFILIATION[self.power]
+        return self.power
+
+
 class EDBounty(object):
     def __init__(self, value):
         self.value = value
@@ -48,7 +132,7 @@ class EDVehicles(object):
     @staticmethod
     def canonicalize(name):
         if name is None:
-            return u"Unknown"
+            return u"Unknown" # Note: this shouldn't be translated
 
         if name.lower() in EDVehicles.CANONICAL_SHIP_NAMES:
             return EDVehicles.CANONICAL_SHIP_NAMES[name.lower()]
@@ -88,6 +172,7 @@ class EDCmdr(object):
         self.friends = set()
         self.powerplay = None
         self.time_pledged = None
+        self.squadron = None
 
     def in_solo_or_private(self):
         return self.game_mode in ["Solo", "Group"]
@@ -126,9 +211,9 @@ class EDCmdr(object):
         return interlocutor in self.friends or interlocutor in self.wing
 
     def is_enemy_with(self, power):
-        if self.powerplay and power:
-            return power != self.powerplay
-        return False
+        if self.is_independent() or not power:
+            return False
+        return self.powerplay.is_enemy(power)
 
     @property
     def ship(self):
@@ -174,14 +259,44 @@ class EDCmdr(object):
     def in_bad_neighborhood(self):
         return self.location.is_anarchy_or_lawless()
 
-    @star_system.setter
-    def star_system(self, star_system):
-        self.location.star_system = star_system
+    def pledged(self, powerplay, time_pledged):
+        self.powerplay = EDRPowerplay(power, time_pledged)
+    
+    def pledged_since(self):
+        if self.powerplay:
+            return self.powerplay.since()
 
+    def squadron_member(self, squadron_name, squadron_id, squadron_rank):
+        self.squadron = EDRSquadron(squadron_name, squadron_id, squadron_rank)
+    
+    def is_independent(self):
+        return self.powerplay is None
+
+    def is_lone_wolf(self):
+        return self.squadron is None
+
+    def is_trusted_by_squadron(self):
+        if self.is_lone_wolf():
+            return False
+        return self.squadron.is_somewhat_trusted()
+
+    def is_empowered_by_squadron(self):
+        if self.is_lone_wolf():
+            return False
+        return self.squadron.is_fully_trusted()
+    
+    def is_trusted_by_power(self):
+        if self.is_independent():
+            return False
+        return self.powerplay.is_somewhat_trusted()
+
+    def is_empowered_by_power(self):
+        if self.is_independent():
+            return True
+        return self.powerplay.is_fully_trusted()
 
     def has_partial_status(self):
         return self._ship is None or self.location.star_system is None or self.location.place is None
-
 
     def update_ship_if_obsolete(self, ship, ed_timestamp):
         if self._ship is None or self._ship != EDVehicles.canonicalize(ship):

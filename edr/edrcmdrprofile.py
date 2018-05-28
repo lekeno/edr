@@ -267,6 +267,16 @@ class EDRCmdrProfile(object):
 
         self.sqdrdex_profile = EDRCmdrDexProfile(dex_dict)
 
+    def sqdrdex_dict(self):
+        if self.sqdrdex_profile is None:
+            return None
+
+        json_friendly_tags = list(self.sqdrdex_profile.tags)
+        return {
+            u"name": self.name,
+            u"rel": self.dex_profile._iff,
+        }
+
     def tag(self, tag):
         if self.dex_profile is None:
             self.dex_profile = EDRCmdrDexProfile({})
