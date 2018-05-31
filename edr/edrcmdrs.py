@@ -80,7 +80,7 @@ class EDRCmdrs(object):
         print "edrcmdrs heartbeat check"
         print force_update
         print self.heartbeat_timestamp
-        mark_twain_flag = (EDTime.js_epoch_now() - self.heartbeat_timestamp) >= self._edr_heartbeat if self.heartbeat_timestamp else True
+        mark_twain_flag = int((EDTime.js_epoch_now() - self.heartbeat_timestamp)/1000) >= self._edr_heartbeat if self.heartbeat_timestamp else True
         print mark_twain_flag
         if force_update or mark_twain_flag:
             info = self.server.heartbeat()
@@ -139,23 +139,23 @@ class EDRCmdrs(object):
         sqdr_id = self.__squadron_id()
         if not sqdr_id:
             return None
-        sqdrdex = self.sqdrdex_cache.get(u"{}:{}".format(sqdr_id, cmdr_name.lower()))
-        if sqdrdex:
+        profile = self.sqdrdex_cache.get(u"{}:{}".format(sqdr_id, cmdr_name.lower()))
+        if profile:
             EDRLOG.log(u"Cmdr {cmdr} is in the EDR IFF cache for squadron {sqid}".format(cmdr=cmdr_name,
                                                                                     sqid=sqdr_id),
                                                                                     "DEBUG")
-            return sqdrdex
+            return profile
 
         profile = self.__edr_cmdr(cmdr_name, autocreate)
         if not profile:
             return None
 
-        sqdrdex = self.server.sqdrdex(sqdr_id, profile.cid)
-        if sqdrdex:
+        sqdrdex_dict = self.server.sqdrdex(sqdr_id, profile.cid)
+        if sqdrdex_dict:
             EDRLOG.log(u"EDR SqdrDex {sqid} entry found for {cmdr}@{cid}".format(sqid=sqdr_id,
                                                                     cmdr=cmdr_name, cid=profile.cid
                                                                     ), "DEBUG")
-            profile.sqdrdex(sqdrdex)
+            profile.sqdrdex(sqdrdex_dict)
         self.sqdrdex_cache.set(u"{}:{}".format(sqdr_id, cmdr_name.lower()), profile)
         EDRLOG.log(u"Cached EDR SqdrDex {sqid} entry for {cmdr}@{cid}".format(sqid=sqdr_id,
                                                                 cmdr=cmdr_name, cid=profile.cid), "DEBUG")
@@ -200,10 +200,10 @@ class EDRCmdrs(object):
             EDRLOG.log(u"Combining info from EDR and Inara for cmdr {}".format(cmdr_name), "INFO")
             profile.complement(inara_profile)
         
-        sqdrdex = self.__edr_sqdrdex(cmdr_name, autocreate)
-        if sqdrdex:
+        squadron_profile = self.__edr_sqdrdex(cmdr_name, autocreate)
+        if squadron_profile:
             EDRLOG.log(u"Combining info from Squadron for cmdr {}".format(cmdr_name), "INFO")
-            profile.sqdrdex(sqdrdex)
+            profile.sqdrdex(squadron_profile.sqdrdex_dict())
 
         return profile
 

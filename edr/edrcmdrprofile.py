@@ -260,8 +260,6 @@ class EDRCmdrProfile(object):
     def sqdrdex(self, dex_dict):
         if dex_dict is None:
             return False
-
-        print dex_dict
         if self.name.lower() != dex_dict.get("name", "").lower():
             EDRLOG.log(u"Can't augment with CmdrDex profile since it doesn't match: {} vs. {}".format(dex_dict.get("name", ""), self.name), "DEBUG")
             return False
