@@ -12,6 +12,7 @@ import edrconfig
 import lrucache
 import edentities
 import edrserver
+import edrinara
 import audiofeedback
 import edrlog
 import ingamemsg
@@ -65,8 +66,8 @@ class EDRClient(object):
         audio = 1 if config.get("EDRAudioFeedback") == "True" else 0
         self._audio_feedback = tk.IntVar(value=audio)
 
-        self.player = edentities.EDCmdr()
         self.server = edrserver.EDRServer()
+        self.inara = edrinara.EDRInara()
         
         self.realtime_params = {
             EDROpponents.OUTLAWS: { "min_bounty": None if config.get("EDROutlawsAlertsMinBounty") == "None" else config.getint("EDROutlawsAlertsMinBounty"),
@@ -76,7 +77,8 @@ class EDRClient(object):
         }
         
         self.edrsystems = edrsystems.EDRSystems(self.server)
-        self.edrcmdrs = edrcmdrs.EDRCmdrs(self.server)
+        self.edrcmdrs = edrcmdrs.EDRCmdrs(self.server, self.inara)
+        self.player = self.edrcmdrs.player
         self.edropponents = {
             EDROpponents.OUTLAWS: EDROpponents(self.server, EDROpponents.OUTLAWS, self._realtime_callback),
             EDROpponents.ENEMIES: EDROpponents(self.server, EDROpponents.ENEMIES, self._realtime_callback),
@@ -203,21 +205,13 @@ class EDRClient(object):
         self._audio_feedback.set(new_value)
 
     def player_name(self, name):
-        self.edrcmdrs.player_name = name
-        self.player.name = name
-        self.player.squadron = True #TODO dummy, rework the whole player thing to avoid having bits of info everywhere.
+        self.edrcmdrs.set_player_name(name)
 
     def pledged_to(self, power, time_pledged=0):
-        delta = time_pledged - self.player.time_pledged if self.player.time_pledged else time_pledged 
-        if power == self.player.powerplay and delta <= 60*60*6:
-            EDRLOG.log(u"Skipping pledged_to (not noteworthy): current vs. proposed {} vs. {}; {} vs {}".format(self.player.powerplay, power, self.player.time_pledged, time_pledged), "DEBUG")
-            return
-        self.player.powerplay = power
-        self.player.time_pledged = time_pledged
-        for kind in self.edropponents:
-            self.edropponents[kind].pledged_to(power, time_pledged)
-        since = edtime.EDTime.js_epoch_now() - (time_pledged * 1000)
-        self.server.pledged_to(power, since)
+        if self.edrcmdrs.player_pledged_to(power, time_pledged):
+            for kind in self.edropponents:
+                self.edropponents[kind].pledged_to(power, time_pledged)
+        #TODO else, log?
 
     def login(self):
         self.server.logout()
@@ -342,7 +336,7 @@ class EDRClient(object):
                 # Translators: this is shown via the overlay if the system of interest is an Anarchy (current system or !sitrep <system>)
                 details.append(_c(u"Sitrep|Anarchy: not all crimes are reported."))
             if self.edrsystems.has_recent_activity(star_system):
-                summary = self.edrsystems.summarize_recent_activity(star_system, self.player.powerplay)
+                summary = self.edrsystems.summarize_recent_activity(star_system, self.player.power)
                 for section in summary:
                     details.append(u"{}: {}".format(section, "; ".join(summary[section])))
         if details:
@@ -475,7 +469,7 @@ class EDRClient(object):
         elif kind == EDROpponents.ENEMIES:
             if self.is_anonymous():
                 details = _(u"Request an EDR account to access enemy alerts (https://lekeno.github.io)")
-            elif not self.player.powerplay:
+            elif not self.player.power:
                 details = _(u"Pledge to a power to access enemy alerts")
             elif self.player.time_pledged < 24*60*60*7: #TODO 30 days after the beta phase
                 details = _(u"Remain loyal for at least 30 days to access enemy alerts")
@@ -641,7 +635,7 @@ class EDRClient(object):
             return
 
         profile = self.cmdr(cmdr_name, check_inara_server=True)
-        if profile and (self.player.name != cmdr_name) and profile.is_dangerous(self.player.powerplay):
+        if profile and (self.player.name != cmdr_name) and profile.is_dangerous(self.player.power):
             self.status = _(u"{} is bad news.").format(cmdr_name)
             if self.novel_enough_blip(cmdr_id, blip, cognitive = True):
                 self.__warning(_(u"Warning!"), [profile.short_profile()])
@@ -682,7 +676,7 @@ class EDRClient(object):
             legal = self.edrlegal.summarize_recents(profile.cid)
             bounty = edentities.EDBounty(scan["bounty"]) if scan["bounty"] else None
             if profile and (self.player.name != cmdr_name):
-                if profile.is_dangerous(pledged_to=self.player.powerplay):
+                if profile.is_dangerous(pledged_to=self.player.power):
                     # Translators: this is shown via EDMC's EDR status line upon contact with a known outlaw
                     self.status = _(u"{} is bad news.").format(cmdr_name)
                     details = [profile.short_profile()]
@@ -711,9 +705,9 @@ class EDRClient(object):
                 if (self.is_anonymous() and (profile.is_dangerous() or (scan["wanted"] and bounty.is_significant()))):
                     # Translators: this is shown to users who don't yet have an EDR account
                     self.advertise_full_account(_(u"You could have helped other EDR users by reporting this outlaw."))
-                elif self.is_anonymous() and scan["enemy"] and self.player.powerplay:
+                elif self.is_anonymous() and scan["enemy"] and self.player.power:
                     # Translators: this is shown to users who don't yet have an EDR account
-                    self.advertise_full_account(_(u"You could have helped other {power} pledges by reporting this enemy.").format(self.player.powerplay))
+                    self.advertise_full_account(_(u"You could have helped other {power} pledges by reporting this enemy.").format(self.player.power))
                 self.cognitive_scans_cache.set(cmdr_id, scan)
 
         if not self.novel_enough_scan(cmdr_id, scan):
@@ -871,7 +865,7 @@ class EDRClient(object):
         return self._opponents(EDROpponents.ENEMIES)
 
     def _opponents(self, kind):
-        if kind is EDROpponents.ENEMIES and not self.player.powerplay:
+        if kind is EDROpponents.ENEMIES and not self.player.power:
             EDRLOG.log(u"Not pledged to any power, can't have enemies.", "INFO")
             self.__notify(_(u"Recently Sighted {kind}").format(kind=_(kind)), [_(u"You need to be pledged to a power.")])
             return False

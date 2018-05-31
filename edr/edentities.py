@@ -7,48 +7,30 @@ import edrconfig
 from edri18n import _, _c
 EDRLOG = edrlog.EDRLog()
 
-class class EDRSquadron(object):
-    SOMEWHAT_TRUSTED_LEVEL = 100
-    FULLY_TRUSTED_LEVEL = 300
+class EDRSquadronMember(object):
+    SOMEWHAT_TRUSTED_LEVEL = 100 #TODO parameter
+    FULLY_TRUSTED_LEVEL = 300 #TODO paramerter
 
-    def __init__(self, name, inara_id):
-        self.name = name
-        self.inara_id = inara_id
-
-    @staticmethod
-    def rank_to_level(rank):
-        RANK_LEVEL_LUT = {
-            "wing commander": 1000,
-            "deputy wing commander": 999,
-            "chief of staff": 800,
-            "operations officer": 700, 
-            "squadron leader": 600,
-            "flight leader": 500,
-            "senior wingman": 400,
-            "wingman": 300,
-            "pilot": 200,
-            "co-pilot": 100,
-            "reserve": 50,
-            "recruit": 0 
-        }
-        return RANK_LEVEL_LUT.get(rank, -1000)
+    def __init__(self, squadron_dict):
+        self.name = squadron_dict["squadronName"]
+        self.inara_id = squadron_dict["squadronId"]
+        self.rank = squadron_dict["squadronRank"]
+        self.heartbeat = squadron_dict["heartbeat"]
+        self.level = squadron_dict["squadronLevel"]
     
-    @staticmethod
-    def is_somewhat_trusted(rank):
-        return EDRSquadron.rank_to_level(rank) >= EDRSquadron.SOMEWHAT_TRUSTED_LEVEL
+    def is_somewhat_trusted(self):
+        return self.level >= EDRSquadronMember.SOMEWHAT_TRUSTED_LEVEL
 
-    @staticmethod
-    def is_fully_trusted(rank):
-        return EDRSquadron.rank_to_level(rank) >= EDRSquadron.FULLY_TRUSTED_LEVEL
+    def is_fully_trusted(self):
+        return self.level >= EDRSquadronMember.FULLY_TRUSTED_LEVEL
 
+    def info(self):
+        return {"squadronName": self.name, "squadronId": self.inara_id, "squadronRank": self.rank, "squadronLevel": self.level }
 
 class EDRPowerplay(object):
     def __init__(self, pledged_to, time_pledged):
         self.pledged_to = pledged_to
-        self.time_pledged = time_pledged
-
-    def pledged_since(self):
-        return edtime.EDTime.py_epoch_now() - self.time_pledged
+        self.since = edtime.EDTime.py_epoch_now() - time_pledged
 
     def is_enemy(self, power): 
         POWERS_AFFILIATION = {
@@ -65,9 +47,9 @@ class EDRPowerplay(object):
             "zemina_torval": "Empire",   
         }
 
-        if not (self.power in POWERS_AFFILIATION and power in POWERS_AFFILIATION):
+        if not (self.pledged_to in POWERS_AFFILIATION and power in POWERS_AFFILIATION):
             return False
-        my_affiliation = POWERS_AFFILIATION[self.power]
+        my_affiliation = POWERS_AFFILIATION[self.pledged_to]
         their_affiliation = POWERS_AFFILIATION[power]
         return my_affiliation != their_affiliation if my_affiliation else True
 
@@ -86,9 +68,20 @@ class EDRPowerplay(object):
             "zemina_torval": "Zemina",   
         }
 
-        if self.power in POWERS_AFFILIATION:
-            return POWERS_AFFILIATION[self.power]
-        return self.power
+        if self.pledged_to in POWERS_AFFILIATION:
+            return POWERS_AFFILIATION[self.pledged_to]
+        return self.pledged_to
+
+    def time_pledged(self):
+        return edtime.EDTime.py_epoch_now() - self.since
+
+    def is_somewhat_trusted(self):
+        return False
+        #TODO return true if enough time has passed (parameterize)
+
+    def is_fully_trusted(self):
+        return False
+        #TODO return true if enough time has passed (parameterize)
 
 
 class EDBounty(object):
@@ -171,7 +164,6 @@ class EDCmdr(object):
         self.wing = set()
         self.friends = set()
         self.powerplay = None
-        self.time_pledged = None
         self.squadron = None
 
     def in_solo_or_private(self):
@@ -250,24 +242,45 @@ class EDCmdr(object):
         return self.location.place
 
     @place.setter
+
     def place(self, place):
         self.location.place = place
-
     def location_security(self, ed_security_state):
         self.location.security = ed_security_state
 
     def in_bad_neighborhood(self):
         return self.location.is_anarchy_or_lawless()
 
-    def pledged(self, powerplay, time_pledged):
+    @property
+    def power(self):
+        if self.is_independent():
+            return None
+        return self.powerplay.pledged_to
+    
+    @property
+    def time_pledged(self):
+        if self.is_independent():
+            return None
+        return self.powerplay.time_pledged()
+
+    def pledged_to(self, power, time_pledged):
         self.powerplay = EDRPowerplay(power, time_pledged)
     
     def pledged_since(self):
-        if self.powerplay:
-            return self.powerplay.since()
+        if self.is_independent():
+            return None
+        return self.powerplay.since
 
-    def squadron_member(self, squadron_name, squadron_id, squadron_rank):
-        self.squadron = EDRSquadron(squadron_name, squadron_id, squadron_rank)
+    def squadron_member(self, squadron_dict):
+        self.squadron = EDRSquadronMember(squadron_dict)
+
+    def lone_wolf(self):
+        self.squadron = None
+
+    def squadron_info(self):
+        if self.is_lone_wolf():
+            return None
+        return self.squadron.info()
     
     def is_independent(self):
         return self.powerplay is None

@@ -15,12 +15,12 @@ class EDRInara(object):
         self.version = config.edr_version()
         self.INARA_API_KEY = config.inara_api_key()
         self.INARA_ENDPOINT = config.inara_endpoint()
-        self.cmdr_name = None
+        self.requester = None
 
-    def squadron(self):
-        if self.cmdr_name is None:
+    def squadron(self, cmdr_name):
+        if self.requester is None:
             return None
-        json_resp = self.__cmdr(self.cmdr_name)
+        json_resp = self.__cmdr(cmdr_name)
         try:
             squadron = json_resp["commanderWing"]
             return { "id": squadron["wingID"], "name": squadron["wingName"], "rank": squadron["wingMemberRank"] }
@@ -29,7 +29,7 @@ class EDRInara(object):
 
     
     def cmdr(self, cmdr_name):
-        if self.cmdr_name is None:
+        if self.requester is None:
             return
         json_resp = self.__cmdr(cmdr_name)
         if json_resp:
@@ -74,7 +74,7 @@ class EDRInara(object):
             "appVersion": self.version,
             "isDeveloped": False,
             "APIkey": self.INARA_API_KEY,
-            "commanderName": self.cmdr_name
+            "commanderName": self.requester
         }
 
     def __api_cmdrprofile(self, cmdr_name):

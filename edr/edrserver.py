@@ -118,9 +118,9 @@ class EDRServer(object):
 
         return sid
 
-    def pledged_to(self, powerplay, since):
+    def pledged_to(self, power, since):
         params = { "auth": self.auth_token() }
-        if powerplay is None:
+        if power is None:
             EDRLOG.log(u"Removing pledge info for uid {uid}".format(uid=self.uid), "INFO")
             endpoint = "{server}/v1/pledges/{uid}/.json".format(server=self.EDR_SERVER, uid=self.uid())
             EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
@@ -128,9 +128,9 @@ class EDRServer(object):
             EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
             return resp.status_code == requests.codes.ok
         
-        EDRLOG.log(u"Pledge info for uid {uid} with power:{power}".format(uid=self.uid(), power=powerplay), "INFO")
+        EDRLOG.log(u"Pledge info for uid {uid} with power:{power}".format(uid=self.uid(), power=power), "INFO")
         endpoint = "{server}/v1/pledges/{uid}/.json".format(server=self.EDR_SERVER, uid=self.uid())
-        json = { "cpower": self.nodify(powerplay), "since": since, "heartbeat": {".sv": "timestamp"} }
+        json = { "cpower": self.nodify(power), "since": int(since*1000), "heartbeat": {".sv": "timestamp"} }
         EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = requests.put(endpoint, params=params, json=json)
         EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
@@ -242,9 +242,9 @@ class EDRServer(object):
         endpoint = "/v1/outlaws/"
         return self.__get_recent(endpoint, timespan_seconds)
 
-    def recent_enemies(self, timespan_seconds, powerplay):
+    def recent_enemies(self, timespan_seconds, power):
         EDRLOG.log(u"Recently sighted enemies", "INFO")                
-        endpoint = "/v1/powerplay/{}/enemies/".format(self.nodify(powerplay))
+        endpoint = "/v1/powerplay/{}/enemies/".format(self.nodify(power))
         return self.__get_recent(endpoint, timespan_seconds)
 
     def heartbeat(self):
@@ -258,12 +258,12 @@ class EDRServer(object):
             return None
         return json.loads(resp.content)
     
-    def where(self, name, powerplay=None):
+    def where(self, name, power=None):
         EDRLOG.log(u"Where query for opponent named '{}'".format(name), "INFO")
         params = {"orderBy": '"cname"', "equalTo": json.dumps(name.lower()), "limitToFirst": 1, "auth": self.auth_token() }
         endpoint = "{}/v1/".format(self.EDR_SERVER)
-        if powerplay:
-            endpoint += "powerplay/{}/enemies.json".format(self.nodify(powerplay))
+        if power:
+            endpoint += "powerplay/{}/enemies.json".format(self.nodify(power))
         else:
             endpoint += "outlaws.json"
         resp = requests.get(endpoint, params=params)

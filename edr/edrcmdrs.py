@@ -5,6 +5,7 @@ import edrconfig
 import edrinara
 import lrucache
 import edrlog
+from edentities import EDCmdr
 
 EDRLOG = edrlog.EDRLog()
 
@@ -17,10 +18,11 @@ class EDRCmdrs(object):
     EDR_SQDRDEX_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/sqdrdex.v1.p')
 
-    def __init__(self, server):
-        self.server = server
-        self.inara = edrinara.EDRInara()
-        self._player = { "name": None, "squadron_id": None, "squadron_level": None, "heartbeat": None}
+    def __init__(self, edrserver, edrinara):
+        self.server = edrserver
+        self.inara = edrinara
+        self._player = EDCmdr()
+        self.heartbeat_timestamp = None
  
         edr_config = edrconfig.EDRConfig()
         self._edr_heartbeat = edr_config.edr_heartbeat()
@@ -47,24 +49,43 @@ class EDRCmdrs(object):
                                                  edr_config.sqdrdex_max_age())
 
     @property
-    def player_name(self):
-        return self._player["name"]
+    def player(self):
+        return self._player
 
-    @player_name.setter
-    def player_name(self, new_player_name):
-        if (new_player_name != self._player["name"]):
-            self._player["name"] = new_player_name
-            self.__squadron_id(force_update=True)
+    def player_name(self):
+        return self._player.name
+
+    def set_player_name(self, new_player_name):
+        if (new_player_name != self._player.name):
+            self._player.name = new_player_name
+            self.inara.requester = new_player_name
+            self.__update_squadron_info(force_update=True)
         self.inara.cmdr_name = new_player_name
 
-    def __squadron_id(self, force_update=False):
-        mark_twain_flag = (EDTime.js_epoch_now() - self._player["heartbeat"]) >= self._edr_heartbeat if self._player["heartbeat"] else True
+    def player_pledged_to(self, power, time_pledged=0):
+        delta = time_pledged - self._player.time_pledged if self._player.time_pledged else time_pledged
+        if power == self._player.power and delta <= 60*60*6: #TODO parameterize
+            EDRLOG.log(u"Skipping pledged_to (not noteworthy): current vs. proposed {} vs. {}; {} vs {}".format(self._player.power, power, self._player.time_pledged, time_pledged), "DEBUG")
+            return False
+        self._player.pledged_to(power, time_pledged)
+        since = self._player.pledged_since()
+        return self.server.pledged_to(power, since)        
+
+    def __squadron_id(self):
+        self.__update_squadron_info()
+        info = self._player.squadron_info()
+        return info["squadronId"] if info else None
+
+    def __update_squadron_info(self, force_update=False):
+        print "edrcmdrs heartbeat check"
+        print force_update
+        print self.heartbeat_timestamp
+        mark_twain_flag = (EDTime.js_epoch_now() - self.heartbeat_timestamp) >= self._edr_heartbeat if self.heartbeat_timestamp else True
+        print mark_twain_flag
         if force_update or mark_twain_flag:
             info = self.server.heartbeat()
-            self._player["squadron_id"] = info["squadronId"] if info else None
-            self._player["squadron_level"] = info["squadronLevel"] if info else None
-            self._player["heartbeat"] = info["heartbeat"]
-        return self._player["squadron_id"]
+            self._player.squadron_member(info) if info else self._player.lone_wolf()
+            self.heartbeat_timestamp = info["heartbeat"]
 
     def persist(self):
         with open(self.EDR_CMDRS_CACHE, 'wb') as handle:
@@ -113,7 +134,6 @@ class EDRCmdrs(object):
         EDRLOG.log(u"Cached EDR profile {cmdr}: {id}".format(cmdr=cmdr_name,
                                                         id=profile.cid), "DEBUG")
         return profile
-
     
     def __edr_sqdrdex(self, cmdr_name, autocreate):
         sqdr_id = self.__squadron_id()
@@ -316,7 +336,7 @@ class EDRCmdrs(object):
             EDRLOG.log(u"Couldn't untag {} (e.g. tag not present)".format(cmdr_name), "DEBUG")
             return False
 
-        sqdr_dict = profile.sqdrdex_dict()
+        sqdrdex_dict = profile.sqdrdex_dict()
         EDRLOG.log(u"New dex state: {}".format(sqdrdex_dict), "DEBUG")
         success = self.server.update_sqdrdex(sqdr_id, profile.cid, sqdrdex_dict)
         if success:
