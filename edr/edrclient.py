@@ -790,10 +790,11 @@ class EDRClient(object):
             return False
 
         success = self.edrcmdrs.tag_cmdr(cmdr_name, tag)
+        dex_name = _(u"Squadron Dex") if tag in ["enemy", "ally"] else _(u"Cmdr Dex") 
         if success:
-            self.__notify(_(u"Cmdr Dex"), [_(u"Successfully tagged cmdr {name} with {tag}").format(name=cmdr_name, tag=tag)])
+            self.__notify(dex_name, [_(u"Successfully tagged cmdr {name} with {tag}").format(name=cmdr_name, tag=tag)])
         else:
-            self.__notify(_(u"Cmdr Dex"), [_(u"Could not tag cmdr {name} with {tag}").format(name=cmdr_name, tag=tag)])
+            self.__notify(dex_name, [_(u"Could not tag cmdr {name} with {tag}").format(name=cmdr_name, tag=tag)])
         return success
     
     def memo_cmdr(self, cmdr_name, memo):
@@ -834,13 +835,14 @@ class EDRClient(object):
             return False
 
         success = self.edrcmdrs.untag_cmdr(cmdr_name, tag)
+        dex_name = _(u"Squadron Dex") if tag in ["enemy", "ally"] else _(u"Cmdr Dex")
         if success:
             if tag is None:
-                self.__notify(_(u"Cmdr Dex"), [_(u"Successfully removed all tags from cmdr {}").format(cmdr_name)])
+                self.__notify(dex_name, [_(u"Successfully removed all tags from cmdr {}").format(cmdr_name)])
             else:
-                self.__notify(_(u"Cmdr Dex"), [_(u"Successfully removed tag {} from cmdr {}").format(tag, cmdr_name)])
+                self.__notify(dex_name, [_(u"Successfully removed tag {} from cmdr {}").format(tag, cmdr_name)])
         else:
-            self.__notify(_(u"Cmdr Dex"), [_(u"Could not remove tag(s) from cmdr {}").format(cmdr_name)])
+            self.__notify(dex_name, [_(u"Could not remove tag(s) from cmdr {}").format(cmdr_name)])
         return success
 
     def where(self, cmdr_name):

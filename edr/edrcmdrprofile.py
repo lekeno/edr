@@ -272,22 +272,46 @@ class EDRCmdrProfile(object):
 
         return {
             u"name": self.name,
-            u"rel": self.dex_profile._iff,
+            u"rel": self.sqdrdex_profile._iff,
         }
 
     def tag(self, tag):
+        if tag in EDRCmdrDexProfile.iffs():
+            return self.__sqdrdex_tag(tag)
+        return self.__cmdrdex_tag(tag)
+
+    def __cmdrdex_tag(self, tag):
         if self.dex_profile is None:
             self.dex_profile = EDRCmdrDexProfile({})
 
         return self.dex_profile.tag(tag)
 
+    def __sqdrdex_tag(self, tag):
+        if self.sqdrdex_profile is None:
+            self.sqdrdex_profile = EDRCmdrDexProfile({}) #TODO should be a different class
+
+        return self.sqdrdex_profile.tag(tag)
+
     def untag(self, tag):
+        if tag in EDRCmdrDexProfile.iffs():
+            return self.__sqdrdex_untag(tag)
+        return self.__cmdrdex_untag(tag)
+
+    def __cmdrdex_untag(self, tag):
         if self.dex_profile is None:
             return False
         if tag is None:
             self.dex_profile = None
             return True
         return self.dex_profile.untag(tag)
+
+    def __sqdrdex_untag(self, tag):
+        if self.sqdrdex_profile is None:
+            return False
+        if tag is None:
+            self.sqdrdex_profile = None
+            return True
+        return self.sqdrdex_profile.untag(tag)
 
     def memo(self, memo):
         if self.dex_profile is None:
