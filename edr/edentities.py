@@ -8,8 +8,8 @@ from edri18n import _, _c
 EDRLOG = edrlog.EDRLog()
 
 class EDRSquadronMember(object):
-    SOMEWHAT_TRUSTED_LEVEL = 100 #TODO parameter
-    FULLY_TRUSTED_LEVEL = 300 #TODO paramerter
+    SOMEWHAT_TRUSTED_LEVEL = {"rank": "wingman", "level": 100}
+    FULLY_TRUSTED_LEVEL = {"rank": "co-pilot", "level": 300}
 
     def __init__(self, squadron_dict):
         self.name = squadron_dict["squadronName"]
@@ -19,10 +19,10 @@ class EDRSquadronMember(object):
         self.level = squadron_dict["squadronLevel"]
     
     def is_somewhat_trusted(self):
-        return self.level >= EDRSquadronMember.SOMEWHAT_TRUSTED_LEVEL
+        return self.level >= EDRSquadronMember.SOMEWHAT_TRUSTED_LEVEL["level"]
 
     def is_fully_trusted(self):
-        return self.level >= EDRSquadronMember.FULLY_TRUSTED_LEVEL
+        return self.level >= EDRSquadronMember.FULLY_TRUSTED_LEVEL["level"]
 
     def info(self):
         return {"squadronName": self.name, "squadronId": self.inara_id, "squadronRank": self.rank, "squadronLevel": self.level }
@@ -71,6 +71,9 @@ class EDRPowerplay(object):
         if self.pledged_to in POWERS_AFFILIATION:
             return POWERS_AFFILIATION[self.pledged_to]
         return self.pledged_to
+
+    def canonicalize(self):
+        return self.pledged_to.lower().replace(" ", "_")
 
     def time_pledged(self):
         return edtime.EDTime.py_epoch_now() - self.since
@@ -292,6 +295,12 @@ class EDCmdr(object):
         if self.is_lone_wolf():
             return False
         return self.squadron.is_somewhat_trusted()
+
+    def squadron_trusted_rank(self):
+        return EDRSquadronMember.SOMEWHAT_TRUSTED_LEVEL["rank"]
+
+    def squadron_empowered_rank(self):
+        return EDRSquadronMember.FULLY_TRUSTED_LEVEL["rank"]
 
     def is_empowered_by_squadron(self):
         if self.is_lone_wolf():

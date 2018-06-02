@@ -784,10 +784,15 @@ class EDRClient(object):
             self.advertise_full_account(_(u"Sorry, this feature only works with an EDR account."), passive=False)
             return False
         
-        if not self.player.squadron and tag in ["enemy", "ally"]:
-            EDRLOG.log(u"Skipping squadron tag since the user isn't a member of a squadron.", "INFO")
-            self.notify_with_details(_(u"Unlock by joining a squadron on Inara"), ["Sorry, you need to join a squadron on https://inara.cz to use this feature.", "Then, restart EDR to reflect changes."])
-            return False
+        if  tag in ["enemy", "ally"]:
+            if not self.player.squadron:
+                EDRLOG.log(u"Skipping squadron tag since the user isn't a member of a squadron.", "INFO")
+                self.notify_with_details(_(u"Squadron Dex"), [_(u"You need to join a squadron on https://inara.cz to use this feature."), _(u"Then, reboot EDR to reflect these changes.")])
+                return False
+            elif not self.player.is_empowered_by_squadron():
+                EDRLOG.log(u"Skipping squadron tag since the user isn't trusted.", "INFO")
+                self.notify_with_details(_(u"Squadron Dex"), [_(u"You need to reach {} to tag enemies or allies.").format(self.player.squadron_empowered_rank())])
+                return False
 
         success = self.edrcmdrs.tag_cmdr(cmdr_name, tag)
         dex_name = _(u"Squadron Dex") if tag in ["enemy", "ally"] else _(u"Cmdr Dex") 
@@ -829,10 +834,15 @@ class EDRClient(object):
             self.advertise_full_account(_(u"Sorry, this feature only works with an EDR account."), passive=False)
             return False
 
-        if not self.player.squadron and tag in ["enemy", "ally"]:
-            EDRLOG.log(u"Skipping squadron untag since the user isn't a member of a squadron.", "INFO")
-            self.notify_with_details(_(u"Unlock by joining a squadron on Inara"), ["Sorry, you need to join a squadron on https://inara.cz to use this feature.", "Then, reboot EDR to reflect these changes."])
-            return False
+        if  tag in ["enemy", "ally"]:
+            if not self.player.squadron:
+                EDRLOG.log(u"Skipping squadron untag since the user isn't a member of a squadron.", "INFO")
+                self.notify_with_details(_(u"Squadron Dex"), [_(u"You need to join a squadron on https://inara.cz to use this feature."), _(u"Then, reboot EDR to reflect these changes.")])
+                return False
+            elif not self.player.is_empowered_by_squadron():
+                EDRLOG.log(u"Skipping squadron untag since the user isn't trusted.", "INFO")
+                self.notify_with_details(_(u"Squadron Dex"), [_(u"You need to reach {} to tag enemies or allies.").format(self.player.squadron_empowered_rank())])
+                return False
 
         success = self.edrcmdrs.untag_cmdr(cmdr_name, tag)
         dex_name = _(u"Squadron Dex") if tag in ["enemy", "ally"] else _(u"Cmdr Dex")
