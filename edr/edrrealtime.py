@@ -84,7 +84,7 @@ class RemoteThread(threading.Thread):
             self.sse.close()
             self.sse = None
         nowish = edtime.EDTime.js_epoch_now() - 1000*60*self.minutes_ago
-        params = { "orderBy": '"timestamp"', "startAt": nowish}
+        params = { "orderBy": '"timestamp"', "startAt": nowish, "limitToLast": 10}
         if self.authenticator:
             params["auth"] = self.authenticator()
         self.sse = ClosableSSEClient(self.endpoint, params=params, chunk_size=1)

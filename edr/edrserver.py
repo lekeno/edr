@@ -63,8 +63,7 @@ class EDRServer(object):
         past_epoch_js = int(now_epoch_js - (1000 * timespan_seconds))
         future_epoch_js = 1830000000000L
 
-        params = {"orderBy": '"timestamp"', "startAt": past_epoch_js, "endAt": future_epoch_js, "auth": self.auth_token()}
-        print params
+        params = {"orderBy": '"timestamp"', "startAt": past_epoch_js, "endAt": future_epoch_js, "auth": self.auth_token(), "limitToLast": 10}
         resp = requests.get("{}/v1/notams.json".format(self.EDR_SERVER), params=params)
 
         if resp.status_code != requests.codes.ok:
@@ -78,7 +77,7 @@ class EDRServer(object):
         now_epoch_js = int(1000 * calendar.timegm(time.gmtime()))
         past_epoch_js = int(now_epoch_js - (1000 * timespan_seconds))
 
-        params = {"orderBy": '"timestamp"', "startAt": past_epoch_js, "endAt": now_epoch_js, "auth": self.auth_token()}
+        params = {"orderBy": '"timestamp"', "startAt": past_epoch_js, "endAt": now_epoch_js, "auth": self.auth_token(), "limitToLast": 30}
         resp = requests.get("{}/v1/systems.json".format(self.EDR_SERVER), params=params)
 
         if resp.status_code != requests.codes.ok:
@@ -208,11 +207,13 @@ class EDRServer(object):
         endpoint = "/v1/crimes/{system_id}/".format(system_id=system_id)
         return self.__post_json(endpoint, info)
 
-    def __get_recent(self, path, timespan_seconds):
+    def __get_recent(self, path, timespan_seconds, limitToLast=None):
         now_epoch_js = int(1000 * calendar.timegm(time.gmtime()))
         past_epoch_js = int(now_epoch_js - (1000 * timespan_seconds))
 
         params = { "orderBy": '"timestamp"', "startAt": past_epoch_js, "endAt": now_epoch_js, "auth": self.auth_token()}
+        if limitToLast:
+            params["limitToLast"] = limitToLast
         endpoint = "{server}{path}.json".format(server=self.EDR_SERVER, path=path)
         EDRLOG.log(u"Get recent; endpoint: {}".format(endpoint), "DEBUG")
         resp = requests.get(endpoint, params=params)
@@ -230,22 +231,22 @@ class EDRServer(object):
     def recent_crimes(self,  system_id, timespan_seconds):
         EDRLOG.log(u"Recent crimes for system {sid}".format(sid=system_id), "INFO")
         endpoint = "/v1/crimes/{sid}/".format(sid=system_id)
-        return self.__get_recent(endpoint, timespan_seconds)
+        return self.__get_recent(endpoint, timespan_seconds, limitToLast=50)
 
     def recent_traffic(self,  system_id, timespan_seconds):
         EDRLOG.log(u"Recent traffic for system {sid}".format(sid=system_id), "INFO")
         endpoint = "/v1/traffic/{sid}/".format(sid=system_id)
-        return self.__get_recent(endpoint, timespan_seconds)
+        return self.__get_recent(endpoint, timespan_seconds, limitToLast=50)
 
     def recent_outlaws(self, timespan_seconds):
         EDRLOG.log(u"Recently sighted outlaws", "INFO")
         endpoint = "/v1/outlaws/"
-        return self.__get_recent(endpoint, timespan_seconds)
+        return self.__get_recent(endpoint, timespan_seconds, limitToLast=50)
 
     def recent_enemies(self, timespan_seconds, power):
         EDRLOG.log(u"Recently sighted enemies", "INFO")                
         endpoint = "/v1/powerplay/{}/enemies/".format(self.nodify(power))
-        return self.__get_recent(endpoint, timespan_seconds)
+        return self.__get_recent(endpoint, timespan_seconds, limitToLast=50)
 
     def heartbeat(self):
         EDRLOG.log(u"EDR heartbeat", "INFO")                
