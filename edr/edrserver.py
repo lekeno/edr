@@ -222,11 +222,11 @@ class EDRServer(object):
 
         if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Failed to retrieve recent items. Error code: {}".format(resp.status_code), "ERROR")
-            return None
+            return []
         
         results = json.loads(resp.content)
         if not results:
-            return None
+            return []
         # When using Firebase's REST API, the filtered results are returned in an undefined order since JSON interpreters don't enforce any ordering.
         # So, sorting has to be done on the client side
         sorted_results = sorted(results.values(), key=lambda t: t["timestamp"], reverse=True)
