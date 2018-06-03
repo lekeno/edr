@@ -347,13 +347,16 @@ class EDRCmdrProfile(object):
         lut = [_(u"Outlaw ++++"), _(u"Outlaw +++"), _(u"Outlaw ++"), _(u"Outlaw +"), _(u"Outlaw"), _(u"Neutral"), _(u"Enforcer"), _(u"Enforcer +"), _(u"Enforcer ++"), _(u"Enforcer +++"), _(u"Enforcer ++++")]
         karma = lut[mapped_index]
 
-        if self.dex_profile is None:
-            return karma
+        alignment = self.dex_profile.alignment if self.dex_profile else None
+        iff = self.sqdrdex_profile.iff if self.sqdrdex_profile else None
 
-        alignment = self.dex_profile.alignment
+        karma_title = u"{}".format(karma)
+        if iff:
+            karma_title += u" #{}".format(iff)
+        
         if alignment:
-            return u"{} #{}".format(karma, alignment)
-
+            karma_title += u" #{}".format(alignment)
+    
         return karma
 
     def crowd_alignment(self):
