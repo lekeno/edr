@@ -251,7 +251,10 @@ class EDRCmdrs(object):
 
         sqdrdex_dict = profile.sqdrdex_dict()
         EDRLOG.log(u"New dex state: {}".format(sqdrdex_dict), "DEBUG")
-        success = self.server.update_sqdrdex(sqdr_id, profile.cid, sqdrdex_dict)
+        augmented_sqdrdex_dict = sqdrdex_dict
+        augmented_sqdrdex_dict["level"] = self._player.squadron_info["squadronLevel"]
+        augmented_sqdrdex_dict["by"] = self._player.name
+        success = self.server.update_sqdrdex(sqdr_id, profile.cid, augmented_sqdrdex_dict)
         if success:
             self.evict(cmdr_name)
         return success
@@ -338,7 +341,10 @@ class EDRCmdrs(object):
 
         sqdrdex_dict = profile.sqdrdex_dict()
         EDRLOG.log(u"New dex state: {}".format(sqdrdex_dict), "DEBUG")
-        success = self.server.update_sqdrdex(sqdr_id, profile.cid, sqdrdex_dict)
+        augmented_sqdrdex_dict = sqdrdex_dict
+        augmented_sqdrdex_dict["level"] = self._player.squadron_info["squadronLevel"]
+        augmented_sqdrdex_dict["by"] = self._player.name
+        success = self.server.update_sqdrdex(sqdr_id, profile.cid, augmented_sqdrdex_dict)
         if success:
             self.evict(cmdr_name)
         return success
