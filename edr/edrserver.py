@@ -199,7 +199,9 @@ class EDRServer(object):
     def legal_records(self, cmdr_id, timespan_seconds):
         EDRLOG.log(u"Fetching legal record for cmdr {cid}".format(cid=cmdr_id), "INFO")
         endpoint = "/v1/legal/{cmdr_id}/".format(cmdr_id=cmdr_id)
-        return self.__get_recent(endpoint, timespan_seconds)
+        legal_records_perday = 24
+        records_over_timespan = timespan_seconds / 86400 * legal_records_perday
+        return self.__get_recent(endpoint, timespan_seconds, limitToLast=records_over_timespan)
 
     def crime(self,  system_id, info):
         info["uid"] = self.uid()
@@ -223,6 +225,8 @@ class EDRServer(object):
             return None
         
         results = json.loads(resp.content)
+        if not results:
+            return None
         # When using Firebase's REST API, the filtered results are returned in an undefined order since JSON interpreters don't enforce any ordering.
         # So, sorting has to be done on the client side
         sorted_results = sorted(results.values(), key=lambda t: t["timestamp"], reverse=True)
