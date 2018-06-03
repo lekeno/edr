@@ -17,7 +17,7 @@ class EDRCmdrDexProfile(object):
         if dex_dict is None:
             dex_dict = {}
         self._alignment = dex_dict.get("alignment", None)
-        self._iff = dex_dict.get("iff", None)
+        self._iff = dex_dict.get("rel", None)
         self.tags = set([self.__tagify(t) for t in dex_dict.get("tags", [])])
         self._friend = dex_dict.get("friend", False)
         self._memo = dex_dict.get("memo", None)
@@ -352,12 +352,12 @@ class EDRCmdrProfile(object):
 
         karma_title = u"{}".format(karma)
         if iff:
-            karma_title += u" #{}".format(iff)
+            karma_title += u", #{}".format(iff)
         
         if alignment:
-            karma_title += u" #{}".format(alignment)
+            karma_title += u", #{}".format(alignment)
     
-        return karma
+        return karma_title
 
     def crowd_alignment(self):
         if self.alignment_hints is None:
