@@ -19,6 +19,7 @@ class EDRCmdrDexProfile(object):
             dex_dict = {}
         self._alignment = dex_dict.get("alignment", None)
         self._iff = dex_dict.get("rel", None)
+        self.iff_by = dex_dict.get("by", None)
         self.tags = set([self.__tagify(t) for t in dex_dict.get("tags", [])])
         self._friend = dex_dict.get("friend", False)
         self._memo = dex_dict.get("memo", None)
@@ -121,6 +122,7 @@ class EDRCmdrDexProfile(object):
             return True
         elif tag in EDRCmdrDexProfile.iffs() and self._iff != tag:
             self.iff = tag
+            self.iff_by = None
             return True
         elif tag not in self.tags:
             self.tags.add(tag)
@@ -139,6 +141,7 @@ class EDRCmdrDexProfile(object):
             return True
         elif tag == self._iff:
             self.iff = None
+            self.iff_by = None
             return True
         elif tag in self.tags:
             self.tags.remove(tag)
@@ -380,7 +383,10 @@ class EDRCmdrProfile(object):
         
         sqdex_parts = []
         iff = self.sqdrdex_profile.iff if self.sqdrdex_profile else None
-        if iff:
+        iff_by = self.sqdrdex_profile.iff_by if self.sqdrdex_profile else None
+        if iff and iff_by
+            sqdex_parts.append(_(u"{iff} by {tagged_by}").format(iff=iff, tagged_by=iff_by))
+        elif iff:
             sqdex_parts.append(iff)
 
         cdex_parts = []
