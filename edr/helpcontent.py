@@ -19,6 +19,7 @@ class HelpContent(object):
                 _(u" - !help enforcers: features for enforcers / bounty hunters"),
                 _(u" - !help powerplay: features for commanders pledged to a power"),
                 _(u" - !help cmdrdex: personalizing EDR's commanders database"),
+                _(u" - !help sqdrdex: tag other commanders as ally or enemy of your squadron"),
                 _(u" - !help config: configuration options"),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
@@ -159,6 +160,24 @@ class HelpContent(object):
                 _(u"Send !clear in chat to clear everything on the overlay.")
             ]
         },
+        "sqdrdex": {
+            "header": _(u"Tagging allies and enemies of your squadron"),
+            "details": [
+                _(u"The Squadron Dex allows you to tag other commanders as allies or enemies of your squadron."),
+                _(u"To use this feature, you will need to be an active member of a squadron on https://inara.cz."),
+                _(u"Read access: Co-pilot and above. Write access: wingman and above. Updating: same or higher rank."),
+                _(u"Updating/Deleting existing entries: same or higher rank than the member who created it."),
+                u"⚶",
+                _(u"Ally and Enemy tags:"),
+                _(u"Send !help cmdrdex for general usage info."),
+                _(u" - '#ally' or '#s+': to tag a commander as an ally."),
+                _(u" - '#enemy' or '#s!': to tag a commander as an enemy."),
+                _(u" - '-#ally' or '-#s+': to remove an ally tag off a commander."),
+                _(u" - '-#enemy' or '-#s!': to remove an enemy tag off a commander."),
+                u"⚶",
+                _(u"Send !clear in chat to clear everything on the overlay.")
+            ]
+        }, 
         "config": {
             "header": _(u"Configuration options"),
             "details": [
