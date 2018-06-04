@@ -12,9 +12,9 @@ EDRLOG = edrlog.EDRLog()
 class EDRCmdrs(object):
     #TODO these should be player and/or squadron specific
     EDR_CMDRS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/cmdrs.v4.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/cmdrs.v5.p')
     EDR_INARA_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/inara.v4.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/inara.v5.p')
     EDR_SQDRDEX_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/sqdrdex.v1.p')
 
