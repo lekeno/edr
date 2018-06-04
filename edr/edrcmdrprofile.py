@@ -1,3 +1,4 @@
+# coding= utf-8
 import edrlog
 import edtime
 from edri18n import _, _c
@@ -342,23 +343,6 @@ class EDRCmdrProfile(object):
             total_hints = sum([hints for hints in self.alignment_hints.values()])
             return (total_hints > 10 and self.alignment_hints["outlaw"] / total_hints > .5)
 
-    def karma_title(self):
-        mapped_index = int(10*(self._karma + self.max_karma()) / (2.0*self.max_karma()))
-        lut = [_(u"Outlaw ++++"), _(u"Outlaw +++"), _(u"Outlaw ++"), _(u"Outlaw +"), _(u"Outlaw"), _(u"Neutral"), _(u"Enforcer"), _(u"Enforcer +"), _(u"Enforcer ++"), _(u"Enforcer +++"), _(u"Enforcer ++++")]
-        karma = lut[mapped_index]
-
-        alignment = self.dex_profile.alignment if self.dex_profile else None
-        iff = self.sqdrdex_profile.iff if self.sqdrdex_profile else None
-
-        karma_title = u"{}".format(karma)
-        if iff:
-            karma_title += u", #{}".format(iff)
-        
-        if alignment:
-            karma_title += u", #{}".format(alignment)
-    
-        return karma_title
-
     def crowd_alignment(self):
         if self.alignment_hints is None:
             return None
@@ -370,40 +354,63 @@ class EDRCmdrProfile(object):
         return u"[!{:.0%} ?{:.0%} +{:.0%}]".format(self.alignment_hints["outlaw"] / total_hints, self.alignment_hints["neutral"] / total_hints, self.alignment_hints["enforcer"] / total_hints)
 
     def short_profile(self):
-        result = u"{name}: {karma}".format(name=self.name, karma=self.karma_title())
+        edr_parts = []
+        #TODO stick the + to the word
+        mapped_index = int(10*(self._karma + self.max_karma()) / (2.0*self.max_karma()))
+        lut = [_(u"Outlaw++++"), _(u"Outlaw+++"), _(u"Outlaw++"), _(u"Outlaw+"), _(u"Outlaw"), _(u"Neutral"), _(u"Enforcer"), _(u"Enforcer+"), _(u"Enforcer++"), _(u"Enforcer+++"), _(u"Enforcer++++")]
+        karma = lut[mapped_index]
 
+        edr_parts.append(karma)
+        
         alignment = self.crowd_alignment()
         if not (alignment is None or alignment == ""):
-            result += u" {}".format(alignment)
+            edr_parts.append(alignment)
+        
+        if not (self.patreon is None or self.patreon == ""):
+            edr_parts.append(u"${patreon}".format(patreon=self.patreon))
 
+        inara_parts = []
         if not (self.squadron is None or self.squadron == ""):
-            result += u", {squadron}".format(squadron=self.squadron)
+            inara_parts.append(self.squadron)
 
         if not (self.role is None or self.role == ""):
-            result += u", {role}".format(role=self.role)
+            inara_parts.append(self.role)
 
         if not (self.powerplay is None or self.powerplay == ""):
-            result += u", {powerplay}".format(powerplay=self.powerplay)
+            inara_parts.append(self.powerplay)
+        
+        sqdex_parts = []
+        iff = self.sqdrdex_profile.iff if self.sqdrdex_profile else None
+        if iff:
+            sqdex_parts.append(iff)
 
-        if not (self.patreon is None or self.patreon == ""):
-            result += u", Patreon:{patreon}".format(patreon=self.patreon)
-
+        cdex_parts = []
         if self.dex_profile:
+            alignment = self.dex_profile.alignment if self.dex_profile else None
+            if alignment:
+                cdex_parts.append(u"#{}".format(alignment))
             if self.dex_profile.friend:
-                result += _(u" [friend]")
+                cdex_parts.append(_(u"#friend"))
 
             tags = self.dex_profile.tags
             if tags:
-                result += u", #{}".format(" #".join(tags))
+                cdex_parts.append(u"#{}".format(" #".join(tags)))
             
             memo = self.dex_profile.memo
             if memo:
-                result += u", {}".format(memo)
-            
-            updated_jse = self.dex_profile.updated
-            if updated_jse:
-                updated_edt = edtime.EDTime()
-                updated_edt.from_js_epoch(updated_jse)
-                result += u" ({})".format(updated_edt.as_immersive_date())
+                cdex_parts.append(memo)
+
+        result = u"{}".format(self.name)
+        if edr_parts:
+            result += u" ✪EDR {}".format(", ".join(edr_parts))
+
+        if inara_parts:
+            result += u" ✪INR {}".format(", ".join(inara_parts))
+
+        if sqdex_parts:
+            result += u" ✪SDX {}".format(", ".join(sqdex_parts))
+    
+        if cdex_parts:
+            result += u" ✪CDX {}".format(", ".join(cdex_parts))
 
         return result
