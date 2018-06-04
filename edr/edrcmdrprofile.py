@@ -355,7 +355,6 @@ class EDRCmdrProfile(object):
 
     def short_profile(self):
         edr_parts = []
-        #TODO stick the + to the word
         mapped_index = int(10*(self._karma + self.max_karma()) / (2.0*self.max_karma()))
         lut = [_(u"Outlaw++++"), _(u"Outlaw+++"), _(u"Outlaw++"), _(u"Outlaw+"), _(u"Outlaw"), _(u"Neutral"), _(u"Enforcer"), _(u"Enforcer+"), _(u"Enforcer++"), _(u"Enforcer+++"), _(u"Enforcer++++")]
         karma = lut[mapped_index]
