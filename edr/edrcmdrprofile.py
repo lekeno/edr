@@ -277,6 +277,7 @@ class EDRCmdrProfile(object):
         return {
             u"name": self.name,
             u"rel": self.sqdrdex_profile._iff,
+            u"by": self.sqdrdex_profile.iff_by,
         }
 
     def tag(self, tag):
@@ -384,7 +385,7 @@ class EDRCmdrProfile(object):
         sqdex_parts = []
         iff = self.sqdrdex_profile.iff if self.sqdrdex_profile else None
         iff_by = self.sqdrdex_profile.iff_by if self.sqdrdex_profile else None
-        if iff and iff_by
+        if iff and iff_by:
             sqdex_parts.append(_(u"{iff} by {tagged_by}").format(iff=iff, tagged_by=iff_by))
         elif iff:
             sqdex_parts.append(iff)
