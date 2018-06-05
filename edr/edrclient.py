@@ -583,35 +583,46 @@ class EDRClient(object):
         return self.novel_enough_alert(event["cmdr"].lower(), event)
 
     def _summarize_realtime_alerts(self, kind, events):
+        try:
+            precheck = events.values()
+        except TypeError:
+            return self._summarize_realtime_alert(event)
+
         summary =  []
         for event in events.values():
-            EDRLOG.log(u"realtime {} alerts, handling {}".format(kind, event), "DEBUG")
-            if self._worthy_alert(kind, event):
-                location = edentities.EDLocation(event["starSystem"], event["place"])
-                distance = None
-                try:
-                    distance = self.edrsystems.distance(self.player.star_system, location.star_system)
-                except ValueError:
-                    pass
-                
-                oneliner = _(u"{cmdr} ({ship}) sighted in {location}")
-                if kind is EDROpponents.ENEMIES and event.get("enemy", None):
-                    oneliner = _(u"Enemy {cmdr} ({ship}) sighted in {location}")
-                elif kind is EDROpponents.OUTLAWS:
-                    oneliner = _(u"Outlaw {cmdr} ({ship}) sighted in {location}")
-                oneliner = oneliner.format(cmdr=event["cmdr"], ship=event["ship"], location=location.pretty_print())
-                
-                if distance:
-                    oneliner += _(u" [{distance:.3g} ly]").format(distance=distance) if distance < 50.0 else _(u" [{distance} ly]").format(distance=int(distance))
-                if event.get("wanted", None):
-                    if event["bounty"] > 0:
-                        oneliner += _(u" wanted for {bounty} cr").format(bounty=edentities.EDBounty(event["bounty"]).pretty_print())
-                    else:
-                        oneliner += _(u" wanted somewhere")
-                summary.append(oneliner)
-            else:
-                EDRLOG.log(u"Skipped realtime {} event because it wasn't worth alerting about: {}.".format(kind, event), "DEBUG")
+            summarized = self._summarize_realtime_alert(event)
+            if summarized:
+                summary.append(summarized)
         return summary
+
+
+    def _summarize_realtime_alert(self, kind, event):
+        EDRLOG.log(u"realtime {} alerts, handling {}".format(kind, event), "DEBUG")
+        if not self._worthy_alert(kind, event):
+            EDRLOG.log(u"Skipped realtime {} event because it wasn't worth alerting about: {}.".format(kind, event), "DEBUG")
+        else:
+            location = edentities.EDLocation(event["starSystem"], event["place"])
+            distance = None
+            try:
+                distance = self.edrsystems.distance(self.player.star_system, location.star_system)
+            except ValueError:
+                pass
+            
+            oneliner = _(u"{cmdr} ({ship}) sighted in {location}")
+            if kind is EDROpponents.ENEMIES and event.get("enemy", None):
+                oneliner = _(u"Enemy {cmdr} ({ship}) sighted in {location}")
+            elif kind is EDROpponents.OUTLAWS:
+                oneliner = _(u"Outlaw {cmdr} ({ship}) sighted in {location}")
+            oneliner = oneliner.format(cmdr=event["cmdr"], ship=event["ship"], location=location.pretty_print())
+            
+            if distance:
+                oneliner += _(u" [{distance:.3g} ly]").format(distance=distance) if distance < 50.0 else _(u" [{distance} ly]").format(distance=int(distance))
+            if event.get("wanted", None):
+                if event["bounty"] > 0:
+                    oneliner += _(u" wanted for {bounty} cr").format(bounty=edentities.EDBounty(event["bounty"]).pretty_print())
+                else:
+                    oneliner += _(u" wanted somewhere")
+            return oneliner
 
     def who(self, cmdr_name, autocreate=False):
         profile = self.cmdr(cmdr_name, autocreate, check_inara_server=True)
