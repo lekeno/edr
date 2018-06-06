@@ -77,11 +77,7 @@ class EDRCmdrs(object):
         return info["squadronId"] if info else None
 
     def __update_squadron_info(self, force_update=False):
-        print "edrcmdrs heartbeat check"
-        print force_update
-        print self.heartbeat_timestamp
         mark_twain_flag = int((EDTime.js_epoch_now() - self.heartbeat_timestamp)/1000) >= self._edr_heartbeat if self.heartbeat_timestamp else True
-        print mark_twain_flag
         if force_update or mark_twain_flag:
             info = self.server.heartbeat()
             self._player.squadron_member(info) if info else self._player.lone_wolf()
@@ -99,17 +95,19 @@ class EDRCmdrs(object):
 
     def evict(self, cmdr):
         try:
-            del self.cmdrs_cache[cmdr]
+            del self.cmdrs_cache[cmdr.lower()]
         except KeyError:
             pass
 
         try:
-            del self.inara_cache[cmdr]
+            del self.inara_cache[cmdr.lower()]
         except KeyError:
             pass
 
         try:
-            del self.sqdrdex_cache[cmdr]
+            sqdr_id = self.__squadron_id()
+            sq_cmdr_key = "{}:{}".format(sqdr_id, cmdr.lower())
+            del self.sqdrdex_cache[sq_cmdr_key]
         except KeyError:
             pass
 
@@ -139,10 +137,11 @@ class EDRCmdrs(object):
         sqdr_id = self.__squadron_id()
         if not sqdr_id:
             return None
-        profile = self.sqdrdex_cache.get(u"{}:{}".format(sqdr_id, cmdr_name.lower()))
+        key = u"{}:{}".format(sqdr_id, cmdr_name.lower())
+        profile = self.sqdrdex_cache.get(key)
         if profile:
-            EDRLOG.log(u"Cmdr {cmdr} is in the EDR IFF cache for squadron {sqid}".format(cmdr=cmdr_name,
-                                                                                    sqid=sqdr_id),
+            EDRLOG.log(u"Cmdr {cmdr} is in the EDR IFF cache for squadron {sqid} with key {key}".format(cmdr=cmdr_name,
+                                                                                    sqid=sqdr_id, key=key),
                                                                                     "DEBUG")
             return profile
 
@@ -223,13 +222,13 @@ class EDRCmdrs(object):
         tagged = profile.tag(tag)
         if not tagged:
             EDRLOG.log(u"Couldn't tag {} with {} (e.g. already tagged)".format(cmdr_name, tag), "DEBUG")
+            self.evict(cmdr_name)
             return False
 
         dex_dict = profile.dex_dict()
         EDRLOG.log(u"New dex state: {}".format(dex_dict), "DEBUG")
         success = self.server.update_cmdrdex(profile.cid, dex_dict)
-        if success:
-            self.evict(cmdr_name)
+        self.evict(cmdr_name)
         return success
 
     def __squadron_tag_cmdr(self, cmdr_name, tag):
@@ -247,6 +246,7 @@ class EDRCmdrs(object):
         tagged = profile.tag(tag)
         if not tagged:
             EDRLOG.log(u"Couldn't tag {} with {} (e.g. already tagged)".format(cmdr_name, tag), "DEBUG")
+            self.evict(cmdr_name)
             return False
 
         sqdrdex_dict = profile.sqdrdex_dict()
@@ -255,8 +255,7 @@ class EDRCmdrs(object):
         augmented_sqdrdex_dict["level"] = self._player.squadron_info()["squadronLevel"]
         augmented_sqdrdex_dict["by"] = self._player.name
         success = self.server.update_sqdrdex(sqdr_id, profile.cid, augmented_sqdrdex_dict)
-        if success:
-            self.evict(cmdr_name)
+        self.evict(cmdr_name)
         return success
          
     def memo_cmdr(self, cmdr_name, memo):
@@ -271,12 +270,12 @@ class EDRCmdrs(object):
         noted = profile.memo(memo)
         if not noted:
             EDRLOG.log(u"Couldn't write a note about {}".format(cmdr_name), "DEBUG")
+            self.evict(cmdr_name)
             return False
 
         dex_dict = profile.dex_dict()
         success = self.server.update_cmdrdex(profile.cid, dex_dict)
-        if success:
-            self.evict(cmdr_name)
+        self.evict(cmdr_name)
         return success
 
     def clear_memo_cmdr(self, cmdr_name):
@@ -289,12 +288,12 @@ class EDRCmdrs(object):
         noted = profile.remove_memo()
         if not noted:
             EDRLOG.log(u"Couldn't remove a note from {}".format(cmdr_name), "DEBUG")
+            self.evict(cmdr_name)
             return False
 
         dex_dict = profile.dex_dict()
         success = self.server.update_cmdrdex(profile.cid, dex_dict)
-        if success:
-            self.evict(cmdr_name)
+        self.evict(cmdr_name)
         return success
     
     def untag_cmdr(self, cmdr_name, tag):
@@ -313,13 +312,13 @@ class EDRCmdrs(object):
         untagged = profile.untag(tag)
         if not untagged:
             EDRLOG.log(u"Couldn't untag {} (e.g. tag not present)".format(cmdr_name), "DEBUG")
+            self.evict(cmdr_name)
             return False
 
         dex_dict = profile.dex_dict()
         EDRLOG.log(u"New dex state: {}".format(dex_dict), "DEBUG")
         success = self.server.update_cmdrdex(profile.cid, dex_dict)
-        if success:
-            self.evict(cmdr_name)
+        self.evict(cmdr_name)
         return success
 
     def __squadron_untag_cmdr(self, cmdr_name, tag):
@@ -337,6 +336,7 @@ class EDRCmdrs(object):
         untagged = profile.untag(tag)
         if not untagged:
             EDRLOG.log(u"Couldn't untag {} (e.g. tag not present)".format(cmdr_name), "DEBUG")
+            self.evict(cmdr_name)
             return False
 
         sqdrdex_dict = profile.sqdrdex_dict()
@@ -345,6 +345,5 @@ class EDRCmdrs(object):
         augmented_sqdrdex_dict["level"] = self._player.squadron_info()["squadronLevel"]
         augmented_sqdrdex_dict["by"] = self._player.name
         success = self.server.update_sqdrdex(sqdr_id, profile.cid, augmented_sqdrdex_dict)
-        if success:
-            self.evict(cmdr_name)
+        self.evict(cmdr_name)
         return success
