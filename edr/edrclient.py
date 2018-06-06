@@ -618,12 +618,12 @@ class EDRClient(object):
         profile = self.cmdr(cmdr_name, autocreate, check_inara_server=True)
         if profile:
             self.status = _(u"got info about {}").format(cmdr_name)
-            EDRLOG.log(u"Who {} : {}".format(cmdr_name, profile.short_profile()), "INFO")
+            EDRLOG.log(u"Who {} : {}".format(cmdr_name, profile.short_profile(self.player.powerplay)), "INFO")
             legal = self.edrlegal.summarize_recents(profile.cid)
             if legal:
-                self.__intel(cmdr_name, [profile.short_profile(), legal])
+                self.__intel(cmdr_name, [profile.short_profile(self.player.powerplay), legal])
             else:
-                self.__intel(cmdr_name, [profile.short_profile()])
+                self.__intel(cmdr_name, [profile.short_profile(self.player.powerplay)])
         else:
             EDRLOG.log(u"Who {} : no info".format(cmdr_name), "INFO")
             self.__intel(cmdr_name, [_("No info about {cmdr}").format(cmdr=cmdr_name)])
@@ -636,12 +636,12 @@ class EDRClient(object):
             return
 
         profile = self.cmdr(cmdr_name, check_inara_server=True)
-        if profile and (self.player.name != cmdr_name) and profile.is_dangerous(self.player.power):
+        if profile and (self.player.name != cmdr_name) and profile.is_dangerous(self.player.powerplay):
             self.status = _(u"{} is bad news.").format(cmdr_name)
             if self.novel_enough_blip(cmdr_id, blip, cognitive = True):
-                self.__warning(_(u"Warning!"), [profile.short_profile()])
+                self.__warning(_(u"Warning!"), [profile.short_profile(self.player.powerplay)])
                 self.cognitive_blips_cache.set(cmdr_id, blip)
-                if self.is_anonymous() and profile.is_dangerous():
+                if self.is_anonymous() and profile.is_dangerous(self.player.powerplay):
                     self.advertise_full_account(_("You could have helped other EDR users by reporting this outlaw."))
                 elif self.is_anonymous():
                     self.advertise_full_account(_("You could have helped other EDR users by reporting this enemy."))
@@ -677,13 +677,13 @@ class EDRClient(object):
             legal = self.edrlegal.summarize_recents(profile.cid)
             bounty = edentities.EDBounty(scan["bounty"]) if scan["bounty"] else None
             if profile and (self.player.name != cmdr_name):
-                if profile.is_dangerous(pledged_to=self.player.power):
+                if profile.is_dangerous(self.player.powerplay):
                     # Translators: this is shown via EDMC's EDR status line upon contact with a known outlaw
                     self.status = _(u"{} is bad news.").format(cmdr_name)
-                    details = [profile.short_profile()]
+                    details = [profile.short_profile(self.player.powerplay)]
                     status = ""
                     if scan["enemy"]:
-                        status += _(u"Powerplay Enemy. ")
+                        status += _(u"PP Enemy (weapons free). ")
                     if scan["bounty"]:
                         status += _(u"Wanted for {} cr").format(edentities.EDBounty(scan["bounty"]).pretty_print())
                     elif scan["wanted"]:
@@ -695,7 +695,7 @@ class EDRClient(object):
                     self.__warning(_(u"Warning!"), details)
                 elif self.intel_even_if_clean or (scan["wanted"] and bounty.is_significant()):
                     self.status = _(u"Intel for cmdr {}.").format(cmdr_name)
-                    details = [profile.short_profile()]
+                    details = [profile.short_profile(self.player.powerplay)]
                     if bounty:
                         details.append(_(u"Wanted for {} cr").format(edentities.EDBounty(scan["bounty"]).pretty_print()))
                     elif scan["wanted"]:
@@ -703,7 +703,7 @@ class EDRClient(object):
                     if legal:
                         details.append(legal)
                     self.__intel(_(u"Intel"), details)
-                if (self.is_anonymous() and (profile.is_dangerous() or (scan["wanted"] and bounty.is_significant()))):
+                if (self.is_anonymous() and (profile.is_dangerous(self.player.powerplay) or (scan["wanted"] and bounty.is_significant()))):
                     # Translators: this is shown to users who don't yet have an EDR account
                     self.advertise_full_account(_(u"You could have helped other EDR users by reporting this outlaw."))
                 elif self.is_anonymous() and scan["enemy"] and self.player.power:

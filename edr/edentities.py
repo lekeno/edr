@@ -35,18 +35,30 @@ class EDRPowerplay(object):
     def is_enemy(self, power): 
         POWERS_AFFILIATION = {
             "a_lavigny-duval": "Empire",
+            "arissa lavigny duval": "Empire",
             "aisling_duval": "Empire",
+            "aisling duval": "Empire",
             "archon_delaine": None,
+            "archon delaine": None,
             "denton_patreus": "Empire",
+            "denton patreus": "Empire",
             "edmund_mahon": "Alliance",
+            "edmund mahon": "Alliance",
             "felicia_winters": "Federation",
+            "felicia winters": "Federation",
             "li_yong-rui": None,
+            "li yong-rui": None,
             "pranav_antal": None,
+            "pranav antal": None,
             "yuri_grom": None,
+            "yuri grom": None,
             "zachary_hudson": "Federation",
-            "zemina_torval": "Empire",   
+            "zachary hudson": "Federation",
+            "zemina_torval": "Empire",
+            "zemina torval": "Empire",   
         }
 
+        power = power.lower()
         if not (self.pledged_to in POWERS_AFFILIATION and power in POWERS_AFFILIATION):
             return False
         my_affiliation = POWERS_AFFILIATION[self.pledged_to]

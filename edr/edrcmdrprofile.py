@@ -334,15 +334,15 @@ class EDRCmdrProfile(object):
             self.dex_profile = None
         return True
     
-    def is_dangerous(self, pledged_to=None):
+    def is_dangerous(self, powerplay=None):
         if self.sqdrdex_profile:
             return self.sqdrdex_profile._iff == "enemy"
         if self.dex_profile:
             return self.dex_profile._alignment == "outlaw"
         if self._karma <= -250:
             return True
-        if pledged_to and self.powerplay:
-            return pledged_to.lower() != self.powerplay.lower()
+        if powerplay and self.powerplay:
+            return powerplay.is_enemy(self.powerplay)
         if self.alignment_hints and self.alignment_hints["outlaw"] > 0:
             total_hints = sum([hints for hints in self.alignment_hints.values()])
             return (total_hints > 10 and self.alignment_hints["outlaw"] / total_hints > .5)
@@ -357,7 +357,7 @@ class EDRCmdrProfile(object):
             return u"[!{} ?{} +{}]".format(self.alignment_hints["outlaw"], self.alignment_hints["neutral"], self.alignment_hints["enforcer"])
         return u"[!{:.0%} ?{:.0%} +{:.0%}]".format(self.alignment_hints["outlaw"] / total_hints, self.alignment_hints["neutral"] / total_hints, self.alignment_hints["enforcer"] / total_hints)
 
-    def short_profile(self):
+    def short_profile(self, powerplay=None):
         edr_parts = []
         mapped_index = int(10*(self._karma + self.max_karma()) / (2.0*self.max_karma()))
         lut = [_(u"Outlaw++++"), _(u"Outlaw+++"), _(u"Outlaw++"), _(u"Outlaw+"), _(u"Outlaw"), _(u"Neutral"), _(u"Enforcer"), _(u"Enforcer+"), _(u"Enforcer++"), _(u"Enforcer+++"), _(u"Enforcer++++")]
@@ -379,8 +379,11 @@ class EDRCmdrProfile(object):
         if not (self.role is None or self.role == ""):
             inara_parts.append(self.role)
 
+        powerplay_parts = []
         if not (self.powerplay is None or self.powerplay == ""):
             inara_parts.append(self.powerplay)
+            if powerplay and powerplay.is_enemy(self.powerplay):
+                powerplay_parts.append(_(u"powerplay|enemy"))
         
         sqdex_parts = []
         iff = self.sqdrdex_profile.iff if self.sqdrdex_profile else None
@@ -414,9 +417,12 @@ class EDRCmdrProfile(object):
             result += u" ✪INR {}".format(", ".join(inara_parts))
 
         if sqdex_parts:
-            result += u" ✪SDX {}".format(", ".join(sqdex_parts))
+            result += u" ✪SQN {}".format(", ".join(sqdex_parts))
     
         if cdex_parts:
-            result += u" ✪CDX {}".format(", ".join(cdex_parts))
+            result += u" ✪CMD {}".format(", ".join(cdex_parts))
+
+        if powerplay_parts:
+            result += u" ✪PP {}".format(", ".join(powerplay_parts))
 
         return result
