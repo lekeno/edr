@@ -555,7 +555,7 @@ class EDRClient(object):
         if events in ["cancel", "auth_revoked"]:
             summary = [_(u"Comms link interrupted. Send '?{} on' to re-establish.").format(kind.lower())]
         else:
-            summary = self._summarize_realtime_alerts(kind, events)
+            summary = self._summarize_realtime_alert(kind, events)
         if summary:
             self.notify_with_details(_(u"EDR Alerts"), summary)
 
@@ -582,21 +582,8 @@ class EDRClient(object):
                 return False
         return self.novel_enough_alert(event["cmdr"].lower(), event)
 
-    def _summarize_realtime_alerts(self, kind, events):
-        try:
-            precheck = events.values()
-        except TypeError:
-            return self._summarize_realtime_alert(event)
-
-        summary =  []
-        for event in events.values():
-            summarized = self._summarize_realtime_alert(event)
-            if summarized:
-                summary.append(summarized)
-        return summary
-
-
     def _summarize_realtime_alert(self, kind, event):
+        summary =  []
         EDRLOG.log(u"realtime {} alerts, handling {}".format(kind, event), "DEBUG")
         if not self._worthy_alert(kind, event):
             EDRLOG.log(u"Skipped realtime {} event because it wasn't worth alerting about: {}.".format(kind, event), "DEBUG")
@@ -622,7 +609,10 @@ class EDRClient(object):
                     oneliner += _(u" wanted for {bounty} cr").format(bounty=edentities.EDBounty(event["bounty"]).pretty_print())
                 else:
                     oneliner += _(u" wanted somewhere")
-            return oneliner
+            
+            if oneliner:
+                summary.append(oneliner)
+        return summary
 
     def who(self, cmdr_name, autocreate=False):
         profile = self.cmdr(cmdr_name, autocreate, check_inara_server=True)

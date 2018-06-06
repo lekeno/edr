@@ -138,7 +138,17 @@ class EDRSEEReader():
                     break
                 edr_log.log(u"handling msg: {} {} {}".format(msg.event, msg.data, self.kind), "DEBUG")
                 if msg.event in ["put", "patch"] and msg.data:
-                    self.callback(self.kind, json.loads(msg.data)["data"])
+                    data = json.loads(msg.data)
+                    if data is None or data["data"] is None:
+                        continue
+                    if data["path"] == '/':
+                        # initial update
+                        keys = data["data"].keys()
+                        keys.sort()
+                        for k in keys:
+                            self.callback(self.kind, data["data"][k])
+                    else:
+                        self.callback(self.kind, data["data"])
                 elif msg.event in ["cancel", "auth_revoked"]:
                     self.callback(self.kind, msg.event)
 
