@@ -575,7 +575,7 @@ def handle_scan_events(cmdr, entry):
     edr_submit_contact(cmdr_name, ship, entry["timestamp"], "Ship targeted", cmdr)
     if entry["ScanStage"] == 3:
         wanted = entry["LegalStatus"] in ["Wanted", "WantedEnemy", "Warrant"]
-        enemy = entry["LegalStatus"] in ["Enemy", "WantedEnemy"]
+        enemy = entry["LegalStatus"] in ["Enemy", "WantedEnemy", "Hunter"]
         scan = {
             "cmdr": cmdr_name,
             "ship": ship,
