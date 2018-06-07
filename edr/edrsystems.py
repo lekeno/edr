@@ -82,6 +82,7 @@ class EDRSystems(object):
         self.reports_check_interval = edr_config.reports_check_interval()
         self.notams_check_interval = edr_config.notams_check_interval()
         self.timespan = edr_config.sitreps_timespan()
+        self.timespan_notams = edr_config.notams_timespan()
         self.server = server
         self.edsm_server = edsmserver.EDSMServer()
 
@@ -471,10 +472,10 @@ class EDRSystems(object):
             updated = True
 
         if self.__are_notams_stale():
-            missing_seconds = self.timespan
+            missing_seconds = self.timespan_notams
             now = datetime.datetime.now()
             if self.notams_cache.last_updated:
-                missing_seconds = min(self.timespan, (now - self.notams_cache.last_updated).total_seconds())
+                missing_seconds = min(self.timespan_notams, (now - self.notams_cache.last_updated).total_seconds())
 
             notams = self.server.notams(missing_seconds)
             if notams:

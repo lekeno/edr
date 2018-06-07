@@ -105,6 +105,9 @@ class EDRConfig(object):
     def sitreps_timespan(self):
         return int(self.config.get('sitreps', 'sitreps_timespan'))
 
+    def notams_timespan(self):
+        return int(self.config.get('notams', 'notams_timespan'))
+
     def sitreps_max_age(self):
         return int(self.config.get('sitreps', 'sitreps_max_age'))
 
@@ -112,10 +115,10 @@ class EDRConfig(object):
         return int(self.config.get('sitreps', 'reports_check_interval'))
 
     def notams_check_interval(self):
-        return int(self.config.get('sitreps', 'notams_check_interval'))
+        return int(self.config.get('notams', 'notams_check_interval'))
 
     def notams_max_age(self):
-        return int(self.config.get('sitreps', 'notams_max_age'))
+        return int(self.config.get('notams', 'notams_max_age'))
 
     def recon_recent_threshold(self):
         return int(self.config.get('sitreps', 'recon_recent_threshold'))
