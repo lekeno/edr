@@ -8,9 +8,10 @@ import textwrap
 EDRLOG = edrlog.EDRLog()
 
 _thisdir = os.path.abspath(os.path.dirname(__file__))
-_overlay_dir = os.path.join(_thisdir, "EDMCOverlay")
+_overlay_dir = os.path.join(_thisdir, u"EDMCOverlay")
 if _overlay_dir not in sys.path:
-    # easy 'fix' EDRLOG.log(u"adding {} to sys.path".format(_overlay_dir), "DEBUG")
+    # fails if a user has non asciii characters
+    # EDRLOG.log(u"adding {} to sys.path".format(_overlay_dir), "DEBUG")
     sys.path.append(_overlay_dir)
 
 try:
