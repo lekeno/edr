@@ -15,7 +15,6 @@ import urllib
 EDRLOG = edrlog.EDRLog()
 
 class EDRServer(object):
-
     @staticmethod
     def nodify(name):
         return name.lower().replace(" ", "_")
@@ -64,7 +63,7 @@ class EDRServer(object):
         past_epoch_js = int(now_epoch_js - (1000 * timespan_seconds))
         future_epoch_js = 1830000000000L
 
-        params = {"orderBy": '"timestamp"', "startAt": past_epoch_js, "endAt": future_epoch_js, "auth": self.auth_token()}
+        params = {"orderBy": '"timestamp"', "startAt": past_epoch_js, "endAt": future_epoch_js, "auth": self.auth_token(), "limitToLast": 10}
         resp = requests.get("{}/v1/notams.json".format(self.EDR_SERVER), params=params)
 
         if resp.status_code != requests.codes.ok:
@@ -78,7 +77,7 @@ class EDRServer(object):
         now_epoch_js = int(1000 * calendar.timegm(time.gmtime()))
         past_epoch_js = int(now_epoch_js - (1000 * timespan_seconds))
 
-        params = {"orderBy": '"timestamp"', "startAt": past_epoch_js, "endAt": now_epoch_js, "auth": self.auth_token()}
+        params = {"orderBy": '"timestamp"', "startAt": past_epoch_js, "endAt": now_epoch_js, "auth": self.auth_token(), "limitToLast": 30}
         resp = requests.get("{}/v1/systems.json".format(self.EDR_SERVER), params=params)
 
         if resp.status_code != requests.codes.ok:
@@ -118,9 +117,9 @@ class EDRServer(object):
 
         return sid
 
-    def pledged_to(self, powerplay, since):
+    def pledged_to(self, power, since):
         params = { "auth": self.auth_token() }
-        if powerplay is None:
+        if power is None:
             EDRLOG.log(u"Removing pledge info for uid {uid}".format(uid=self.uid), "INFO")
             endpoint = "{server}/v1/pledges/{uid}/.json".format(server=self.EDR_SERVER, uid=self.uid())
             EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
@@ -128,14 +127,13 @@ class EDRServer(object):
             EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
             return resp.status_code == requests.codes.ok
         
-        EDRLOG.log(u"Pledge info for uid {uid} with power:{power}".format(uid=self.uid(), power=powerplay), "INFO")
+        EDRLOG.log(u"Pledge info for uid {uid} with power:{power}".format(uid=self.uid(), power=power), "INFO")
         endpoint = "{server}/v1/pledges/{uid}/.json".format(server=self.EDR_SERVER, uid=self.uid())
-        json = { "cpower": self.nodify(powerplay), "since": since, "heartbeat": {".sv": "timestamp"} }
+        json = { "cpower": self.nodify(power), "since": int(since*1000), "heartbeat": {".sv": "timestamp"} }
         EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = requests.put(endpoint, params=params, json=json)
         EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
-        return resp.status_code == requests.codes.ok
-            
+        return resp.status_code == requests.codes.ok            
     
     def cmdr(self, cmdr, autocreate=True):
         cmdr_profile = edrcmdrprofile.EDRCmdrProfile()
@@ -201,7 +199,9 @@ class EDRServer(object):
     def legal_records(self, cmdr_id, timespan_seconds):
         EDRLOG.log(u"Fetching legal record for cmdr {cid}".format(cid=cmdr_id), "INFO")
         endpoint = "/v1/legal/{cmdr_id}/".format(cmdr_id=cmdr_id)
-        return self.__get_recent(endpoint, timespan_seconds)
+        legal_records_perday = 24
+        records_over_timespan = timespan_seconds / 86400 * legal_records_perday
+        return self.__get_recent(endpoint, timespan_seconds, limitToLast=records_over_timespan)
 
     def crime(self,  system_id, info):
         info["uid"] = self.uid()
@@ -209,20 +209,24 @@ class EDRServer(object):
         endpoint = "/v1/crimes/{system_id}/".format(system_id=system_id)
         return self.__post_json(endpoint, info)
 
-    def __get_recent(self, path, timespan_seconds):
+    def __get_recent(self, path, timespan_seconds, limitToLast=None):
         now_epoch_js = int(1000 * calendar.timegm(time.gmtime()))
         past_epoch_js = int(now_epoch_js - (1000 * timespan_seconds))
 
         params = { "orderBy": '"timestamp"', "startAt": past_epoch_js, "endAt": now_epoch_js, "auth": self.auth_token()}
+        if limitToLast:
+            params["limitToLast"] = limitToLast
         endpoint = "{server}{path}.json".format(server=self.EDR_SERVER, path=path)
         EDRLOG.log(u"Get recent; endpoint: {}".format(endpoint), "DEBUG")
         resp = requests.get(endpoint, params=params)
 
         if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Failed to retrieve recent items. Error code: {}".format(resp.status_code), "ERROR")
-            return None
+            return []
         
         results = json.loads(resp.content)
+        if not results:
+            return []
         # When using Firebase's REST API, the filtered results are returned in an undefined order since JSON interpreters don't enforce any ordering.
         # So, sorting has to be done on the client side
         sorted_results = sorted(results.values(), key=lambda t: t["timestamp"], reverse=True)
@@ -231,29 +235,40 @@ class EDRServer(object):
     def recent_crimes(self,  system_id, timespan_seconds):
         EDRLOG.log(u"Recent crimes for system {sid}".format(sid=system_id), "INFO")
         endpoint = "/v1/crimes/{sid}/".format(sid=system_id)
-        return self.__get_recent(endpoint, timespan_seconds)
+        return self.__get_recent(endpoint, timespan_seconds, limitToLast=50)
 
     def recent_traffic(self,  system_id, timespan_seconds):
         EDRLOG.log(u"Recent traffic for system {sid}".format(sid=system_id), "INFO")
         endpoint = "/v1/traffic/{sid}/".format(sid=system_id)
-        return self.__get_recent(endpoint, timespan_seconds)
+        return self.__get_recent(endpoint, timespan_seconds, limitToLast=50)
 
     def recent_outlaws(self, timespan_seconds):
         EDRLOG.log(u"Recently sighted outlaws", "INFO")
         endpoint = "/v1/outlaws/"
-        return self.__get_recent(endpoint, timespan_seconds)
+        return self.__get_recent(endpoint, timespan_seconds, limitToLast=50)
 
-    def recent_enemies(self, timespan_seconds, powerplay):
+    def recent_enemies(self, timespan_seconds, power):
         EDRLOG.log(u"Recently sighted enemies", "INFO")                
-        endpoint = "/v1/powerplay/{}/enemies/".format(self.nodify(powerplay))
-        return self.__get_recent(endpoint, timespan_seconds)
+        endpoint = "/v1/powerplay/{}/enemies/".format(self.nodify(power))
+        return self.__get_recent(endpoint, timespan_seconds, limitToLast=50)
+
+    def heartbeat(self):
+        EDRLOG.log(u"EDR heartbeat", "INFO")                
+        endpoint = "https://us-central1-blistering-inferno-4028.cloudfunctions.net/heartbeat"
+        params = {"uid": self.uid() }
+        resp = requests.get(endpoint, params=params)
+
+        if resp.status_code != requests.codes.ok:
+            EDRLOG.log(u"Heartbeat failed. Error code: {}".format(resp.status_code), "ERROR")
+            return None
+        return json.loads(resp.content)
     
-    def where(self, name, powerplay=None):
+    def where(self, name, power=None):
         EDRLOG.log(u"Where query for opponent named '{}'".format(name), "INFO")
         params = {"orderBy": '"cname"', "equalTo": json.dumps(name.lower()), "limitToFirst": 1, "auth": self.auth_token() }
         endpoint = "{}/v1/".format(self.EDR_SERVER)
-        if powerplay:
-            endpoint += "powerplay/{}/enemies.json".format(self.nodify(powerplay))
+        if power:
+            endpoint += "powerplay/{}/enemies.json".format(self.nodify(power))
         else:
             endpoint += "outlaws.json"
         resp = requests.get(endpoint, params=params)
@@ -271,29 +286,55 @@ class EDRServer(object):
     def update_cmdrdex(self, cmdr_id, dex_entry):
         if self.is_anonymous():
             return False
-        params = { "auth" : self.auth_token()}
-        
+        dex_path = "/v1/cmdrsdex/{}/".format(self.uid())
         if dex_entry is None:
-            EDRLOG.log(u"Removing CmdrDex entry for cmdr {cid}".format(cid=cmdr_id), "INFO")
-            endpoint = "{server}/v1/cmdrsdex/{uid}/{cid}.json".format(server=self.EDR_SERVER, uid=self.uid(), cid=cmdr_id)
-            EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
-            resp = requests.delete(endpoint, params=params)
-            EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
-            return resp.status_code == requests.codes.ok
+            return self.__remove_dex(dex_path, cmdr_id)
         
-        EDRLOG.log(u"CmdrDex entry for cmdr {cid} with json:{json}".format(cid=cmdr_id, json=dex_entry), "INFO")
-        endpoint = "{server}/v1/cmdrsdex/{uid}/{cid}/.json".format(server=self.EDR_SERVER, uid=self.uid(), cid=cmdr_id)
+        return self.__update_dex(dex_path, cmdr_id, dex_entry)    
+
+    def cmdrdex(self, cmdr_id):
+        if self.is_anonymous():
+            return None
+        dex_path = "/v1/cmdrsdex/{}/".format(self.uid())
+        return self.__dex(dex_path, cmdr_id)
+
+    def update_sqdrdex(self, sqdr_id, cmdr_id, dex_entry):
+        if self.is_anonymous():
+            return False
+        dex_path = "/v1/sqdrsdex/{}/".format(sqdr_id)
+        if dex_entry is None:
+            return self.__remove_dex(dex_path, cmdr_id)
+        
+        return self.__update_dex(dex_path, cmdr_id, dex_entry)
+
+    def sqdrdex(self, sqdr_id, cmdr_id):
+        if self.is_anonymous():
+            return None
+        dex_path = "/v1/sqdrsdex/{}/".format(sqdr_id)
+        return self.__dex(dex_path, cmdr_id)
+
+    def __update_dex(self, dex_path, cmdr_id, dex_entry):
+        params = { "auth" : self.auth_token()}
+        EDRLOG.log(u"Dex entry for cmdr {cid} with json:{json}".format(cid=cmdr_id, json=dex_entry), "INFO")
+        endpoint = "{server}{dex}{cid}/.json".format(server=self.EDR_SERVER, dex=dex_path, cid=cmdr_id)
         EDRLOG.log(u"Endpoint: {} with {}".format(endpoint, dex_entry), "DEBUG")
         resp = requests.put(endpoint, params=params, json=dex_entry)
         EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
         return resp.status_code == requests.codes.ok
 
-    def cmdrdex(self, cmdr_id):
-        if self.is_anonymous():
-            return None
-        EDRLOG.log(u"CmdrDex request for {}".format(cmdr_id), "DEBUG")
+    def __remove_dex(self, dex_path, cmdr_id):
         params = { "auth" : self.auth_token()}
-        endpoint = "{server}/v1/cmdrsdex/{uid}/{cid}/.json".format(server=self.EDR_SERVER, uid=self.uid(), cid=cmdr_id)
+        EDRLOG.log(u"Removing Dex entry for cmdr {cid}".format(cid=cmdr_id), "INFO")
+        endpoint = "{server}{dex}{cid}.json".format(server=self.EDR_SERVER, dex=dex_path, cid=cmdr_id)
+        EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
+        resp = requests.delete(endpoint, params=params)
+        EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
+        return resp.status_code == requests.codes.ok
+    
+    def __dex(self, dex_path, cmdr_id):
+        EDRLOG.log(u"Dex request for {}".format(cmdr_id), "DEBUG")
+        params = { "auth" : self.auth_token()}
+        endpoint = "{server}{dex}{cid}/.json".format(server=self.EDR_SERVER, dex=dex_path, cid=cmdr_id)
         EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = requests.get(endpoint, params=params)
         EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")

@@ -19,6 +19,9 @@ class EDRConfig(object):
     def edr_needs_u_novelty_threshold(self):
         return int(self.config.get('edr', 'edr_needs_u_novelty_threshold'))
 
+    def edr_heartbeat(self):
+        return int(self.config.get('edr', 'edr_heartbeat'))
+
     def inara_api_key(self):
         return self.config.get('inara', 'inara_api_key')
 
@@ -66,6 +69,9 @@ class EDRConfig(object):
 
     def cmdrsdex_max_age(self):
         return int(self.config.get('lrucaches', 'cmdrsdex_max_age'))
+
+    def sqdrdex_max_age(self):
+        return int(self.config.get('lrucaches', 'sqdrdex_max_age'))
 
     def inara_max_age(self):
         return int(self.config.get('lrucaches', 'inara_max_age'))
