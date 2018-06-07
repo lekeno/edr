@@ -99,7 +99,7 @@ class EDRLegalRecords(object):
             if last_updated:
                 missing_seconds = min(self.timespan, (now - last_updated).total_seconds())
             
-            records = self.server.legal_records(cmdr_id, missing_seconds)
+            records = self.server.legal_records(cmdr_id, missing_seconds)                
             records = sorted(records, key=lambda t: t["timestamp"], reverse=False)
             recent_records =  deque(maxlen=10)
             if self.records.has_key(cmdr_id):
