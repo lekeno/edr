@@ -86,6 +86,8 @@ class HelpContent(object):
                 _(u" - '!sitrep system_name': to display the sitrep for the star system called system_name."),
                 _(u" - '!notams': to display a list of star systems with active notices, i.e. Notice To Air Men."),
                 _(u" - '!notam system_name': to display any active notice the star system called system_name."),
+                _(u" - '!distance system_name', '!d system_name': to display the distance from your position to 'system_name'."),
+                _(u" - '!distance A > B', '!d A > B': to display the distance from 'A' to 'B'."),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
             ]

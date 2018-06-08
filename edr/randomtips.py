@@ -49,6 +49,10 @@ DEFAULT_TIPS = {
         _(u"Send '#= <cmdrname>' or '#friend <cmdrname>' to tag <cmdrname> as a friend in your commanders index."),
         _(u"Sending '#<tag>' to a contact will tag them as <tag> in your commanders index."),
         _(u"Send '#<tag> <cmdrname>' to tag <cmdrname> as <tag> in your commanders index."),
+        _(u"Sending '#s!' or '#enemy' to a contact will tag them as an enemy for your Inara squadron."),
+        _(u"Send '#s! <cmdrname>' or '#enemy <cmdrname>' to tag <cmdrname> as an enemy for your Inara squadron."),
+        _(u"Sending '#s+' or '#ally' to a contact will tag them as an ally for your Inara squadron."),
+        _(u"Send '#s+ <cmdrname>' or '#ally <cmdrname>' to tag <cmdrname> as an ally for your Inara squadron."),
         _(u"EDR will use the friend tag to infer a social graph for upcoming features."),
         _(u"Your commanders index is personal. EDR will only show aggregate stats to other EDR users."),
         _(u"Tag a commander with an outlaw tag if you witness them going after a clean and non-enemy power commander."),
@@ -84,7 +88,9 @@ DEFAULT_TIPS = {
         _(u"Send '?enemies ly 150': to configure a maximal distance of 150 ly for the enemies realtime alerts."),
         _(u"Send '?enemies cr 10000': to configure a minimal bounty of 10k cr for the enemies realtime alerts."),
         _(u"Send '?enemies cr -': to remove the minimal bounty for the realtime alerts."),
-        _(u"Send '?enemies ly -': to remove the maximal distance for the realtime alerts.")
+        _(u"Send '?enemies ly -': to remove the maximal distance for the realtime alerts."),
+        _(u"Send '!distance <system>' or '!d <system>': shows the distance to <system>."),
+        _(u"Send '!distance Lave > Eravate ' or '!d Lave > Eravate': shows the distance from Lave to Eravate.")
     ],
     "OPEN tips": [
         _(u"Never fly what you can't afford to lose. Check your rebuy and credit balance on your right panel."),
