@@ -208,6 +208,7 @@ class EDRClient(object):
         self.edrcmdrs.set_player_name(name)
 
     def pledged_to(self, power, time_pledged=0):
+        notdotpower = power.replace(".", "")
         if self.edrcmdrs.player_pledged_to(power, time_pledged):
             for kind in self.edropponents:
                 self.edropponents[kind].pledged_to(power, time_pledged)
