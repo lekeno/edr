@@ -630,9 +630,15 @@ class EDRClient(object):
 
     def distance(self, from_system, to_system):
         oneliner = ""
-        distance = self.edrsystems.distance(from_system, to_system)
+        distance = None
+        try:
+            distance = self.edrsystems.distance(from_system, to_system)
+        except ValueError:
+            pass
+            
         if distance:
-            oneliner = _(u"{dist}ly from {from_sys} to {to_sys}".format(dist=distance, from_sys=from_system, to_sys=to_system))
+            pretty_dist = _(u"{distance:.3g}").format(distance=distance) if distance < 50.0 else _(u"{distance}").format(distance=int(distance))
+            oneliner = _(u"{dist}ly from {from_sys} to {to_sys}".format(dist=pretty_dist, from_sys=from_system, to_sys=to_system))
             self.status = _(u"distance: {dist}ly")
         else:
             self.status = _(u"distance failed")
