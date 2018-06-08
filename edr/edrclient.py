@@ -628,6 +628,17 @@ class EDRClient(object):
             EDRLOG.log(u"Who {} : no info".format(cmdr_name), "INFO")
             self.__intel(cmdr_name, [_("No info about {cmdr}").format(cmdr=cmdr_name)])
 
+    def distance(self, from_system, to_system):
+        oneliner = ""
+        distance = self.edrsystems.distance(from_system, to_system)
+        if distance:
+            oneliner = _(u"{dist}ly from {from_sys} to {to_sys}".format(dist=distance, from_sys=from_system, to_sys=to_system))
+            self.status = _(u"distance: {dist}ly")
+        else:
+            self.status = _(u"distance failed")
+            oneliner = _(u"Couldn't calculate a distance. Invalid or unknown system names?")
+        self.__notify("Distance", [oneliner])
+
     def blip(self, cmdr_name, blip):
         cmdr_id = self.cmdr_id(cmdr_name)
         if cmdr_id is None:

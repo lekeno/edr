@@ -642,6 +642,16 @@ def handle_bang_commands(cmdr, command, command_parts):
     elif command == "!where" and len(command_parts) == 2:
         EDRLOG.log(u"Explicit where command for {}".format(command_parts[1]), "INFO")
         EDR_CLIENT.where(command_parts[1])
+    elif command in ["!distance", "!d"] and len(command_parts) >= 2:
+        EDRLOG.log(u"Distance command", "INFO")
+        systems = " ".join(command_parts[1:]).split(" > ", 1)
+        if not systems:
+            EDRLOG.log(u"Aborting distance calculation (no params).", "DEBUG")
+            return
+        from_sys = systems[0] if len(systems) == 2 else cmdr.star_system
+        to_sys = systems[1] if len(systems) == 2 else systems[0]
+        EDRLOG.log(u"Distance command from {} to {}".format(from_sys, to_sys), "INFO")
+        EDR_CLIENT.distance(from_sys, to_sys)
     elif command == "!help":
         EDRLOG.log(u"Help command", "INFO")
         EDR_CLIENT.help("" if len(command_parts) == 1 else command_parts[1])
