@@ -12,6 +12,7 @@ import edrconfig
 import lrucache
 import edentities
 import edrserver
+import edrinara
 import audiofeedback
 import edrlog
 import ingamemsg
@@ -65,8 +66,8 @@ class EDRClient(object):
         audio = 1 if config.get("EDRAudioFeedback") == "True" else 0
         self._audio_feedback = tk.IntVar(value=audio)
 
-        self.player = edentities.EDCmdr()
         self.server = edrserver.EDRServer()
+        self.inara = edrinara.EDRInara()
         
         self.realtime_params = {
             EDROpponents.OUTLAWS: { "min_bounty": None if config.get("EDROutlawsAlertsMinBounty") == "None" else config.getint("EDROutlawsAlertsMinBounty"),
@@ -76,7 +77,8 @@ class EDRClient(object):
         }
         
         self.edrsystems = edrsystems.EDRSystems(self.server)
-        self.edrcmdrs = edrcmdrs.EDRCmdrs(self.server)
+        self.edrcmdrs = edrcmdrs.EDRCmdrs(self.server, self.inara)
+        self.player = self.edrcmdrs.player
         self.edropponents = {
             EDROpponents.OUTLAWS: EDROpponents(self.server, EDROpponents.OUTLAWS, self._realtime_callback),
             EDROpponents.ENEMIES: EDROpponents(self.server, EDROpponents.ENEMIES, self._realtime_callback),
@@ -203,20 +205,14 @@ class EDRClient(object):
         self._audio_feedback.set(new_value)
 
     def player_name(self, name):
-        self.edrcmdrs.inara.cmdr_name = name
-        self.player.name = name
+        self.edrcmdrs.set_player_name(name)
 
     def pledged_to(self, power, time_pledged=0):
-        delta = time_pledged - self.player.time_pledged if self.player.time_pledged else time_pledged 
-        if power == self.player.powerplay and delta <= 60*60*6:
-            EDRLOG.log(u"Skipping pledged_to (not noteworthy): current vs. proposed {} vs. {}; {} vs {}".format(self.player.powerplay, power, self.player.time_pledged, time_pledged), "DEBUG")
-            return
-        self.player.powerplay = power
-        self.player.time_pledged = time_pledged
-        for kind in self.edropponents:
-            self.edropponents[kind].pledged_to(power, time_pledged)
-        since = edtime.EDTime.js_epoch_now() - (time_pledged * 1000)
-        self.server.pledged_to(power, since)
+        nodotpower = power.replace(".", "")
+        if self.edrcmdrs.player_pledged_to(nodotpower, time_pledged):
+            for kind in self.edropponents:
+                self.edropponents[kind].pledged_to(nodotpower, time_pledged)
+        #TODO else, log?
 
     def login(self):
         self.server.logout()
@@ -341,7 +337,7 @@ class EDRClient(object):
                 # Translators: this is shown via the overlay if the system of interest is an Anarchy (current system or !sitrep <system>)
                 details.append(_c(u"Sitrep|Anarchy: not all crimes are reported."))
             if self.edrsystems.has_recent_activity(star_system):
-                summary = self.edrsystems.summarize_recent_activity(star_system, self.player.powerplay)
+                summary = self.edrsystems.summarize_recent_activity(star_system, self.player.power)
                 for section in summary:
                     details.append(u"{}: {}".format(section, "; ".join(summary[section])))
         if details:
@@ -474,9 +470,9 @@ class EDRClient(object):
         elif kind == EDROpponents.ENEMIES:
             if self.is_anonymous():
                 details = _(u"Request an EDR account to access enemy alerts (https://lekeno.github.io)")
-            elif not self.player.powerplay:
+            elif not self.player.power:
                 details = _(u"Pledge to a power to access enemy alerts")
-            elif self.player.time_pledged < 24*60*60*30:
+            elif self.player.time_pledged < 24*60*60*7: #TODO 30 days after the beta phase
                 details = _(u"Remain loyal for at least 30 days to access enemy alerts")
             else:
                 details = _(u"Enabling Enemy alerts") if self.edropponents[kind].establish_comms_link() else _(u"Couldn't enable Enemy alerts")
@@ -560,7 +556,7 @@ class EDRClient(object):
         if events in ["cancel", "auth_revoked"]:
             summary = [_(u"Comms link interrupted. Send '?{} on' to re-establish.").format(kind.lower())]
         else:
-            summary = self._summarize_realtime_alerts(kind, events)
+            summary = self._summarize_realtime_alert(kind, events)
         if summary:
             self.notify_with_details(_(u"EDR Alerts"), summary)
 
@@ -587,50 +583,68 @@ class EDRClient(object):
                 return False
         return self.novel_enough_alert(event["cmdr"].lower(), event)
 
-    def _summarize_realtime_alerts(self, kind, events):
+    def _summarize_realtime_alert(self, kind, event):
         summary =  []
-        for event in events.values():
-            EDRLOG.log(u"realtime {} alerts, handling {}".format(kind, event), "DEBUG")
-            if self._worthy_alert(kind, event):
-                location = edentities.EDLocation(event["starSystem"], event["place"])
-                distance = None
-                try:
-                    distance = self.edrsystems.distance(self.player.star_system, location.star_system)
-                except ValueError:
-                    pass
-                
-                oneliner = _(u"{cmdr} ({ship}) sighted in {location}")
-                if kind is EDROpponents.ENEMIES and event.get("enemy", None):
-                    oneliner = _(u"Enemy {cmdr} ({ship}) sighted in {location}")
-                elif kind is EDROpponents.OUTLAWS:
-                    oneliner = _(u"Outlaw {cmdr} ({ship}) sighted in {location}")
-                oneliner = oneliner.format(cmdr=event["cmdr"], ship=event["ship"], location=location.pretty_print())
-                
-                if distance:
-                    oneliner += _(u" [{distance:.3g} ly]").format(distance=distance) if distance < 50.0 else _(u" [{distance} ly]").format(distance=int(distance))
-                if event.get("wanted", None):
-                    if event["bounty"] > 0:
-                        oneliner += _(u" wanted for {bounty} cr").format(bounty=edentities.EDBounty(event["bounty"]).pretty_print())
-                    else:
-                        oneliner += _(u" wanted somewhere")
+        EDRLOG.log(u"realtime {} alerts, handling {}".format(kind, event), "DEBUG")
+        if not self._worthy_alert(kind, event):
+            EDRLOG.log(u"Skipped realtime {} event because it wasn't worth alerting about: {}.".format(kind, event), "DEBUG")
+        else:
+            location = edentities.EDLocation(event["starSystem"], event["place"])
+            distance = None
+            try:
+                distance = self.edrsystems.distance(self.player.star_system, location.star_system)
+            except ValueError:
+                pass
+            
+            oneliner = _(u"{cmdr} ({ship}) sighted in {location}")
+            if kind is EDROpponents.ENEMIES and event.get("enemy", None):
+                oneliner = _(u"Enemy {cmdr} ({ship}) sighted in {location}")
+            elif kind is EDROpponents.OUTLAWS:
+                oneliner = _(u"Outlaw {cmdr} ({ship}) sighted in {location}")
+            oneliner = oneliner.format(cmdr=event["cmdr"], ship=event["ship"], location=location.pretty_print())
+            
+            if distance:
+                oneliner += _(u" [{distance:.3g} ly]").format(distance=distance) if distance < 50.0 else _(u" [{distance} ly]").format(distance=int(distance))
+            if event.get("wanted", None):
+                if event["bounty"] > 0:
+                    oneliner += _(u" wanted for {bounty} cr").format(bounty=edentities.EDBounty(event["bounty"]).pretty_print())
+                else:
+                    oneliner += _(u" wanted somewhere")
+            
+            if oneliner:
                 summary.append(oneliner)
-            else:
-                EDRLOG.log(u"Skipped realtime {} event because it wasn't worth alerting about: {}.".format(kind, event), "DEBUG")
         return summary
 
     def who(self, cmdr_name, autocreate=False):
         profile = self.cmdr(cmdr_name, autocreate, check_inara_server=True)
-        if not profile is None:
+        if profile:
             self.status = _(u"got info about {}").format(cmdr_name)
-            EDRLOG.log(u"Who {} : {}".format(cmdr_name, profile.short_profile()), "INFO")
+            EDRLOG.log(u"Who {} : {}".format(cmdr_name, profile.short_profile(self.player.powerplay)), "INFO")
             legal = self.edrlegal.summarize_recents(profile.cid)
             if legal:
-                self.__intel(cmdr_name, [profile.short_profile(), legal])
+                self.__intel(cmdr_name, [profile.short_profile(self.player.powerplay), legal])
             else:
-                self.__intel(cmdr_name, [profile.short_profile()])
+                self.__intel(cmdr_name, [profile.short_profile(self.player.powerplay)])
         else:
             EDRLOG.log(u"Who {} : no info".format(cmdr_name), "INFO")
             self.__intel(cmdr_name, [_("No info about {cmdr}").format(cmdr=cmdr_name)])
+
+    def distance(self, from_system, to_system):
+        oneliner = ""
+        distance = None
+        try:
+            distance = self.edrsystems.distance(from_system, to_system)
+        except ValueError:
+            pass
+            
+        if distance:
+            pretty_dist = _(u"{distance:.3g}").format(distance=distance) if distance < 50.0 else _(u"{distance}").format(distance=int(distance))
+            oneliner = _(u"{dist}ly from {from_sys} to {to_sys}".format(dist=pretty_dist, from_sys=from_system, to_sys=to_system))
+            self.status = _(u"distance: {dist}ly")
+        else:
+            self.status = _(u"distance failed")
+            oneliner = _(u"Couldn't calculate a distance. Invalid or unknown system names?")
+        self.__notify("Distance", [oneliner])
 
     def blip(self, cmdr_name, blip):
         cmdr_id = self.cmdr_id(cmdr_name)
@@ -643,9 +657,9 @@ class EDRClient(object):
         if profile and (self.player.name != cmdr_name) and profile.is_dangerous(self.player.powerplay):
             self.status = _(u"{} is bad news.").format(cmdr_name)
             if self.novel_enough_blip(cmdr_id, blip, cognitive = True):
-                self.__warning(_(u"Warning!"), [profile.short_profile()])
+                self.__warning(_(u"Warning!"), [profile.short_profile(self.player.powerplay)])
                 self.cognitive_blips_cache.set(cmdr_id, blip)
-                if self.is_anonymous() and profile.is_dangerous():
+                if self.is_anonymous() and profile.is_dangerous(self.player.powerplay):
                     self.advertise_full_account(_("You could have helped other EDR users by reporting this outlaw."))
                 elif self.is_anonymous():
                     self.advertise_full_account(_("You could have helped other EDR users by reporting this enemy."))
@@ -681,13 +695,13 @@ class EDRClient(object):
             legal = self.edrlegal.summarize_recents(profile.cid)
             bounty = edentities.EDBounty(scan["bounty"]) if scan["bounty"] else None
             if profile and (self.player.name != cmdr_name):
-                if profile.is_dangerous(pledged_to=self.player.powerplay):
+                if profile.is_dangerous(self.player.powerplay):
                     # Translators: this is shown via EDMC's EDR status line upon contact with a known outlaw
                     self.status = _(u"{} is bad news.").format(cmdr_name)
-                    details = [profile.short_profile()]
+                    details = [profile.short_profile(self.player.powerplay)]
                     status = ""
                     if scan["enemy"]:
-                        status += _(u"Powerplay Enemy. ")
+                        status += _(u"PP Enemy (weapons free). ")
                     if scan["bounty"]:
                         status += _(u"Wanted for {} cr").format(edentities.EDBounty(scan["bounty"]).pretty_print())
                     elif scan["wanted"]:
@@ -699,7 +713,7 @@ class EDRClient(object):
                     self.__warning(_(u"Warning!"), details)
                 elif self.intel_even_if_clean or (scan["wanted"] and bounty.is_significant()):
                     self.status = _(u"Intel for cmdr {}.").format(cmdr_name)
-                    details = [profile.short_profile()]
+                    details = [profile.short_profile(self.player.powerplay)]
                     if bounty:
                         details.append(_(u"Wanted for {} cr").format(edentities.EDBounty(scan["bounty"]).pretty_print()))
                     elif scan["wanted"]:
@@ -707,12 +721,12 @@ class EDRClient(object):
                     if legal:
                         details.append(legal)
                     self.__intel(_(u"Intel"), details)
-                if (self.is_anonymous() and (profile.is_dangerous() or (scan["wanted"] and bounty.is_significant()))):
+                if (self.is_anonymous() and (profile.is_dangerous(self.player.powerplay) or (scan["wanted"] and bounty.is_significant()))):
                     # Translators: this is shown to users who don't yet have an EDR account
                     self.advertise_full_account(_(u"You could have helped other EDR users by reporting this outlaw."))
-                elif self.is_anonymous() and scan["enemy"] and self.player.powerplay:
+                elif self.is_anonymous() and scan["enemy"] and self.player.power:
                     # Translators: this is shown to users who don't yet have an EDR account
-                    self.advertise_full_account(_(u"You could have helped other {power} pledges by reporting this enemy.").format(self.player.powerplay))
+                    self.advertise_full_account(_(u"You could have helped other {power} pledges by reporting this enemy.").format(self.player.power))
                 self.cognitive_scans_cache.set(cmdr_id, scan)
 
         if not self.novel_enough_scan(cmdr_id, scan):
@@ -788,12 +802,23 @@ class EDRClient(object):
             EDRLOG.log(u"Skipping tag cmdr since the user is anonymous.", "INFO")
             self.advertise_full_account(_(u"Sorry, this feature only works with an EDR account."), passive=False)
             return False
+        
+        if  tag in ["enemy", "ally"]:
+            if not self.player.squadron:
+                EDRLOG.log(u"Skipping squadron tag since the user isn't a member of a squadron.", "INFO")
+                self.notify_with_details(_(u"Squadron Dex"), [_(u"You need to join a squadron on https://inara.cz to use this feature."), _(u"Then, reboot EDR to reflect these changes.")])
+                return False
+            elif not self.player.is_empowered_by_squadron():
+                EDRLOG.log(u"Skipping squadron tag since the user isn't trusted.", "INFO")
+                self.notify_with_details(_(u"Squadron Dex"), [_(u"You need to reach {} to tag enemies or allies.").format(self.player.squadron_empowered_rank())])
+                return False
 
         success = self.edrcmdrs.tag_cmdr(cmdr_name, tag)
+        dex_name = _(u"Squadron Dex") if tag in ["enemy", "ally"] else _(u"Cmdr Dex") 
         if success:
-            self.__notify(_(u"Cmdr Dex"), [_(u"Successfully tagged cmdr {name} with {tag}").format(name=cmdr_name, tag=tag)])
+            self.__notify(dex_name, [_(u"Successfully tagged cmdr {name} with {tag}").format(name=cmdr_name, tag=tag)])
         else:
-            self.__notify(_(u"Cmdr Dex"), [_(u"Could not tag cmdr {name} with {tag}").format(name=cmdr_name, tag=tag)])
+            self.__notify(dex_name, [_(u"Could not tag cmdr {name} with {tag}").format(name=cmdr_name, tag=tag)])
         return success
     
     def memo_cmdr(self, cmdr_name, memo):
@@ -828,14 +853,25 @@ class EDRClient(object):
             self.advertise_full_account(_(u"Sorry, this feature only works with an EDR account."), passive=False)
             return False
 
+        if  tag in ["enemy", "ally"]:
+            if not self.player.squadron:
+                EDRLOG.log(u"Skipping squadron untag since the user isn't a member of a squadron.", "INFO")
+                self.notify_with_details(_(u"Squadron Dex"), [_(u"You need to join a squadron on https://inara.cz to use this feature."), _(u"Then, reboot EDR to reflect these changes.")])
+                return False
+            elif not self.player.is_empowered_by_squadron():
+                EDRLOG.log(u"Skipping squadron untag since the user isn't trusted.", "INFO")
+                self.notify_with_details(_(u"Squadron Dex"), [_(u"You need to reach {} to tag enemies or allies.").format(self.player.squadron_empowered_rank())])
+                return False
+
         success = self.edrcmdrs.untag_cmdr(cmdr_name, tag)
+        dex_name = _(u"Squadron Dex") if tag in ["enemy", "ally"] else _(u"Cmdr Dex")
         if success:
             if tag is None:
-                self.__notify(_(u"Cmdr Dex"), [_(u"Successfully removed all tags from cmdr {}").format(cmdr_name)])
+                self.__notify(dex_name, [_(u"Successfully removed all tags from cmdr {}").format(cmdr_name)])
             else:
-                self.__notify(_(u"Cmdr Dex"), [_(u"Successfully removed tag {} from cmdr {}").format(tag, cmdr_name)])
+                self.__notify(dex_name, [_(u"Successfully removed tag {} from cmdr {}").format(tag, cmdr_name)])
         else:
-            self.__notify(_(u"Cmdr Dex"), [_(u"Could not remove tag(s) from cmdr {}").format(cmdr_name)])
+            self.__notify(dex_name, [_(u"Could not remove tag(s) from cmdr {}").format(cmdr_name)])
         return success
 
     def where(self, cmdr_name):
@@ -860,7 +896,7 @@ class EDRClient(object):
         return self._opponents(EDROpponents.ENEMIES)
 
     def _opponents(self, kind):
-        if kind is EDROpponents.ENEMIES and not self.player.powerplay:
+        if kind is EDROpponents.ENEMIES and not self.player.power:
             EDRLOG.log(u"Not pledged to any power, can't have enemies.", "INFO")
             self.__notify(_(u"Recently Sighted {kind}").format(kind=_(kind)), [_(u"You need to be pledged to a power.")])
             return False

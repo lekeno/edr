@@ -19,6 +19,9 @@ class EDRConfig(object):
     def edr_needs_u_novelty_threshold(self):
         return int(self.config.get('edr', 'edr_needs_u_novelty_threshold'))
 
+    def edr_heartbeat(self):
+        return int(self.config.get('edr', 'edr_heartbeat'))
+
     def inara_api_key(self):
         return self.config.get('inara', 'inara_api_key')
 
@@ -67,6 +70,9 @@ class EDRConfig(object):
     def cmdrsdex_max_age(self):
         return int(self.config.get('lrucaches', 'cmdrsdex_max_age'))
 
+    def sqdrdex_max_age(self):
+        return int(self.config.get('lrucaches', 'sqdrdex_max_age'))
+
     def inara_max_age(self):
         return int(self.config.get('lrucaches', 'inara_max_age'))
 
@@ -105,6 +111,9 @@ class EDRConfig(object):
     def sitreps_timespan(self):
         return int(self.config.get('sitreps', 'sitreps_timespan'))
 
+    def notams_timespan(self):
+        return int(self.config.get('notams', 'notams_timespan'))
+
     def sitreps_max_age(self):
         return int(self.config.get('sitreps', 'sitreps_max_age'))
 
@@ -112,10 +121,10 @@ class EDRConfig(object):
         return int(self.config.get('sitreps', 'reports_check_interval'))
 
     def notams_check_interval(self):
-        return int(self.config.get('sitreps', 'notams_check_interval'))
+        return int(self.config.get('notams', 'notams_check_interval'))
 
     def notams_max_age(self):
-        return int(self.config.get('sitreps', 'notams_max_age'))
+        return int(self.config.get('notams', 'notams_max_age'))
 
     def recon_recent_threshold(self):
         return int(self.config.get('sitreps', 'recon_recent_threshold'))

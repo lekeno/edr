@@ -8,6 +8,10 @@ class EDTime(object, comparable.ComparableMixin):
     @staticmethod
     def js_epoch_now():
         return 1000 * calendar.timegm(time.gmtime())
+
+    @staticmethod
+    def py_epoch_now():
+        return calendar.timegm(time.gmtime())
     
     @staticmethod
     def immersive_delta():

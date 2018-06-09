@@ -310,7 +310,7 @@ def edr_submit_crime(criminal_cmdrs, offence, victim):
         "victim": victim.name,
         "victimShip": victim.ship,
         "reportedBy": victim.name,
-        "byPledge": victim.powerplay.lower().replace(" ", "_") if victim.powerplay else ""
+        "byPledge": victim.powerplay.canonicalize() if victim.powerplay else ""
     }
 
     if not EDR_CLIENT.crime(victim.star_system, report):
@@ -346,7 +346,7 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim):
         "victim": victim,
         "victimShip": u"Unknown",
         "reportedBy": criminal_cmdr.name,
-        "byPledge": criminal_cmdr.powerplay.lower().replace(" ", "_") if criminal_cmdr.powerplay else ""
+        "byPledge": criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else ""
     }
 
     EDRLOG.log(u"Perpetrated crime: {}".format(report), "DEBUG")
@@ -380,7 +380,7 @@ def edr_submit_contact(cmdr_name, ship, timestamp, source, witness):
         "ship" : ship if ship else u"Unknown",
         "source": source,
         "reportedBy": witness.name,
-        "byPledge": witness.powerplay.lower().replace(" ", "_") if witness.powerplay else ""
+        "byPledge": witness.powerplay.canonicalize() if witness.powerplay else ""
     }
 
     if not witness.in_open():
@@ -409,7 +409,7 @@ def edr_submit_scan(scan, timestamp, source, witness):
     report["timestamp"] = edt.as_js_epoch()
     report["source"] = source
     report["reportedBy"] = witness.name
-    report["byPledge"] = witness.powerplay.lower().replace(" ", "_") if witness.powerplay else ""
+    report["byPledge"] = witness.powerplay.canonicalize() if witness.powerplay else ""
 
     if not witness.in_open():
         EDRLOG.log(u"Scan not submitted due to unconfirmed Open mode", "INFO")
@@ -446,7 +446,7 @@ def edr_submit_traffic(cmdr_name, ship, timestamp, source, witness):
         "ship" : ship if ship else u"Unknown",
         "source": source,
         "reportedBy": witness.name,
-        "byPledge": witness.powerplay.lower().replace(" ", "_") if witness.powerplay else ""
+        "byPledge": witness.powerplay.canonicalize() if witness.powerplay else ""
     }
 
     if not witness.in_open():
@@ -575,7 +575,7 @@ def handle_scan_events(cmdr, entry):
     edr_submit_contact(cmdr_name, ship, entry["timestamp"], "Ship targeted", cmdr)
     if entry["ScanStage"] == 3:
         wanted = entry["LegalStatus"] in ["Wanted", "WantedEnemy", "Warrant"]
-        enemy = entry["LegalStatus"] in ["Enemy", "WantedEnemy"]
+        enemy = entry["LegalStatus"] in ["Enemy", "WantedEnemy", "Hunter"]
         scan = {
             "cmdr": cmdr_name,
             "ship": ship,
@@ -642,6 +642,16 @@ def handle_bang_commands(cmdr, command, command_parts):
     elif command == "!where" and len(command_parts) == 2:
         EDRLOG.log(u"Explicit where command for {}".format(command_parts[1]), "INFO")
         EDR_CLIENT.where(command_parts[1])
+    elif command in ["!distance", "!d"] and len(command_parts) >= 2:
+        EDRLOG.log(u"Distance command", "INFO")
+        systems = " ".join(command_parts[1:]).split(" > ", 1)
+        if not systems:
+            EDRLOG.log(u"Aborting distance calculation (no params).", "DEBUG")
+            return
+        from_sys = systems[0] if len(systems) == 2 else cmdr.star_system
+        to_sys = systems[1] if len(systems) == 2 else systems[0]
+        EDRLOG.log(u"Distance command from {} to {}".format(from_sys, to_sys), "INFO")
+        EDR_CLIENT.distance(from_sys, to_sys)
     elif command == "!help":
         EDRLOG.log(u"Help command", "INFO")
         EDR_CLIENT.help("" if len(command_parts) == 1 else command_parts[1])
@@ -697,6 +707,12 @@ def handle_hash_commands(command, command_parts, entry):
     elif (command == "#+" or command == "#enforcer"):
         EDRLOG.log(u"Tag enforcer command for {}".format(target_cmdr), "INFO")
         EDR_CLIENT.tag_cmdr(target_cmdr, "enforcer")
+    elif (command == "#s!" or command == "#enemy"):
+        EDRLOG.log(u"Tag squadron enemy command for {}".format(target_cmdr), "INFO")
+        EDR_CLIENT.tag_cmdr(target_cmdr, "enemy")
+    elif (command == "#s+" or command == "#ally"):
+        EDRLOG.log(u"Tag squadron ally command for {}".format(target_cmdr), "INFO")
+        EDR_CLIENT.tag_cmdr(target_cmdr, "ally")
     elif (command == "#=" or command == "#friend"):
         EDRLOG.log(u"Tag friend command for {}".format(target_cmdr), "INFO")
         EDR_CLIENT.tag_cmdr(target_cmdr, "friend")
@@ -712,7 +728,7 @@ def handle_minus_commands(command, command_parts, entry):
         target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
 
     if command == "-#":
-        EDRLOG.log(u"Remove {} from cmdrsdex".format(target_cmdr), "INFO")
+        EDRLOG.log(u"Remove {} from dex".format(target_cmdr), "INFO")
         EDR_CLIENT.untag_cmdr(target_cmdr, tag=None)
     elif command == "-#!" or command == "-#outlaw":
         EDRLOG.log(u"Remove outlaw tag for {}".format(target_cmdr), "INFO")
@@ -723,6 +739,12 @@ def handle_minus_commands(command, command_parts, entry):
     elif command == "-#+" or command == "-#enforcer":
         EDRLOG.log(u"Remove enforcer tag for {}".format(target_cmdr), "INFO")
         EDR_CLIENT.untag_cmdr(target_cmdr, "enforcer")
+    elif command == "-#s!" or command == "-#enemy":
+        EDRLOG.log(u"Remove squadron enemy tag for {}".format(target_cmdr), "INFO")
+        EDR_CLIENT.untag_cmdr(target_cmdr, "enemy")
+    elif command == "-#s+" or command == "-#ally":
+        EDRLOG.log(u"Remove squadron ally tag for {}".format(target_cmdr), "INFO")
+        EDR_CLIENT.untag_cmdr(target_cmdr, "ally")    
     elif command == "-#=" or command == "-#friend":
         EDRLOG.log(u"Remove friend tag for {}".format(target_cmdr), "INFO")
         EDR_CLIENT.untag_cmdr(target_cmdr, "friend")

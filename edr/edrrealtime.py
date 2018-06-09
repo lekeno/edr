@@ -84,7 +84,7 @@ class RemoteThread(threading.Thread):
             self.sse.close()
             self.sse = None
         nowish = edtime.EDTime.js_epoch_now() - 1000*60*self.minutes_ago
-        params = { "orderBy": '"timestamp"', "startAt": nowish}
+        params = { "orderBy": '"timestamp"', "startAt": nowish, "limitToLast": 10}
         if self.authenticator:
             params["auth"] = self.authenticator()
         self.sse = ClosableSSEClient(self.endpoint, params=params, chunk_size=1)
@@ -138,7 +138,17 @@ class EDRSEEReader():
                     break
                 edr_log.log(u"handling msg: {} {} {}".format(msg.event, msg.data, self.kind), "DEBUG")
                 if msg.event in ["put", "patch"] and msg.data:
-                    self.callback(self.kind, json.loads(msg.data)["data"])
+                    data = json.loads(msg.data)
+                    if data is None or data["data"] is None:
+                        continue
+                    if data["path"] == '/':
+                        # initial update
+                        keys = data["data"].keys()
+                        keys.sort()
+                        for k in keys:
+                            self.callback(self.kind, data["data"][k])
+                    else:
+                        self.callback(self.kind, data["data"])
                 elif msg.event in ["cancel", "auth_revoked"]:
                     self.callback(self.kind, msg.event)
 
