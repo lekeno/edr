@@ -205,9 +205,12 @@ class EDRClient(object):
         self._audio_feedback.set(new_value)
 
     def player_name(self, name):
-        self.edrcmdrs.set_player_name(name)
+        self.edrcmdrs.set_player_name(name, )
 
     def pledged_to(self, power, time_pledged=0):
+        if self.server.is_anonymous():
+            EDRLOG.log(u"Skipping pledged_to call since the user is anonymous.", "INFO")
+            return
         nodotpower = power.replace(".", "")
         if self.edrcmdrs.player_pledged_to(nodotpower, time_pledged):
             for kind in self.edropponents:
