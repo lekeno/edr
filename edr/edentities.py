@@ -12,11 +12,11 @@ class EDRSquadronMember(object):
     FULLY_TRUSTED_LEVEL = {"rank": "co-pilot", "level": 300}
 
     def __init__(self, squadron_dict):
-        self.name = squadron_dict["squadronName"]
-        self.inara_id = squadron_dict["squadronId"]
-        self.rank = squadron_dict["squadronRank"]
-        self.heartbeat = squadron_dict["heartbeat"]
-        self.level = squadron_dict["squadronLevel"]
+        self.name = squadron_dict.get("squadronName", None)
+        self.inara_id = squadron_dict.get("squadronName", None)
+        self.rank = squadron_dict.get("squadronRank", None)
+        self.heartbeat = squadron_dict.get("heartbeat", None)
+        self.level = squadron_dict.get("squadronLevel", None)
     
     def is_somewhat_trusted(self):
         return self.level >= EDRSquadronMember.SOMEWHAT_TRUSTED_LEVEL["level"]

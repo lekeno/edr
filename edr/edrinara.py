@@ -40,7 +40,7 @@ class EDRInara(object):
         return None
         
 
-    def __cmdr(self, cmdr_name):
+    def cmdr(self, cmdr_name):
         payload = { "header": self.__api_header(), "events" : [self.__api_cmdrprofile(cmdr_name)] }
 
         resp = requests.post(self.INARA_ENDPOINT, json=payload)

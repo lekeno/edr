@@ -82,8 +82,12 @@ class EDRCmdrs(object):
         mark_twain_flag = int((EDTime.js_epoch_now() - self.heartbeat_timestamp)/1000) >= self._edr_heartbeat if self.heartbeat_timestamp else True
         if force_update or mark_twain_flag:
             info = self.server.heartbeat()
-            self._player.squadron_member(info) if info else self._player.lone_wolf()
-            self.heartbeat_timestamp = info["heartbeat"]
+            if info:
+                self.heartbeat_timestamp = info["heartbeat"] if "heartbeat" in info else EDTime.js_epoch_now()
+                self._player.squadron_member(info) if "squadronId" in info else self._player.lone_wolf()
+            else:
+                self.heartbeat_timestamp = EDTime.js_epoch_now()
+                self._player.lone_wolf()
 
     def persist(self):
         with open(self.EDR_CMDRS_CACHE, 'wb') as handle:
