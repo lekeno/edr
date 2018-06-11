@@ -13,8 +13,8 @@ class EDRAutoUpdater(object):
         self.output = EDRAutoUpdater.LATEST
 
     def download_latest(self):
-        zipball_url = self.__latest_release_url()
-        response = requests.get(zipball_url, stream=True)
+        download_url = self.__latest_release_url()
+        response = requests.get(download_url, stream=True)
         response.raise_for_status()
 
         with open(self.output, 'wb') as handle:
@@ -32,4 +32,8 @@ class EDRAutoUpdater(object):
             #TODO error log
             return None
         json_resp = json.loads(response.content)
-        return json_resp.get("zipball_url", None)
+        assets = json_resp.get("assets", None)
+        if not assets:
+            return None
+        return assets[0].get("browser_download_url", None)
+
