@@ -17,9 +17,13 @@ class EDRAutoUpdater(object):
         response = requests.get(download_url, stream=True)
         response.raise_for_status()
 
+        if response.status_code != requests.codes.ok:
+            return False
+
         with open(self.output, 'wb') as handle:
             for block in response.iter_content(8192):
                 handle.write(block)
+        return True
     
     def extract_latest(self):
         with zipfile.ZipFile(EDRAutoUpdater.LATEST, "r") as latest:
