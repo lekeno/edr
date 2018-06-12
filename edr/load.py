@@ -6,6 +6,7 @@ from edentities import EDCmdr
 from edtime import EDTime
 from edrlog import EDRLog
 import edentities
+import edrautoupdater
 from edri18n import _, _c
 
 EDR_CLIENT = EDRClient()
@@ -30,6 +31,13 @@ def plugin_start():
 def plugin_stop():
     EDRLOG.log(u"Stopping the plugin...", "INFO")
     EDR_CLIENT.shutdown(everything=True)
+    if EDR_CLIENT.update_pending:
+        EDR_CLIENT = None
+        EDRLOG.log(u"Please wait: auto updating EDR", INFO)
+        auto_updater = edrautoupdater.EDRAutoUpdater()
+        downloaded = auto_updater.download_latest()
+        if downloaded:
+            auto_updater.extract_latest()
 
 
 def plugin_app(parent):
