@@ -3,12 +3,15 @@ import zipfile
 import os
 import json
 import datetime
+import edrlog
+
+EDRLOG = edrlog.EDRLog()
 
 class EDRAutoUpdater(object):
     REPO = "lekeno/edr"
-    LATEST = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'updates/latest.zip')
-    BACKUP = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'backup/')
-    EDR_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)))
+    LATEST = os.path.join(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'updates'), 'latest.zip')
+    BACKUP = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'backup')
+    EDR_PATH = os.path.abspath(os.path.dirname(__file__))
 
     def __init__(self):
         self.output = EDRAutoUpdater.LATEST
@@ -29,16 +32,19 @@ class EDRAutoUpdater(object):
         return True
 
     def clean_old_backups(self):
-        files =  sorted(os.listdir(EDRAutoUpdater.BACKUP), key = os.path.getctime)
+        files = os.listdir(EDRAutoUpdater.BACKUP)
+        files = [os.path.join(EDRAutoUpdater.BACKUP, f) for f in files]
+        files.sort(key=lambda x: os.path.getctime(x))
         nbfiles = len(files)
         max_backups = 5
         for i in range(0, nbfiles - max_backups):
+            f = files[i]
+            EDRLOG.log(u"Removing backup {}".format(f), "INFO")
             os.unlink(f)
-            EDRLog.log(u"Removed backup {}".format(f), "INFO")
 
     def make_backup(self):
         name = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '.zip'
-        backup_file = EDRAutoUpdater.BACKUP + name
+        backup_file = os.path.join(EDRAutoUpdater.BACKUP, name)
         zipf = zipfile.ZipFile(backup_file, 'w', zipfile.ZIP_DEFLATED)
         self.__zipdir(EDRAutoUpdater.EDR_PATH, zipf)
         zipf.close()
