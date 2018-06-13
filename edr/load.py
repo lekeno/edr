@@ -36,7 +36,11 @@ def plugin_stop():
         auto_updater = edrautoupdater.EDRAutoUpdater()
         downloaded = auto_updater.download_latest()
         if downloaded:
+            EDRLOG.log(u"Download successful, creating a backup.", "INFO")
             auto_updater.make_backup()
+            EDRLOG.log(u"Cleaning old backups.", "INFO")
+            auto_updater.clean_old_backups()
+            EDRLOG.log(u"Extracting latest version.", "INFO")
             auto_updater.extract_latest()
 
 
