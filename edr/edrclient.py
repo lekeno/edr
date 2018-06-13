@@ -86,6 +86,7 @@ class EDRClient(object):
         self.edrlegal = edrlegalrecords.EDRLegalRecords(self.server)
 
         self.mandatory_update = False
+        self.update_pending = False
         self.crimes_reporting = True
         self.motd = []
         self.tips = randomtips.RandomTips()
@@ -149,11 +150,13 @@ class EDRClient(object):
             EDRLOG.log(u"Mandatory update! {version} vs. {min}"
                        .format(version=self.edr_version, min=version_range["min"]), "ERROR")
             self.mandatory_update = True
+            self.update_pending = True
             self.__status_update_pending()
         elif self.is_obsolete(version_range["latest"]):
             EDRLOG.log(u"EDR update available! {version} vs. {latest}"
                        .format(version=self.edr_version, latest=version_range["latest"]), "INFO")
             self.mandatory_update = False
+            self.update_pending = True
             self.__status_update_pending()
 
     def is_obsolete(self, advertised_version):
@@ -255,8 +258,12 @@ class EDRClient(object):
             self.edropponents[kind].shutdown_comms_link()
         self.edrlegal.persist()
         self.IN_GAME_MSG.shutdown()
-        if everything:
-            self.server.logout()
+
+        if not everything:
+            return
+
+        self.server.logout()
+
 
     def app_ui(self, parent):
         label = tk.Label(parent, text=u"EDR:")
