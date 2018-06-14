@@ -312,10 +312,14 @@ class EDRClient(object):
 
     def __status_update_pending(self):
         # Translators: this is shown in EDMC's status
-        self.status = _(u"mandatory EDR update!") if self.mandatory_update else _(u"please update EDR!")
-        if self.status_ui:
-            self.status_ui.underline = True
-            self.status_ui.url = "https://github.com/lekeno/edr/releases/latest"
+        if self.autoupdate_pending:
+            self.status = _(u"mandatory update pending (relaunch EDMC)") if self.mandatory_update else _(u"update pending (relaunch EDMC to apply)")
+        else:
+            # Translators: this is shown in EDMC's status
+            self.status = _(u"mandatory EDR update!") if self.mandatory_update else _(u"please update EDR!")
+            if self.status_ui:
+                self.status_ui.underline = True
+                self.status_ui.url = "https://github.com/lekeno/edr/releases/latest"
             
 
     def prefs_changed(self):
