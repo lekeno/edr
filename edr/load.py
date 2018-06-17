@@ -31,7 +31,7 @@ def plugin_start():
 def plugin_stop():
     EDRLOG.log(u"Stopping the plugin...", "INFO")
     EDR_CLIENT.shutdown(everything=True)
-    if EDR_CLIENT.update_pending:
+    if EDR_CLIENT.autoupdate_pending:
         EDRLOG.log(u"Please wait: auto updating EDR", "INFO")
         auto_updater = edrautoupdater.EDRAutoUpdater()
         downloaded = auto_updater.download_latest()
