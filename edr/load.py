@@ -96,7 +96,7 @@ def handle_wing_events(ed_player, entry):
         EDRLOG.log(u" Left the wing.", "INFO")
 
 def handle_multicrew_events(ed_player, entry):
-    if entry["event"] in ["CrewMemberJoins"]:
+    if entry["event"] in ["CrewMemberJoins", "CrewMemberRoleChange"]:
         crew = plain_cmdr_name(entry["Crew"])
         ed_player.add_to_crew(crew)
         EDR_CLIENT.status = _(u"added to crew: ").format(crew)
@@ -120,20 +120,22 @@ def handle_multicrew_events(ed_player, entry):
         EDRLOG.log(u"Joined captain {}'s crew".format(captain), "INFO")
         EDR_CLIENT.who(captain, autocreate=True) # TODO passive check
 
-    if entry["event"] in ["QuitACrew"]:
+    if entry["event"] in ["QuitACrew"] and ed_player.name == entry["Captain"].lower():
         ed_player.leave_crew()
         EDR_CLIENT.status = _(u"left crew.")
         EDRLOG.log(u"Left the crew.", "INFO")
 
     if entry["event"] in ["EndCrewSession"]:
+        crimes = False if not "OnCrimes" in entry else entry["OnCrimes"]
         for member in ed_player.crew:
             duration = ed_player.crew_time_elapsed(member)
-            kicked = False
-            crimes = False if not "OnCrimes" in entry else entry["OnCrimes"]
-            edr_submit_multicrew_session(ed_player, entry["timestamp"], member, duration, kicked, crimes)
+            edr_submit_multicrew_session(ed_player, entry["timestamp"], member, duration, False, crimes)
         ed_player.disband_crew()
         EDR_CLIENT.status = _(u"crew disbanded.")
         EDRLOG.log(u"Crew disbanded.", "INFO")
+
+{ "timestamp":"2018-06-17T04:23:59Z", "event":"UnderAttack", "Target":"Mothership" }
+{ "timestamp":"2018-06-17T04:23:59Z", "event":"UnderAttack", "Target":"You" }
 
 def handle_movement_events(ed_player, entry):
     outcome = {"updated": False, "reason": None}

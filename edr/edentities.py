@@ -224,6 +224,9 @@ class EDCmdr(object):
     def leave_crew(self):
         self.crew = set()
 
+    def disband_crew(self):
+        self.crew = set()
+
     def join_crew(self, captain):
         self.crew = set(captain)
         #TODO if needed set something to tell own's crew from someone else's crew
