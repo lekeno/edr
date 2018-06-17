@@ -105,11 +105,13 @@ def handle_multicrew_events(ed_player, entry):
 
     if entry["event"] in ["CrewMemberQuits", "KickCrewMember"]:
         crew = plain_cmdr_name(entry["Crew"])
+        duration = ed_player.crew_time_elapsed(crew)
+        kicked = entry["event"] == "KickCrewMember"
+        crimes = False if not "OnCrimes" in entry else entry["OnCrimes"]
         ed_player.remove_from_crew(crew)
-        if entry["event"] == "KickCrewMember":
-            #TODO check OnCrime, send to EDR (kicked, committed crime)
         EDR_CLIENT.status = _(u"{} left the crew.".format(crew))
         EDRLOG.log(u"{} left the crew.".format(crew), "INFO")
+        edr_submit_multicrew_session(ed_player, entry["timestamp"], crew, duration, kicked, crimes)
 
     if entry["event"] in ["JoinACrew"]:
         captain = plain_cmdr_name(entry["Captain"])
@@ -124,6 +126,11 @@ def handle_multicrew_events(ed_player, entry):
         EDRLOG.log(u"Left the crew.", "INFO")
 
     if entry["event"] in ["EndCrewSession"]:
+        for member in ed_player.crew:
+            duration = ed_player.crew_time_elapsed(member)
+            kicked = False
+            crimes = False if not "OnCrimes" in entry else entry["OnCrimes"]
+            edr_submit_multicrew_session(ed_player, entry["timestamp"], member, duration, kicked, crimes)
         ed_player.disband_crew()
         EDR_CLIENT.status = _(u"crew disbanded.")
         EDRLOG.log(u"Crew disbanded.", "INFO")
@@ -215,6 +222,22 @@ def handle_lifecycle_events(ed_player, entry):
         if not ed_player.in_solo_or_private():
             EDR_CLIENT.warmup()
 
+def handle_friends_events(ed_player, entry):
+    if entry["event"] != "Friends":
+        return
+
+    if entry["Status"] == "Requested":
+        requester = plain_cmdr_name(entry["Name"])
+        EDR_CLIENT.who(requester, autocreate=True)
+
+    if entry["Status"] == "Online":
+        friend = plain_cmdr_name(entry["Name"])
+        # TODO EDR server heartbeat ?
+
+    if entry["Status"] == "Offline":
+        friend = plain_cmdr_name(entry["Name"])
+        # TODO EDR server anti-heartbeat ?
+
 def handle_powerplay_events(ed_player, entry):
     if entry["event"] == "Powerplay":
         EDRLOG.log(u"Initial powerplay event: {}".format(entry), "DEBUG")
@@ -252,6 +275,13 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         # There should be a Powerplay event before the Statistics event
         # if not then the player is not pledged and we should reflect that on the server
         EDR_CLIENT.pledged_to(None)
+
+    if entry["event"] == "Friends":
+        handle_friends_events(ed_player, entry)
+
+    # TODO confirm if this belongs before the solo_or_private check
+    if "crew" in entry["event"]:
+        handle_multicrew_events(ed_player, entry)
 
     if ed_player.in_solo_or_private():
         EDR_CLIENT.status = _(u"disabled in Solo/Private.")
@@ -517,6 +547,28 @@ def edr_submit_traffic(cmdr_name, ship, timestamp, source, witness):
         EDR_CLIENT.status = _(u"failed to report traffic.")
         EDR_CLIENT.evict_system(witness.star_system)
     EDR_CLIENT.status = _(u"traffic reported (cmdr {name}).").format(name=cmdr_name)
+
+def edr_submit_multicrew_session(captain, timestamp, crew, duration, kicked, crimes):
+    edt = EDTime()
+    edt.from_journal_timestamp(timestamp) # TODO
+
+    report = {
+        "captain": captain.name,
+        "timestamp": edt.as_js_epoch(),
+        "crew" : crew,
+        "duration": duration,
+        "kicked": kicked,
+        "crimes": crimes
+    }
+
+    if not captain.in_open():
+        EDRLOG.log(u"Skipping submit traffic due to unconfirmed Open mode", "INFO")
+        EDR_CLIENT.status = _(u"not in Open? Start EDMC before Elite.")
+        return
+
+    if not EDR_CLIENT.multicrew_session(report):
+        EDR_CLIENT.status = _(u"failed to report multicrew session.")
+    EDR_CLIENT.status = _(u"multicrew session reported (cmdr {name}).").format(name=crew)
 
 def report_crime(cmdr, entry):
     """
