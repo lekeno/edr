@@ -174,10 +174,12 @@ class EDCmdr(object):
         self.game_mode = None
         self.previous_mode = None
         self.previous_wing = set()
+        self.previous_crew = set()
         self.from_birth = False
         self._timestamp = edtime.EDTime()
         self.wing = set()
         self.friends = set()
+        self.crew = set()
         self.powerplay = None
         self.squadron = None
 
@@ -192,18 +194,23 @@ class EDCmdr(object):
         self.previous_mode = None
         self.previous_wing = set()
         self.wing = set()
+        self.crew = set()
 
     def killed(self):
         self.previous_mode = self.game_mode 
         self.previous_wing = self.wing.copy()
+        self.previous_crew = self.crew.copy()
         self.game_mode = None
         self.wing = set()
+        self.crew = set() # TODO confirm that this is right
 
     def resurrect(self):
         self.game_mode = self.previous_mode 
         self.wing = self.previous_wing.copy()
+        self.crew = self.previous_crew.copy() #TODO confirm that this is how it works
         self.previous_mode = None
         self.previous_wing = set()
+        self.previous_crew = set()
 
     def leave_wing(self):
         self.wing = set()
@@ -213,6 +220,19 @@ class EDCmdr(object):
 
     def add_to_wing(self, other):
         self.wing.add(other)
+
+    def leave_crew(self):
+        self.crew = set()
+
+    def join_crew(self, captain):
+        self.crew = set(captain)
+        #TODO if needed set something to tell own's crew from someone else's crew
+
+    def add_to_crew(self, member):
+        self.crew.add(member)
+    
+    def remove_from_crew(self, member):
+        self.crew.remove(member)
 
     def is_friend_or_in_wing(self, interlocutor):
         return interlocutor in self.friends or interlocutor in self.wing
