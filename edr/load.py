@@ -69,21 +69,59 @@ def prerequisites(edr_client, is_beta):
         return False
     return True
 
+def plain_cmdr_name(journal_cmdr_name):
+    if journal_cmdr_name.startswith("$cmdr_decorate:#name="):
+            return journal_cmdr_name[len("$cmdr_decorate:#name="):-1]
+    return journal_cmdr_name
+
 def handle_wing_events(ed_player, entry):
     if entry["event"] in ["WingAdd"]:
-        ed_player.add_to_wing(entry["Name"])
-        EDR_CLIENT.status = _(u"added to wing: ").format(entry["Name"])
+        wingmate = plain_cmdr_name(entry["Name"])
+        ed_player.add_to_wing(wingmate)
+        EDR_CLIENT.status = _(u"added to wing: ").format(wingmate)
         EDRLOG.log(u"Addition to wing: {}".format(ed_player.wing), "INFO")
+        EDR_CLIENT.who(wingmate, autocreate=True) # TODO passive check
 
     if entry["event"] in ["WingJoin"]:
         ed_player.join_wing(entry["Others"])
         EDR_CLIENT.status = _(u"joined wing.")
         EDRLOG.log(u"Joined a wing: {}".format(ed_player.wing), "INFO")
+        wingmates = entry["Others"]
+        for wingmate in wingmates:
+            EDR_CLIENT.who(plain_cmdr_name(wingmate), autocreate=True) # TODO passive check
 
     if entry["event"] in ["WingLeave"]:
         ed_player.leave_wing()
         EDR_CLIENT.status = _(u"left wing.")
         EDRLOG.log(u" Left the wing.", "INFO")
+
+def handle_multicrew_events(ed_player, entry):
+    if entry["event"] in ["CrewMemberJoins"]:
+        crew = plain_cmdr_name(entry["Crew"])
+        # TODO ed_player.crew_member_joined(crew)
+        EDR_CLIENT.status = _(u"added to crew: ").format(crew)
+        # EDRLOG.log(u"Addition to crew: {}".format(ed_player.crew), "INFO")
+        EDR_CLIENT.who(crew, autocreate=True) # TODO passive check
+
+    if entry["event"] in ["CrewMemberQuits", "KickCrewMember"]:
+        crew = plain_cmdr_name(entry["Crew"])
+        # TODO ed_player.crew_member_left(crew)
+        if entry["event"] == "KickCrewMember":
+            #TODO check OnCrime, send to EDR (kicked, committed crime)
+        EDR_CLIENT.status = _(u"{} left the crew.".format(crew))
+        EDRLOG.log(u"{} left the crew.".format(crew), "INFO")
+
+    if entry["event"] in ["JoinACrew"]:
+        captain = plain_cmdr_name(entry["Captain"])
+        # TODO ed_player.join_crew(captain)
+        EDR_CLIENT.status = _(u"joined a crew.")
+        # EDRLOG.log(u"Joined captain {}'s crew".format(ed_player.crew.captain), "INFO")
+        EDR_CLIENT.who(captain, autocreate=True) # TODO passive check
+
+    if entry["event"] in ["QuitACrew", "EndCrewSession"]:
+        # TODO ed_player.leave_crew()
+        EDR_CLIENT.status = _(u"left crew.")
+        EDRLOG.log(u" Left the crew.", "INFO")
 
 def handle_movement_events(ed_player, entry):
     outcome = {"updated": False, "reason": None}
