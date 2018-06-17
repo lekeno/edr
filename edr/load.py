@@ -134,9 +134,6 @@ def handle_multicrew_events(ed_player, entry):
         EDR_CLIENT.status = _(u"crew disbanded.")
         EDRLOG.log(u"Crew disbanded.", "INFO")
 
-{ "timestamp":"2018-06-17T04:23:59Z", "event":"UnderAttack", "Target":"Mothership" }
-{ "timestamp":"2018-06-17T04:23:59Z", "event":"UnderAttack", "Target":"You" }
-
 def handle_movement_events(ed_player, entry):
     outcome = {"updated": False, "reason": None}
 
