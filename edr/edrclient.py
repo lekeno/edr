@@ -252,6 +252,7 @@ class EDRClient(object):
 
     def shutdown(self, everything=False):
         self.edrcmdrs.persist()
+        # TODO send an offline ping to EDR?
         self.edrsystems.persist()
         for kind in self.edropponents:
             self.edropponents[kind].persist()
@@ -810,6 +811,21 @@ class EDRClient(object):
             return False
 
         return self.server.crime(sid, crime)
+
+    def crew_report(self, report):
+        if self.is_anonymous():
+            EDRLOG.log(u"Skipping crew report since the user is anonymous.", "INFO")
+            if report["captain"] == self.player.name and (report["crimes"] or report["kicked"]):
+                self.advertise_full_account(_(u"You could have helped other EDR users by reporting this problematic crew member!"))
+            return False
+
+        crew_id = self.cmdr_id(report["crew"])
+        if crew_id is None:
+            self.status = _(u"{} is unknown to EDR.".format(report["crew"]))
+            EDRLOG.log(u"Can't submit crew report (no cmdr id for {}).".format(report["crew"]), "ERROR")
+            return False
+
+        return self.server.crew_report(crew_id, report)
 
     def tag_cmdr(self, cmdr_name, tag):
         if self.is_anonymous():

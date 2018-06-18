@@ -125,7 +125,7 @@ def handle_multicrew_events(ed_player, entry):
         EDR_CLIENT.status = _(u"left crew.")
         EDRLOG.log(u"Left the crew.", "INFO")
 
-    if entry["event"] in ["EndCrewSession"]:
+    if entry["event"] in ["EndCrewSession"] and ed_player.crew:
         crimes = False if not "OnCrimes" in entry else entry["OnCrimes"]
         for member in ed_player.crew:
             duration = ed_player.crew_time_elapsed(member)
@@ -278,15 +278,15 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] == "Friends":
         handle_friends_events(ed_player, entry)
 
-    # TODO confirm if this belongs before the solo_or_private check
-    if "crew" in entry["event"]:
-        handle_multicrew_events(ed_player, entry)
 
     if ed_player.in_solo_or_private():
         EDR_CLIENT.status = _(u"disabled in Solo/Private.")
         EDRLOG.log(u"Game mode is {}: skip!".format(ed_player.game_mode), "INFO")
         return
 
+    if "Crew" in entry["event"]:
+        handle_multicrew_events(ed_player, entry)
+        
     if entry["event"] in ["WingAdd", "WingJoin", "WingLeave"]:
         handle_wing_events(ed_player, entry)
 
@@ -549,7 +549,7 @@ def edr_submit_traffic(cmdr_name, ship, timestamp, source, witness):
 
 def edr_submit_multicrew_session(captain, timestamp, crew, duration, kicked, crimes):
     edt = EDTime()
-    edt.from_journal_timestamp(timestamp) # TODO
+    edt.from_journal_timestamp(timestamp)
 
     report = {
         "captain": captain.name,
@@ -565,7 +565,7 @@ def edr_submit_multicrew_session(captain, timestamp, crew, duration, kicked, cri
         EDR_CLIENT.status = _(u"not in Open? Start EDMC before Elite.")
         return
 
-    if not EDR_CLIENT.multicrew_session(report):
+    if not EDR_CLIENT.crew_report(report):
         EDR_CLIENT.status = _(u"failed to report multicrew session.")
     EDR_CLIENT.status = _(u"multicrew session reported (cmdr {name}).").format(name=crew)
 

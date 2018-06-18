@@ -209,6 +209,11 @@ class EDRServer(object):
         endpoint = "/v1/crimes/{system_id}/".format(system_id=system_id)
         return self.__post_json(endpoint, info)
 
+    def crew_report(self, crew_id, report):
+        EDRLOG.log(u"Multicrew session report: {}".format(report), "INFO")
+        endpoint = "/v1/crew_reports/{}/".format(crew_id)
+        return self.__post_json(endpoint, info)
+
     def __get_recent(self, path, timespan_seconds, limitToLast=None):
         now_epoch_js = int(1000 * calendar.timegm(time.gmtime()))
         past_epoch_js = int(now_epoch_js - (1000 * timespan_seconds))
