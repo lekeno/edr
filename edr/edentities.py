@@ -14,13 +14,17 @@ class EDRCrew(object):
         self.members = {}
 
     def add(self, crew_member):
-        self.members["crew_member"] = edtime.EDTime.py_epoch_now()
+        if crew_member in self.members:
+            return False
+        self.members[crew_member] = edtime.EDTime.py_epoch_now()
+        return True
 
     def remove(self, crew_member):
         try:
-            del self.members["crew_member"]
+            del self.members[crew_member]
+            return True
         except:
-            pass
+            return False
     
     def disband(self):
         self.members = {}
@@ -260,12 +264,12 @@ class EDCmdr(object):
     def add_to_crew(self, member):
         if not self.crew:
             self.crew = EDRCrew(self.name)
-        self.crew.add(member)
+        return self.crew.add(member)
     
     def remove_from_crew(self, member):
         if not self.crew:
             self.crew = EDRCrew(self.name)
-        self.crew.remove(member)
+        return self.crew.remove(member)
 
     def crew_time_elapsed(self, member):
         if not self.crew:
