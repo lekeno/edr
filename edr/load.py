@@ -331,6 +331,8 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     if status_outcome["updated"]:
         edr_update_cmdr_status(ed_player, status_outcome["reason"])
+        if ed_player.in_a_crew():
+            edr_submit_contact(ed_player.crew.captain, "Unknown", entry["timestamp"], "Multicrew", cmdr)
 
 
 def edr_update_cmdr_status(cmdr, reason_for_update):

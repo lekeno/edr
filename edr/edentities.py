@@ -248,6 +248,11 @@ class EDCmdr(object):
     def add_to_wing(self, other):
         self.wing.add(other)
 
+    def in_a_crew(self):
+        if not self.crew:
+            return False
+        return self.crew.captain != self.name
+        
     def leave_crew(self):
         if not self.crew:
             return
