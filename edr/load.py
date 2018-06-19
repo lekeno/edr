@@ -296,7 +296,8 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         handle_wing_events(ed_player, entry)
 
     EDR_CLIENT.player_name(cmdr)
-    ship = state["ShipType"]
+    ship = state["ShipType"] # TODO does this work well with multicrew?
+    print ship # TODO temp
     status_outcome = {"updated": False, "reason": "Unspecified"}
 
     status_outcome["updated"] = ed_player.update_ship_if_obsolete(ship, entry["timestamp"])
@@ -332,7 +333,11 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if status_outcome["updated"]:
         edr_update_cmdr_status(ed_player, status_outcome["reason"])
         if ed_player.in_a_crew():
-            edr_submit_contact(ed_player.crew.captain, "Unknown", entry["timestamp"], "Multicrew", cmdr)
+            edr_submit_contact(ed_player.crew.captain, "Unknown (captain)", entry["timestamp"], "Multicrew", cmdr)
+        if ed_player.crew:
+            for member in ed_player.crew:
+                edr_submit_contact(member, "Unknown (crew)", entry["timestamp"], "Multicrew", cmdr)
+        
 
 
 def edr_update_cmdr_status(cmdr, reason_for_update):

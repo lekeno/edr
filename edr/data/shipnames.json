@@ -35,5 +35,7 @@
   "empire_fighter": "Imperial Fighter",
   "federation_fighter": "F63 Condor",
   "independent_fighter" : "Taipan Fighter",
-  "unknown": "Unknown"
+  "unknown": "Unknown",
+  "unknown (crew)": "Unknown (crew)",
+  "unknown (captain)": "Unknown (captain)"
 }
