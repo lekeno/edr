@@ -212,7 +212,7 @@ class EDRServer(object):
     def crew_report(self, crew_id, report):
         EDRLOG.log(u"Multicrew session report: {}".format(report), "INFO")
         endpoint = "/v1/crew_reports/{}/".format(crew_id)
-        return self.__post_json(endpoint, info)
+        return self.__post_json(endpoint, report)
 
     def __get_recent(self, path, timespan_seconds, limitToLast=None):
         now_epoch_js = int(1000 * calendar.timegm(time.gmtime()))
@@ -227,6 +227,7 @@ class EDRServer(object):
 
         if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Failed to retrieve recent items. Error code: {}".format(resp.status_code), "ERROR")
+            print params # TODO temp
             return []
         
         results = json.loads(resp.content)

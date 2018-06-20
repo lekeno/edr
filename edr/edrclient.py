@@ -218,7 +218,8 @@ class EDRClient(object):
         if self.edrcmdrs.player_pledged_to(nodotpower, time_pledged):
             for kind in self.edropponents:
                 self.edropponents[kind].pledged_to(nodotpower, time_pledged)
-        #TODO else, log?
+        else:
+            EDRLOG.log(u"Pledging to {} with time pledged set to {} failed".format(nodotpower, time_pledged), "WARNING")
 
     def login(self):
         self.server.logout()

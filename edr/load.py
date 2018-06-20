@@ -104,6 +104,9 @@ def handle_multicrew_events(ed_player, entry):
         if success: # only show intel on the first add 
             EDR_CLIENT.who(crew, autocreate=True) # TODO passive check
 
+    # captain disbanded crew or kicked me and got this:
+    # {"timestamp":"2018-06-19T20:05:01Z", "event":"CrewMemberQuits", "Crew":"crew" }
+    # { "timestamp":"2018-06-19T20:05:01Z", "event":"QuitACrew", "Captain":"" }
     if entry["event"] in ["CrewMemberQuits", "KickCrewMember"]:
         crew = plain_cmdr_name(entry["Crew"])
         duration = ed_player.crew_time_elapsed(crew)
@@ -122,8 +125,9 @@ def handle_multicrew_events(ed_player, entry):
         EDR_CLIENT.who(captain, autocreate=True) # TODO passive check
 
     if entry["event"] in ["QuitACrew"] and ed_player.crew:
+        # Note: captain can be empty... { "timestamp":"2018-06-19T20:05:01Z", "event":"QuitACrew", "Captain":"" }
         # crimes = False if not "OnCrimes" in entry else entry["OnCrimes"]
-        for member in ed_player.crew:
+        for member in ed_player.crew.members:
             duration = ed_player.crew_time_elapsed(member)
             edr_submit_multicrew_session(ed_player, entry["timestamp"], member, duration, False, False, False) #TODO confirm when destroyed should be set
         ed_player.leave_crew()
@@ -132,7 +136,7 @@ def handle_multicrew_events(ed_player, entry):
 
     if entry["event"] in ["EndCrewSession"] and ed_player.crew:
         crimes = False if not "OnCrimes" in entry else entry["OnCrimes"]
-        for member in ed_player.crew:
+        for member in ed_player.crew.members:
             duration = ed_player.crew_time_elapsed(member)
             edr_submit_multicrew_session(ed_player, entry["timestamp"], member, duration, False, crimes, False) #TODO confirm when destroyed should be set
         ed_player.disband_crew()
@@ -193,10 +197,15 @@ def handle_change_events(ed_player, entry):
     return outcome
 
 def handle_lifecycle_events(ed_player, entry):
-    if entry["event"] in ["Music"] and entry["MusicTrack"] == "MainMenu":
+    if entry["event"] in ["Music"] and entry["MusicTrack"] == "MainMenu" and not ed_player.in_a_crew():
+        # Checking for 'in_a_crew' because "MainMenu" shows up when joining a multicrew session
+        # Assumption: being in a crew while main menu happens means that a multicrew session is about to start.
+        # { "timestamp":"2018-06-19T13:06:04Z", "event":"QuitACrew", "Captain":"Dummy" }
+        # { "timestamp":"2018-06-19T13:06:16Z", "event":"Music", "MusicTrack":"MainMenu" }
         EDR_CLIENT.clear()
         ed_player.game_mode = None
         ed_player.leave_wing()
+        ed_player.leave_crew()
         EDRLOG.log(u"Player is on the main menu.", "DEBUG")
         return
 
@@ -332,11 +341,15 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     if status_outcome["updated"]:
         edr_update_cmdr_status(ed_player, status_outcome["reason"])
+        # TODO is the system, place guaranteed to be correct on first multicrew event?
         if ed_player.in_a_crew():
-            edr_submit_contact(ed_player.crew.captain, "Unknown (captain)", entry["timestamp"], "Multicrew", cmdr)
-        if ed_player.crew:
-            for member in ed_player.crew:
-                edr_submit_contact(member, "Unknown (crew)", entry["timestamp"], "Multicrew", cmdr)
+            print ed_player.star_system
+            ship = ed_player.ship if ed_player.is_captain() else u"Unknown"
+            for member in ed_player.crew.members:
+                if member == ed_player.name:
+                    continue
+                source = u"Multicrew (captain)" if ed_player.is_captain() else u"Multicrew (crew)"
+                edr_submit_contact(member, ship, entry["timestamp"], source, ed_player)
         
 
 
@@ -639,7 +652,8 @@ def report_comms(cmdr, entry):
     :param entry:
     :return:
     """
-    if entry["event"] == "ReceiveText":
+    # Note: Channel can be missing... probably not safe to assume anything in that case 
+    if entry["event"] == "ReceiveText" and "Channel" in entry:
         if entry["Channel"] in ["local"]:
             from_cmdr = entry["From"]
             if entry["From"].startswith("$cmdr_decorate:#name="):

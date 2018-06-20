@@ -11,7 +11,7 @@ class EDRCrew(object):
     def __init__(self, captain):
         self.captain = captain
         self.creation = edtime.EDTime.py_epoch_now()
-        self.members = {}
+        self.members = {captain: self.creation}
 
     def add(self, crew_member):
         if crew_member in self.members:
@@ -20,6 +20,8 @@ class EDRCrew(object):
         return True
 
     def remove(self, crew_member):
+        if crew_member == self.captain:
+            self.captain = None
         try:
             del self.members[crew_member]
             return True
@@ -28,11 +30,19 @@ class EDRCrew(object):
     
     def disband(self):
         self.members = {}
+        self.captain = None
+        self.creation = None
+
+    def is_captain(self, member):
+        return member == self.captain
 
     def duration(self, member):
         if member not in self.members:
             return 0
-        return edtime.EDTime.py_epoch_now() - self.members[member] 
+        now = edtime.EDTime.py_epoch_now()
+        then = self.members[member]
+        return now - then
+   
 
 class EDRSquadronMember(object):
     SOMEWHAT_TRUSTED_LEVEL = {"rank": "wingman", "level": 100}
@@ -244,6 +254,7 @@ class EDCmdr(object):
 
     def join_wing(self, others):
         self.wing = set(others)
+        self.crew = None
 
     def add_to_wing(self, other):
         self.wing.add(other)
@@ -265,21 +276,29 @@ class EDCmdr(object):
 
     def join_crew(self, captain):
         self.crew = EDRCrew(captain)
+        self.wing = set()
     
     def add_to_crew(self, member):
         if not self.crew:
             self.crew = EDRCrew(self.name)
+            self.wings = set()
         return self.crew.add(member)
     
     def remove_from_crew(self, member):
         if not self.crew:
             self.crew = EDRCrew(self.name)
+            self.wings = set()
         return self.crew.remove(member)
 
     def crew_time_elapsed(self, member):
         if not self.crew:
             return 0
         return self.crew.duration(member)
+    
+    def is_captain(self, member):
+        if not self.crew:
+            return False
+        return self.crew.is_captain(member)
 
     def is_friend_or_in_wing(self, interlocutor):
         return interlocutor in self.friends or interlocutor in self.wing
