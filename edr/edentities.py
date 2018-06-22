@@ -20,8 +20,6 @@ class EDRCrew(object):
         return True
 
     def remove(self, crew_member):
-        if crew_member == self.captain:
-            self.captain = None
         try:
             del self.members[crew_member]
             return True
@@ -276,7 +274,9 @@ class EDCmdr(object):
 
     def join_crew(self, captain):
         self.crew = EDRCrew(captain)
+        self.crew.add(self.name)
         self.wing = set()
+        self.ship = u"Unknown"
     
     def add_to_crew(self, member):
         if not self.crew:
@@ -295,9 +295,11 @@ class EDCmdr(object):
             return 0
         return self.crew.duration(member)
     
-    def is_captain(self, member):
+    def is_captain(self, member=None):
         if not self.crew:
             return False
+        if not member:
+            member = self.name 
         return self.crew.is_captain(member)
 
     def is_friend_or_in_wing(self, interlocutor):
