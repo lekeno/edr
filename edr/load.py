@@ -81,19 +81,22 @@ def handle_wing_events(ed_player, entry):
         EDR_CLIENT.status = _(u"added to wing: ").format(wingmate)
         EDRLOG.log(u"Addition to wing: {}".format(ed_player.wing), "INFO")
         EDR_CLIENT.who(wingmate, autocreate=True) # TODO passive check
-
-    if entry["event"] in ["WingJoin"]:
+    elif entry["event"] in ["WingJoin"]:
         ed_player.join_wing(entry["Others"])
         EDR_CLIENT.status = _(u"joined wing.")
         EDRLOG.log(u"Joined a wing: {}".format(ed_player.wing), "INFO")
         wingmates = entry["Others"]
         for wingmate in wingmates:
             EDR_CLIENT.who(plain_cmdr_name(wingmate), autocreate=True) # TODO passive check
-
-    if entry["event"] in ["WingLeave"]:
+    elif entry["event"] in ["WingLeave"]:
         ed_player.leave_wing()
         EDR_CLIENT.status = _(u"left wing.")
         EDRLOG.log(u" Left the wing.", "INFO")
+    elif entry["event"] in ["WingInvite"] and (ed_player.in_a_crew() or ed_player.in_a_wing()):
+        EDR_CLIENT.status = _(u"{} wants to wing.").format(entry["Name"])
+        EDR_CLIENT.notify_with_details(u"Wing request", [_(u"{} tried to invite you to their wing.").format(entry["Name"])])
+        EDRLOG.log(u"Wing invite from {} received while in a wing or crew.".format(entry["Name"]), "INFO")
+
 
 def handle_multicrew_events(ed_player, entry):
     if entry["event"] in ["CrewMemberJoins", "CrewMemberRoleChange", "CrewLaunchFighter"]:
@@ -334,7 +337,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if "Crew" in entry["event"]:
         handle_multicrew_events(ed_player, entry)
         
-    if entry["event"] in ["WingAdd", "WingJoin", "WingLeave"]:
+    if entry["event"] in ["WingAdd", "WingJoin", "WingLeave", "WingInvite"]:
         handle_wing_events(ed_player, entry)
 
     EDR_CLIENT.player_name(cmdr)
