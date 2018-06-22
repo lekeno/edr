@@ -217,6 +217,7 @@ class EDCmdr(object):
         self.crew = None
         self.powerplay = None
         self.squadron = None
+        self.destroyed = False
 
     def in_solo_or_private(self):
         return self.game_mode in ["Solo", "Group"]
@@ -230,6 +231,7 @@ class EDCmdr(object):
         self.previous_wing = set()
         self.wing = set()
         self.crew = None
+        self.destroyed = False
 
     def killed(self):
         self.previous_mode = self.game_mode 
@@ -238,6 +240,7 @@ class EDCmdr(object):
         self.game_mode = None
         self.wing = set()
         self.crew = None
+        self.destroyed = True
 
     def resurrect(self):
         self.game_mode = self.previous_mode 
@@ -246,6 +249,7 @@ class EDCmdr(object):
         self.previous_mode = None
         self.previous_wing = set()
         self.previous_crew = None
+        self.destroyed = False
 
     def leave_wing(self):
         self.wing = set()
