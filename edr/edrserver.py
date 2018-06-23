@@ -259,7 +259,7 @@ class EDRServer(object):
         return self.__get_recent(endpoint, timespan_seconds, limitToLast=50)
 
     def heartbeat(self):
-        EDRLOG.log(u"EDR heartbeat", "INFO")                
+        EDRLOG.log(u"Sending heartbeat", "INFO")                
         endpoint = "https://us-central1-blistering-inferno-4028.cloudfunctions.net/heartbeat"
         params = {"uid": self.uid() }
         resp = requests.get(endpoint, params=params)
@@ -267,6 +267,7 @@ class EDRServer(object):
         if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Heartbeat failed. Error code: {}".format(resp.status_code), "ERROR")
             return None
+        EDRLOG.log(u"Heartbeat response: {}".format(resp.content), "INFO")
         return json.loads(resp.content)
     
     def where(self, name, power=None):

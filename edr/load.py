@@ -80,14 +80,11 @@ def handle_wing_events(ed_player, entry):
         ed_player.add_to_wing(wingmate)
         EDR_CLIENT.status = _(u"added to wing: ").format(wingmate)
         EDRLOG.log(u"Addition to wing: {}".format(ed_player.wing), "INFO")
-        EDR_CLIENT.who(wingmate, autocreate=True)
     elif entry["event"] in ["WingJoin"]:
         ed_player.join_wing(entry["Others"])
         EDR_CLIENT.status = _(u"joined wing.")
         EDRLOG.log(u"Joined a wing: {}".format(ed_player.wing), "INFO")
         wingmates = entry["Others"]
-        for wingmate in wingmates:
-            EDR_CLIENT.who(plain_cmdr_name(wingmate), autocreate=True)
     elif entry["event"] in ["WingLeave"]:
         ed_player.leave_wing()
         EDR_CLIENT.status = _(u"left wing.")
@@ -358,6 +355,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
             handle_scan_events(ed_player, entry)
         elif ("ScanStage" in entry and entry["ScanStage"] == 0) or ("TargetLocked" in entry and not entry["TargetLocked"]):
             ed_player.target = None
+        EDRLOG.log(u"shiptargeted event: target = {}".format(ed_player.target), "DEBUG")  # TODO temp
 
     if entry["event"] in ["ReceiveText", "SendText"]:
         report_comms(ed_player, entry)
@@ -715,6 +713,7 @@ def handle_scan_events(cmdr, entry):
         # Happens when scanning one's unmanned ship, etc.
         return False
 
+    cmdr.target = cmdr_name
     ship = edentities.EDVehicles.canonicalize(entry["Ship"])
 
     edr_submit_contact(cmdr_name, ship, entry["timestamp"], "Ship targeted", cmdr)
@@ -766,7 +765,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         else:
             target_cmdr = EDR_CLIENT.player.target
         if target_cmdr:
-            EDRLOG.log(u"Explicit who command for {}".format(command_parts[1]), "INFO")
+            EDRLOG.log(u"Explicit who command for {}".format(target_cmdr), "INFO")
             EDR_CLIENT.who(target_cmdr)
     elif command == "!crimes":
         crimes_command("" if len(command_parts) == 1 else command_parts[1])
