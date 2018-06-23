@@ -92,10 +92,6 @@ def handle_wing_events(ed_player, entry):
         ed_player.leave_wing()
         EDR_CLIENT.status = _(u"left wing.")
         EDRLOG.log(u" Left the wing.", "INFO")
-    elif entry["event"] in ["WingInvite"] and (ed_player.in_a_crew() or ed_player.in_a_wing()):
-        EDR_CLIENT.status = _(u"{} wants to wing.").format(entry["Name"])
-        EDR_CLIENT.notify_with_details(u"Wing request", [_(u"{} tried to invite you to their wing.").format(entry["Name"])])
-        EDRLOG.log(u"Wing invite from {} received while in a wing or crew.".format(entry["Name"]), "INFO")
 
 
 def handle_multicrew_events(ed_player, entry):
@@ -228,9 +224,9 @@ def handle_change_events(ed_player, entry):
     return outcome
 
 def handle_lifecycle_events(ed_player, entry):
-    if entry["event"] in ["Music"] and entry["MusicTrack"] == "MainMenu" and not ed_player.in_a_crew():
-        # Checking for 'in_a_crew' because "MainMenu" shows up when joining a multicrew session
-        # Assumption: being in a crew while main menu happens means that a multicrew session is about to start.
+    if entry["event"] in ["Music"] and entry["MusicTrack"] == "MainMenu" and not ed_player.is_crew_member():
+        # Checking for 'is_crew_member' because "MainMenu" shows up when joining a multicrew session
+        # Assumption: being a crew member while main menu happens means that a multicrew session is about to start.
         # { "timestamp":"2018-06-19T13:06:04Z", "event":"QuitACrew", "Captain":"Dummy" }
         # { "timestamp":"2018-06-19T13:06:16Z", "event":"Music", "MusicTrack":"MainMenu" }
         EDR_CLIENT.clear()
@@ -273,14 +269,6 @@ def handle_friends_events(ed_player, entry):
     if entry["Status"] == "Requested":
         requester = plain_cmdr_name(entry["Name"])
         EDR_CLIENT.who(requester, autocreate=True)
-
-    if entry["Status"] == "Online":
-        friend = plain_cmdr_name(entry["Name"])
-        # TODO EDR server heartbeat ?
-
-    if entry["Status"] == "Offline":
-        friend = plain_cmdr_name(entry["Name"])
-        # TODO EDR server anti-heartbeat ?
 
 def handle_powerplay_events(ed_player, entry):
     if entry["event"] == "Powerplay":
@@ -332,11 +320,11 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if "Crew" in entry["event"]:
         handle_multicrew_events(ed_player, entry)
         
-    if entry["event"] in ["WingAdd", "WingJoin", "WingLeave", "WingInvite"]:
+    if entry["event"] in ["WingAdd", "WingJoin", "WingLeave"]:
         handle_wing_events(ed_player, entry)
 
     EDR_CLIENT.player_name(cmdr)
-    if ed_player.in_a_crew() and not ed_player.is_captain():
+    if ed_player.is_crew_member():
         ship = u"Unknown"
     else:
         ship = state["ShipType"]
@@ -365,8 +353,11 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PVPKill"]:
         report_crime(ed_player, entry)
 
-    if entry["event"] in ["ShipTargeted"] and "ScanStage" in entry and entry["ScanStage"] > 0:
-        handle_scan_events(ed_player, entry)
+    if entry["event"] in ["ShipTargeted"]:
+        if "ScanStage" in entry and entry["ScanStage"] > 0:
+            handle_scan_events(ed_player, entry)
+        elif ("ScanStage" in entry and entry["ScanStage"] == 0) or ("TargetLocked" in entry and not entry["TargetLocked"]):
+            ed_player.target = None
 
     if entry["event"] in ["ReceiveText", "SendText"]:
         report_comms(ed_player, entry)
@@ -376,7 +367,6 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     if status_outcome["updated"]:
         edr_update_cmdr_status(ed_player, status_outcome["reason"])
-        # TODO is the system, place guaranteed to be correct on first multicrew event?
         if ed_player.in_a_crew():
             for member in ed_player.crew.members:
                 if member == ed_player.name:
@@ -605,8 +595,8 @@ def edr_submit_traffic(cmdr_name, ship, timestamp, source, witness):
     EDR_CLIENT.status = _(u"traffic reported (cmdr {name}).").format(name=cmdr_name)
 
 def edr_submit_multicrew_session(player, report):
-    if not player.in_open():
-        EDRLOG.log(u"Skipping submit traffic due to unconfirmed Open mode", "INFO")
+    if not player.in_open() and not player.destroyed:
+        EDRLOG.log(u"Skipping submit multicrew report: not in Open and not destroyed", "INFO")
         EDR_CLIENT.status = _(u"not in Open? Start EDMC before Elite.")
         return
 
@@ -713,6 +703,9 @@ def handle_scan_events(cmdr, entry):
         prefix = "$RolePanel2_unmanned; $cmdr_decorate:#name="
     elif entry["PilotName"].startswith("$RolePanel2_crew; $cmdr_decorate:#name="):
         prefix = "$RolePanel2_crew; $cmdr_decorate:#name="
+    else:
+        cmdr.target = None #NPC
+
     
     if not prefix:
         return False
@@ -766,9 +759,15 @@ def handle_bang_commands(cmdr, command, command_parts):
         overlay_command("" if len(command_parts) == 1 else command_parts[1])
     elif command == "!audiocue" and len(command_parts) == 2:
         audiocue_command(command_parts[1])
-    elif command == "!who" and len(command_parts) == 2:
-        EDRLOG.log(u"Explicit who command for {}".format(command_parts[1]), "INFO")
-        EDR_CLIENT.who(command_parts[1])
+    elif command == "!who":
+        target_cmdr = None
+        if len(command_parts) == 2:
+            target_cmdr = command_parts[1]
+        else:
+            target_cmdr = EDR_CLIENT.player.target
+        if target_cmdr:
+            EDRLOG.log(u"Explicit who command for {}".format(command_parts[1]), "INFO")
+            EDR_CLIENT.who(target_cmdr)
     elif command == "!crimes":
         crimes_command("" if len(command_parts) == 1 else command_parts[1])
     elif command == "!sitrep":
@@ -791,9 +790,15 @@ def handle_bang_commands(cmdr, command, command_parts):
     elif command == "!enemies":
         EDRLOG.log(u"Enemies command", "INFO")
         EDR_CLIENT.enemies()
-    elif command == "!where" and len(command_parts) == 2:
-        EDRLOG.log(u"Explicit where command for {}".format(command_parts[1]), "INFO")
-        EDR_CLIENT.where(command_parts[1])
+    elif command == "!where":
+        target_cmdr = None
+        if len(command_parts) == 2:
+            target_cmdr = command_parts[1]
+        else:
+            target_cmdr = EDR_CLIENT.player.target
+        if target_cmdr:
+            EDRLOG.log(u"Explicit where command for {}".format(target_cmdr), "INFO")
+            EDR_CLIENT.where(target_cmdr)
     elif command in ["!distance", "!d"] and len(command_parts) >= 2:
         EDRLOG.log(u"Distance command", "INFO")
         systems = " ".join(command_parts[1:]).split(" > ", 1)
@@ -845,10 +850,11 @@ def handle_query_commands(cmdr, command, command_parts):
             EDR_CLIENT.max_distance_enemies_alerts(param[3:])
     
 def handle_hash_commands(command, command_parts, entry):
-    target_cmdr = command_parts[1] if len(command_parts) > 1 else None
-    if target_cmdr is None and not entry["To"] in ["local", "voicechat", "wing", "friend"]:
-        prefix = "$cmdr_decorate:#name="
-        target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
+    target_cmdr = get_target_cmdr(command_parts, entry, EDR_CLIENT.player)
+    
+    if target_cmdr is None:
+        EDRLOG.log(u"Skipping tag command: no valid target", "WARNING")
+        return
     
     if (command == "#!" or command == "#outlaw"):
         EDRLOG.log(u"Tag outlaw command for {}".format(target_cmdr), "INFO")
@@ -873,11 +879,21 @@ def handle_hash_commands(command, command_parts, entry):
         EDRLOG.log(u"Tag command for {} with {}".format(target_cmdr, tag), "INFO")
         EDR_CLIENT.tag_cmdr(target_cmdr, tag)
 
-def handle_minus_commands(command, command_parts, entry):
+def get_target_cmdr(command_parts, entry, player):
     target_cmdr = command_parts[1] if len(command_parts) > 1 else None
-    if target_cmdr is None and not entry["To"] in ["local", "voicechat", "wing", "friend"]:
-        prefix = "$cmdr_decorate:#name="
-        target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
+    if target_cmdr is None:
+        if not entry["To"] in ["local", "voicechat", "wing", "friend"]:
+            prefix = "$cmdr_decorate:#name="
+            target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
+        else:
+            target_cmdr = player.target
+    return target_cmdr
+
+def handle_minus_commands(command, command_parts, entry):
+    target_cmdr = get_target_cmdr(command_parts, entry, EDR_CLIENT.player)
+    if target_cmdr is None:
+        EDRLOG.log(u"Skipping untag command: no valid target", "WARNING")
+        return
 
     if command == "-#":
         EDRLOG.log(u"Remove {} from dex".format(target_cmdr), "INFO")
@@ -914,15 +930,20 @@ def handle_at_commands(entry):
         return
     command_parts = entry["Message"].split(" memo=", 1)
     command = command_parts[0].lower()
+    target_cmdr = None
     
-    if command == "@# " and not entry["To"] in ["local", "voicechat", "wing", "friend"]:
-        prefix = "$cmdr_decorate:#name="
-        target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
-        EDRLOG.log(u"Memo command for tagged cmdr {}".format(target_cmdr), "INFO")
-        EDR_CLIENT.memo_cmdr(target_cmdr, command_parts[1])
+    if command == "@# ":
+        if not entry["To"] in ["local", "voicechat", "wing", "friend"]:
+            prefix = "$cmdr_decorate:#name="
+            target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
+            EDRLOG.log(u"Memo command for tagged cmdr {}".format(target_cmdr), "INFO")
+        else:
+            target_cmdr = EDR_CLIENT.player.target
     elif command.startswith("@# ") and len(command)>2:
         target_cmdr = command[3:]
         EDRLOG.log(u"Memo command for tagged cmdr {}".format(target_cmdr), "INFO")
+
+    if target_cmdr:
         EDR_CLIENT.memo_cmdr(target_cmdr, command_parts[1])
 
 

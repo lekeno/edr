@@ -209,7 +209,6 @@ class EDCmdr(object):
         self.game_mode = None
         self.previous_mode = None
         self.previous_wing = set()
-        self.previous_crew = set()
         self.from_birth = False
         self._timestamp = edtime.EDTime()
         self.wing = set()
@@ -218,6 +217,7 @@ class EDCmdr(object):
         self.powerplay = None
         self.squadron = None
         self.destroyed = False
+        self.target = None
 
     def in_solo_or_private(self):
         return self.game_mode in ["Solo", "Group"]
@@ -232,24 +232,24 @@ class EDCmdr(object):
         self.wing = set()
         self.crew = None
         self.destroyed = False
+        self.target = None
 
     def killed(self):
         self.previous_mode = self.game_mode 
         self.previous_wing = self.wing.copy()
-        self.previous_crew = self.crew.copy()
         self.game_mode = None
         self.wing = set()
         self.crew = None
         self.destroyed = True
+        self.target = None
 
     def resurrect(self):
         self.game_mode = self.previous_mode 
         self.wing = self.previous_wing.copy()
-        self.crew = self.previous_crew.copy() #TODO confirm that this is how it works
         self.previous_mode = None
         self.previous_wing = set()
-        self.previous_crew = None
         self.destroyed = False
+        self.target = None
 
     def leave_wing(self):
         self.wing = set()
@@ -261,10 +261,16 @@ class EDCmdr(object):
     def add_to_wing(self, other):
         self.wing.add(other)
 
-    def in_a_crew(self):
+    def is_crew_member(self):
         if not self.crew:
             return False
         return self.crew.captain != self.name
+
+    def in_a_crew(self):
+        return self.crew is not None
+
+    def in_a_wing(self):
+        return len(self.wing) > 0
         
     def leave_crew(self):
         if not self.crew:
@@ -285,13 +291,13 @@ class EDCmdr(object):
     def add_to_crew(self, member):
         if not self.crew:
             self.crew = EDRCrew(self.name)
-            self.wings = set()
+            self.wing = set()
         return self.crew.add(member)
     
     def remove_from_crew(self, member):
         if not self.crew:
             self.crew = EDRCrew(self.name)
-            self.wings = set()
+            self.wing = set()
         return self.crew.remove(member)
 
     def crew_time_elapsed(self, member):

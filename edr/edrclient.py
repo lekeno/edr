@@ -251,7 +251,6 @@ class EDRClient(object):
 
     def shutdown(self, everything=False):
         self.edrcmdrs.persist()
-        # TODO send an offline ping to EDR?
         self.edrsystems.persist()
         for kind in self.edropponents:
             self.edropponents[kind].persist()
