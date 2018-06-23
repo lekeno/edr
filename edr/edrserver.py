@@ -200,7 +200,7 @@ class EDRServer(object):
         EDRLOG.log(u"Fetching legal record for cmdr {cid}".format(cid=cmdr_id), "INFO")
         endpoint = "/v1/legal/{cmdr_id}/".format(cmdr_id=cmdr_id)
         legal_records_perday = 24
-        records_over_timespan = timespan_seconds / 86400 * legal_records_perday
+        records_over_timespan = int(max(1, round(timespan_seconds / 86400.0 * legal_records_perday)))
         return self.__get_recent(endpoint, timespan_seconds, limitToLast=records_over_timespan)
 
     def crime(self,  system_id, info):
