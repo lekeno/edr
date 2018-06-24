@@ -200,7 +200,7 @@ class EDRServer(object):
         EDRLOG.log(u"Fetching legal record for cmdr {cid}".format(cid=cmdr_id), "INFO")
         endpoint = "/v1/legal/{cmdr_id}/".format(cmdr_id=cmdr_id)
         legal_records_perday = 24
-        records_over_timespan = timespan_seconds / 86400 * legal_records_perday
+        records_over_timespan = int(max(1, round(timespan_seconds / 86400.0 * legal_records_perday)))
         return self.__get_recent(endpoint, timespan_seconds, limitToLast=records_over_timespan)
 
     def crime(self,  system_id, info):
@@ -208,6 +208,11 @@ class EDRServer(object):
         EDRLOG.log(u"Crime report for system {sid} with json:{json}".format(sid=system_id, json=info), "INFO")
         endpoint = "/v1/crimes/{system_id}/".format(system_id=system_id)
         return self.__post_json(endpoint, info)
+
+    def crew_report(self, crew_id, report):
+        EDRLOG.log(u"Multicrew session report: {}".format(report), "INFO")
+        endpoint = "/v1/crew_reports/{}/".format(crew_id)
+        return self.__post_json(endpoint, report)
 
     def __get_recent(self, path, timespan_seconds, limitToLast=None):
         now_epoch_js = int(1000 * calendar.timegm(time.gmtime()))
@@ -226,6 +231,7 @@ class EDRServer(object):
         
         results = json.loads(resp.content)
         if not results:
+            EDRLOG.log(u"Empty recent items.", "INFO")
             return []
         # When using Firebase's REST API, the filtered results are returned in an undefined order since JSON interpreters don't enforce any ordering.
         # So, sorting has to be done on the client side
@@ -253,7 +259,7 @@ class EDRServer(object):
         return self.__get_recent(endpoint, timespan_seconds, limitToLast=50)
 
     def heartbeat(self):
-        EDRLOG.log(u"EDR heartbeat", "INFO")                
+        EDRLOG.log(u"Sending heartbeat", "INFO")                
         endpoint = "https://us-central1-blistering-inferno-4028.cloudfunctions.net/heartbeat"
         params = {"uid": self.uid() }
         resp = requests.get(endpoint, params=params)
@@ -261,6 +267,7 @@ class EDRServer(object):
         if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Heartbeat failed. Error code: {}".format(resp.status_code), "ERROR")
             return None
+        EDRLOG.log(u"Heartbeat response: {}".format(resp.content), "INFO")
         return json.loads(resp.content)
     
     def where(self, name, power=None):

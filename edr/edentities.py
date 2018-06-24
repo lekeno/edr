@@ -7,13 +7,48 @@ import edrconfig
 from edri18n import _, _c
 EDRLOG = edrlog.EDRLog()
 
+class EDRCrew(object):
+    def __init__(self, captain):
+        self.captain = captain
+        self.creation = edtime.EDTime.py_epoch_now()
+        self.members = {captain: self.creation}
+
+    def add(self, crew_member):
+        if crew_member in self.members:
+            return False
+        self.members[crew_member] = edtime.EDTime.py_epoch_now()
+        return True
+
+    def remove(self, crew_member):
+        try:
+            del self.members[crew_member]
+            return True
+        except:
+            return False
+    
+    def disband(self):
+        self.members = {}
+        self.captain = None
+        self.creation = None
+
+    def is_captain(self, member):
+        return member == self.captain
+
+    def duration(self, member):
+        if member not in self.members:
+            return 0
+        now = edtime.EDTime.py_epoch_now()
+        then = self.members[member]
+        return now - then
+   
+
 class EDRSquadronMember(object):
     SOMEWHAT_TRUSTED_LEVEL = {"rank": "wingman", "level": 100}
     FULLY_TRUSTED_LEVEL = {"rank": "co-pilot", "level": 300}
 
     def __init__(self, squadron_dict):
         self.name = squadron_dict.get("squadronName", None)
-        self.inara_id = squadron_dict.get("squadronName", None)
+        self.inara_id = squadron_dict.get("squadronId", None)
         self.rank = squadron_dict.get("squadronRank", None)
         self.heartbeat = squadron_dict.get("heartbeat", None)
         self.level = squadron_dict.get("squadronLevel", None)
@@ -178,8 +213,11 @@ class EDCmdr(object):
         self._timestamp = edtime.EDTime()
         self.wing = set()
         self.friends = set()
+        self.crew = None
         self.powerplay = None
         self.squadron = None
+        self.destroyed = False
+        self.target = None
 
     def in_solo_or_private(self):
         return self.game_mode in ["Solo", "Group"]
@@ -192,27 +230,87 @@ class EDCmdr(object):
         self.previous_mode = None
         self.previous_wing = set()
         self.wing = set()
+        self.crew = None
+        self.destroyed = False
+        self.target = None
 
     def killed(self):
         self.previous_mode = self.game_mode 
         self.previous_wing = self.wing.copy()
         self.game_mode = None
         self.wing = set()
+        self.crew = None
+        self.destroyed = True
+        self.target = None
 
     def resurrect(self):
         self.game_mode = self.previous_mode 
         self.wing = self.previous_wing.copy()
         self.previous_mode = None
         self.previous_wing = set()
+        self.destroyed = False
+        self.target = None
 
     def leave_wing(self):
         self.wing = set()
 
     def join_wing(self, others):
         self.wing = set(others)
+        self.crew = None
 
     def add_to_wing(self, other):
         self.wing.add(other)
+
+    def is_crew_member(self):
+        if not self.crew:
+            return False
+        return self.crew.captain != self.name
+
+    def in_a_crew(self):
+        return self.crew is not None
+
+    def in_a_wing(self):
+        return len(self.wing) > 0
+        
+    def leave_crew(self):
+        if not self.crew:
+            return
+        self.crew = None
+
+    def disband_crew(self):
+        if not self.crew:
+            return
+        self.crew.disband()
+
+    def join_crew(self, captain):
+        self.crew = EDRCrew(captain)
+        self.crew.add(self.name)
+        self.wing = set()
+        self.ship = u"Unknown"
+    
+    def add_to_crew(self, member):
+        if not self.crew:
+            self.crew = EDRCrew(self.name)
+            self.wing = set()
+        return self.crew.add(member)
+    
+    def remove_from_crew(self, member):
+        if not self.crew:
+            self.crew = EDRCrew(self.name)
+            self.wing = set()
+        return self.crew.remove(member)
+
+    def crew_time_elapsed(self, member):
+        if not self.crew:
+            return 0
+        return self.crew.duration(member)
+    
+    def is_captain(self, member=None):
+        if not self.crew:
+            return False
+        if not member:
+            member = self.name 
+        return self.crew.is_captain(member)
 
     def is_friend_or_in_wing(self, interlocutor):
         return interlocutor in self.friends or interlocutor in self.wing
