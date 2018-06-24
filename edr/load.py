@@ -80,6 +80,7 @@ def handle_wing_events(ed_player, entry):
         ed_player.add_to_wing(wingmate)
         EDR_CLIENT.status = _(u"added to wing: ").format(wingmate)
         EDRLOG.log(u"Addition to wing: {}".format(ed_player.wing), "INFO")
+        EDR_CLIENT.who(wingmate, autocreate=True, cognitive=True)
     elif entry["event"] in ["WingJoin"]:
         ed_player.join_wing(entry["Others"])
         EDR_CLIENT.status = _(u"joined wing.")
@@ -89,6 +90,11 @@ def handle_wing_events(ed_player, entry):
         ed_player.leave_wing()
         EDR_CLIENT.status = _(u"left wing.")
         EDRLOG.log(u" Left the wing.", "INFO")
+    elif entry["event"] in ["WingInvite"]:
+        requester = plain_cmdr_name(entry["Name"])
+        EDR_CLIENT.status = _(u"wing invite from: ").format(requester)
+        EDRLOG.log(u"Wing invite from: {}".format(requester), "INFO")
+        EDR_CLIENT.who(requester, autocreate=True, cognitive=True)
 
 
 def handle_multicrew_events(ed_player, entry):
@@ -98,7 +104,7 @@ def handle_multicrew_events(ed_player, entry):
         if success: # only show intel on the first add 
             EDR_CLIENT.status = _(u"added to crew: ").format(crew)
             EDRLOG.log(u"Addition to crew: {}".format(ed_player.crew.members), "INFO")
-            EDR_CLIENT.who(crew, autocreate=True)
+            EDR_CLIENT.who(crew, autocreate=True, cognitive=True)
 
     if entry["event"] in ["CrewMemberQuits", "KickCrewMember"]:
         crew = plain_cmdr_name(entry["Crew"])
@@ -126,7 +132,7 @@ def handle_multicrew_events(ed_player, entry):
         ed_player.join_crew(captain)
         EDR_CLIENT.status = _(u"joined a crew.")
         EDRLOG.log(u"Joined captain {}'s crew".format(captain), "INFO")
-        EDR_CLIENT.who(captain, autocreate=True)
+        EDR_CLIENT.who(captain, autocreate=True, cognitive=True)
 
     if entry["event"] in ["QuitACrew"] and ed_player.crew:
         for member in ed_player.crew.members:
@@ -142,7 +148,7 @@ def handle_multicrew_events(ed_player, entry):
                 "crimes": False,
                 "destroyed": ed_player.destroyed if ed_player.is_captain() else False
             }    
-            edr_submit_multicrew_session(ed_player, report) #TODO confirm when destroyed should be set
+            edr_submit_multicrew_session(ed_player, report)
         ed_player.leave_crew()
         EDR_CLIENT.status = _(u"left crew.")
         EDRLOG.log(u"Left the crew.", "INFO")
@@ -162,7 +168,7 @@ def handle_multicrew_events(ed_player, entry):
                 "crimes": crimes,
                 "destroyed": ed_player.destroyed if ed_player.is_captain() else False
             }    
-            edr_submit_multicrew_session(ed_player, report) #TODO confirm when destroyed should be set
+            edr_submit_multicrew_session(ed_player, report)
         ed_player.disband_crew()
         EDR_CLIENT.status = _(u"crew disbanded.")
         EDRLOG.log(u"Crew disbanded.", "INFO")
@@ -265,7 +271,7 @@ def handle_friends_events(ed_player, entry):
 
     if entry["Status"] == "Requested":
         requester = plain_cmdr_name(entry["Name"])
-        EDR_CLIENT.who(requester, autocreate=True)
+        EDR_CLIENT.who(requester, autocreate=True, cognitive=True)
 
 def handle_powerplay_events(ed_player, entry):
     if entry["event"] == "Powerplay":
@@ -355,7 +361,6 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
             handle_scan_events(ed_player, entry)
         elif ("ScanStage" in entry and entry["ScanStage"] == 0) or ("TargetLocked" in entry and not entry["TargetLocked"]):
             ed_player.target = None
-        EDRLOG.log(u"shiptargeted event: target = {}".format(ed_player.target), "DEBUG")  # TODO temp
 
     if entry["event"] in ["ReceiveText", "SendText"]:
         report_comms(ed_player, entry)
