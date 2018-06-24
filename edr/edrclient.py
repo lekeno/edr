@@ -628,18 +628,9 @@ class EDRClient(object):
                 summary.append(oneliner)
         return summary
 
-    def who(self, cmdr_name, autocreate=False, cognitive=False):
-        cmdr_id = self.cmdr_id(cmdr_name)
-        if cmdr_id is None:
-            self.status = _(u"no cmdr id (who).")
-            EDRLOG.log(u"Can't show profile (no cmdr id for {}).".format(cmdr_name), "ERROR")
-            return
-
-        profile = self.cmdr(cmdr_name, autocreate, check_inara_server=True)        
+    def who(self, cmdr_name, autocreate=False):
+        profile = self.cmdr(cmdr_name, autocreate, check_inara_server=True)
         if profile:
-            if cognitive and not self.novel_enough_blip(cmdr_id, blip, cognitive = True):
-                EDRLOG.log(u"Skipping who since a profile was recently shown.", "INFO")
-                return
             self.status = _(u"got info about {}").format(cmdr_name)
             EDRLOG.log(u"Who {} : {}".format(cmdr_name, profile.short_profile(self.player.powerplay)), "INFO")
             legal = self.edrlegal.summarize_recents(profile.cid)

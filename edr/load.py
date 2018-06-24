@@ -80,12 +80,11 @@ def handle_wing_events(ed_player, entry):
         ed_player.add_to_wing(wingmate)
         EDR_CLIENT.status = _(u"added to wing: ").format(wingmate)
         EDRLOG.log(u"Addition to wing: {}".format(ed_player.wing), "INFO")
-        EDR_CLIENT.who(wingmate, autocreate=True, cognitive=True)
+        EDR_CLIENT.who(wingmate, autocreate=True)
     elif entry["event"] in ["WingJoin"]:
         ed_player.join_wing(entry["Others"])
         EDR_CLIENT.status = _(u"joined wing.")
         EDRLOG.log(u"Joined a wing: {}".format(ed_player.wing), "INFO")
-        wingmates = entry["Others"]
     elif entry["event"] in ["WingLeave"]:
         ed_player.leave_wing()
         EDR_CLIENT.status = _(u"left wing.")
@@ -94,7 +93,7 @@ def handle_wing_events(ed_player, entry):
         requester = plain_cmdr_name(entry["Name"])
         EDR_CLIENT.status = _(u"wing invite from: ").format(requester)
         EDRLOG.log(u"Wing invite from: {}".format(requester), "INFO")
-        EDR_CLIENT.who(requester, autocreate=True, cognitive=True)
+        EDR_CLIENT.who(requester, autocreate=True)
 
 
 def handle_multicrew_events(ed_player, entry):
@@ -104,7 +103,7 @@ def handle_multicrew_events(ed_player, entry):
         if success: # only show intel on the first add 
             EDR_CLIENT.status = _(u"added to crew: ").format(crew)
             EDRLOG.log(u"Addition to crew: {}".format(ed_player.crew.members), "INFO")
-            EDR_CLIENT.who(crew, autocreate=True, cognitive=True)
+            EDR_CLIENT.who(crew, autocreate=True)
 
     if entry["event"] in ["CrewMemberQuits", "KickCrewMember"]:
         crew = plain_cmdr_name(entry["Crew"])
@@ -132,7 +131,7 @@ def handle_multicrew_events(ed_player, entry):
         ed_player.join_crew(captain)
         EDR_CLIENT.status = _(u"joined a crew.")
         EDRLOG.log(u"Joined captain {}'s crew".format(captain), "INFO")
-        EDR_CLIENT.who(captain, autocreate=True, cognitive=True)
+        EDR_CLIENT.who(captain, autocreate=True)
 
     if entry["event"] in ["QuitACrew"] and ed_player.crew:
         for member in ed_player.crew.members:
@@ -271,7 +270,7 @@ def handle_friends_events(ed_player, entry):
 
     if entry["Status"] == "Requested":
         requester = plain_cmdr_name(entry["Name"])
-        EDR_CLIENT.who(requester, autocreate=True, cognitive=True)
+        EDR_CLIENT.who(requester, autocreate=True)
 
 def handle_powerplay_events(ed_player, entry):
     if entry["event"] == "Powerplay":
