@@ -77,11 +77,17 @@ class EDRCmdrs(object):
         return info["squadronId"] if info else None
 
     def __update_squadron_info(self, force_update=False):
+        if self.server.is_anonymous():
+            return
         mark_twain_flag = int((EDTime.js_epoch_now() - self.heartbeat_timestamp)/1000) >= self._edr_heartbeat if self.heartbeat_timestamp else True
         if force_update or mark_twain_flag:
             info = self.server.heartbeat()
-            self._player.squadron_member(info) if info else self._player.lone_wolf()
-            self.heartbeat_timestamp = info["heartbeat"]
+            if info:
+                self.heartbeat_timestamp = info["heartbeat"] if "heartbeat" in info else EDTime.js_epoch_now()
+                self._player.squadron_member(info) if "squadronId" in info else self._player.lone_wolf()
+            else:
+                self.heartbeat_timestamp = EDTime.js_epoch_now()
+                self._player.lone_wolf()
 
     def persist(self):
         with open(self.EDR_CMDRS_CACHE, 'wb') as handle:
@@ -106,8 +112,9 @@ class EDRCmdrs(object):
 
         try:
             sqdr_id = self.__squadron_id()
-            sq_cmdr_key = "{}:{}".format(sqdr_id, cmdr.lower())
-            del self.sqdrdex_cache[sq_cmdr_key]
+            if sqdr_id:
+                sq_cmdr_key = "{}:{}".format(sqdr_id, cmdr.lower())
+                del self.sqdrdex_cache[sq_cmdr_key]
         except KeyError:
             pass
 

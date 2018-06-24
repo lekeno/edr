@@ -70,7 +70,7 @@ class EDRInara(object):
 
     def __api_header(self):
         return {
-            "appName": "Elidex",
+            "appName": "EDRecon",
             "appVersion": self.version,
             "isDeveloped": False,
             "APIkey": self.INARA_API_KEY,

@@ -86,6 +86,7 @@ class EDRClient(object):
         self.edrlegal = edrlegalrecords.EDRLegalRecords(self.server)
 
         self.mandatory_update = False
+        self.autoupdate_pending = False
         self.crimes_reporting = True
         self.motd = []
         self.tips = randomtips.RandomTips()
@@ -149,11 +150,13 @@ class EDRClient(object):
             EDRLOG.log(u"Mandatory update! {version} vs. {min}"
                        .format(version=self.edr_version, min=version_range["min"]), "ERROR")
             self.mandatory_update = True
+            self.autoupdate_pending = version_range.get("autoupdatable", False)
             self.__status_update_pending()
         elif self.is_obsolete(version_range["latest"]):
             EDRLOG.log(u"EDR update available! {version} vs. {latest}"
                        .format(version=self.edr_version, latest=version_range["latest"]), "INFO")
             self.mandatory_update = False
+            self.autoupdate_pending = version_range.get("autoupdatable", False)
             self.__status_update_pending()
 
     def is_obsolete(self, advertised_version):
@@ -205,14 +208,16 @@ class EDRClient(object):
         self._audio_feedback.set(new_value)
 
     def player_name(self, name):
-        self.edrcmdrs.set_player_name(name)
+        self.edrcmdrs.set_player_name(name, )
 
     def pledged_to(self, power, time_pledged=0):
+        if self.server.is_anonymous():
+            EDRLOG.log(u"Skipping pledged_to call since the user is anonymous.", "INFO")
+            return
         nodotpower = power.replace(".", "")
         if self.edrcmdrs.player_pledged_to(nodotpower, time_pledged):
             for kind in self.edropponents:
                 self.edropponents[kind].pledged_to(nodotpower, time_pledged)
-        #TODO else, log?
 
     def login(self):
         self.server.logout()
@@ -252,8 +257,12 @@ class EDRClient(object):
             self.edropponents[kind].shutdown_comms_link()
         self.edrlegal.persist()
         self.IN_GAME_MSG.shutdown()
-        if everything:
-            self.server.logout()
+
+        if not everything:
+            return
+
+        self.server.logout()
+
 
     def app_ui(self, parent):
         label = tk.Label(parent, text=u"EDR:")
@@ -302,10 +311,14 @@ class EDRClient(object):
 
     def __status_update_pending(self):
         # Translators: this is shown in EDMC's status
-        self.status = _(u"mandatory EDR update!") if self.mandatory_update else _(u"please update EDR!")
-        if self.status_ui:
-            self.status_ui.underline = True
-            self.status_ui.url = "https://github.com/lekeno/edr/releases/latest"
+        if self.autoupdate_pending:
+            self.status = _(u"mandatory update pending (relaunch EDMC)") if self.mandatory_update else _(u"update pending (relaunch EDMC to apply)")
+        else:
+            # Translators: this is shown in EDMC's status
+            self.status = _(u"mandatory EDR update!") if self.mandatory_update else _(u"please update EDR!")
+            if self.status_ui:
+                self.status_ui.underline = True
+                self.status_ui.url = "https://github.com/lekeno/edr/releases/latest"
             
 
     def prefs_changed(self):
@@ -796,6 +809,21 @@ class EDRClient(object):
             return False
 
         return self.server.crime(sid, crime)
+
+    def crew_report(self, report):
+        if self.is_anonymous():
+            EDRLOG.log(u"Skipping crew report since the user is anonymous.", "INFO")
+            if report["captain"] == self.player.name and (report["crimes"] or report["kicked"]):
+                self.advertise_full_account(_(u"You could have helped other EDR users by reporting this problematic crew member!"))
+            return False
+
+        crew_id = self.cmdr_id(report["crew"])
+        if crew_id is None:
+            self.status = _(u"{} is unknown to EDR.".format(report["crew"]))
+            EDRLOG.log(u"Can't submit crew report (no cmdr id for {}).".format(report["crew"]), "ERROR")
+            return False
+
+        return self.server.crew_report(crew_id, report)
 
     def tag_cmdr(self, cmdr_name, tag):
         if self.is_anonymous():
