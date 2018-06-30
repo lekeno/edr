@@ -243,7 +243,7 @@ class EDRSystems(object):
             summary_outlaws.append(u"{} {}".format(system[0], edtime.EDTime.t_minus(system[1], short=True)))
         if summary_outlaws:
             # Translators: this is for the sitreps feature; it's the title of a section to show systems with sighted outlaws 
-            summary[_c(u"sitreps section|Outlaws")] = summary_outlaws
+            summary[_c(u"sitreps section|✪ Outlaws")] = summary_outlaws
         
         if pledged_to:
             summary_enemies = []
@@ -252,7 +252,7 @@ class EDRSystems(object):
                 summary_enemies.append(u"{} {}".format(system[0], edtime.EDTime.t_minus(system[1], short=True)))
             if summary_enemies:
                 # Translators: this is for the sitreps feature; it's the title of a section to show systems with sighted enemies (powerplay) 
-                summary[_c(u"sitreps section|Enemies")] = summary_enemies
+                summary[_c(u"sitreps section|✪ Enemies")] = summary_enemies
 
         summary_crimes = []
         systems_with_recent_crimes = sorted(systems_with_recent_crimes.items(), key=lambda t: t[1], reverse=True)
@@ -260,7 +260,7 @@ class EDRSystems(object):
             summary_crimes.append(u"{} {}".format(system[0], edtime.EDTime.t_minus(system[1], short=True)))
         if summary_crimes:
             # Translators: this is for the sitreps feature; it's the title of a section to show systems with reported crimes
-            summary[_c(u"sitreps section|Crimes")] = summary_crimes
+            summary[_c(u"sitreps section|✪ Crimes")] = summary_crimes
 
         summary_traffic = []
         systems_with_recent_traffic = sorted(systems_with_recent_traffic.items(), key=lambda t: t[1], reverse=True)
@@ -268,7 +268,7 @@ class EDRSystems(object):
             summary_traffic.append(u"{} {}".format(system[0], edtime.EDTime.t_minus(system[1], short=True)))
         if summary_traffic:
             # Translators: this is for the sitreps feature; it's the title of a section to show systems with traffic
-            summary[_c(u"sitreps section|Traffic")] = summary_traffic
+            summary[_c(u"sitreps section|✪ Traffic")] = summary_traffic
 
         return summary
 
@@ -373,7 +373,7 @@ class EDRSystems(object):
                     summary_sighted.append(u"{} {}".format(cmdr, edtime.EDTime.t_minus(summary_traffic[cmdr], short=True)))
                 if summary_sighted:
                     # Translators: this is for the sitrep feature; it's a section to show sighted cmdrs in the system of interest
-                    summary[_c(u"sitrep section|Sighted")] = summary_sighted
+                    summary[_c(u"sitrep section|✪ Sighted")] = summary_sighted
         
         if self.has_recent_crimes(star_system):
             summary_interdictors = []
@@ -405,10 +405,10 @@ class EDRSystems(object):
                         summary_interdictors.append(u"{} {}".format(criminal, edtime.EDTime.t_minus(summary_crimes[criminal][0], short=True)))
                 if summary_interdictors:
                     # Translators: this is for the sitrep feature; it's a section to show cmdrs who have been reported as interdicting another cmdr in the system of interest
-                    summary[_c(u"sitrep section|Interdictors")] = summary_interdictors
+                    summary[_c(u"sitrep section|✪ Interdictors")] = summary_interdictors
                 if summary_destroyers:
                     # Translators: this is for the sitrep feature; it's a section to show cmdrs who have been reported as responsible for destroying the ship of another cmdr in the system of interest; use a judgement-neutral term
-                    summary[_c(u"sitreps section|Destroyers")] = summary_destroyers
+                    summary[_c(u"sitreps section|✪ Destroyers")] = summary_destroyers
         
         wanted_cmdrs = sorted(wanted_cmdrs.items(), key=operator.itemgetter(1), reverse=True)
         if wanted_cmdrs:
@@ -417,7 +417,7 @@ class EDRSystems(object):
                 summary_wanted.append(u"{} {}".format(wanted[0], edtime.EDTime.t_minus(wanted[1][0], short=True)))
             if summary_wanted:
                 # Translators: this is for the sitrep feature; it's a section to show wanted cmdrs who have been sighted in the system of interest
-                summary[_c(u"sitreps section|Outlaws")] = summary_wanted
+                summary[_c(u"sitreps section|✪ Outlaws")] = summary_wanted
         
         enemies = sorted(enemies.items(), key=operator.itemgetter(1), reverse=True)
         if enemies:
@@ -426,7 +426,7 @@ class EDRSystems(object):
                 summary_enemies.append(u"{} {}".format(enemies[0], edtime.EDTime.t_minus(enemies[1][0], short=True)))
             if summary_enemies:
                 # Translators: this is for the sitrep feature; it's a section to show enemy cmdrs who have been sighted in the system of interest
-                summary[_c(u"sitreps section|Enemies")] = summary_enemies
+                summary[_c(u"sitreps section|✪ Enemies")] = summary_enemies
 
         return summary
 
