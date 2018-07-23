@@ -215,6 +215,9 @@ class EDRCmdrProfile(object):
         self.squadron_rank = json_cmdr.get("squadronRank", None)
         self.role = json_cmdr.get("role", None)
         self.karma = json_cmdr.get("karma", 0)
+        dkarma = json_cmdr.get("dkarma", 0)
+        if self.karma == 0 or (self.karma < 0 and dkarma < self.karma):
+            self.karma = dkarma
         self.alignment_hints = json_cmdr.get("alignmentHints", None)
         self.patreon = json_cmdr.get("patreon", None)
         self.dex_profile = None
@@ -339,7 +342,7 @@ class EDRCmdrProfile(object):
             return self.sqdrdex_profile._iff == "enemy"
         if self.dex_profile:
             return self.dex_profile._alignment == "outlaw"
-        if self._karma <= -250:
+        if self._karma < -200:
             return True
         if powerplay and self.powerplay:
             return powerplay.is_enemy(self.powerplay)
@@ -360,7 +363,7 @@ class EDRCmdrProfile(object):
     def short_profile(self, powerplay=None):
         edr_parts = []
         mapped_index = int(10*(self._karma + self.max_karma()) / (2.0*self.max_karma()))
-        lut = [_(u"Outlaw++++"), _(u"Outlaw+++"), _(u"Outlaw++"), _(u"Outlaw+"), _(u"Outlaw"), _(u"Neutral"), _(u"Enforcer"), _(u"Enforcer+"), _(u"Enforcer++"), _(u"Enforcer+++"), _(u"Enforcer++++")]
+        lut = [_(u"Outlaw++++"), _(u"Outlaw+++"), _(u"Outlaw++"), _(u"Outlaw+"), _(u"Outlaw"), _(u"Neutral"), _(u"Lawful"), _(u"Lawful+"), _(u"Lawful++"), _(u"Lawful+++"), _(u"Lawful++++")]
         karma = lut[mapped_index]
 
         edr_parts.append(karma)

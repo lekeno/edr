@@ -360,6 +360,8 @@ class EDRSystems(object):
                     if traffic["timestamp"] < previous_timestamp:
                         continue
                     karma = traffic.get("karma", 0)
+                    if not karma > 0:
+                        karma = min(karma, criminal.get("dkarma", 0))
                     bounty = EDBounty(traffic.get("bounty", 0))
                     enemy = traffic.get("enemy", False)
                     by_pledge = traffic.get("byPledge", None)
@@ -391,6 +393,8 @@ class EDRSystems(object):
                             if previous_timestamp > crime["timestamp"]:
                                 continue
                             karma = criminal.get("karma", 0)
+                            if not karma > 0:
+                                karma = min(karma, criminal.get("dkarma", 0))
                             bounty = EDBounty(traffic.get("bounty", 0))
                             enemy = traffic.get("enemy", False)
                             by_pledge = traffic.get("byPledge", None)
