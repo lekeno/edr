@@ -168,6 +168,7 @@ class EDRCmdrProfile(object):
         self.squadron_rank = None
         self.role = None
         self._karma = 0
+        self.dyn_karma = False
         self.alignment_hints = None
         self.patreon = None
         self.dex_profile = None
@@ -203,6 +204,7 @@ class EDRCmdrProfile(object):
         self.role = json_cmdr.get("preferredGameRole", None)
         self.powerplay = json_cmdr.get("preferredPowerName", None)
         self.karma = 0 #not supported by Inara
+        self.dyn_karma = False
         self.alignment_hints = None #not supported by Inara
         self.patreon = None
         self.dex_profile = None
@@ -215,9 +217,11 @@ class EDRCmdrProfile(object):
         self.squadron_rank = json_cmdr.get("squadronRank", None)
         self.role = json_cmdr.get("role", None)
         self.karma = json_cmdr.get("karma", 0)
+        self.dyn_karma = False
         dkarma = json_cmdr.get("dkarma", 0)
         if self.karma == 0 or (self.karma < 0 and dkarma < self.karma):
             self.karma = dkarma
+            self.dyn_karma = True
         self.alignment_hints = json_cmdr.get("alignmentHints", None)
         self.patreon = json_cmdr.get("patreon", None)
         self.dex_profile = None
@@ -364,7 +368,10 @@ class EDRCmdrProfile(object):
         edr_parts = []
         mapped_index = int(10*(self._karma + self.max_karma()) / (2.0*self.max_karma()))
         lut = [_(u"Outlaw++++"), _(u"Outlaw+++"), _(u"Outlaw++"), _(u"Outlaw+"), _(u"Outlaw"), _(u"Neutral"), _(u"Lawful"), _(u"Lawful+"), _(u"Lawful++"), _(u"Lawful+++"), _(u"Lawful++++")]
-        karma = lut[mapped_index]
+        karma = ""
+        if self.dyn_karma:
+            karma += u"≈ "
+        karma += lut[mapped_index]
 
         edr_parts.append(karma)
         

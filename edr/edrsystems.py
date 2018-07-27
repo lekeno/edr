@@ -361,7 +361,7 @@ class EDRSystems(object):
                         continue
                     karma = traffic.get("karma", 0)
                     if not karma > 0:
-                        karma = min(karma, criminal.get("dkarma", 0))
+                        karma = min(karma, traffic.get("dkarma", 0))
                     bounty = EDBounty(traffic.get("bounty", 0))
                     enemy = traffic.get("enemy", False)
                     by_pledge = traffic.get("byPledge", None)
