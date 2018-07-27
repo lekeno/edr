@@ -687,7 +687,7 @@ class EDRClient(object):
         if self.is_anonymous():
             EDRLOG.log("Skipping blip since the user is anonymous.", "INFO")
             self.blips_cache.set(cmdr_id, blip)
-            return False
+            return True
 
         success = self.server.blip(cmdr_id, blip)
         if success:
