@@ -16,6 +16,7 @@ import edrinara
 import audiofeedback
 import edrlog
 import ingamemsg
+import edrtogglingpanel
 import edrsystems
 import edrcmdrs
 from edropponents import EDROpponents
@@ -28,7 +29,7 @@ from edri18n import _, _c, _edr, set_language
 EDRLOG = edrlog.EDRLog()
 
 class EDRClient(object):
-    IN_GAME_MSG = ingamemsg.InGameMsg()
+    IN_GAME_MSG = ingamemsg.InGameMsg() 
     AUDIO_FEEDBACK = audiofeedback.AudioFeedback()
 
     def __init__(self):
@@ -38,6 +39,7 @@ class EDRClient(object):
         self.edr_version = edr_config.edr_version()
         EDRLOG.log(u"Version {}".format(self.edr_version), "INFO")
 
+        self.enemy_alerts_pledge_threshold = edr_config.enemy_alerts_pledge_threshold()
         self.system_novelty_threshold = edr_config.system_novelty_threshold()
         self.place_novelty_threshold = edr_config.place_novelty_threshold()
         self.ship_novelty_threshold = edr_config.ship_novelty_threshold()
@@ -58,10 +60,14 @@ class EDRClient(object):
         self._password = tk.StringVar(value=config.get("EDRPassword"))
         # Translators: this is shown on the EDMC's status line
         self._status = tk.StringVar(value=_(u"not authenticated."))
-        self.status_ui = None
-
+        
         visual = 1 if config.get("EDRVisualFeedback") == "True" else 0
         self._visual_feedback = tk.IntVar(value=visual)
+
+        visual_alt = 1 if config.get("EDRVisualAltFeedback") == "True" else 0
+        self._visual_alt_feedback = tk.IntVar(value=visual_alt)
+        
+        self.ui = edrtogglingpanel.EDRTogglingPanel(self._status, self._visual_alt_feedback)
 
         audio = 1 if config.get("EDRAudioFeedback") == "True" else 0
         self._audio_feedback = tk.IntVar(value=audio)
@@ -108,6 +114,7 @@ class EDRClient(object):
         c_email = config.get("EDREmail")
         c_password = config.get("EDRPassword")
         c_visual_feedback = config.get("EDRVisualFeedback")
+        c_visual_alt_feedback = config.get("EDRVisualAltFeedback")
         c_audio_feedback = config.get("EDRAudioFeedback")
         c_audio_volume = config.get("EDRAudioFeedbackVolume")
 
@@ -125,6 +132,11 @@ class EDRClient(object):
             self._visual_feedback.set(0)
         else:
             self._visual_feedback.set(1)
+
+        if c_visual_alt_feedback is None or c_visual_alt_feedback == "False":
+            self._visual_alt_feedback.set(0)
+        else:
+            self._visual_alt_feedback.set(1)
 
         if c_audio_feedback is None or c_audio_feedback == "False":
             self._audio_feedback.set(0)
@@ -187,9 +199,7 @@ class EDRClient(object):
     @status.setter
     def status(self, new_status):
         self._status.set(new_status)
-        if self.status_ui:
-            self.status_ui.url = None
-            self.status_ui.underline = False
+        self.ui.nolink()
 
     @property
     def visual_feedback(self):
@@ -198,6 +208,15 @@ class EDRClient(object):
     @visual_feedback.setter
     def visual_feedback(self, new_value):
         self._visual_feedback.set(new_value)
+
+    @property
+    def visual_alt_feedback(self):
+        return self._visual_alt_feedback.get() == 1
+
+    @visual_alt_feedback.setter
+    def visual_alt_feedback(self, new_value):
+        self._visual_alt_feedback.set(new_value)
+
 
     @property
     def audio_feedback(self):
@@ -257,18 +276,16 @@ class EDRClient(object):
             self.edropponents[kind].shutdown_comms_link()
         self.edrlegal.persist()
         self.IN_GAME_MSG.shutdown()
+        config.set("EDRVisualAltFeedback", "True" if self.visual_alt_feedback else "False")
 
         if not everything:
             return
-
+        
         self.server.logout()
 
-
     def app_ui(self, parent):
-        label = tk.Label(parent, text=u"EDR:")
-        self.status_ui = ttkHyperlinkLabel.HyperlinkLabel(parent, textvariable=self._status, anchor=tk.W)
         self.check_version()
-        return (label, self.status_ui)
+        return self.ui
 
     def prefs_ui(self, parent):
         frame = notebook.Frame(parent)
@@ -316,9 +333,7 @@ class EDRClient(object):
         else:
             # Translators: this is shown in EDMC's status
             self.status = _(u"mandatory EDR update!") if self.mandatory_update else _(u"please update EDR!")
-            if self.status_ui:
-                self.status_ui.underline = True
-                self.status_ui.url = "https://github.com/lekeno/edr/releases/latest"
+            self.ui.link("https://github.com/lekeno/edr/releases/latest")
             
 
     def prefs_changed(self):
@@ -485,8 +500,8 @@ class EDRClient(object):
                 details = _(u"Request an EDR account to access enemy alerts (https://lekeno.github.io)")
             elif not self.player.power:
                 details = _(u"Pledge to a power to access enemy alerts")
-            elif self.player.time_pledged < 24*60*60*7: #TODO 30 days after the beta phase
-                details = _(u"Remain loyal for at least 30 days to access enemy alerts")
+            elif self.player.time_pledged < self.enemy_alerts_pledge_threshold:
+                details = _(u"Remain loyal for at least {} days to access enemy alerts").format(int(self.enemy_alerts_pledge_threshold / 24*60*60))
             else:
                 details = _(u"Enabling Enemy alerts") if self.edropponents[kind].establish_comms_link() else _(u"Couldn't enable Enemy alerts")
         else:            
@@ -943,52 +958,60 @@ class EDRClient(object):
         if not content:
             return False
 
-        EDRLOG.log(u"Show help for {} with header: {} and details: {}".format(section, content["header"], content["details"][0]), "DEBUG")
-        self.IN_GAME_MSG.help(content["header"], content["details"])
+        if self.visual_feedback:
+            EDRLOG.log(u"Show help for {} with header: {} and details: {}".format(section, content["header"], content["details"][0]), "DEBUG")
+            self.IN_GAME_MSG.help(content["header"], content["details"])
+        EDRLOG.log(u"[Alt] Show help for {} with header: {} and details: {}".format(section, content["header"], content["details"][0]), "DEBUG")
+        self.ui.help(content["header"], content["details"])
         return True
 
     def clear(self):
         self.IN_GAME_MSG.clear()
+        self.ui.clear()
            
 
     def __sitrep(self, header, details):
         if self.audio_feedback:
             self.AUDIO_FEEDBACK.notify()
-        if not self.visual_feedback:
-            return
-        EDRLOG.log(u"sitrep with header: {}; details: {}".format(header, details[0]), "DEBUG")
-        self.IN_GAME_MSG.clear_sitrep()
-        self.IN_GAME_MSG.sitrep(header, details)
+        if self.visual_feedback:
+            EDRLOG.log(u"sitrep with header: {}; details: {}".format(header, details[0]), "DEBUG")
+            self.IN_GAME_MSG.clear_sitrep()
+            self.IN_GAME_MSG.sitrep(header, details)
+        EDRLOG.log(u"[Alt] sitrep with header: {}; details: {}".format(header, details[0]), "DEBUG")
+        self.ui.sitrep(header, details)
 
     def __intel(self, who, details, clear_before=False):
         if self.audio_feedback:
             self.AUDIO_FEEDBACK.notify()
-        if not self.visual_feedback:
-            return
-        EDRLOG.log(u"Intel for {}; details: {}".format(who, details[0]), "DEBUG")
-        if clear_before:
-            self.IN_GAME_MSG.clear_intel()
-        self.IN_GAME_MSG.intel(_(u"Intel"), details)
+        if self.visual_feedback:
+            EDRLOG.log(u"Intel for {}; details: {}".format(who, details[0]), "DEBUG")
+            if clear_before:
+                self.IN_GAME_MSG.clear_intel()
+            self.IN_GAME_MSG.intel(_(u"Intel"), details)
+        EDRLOG.log(u"[Alt] Intel for {}; details: {}".format(who, details[0]), "DEBUG")
+        self.ui.intel(_(u"Intel"), details)
 
     def __warning(self, header, details, clear_before=False):
         if self.audio_feedback:
             self.AUDIO_FEEDBACK.warn()
-        if not self.visual_feedback:
-            return
-        EDRLOG.log(u"Warning; details: {}".format(details[0]), "DEBUG")
-        if clear_before:
-            self.IN_GAME_MSG.clear_warning()
-        self.IN_GAME_MSG.warning(header, details)
+        if self.visual_feedback:
+            EDRLOG.log(u"Warning; details: {}".format(details[0]), "DEBUG")
+            if clear_before:
+                self.IN_GAME_MSG.clear_warning()
+            self.IN_GAME_MSG.warning(header, details)
+        EDRLOG.log(u"[Alt] Warning; details: {}".format(details[0]), "DEBUG")
+        self.ui.warning(header, details)
     
     def __notify(self, header, details, clear_before=False):
         if self.audio_feedback:
             self.AUDIO_FEEDBACK.notify()
-        if not self.visual_feedback:
-            return
-        EDRLOG.log(u"Notify about {}; details: {}".format(header, details[0]), "DEBUG")
-        if clear_before:
-            self.IN_GAME_MSG.clear_notice()
-        self.IN_GAME_MSG.notify(header, details)
+        if self.visual_feedback:
+            EDRLOG.log(u"Notify about {}; details: {}".format(header, details[0]), "DEBUG")
+            if clear_before:
+                self.IN_GAME_MSG.clear_notice()
+            self.IN_GAME_MSG.notify(header, details)
+        EDRLOG.log(u"[Alt] Notify about {}; details: {}".format(header, details[0]), "DEBUG")
+        self.ui.notify(header, details)        
 
     def notify_with_details(self, notice, details):
         self.__notify(notice, details)
