@@ -61,6 +61,12 @@ class EDRConfig(object):
     def cognitive_novelty_threshold(self):
         return int(self.config.get('novelty', 'cognitive_novelty_threshold'))
 
+    def enemy_alerts_pledge_threshold(self):
+        return int(self.config.get('enemies', 'enemy_alerts_pledge_threshold'))
+
+    def noteworthy_pledge_threshold(self):
+        return int(self.config.get('powerplay', 'noteworthy_pledge_threshold'))
+
     def systems_max_age(self):
         return int(self.config.get('lrucaches', 'systems_max_age'))
 

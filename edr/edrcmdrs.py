@@ -12,11 +12,11 @@ EDRLOG = edrlog.EDRLog()
 class EDRCmdrs(object):
     #TODO these should be player and/or squadron specific
     EDR_CMDRS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/cmdrs.v5.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/cmdrs.v6.p')
     EDR_INARA_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/inara.v5.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/inara.v6.p')
     EDR_SQDRDEX_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/sqdrdex.v1.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/sqdrdex.v2.p')
 
     def __init__(self, edrserver, edrinara):
         self.server = edrserver
@@ -63,8 +63,9 @@ class EDRCmdrs(object):
         self.inara.cmdr_name = new_player_name
 
     def player_pledged_to(self, power, time_pledged=0):
+        edr_config = edrconfig.EDRConfig()
         delta = time_pledged - self._player.time_pledged if self._player.time_pledged else time_pledged
-        if power == self._player.power and delta <= 60*60*6: #TODO parameterize
+        if power == self._player.power and delta <= edr_config.noteworthy_pledge_threshold():
             EDRLOG.log(u"Skipping pledged_to (not noteworthy): current vs. proposed {} vs. {}; {} vs {}".format(self._player.power, power, self._player.time_pledged, time_pledged), "DEBUG")
             return False
         self._player.pledged_to(power, time_pledged)

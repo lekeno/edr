@@ -162,7 +162,7 @@ class EDRCmdrProfile(object):
     
     def __init__(self):
         self.cid = None
-        self._name = None
+        self.name = None
         self.squadron = None
         self.squadron_id = None
         self.squadron_rank = None
@@ -174,18 +174,7 @@ class EDRCmdrProfile(object):
         self.dex_profile = None
         self.sqdrdex_profile = None
         self.powerplay = None
-    
-    @property
-    def name(self):
-        return self._name
 
-    @name.setter
-    def name(self, new_name):
-        if new_name is None:
-            self._name = None
-            return
-        
-        self._name = new_name
         
     @property
     def karma(self):
