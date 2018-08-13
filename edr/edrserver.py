@@ -24,6 +24,7 @@ class EDRServer(object):
         self.REST_firebase = RESTFirebase.RESTFirebaseAuth()
         self.EDR_API_KEY = config.edr_api_key()
         self.EDR_SERVER = config.edr_server()
+        self.player_name = None
 
     def login(self, email, password):
         self.REST_firebase.api_key = self.EDR_API_KEY
@@ -34,6 +35,9 @@ class EDRServer(object):
 
     def logout(self):
         self.REST_firebase.clear_authentication()
+
+    def set_player_name(self, name):
+        self.player_name = name
 
     def is_authenticated(self):
         return self.REST_firebase.is_valid_auth_token()
@@ -46,7 +50,6 @@ class EDRServer(object):
 
     def auth_token(self):
         return self.REST_firebase.id_token()
-
 
     def server_version(self):
         endpoint = "{}/version/.json".format(self.EDR_SERVER)
@@ -74,6 +77,10 @@ class EDRServer(object):
 
 
     def sitreps(self, timespan_seconds):
+        if not self.__preflight("sitreps", timespan_seconds):
+            EDRLOG.log(u"Preflight failed for sitreps call.", "DEBUG")
+            raise CommsJammedError("sitreps")
+        
         now_epoch_js = int(1000 * calendar.timegm(time.gmtime()))
         past_epoch_js = int(now_epoch_js - (1000 * timespan_seconds))
 
@@ -87,6 +94,10 @@ class EDRServer(object):
         return json.loads(resp.content)
 
     def system_id(self, star_system, may_create):
+        if not self.__preflight("system_id", star_system):
+            EDRLOG.log(u"Preflight failed for system_id call.", "DEBUG")
+            raise CommsJammedError("system_id")
+
         # Firebase rest API needs double quoted params (fixes issues with queries for systems with a "+")
         params = {"orderBy": '"cname"', "equalTo": json.dumps(star_system.lower()), "limitToFirst": 1, "auth": self.auth_token()}
         endpoint = "{}/v1/systems.json".format(self.EDR_SERVER)
@@ -124,7 +135,7 @@ class EDRServer(object):
             endpoint = "{server}/v1/pledges/{uid}/.json".format(server=self.EDR_SERVER, uid=self.uid())
             EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
             resp = requests.delete(endpoint, params=params)
-            EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
+            EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
             return resp.status_code == requests.codes.ok
         
         EDRLOG.log(u"Pledge info for uid {uid} with power:{power}".format(uid=self.uid(), power=power), "INFO")
@@ -132,13 +143,16 @@ class EDRServer(object):
         json = { "cpower": self.nodify(power), "since": int(since*1000), "heartbeat": {".sv": "timestamp"} }
         EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = requests.put(endpoint, params=params, json=json)
-        EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
+        EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
         return resp.status_code == requests.codes.ok            
     
     def cmdr(self, cmdr, autocreate=True):
+        if not self.__preflight("cmdr", cmdr):
+            EDRLOG.log(u"Preflight failed for cmdr call.", "DEBUG")
+            raise CommsJammedError("cmdr")
         cmdr_profile = edrcmdrprofile.EDRCmdrProfile()
 
-        params = { "orderBy": '"cname"', "equalTo": json.dumps(urllib.quote_plus(cmdr.lower().encode('utf-8'))), "limitToFirst": 1, "auth": self.auth_token() }
+        params = { "orderBy": '"cname"', "equalTo": json.dumps(urllib.quote_plus(cmdr.lower().encode('utf-8'))), "limitToFirst": 1, "auth": self.auth_token()}
         endpoint = "{}/v1/cmdrs.json".format(self.EDR_SERVER)
         EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = requests.get(endpoint, params=params)
@@ -149,7 +163,7 @@ class EDRServer(object):
             return None
 
         if resp.content == 'null':
-            if autocreate:
+            if autocreate and not self.is_anonymous():
                 params = { "auth" : self.auth_token() }
                 endpoint = "{}/v1/cmdrs.json".format(self.EDR_SERVER)
                 resp = requests.post(endpoint, params=params, json={"name": cmdr, "uid" : self.uid()})
@@ -185,6 +199,10 @@ class EDRServer(object):
         return self.__post_json(endpoint, info)
 
     def traffic(self, system_id, info):
+        if not self.__preflight("traffic", system_id):
+            EDRLOG.log(u"Preflight failed for traffic call.", "DEBUG")
+            raise CommsJammedError("traffic")
+
         info["uid"] = self.uid()
         EDRLOG.log(u"Traffic report for system {sid} with json:{json}".format(sid=system_id, json=info), "INFO")
         endpoint = "/v1/traffic/{system_id}/".format(system_id=system_id)
@@ -238,22 +256,38 @@ class EDRServer(object):
         sorted_results = sorted(results.values(), key=lambda t: t["timestamp"], reverse=True)
         return sorted_results
 
-    def recent_crimes(self,  system_id, timespan_seconds):
+    def recent_crimes(self, system_id, timespan_seconds):
+        if not self.__preflight("recent_crimes", system_id):
+            EDRLOG.log(u"Preflight failed for recent_crimes call.", "DEBUG")
+            raise CommsJammedError("recent_crimes")
+
         EDRLOG.log(u"Recent crimes for system {sid}".format(sid=system_id), "INFO")
         endpoint = "/v1/crimes/{sid}/".format(sid=system_id)
         return self.__get_recent(endpoint, timespan_seconds, limitToLast=50)
 
-    def recent_traffic(self,  system_id, timespan_seconds):
+    def recent_traffic(self, system_id, timespan_seconds):
+        if not self.__preflight("recent_traffic", system_id):
+            EDRLOG.log(u"Preflight failed for recent_traffic call.", "DEBUG")
+            raise CommsJammedError("recent_traffic")
+
         EDRLOG.log(u"Recent traffic for system {sid}".format(sid=system_id), "INFO")
         endpoint = "/v1/traffic/{sid}/".format(sid=system_id)
         return self.__get_recent(endpoint, timespan_seconds, limitToLast=50)
 
     def recent_outlaws(self, timespan_seconds):
+        if not self.__preflight("recent_outlaws", timespan_seconds):
+            EDRLOG.log(u"Preflight failed for recent_outlaws call.", "DEBUG")
+            raise CommsJammedError("recent_outlaws")
+
         EDRLOG.log(u"Recently sighted outlaws", "INFO")
         endpoint = "/v1/outlaws/"
         return self.__get_recent(endpoint, timespan_seconds, limitToLast=50)
 
     def recent_enemies(self, timespan_seconds, power):
+        if not self.__preflight("recent_enemies", power):
+            EDRLOG.log(u"Preflight failed for recent_enemies call.", "DEBUG")
+            raise CommsJammedError("recent_enemies")
+
         EDRLOG.log(u"Recently sighted enemies", "INFO")                
         endpoint = "/v1/powerplay/{}/enemies/".format(self.nodify(power))
         return self.__get_recent(endpoint, timespan_seconds, limitToLast=50)
@@ -271,6 +305,10 @@ class EDRServer(object):
         return json.loads(resp.content)
     
     def where(self, name, power=None):
+        if not self.__preflight("where", name):
+            EDRLOG.log(u"Preflight failed for where call.", "DEBUG")
+            raise CommsJammedError("where")
+
         EDRLOG.log(u"Where query for opponent named '{}'".format(name), "INFO")
         params = {"orderBy": '"cname"', "equalTo": json.dumps(name.lower()), "limitToFirst": 1, "auth": self.auth_token() }
         endpoint = "{}/v1/".format(self.EDR_SERVER)
@@ -326,7 +364,7 @@ class EDRServer(object):
         endpoint = "{server}{dex}{cid}/.json".format(server=self.EDR_SERVER, dex=dex_path, cid=cmdr_id)
         EDRLOG.log(u"Endpoint: {} with {}".format(endpoint, dex_entry), "DEBUG")
         resp = requests.put(endpoint, params=params, json=dex_entry)
-        EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
+        EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
         return resp.status_code == requests.codes.ok
 
     def __remove_dex(self, dex_path, cmdr_id):
@@ -335,7 +373,7 @@ class EDRServer(object):
         endpoint = "{server}{dex}{cid}.json".format(server=self.EDR_SERVER, dex=dex_path, cid=cmdr_id)
         EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = requests.delete(endpoint, params=params)
-        EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
+        EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
         return resp.status_code == requests.codes.ok
     
     def __dex(self, dex_path, cmdr_id):
@@ -344,9 +382,32 @@ class EDRServer(object):
         endpoint = "{server}{dex}{cid}/.json".format(server=self.EDR_SERVER, dex=dex_path, cid=cmdr_id)
         EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = requests.get(endpoint, params=params)
-        EDRLOG.log(u"resp= {}; {}".format(resp.status_code, resp.content), "DEBUG")
+        EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
 
         if resp.status_code == requests.codes.ok:
             return json.loads(resp.content)
         else:
             return None
+
+    def preflight_realtime(self, kind):
+        api_name = u"realtime_{}".format(kind.lower())
+        if not self.__preflight(api_name, "n/a"):
+            raise CommsJammedError(api_name)
+        return True
+
+    def __preflight(self, api_name, param):
+        params = {"auth": self.auth_token() }
+        json = { "name": self.player_name, "timestamp": {".sv": "timestamp"}, "param": param, "api": api_name }
+        EDRLOG.log(u"Preflight request for {} with {}".format(api_name, json), "DEBUG")
+        endpoint = "{server}/v1/preflight/{uid}/.json".format(server=self.EDR_SERVER, uid=self.uid(), api_name=api_name)
+        EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
+        resp = requests.put(endpoint, params=params, json=json)
+        EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+        return resp.status_code == requests.codes.ok
+
+class CommsJammedError(Exception):
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)

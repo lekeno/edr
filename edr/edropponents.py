@@ -79,8 +79,10 @@ class EDROpponents(object):
             return False
         endpoint = "{}{}".format(self.server.EDR_SERVER, self._node())
         self.realtime = edrrealtime.EDRRealtimeUpdates(self.realtime_callback, self.kind, endpoint, self.server.auth_token)
-        self.realtime.start()
-        return True
+        if self.server.preflight_realtime(self.kind):
+            self.realtime.start()
+            return True
+        return False
 
     def shutdown_comms_link(self):
         if self.realtime and self.realtime.is_live():

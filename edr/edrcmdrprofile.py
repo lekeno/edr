@@ -356,7 +356,7 @@ class EDRCmdrProfile(object):
     def short_profile(self, powerplay=None):
         edr_parts = []
         mapped_index = int(10*(self._karma + self.max_karma()) / (2.0*self.max_karma()))
-        lut = [_(u"Outlaw++++"), _(u"Outlaw+++"), _(u"Outlaw++"), _(u"Outlaw+"), _(u"Outlaw"), _(u"Neutral"), _(u"Lawful"), _(u"Lawful+"), _(u"Lawful++"), _(u"Lawful+++"), _(u"Lawful++++")]
+        lut = [_(u"Outlaw++++"), _(u"Outlaw+++"), _(u"Outlaw++"), _(u"Outlaw+"), _(u"Outlaw"), _(u"Ambiguous"), _(u"Lawful"), _(u"Lawful+"), _(u"Lawful++"), _(u"Lawful+++"), _(u"Lawful++++")]
         karma = ""
         if self.dyn_karma:
             karma += u"≈ "

@@ -29,7 +29,6 @@ from edri18n import _, _c, _edr, set_language
 EDRLOG = edrlog.EDRLog()
 
 class EDRClient(object):
-    IN_GAME_MSG = ingamemsg.InGameMsg() 
     AUDIO_FEEDBACK = audiofeedback.AudioFeedback()
 
     def __init__(self):
@@ -62,6 +61,7 @@ class EDRClient(object):
         self._status = tk.StringVar(value=_(u"not authenticated."))
         
         visual = 1 if config.get("EDRVisualFeedback") == "True" else 0
+        self.IN_GAME_MSG = ingamemsg.InGameMsg() if visual else None
         self._visual_feedback = tk.IntVar(value=visual)
 
         visual_alt = 1 if config.get("EDRVisualAltFeedback") == "True" else 0
@@ -203,7 +203,12 @@ class EDRClient(object):
 
     @property
     def visual_feedback(self):
-        return self._visual_feedback.get() == 1
+        if self._visual_feedback.get() == 0:
+            return False
+        
+        if not self.IN_GAME_MSG:
+             self.IN_GAME_MSG = ingamemsg.InGameMsg() 
+        return True
 
     @visual_feedback.setter
     def visual_feedback(self, new_value):
@@ -227,7 +232,8 @@ class EDRClient(object):
         self._audio_feedback.set(new_value)
 
     def player_name(self, name):
-        self.edrcmdrs.set_player_name(name, )
+        self.edrcmdrs.set_player_name(name)
+        self.server.set_player_name(name)
 
     def pledged_to(self, power, time_pledged=0):
         if self.server.is_anonymous():
@@ -275,7 +281,8 @@ class EDRClient(object):
             self.edropponents[kind].persist()
             self.edropponents[kind].shutdown_comms_link()
         self.edrlegal.persist()
-        self.IN_GAME_MSG.shutdown()
+        if self.IN_GAME_MSG:
+            self.IN_GAME_MSG.shutdown()
         config.set("EDRVisualAltFeedback", "True" if self.visual_alt_feedback else "False")
 
         if not everything:
@@ -352,25 +359,29 @@ class EDRClient(object):
         self.login()
 
     def check_system(self, star_system):
-        EDRLOG.log(u"Check system called: {}".format(star_system), "INFO")
-        details = []
-        notams = self.edrsystems.active_notams(star_system)
-        if notams:
-            EDRLOG.log(u"NOTAMs for {}: {}".format(star_system, notams), "DEBUG")
-            details += notams
+        try:
+            EDRLOG.log(u"Check system called: {}".format(star_system), "INFO")
+            details = []
+            notams = self.edrsystems.active_notams(star_system)
+            if notams:
+                EDRLOG.log(u"NOTAMs for {}: {}".format(star_system, notams), "DEBUG")
+                details += notams
+            
+            if self.edrsystems.has_sitrep(star_system):
+                if star_system == self.player.star_system and self.player.in_bad_neighborhood():
+                    EDRLOG.log(u"Sitrep system is known to be an anarchy. Crimes aren't reported.", "INFO")
+                    # Translators: this is shown via the overlay if the system of interest is an Anarchy (current system or !sitrep <system>)
+                    details.append(_c(u"Sitrep|Anarchy: not all crimes are reported."))
+                if self.edrsystems.has_recent_activity(star_system):
+                    summary = self.edrsystems.summarize_recent_activity(star_system, self.player.power)
+                    for section in summary:
+                        details.append(u"{}: {}".format(section, "; ".join(summary[section])))
+            if details:
+                # Translators: this is the heading for the sitrep of a given system {}; shown via the overlay
+                self.__sitrep(_(u"SITREP for {}").format(star_system), details)
+        except edrserver.CommsJammedError:
+            self.__commsjammed()
         
-        if self.edrsystems.has_sitrep(star_system):
-            if star_system == self.player.star_system and self.player.in_bad_neighborhood():
-                EDRLOG.log(u"Sitrep system is known to be an anarchy. Crimes aren't reported.", "INFO")
-                # Translators: this is shown via the overlay if the system of interest is an Anarchy (current system or !sitrep <system>)
-                details.append(_c(u"Sitrep|Anarchy: not all crimes are reported."))
-            if self.edrsystems.has_recent_activity(star_system):
-                summary = self.edrsystems.summarize_recent_activity(star_system, self.player.power)
-                for section in summary:
-                    details.append(u"{}: {}".format(section, "; ".join(summary[section])))
-        if details:
-            # Translators: this is the heading for the sitrep of a given system {}; shown via the overlay
-            self.__sitrep(_(u"SITREP for {}").format(star_system), details)
 
     def notams(self):
         summary = self.edrsystems.systems_with_active_notams()
@@ -393,26 +404,37 @@ class EDRClient(object):
             self.__sitrep(_(u"NOTAM for {}").format(star_system), [_(u"No active NOTAMs.")])
 
     def sitreps(self):
-        details = []
-        summary = self.edrsystems.systems_with_recent_activity()
-        for section in summary:
-            details.append(u"{}: {}".format(section, "; ".join(summary[section])))
-        if details:
-            self.__sitrep(_(u"SITREPS"), details)
+        try:
+            details = []
+            summary = self.edrsystems.systems_with_recent_activity()
+            for section in summary:
+                details.append(u"{}: {}".format(section, "; ".join(summary[section])))
+            if details:
+                self.__sitrep(_(u"SITREPS"), details)
+        except edrserver.CommsJammedError:
+            self.__commsjammed()
 
 
     def cmdr_id(self, cmdr_name):
-        profile = self.cmdr(cmdr_name, check_inara_server=False)
-        if not (profile is None or profile.cid is None):
-            EDRLOG.log(u"Cmdr {cmdr} known as id={cid}".format(cmdr=cmdr_name,
-                                                               cid=profile.cid), "DEBUG")
-            return profile.cid
+        try:
+            profile = self.cmdr(cmdr_name, check_inara_server=False)
+            if not (profile is None or profile.cid is None):
+                EDRLOG.log(u"Cmdr {cmdr} known as id={cid}".format(cmdr=cmdr_name,
+                                                                cid=profile.cid), "DEBUG")
+                return profile.cid
 
-        EDRLOG.log(u"Failed to retrieve/create cmdr {}".format(cmdr_name), "ERROR")
-        return None
+            EDRLOG.log(u"Failed to retrieve/create cmdr {}".format(cmdr_name), "ERROR")
+            return None
+        except edrserver.CommsJammedError:
+            self.__commsjammed()
+            return None
 
     def cmdr(self, cmdr_name, autocreate=True, check_inara_server=False):
-        return self.edrcmdrs.cmdr(cmdr_name, autocreate, check_inara_server)
+        try:
+            return self.edrcmdrs.cmdr(cmdr_name, autocreate, check_inara_server)
+        except edrserver.CommsJammedError:
+            self.__commsjammed()
+            return None
 
     def evict_system(self, star_system):
         self.edrsystems.evict(star_system)
@@ -492,26 +514,29 @@ class EDRClient(object):
         self._enable_alerts(EDROpponents.ENEMIES, silent)
 
     def _enable_alerts(self, kind, silent=False):
-        details = ""
-        if self._alerts_enabled(kind, silent=True):
-            details = _(u"{} alerts already enabled").format(_(kind))
-        elif kind == EDROpponents.ENEMIES:
-            if self.is_anonymous():
-                details = _(u"Request an EDR account to access enemy alerts (https://lekeno.github.io)")
-            elif not self.player.power:
-                details = _(u"Pledge to a power to access enemy alerts")
-            elif self.player.time_pledged < self.enemy_alerts_pledge_threshold:
-                details = _(u"Remain loyal for at least {} days to access enemy alerts").format(int(self.enemy_alerts_pledge_threshold / 24*60*60))
-            else:
-                details = _(u"Enabling Enemy alerts") if self.edropponents[kind].establish_comms_link() else _(u"Couldn't enable Enemy alerts")
-        else:            
-            details = _(u"Enabling {kind} alerts").format(kind=_(kind)) if self.edropponents[kind].establish_comms_link() else _(u"Couldn't enable {kind} alerts").format(kind=_(kind))
-        if not silent:
-            if self.realtime_params[kind]["max_distance"]:
-                details += _(u" <={max_distance}ly").format(max_distance=self.realtime_params[kind]["max_distance"])
-            if self.realtime_params[kind]["min_bounty"]:
-                details += _(u" >={min_bounty}cr").format(min_bounty=self.realtime_params[kind]["min_bounty"])
-            self.notify_with_details(_(u"EDR Alerts"), [details])
+        try:
+            details = ""
+            if self._alerts_enabled(kind, silent=True):
+                details = _(u"{} alerts already enabled").format(_(kind))
+            elif kind == EDROpponents.ENEMIES:
+                if self.is_anonymous():
+                    details = _(u"Request an EDR account to access enemy alerts (https://lekeno.github.io)")
+                elif not self.player.power:
+                    details = _(u"Pledge to a power to access enemy alerts")
+                elif self.player.time_pledged < self.enemy_alerts_pledge_threshold:
+                    details = _(u"Remain loyal for at least {} days to access enemy alerts").format(int(self.enemy_alerts_pledge_threshold / 24*60*60))
+                else:
+                    details = _(u"Enabling Enemy alerts") if self.edropponents[kind].establish_comms_link() else _(u"Couldn't enable Enemy alerts")
+            else:            
+                details = _(u"Enabling {kind} alerts").format(kind=_(kind)) if self.edropponents[kind].establish_comms_link() else _(u"Couldn't enable {kind} alerts").format(kind=_(kind))
+            if not silent:
+                if self.realtime_params[kind]["max_distance"]:
+                    details += _(u" <={max_distance}ly").format(max_distance=self.realtime_params[kind]["max_distance"])
+                if self.realtime_params[kind]["min_bounty"]:
+                    details += _(u" >={min_bounty}cr").format(min_bounty=self.realtime_params[kind]["min_bounty"])
+                self.notify_with_details(_(u"EDR Alerts"), [details])
+        except edrserver.CommsJammedError:
+            self.__commsjammed()
         
     def disable_outlaws_alerts(self, silent=False):
         self._disable_alerts(EDROpponents.OUTLAWS, silent)
@@ -644,18 +669,21 @@ class EDRClient(object):
         return summary
 
     def who(self, cmdr_name, autocreate=False):
-        profile = self.cmdr(cmdr_name, autocreate, check_inara_server=True)
-        if profile:
-            self.status = _(u"got info about {}").format(cmdr_name)
-            EDRLOG.log(u"Who {} : {}".format(cmdr_name, profile.short_profile(self.player.powerplay)), "INFO")
-            legal = self.edrlegal.summarize_recents(profile.cid)
-            if legal:
-                self.__intel(cmdr_name, [profile.short_profile(self.player.powerplay), legal])
+        try:
+            profile = self.cmdr(cmdr_name, autocreate, check_inara_server=True)
+            if profile:
+                self.status = _(u"got info about {}").format(cmdr_name)
+                EDRLOG.log(u"Who {} : {}".format(cmdr_name, profile.short_profile(self.player.powerplay)), "INFO")
+                legal = self.edrlegal.summarize_recents(profile.cid)
+                if legal:
+                    self.__intel(cmdr_name, [profile.short_profile(self.player.powerplay), legal])
+                else:
+                    self.__intel(cmdr_name, [profile.short_profile(self.player.powerplay)])
             else:
-                self.__intel(cmdr_name, [profile.short_profile(self.player.powerplay)])
-        else:
-            EDRLOG.log(u"Who {} : no info".format(cmdr_name), "INFO")
-            self.__intel(cmdr_name, [_("No info about {cmdr}").format(cmdr=cmdr_name)])
+                EDRLOG.log(u"Who {} : no info".format(cmdr_name), "INFO")
+                self.__intel(cmdr_name, [_("No info about {cmdr}").format(cmdr=cmdr_name)])
+        except edrserver.CommsJammedError:
+            self.__commsjammed()    
 
     def distance(self, from_system, to_system):
         oneliner = ""
@@ -776,28 +804,32 @@ class EDRClient(object):
 
 
     def traffic(self, star_system, traffic):
-        if self.is_anonymous():
-            EDRLOG.log(u"Skipping traffic report since the user is anonymous.", "INFO")
+        try:
+            if self.is_anonymous():
+                EDRLOG.log(u"Skipping traffic report since the user is anonymous.", "INFO")
+                return False
+
+            sigthed_cmdr = traffic["cmdr"]
+            if not self.novel_enough_traffic_report(sigthed_cmdr, traffic):
+                self.status = _(u"not novel enough (traffic).")
+                EDRLOG.log(u"Traffic report is not novel enough to warrant reporting", "INFO")
+                return True
+
+            sid = self.edrsystems.system_id(star_system, may_create=True)
+            if sid is None:
+                EDRLOG.log(u"Failed to report traffic for system {} : no id found.".format(star_system),
+                        "DEBUG")
+                return False
+
+            success = self.server.traffic(sid, traffic)
+            if success:
+                self.status = _(u"traffic reported.")
+                self.traffic_cache.set(sigthed_cmdr, traffic)
+
+            return success
+        except edrserver.CommsJammedError:
+            self.__commsjammed()
             return False
-
-        sigthed_cmdr = traffic["cmdr"]
-        if not self.novel_enough_traffic_report(sigthed_cmdr, traffic):
-            self.status = _(u"not novel enough (traffic).")
-            EDRLOG.log(u"Traffic report is not novel enough to warrant reporting", "INFO")
-            return True
-
-        sid = self.edrsystems.system_id(star_system, may_create=True)
-        if sid is None:
-            EDRLOG.log(u"Failed to report traffic for system {} : no id found.".format(star_system),
-                       "DEBUG")
-            return False
-
-        success = self.server.traffic(sid, traffic)
-        if success:
-            self.status = _(u"traffic reported.")
-            self.traffic_cache.set(sigthed_cmdr, traffic)
-
-        return success
 
 
     def crime(self, star_system, crime):
@@ -919,24 +951,35 @@ class EDRClient(object):
 
     def where(self, cmdr_name):
         report = {}
-        for kind in self.edropponents:
-            candidate_report = self.edropponents[kind].where(cmdr_name)
-            if candidate_report and (not report or report["timestamp"] < candidate_report["timestamp"]):
-                report = candidate_report
-        
-        if report:
-            self.status = _(u"got info about {}").format(cmdr_name)
-            self.__intel(_(u"Intel for {}").format(cmdr_name), report["readable"])
-        else:
-            EDRLOG.log(u"Where {} : no info".format(cmdr_name), "INFO")
-            self.status = _(u"no info about {}").format(cmdr_name)
-            self.__intel(_(u"Intel for {}").format(cmdr_name), [_(u"Not recently sighted or not an outlaw.")])
+        try:
+            for kind in self.edropponents:
+                candidate_report = self.edropponents[kind].where(cmdr_name)
+                if candidate_report and (not report or report["timestamp"] < candidate_report["timestamp"]):
+                    report = candidate_report
+            
+            if report:
+                self.status = _(u"got info about {}").format(cmdr_name)
+                self.__intel(_(u"Intel for {}").format(cmdr_name), report["readable"])
+            else:
+                EDRLOG.log(u"Where {} : no info".format(cmdr_name), "INFO")
+                self.status = _(u"no info about {}").format(cmdr_name)
+                self.__intel(_(u"Intel for {}").format(cmdr_name), [_(u"Not recently sighted or not an outlaw.")])
+        except edrserver.CommsJammedError:
+            self.__commsjammed()
 
     def outlaws(self):
-        return self._opponents(EDROpponents.OUTLAWS)
+        try:
+            return self._opponents(EDROpponents.OUTLAWS)
+        except edrserver.CommsJammedError:
+            self.__commsjammed()
+            return False
 
     def enemies(self):
-        return self._opponents(EDROpponents.ENEMIES)
+        try:
+            return self._opponents(EDROpponents.ENEMIES)
+        except edrserver.CommsJammedError:
+            self.__commsjammed()
+            return False
 
     def _opponents(self, kind):
         if kind is EDROpponents.ENEMIES and not self.player.power:
@@ -966,7 +1009,8 @@ class EDRClient(object):
         return True
 
     def clear(self):
-        self.IN_GAME_MSG.clear()
+        if self.visual_feedback:
+            self.IN_GAME_MSG.clear()
         self.ui.clear()
            
 
@@ -1012,6 +1056,9 @@ class EDRClient(object):
             self.IN_GAME_MSG.notify(header, details)
         EDRLOG.log(u"[Alt] Notify about {}; details: {}".format(header, details[0]), "DEBUG")
         self.ui.notify(header, details)        
+
+    def __commsjammed(self):
+        self.__notify(_(u"Comms Link Error"), [_(u"EDR Central can't be reached at the moment"), _(u"Try again later or contact Cmdr LeKeno if it keeps failing")])
 
     def notify_with_details(self, notice, details):
         self.__notify(notice, details)
