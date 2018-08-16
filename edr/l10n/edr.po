@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2018-07-26 06:22+0900\n"
-"PO-Revision-Date: 2018-07-26 06:32+0900\n"
+"POT-Creation-Date: 2018-08-13 14:00+0900\n"
+"PO-Revision-Date: 2018-08-13 14:04+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -18,37 +18,37 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 
 #. Translators: this is a short representation for a bounty >= 10 000 000 000 credits (b stands for billion)
-#: edentities.py:150
+#: edentities.py:150 edrcg.py:70
 msgid "{} b"
 msgstr "{} mm"
 
 #. Translators: this is a short representation for a bounty >= 1 000 000 000 credits (b stands for billion)
-#: edentities.py:153
+#: edentities.py:153 edrcg.py:72
 msgid "{:.1f} b"
 msgstr "{:.1f} mm"
 
 #. Translators: this is a short representation for a bounty >= 10 000 000 credits (m stands for million)
-#: edentities.py:156
+#: edentities.py:156 edrcg.py:74
 msgid "{} m"
 msgstr "{} m"
 
 #. Translators: this is a short representation for a bounty >= 1 000 000 credits (m stands for million)
-#: edentities.py:159
+#: edentities.py:159 edrcg.py:76
 msgid "{:.1f} m"
 msgstr "{:.1f} m"
 
 #. Translators: this is a short representation for a bounty >= 10 000 credits (k stands for kilo, i.e. thousand)
-#: edentities.py:162
+#: edentities.py:162 edrcg.py:78
 msgid "{} k"
 msgstr "{} k"
 
 #. Translators: this is a short representation for a bounty >= 1000 credits (k stands for kilo, i.e. thousand)
-#: edentities.py:165
+#: edentities.py:165 edrcg.py:80
 msgid "{:.1f} k"
 msgstr "{:.1f} k"
 
 #. Translators: this is a short representation for a bounty < 1000 credits (i.e. shows the whole bounty, unabbreviated)
-#: edentities.py:168
+#: edentities.py:168 edrcg.py:82
 msgid "{}"
 msgstr "{}"
 
@@ -57,404 +57,429 @@ msgstr "{}"
 msgid "For an unknown or missing place|Unknown"
 msgstr "Indéterminé"
 
+#: edrcg.py:40
+msgid "completed"
+msgstr ""
+
+#: edrcg.py:40
+msgid "Tier {}/{}"
+msgstr ""
+
+#: edrcg.py:41
+msgid "top {}/{}"
+msgstr ""
+
+#: edrcg.py:41
+msgid "top {}%/{}"
+msgstr ""
+
+#: edrcg.py:42
+msgid "contributed {}/{}"
+msgstr ""
+
+#: edrcg.py:44
+#, python-brace-format
+msgid "{title} in {system}, {market}: {state}"
+msgstr ""
+
 #. Translators: this is shown on the EDMC's status line
 #. Translators: this is shown on EDMC's status bar when the authentication fails
-#: edrclient.py:60 edrclient.py:229 edrclient.py:308
+#: edrclient.py:61 edrclient.py:254 edrclient.py:332
 msgid "not authenticated."
 msgstr "identité non confirmée."
 
 #. Translators: this is shown on EDMC's status bar when a user enables loud audio cues
-#: edrclient.py:99
+#: edrclient.py:105
 msgid "loud audio cues."
 msgstr "retour audio à fond."
 
 #. Translators: this is shown on EDMC's status bar when a user enables soft audio cues
-#: edrclient.py:105
+#: edrclient.py:111
 msgid "soft audio cues."
 msgstr "retour audio subtile."
 
 #. Translators: this is shown on EDMC's status bar when the version check fails
-#: edrclient.py:146
+#: edrclient.py:158
 msgid "check for version update has failed."
 msgstr "impossible de vérifier la mise à jour."
 
 #. Translators: this is shown on EDMC's status bar when the authentication succeeds
-#: edrclient.py:226 edrclient.py:306
+#: edrclient.py:251 edrclient.py:330
 msgid "authenticated."
 msgstr "identité confirmée."
 
 #. Translators: this is shown when EDR warms-up via the overlay
-#: edrclient.py:241
+#: edrclient.py:266
 msgid "Check that Elite still has the focus!"
 msgstr "Vérifiez qu'Elite a le focus!"
 
 #. Translators: this is shown when EDR warms-up via the overlay if there is a mandatory update pending
-#: edrclient.py:244
+#: edrclient.py:269
 msgid "Mandatory update!"
 msgstr "Mise à jour obligatoire!"
 
 #. Translators: this is shown when EDR warms-up via the overlay, the -- are for presentation purpose
-#: edrclient.py:247
+#: edrclient.py:272
 msgid "-- Feeling lost? Send !help via the in-game chat --"
 msgstr "-- Un peu perdu? Envoyer !help dans le chat --"
 
 #. Translators: this is shown when EDR warms-up via the overlay
-#: edrclient.py:250
+#: edrclient.py:275
 msgid "EDR v{} by LeKeno (Cobra Kai)"
 msgstr "EDR v{} par LeKeno (Cobra Kai)"
 
 #. Translators: this is shown in the preferences panel
-#: edrclient.py:278
+#: edrclient.py:302
 msgid "EDR website"
 msgstr "Site web pour EDR"
 
 #. Translators: this is shown in the preferences panel
-#: edrclient.py:281
+#: edrclient.py:305
 msgid "Credentials"
 msgstr "Identifiants"
 
 #. Translators: this is shown in the preferences panel
-#: edrclient.py:284
+#: edrclient.py:308
 msgid "Log in with your EDR account for full access"
 msgstr "Identifiez-vous avec un compte EDR pour un accès complet"
 
-#: edrclient.py:287
+#: edrclient.py:311
 msgid "Email"
 msgstr "Email"
 
-#: edrclient.py:291
+#: edrclient.py:315
 msgid "Password"
 msgstr "Mot de passe"
 
 #. Translators: this is shown in the preferences panel as a heading for feedback options (e.g. overlay, audio cues)
-#: edrclient.py:296
+#: edrclient.py:320
 msgid "EDR Feedback:"
 msgstr "Retour EDR:"
 
-#: edrclient.py:299
+#: edrclient.py:323
 msgid "Overlay"
 msgstr "Écran superposé"
 
-#: edrclient.py:302
+#: edrclient.py:326
 msgid "Sound"
 msgstr "Audio"
 
-#: edrclient.py:315
+#: edrclient.py:339
 msgid "mandatory update pending (relaunch EDMC)"
 msgstr "mise à jour d'EDR obligatoire (redémarrez EDMC)"
 
-#: edrclient.py:315
+#: edrclient.py:339
 msgid "update pending (relaunch EDMC to apply)"
 msgstr "veuillez mettre à jour EDR (redémarrez EDMC)!"
 
 #. Translators: this is shown in EDMC's status
-#: edrclient.py:318
+#: edrclient.py:342
 msgid "mandatory EDR update!"
 msgstr "mise à jour d'EDR obligatoire!"
 
-#: edrclient.py:318
+#: edrclient.py:342
 msgid "please update EDR!"
 msgstr "veuillez mettre à jour EDR!"
 
 #. Translators: this is shown via the overlay if the system of interest is an Anarchy (current system or !sitrep <system>)
-#: edrclient.py:351
+#: edrclient.py:374
 msgid "Sitrep|Anarchy: not all crimes are reported."
 msgstr "Anarchie: les crimes ne seront pas tous rapportés."
 
 #. Translators: this is the heading for the sitrep of a given system {}; shown via the overlay
-#: edrclient.py:358
+#: edrclient.py:381
 msgid "SITREP for {}"
 msgstr "SITREP pour {}"
 
 #. Translators: this shows a ist of systems {} with active NOtice To Air Men via the overlay
-#: edrclient.py:365
+#: edrclient.py:391
 msgid "Active NOTAMs for: {}"
 msgstr "NOTAMs en vigueur pour: {}"
 
 #. Translators: this is the heading for the active NOTAMs overlay
-#: edrclient.py:367 edrclient.py:369
+#: edrclient.py:393 edrclient.py:395
 msgid "NOTAMs"
 msgstr "NOTAMs"
 
-#: edrclient.py:369 edrclient.py:378
+#: edrclient.py:395 edrclient.py:404
 msgid "No active NOTAMs."
 msgstr "Aucun NOTAM en vigueur."
 
 #. Translators: this is the heading to show any active NOTAM for a given system {}
-#: edrclient.py:376 edrclient.py:378
+#: edrclient.py:402 edrclient.py:404
 msgid "NOTAM for {}"
 msgstr "NOTAM pour {}"
 
-#: edrclient.py:386
+#: edrclient.py:413
 msgid "SITREPS"
 msgstr "SITREPS"
 
-#: edrclient.py:465
+#: edrclient.py:502
 msgid "{} alerts enabled"
 msgstr "Alertes {} activées"
 
-#: edrclient.py:465
+#: edrclient.py:502
 msgid "{} alerts disabled"
 msgstr "Alertes {} désactivées"
 
-#: edrclient.py:467 edrclient.py:496
+#: edrclient.py:504 edrclient.py:534
 #, python-brace-format
 msgid " <={max_distance}ly"
 msgstr " <={max_distance}al"
 
-#: edrclient.py:469 edrclient.py:498
+#: edrclient.py:506 edrclient.py:536
 #, python-brace-format
 msgid " >={min_bounty}cr"
 msgstr " >={min_bounty}cr"
 
-#: edrclient.py:470 edrclient.py:499 edrclient.py:515 edrclient.py:528
-#: edrclient.py:530 edrclient.py:533 edrclient.py:552 edrclient.py:554
-#: edrclient.py:574
+#: edrclient.py:507 edrclient.py:537 edrclient.py:555 edrclient.py:568
+#: edrclient.py:570 edrclient.py:573 edrclient.py:592 edrclient.py:594
+#: edrclient.py:614
 msgid "EDR Alerts"
 msgstr "Alertes EDR"
 
-#: edrclient.py:482
+#: edrclient.py:520
 msgid "{} alerts already enabled"
 msgstr "alertes {} déjà activées"
 
-#: edrclient.py:485
+#: edrclient.py:523
 msgid ""
 "Request an EDR account to access enemy alerts (https://lekeno.github.io)"
 msgstr ""
 "Demandez un compte EDR afin d'accéder aux alertes d'ennemis (https://lekeno."
 "github.io/)"
 
-#: edrclient.py:487
+#: edrclient.py:525
 msgid "Pledge to a power to access enemy alerts"
 msgstr "Prêter allégeance à une puissance afin d'accéder aux alertes d'ennemis"
 
-#: edrclient.py:489
-msgid "Remain loyal for at least 30 days to access enemy alerts"
+#: edrclient.py:527
+msgid "Remain loyal for at least {} days to access enemy alerts"
 msgstr ""
-"Vous devez avoir au moins 30 jour de loyauté à votre puissance afin "
+"Vous devez avoir au moins {} jours de loyauté à votre puissance afin "
 "d'accéder aux alertes d'ennemis"
 
-#: edrclient.py:491
+#: edrclient.py:529
 msgid "Enabling Enemy alerts"
 msgstr "Activation des alertes temps-réel"
 
-#: edrclient.py:491
+#: edrclient.py:529
 msgid "Couldn't enable Enemy alerts"
 msgstr "Impossible d'activer les alerts temps-réel"
 
-#: edrclient.py:493
+#: edrclient.py:531
 #, python-brace-format
 msgid "Enabling {kind} alerts"
 msgstr "Activation des alertes {kind}"
 
-#: edrclient.py:493
+#: edrclient.py:531
 #, python-brace-format
 msgid "Couldn't enable {kind} alerts"
 msgstr "Impossible d'activer les alertes {kind}"
 
-#: edrclient.py:511
+#: edrclient.py:551
 msgid "Disabling {} alerts"
 msgstr "Désactivation des alertes {}"
 
-#: edrclient.py:513
+#: edrclient.py:553
 msgid "{} alerts already disabled"
 msgstr "alertes {} déjà désactivées"
 
-#: edrclient.py:528
+#: edrclient.py:568
 #, python-brace-format
 msgid "minimum bounty set to {min_bounty} cr for {kind}"
 msgstr "prime minimale de {min_bounty} cr pour {kind}"
 
-#: edrclient.py:530
+#: edrclient.py:570
 msgid "invalid value for minimum bounty"
 msgstr "entrée invalide pour la prime minimale"
 
-#: edrclient.py:533
+#: edrclient.py:573
 msgid "no minimum bounty required"
 msgstr "aucune prime minimale requise"
 
-#: edrclient.py:552
+#: edrclient.py:592
 #, python-brace-format
 msgid "maximum distance set to {max_distance} ly for {kind}"
 msgstr "distance maximale de {max_distance} al pour {kind}"
 
-#: edrclient.py:554
+#: edrclient.py:594
 msgid "invalid value, removing maximal distance"
 msgstr "suppression de la distance maximale"
 
-#: edrclient.py:557
+#: edrclient.py:597
 msgid "Outlaws Alerts"
 msgstr "Alertes Bandits"
 
-#: edrclient.py:557
+#: edrclient.py:597
 msgid "no limits on distance"
 msgstr "sans distance maximale"
 
-#: edrclient.py:570
+#: edrclient.py:610
 msgid "Comms link interrupted. Send '?{} on' to re-establish."
 msgstr "Liaison interrompue. Envoyez '?{}' pour rétablir la liaison."
 
-#: edrclient.py:612
+#: edrclient.py:652
 #, python-brace-format
 msgid "{cmdr} ({ship}) sighted in {location}"
 msgstr "{cmdr} ({ship}) repéré à {location}"
 
-#: edrclient.py:614
+#: edrclient.py:654
 #, python-brace-format
 msgid "Enemy {cmdr} ({ship}) sighted in {location}"
 msgstr "Ennemi {cmdr} ({ship}) repéré à {location}"
 
-#: edrclient.py:616
+#: edrclient.py:656
 #, python-brace-format
 msgid "Outlaw {cmdr} ({ship}) sighted in {location}"
 msgstr "Bandit {cmdr} ({ship}) repéré à {location}"
 
-#: edrclient.py:620
+#: edrclient.py:660
 #, python-brace-format
 msgid " [{distance:.3g} ly]"
 msgstr " [{distance:.3g} al]"
 
-#: edrclient.py:620
+#: edrclient.py:660
 #, python-brace-format
 msgid " [{distance} ly]"
 msgstr " [{distance} al]"
 
-#: edrclient.py:623
+#: edrclient.py:663
 #, python-brace-format
 msgid " wanted for {bounty} cr"
 msgstr " recherché pour {bounty} cr"
 
-#: edrclient.py:625
+#: edrclient.py:665
 msgid " wanted somewhere"
 msgstr " recherché quelque part"
 
-#: edrclient.py:634 edrclient.py:913
+#: edrclient.py:675 edrclient.py:961
 msgid "got info about {}"
 msgstr "profile reçu pour {}"
 
-#: edrclient.py:643
+#: edrclient.py:684
 #, python-brace-format
 msgid "No info about {cmdr}"
 msgstr "Aucune info sur {cmdr}"
 
-#: edrclient.py:654
+#: edrclient.py:697
 #, python-brace-format
 msgid "{distance:.3g}"
 msgstr "{distance:.3g}"
 
-#: edrclient.py:654
+#: edrclient.py:697
 #, python-brace-format
 msgid "{distance}"
 msgstr "{distance}"
 
-#: edrclient.py:655
+#: edrclient.py:698
 #, python-brace-format
 msgid "{dist}ly from {from_sys} to {to_sys}"
 msgstr "{dist}al entre {from_sys} et {to_sys}"
 
-#: edrclient.py:656
+#: edrclient.py:699
 #, python-brace-format
 msgid "distance: {dist}ly"
 msgstr "{dist}al"
 
-#: edrclient.py:658
+#: edrclient.py:701
 msgid "distance failed"
 msgstr "échec de la distance"
 
-#: edrclient.py:659
+#: edrclient.py:702
 msgid "Couldn't calculate a distance. Invalid or unknown system names?"
 msgstr "Impossible de calculer la distance. Systèmes inconnus ou non valides?"
 
-#: edrclient.py:665
+#: edrclient.py:708
 msgid "no cmdr id (contact)."
 msgstr "pas de cmdr id (contact)."
 
 #. Translators: this is shown via EDMC's EDR status line upon contact with a known outlaw
-#: edrclient.py:671 edrclient.py:713
+#: edrclient.py:714 edrclient.py:756
 msgid "{} is bad news."
 msgstr "{} est une mauvaise nouvelle."
 
-#: edrclient.py:673 edrclient.py:726
+#: edrclient.py:716 edrclient.py:769
 msgid "Warning!"
 msgstr "Attention!"
 
 #. Translators: this is shown to users who don't yet have an EDR account
-#: edrclient.py:676 edrclient.py:739
+#: edrclient.py:719 edrclient.py:782
 msgid "You could have helped other EDR users by reporting this outlaw."
 msgstr ""
 "Vous auriez pu aider d'autres utilisateurs EDR en rapportant ce bandit."
 
-#: edrclient.py:678
+#: edrclient.py:721
 msgid "You could have helped other EDR users by reporting this enemy."
 msgstr ""
 "Vous auriez pu aider d'autres utilisateurs EDR en rapportant cet ennemi."
 
-#: edrclient.py:702
+#: edrclient.py:745
 msgid "cmdr unknown to EDR."
 msgstr "cmd inconnu des services EDR."
 
-#: edrclient.py:717
+#: edrclient.py:760
 msgid "PP Enemy (weapons free). "
 msgstr "Ennemi PP (feu à volonté). "
 
-#: edrclient.py:719 edrclient.py:731
+#: edrclient.py:762 edrclient.py:774
 msgid "Wanted for {} cr"
 msgstr "Recherché pour {} cr"
 
-#: edrclient.py:721
+#: edrclient.py:764
 msgid "Wanted somewhere. A Kill-Warrant-Scan will reveal their highest bounty."
 msgstr "Recherché par une autorité. Un scan révèlera la plus grosse prime."
 
-#: edrclient.py:728
+#: edrclient.py:771
 msgid "Intel for cmdr {}."
 msgstr "Renseignements sur {}."
 
-#: edrclient.py:733
+#: edrclient.py:776
 msgid "Wanted somewhere but it could be minor offenses."
 msgstr "Recherché par une autorité. Possibilité d'un délit mineur."
 
-#: edrclient.py:736 edrclient.py:971
+#: edrclient.py:779 edrclient.py:1034 edrclient.py:1036
 msgid "Intel"
 msgstr "Renseignements"
 
 #. Translators: this is shown to users who don't yet have an EDR account
-#: edrclient.py:742
+#: edrclient.py:785
 #, python-brace-format
 msgid "You could have helped other {power} pledges by reporting this enemy."
 msgstr "Vous auriez pu aider les alliés de {power} en rapportant cet ennemi."
 
-#: edrclient.py:746
+#: edrclient.py:789
 msgid "not novel enough (scan)."
 msgstr "situation pas assez nouvelle (scan)"
 
-#: edrclient.py:757
+#: edrclient.py:800
 msgid "scan reported for {}."
 msgstr "scan de {} rapport."
 
-#: edrclient.py:770
+#: edrclient.py:814
 msgid "not novel enough (traffic)."
 msgstr "situation pas assez nouvelle (trafic)"
 
-#: edrclient.py:782
+#: edrclient.py:826
 msgid "traffic reported."
 msgstr "trafic rapport."
 
-#: edrclient.py:791
+#: edrclient.py:838
 msgid "Crimes reporting is off (!crimes on to re-enable)"
 msgstr "Rapport de crimes désactivé (envoyez '!crimes on' pour activer)"
 
-#: edrclient.py:796
+#: edrclient.py:843
 msgid "Anarchy system (crimes not reported)."
 msgstr "Anarchie (crimes non rapportés)"
 
-#: edrclient.py:802
+#: edrclient.py:849
 msgid ""
 "You could have helped other EDR users or get help by reporting this crime!"
 msgstr ""
 "Vous auriez pu aider d'autres utilisateurs EDR ou alerter les vigiles en "
 "rapportant ce crime!"
 
-#: edrclient.py:817
+#: edrclient.py:864
 msgid ""
 "You could have helped other EDR users by reporting this problematic crew "
 "member!"
@@ -462,116 +487,128 @@ msgstr ""
 "Vous auriez pu aider d'autres utilisateurs EDR en rapportant ce membre "
 "d'équipage problématique."
 
-#: edrclient.py:822
+#: edrclient.py:869
 msgid "{} is unknown to EDR."
 msgstr "{} n'est pas connu par les services EDR."
 
-#: edrclient.py:831 edrclient.py:855 edrclient.py:868 edrclient.py:881
+#: edrclient.py:878 edrclient.py:902 edrclient.py:915 edrclient.py:928
 msgid "Sorry, this feature only works with an EDR account."
 msgstr "Désolé, cette fonctionnalité nécessite un compte EDR."
 
-#: edrclient.py:837 edrclient.py:841 edrclient.py:845 edrclient.py:887
-#: edrclient.py:891 edrclient.py:895
+#: edrclient.py:884 edrclient.py:888 edrclient.py:892 edrclient.py:934
+#: edrclient.py:938 edrclient.py:942
 msgid "Squadron Dex"
 msgstr "Dex Escadron"
 
-#: edrclient.py:837 edrclient.py:887
+#: edrclient.py:884 edrclient.py:934
 msgid "You need to join a squadron on https://inara.cz to use this feature."
 msgstr ""
 "Vous devez rejoindre un escadron sur https://inara.cz pour utiliser cette "
 "fonctionalité"
 
-#: edrclient.py:837 edrclient.py:887
+#: edrclient.py:884 edrclient.py:934
 msgid "Then, reboot EDR to reflect these changes."
 msgstr "Ensuite, relancez EDR pour appliquer les changements."
 
-#: edrclient.py:841 edrclient.py:891
+#: edrclient.py:888 edrclient.py:938
 msgid "You need to reach {} to tag enemies or allies."
 msgstr "Vous devez être au moins {} afin de taggé des ennemis ou alliés."
 
-#: edrclient.py:845 edrclient.py:860 edrclient.py:862 edrclient.py:873
-#: edrclient.py:875 edrclient.py:895
+#: edrclient.py:892 edrclient.py:907 edrclient.py:909 edrclient.py:920
+#: edrclient.py:922 edrclient.py:942
 msgid "Cmdr Dex"
 msgstr "Dex Commandants"
 
-#: edrclient.py:847
+#: edrclient.py:894
 #, python-brace-format
 msgid "Successfully tagged cmdr {name} with {tag}"
 msgstr "Cmdr {name} a bien été tagué avec {tag}"
 
-#: edrclient.py:849
+#: edrclient.py:896
 #, python-brace-format
 msgid "Could not tag cmdr {name} with {tag}"
 msgstr "Impossible de tagguer Cmdr {name} avec {tag}"
 
-#: edrclient.py:860
+#: edrclient.py:907
 msgid "Successfully attached a memo to cmdr {}"
 msgstr "Le mémo à-propos du cmd {} a bien été enregistré"
 
-#: edrclient.py:862
+#: edrclient.py:909
 msgid "Failed to attach a memo to cmdr {}"
 msgstr "Impossible d'enregistrer le mémo à-propos du cmd {}"
 
-#: edrclient.py:873
+#: edrclient.py:920
 msgid "Successfully removed memo from cmdr {}"
 msgstr "Le mémo à-propos du cmd {} a bien été supprimé"
 
-#: edrclient.py:875
+#: edrclient.py:922
 msgid "Failed to remove memo from cmdr {}"
 msgstr "Impossible de supprimer le mémo à-propos du cmd {}"
 
-#: edrclient.py:898
+#: edrclient.py:945
 msgid "Successfully removed all tags from cmdr {}"
 msgstr "Tous les tags ont bien été supprimés pour le cmd {}"
 
-#: edrclient.py:900
+#: edrclient.py:947
 msgid "Successfully removed tag {} from cmdr {}"
 msgstr "Le tag {} a bien été supprimé pour le cmd {}"
 
-#: edrclient.py:902
+#: edrclient.py:949
 msgid "Could not remove tag(s) from cmdr {}"
 msgstr "Impossible de supprimer les tags pour le cmd {}"
 
-#: edrclient.py:914 edrclient.py:918
+#: edrclient.py:962 edrclient.py:966
 msgid "Intel for {}"
 msgstr "Renseignements pour {}"
 
-#: edrclient.py:917
+#: edrclient.py:965
 msgid "no info about {}"
 msgstr "aucune info sur {}"
 
-#: edrclient.py:918
+#: edrclient.py:966
 msgid "Not recently sighted or not an outlaw."
 msgstr "Aucun récent contact, ou non recherché."
 
-#: edrclient.py:929 edrclient.py:934 edrclient.py:939
+#: edrclient.py:987 edrclient.py:992 edrclient.py:997
 #, python-brace-format
 msgid "Recently Sighted {kind}"
 msgstr "{kind} récemment repérés"
 
-#: edrclient.py:929
+#: edrclient.py:987
 msgid "You need to be pledged to a power."
 msgstr "Vous devez prêter allégeance à un pouvoir."
 
-#: edrclient.py:934
+#: edrclient.py:992
 #, python-brace-format
 msgid "No {kind} sighted in the last {timespan}"
 msgstr "Pas de contact avec des {kind} depuis {timespan}"
 
-#: edrclient.py:937
+#: edrclient.py:995
 #, python-brace-format
 msgid "recently sighted {kind}"
 msgstr "{kind} récemment repérés"
 
-#: edrclient.py:1006
+#: edrclient.py:1061
+msgid "Comms Link Error"
+msgstr "Erreur de Liaison Comms"
+
+#: edrclient.py:1061
+msgid "EDR Central can't be reached at the moment"
+msgstr "Impossible de joindre le central EDR"
+
+#: edrclient.py:1061
+msgid "Try again later or contact Cmdr LeKeno if it keeps failing"
+msgstr "Essayez plus tard ou contactez LeKeno si cela persiste."
+
+#: edrclient.py:1076
 msgid "EDR needs you!"
 msgstr "EDR a besoin de vous!"
 
-#: edrclient.py:1006
+#: edrclient.py:1076
 msgid "Apply for an account at https://lekeno.github.io/"
 msgstr "Demandez un compte EDR depuis https://lekeno.github.io/"
 
-#: edrclient.py:1006
+#: edrclient.py:1076
 msgid "It's free, no strings attached."
 msgstr "C'est gratuit et sans obligations."
 
@@ -595,60 +632,60 @@ msgstr "ennemi"
 msgid "ally"
 msgstr "allié"
 
-#: edrcmdrprofile.py:366
+#: edrcmdrprofile.py:359
 msgid "Outlaw++++"
 msgstr "Bandit++++"
 
-#: edrcmdrprofile.py:366
+#: edrcmdrprofile.py:359
 msgid "Outlaw+++"
 msgstr "Bandit+++"
 
-#: edrcmdrprofile.py:366
+#: edrcmdrprofile.py:359
 msgid "Outlaw++"
 msgstr "Bandit++"
 
-#: edrcmdrprofile.py:366
+#: edrcmdrprofile.py:359
 msgid "Outlaw+"
 msgstr "Bandit+"
 
-#: edrcmdrprofile.py:366
+#: edrcmdrprofile.py:359
 msgid "Outlaw"
 msgstr "Bandit"
 
-#: edrcmdrprofile.py:366
-msgid "Neutral"
-msgstr "Neutre"
+#: edrcmdrprofile.py:359
+msgid "Ambiguous"
+msgstr "Ambigu"
 
-#: edrcmdrprofile.py:366
+#: edrcmdrprofile.py:359
 msgid "Lawful"
 msgstr "Innocent"
 
-#: edrcmdrprofile.py:366
+#: edrcmdrprofile.py:359
 msgid "Lawful+"
 msgstr "Innocent+"
 
-#: edrcmdrprofile.py:366
+#: edrcmdrprofile.py:359
 msgid "Lawful++"
 msgstr "Innocent++"
 
-#: edrcmdrprofile.py:366
+#: edrcmdrprofile.py:359
 msgid "Lawful+++"
 msgstr "Innocent+++"
 
-#: edrcmdrprofile.py:366
+#: edrcmdrprofile.py:359
 msgid "Lawful++++"
 msgstr "Innocent++++"
 
-#: edrcmdrprofile.py:389
+#: edrcmdrprofile.py:385
 msgid "powerplay|enemy"
 msgstr "Ennemi"
 
-#: edrcmdrprofile.py:395
+#: edrcmdrprofile.py:391
 #, python-brace-format
 msgid "{iff} by {tagged_by}"
 msgstr "{iff} selon {tagged_by}"
 
-#: edrcmdrprofile.py:405
+#: edrcmdrprofile.py:401
 msgid "#friend"
 msgstr "#friend"
 
@@ -663,36 +700,36 @@ msgid "[Last {}] clean:{} / wanted:{}"
 msgstr "[Derniers {}] vierge:{} / recherché:{}"
 
 #. Translators: this is a one-liner for the recently sighted opponents; Keep it short! T{t:<2} is to show how long ago e.g. T-4H (4 hours ago)
-#: edropponents.py:134
+#: edropponents.py:136
 #, python-brace-format
 msgid "T{t:<2}: {name} in {system}, wanted for {bounty}"
 msgstr "T{t:<2}: {name} à {system}, recherché pour {bounty}"
 
 #. Translators: this is a one-liner for the recently sighted opponents; Keep it short! T{t:<2} is to show how long ago e.g. T-4H (4 hours ago)
-#: edropponents.py:137
+#: edropponents.py:139
 #, python-brace-format
 msgid "T{t:<2}: {name} in {system}"
 msgstr "T{t:<2}: {name} à {system}"
 
 #. Translators: this is for a recently sighted outlaw; T{t} is to show how long ago, e.g. T-2h43m
-#: edropponents.py:142
+#: edropponents.py:144
 #, python-brace-format
 msgid "T{t} {name} sighted in {system}"
 msgstr "T{t} {name} repéré à {system}"
 
 #. Translators: this is a continuation of the previous item (location of recently sighted outlaw) and shows a place in the system (e.g. supercruise, Cleve Hub)
-#: edropponents.py:146 edropponents.py:148
+#: edropponents.py:148 edropponents.py:150
 #, python-brace-format
 msgid ", {place}"
 msgstr ", {place}"
 
 #. Translators: this is for the recently sighted outlaw feature; it shows which ship they were flying at the time
-#: edropponents.py:152
+#: edropponents.py:154
 msgid "Spaceship: {}"
 msgstr "Vaisseau: {}"
 
 #. Translators: this is for the recently sighted outlaw feature; it shows their bounty if any
-#: edropponents.py:156
+#: edropponents.py:158
 msgid "Wanted for {} credits"
 msgstr "Recherché pour {} cr"
 
@@ -1153,9 +1190,9 @@ msgstr "Ces commandes afficheront les informations suivantes:"
 
 #: helpcontent.py:102
 msgid ""
-" - EDR alignment: outlaw, neutral, lawful with grades, e.g. outlaw ++++."
+" - EDR alignment: outlaw, ambiguous, lawful with grades, e.g. outlaw ++++."
 msgstr ""
-" - Alignement EDR: bandit, neutre, innocent avec des grades, e.g. bandit +++"
+" - Alignement EDR: bandit, ambigu, innocent avec des grades, e.g. bandit +++"
 "+."
 
 #: helpcontent.py:103
@@ -2586,6 +2623,9 @@ msgid ""
 "[Defense] Like the song says you've got to know when to walk away and know "
 "when to run."
 msgstr "[Défense] Sachez quand il vaut mieux prendre la poudre d'escampette."
+
+#~ msgid "Neutral"
+#~ msgstr "Neutre"
 
 #~ msgid "Enforcer"
 #~ msgstr "Vigile"

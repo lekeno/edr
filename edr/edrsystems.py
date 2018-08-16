@@ -20,6 +20,8 @@ from edri18n import _, _c, _edr
 
 EDRLOG = edrlog.EDRLog()
 
+# TODO cache temp entry for failed lookup, e.g. queries by anonymous users on new systems.
+
 class EDRSystems(object):
     EDR_SYSTEMS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/systems.v2.p')
@@ -90,7 +92,8 @@ class EDRSystems(object):
         if not star_system:
             return None
         sid = self.systems_cache.get(star_system.lower())
-        if sid:
+        cached = self.systems_cache.has_key(star_system.lower())
+        if cached or sid:
             EDRLOG.log(u"System {} is in the cache with id={}".format(star_system, sid), "DEBUG")
             return sid
 
@@ -100,6 +103,8 @@ class EDRSystems(object):
             EDRLOG.log(u"Cached {}'s id={}".format(star_system, sid), "DEBUG")
             return sid
 
+        self.systems_cache.set(star_system.lower(), None)
+        EDRLOG.log(u"No match on EDR. Temporary entry to be nice on EDR's server.", "DEBUG")
         return None
 
     def persist(self):
