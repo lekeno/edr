@@ -707,7 +707,8 @@ class EDRClient(object):
         if cmdr_id is None:
             self.status = _(u"no cmdr id (contact).")
             EDRLOG.log(u"Can't submit blip (no cmdr id for {}).".format(cmdr_name), "ERROR")
-            return
+            its_actually_fine = self.is_anonymous()
+            return its_actually_fine
 
         profile = self.cmdr(cmdr_name, check_inara_server=True)
         if profile and (self.player.name != cmdr_name) and profile.is_dangerous(self.player.powerplay):
@@ -744,7 +745,8 @@ class EDRClient(object):
         if cmdr_id is None:
             self.status = _(u"cmdr unknown to EDR.")
             EDRLOG.log(u"Can't submit scan (no cmdr id for {}).".format(cmdr_name), "ERROR")
-            return
+            its_actually_fine = self.is_anonymous()
+            return its_actually_fine
 
         if self.novel_enough_scan(cmdr_id, scan, cognitive = True):
             profile = self.cmdr(cmdr_name, check_inara_server=True)
@@ -793,21 +795,20 @@ class EDRClient(object):
         if self.is_anonymous():
             EDRLOG.log("Skipping reporting scan since the user is anonymous.", "INFO")
             self.scans_cache.set(cmdr_id, scan)
-            return False
+            return True
 
         success = self.server.scanned(cmdr_id, scan)
         if success:
             self.status = _(u"scan reported for {}.").format(cmdr_name)
             self.scans_cache.set(cmdr_id, scan)
 
-        return success        
-
+        return success
 
     def traffic(self, star_system, traffic):
         try:
             if self.is_anonymous():
                 EDRLOG.log(u"Skipping traffic report since the user is anonymous.", "INFO")
-                return False
+                return True
 
             sigthed_cmdr = traffic["cmdr"]
             if not self.novel_enough_traffic_report(sigthed_cmdr, traffic):
@@ -836,18 +837,18 @@ class EDRClient(object):
         if not self.crimes_reporting:
             EDRLOG.log(u"Crimes reporting is off (!crimes on to re-enable).", "INFO")
             self.status = _(u"Crimes reporting is off (!crimes on to re-enable)")
-            return False
+            return True
             
         if self.player.in_bad_neighborhood():
             EDRLOG.log(u"Crime not being reported because the player is in an anarchy.", "INFO")
             self.status = _(u"Anarchy system (crimes not reported).")
-            return False
+            return True
 
         if self.is_anonymous():
             EDRLOG.log(u"Skipping crime report since the user is anonymous.", "INFO")
             if crime["victim"] == self.player.name:
                 self.advertise_full_account(_(u"You could have helped other EDR users or get help by reporting this crime!"))
-            return False
+            return True
 
         sid = self.edrsystems.system_id(star_system, may_create=True)
         if sid is None:
@@ -855,7 +856,10 @@ class EDRClient(object):
                        "DEBUG")
             return False
 
-        return self.server.crime(sid, crime)
+        if self.server.crime(sid, crime):
+            self.status = _(u"crime reported!")
+            return True
+        return False
 
     def crew_report(self, report):
         if self.is_anonymous():
@@ -869,8 +873,12 @@ class EDRClient(object):
             self.status = _(u"{} is unknown to EDR.".format(report["crew"]))
             EDRLOG.log(u"Can't submit crew report (no cmdr id for {}).".format(report["crew"]), "ERROR")
             return False
+        
+        if self.server.crew_report(crew_id, report):
+            self.status = _(u"multicrew session reported (cmdr {name}).").format(name=report["crew"])
+            return True
+        return False
 
-        return self.server.crew_report(crew_id, report)
 
     def tag_cmdr(self, cmdr_name, tag):
         if self.is_anonymous():

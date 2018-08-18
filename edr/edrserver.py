@@ -25,6 +25,7 @@ class EDRServer(object):
         self.EDR_API_KEY = config.edr_api_key()
         self.EDR_SERVER = config.edr_server()
         self.player_name = None
+        self.version = edrconfig.EDRConfig().edr_version()
 
     def login(self, email, password):
         self.REST_firebase.api_key = self.EDR_API_KEY
@@ -396,12 +397,12 @@ class EDRServer(object):
         return True
 
     def __preflight(self, api_name, param):
-        params = {"auth": self.auth_token() }
+        headers = {"Authorization": "Bearer {}".format(self.auth_token()), "EDR-Version": "v{}".format(self.version) }
         json = { "name": self.player_name, "timestamp": {".sv": "timestamp"}, "param": param, "api": api_name }
         EDRLOG.log(u"Preflight request for {} with {}".format(api_name, json), "DEBUG")
-        endpoint = "{server}/v1/preflight/{uid}/.json".format(server=self.EDR_SERVER, uid=self.uid(), api_name=api_name)
+        endpoint = "https://us-central1-blistering-inferno-4028.cloudfunctions.net/edr/v1/preflight/{uid}".format(server=self.EDR_SERVER, uid=self.uid())
         EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
-        resp = requests.put(endpoint, params=params, json=json)
+        resp = requests.put(endpoint, headers=headers, json=json)
         EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
         return resp.status_code == requests.codes.ok
 

@@ -407,7 +407,6 @@ def edr_update_cmdr_status(cmdr, reason_for_update):
     EDRLOG.log(u"report: {}".format(report), "DEBUG")
 
     if not EDR_CLIENT.blip(cmdr.name, report):
-        EDR_CLIENT.status = ip(cmdr.name, report):
         EDR_CLIENT.status = _(u"blip failed.")
         EDR_CLIENT.evict_cmdr(cmdr.name)
         return
@@ -450,9 +449,6 @@ def edr_submit_crime(criminal_cmdrs, offence, victim):
     if not EDR_CLIENT.crime(victim.star_system, report):
         EDR_CLIENT.status = _(u"failed to report crime.")
         EDR_CLIENT.evict_system(victim.star_system)
-        return
-
-    EDR_CLIENT.status = _(u"crime reported!")
 
 
 def edr_submit_crime_self(criminal_cmdr, offence, victim):
@@ -488,10 +484,6 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim):
     if not EDR_CLIENT.crime(criminal_cmdr.star_system, report):
         EDR_CLIENT.status = _(u"failed to report crime.")
         EDR_CLIENT.evict_system(criminal_cmdr.star_system)
-        return
-
-    EDR_CLIENT.status = _(u"crime reported!")
-
 
 def edr_submit_contact(cmdr_name, ship, timestamp, source, witness):
     """
@@ -530,7 +522,6 @@ def edr_submit_contact(cmdr_name, ship, timestamp, source, witness):
         EDR_CLIENT.status = _(u"failed to report contact.")
         EDR_CLIENT.evict_cmdr(cmdr_name)
 
-    EDR_CLIENT.status = _(u"contact reported (cmdr {name}).").format(name=cmdr_name)
     edr_submit_traffic(cmdr_name, ship, timestamp, source, witness)
 
 def edr_submit_scan(scan, timestamp, source, witness):
@@ -557,7 +548,6 @@ def edr_submit_scan(scan, timestamp, source, witness):
     if not EDR_CLIENT.scanned(scan["cmdr"], report):
         EDR_CLIENT.status = _(u"failed to report scan.")
         EDR_CLIENT.evict_cmdr(scan["cmdr"])
-    EDR_CLIENT.status = _(u"scan reported (cmdr {name}).").format(name=scan["cmdr"])
 
 def edr_submit_traffic(cmdr_name, ship, timestamp, source, witness):
     """
@@ -595,7 +585,6 @@ def edr_submit_traffic(cmdr_name, ship, timestamp, source, witness):
     if not EDR_CLIENT.traffic(witness.star_system, report):
         EDR_CLIENT.status = _(u"failed to report traffic.")
         EDR_CLIENT.evict_system(witness.star_system)
-    EDR_CLIENT.status = _(u"traffic reported (cmdr {name}).").format(name=cmdr_name)
 
 def edr_submit_multicrew_session(player, report):
     if not player.in_open() and not player.destroyed:
@@ -605,7 +594,6 @@ def edr_submit_multicrew_session(player, report):
 
     if not EDR_CLIENT.crew_report(report):
         EDR_CLIENT.status = _(u"failed to report multicrew session.")
-    EDR_CLIENT.status = _(u"multicrew session reported (cmdr {name}).").format(name=report["crew"])
 
 def report_crime(cmdr, entry):
     """
