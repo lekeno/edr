@@ -196,7 +196,7 @@ def handle_movement_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_place_if_obsolete(place, entry["timestamp"])
         outcome["reason"] = "Hyperspace"
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
-        EDR_CLIENT.check_system(entry["StarSystem"])
+        EDR_CLIENT.check_system(entry["StarSystem"], may_create=True)
 
     if entry["event"] in ["ApproachSettlement"]:
         place = entry["Name"]
@@ -215,7 +215,7 @@ def handle_change_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_place_if_obsolete(place, entry["timestamp"])
         outcome["reason"] = "Location event"
         EDRLOG.log(u"Place changed: {} (location event)".format(place), "INFO")
-        EDR_CLIENT.check_system(entry["StarSystem"])
+        EDR_CLIENT.check_system(entry["StarSystem"], may_create=True)
 
     if entry["event"] in ["Undocked", "Docked", "DockingCancelled", "DockingDenied",
                           "DockingGranted", "DockingRequested", "DockingTimeout"]:
@@ -407,6 +407,7 @@ def edr_update_cmdr_status(cmdr, reason_for_update):
     EDRLOG.log(u"report: {}".format(report), "DEBUG")
 
     if not EDR_CLIENT.blip(cmdr.name, report):
+        EDR_CLIENT.status = ip(cmdr.name, report):
         EDR_CLIENT.status = _(u"blip failed.")
         EDR_CLIENT.evict_cmdr(cmdr.name)
         return

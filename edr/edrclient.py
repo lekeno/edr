@@ -358,11 +358,11 @@ class EDRClient(object):
                                                 config.get("EDRAudioFeedbackVolume")), "DEBUG")
         self.login()
 
-    def check_system(self, star_system):
+    def check_system(self, star_system, may_create=False):
         try:
             EDRLOG.log(u"Check system called: {}".format(star_system), "INFO")
             details = []
-            notams = self.edrsystems.active_notams(star_system)
+            notams = self.edrsystems.active_notams(star_system, may_create)
             if notams:
                 EDRLOG.log(u"NOTAMs for {}: {}".format(star_system, notams), "DEBUG")
                 details += notams

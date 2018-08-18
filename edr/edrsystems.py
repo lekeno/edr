@@ -24,7 +24,7 @@ EDRLOG = edrlog.EDRLog()
 
 class EDRSystems(object):
     EDR_SYSTEMS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/systems.v2.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/systems.v3.p')
     EDSM_SYSTEMS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_systems.v2.p')
     EDR_NOTAMS_CACHE = os.path.join(
@@ -169,9 +169,9 @@ class EDRSystems(object):
         sid = self.system_id(star_system)
         return self.sitreps_cache.has_key(sid)
 
-    def has_notams(self, star_system):
+    def has_notams(self, star_system, may_create=False):
         self.__update_if_stale()
-        sid = self.system_id(star_system)
+        sid = self.system_id(star_system, may_create)
         return self.notams_cache.has_key(sid)
 
     def __has_active_notams(self, system_id):
@@ -180,8 +180,8 @@ class EDRSystems(object):
             return False
         return len(self.__active_notams_for_sid(system_id)) > 0
 
-    def active_notams(self, star_system):
-        if self.has_notams(star_system):
+    def active_notams(self, star_system, may_create=False):
+        if self.has_notams(star_system, may_create):
             return self.__active_notams_for_sid(self.system_id(star_system))
         return None
 
