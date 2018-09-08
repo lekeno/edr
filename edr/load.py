@@ -329,8 +329,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if ed_player.is_crew_member():
         ship = u"Unknown"
     else:
-        ship = state["ShipType"]
-
+        ship = edentities.EDVehicles.canonicalize(state["ShipType"])
         
     status_outcome = {"updated": False, "reason": "Unspecified"}
 
@@ -408,7 +407,7 @@ def edr_update_cmdr_status(cmdr, reason_for_update):
 
     if not EDR_CLIENT.blip(cmdr.name, report):
         EDR_CLIENT.status = _(u"blip failed.")
-        EDR_CLIENT.evict_cmdr(cmdr.name)
+        EDR_CLIENT.evict_cmdr(cmdr.name) # TODO reconsider if needed, this was the source of multiple side effects :()
         return
 
     EDR_CLIENT.status = _(u"blip succeeded!")
@@ -751,7 +750,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         overlay_command("" if len(command_parts) == 1 else command_parts[1])
     elif command == "!audiocue" and len(command_parts) == 2:
         audiocue_command(command_parts[1])
-    elif command == "!who":
+    elif command in ["!who", "!w"]:
         target_cmdr = None
         if len(command_parts) == 2:
             target_cmdr = command_parts[1]
@@ -801,6 +800,15 @@ def handle_bang_commands(cmdr, command, command_parts):
         to_sys = systems[1] if len(systems) == 2 else systems[0]
         EDRLOG.log(u"Distance command from {} to {}".format(from_sys, to_sys), "INFO")
         EDR_CLIENT.distance(from_sys, to_sys)
+    elif command == "!if":
+        EDRLOG.log(u"Interstellar Factors command", "INFO")
+        search_center = cmdr.star_system
+        override_sc_dist = None
+        if len(command_parts) >= 2:
+            parameters = " ".join(command_parts[1:]).split(" < ", 1)
+            search_center = parameters[0] or cmdr.star_system
+            override_sc_dist = parameters[1] if len(parameters) > 1 else None
+        EDR_CLIENT.interstellar_factors_near(search_center, override_sc_dist)
     elif command == "!help":
         EDRLOG.log(u"Help command", "INFO")
         EDR_CLIENT.help("" if len(command_parts) == 1 else command_parts[1])

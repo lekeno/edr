@@ -686,7 +686,7 @@ class EDRClient(object):
             self.__commsjammed()    
 
     def distance(self, from_system, to_system):
-        oneliner = ""
+        details = []
         distance = None
         try:
             distance = self.edrsystems.distance(from_system, to_system)
@@ -695,12 +695,18 @@ class EDRClient(object):
             
         if distance:
             pretty_dist = _(u"{distance:.3g}").format(distance=distance) if distance < 50.0 else _(u"{distance}").format(distance=int(distance))
-            oneliner = _(u"{dist}ly from {from_sys} to {to_sys}".format(dist=pretty_dist, from_sys=from_system, to_sys=to_system))
-            self.status = _(u"distance: {dist}ly")
+            details.append(_(u"{dist}ly from {from_sys} to {to_sys}").format(dist=pretty_dist, from_sys=from_system, to_sys=to_system))
+            taxi_jump_range = 50
+            jumping_time = self.edrsystems.jumping_time(from_system, to_system, taxi_jump_range)
+            transfer_time = self.edrsystems.transfer_time(from_system, to_system)
+            details.append(_(u"Taxi time ({}LY): {}").format(taxi_jump_range, edtime.EDTime.pretty_print_timespan(jumping_time)))
+            details.append(_(u"Transfer time: {}").format(edtime.EDTime.pretty_print_timespan(transfer_time)))
+            self.status = _(u"distance: {dist}ly").format(dist=pretty_dist)
         else:
             self.status = _(u"distance failed")
-            oneliner = _(u"Couldn't calculate a distance. Invalid or unknown system names?")
-        self.__notify("Distance", [oneliner])
+            details.append(_(u"Couldn't calculate a distance. Invalid or unknown system names?"))
+        self.__notify("Distance", details)
+
 
     def blip(self, cmdr_name, blip):
         cmdr_id = self.cmdr_id(cmdr_name)
@@ -1084,3 +1090,28 @@ class EDRClient(object):
         self.__notify(_(u"EDR needs you!"), [context, u"--", _(u"Apply for an account at https://lekeno.github.io/"), _(u"It's free, no strings attached.")], clear_before=True)
         self.previous_ad = now_epoch
         return True
+
+    def interstellar_factors_near(self, star_system, override_sc_distance = None):
+        if not star_system:
+            return
+        
+        # TODO adjust needs large pad depending on the player's current ship.
+        self.edrsystems.search_interstellar_factors(star_system, self.__interstellar_factors_found, override_sc_distance = override_sc_distance)
+        self.status = _(u"I.Factors: searching...")
+
+    def __interstellar_factors_found(self, reference, radius, sc, result):
+        details = []
+        if result:
+            sc_distance = result['station']['distanceToArrival']
+            distance = result['distance']
+            pretty_dist = _(u"{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _(u"{dist}LY").format(dist=int(distance))
+            pretty_sc_dist = _(u"{dist}LS").format(dist=int(sc_distance))
+            details.append(_(u"{}, {}").format(result['name'], pretty_dist))
+            details.append(_(u"{} ({}), {}").format(result['station']['name'], result['station']['type'], pretty_sc_dist))
+            self.status = _(u"I.Factors: {}, {} - {} ({}), {}").format(result['name'], pretty_dist, result['station']['name'], result['station']['type'], pretty_sc_dist)
+        else:
+            self.status = _(u"I.Factors: nothing within [{}LY, {}LS] of {}".format(int(radius), int(sc), reference))
+            details.append(_(u"no results within [{}LY, {}LS]").format(int(radius), int(sc)))
+            details.append(_(u"Check for low security or anarchy systems."))
+        self.__notify("Interstellar Factors near {}".format(reference), details)
+        

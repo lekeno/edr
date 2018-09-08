@@ -3,12 +3,13 @@
 
 import os
 import pickle
-from math import sqrt
+from math import sqrt, ceil
 
 import datetime
 import time
 import collections
 import operator
+import threading
 
 import edtime
 import edrconfig
@@ -20,13 +21,15 @@ from edri18n import _, _c, _edr
 
 EDRLOG = edrlog.EDRLog()
 
-# TODO cache temp entry for failed lookup, e.g. queries by anonymous users on new systems.
-
 class EDRSystems(object):
     EDR_SYSTEMS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/systems.v3.p')
     EDSM_SYSTEMS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_systems.v2.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_systems.v3.p')
+    EDSM_STATIONS_CACHE = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_stations.v1.p')
+    EDSM_SYSTEMS_WITHIN_RADIUS_CACHE = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_systems_radius.v1.p')
     EDR_NOTAMS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/notams.v2.p')
     EDR_SITREPS_CACHE = os.path.join(
@@ -37,6 +40,8 @@ class EDRSystems(object):
         os.path.abspath(os.path.dirname(__file__)), 'cache/crimes.v2.p')
 
     def __init__(self, server):
+        self.reasonable_sc_distance = 1500
+        self.reasonable_hs_radius = 20
         edr_config = edrconfig.EDRConfig()
 
         try:
@@ -80,6 +85,22 @@ class EDRSystems(object):
         except:
             self.edsm_systems_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                   edr_config.edsm_systems_max_age())
+                                            
+        try:
+            with open(self.EDSM_STATIONS_CACHE, 'rb') as handle:
+                self.edsm_stations_cache = pickle.load(handle)
+        except:
+            self.edsm_stations_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.edsm_stations_max_age())
+
+        try:
+            with open(self.EDSM_SYSTEMS_WITHIN_RADIUS_CACHE, 'rb') as handle:
+                self.edsm_systems_within_radius_cache = pickle.load(handle)
+        except:
+            self.edsm_systems_within_radius_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.edsm_systems_max_age())
+
+         
 
         self.reports_check_interval = edr_config.reports_check_interval()
         self.notams_check_interval = edr_config.notams_check_interval()
@@ -107,6 +128,25 @@ class EDRSystems(object):
         EDRLOG.log(u"No match on EDR. Temporary entry to be nice on EDR's server.", "DEBUG")
         return None
 
+    def stations_in_system(self, star_system):
+        if not star_system:
+            return None
+        stations = self.edsm_stations_cache.get(star_system.lower())
+        cached = self.edsm_stations_cache.has_key(star_system.lower())
+        if cached or stations:
+            EDRLOG.log(u"Stations for system {} are in the cache.".format(star_system), "DEBUG")
+            return stations
+
+        stations = self.edsm_server.stations_in_system(star_system)
+        if stations:
+            self.edsm_stations_cache.set(star_system.lower(), stations)
+            EDRLOG.log(u"Cached {}'s stations".format(star_system), "DEBUG")
+            return stations
+
+        self.edsm_stations_cache.set(star_system.lower(), None)
+        EDRLOG.log(u"No match on EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
+        return None
+
     def persist(self):
         with open(self.EDR_SYSTEMS_CACHE, 'wb') as handle:
             pickle.dump(self.systems_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -126,24 +166,47 @@ class EDRSystems(object):
         with open(self.EDSM_SYSTEMS_CACHE, 'wb') as handle:
             pickle.dump(self.edsm_systems_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+        with open(self.EDSM_STATIONS_CACHE, 'wb') as handle:
+            pickle.dump(self.edsm_stations_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        with open(self.EDSM_SYSTEMS_WITHIN_RADIUS_CACHE, 'wb') as handle:
+            pickle.dump(self.edsm_systems_within_radius_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
     def distance(self, source_system, destination_system):
         if source_system == destination_system:
             return 0
-        source = self.edsm_systems_cache.get(source_system.lower())
-        destination = self.edsm_systems_cache.get(destination_system.lower())
-        if not source:
-            source = self.edsm_server.system(source_system)
-            if source:
-                self.edsm_systems_cache.set(source_system.lower(), source)
-        if not destination:
-            destination = self.edsm_server.system(destination_system)
-            if destination:
-                self.edsm_systems_cache.set(destination_system.lower(), destination)
+        source = self.system(source_system)
+        destination = self.system(destination_system)
+ 
         if source and destination:
             source_coords = source[0]["coords"]
             dest_coords = destination[0]["coords"] 
             return sqrt((dest_coords["x"] - source_coords["x"])**2 + (dest_coords["y"] - source_coords["y"])**2 + (dest_coords["z"] - source_coords["z"])**2)
         raise ValueError('Unknown system')
+
+    
+    def system(self, name):
+        if not name:
+            return None
+
+        the_system = self.edsm_systems_cache.get(name.lower())
+        if the_system:
+            return the_system
+
+        the_system = self.edsm_server.system(name)
+        if the_system:
+            self.edsm_systems_cache.set(name.lower(), the_system)
+            return the_system
+        
+        raise ValueError('Unknown system')
+
+    def transfer_time(self, origin, destination):
+        dist = self.distance(origin, destination)
+        return int(ceil(dist * 9.75 + 300))
+
+    def jumping_time(self, origin, destination, jump_range, seconds_per_jump = 55):
+        dist = self.distance(origin, destination)
+        return int(ceil(dist / jump_range) * seconds_per_jump)
 
     def timespan_s(self):
         return edtime.EDTime.pretty_print_timespan(self.timespan, short=True, verbose=True)
@@ -439,6 +502,44 @@ class EDRSystems(object):
 
         return summary
 
+    def search_interstellar_factors(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+        if not (self.in_bubble(star_system) or self.in_colonia(star_system)):
+            return None
+
+        sc_distance = override_sc_distance or self.reasonable_sc_distance
+        radius = override_radius or self.reasonable_hs_radius
+
+        finder = InterstellarFactorsFinder(star_system, self, callback)
+        finder.with_large_pad(with_large_pad)
+        finder.within_radius(radius)
+        finder.within_supercruise_distance(sc_distance)
+        finder.permits_in_possesion(permits)
+        finder.start()
+        return None
+
+
+    def systems_within_radius(self, star_system, override_radius = None):
+        if not star_system:
+            return None
+
+        radius = override_radius or self.reasonable_hs_radius
+        key = u"{}@{}".format(star_system.lower(), radius)
+        systems = self.edsm_systems_within_radius_cache.get(key)
+        cached = self.edsm_systems_within_radius_cache.has_key(key)
+        if cached or systems:
+            EDRLOG.log(u"Systems within {} of system {} are in the cache.".format(radius, star_system), "DEBUG")
+            return systems
+
+        systems = self.edsm_server.systems_within_radius(star_system, radius)
+        if systems:
+            self.edsm_systems_within_radius_cache.set(key, systems)
+            EDRLOG.log(u"Cached systems within {} of {}".format(radius, star_system), "DEBUG")
+            return systems
+
+        self.edsm_systems_within_radius_cache.set(key, None)
+        EDRLOG.log(u"No results from EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
+        return None
+
     def is_recent(self, timestamp, max_age):
         if timestamp is None:
             return False
@@ -494,3 +595,152 @@ class EDRSystems(object):
             updated = True
 
         return updated
+
+    def closest_destination(self, sysAndSta1, sysAndSta2, override_sc_distance = None):
+        if not sysAndSta1:
+            return sysAndSta2
+
+        if not sysAndSta2:
+            return sysAndSta1
+
+        sc_distance = override_sc_distance or self.reasonable_sc_distance 
+
+        if sysAndSta1['station']['distanceToArrival'] > sc_distance and sysAndSta2['station']['distanceToArrival'] > sc_distance:
+            if abs(sysAndSta1['distance'] - sysAndSta2['distance']) < 5:
+                return sysAndSta1 if sysAndSta1['station']['distanceToArrival'] < sysAndSta2['station']['distanceToArrival'] else sysAndSta2
+            else:
+                return sysAndSta1 if sysAndSta1['distance'] < sysAndSta2['distance'] else sysAndSta2
+    
+        if sysAndSta1['station']['distanceToArrival'] > sc_distance:
+            return sysAndSta2
+    
+        if sysAndSta2['station']['distanceToArrival'] > sc_distance:
+            return sysAndSta1
+
+        return sysAndSta1 if sysAndSta1['distance'] < sysAndSta2['distance'] else sysAndSta2
+
+    def in_bubble(self, system_name):
+        return self.distance(system_name, 'Sol') <= 500
+    
+    def in_colonia(self, system_name):
+        return self.distance(system_name, 'Colonia') <= 500
+
+class InterstellarFactorsFinder(threading.Thread):
+
+    def __init__(self, star_system, edr_systems, callback):
+        self.star_system = star_system
+        self.radius = 50
+        self.sc_distance = 1500
+        self.edr_systems = edr_systems
+        self.callback = callback
+        self.large_pad_required = True
+        self.permits = []
+        super(InterstellarFactorsFinder, self).__init__()
+
+    def with_large_pad(self, required):
+        self.large_pad_required = required
+
+    def within_radius(self, radius):
+        self.radius = radius
+
+    def within_supercruise_distance(self, sc_distance):
+        self.sc_distance = sc_distance
+
+    def permits_in_possesion(self, permits):
+        self.permits = permits
+
+    def run(self):
+        results = self.nearby()
+        if self.callback:
+            self.callback(self.star_system, self.radius, self.sc_distance, results)
+
+    def nearby(self):
+        ifactorsPrime = None
+        ifactorsAlt = None
+        
+        system = self.edr_systems.system(self.star_system)
+        if not system:
+            return None
+
+        system = system[0]
+        system['distance'] = 0
+        if not system.get('requirePermit', False) or (system['requirePermit'] and system['name'] in self.permits):
+            candidate = self.__interstellar_factors_in_system(system)
+            if candidate:
+                check_sc_distance = candidate['distanceToArrival'] <= self.sc_distance
+                check_landing_pads = self.__has_large_lading_pads(candidate['type']) if self.large_pad_required else True
+                if check_sc_distance and check_landing_pads:
+                    ifactorsPrime = system
+                    ifactorsPrime['station'] = candidate
+                    return ifactorsPrime
+                else:
+                    ifactorsAlt = system
+                    ifactorsAlt['station'] = candidate
+        else:
+            print "skipping {} as it requires a missing permit".format(system['name'])
+
+        sorted_systems = self.edr_systems.systems_within_radius(self.star_system, self.radius)
+
+        for system in sorted_systems:
+            if system['requirePermit'] and not (system['name'] in self.permits):
+                print "skipping {} as it requires a missing permit".format(system['name'])
+                continue
+
+            candidate = self.__interstellar_factors_in_system(system)
+            if candidate:
+                check_sc_distance = candidate['distanceToArrival'] <= self.sc_distance
+                check_landing_pads = self.__has_large_lading_pads(candidate['type']) if self.large_pad_required else True
+                if check_sc_distance and check_landing_pads:
+                    trialed = system
+                    trialed['station'] = candidate
+                    closest = self.edr_systems.closest_destination(trialed, ifactorsPrime)
+                    ifactorsPrime = closest
+                else:
+                    trialed = system
+                    trialed['station'] = candidate
+                    closest = self.edr_systems.closest_destination(trialed, ifactorsAlt)
+                    ifactorsAlt = closest
+
+            if ifactorsPrime:
+                break
+
+        return ifactorsPrime if ifactorsPrime else ifactorsAlt
+
+
+    def closest_station_with_ifc(self, stations):
+        overall = None
+        with_large_landing_pads = None
+        for station in stations:
+            if (not station['otherServices'] or not 'Interstellar Factors Contact' in station['otherServices']):
+                continue
+
+            if overall == None:
+                overall = station
+            elif station['distanceToArrival'] < overall['distanceToArrival']:
+                overall = station
+            
+            if self.__has_large_lading_pads(station['type']):
+                with_large_landing_pads = station
+        
+        return with_large_landing_pads if self.large_pad_required and with_large_landing_pads else overall
+
+
+    def __has_large_lading_pads(self, stationType):
+        return stationType.lower() in ['coriolis starport', 'ocellus starport', 'orbis starport', 'planetary port', 'asteroid base', 'mega ship']
+
+    def __interstellar_factors_in_system(self, system):
+        if not system:
+            return None
+            
+        if system.get('requirePermit', False) and not system['name'] in self.permits :
+            return None
+
+        all_stations = self.edr_systems.stations_in_system(system['name'])
+        if not all_stations or not len(all_stations):
+            return None
+
+        return self.closest_station_with_ifc(all_stations)
+
+    def close(self):
+        # TODO
+        return None
