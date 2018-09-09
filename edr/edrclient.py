@@ -1115,3 +1115,76 @@ class EDRClient(object):
             details.append(_(u"Check for low security or anarchy systems."))
         self.__notify("Interstellar Factors near {}".format(reference), details)
         
+
+    def raw_material_trader_near(self, star_system, override_sc_distance = None):
+        if not star_system:
+            return
+        
+        # TODO adjust needs large pad depending on the player's current ship.
+        self.edrsystems.search_raw_trader(star_system, self.__raw_trader_found, override_sc_distance = override_sc_distance)
+        self.status = _(u"Raw mat. trader: searching...")
+
+    def __raw_trader_found(self, reference, radius, sc, result):
+        details = []
+        if result:
+            sc_distance = result['station']['distanceToArrival']
+            distance = result['distance']
+            pretty_dist = _(u"{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _(u"{dist}LY").format(dist=int(distance))
+            pretty_sc_dist = _(u"{dist}LS").format(dist=int(sc_distance))
+            details.append(_(u"{}, {}").format(result['name'], pretty_dist))
+            details.append(_(u"{} ({}), {}").format(result['station']['name'], result['station']['type'], pretty_sc_dist))
+            self.status = _(u"Raw mat. trader: {}, {} - {} ({}), {}").format(result['name'], pretty_dist, result['station']['name'], result['station']['type'], pretty_sc_dist)
+        else:
+            self.status = _(u"Raw mat. trader: nothing within [{}LY, {}LS] of {}".format(int(radius), int(sc), reference))
+            details.append(_(u"no results within [{}LY, {}LS]").format(int(radius), int(sc)))
+            details.append(_(u"Look for relatively safe and inhabited systems with a extraction or refinery economy."))
+        self.__notify("Raw Material Trader near {}".format(reference), details)
+        
+    def encoded_material_trader_near(self, star_system, override_sc_distance = None):
+        if not star_system:
+            return
+        
+        # TODO adjust needs large pad depending on the player's current ship.
+        self.edrsystems.search_encoded_trader(star_system, self.__encoded_trader_found, override_sc_distance = override_sc_distance)
+        self.status = _(u"Encoded data trader: searching...")
+
+    def __encoded_trader_found(self, reference, radius, sc, result):
+        details = []
+        if result:
+            sc_distance = result['station']['distanceToArrival']
+            distance = result['distance']
+            pretty_dist = _(u"{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _(u"{dist}LY").format(dist=int(distance))
+            pretty_sc_dist = _(u"{dist}LS").format(dist=int(sc_distance))
+            details.append(_(u"{}, {}").format(result['name'], pretty_dist))
+            details.append(_(u"{} ({}), {}").format(result['station']['name'], result['station']['type'], pretty_sc_dist))
+            self.status = _(u"Encoded data trader: {}, {} - {} ({}), {}").format(result['name'], pretty_dist, result['station']['name'], result['station']['type'], pretty_sc_dist)
+        else:
+            self.status = _(u"Encoded data trader: nothing within [{}LY, {}LS] of {}".format(int(radius), int(sc), reference))
+            details.append(_(u"no results within [{}LY, {}LS]").format(int(radius), int(sc)))
+            details.append(_(u"Look for relatively safe and inhabited systems with a high-tech or military economy."))
+        self.__notify("Encoded data trader near {}".format(reference), details)
+
+
+    def manufactured_material_trader_near(self, star_system, override_sc_distance = None):
+        if not star_system:
+            return
+        
+        # TODO adjust needs large pad depending on the player's current ship.
+        self.edrsystems.search_manufactured_trader(star_system, self.__manufactured_trader_found, override_sc_distance = override_sc_distance)
+        self.status = _(u"Manufactured mat. trader: searching...")
+
+    def __manufactured_trader_found(self, reference, radius, sc, result):
+        details = []
+        if result:
+            sc_distance = result['station']['distanceToArrival']
+            distance = result['distance']
+            pretty_dist = _(u"{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _(u"{dist}LY").format(dist=int(distance))
+            pretty_sc_dist = _(u"{dist}LS").format(dist=int(sc_distance))
+            details.append(_(u"{}, {}").format(result['name'], pretty_dist))
+            details.append(_(u"{} ({}), {}").format(result['station']['name'], result['station']['type'], pretty_sc_dist))
+            self.status = _(u"Manufactured mat. trader: {}, {} - {} ({}), {}").format(result['name'], pretty_dist, result['station']['name'], result['station']['type'], pretty_sc_dist)
+        else:
+            self.status = _(u"Manufactured mat. trader: nothing within [{}LY, {}LS] of {}".format(int(radius), int(sc), reference))
+            details.append(_(u"no results within [{}LY, {}LS]").format(int(radius), int(sc)))
+            details.append(_(u"Look for relatively safe and inhabited systems with an industrial economy."))
+        self.__notify("Manufactured mat. trader near {}".format(reference), details)

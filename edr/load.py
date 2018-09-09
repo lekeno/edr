@@ -809,6 +809,33 @@ def handle_bang_commands(cmdr, command, command_parts):
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = parameters[1] if len(parameters) > 1 else None
         EDR_CLIENT.interstellar_factors_near(search_center, override_sc_dist)
+    elif command == "!raw":
+        EDRLOG.log(u"Raw Material Trader command", "INFO")
+        search_center = cmdr.star_system
+        override_sc_dist = None
+        if len(command_parts) >= 2:
+            parameters = " ".join(command_parts[1:]).split(" < ", 1)
+            search_center = parameters[0] or cmdr.star_system
+            override_sc_dist = parameters[1] if len(parameters) > 1 else None
+        EDR_CLIENT.raw_material_trader_near(search_center, override_sc_dist)
+    elif command in ["!encoded", "!enc"]:
+        EDRLOG.log(u"Encoded Material Trader command", "INFO")
+        search_center = cmdr.star_system
+        override_sc_dist = None
+        if len(command_parts) >= 2:
+            parameters = " ".join(command_parts[1:]).split(" < ", 1)
+            search_center = parameters[0] or cmdr.star_system
+            override_sc_dist = parameters[1] if len(parameters) > 1 else None
+        EDR_CLIENT.encoded_material_trader_near(search_center, override_sc_dist)
+    elif command in ["!manufactured", "!man"]:
+        EDRLOG.log(u"Manufactured Material Trader command", "INFO")
+        search_center = cmdr.star_system
+        override_sc_dist = None
+        if len(command_parts) >= 2:
+            parameters = " ".join(command_parts[1:]).split(" < ", 1)
+            search_center = parameters[0] or cmdr.star_system
+            override_sc_dist = parameters[1] if len(parameters) > 1 else None
+        EDR_CLIENT.manufactured_material_trader_near(search_center, override_sc_dist)
     elif command == "!help":
         EDRLOG.log(u"Help command", "INFO")
         EDR_CLIENT.help("" if len(command_parts) == 1 else command_parts[1])

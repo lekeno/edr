@@ -9,7 +9,6 @@ import datetime
 import time
 import collections
 import operator
-import threading
 
 import edtime
 import edrconfig
@@ -18,6 +17,8 @@ import lrucache
 import edsmserver
 from edentities import EDBounty
 from edri18n import _, _c, _edr
+import edrservicecheck
+import edrservicefinder
 
 EDRLOG = edrlog.EDRLog()
 
@@ -41,7 +42,7 @@ class EDRSystems(object):
 
     def __init__(self, server):
         self.reasonable_sc_distance = 1500
-        self.reasonable_hs_radius = 20
+        self.reasonable_hs_radius = 50
         edr_config = edrconfig.EDRConfig()
 
         try:
@@ -503,20 +504,39 @@ class EDRSystems(object):
         return summary
 
     def search_interstellar_factors(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+        checker = edrservicecheck.EDRStationServiceCheck('Interstellar Factors Contact')
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+
+    def search_raw_trader(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+        checker = edrservicecheck.EDRRawTraderCheck()
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+
+    def search_encoded_trader(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+        checker = edrservicecheck.EDREncodedTraderCheck()
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+
+    def search_manufactured_trader(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+        checker = edrservicecheck.EDRManufacturedTraderCheck()
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+
+    def search_black_market(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+        checker = edrservicecheck.EDRBlackMarketCheck()
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+        
+    def __search_a_service(self, star_system, callback, checker, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
         if not (self.in_bubble(star_system) or self.in_colonia(star_system)):
-            return None
+            return
 
         sc_distance = override_sc_distance or self.reasonable_sc_distance
+        sc_distance = max(250, sc_distance)
         radius = override_radius or self.reasonable_hs_radius
 
-        finder = InterstellarFactorsFinder(star_system, self, callback)
+        finder = edrservicefinder.EDRServiceFinder(star_system, checker, self, callback)
         finder.with_large_pad(with_large_pad)
         finder.within_radius(radius)
         finder.within_supercruise_distance(sc_distance)
         finder.permits_in_possesion(permits)
         finder.start()
-        return None
-
 
     def systems_within_radius(self, star_system, override_radius = None):
         if not star_system:
@@ -533,7 +553,7 @@ class EDRSystems(object):
         systems = self.edsm_server.systems_within_radius(star_system, radius)
         if systems:
             self.edsm_systems_within_radius_cache.set(key, systems)
-            EDRLOG.log(u"Cached systems within {} of {}".format(radius, star_system), "DEBUG")
+            EDRLOG.log(u"Cached systems within {}LY of {}".format(radius, star_system), "DEBUG")
             return systems
 
         self.edsm_systems_within_radius_cache.set(key, None)
@@ -625,122 +645,3 @@ class EDRSystems(object):
     def in_colonia(self, system_name):
         return self.distance(system_name, 'Colonia') <= 500
 
-class InterstellarFactorsFinder(threading.Thread):
-
-    def __init__(self, star_system, edr_systems, callback):
-        self.star_system = star_system
-        self.radius = 50
-        self.sc_distance = 1500
-        self.edr_systems = edr_systems
-        self.callback = callback
-        self.large_pad_required = True
-        self.permits = []
-        super(InterstellarFactorsFinder, self).__init__()
-
-    def with_large_pad(self, required):
-        self.large_pad_required = required
-
-    def within_radius(self, radius):
-        self.radius = radius
-
-    def within_supercruise_distance(self, sc_distance):
-        self.sc_distance = sc_distance
-
-    def permits_in_possesion(self, permits):
-        self.permits = permits
-
-    def run(self):
-        results = self.nearby()
-        if self.callback:
-            self.callback(self.star_system, self.radius, self.sc_distance, results)
-
-    def nearby(self):
-        ifactorsPrime = None
-        ifactorsAlt = None
-        
-        system = self.edr_systems.system(self.star_system)
-        if not system:
-            return None
-
-        system = system[0]
-        system['distance'] = 0
-        if not system.get('requirePermit', False) or (system['requirePermit'] and system['name'] in self.permits):
-            candidate = self.__interstellar_factors_in_system(system)
-            if candidate:
-                check_sc_distance = candidate['distanceToArrival'] <= self.sc_distance
-                check_landing_pads = self.__has_large_lading_pads(candidate['type']) if self.large_pad_required else True
-                if check_sc_distance and check_landing_pads:
-                    ifactorsPrime = system
-                    ifactorsPrime['station'] = candidate
-                    return ifactorsPrime
-                else:
-                    ifactorsAlt = system
-                    ifactorsAlt['station'] = candidate
-        else:
-            print "skipping {} as it requires a missing permit".format(system['name'])
-
-        sorted_systems = self.edr_systems.systems_within_radius(self.star_system, self.radius)
-
-        for system in sorted_systems:
-            if system['requirePermit'] and not (system['name'] in self.permits):
-                print "skipping {} as it requires a missing permit".format(system['name'])
-                continue
-
-            candidate = self.__interstellar_factors_in_system(system)
-            if candidate:
-                check_sc_distance = candidate['distanceToArrival'] <= self.sc_distance
-                check_landing_pads = self.__has_large_lading_pads(candidate['type']) if self.large_pad_required else True
-                if check_sc_distance and check_landing_pads:
-                    trialed = system
-                    trialed['station'] = candidate
-                    closest = self.edr_systems.closest_destination(trialed, ifactorsPrime)
-                    ifactorsPrime = closest
-                else:
-                    trialed = system
-                    trialed['station'] = candidate
-                    closest = self.edr_systems.closest_destination(trialed, ifactorsAlt)
-                    ifactorsAlt = closest
-
-            if ifactorsPrime:
-                break
-
-        return ifactorsPrime if ifactorsPrime else ifactorsAlt
-
-
-    def closest_station_with_ifc(self, stations):
-        overall = None
-        with_large_landing_pads = None
-        for station in stations:
-            if (not station['otherServices'] or not 'Interstellar Factors Contact' in station['otherServices']):
-                continue
-
-            if overall == None:
-                overall = station
-            elif station['distanceToArrival'] < overall['distanceToArrival']:
-                overall = station
-            
-            if self.__has_large_lading_pads(station['type']):
-                with_large_landing_pads = station
-        
-        return with_large_landing_pads if self.large_pad_required and with_large_landing_pads else overall
-
-
-    def __has_large_lading_pads(self, stationType):
-        return stationType.lower() in ['coriolis starport', 'ocellus starport', 'orbis starport', 'planetary port', 'asteroid base', 'mega ship']
-
-    def __interstellar_factors_in_system(self, system):
-        if not system:
-            return None
-            
-        if system.get('requirePermit', False) and not system['name'] in self.permits :
-            return None
-
-        all_stations = self.edr_systems.stations_in_system(system['name'])
-        if not all_stations or not len(all_stations):
-            return None
-
-        return self.closest_station_with_ifc(all_stations)
-
-    def close(self):
-        # TODO
-        return None
