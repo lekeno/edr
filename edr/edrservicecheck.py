@@ -1,11 +1,16 @@
 class EDRStationServiceCheck(object):
 
     def __init__(self, service):
-        self.large_landing_pad = True
         self.service = service
 
     def check_system(self, system):
-        return system != None
+        if not system:
+            return False
+        
+        if not system.get('information', None):
+            return False
+        
+        return True
 
     def check_station(self, station):
         if not station:
@@ -18,6 +23,62 @@ class EDRStationServiceCheck(object):
             return False
         
         return self.service in station['otherServices']
+    
+class EDRStationFacilityCheck(object):
+
+    def __init__(self, facility):
+        lut = {'shipyard': 'haveShipyard', 'market': 'haveMarket', 'outfitting': 'haveOutfitting'}
+        self.has_facility = lut[facility.lower()] if facility.lower() in lut else None
+
+    def check_system(self, system):
+        if not system:
+            return False
+        
+        if not system.get('information', None):
+            return False
+        
+        return True
+
+    def check_station(self, station):
+        if not station:
+            return False
+        
+        if not self.has_facility:
+            return True
+
+        return station.get(self.has_facility, False)
+
+class EDRStagingCheck(object):
+
+    def __init__(self, max_distance):
+        self.max_distance = max_distance
+
+    def check_system(self, system):
+        if not system:
+            return False
+        
+        if not system.get('information', None) or not system.get('distance', None):
+            return False
+        
+        return system.get('distance', 1) > 0 and system.get('distance', self.max_distance + 1) < self.max_distance
+
+    def check_station(self, station):
+        if not station:
+            return False
+        
+        if not station.get('otherServices', False):
+            return False
+        
+        if not station.get('haveShipyard', False):
+            return False
+
+        if not station.get('haveOutfitting', False):
+            return False
+
+        if not (all(service in station['otherServices'] for service in ['Restock', 'Refuel', 'Repair'])):
+            return False
+
+        return True
 
 class EDRMaterialTraderBasicCheck(EDRStationServiceCheck):
 
@@ -79,8 +140,8 @@ class EDREncodedTraderCheck(EDRMaterialTraderBasicCheck):
     def __init__(self):
         super(EDREncodedTraderCheck, self).__init__()
 
-    def checks_out(self, system):
-        if not super(EDREncodedTraderCheck, self).check_system():
+    def check_system(self, system):
+        if not super(EDREncodedTraderCheck, self).check_system(system):
             return False
 
         info = system['information']
@@ -112,3 +173,37 @@ class EDRBlackMarketCheck(EDRStationServiceCheck):
             return True
         
         return False
+
+class EDRHumanTechBrokerCheck(EDRStationServiceCheck):
+    def __init__(self):
+        super(EDRHumanTechBrokerCheck, self).__init__('Technology Broker')
+
+    def check_system(self, system):
+        if not super(EDRHumanTechBrokerCheck, self).check_system(system):
+            return False
+
+        info = system['information']
+        info['economy'] = info.get('economy', 'N/A')
+        info['population'] = info.get('population', 0)
+        
+        if info['population'] < 1000000:
+            return False
+
+        return info['economy'].lower() == 'industrial'
+    
+class EDRGuardianTechBrokerCheck(EDRStationServiceCheck):
+    def __init__(self):
+        super(EDRGuardianTechBrokerCheck, self).__init__('Technology Broker')
+
+    def check_system(self, system):
+        if not super(EDRGuardianTechBrokerCheck, self).check_system(system):
+            return False
+
+        info = system['information']
+        info['economy'] = info.get('economy', 'N/A')
+        info['population'] = info.get('population', 0)
+        
+        if info['population'] < 1000000:
+            return False
+
+        return info['economy'].lower() == 'high tech'

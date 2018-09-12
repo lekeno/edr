@@ -91,6 +91,12 @@ class EDRServiceFinder(threading.Thread):
             if not self.checker.check_station(station):
                 continue
 
+            state = self.edr_systems.system_state(self.star_system)
+            state = state.lower() if state else state
+            if state == u'lockdown':
+                print "skipping: lockdown"
+                continue
+
             if overall == None:
                 overall = station
             elif station['distanceToArrival'] < overall['distanceToArrival']:

@@ -54,9 +54,19 @@ class EDSMServer(object):
             return None
 
         results = json.loads(resp.content)
-        if not results or not results['stations']:
+        if not results or not results.get('stations', None):
             EDRLOG.log(u"No stations in system {}.".format(system_name), "INFO")
             return []
         sorted_results = sorted(results['stations'], key=lambda t: t["distanceToArrival"])
         return sorted_results
 
+    def factions_in_system(self, system_name):
+        params = {"systemName": system_name}
+        endpoint = "{}/api-system-v1/factions".format(self.EDSM_SERVER)
+        resp = requests.get(endpoint, params=params)
+
+        if resp.status_code != requests.codes.ok:
+            EDRLOG.log(u"Failed to retrieve state for system {} from EDSM: {}.".format(system_name, resp.status_code), "ERROR")
+            return None
+
+        return json.loads(resp.content)

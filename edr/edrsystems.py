@@ -19,6 +19,8 @@ from edentities import EDBounty
 from edri18n import _, _c, _edr
 import edrservicecheck
 import edrservicefinder
+import edrstatecheck
+import edrstatefinder
 
 EDRLOG = edrlog.EDRLog()
 
@@ -31,6 +33,8 @@ class EDRSystems(object):
         os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_stations.v1.p')
     EDSM_SYSTEMS_WITHIN_RADIUS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_systems_radius.v1.p')
+    EDSM_FACTIONS_CACHE = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_factions.v1.p')
     EDR_NOTAMS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/notams.v2.p')
     EDR_SITREPS_CACHE = os.path.join(
@@ -94,6 +98,13 @@ class EDRSystems(object):
             self.edsm_stations_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                   edr_config.edsm_stations_max_age())
 
+        try:
+            with open(self.EDSM_FACTIONS_CACHE, 'rb') as handle:
+                self.edsm_factions_cache = pickle.load(handle)
+        except:
+            self.edsm_factions_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.edsm_factions_max_age())
+        
         try:
             with open(self.EDSM_SYSTEMS_WITHIN_RADIUS_CACHE, 'rb') as handle:
                 self.edsm_systems_within_radius_cache = pickle.load(handle)
@@ -173,6 +184,9 @@ class EDRSystems(object):
         with open(self.EDSM_SYSTEMS_WITHIN_RADIUS_CACHE, 'wb') as handle:
             pickle.dump(self.edsm_systems_within_radius_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+        with open(self.EDSM_FACTIONS_CACHE, 'wb') as handle:
+            pickle.dump(self.edsm_factions_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
     def distance(self, source_system, destination_system):
         if source_system == destination_system:
             return 0
@@ -200,6 +214,55 @@ class EDRSystems(object):
             return the_system
         
         raise ValueError('Unknown system')
+
+    def __factions(self, star_system):
+        if not star_system:
+            return None
+        factions = self.edsm_factions_cache.get(star_system.lower())
+        cached = self.edsm_factions_cache.has_key(star_system.lower())
+        if cached or factions:
+            EDRLOG.log(u"Factions for system {} are in the cache.".format(star_system), "DEBUG")
+            return factions
+
+        factions = self.edsm_server.factions_in_system(star_system)
+        if factions:
+            self.edsm_factions_cache.set(star_system.lower(), factions)
+            EDRLOG.log(u"Cached {}'s factions".format(star_system), "DEBUG")
+            return factions
+
+        self.edsm_factions_cache.set(star_system.lower(), None)
+        EDRLOG.log(u"No match on EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
+        return None
+
+    def system_state(self, star_system):
+        factions = self.__factions(star_system)
+        if not factions:
+            return None
+        
+        if not factions.get('controllingFaction', None) or not factions.get('factions', None):
+            EDRLOG.log(u"Badly formed factions data for system {}.".format(star_system), "INFO")
+            return None
+
+        controlling_faction_id = factions['controllingFaction']['id']
+        all_factions = factions['factions']
+        state = None
+        for faction in all_factions:
+            if faction['id'] == controlling_faction_id:
+                state = faction['state']
+                break
+
+        return state
+
+    def system_allegiance(self, star_system):
+        factions = self.__factions(star_system)
+        if not factions:
+            return None
+        
+        if not factions.get('controllingFaction', None):
+            EDRLOG.log(u"Badly formed factions data for system {}.".format(star_system), "INFO")
+            return None
+
+        return factions['controllingFaction'].get('allegiance', None)
 
     def transfer_time(self, origin, destination):
         dist = self.distance(origin, destination)
@@ -522,19 +585,60 @@ class EDRSystems(object):
     def search_black_market(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
         checker = edrservicecheck.EDRBlackMarketCheck()
         self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
-        
+
+    def search_staging(self, star_system, callback, permits = []):
+        checker = edrservicecheck.EDRStagingCheck(15)
+        self.__search_a_service(star_system, callback, checker, with_large_pad = True, override_radius = 15, permits = permits)
+
+    def search_shipyard(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+        checker = edrservicecheck.EDRStationFacilityCheck('Shipyard')
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+
+    def search_outfitting(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+        checker = edrservicecheck.EDRStationFacilityCheck('Outfitting')
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+
+    def search_market(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+        checker = edrservicecheck.EDRStationFacilityCheck('Market')
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+
+    def search_human_tech_broker(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+        checker = edrservicecheck.EDRHumanTechBrokerCheck()
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+
+    def search_guardian_tech_broker(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+        checker = edrservicecheck.EDRGuardianTechBrokerCheck()
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+
+    def search_pharmaceutical_isolators(self, star_system, callback, override_radius = None, permits = []):
+        checker = edrstatecheck.EDRPharmaceuticalIsolatorsCheck()
+        self.__search_a_state(star_system, callback, checker, override_radius, permits)
+
     def __search_a_service(self, star_system, callback, checker, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
         if not (self.in_bubble(star_system) or self.in_colonia(star_system)):
-            return
+            return #TODO callback with no result
 
         sc_distance = override_sc_distance or self.reasonable_sc_distance
         sc_distance = max(250, sc_distance)
         radius = override_radius or self.reasonable_hs_radius
+        radius = min(60, radius)
 
         finder = edrservicefinder.EDRServiceFinder(star_system, checker, self, callback)
         finder.with_large_pad(with_large_pad)
         finder.within_radius(radius)
         finder.within_supercruise_distance(sc_distance)
+        finder.permits_in_possesion(permits)
+        finder.start()
+
+    def __search_a_state(self, star_system, callback, checker, override_radius = None, permits = []):
+        if not (self.in_bubble(star_system) or self.in_colonia(star_system)):
+            return #TODO callback with no result
+ 
+        radius = override_radius or self.reasonable_hs_radius
+        radius = min(60, radius)
+
+        finder = edrstatefinder.EDRStateFinder(star_system, checker, self, callback)
+        finder.within_radius(radius)
         finder.permits_in_possesion(permits)
         finder.start()
 

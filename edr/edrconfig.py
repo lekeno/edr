@@ -103,6 +103,9 @@ class EDRConfig(object):
     def edsm_stations_max_age(self):
         return int(self.config.get('lrucaches', 'edsm_stations_max_age'))
 
+    def edsm_factions_max_age(self):
+        return int(self.config.get('lrucaches', 'edsm_factions_max_age'))
+
     def lru_max_size(self):
         return int(self.config.get('lrucaches', 'lru_max_size'))
 
