@@ -4,8 +4,11 @@ class EDRBasicStateCheck(object):
     def __init__(self, states, allegiance = None):
         self.states = (state.lower() for state in states) if states else None
         self.allegiance = allegiance
+        self.systems_counter = 0
+        self.stations_counter = None
     
     def check_system(self, system):
+        self.systems_counter = self.systems_counter + 1
         if not system:
             return False
         

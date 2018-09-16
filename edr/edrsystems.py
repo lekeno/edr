@@ -109,7 +109,7 @@ class EDRSystems(object):
             with open(self.EDSM_SYSTEMS_WITHIN_RADIUS_CACHE, 'rb') as handle:
                 self.edsm_systems_within_radius_cache = pickle.load(handle)
         except:
-            self.edsm_systems_within_radius_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+            self.edsm_systems_within_radius_cache = lrucache.LRUCache(edr_config.edsm_within_radius_max_size(),
                                                   edr_config.edsm_systems_max_age())
 
          
@@ -139,6 +139,12 @@ class EDRSystems(object):
         self.systems_cache.set(star_system.lower(), None)
         EDRLOG.log(u"No match on EDR. Temporary entry to be nice on EDR's server.", "DEBUG")
         return None
+
+    def are_stations_stale(self, star_system):
+        if not star_system:
+            return False
+        return self.edsm_stations_cache.is_stale(star_system.lower())
+        
 
     def stations_in_system(self, star_system):
         if not star_system:
@@ -214,6 +220,11 @@ class EDRSystems(object):
             return the_system
         
         raise ValueError('Unknown system')
+
+    def are_factions_stale(self, star_system):
+        if not star_system:
+            return False
+        return self.edsm_factions_cache.is_stale(star_system.lower())
 
     def __factions(self, star_system):
         if not star_system:
@@ -568,6 +579,8 @@ class EDRSystems(object):
 
     def search_interstellar_factors(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
         checker = edrservicecheck.EDRStationServiceCheck('Interstellar Factors Contact')
+        checker.name = 'Interstellar Factors Contact'
+        checker.hint = 'Look for low security systems, or stations run by an anarchy faction regardless of system security'
         self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
 
     def search_raw_trader(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
@@ -586,7 +599,7 @@ class EDRSystems(object):
         checker = edrservicecheck.EDRBlackMarketCheck()
         self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
 
-    def search_staging(self, star_system, callback, permits = []):
+    def search_staging_station(self, star_system, callback, permits = []):
         checker = edrservicecheck.EDRStagingCheck(15)
         self.__search_a_service(star_system, callback, checker, with_large_pad = True, override_radius = 15, permits = permits)
 

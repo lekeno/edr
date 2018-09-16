@@ -48,6 +48,8 @@ class EDRClient(object):
         self.edr_needs_u_novelty_threshold = edr_config.edr_needs_u_novelty_threshold()
         self.previous_ad = None
 
+        self.searching = False
+
         self.blips_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
         self.cognitive_blips_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
         self.traffic_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.traffic_max_age())
@@ -1095,85 +1097,126 @@ class EDRClient(object):
         if not star_system:
             return
         
-        # TODO adjust needs large pad depending on the player's current ship.
-        self.edrsystems.search_interstellar_factors(star_system, self.__interstellar_factors_found, override_sc_distance = override_sc_distance)
-        self.status = _(u"I.Factors: searching...")
+        if self.searching:
+            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")])
+            return
 
-    def __interstellar_factors_found(self, reference, radius, sc, result):
-        details = []
-        if result:
-            sc_distance = result['station']['distanceToArrival']
-            distance = result['distance']
-            pretty_dist = _(u"{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _(u"{dist}LY").format(dist=int(distance))
-            pretty_sc_dist = _(u"{dist}LS").format(dist=int(sc_distance))
-            details.append(_(u"{}, {}").format(result['name'], pretty_dist))
-            details.append(_(u"{} ({}), {}").format(result['station']['name'], result['station']['type'], pretty_sc_dist))
-            self.status = _(u"I.Factors: {}, {} - {} ({}), {}").format(result['name'], pretty_dist, result['station']['name'], result['station']['type'], pretty_sc_dist)
-        else:
-            self.status = _(u"I.Factors: nothing within [{}LY, {}LS] of {}".format(int(radius), int(sc), reference))
-            details.append(_(u"no results within [{}LY, {}LS]").format(int(radius), int(sc)))
-            details.append(_(u"Check for low security or anarchy systems."))
-        self.__notify("Interstellar Factors near {}".format(reference), details)
-        
+        # TODO adjust needs large pad depending on the player's current ship.
+        try:
+            self.edrsystems.search_interstellar_factors(star_system, self.__soi_found, override_sc_distance = override_sc_distance)
+            self.searching = True
+            self.status = _(u"I.Factors: searching...")
+            self.__notify(_(u"EDR Search"), [_(u"Interstellar Factors: searching...")])
+        except ValueError:
+            self.notify_with_details(_(u"EDR Search"), [_(u"Unknown system")])
 
     def raw_material_trader_near(self, star_system, override_sc_distance = None):
         if not star_system:
             return
         
-        # TODO adjust needs large pad depending on the player's current ship.
-        self.edrsystems.search_raw_trader(star_system, self.__raw_trader_found, override_sc_distance = override_sc_distance)
-        self.status = _(u"Raw mat. trader: searching...")
+        if self.searching:
+            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")])
+            return
 
-    def __raw_trader_found(self, reference, radius, sc, result):
-        details = []
-        if result:
-            sc_distance = result['station']['distanceToArrival']
-            distance = result['distance']
-            pretty_dist = _(u"{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _(u"{dist}LY").format(dist=int(distance))
-            pretty_sc_dist = _(u"{dist}LS").format(dist=int(sc_distance))
-            details.append(_(u"{}, {}").format(result['name'], pretty_dist))
-            details.append(_(u"{} ({}), {}").format(result['station']['name'], result['station']['type'], pretty_sc_dist))
-            self.status = _(u"Raw mat. trader: {}, {} - {} ({}), {}").format(result['name'], pretty_dist, result['station']['name'], result['station']['type'], pretty_sc_dist)
-        else:
-            self.status = _(u"Raw mat. trader: nothing within [{}LY, {}LS] of {}".format(int(radius), int(sc), reference))
-            details.append(_(u"no results within [{}LY, {}LS]").format(int(radius), int(sc)))
-            details.append(_(u"Look for relatively safe and inhabited systems with a extraction or refinery economy."))
-        self.__notify("Raw Material Trader near {}".format(reference), details)
+        # TODO adjust needs large pad depending on the player's current ship.
+        try:
+            self.edrsystems.search_raw_trader(star_system, self.__soi_found, override_sc_distance = override_sc_distance)
+            self.searching = True
+            self.status = _(u"Raw mat. trader: searching...")
+            self.__notify(_(u"EDR Search"), [_(u"Raw material trader: searching...")])
+        except ValueError:
+            self.notify_with_details(_(u"EDR Search"), [_(u"Unknown system")])
         
     def encoded_material_trader_near(self, star_system, override_sc_distance = None):
         if not star_system:
             return
         
-        # TODO adjust needs large pad depending on the player's current ship.
-        self.edrsystems.search_encoded_trader(star_system, self.__encoded_trader_found, override_sc_distance = override_sc_distance)
-        self.status = _(u"Encoded data trader: searching...")
+        if self.searching:
+            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")])
+            return
 
-    def __encoded_trader_found(self, reference, radius, sc, result):
-        details = []
-        if result:
-            sc_distance = result['station']['distanceToArrival']
-            distance = result['distance']
-            pretty_dist = _(u"{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _(u"{dist}LY").format(dist=int(distance))
-            pretty_sc_dist = _(u"{dist}LS").format(dist=int(sc_distance))
-            details.append(_(u"{}, {}").format(result['name'], pretty_dist))
-            details.append(_(u"{} ({}), {}").format(result['station']['name'], result['station']['type'], pretty_sc_dist))
-            self.status = _(u"Encoded data trader: {}, {} - {} ({}), {}").format(result['name'], pretty_dist, result['station']['name'], result['station']['type'], pretty_sc_dist)
-        else:
-            self.status = _(u"Encoded data trader: nothing within [{}LY, {}LS] of {}".format(int(radius), int(sc), reference))
-            details.append(_(u"no results within [{}LY, {}LS]").format(int(radius), int(sc)))
-            details.append(_(u"Look for relatively safe and inhabited systems with a high-tech or military economy."))
-        self.__notify("Encoded data trader near {}".format(reference), details)
+        # TODO adjust needs large pad depending on the player's current ship.
+        try:
+            self.edrsystems.search_encoded_trader(star_system, self.__soi_found, override_sc_distance = override_sc_distance)
+            self.searching = True
+            self.status = _(u"Encoded data trader: searching...")
+            self.__notify(_(u"EDR Search"), [_(u"Encoded data trader: searching...")])
+        except ValueError:
+            self.notify_with_details(_(u"EDR Search"), [_(u"Unknown system")])
 
 
     def manufactured_material_trader_near(self, star_system, override_sc_distance = None):
         if not star_system:
             return
         
-        # TODO adjust needs large pad depending on the player's current ship.
-        self.edrsystems.search_manufactured_trader(star_system, self.__manufactured_trader_found, override_sc_distance = override_sc_distance)
-        self.status = _(u"Manufactured mat. trader: searching...")
+        if self.searching:
+            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")])
+            return
 
-    def __manufactured_trader_found(self, reference, radius, sc, result):
+        # TODO adjust needs large pad depending on the player's current ship.
+        try:
+            self.edrsystems.search_manufactured_trader(star_system, self.__soi_found, override_sc_distance = override_sc_distance)
+            self.searching = True
+            self.status = _(u"Manufactured mat. trader: searching...")
+            self.__notify(_(u"EDR Search"), [_(u"Manufactured material trader: searching...")])
+        except ValueError:
+            self.__notify(_(u"EDR Search"), [_(u"Unknown system")])
+
+
+    def staging_station_near(self, star_system, override_sc_distance = None):
+        if not star_system:
+            return
+
+        if self.searching:
+            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")])
+            return
+        
+        # TODO adjust needs large pad depending on the player's current ship.
+        try:
+            self.edrsystems.search_staging_station(star_system, self.__soi_found)
+            self.searching = True
+            self.status = _(u"Staging station: searching...")
+            self.__notify(_(u"EDR Search"), [_(u"Staging station: searching...")])
+        except ValueError:
+            self.notify_with_details(_(u"EDR Search"), [_(u"Unknown system")])
+
+    def human_tech_broker_near(self, star_system, override_sc_distance = None):
+        if not star_system:
+            return
+        
+        if self.searching:
+            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")])
+            return
+
+        # TODO adjust needs large pad depending on the player's current ship.
+        try:
+            self.edrsystems.search_human_tech_broker(star_system, self.__soi_found, override_sc_distance = override_sc_distance)
+            self.searching = True
+            self.status = _(u"Human tech broker: searching...")
+            self.__notify(_(u"EDR Search"), [_(u"Human tech broker: searching...")])
+        except ValueError:
+            self.__notify(_(u"EDR Search"), [_(u"Unknown system")])
+    
+    def guardian_tech_broker_near(self, star_system, override_sc_distance = None):
+        if not star_system:
+            return
+        
+        if self.searching:
+            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")])
+            return
+
+        # TODO adjust needs large pad depending on the player's current ship.
+        try:
+            self.edrsystems.search_guardian_tech_broker(star_system, self.__soi_found, override_sc_distance = override_sc_distance)
+            self.searching = True
+            self.status = _(u"Guardian tech broker: searching...")
+            self.__notify(_(u"EDR Search"), [_(u"Guardian tech broker: searching...")])
+        except ValueError:
+            self.__notify(_(u"EDR Search"), [_(u"Unknown system")])
+
+
+    def __soi_found(self, reference, radius, sc, soi_checker, result):
+        self.searching = False
         details = []
         if result:
             sc_distance = result['station']['distanceToArrival']
@@ -1182,9 +1225,14 @@ class EDRClient(object):
             pretty_sc_dist = _(u"{dist}LS").format(dist=int(sc_distance))
             details.append(_(u"{}, {}").format(result['name'], pretty_dist))
             details.append(_(u"{} ({}), {}").format(result['station']['name'], result['station']['type'], pretty_sc_dist))
-            self.status = _(u"Manufactured mat. trader: {}, {} - {} ({}), {}").format(result['name'], pretty_dist, result['station']['name'], result['station']['type'], pretty_sc_dist)
+            details.append(_(u"as of {}").format(result['station']['updateTime']['information']))
+            self.status = u"{}: {}, {} - {} ({}), {}".format(soi_checker.name, result['name'], pretty_dist, result['station']['name'], result['station']['type'], pretty_sc_dist)
         else:
-            self.status = _(u"Manufactured mat. trader: nothing within [{}LY, {}LS] of {}".format(int(radius), int(sc), reference))
-            details.append(_(u"no results within [{}LY, {}LS]").format(int(radius), int(sc)))
-            details.append(_(u"Look for relatively safe and inhabited systems with an industrial economy."))
-        self.__notify("Manufactured mat. trader near {}".format(reference), details)
+            self.status = _(u"{}: nothing within [{}LY, {}LS] of {}".format(soi_checker.name, int(radius), int(sc), reference))
+            checked = _("checked {} systems").format(soi_checker.systems_counter) 
+            if soi_checker.stations_counter: 
+                checked = _("checked {} systems and {} stations").format(soi_checker.systems_counter, soi_checker.stations_counter) 
+            details.append(_(u"nothing found within [{}LY, {}LS], {}.").format(int(radius), int(sc), checked))
+            if soi_checker.hint:
+                details.append(soi_checker.hint)
+        self.__notify(_(u"{} near {}").format(soi_checker.name, reference), details, clear_before = True)

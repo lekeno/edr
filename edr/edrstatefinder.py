@@ -7,7 +7,7 @@ class EDRStateFinder(threading.Thread):
         self.star_system = star_system
         self.checker = checker
         self.radius = 50
-        self.max_trials = 50
+        self.max_trials = 25
         self.edr_systems = edr_systems
         self.callback = callback
         self.permits = []
@@ -37,21 +37,38 @@ class EDRStateFinder(threading.Thread):
         accessible = not system.get('requirePermit', False) or (system.get('requirePermit', False) and system['name'] in self.permits)
         if possibility and accessible:
             state = self.__state_of_system(system)
-            allegiance = self.__
-            fit = state and self.checker.check_state(state) 
-            if :
+            allegiance = self.edr_systems.system_allegiance(system['allegiance'])
+            if self.checker.check_state(state) and self.checker.check_allegiance(allegiance):
                 statePrime = system
                 return statePrime
 
         systems = self.edr_systems.systems_within_radius(self.star_system, self.radius)
         shuffle(systems)
-        trials = 0
+        
+        statePrime = self.__search(systems)
+        if not statePrime:
+            shuffle(systems)
+            statePrime = self.__search(systems)
 
+        return statePrime
+
+    def close(self):
+        # TODO
+        return None
+
+    def __search(self, systems):
+        statePrime = None
+        trials = 0
         for system in systems:
             possibility = self.checker.check_system(system)
             accessible = not system.get('requirePermit', False) or (system.get('requirePermit', False) and system['name'] in self.permits)
             if not possibility or not accessible:
                 continue
+
+            if not self.edr_systems.are_factions_stale(system['name']):  
+                trials = trials + 1
+                if trials > self.max_trials:
+                    break
 
             state = self.edr_systems.system_state(system['name'])
             allegiance = self.edr_systems.system_allegiance(system['allegiance'])
@@ -60,12 +77,4 @@ class EDRStateFinder(threading.Thread):
                 statePrime = system
                 break
 
-            trials = trials + 1
-            if trials > self.max_trials:
-                break
-
         return statePrime
-
-    def close(self):
-        # TODO
-        return None

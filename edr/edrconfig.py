@@ -109,6 +109,9 @@ class EDRConfig(object):
     def lru_max_size(self):
         return int(self.config.get('lrucaches', 'lru_max_size'))
 
+    def edsm_within_radius_max_size(self):
+        return int(self.config.get('lrucaches', 'edsm_within_radius_max_size'))
+
     def opponents_max_age(self, kind):
         ckind = kind.lower()
         return int(self.config.get(ckind, '{}_max_age'.format(ckind)))

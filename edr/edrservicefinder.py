@@ -1,4 +1,5 @@
 import threading
+from random import shuffle
 
 class EDRServiceFinder(threading.Thread):
 
@@ -7,6 +8,7 @@ class EDRServiceFinder(threading.Thread):
         self.checker = checker
         self.radius = 50
         self.sc_distance = 1500
+        self.max_trials = 25
         self.edr_systems = edr_systems
         self.callback = callback
         self.large_pad_required = True
@@ -28,7 +30,7 @@ class EDRServiceFinder(threading.Thread):
     def run(self):
         results = self.nearby()
         if self.callback:
-            self.callback(self.star_system, self.radius, self.sc_distance, results)
+            self.callback(self.star_system, self.radius, self.sc_distance, self.checker, results)
 
     def nearby(self):
         servicePrime = None
@@ -55,13 +57,36 @@ class EDRServiceFinder(threading.Thread):
                     serviceAlt = system
                     serviceAlt['station'] = candidate
 
-        sorted_systems = self.edr_systems.systems_within_radius(self.star_system, self.radius)
+        systems = self.edr_systems.systems_within_radius(self.star_system, self.radius)
 
-        for system in sorted_systems:
+        candidates = {'prime': servicePrime, 'alt': serviceAlt}
+        candidates = self.__search(systems, candidates)
+        serviceAlt = candidates['alt']
+        servicePrime = candidates['prime']
+
+        if not servicePrime and not serviceAlt:
+            shuffle(systems)
+            candidates = self.__search(systems, candidates)
+            serviceAlt = candidates['alt']
+            servicePrime = candidates['prime']
+
+        return servicePrime if servicePrime else serviceAlt
+
+    def __search(self, systems, candidates):
+        trials = 0
+        for system in systems:
             possibility = self.checker.check_system(system)
             accessible = not system.get('requirePermit', False) or (system.get('requirePermit', False) and system['name'] in self.permits)
             if not possibility or not accessible:
                 continue
+
+            if self.edr_systems.are_stations_stale(system['name']):
+                trials = trials + 1
+                print "Trials #{}".format(trials)
+                if trials > self.max_trials:
+                    break
+            else:
+                print "Free trial, {} is fresh in the cache".format(system['name'])
 
             candidate = self.__service_in_system(system)
             if candidate:
@@ -70,19 +95,19 @@ class EDRServiceFinder(threading.Thread):
                 if check_sc_distance and check_landing_pads:
                     trialed = system
                     trialed['station'] = candidate
-                    closest = self.edr_systems.closest_destination(trialed, servicePrime)
-                    servicePrime = closest
+                    closest = self.edr_systems.closest_destination(trialed, candidates['prime'])
+                    candidates['prime'] = closest
                 else:
                     trialed = system
                     trialed['station'] = candidate
-                    closest = self.edr_systems.closest_destination(trialed, serviceAlt)
-                    serviceAlt = closest
+                    closest = self.edr_systems.closest_destination(trialed, candidates['alt'])
+                    candidates['alt'] = closest
 
-            if servicePrime:
+            if candidates['prime']:
                 break
 
-        return servicePrime if servicePrime else serviceAlt
-
+        return candidates
+        
 
     def closest_station_with_service(self, stations):
         overall = None
@@ -94,7 +119,6 @@ class EDRServiceFinder(threading.Thread):
             state = self.edr_systems.system_state(self.star_system)
             state = state.lower() if state else state
             if state == u'lockdown':
-                print "skipping: lockdown"
                 continue
 
             if overall == None:
