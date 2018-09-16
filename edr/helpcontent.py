@@ -20,6 +20,7 @@ class HelpContent(object):
                 _(u" - !help powerplay: features for commanders pledged to a power"),
                 _(u" - !help cmdrdex: personalizing EDR's commanders database"),
                 _(u" - !help sqdrdex: tag other commanders as ally or enemy of your squadron"),
+                _(u" - !help nearby: command to find things around you or a specific system, e.g. interstellar factors"),
                 _(u" - !help config: configuration options"),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
@@ -176,6 +177,20 @@ class HelpContent(object):
                 _(u" - '#enemy' or '#s!': to tag a commander as an enemy."),
                 _(u" - '-#ally' or '-#s+': to remove an ally tag off a commander."),
                 _(u" - '-#enemy' or '-#s!': to remove an enemy tag off a commander."),
+                u"⚶",
+                _(u"Send !clear in chat to clear everything on the overlay.")
+            ]
+        },
+        "nearby": {
+            "header": _(u"Finding things around you or a specified system"),
+            "details": [
+                _(u" - '!if' or '!if Lave' to find an Interstellar Factors near your position or Lave."),
+                _(u" - '!raw' or '!raw Lave' to find a Raw Material Trader near your position or Lave"),
+                _(u" - '!encoded', !enc' or '!enc Lave' to find an Encoded Data Trader near your position or Lave"),
+                _(u" - '!manufactured', '!man' or '!man Lave' to find a Manufactured Material Trader near your position or Lave"),
+                _(u" - '!staging' or '!staging Lave' to find a good staging station near your position or Lave, i.e. large pads, shipyard, outfitting, repair/rearm/refuel."),
+                _(u" - '!htb', '!humantechbroker' or '!htb Lave' to find a Human Tech Broker near your position or Lave"),
+                _(u" - '!gtb', '!guardiantechbroker' or '!gtb Lave' to find a Guardian Tech Broker near your position or Lave"),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
             ]

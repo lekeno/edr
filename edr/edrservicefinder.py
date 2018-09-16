@@ -82,12 +82,9 @@ class EDRServiceFinder(threading.Thread):
 
             if self.edr_systems.are_stations_stale(system['name']):
                 trials = trials + 1
-                print "Trials #{}".format(trials)
                 if trials > self.max_trials:
                     break
-            else:
-                print "Free trial, {} is fresh in the cache".format(system['name'])
-
+            
             candidate = self.__service_in_system(system)
             if candidate:
                 check_sc_distance = candidate['distanceToArrival'] <= self.sc_distance

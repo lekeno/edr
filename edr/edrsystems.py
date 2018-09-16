@@ -628,9 +628,6 @@ class EDRSystems(object):
         self.__search_a_state(star_system, callback, checker, override_radius, permits)
 
     def __search_a_service(self, star_system, callback, checker, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
-        if not (self.in_bubble(star_system) or self.in_colonia(star_system)):
-            return #TODO callback with no result
-
         sc_distance = override_sc_distance or self.reasonable_sc_distance
         sc_distance = max(250, sc_distance)
         radius = override_radius or self.reasonable_hs_radius

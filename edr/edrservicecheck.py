@@ -14,7 +14,6 @@ class EDRStationServiceCheck(EDRSystemStationCheck):
 
     def check_system(self, system):
         self.systems_counter = self.systems_counter + 1
-        print "#{}: {}".format(self.systems_counter, system['name'])
         return True
 
     def check_station(self, station):

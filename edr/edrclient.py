@@ -1101,6 +1101,10 @@ class EDRClient(object):
             self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")])
             return
 
+        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
+            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")])
+            return
+
         # TODO adjust needs large pad depending on the player's current ship.
         try:
             self.edrsystems.search_interstellar_factors(star_system, self.__soi_found, override_sc_distance = override_sc_distance)
@@ -1108,6 +1112,7 @@ class EDRClient(object):
             self.status = _(u"I.Factors: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Interstellar Factors: searching...")])
         except ValueError:
+            self.status = _(u"I.Factors: failed")
             self.notify_with_details(_(u"EDR Search"), [_(u"Unknown system")])
 
     def raw_material_trader_near(self, star_system, override_sc_distance = None):
@@ -1118,6 +1123,10 @@ class EDRClient(object):
             self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")])
             return
 
+        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
+            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")])
+            return
+
         # TODO adjust needs large pad depending on the player's current ship.
         try:
             self.edrsystems.search_raw_trader(star_system, self.__soi_found, override_sc_distance = override_sc_distance)
@@ -1125,6 +1134,7 @@ class EDRClient(object):
             self.status = _(u"Raw mat. trader: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Raw material trader: searching...")])
         except ValueError:
+            self.status = _(u"Raw mat. trader: failed")
             self.notify_with_details(_(u"EDR Search"), [_(u"Unknown system")])
         
     def encoded_material_trader_near(self, star_system, override_sc_distance = None):
@@ -1135,6 +1145,10 @@ class EDRClient(object):
             self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")])
             return
 
+        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
+            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")])
+            return
+
         # TODO adjust needs large pad depending on the player's current ship.
         try:
             self.edrsystems.search_encoded_trader(star_system, self.__soi_found, override_sc_distance = override_sc_distance)
@@ -1142,6 +1156,7 @@ class EDRClient(object):
             self.status = _(u"Encoded data trader: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Encoded data trader: searching...")])
         except ValueError:
+            self.status = _(u"Encoded data trader: failed")
             self.notify_with_details(_(u"EDR Search"), [_(u"Unknown system")])
 
 
@@ -1153,6 +1168,10 @@ class EDRClient(object):
             self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")])
             return
 
+        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
+            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")])
+            return
+        
         # TODO adjust needs large pad depending on the player's current ship.
         try:
             self.edrsystems.search_manufactured_trader(star_system, self.__soi_found, override_sc_distance = override_sc_distance)
@@ -1160,6 +1179,7 @@ class EDRClient(object):
             self.status = _(u"Manufactured mat. trader: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Manufactured material trader: searching...")])
         except ValueError:
+            self.status = _(u"Manufactured mat. trader: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")])
 
 
@@ -1171,6 +1191,10 @@ class EDRClient(object):
             self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")])
             return
         
+        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
+            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")])
+            return
+
         # TODO adjust needs large pad depending on the player's current ship.
         try:
             self.edrsystems.search_staging_station(star_system, self.__soi_found)
@@ -1178,6 +1202,7 @@ class EDRClient(object):
             self.status = _(u"Staging station: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Staging station: searching...")])
         except ValueError:
+            self.status = _(u"Staging station: failed")
             self.notify_with_details(_(u"EDR Search"), [_(u"Unknown system")])
 
     def human_tech_broker_near(self, star_system, override_sc_distance = None):
@@ -1188,6 +1213,10 @@ class EDRClient(object):
             self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")])
             return
 
+        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
+            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")])
+            return
+
         # TODO adjust needs large pad depending on the player's current ship.
         try:
             self.edrsystems.search_human_tech_broker(star_system, self.__soi_found, override_sc_distance = override_sc_distance)
@@ -1195,6 +1224,7 @@ class EDRClient(object):
             self.status = _(u"Human tech broker: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Human tech broker: searching...")])
         except ValueError:
+            self.status = _(u"Human tech broker: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")])
     
     def guardian_tech_broker_near(self, star_system, override_sc_distance = None):
@@ -1205,6 +1235,10 @@ class EDRClient(object):
             self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")])
             return
 
+        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
+            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")])
+            return
+
         # TODO adjust needs large pad depending on the player's current ship.
         try:
             self.edrsystems.search_guardian_tech_broker(star_system, self.__soi_found, override_sc_distance = override_sc_distance)
@@ -1212,6 +1246,7 @@ class EDRClient(object):
             self.status = _(u"Guardian tech broker: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Guardian tech broker: searching...")])
         except ValueError:
+            self.status = _(u"Guardian tech broker: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")])
 
 
