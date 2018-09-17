@@ -31,13 +31,17 @@ class LRUCache(object):
         if self.capacity <= 0:
             return None
 
+        if not self.has_key(key):
+            return None
+
         try:
-            self.cache[key] = self.cache.pop(key)
             entry = self.cache[key]
             if not self.is_stale(key):
+                self.cache[key] = self.cache.pop(key)
                 return entry["content"]
             else:
-                EDRLOG.log(u"Stale entry: {now}-{dt}>{mxa}, {content}".format(now=datetime.datetime.now(), dt=entry["datetime"], mxa=self.max_age, content=entry["content"]), "DEBUG")
+                EDRLOG.log(u"Stale entry for {key}: {now} - {dt} = {diff} > {mxa}, {content}".format(key=key, now=datetime.datetime.now(), dt=entry["datetime"], diff=(datetime.datetime.now() - entry["datetime"]), mxa=self.max_age, content=entry["content"]), "DEBUG")
+                self.cache.pop(key)
         except KeyError:
             pass
         

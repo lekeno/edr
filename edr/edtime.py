@@ -108,6 +108,9 @@ class EDTime(object, comparable.ComparableMixin):
         else:
             return NotImplemented
 
+    def is_in_the_past(self):
+        return self < EDTime()
+
     def elapsed_threshold(self, journal_timestamp, threshold_timedelta):
         edt= EDTime()
         edt.from_journal_timestamp(journal_timestamp)

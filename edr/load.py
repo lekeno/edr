@@ -196,7 +196,7 @@ def handle_movement_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_place_if_obsolete(place, entry["timestamp"])
         outcome["reason"] = "Hyperspace"
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
-        EDR_CLIENT.check_system(entry["StarSystem"])
+        EDR_CLIENT.check_system(entry["StarSystem"], may_create=True)
 
     if entry["event"] in ["ApproachSettlement"]:
         place = entry["Name"]
@@ -215,7 +215,7 @@ def handle_change_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_place_if_obsolete(place, entry["timestamp"])
         outcome["reason"] = "Location event"
         EDRLOG.log(u"Place changed: {} (location event)".format(place), "INFO")
-        EDR_CLIENT.check_system(entry["StarSystem"])
+        EDR_CLIENT.check_system(entry["StarSystem"], may_create=True)
 
     if entry["event"] in ["Undocked", "Docked", "DockingCancelled", "DockingDenied",
                           "DockingGranted", "DockingRequested", "DockingTimeout"]:
@@ -329,8 +329,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if ed_player.is_crew_member():
         ship = u"Unknown"
     else:
-        ship = state["ShipType"]
-
+        ship = edentities.EDVehicles.canonicalize(state["ShipType"])
         
     status_outcome = {"updated": False, "reason": "Unspecified"}
 
@@ -408,7 +407,7 @@ def edr_update_cmdr_status(cmdr, reason_for_update):
 
     if not EDR_CLIENT.blip(cmdr.name, report):
         EDR_CLIENT.status = _(u"blip failed.")
-        EDR_CLIENT.evict_cmdr(cmdr.name)
+        EDR_CLIENT.evict_cmdr(cmdr.name) # TODO reconsider if needed, this was the source of multiple side effects :()
         return
 
     EDR_CLIENT.status = _(u"blip succeeded!")
@@ -449,9 +448,6 @@ def edr_submit_crime(criminal_cmdrs, offence, victim):
     if not EDR_CLIENT.crime(victim.star_system, report):
         EDR_CLIENT.status = _(u"failed to report crime.")
         EDR_CLIENT.evict_system(victim.star_system)
-        return
-
-    EDR_CLIENT.status = _(u"crime reported!")
 
 
 def edr_submit_crime_self(criminal_cmdr, offence, victim):
@@ -487,10 +483,6 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim):
     if not EDR_CLIENT.crime(criminal_cmdr.star_system, report):
         EDR_CLIENT.status = _(u"failed to report crime.")
         EDR_CLIENT.evict_system(criminal_cmdr.star_system)
-        return
-
-    EDR_CLIENT.status = _(u"crime reported!")
-
 
 def edr_submit_contact(cmdr_name, ship, timestamp, source, witness):
     """
@@ -529,7 +521,6 @@ def edr_submit_contact(cmdr_name, ship, timestamp, source, witness):
         EDR_CLIENT.status = _(u"failed to report contact.")
         EDR_CLIENT.evict_cmdr(cmdr_name)
 
-    EDR_CLIENT.status = _(u"contact reported (cmdr {name}).").format(name=cmdr_name)
     edr_submit_traffic(cmdr_name, ship, timestamp, source, witness)
 
 def edr_submit_scan(scan, timestamp, source, witness):
@@ -556,7 +547,6 @@ def edr_submit_scan(scan, timestamp, source, witness):
     if not EDR_CLIENT.scanned(scan["cmdr"], report):
         EDR_CLIENT.status = _(u"failed to report scan.")
         EDR_CLIENT.evict_cmdr(scan["cmdr"])
-    EDR_CLIENT.status = _(u"scan reported (cmdr {name}).").format(name=scan["cmdr"])
 
 def edr_submit_traffic(cmdr_name, ship, timestamp, source, witness):
     """
@@ -594,7 +584,6 @@ def edr_submit_traffic(cmdr_name, ship, timestamp, source, witness):
     if not EDR_CLIENT.traffic(witness.star_system, report):
         EDR_CLIENT.status = _(u"failed to report traffic.")
         EDR_CLIENT.evict_system(witness.star_system)
-    EDR_CLIENT.status = _(u"traffic reported (cmdr {name}).").format(name=cmdr_name)
 
 def edr_submit_multicrew_session(player, report):
     if not player.in_open() and not player.destroyed:
@@ -604,7 +593,6 @@ def edr_submit_multicrew_session(player, report):
 
     if not EDR_CLIENT.crew_report(report):
         EDR_CLIENT.status = _(u"failed to report multicrew session.")
-    EDR_CLIENT.status = _(u"multicrew session reported (cmdr {name}).").format(name=report["crew"])
 
 def report_crime(cmdr, entry):
     """
@@ -762,7 +750,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         overlay_command("" if len(command_parts) == 1 else command_parts[1])
     elif command == "!audiocue" and len(command_parts) == 2:
         audiocue_command(command_parts[1])
-    elif command == "!who":
+    elif command in ["!who", "!w"]:
         target_cmdr = None
         if len(command_parts) == 2:
             target_cmdr = command_parts[1]
@@ -812,6 +800,69 @@ def handle_bang_commands(cmdr, command, command_parts):
         to_sys = systems[1] if len(systems) == 2 else systems[0]
         EDRLOG.log(u"Distance command from {} to {}".format(from_sys, to_sys), "INFO")
         EDR_CLIENT.distance(from_sys, to_sys)
+    elif command == "!if":
+        EDRLOG.log(u"Interstellar Factors command", "INFO")
+        search_center = cmdr.star_system
+        override_sc_dist = None
+        if len(command_parts) >= 2:
+            parameters = " ".join(command_parts[1:]).split(" < ", 1)
+            search_center = parameters[0] or cmdr.star_system
+            override_sc_dist = parameters[1] if len(parameters) > 1 else None
+        EDR_CLIENT.interstellar_factors_near(search_center, override_sc_dist)
+    elif command == "!raw":
+        EDRLOG.log(u"Raw Material Trader command", "INFO")
+        search_center = cmdr.star_system
+        override_sc_dist = None
+        if len(command_parts) >= 2:
+            parameters = " ".join(command_parts[1:]).split(" < ", 1)
+            search_center = parameters[0] or cmdr.star_system
+            override_sc_dist = parameters[1] if len(parameters) > 1 else None
+        EDR_CLIENT.raw_material_trader_near(search_center, override_sc_dist)
+    elif command in ["!encoded", "!enc"]:
+        EDRLOG.log(u"Encoded Material Trader command", "INFO")
+        search_center = cmdr.star_system
+        override_sc_dist = None
+        if len(command_parts) >= 2:
+            parameters = " ".join(command_parts[1:]).split(" < ", 1)
+            search_center = parameters[0] or cmdr.star_system
+            override_sc_dist = parameters[1] if len(parameters) > 1 else None
+        EDR_CLIENT.encoded_material_trader_near(search_center, override_sc_dist)
+    elif command in ["!manufactured", "!man"]:
+        EDRLOG.log(u"Manufactured Material Trader command", "INFO")
+        search_center = cmdr.star_system
+        override_sc_dist = None
+        if len(command_parts) >= 2:
+            parameters = " ".join(command_parts[1:]).split(" < ", 1)
+            search_center = parameters[0] or cmdr.star_system
+            override_sc_dist = parameters[1] if len(parameters) > 1 else None
+        EDR_CLIENT.manufactured_material_trader_near(search_center, override_sc_dist)
+    elif command == "!staging":
+        EDRLOG.log(u"Looking for a staging station", "INFO")
+        search_center = cmdr.star_system
+        override_sc_dist = None
+        if len(command_parts) >= 2:
+            parameters = " ".join(command_parts[1:]).split(" < ", 1)
+            search_center = parameters[0] or cmdr.star_system
+            override_sc_dist = parameters[1] if len(parameters) > 1 else None
+        EDR_CLIENT.staging_station_near(search_center, override_sc_dist)
+    elif command in ["!htb", "!humantechbroker"]:
+        EDRLOG.log(u"Looking for a human tech broker", "INFO")
+        search_center = cmdr.star_system
+        override_sc_dist = None
+        if len(command_parts) >= 2:
+            parameters = " ".join(command_parts[1:]).split(" < ", 1)
+            search_center = parameters[0] or cmdr.star_system
+            override_sc_dist = parameters[1] if len(parameters) > 1 else None
+        EDR_CLIENT.human_tech_broker_near(search_center, override_sc_dist)
+    elif command in ["!gtb", "!guardiantechbroker"]:
+        EDRLOG.log(u"Looking for a guardian tech broker", "INFO")
+        search_center = cmdr.star_system
+        override_sc_dist = None
+        if len(command_parts) >= 2:
+            parameters = " ".join(command_parts[1:]).split(" < ", 1)
+            search_center = parameters[0] or cmdr.star_system
+            override_sc_dist = parameters[1] if len(parameters) > 1 else None
+        EDR_CLIENT.guardian_tech_broker_near(search_center, override_sc_dist)
     elif command == "!help":
         EDRLOG.log(u"Help command", "INFO")
         EDR_CLIENT.help("" if len(command_parts) == 1 else command_parts[1])

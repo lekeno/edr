@@ -26,8 +26,8 @@ class TestEDTime(TestCase):
         self.assertEqual(result, u"0s")
 
         timespan = -60*60*24*12
-        with self.assertRaises(ValueError):
-            EDTime.pretty_print_timespan(timespan)
+        result = EDTime.pretty_print_timespan(timespan)
+        self.assertEqual(result, u"0")
 
     def test_pretty_print_timespan_short_diff(self):
         timespan = 60*60*24*7 + 60*60*5

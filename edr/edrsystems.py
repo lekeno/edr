@@ -3,7 +3,7 @@
 
 import os
 import pickle
-from math import sqrt
+from math import sqrt, ceil
 
 import datetime
 import time
@@ -17,14 +17,24 @@ import lrucache
 import edsmserver
 from edentities import EDBounty
 from edri18n import _, _c, _edr
+import edrservicecheck
+import edrservicefinder
+import edrstatecheck
+import edrstatefinder
 
 EDRLOG = edrlog.EDRLog()
 
 class EDRSystems(object):
     EDR_SYSTEMS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/systems.v2.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/systems.v3.p')
     EDSM_SYSTEMS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_systems.v2.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_systems.v3.p')
+    EDSM_STATIONS_CACHE = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_stations.v1.p')
+    EDSM_SYSTEMS_WITHIN_RADIUS_CACHE = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_systems_radius.v1.p')
+    EDSM_FACTIONS_CACHE = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_factions.v1.p')
     EDR_NOTAMS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/notams.v2.p')
     EDR_SITREPS_CACHE = os.path.join(
@@ -35,6 +45,8 @@ class EDRSystems(object):
         os.path.abspath(os.path.dirname(__file__)), 'cache/crimes.v2.p')
 
     def __init__(self, server):
+        self.reasonable_sc_distance = 1500
+        self.reasonable_hs_radius = 50
         edr_config = edrconfig.EDRConfig()
 
         try:
@@ -78,6 +90,29 @@ class EDRSystems(object):
         except:
             self.edsm_systems_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                   edr_config.edsm_systems_max_age())
+                                            
+        try:
+            with open(self.EDSM_STATIONS_CACHE, 'rb') as handle:
+                self.edsm_stations_cache = pickle.load(handle)
+        except:
+            self.edsm_stations_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.edsm_stations_max_age())
+
+        try:
+            with open(self.EDSM_FACTIONS_CACHE, 'rb') as handle:
+                self.edsm_factions_cache = pickle.load(handle)
+        except:
+            self.edsm_factions_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.edsm_factions_max_age())
+        
+        try:
+            with open(self.EDSM_SYSTEMS_WITHIN_RADIUS_CACHE, 'rb') as handle:
+                self.edsm_systems_within_radius_cache = pickle.load(handle)
+        except:
+            self.edsm_systems_within_radius_cache = lrucache.LRUCache(edr_config.edsm_within_radius_max_size(),
+                                                  edr_config.edsm_systems_max_age())
+
+         
 
         self.reports_check_interval = edr_config.reports_check_interval()
         self.notams_check_interval = edr_config.notams_check_interval()
@@ -90,7 +125,8 @@ class EDRSystems(object):
         if not star_system:
             return None
         sid = self.systems_cache.get(star_system.lower())
-        if sid:
+        cached = self.systems_cache.has_key(star_system.lower())
+        if cached or sid:
             EDRLOG.log(u"System {} is in the cache with id={}".format(star_system, sid), "DEBUG")
             return sid
 
@@ -100,6 +136,33 @@ class EDRSystems(object):
             EDRLOG.log(u"Cached {}'s id={}".format(star_system, sid), "DEBUG")
             return sid
 
+        self.systems_cache.set(star_system.lower(), None)
+        EDRLOG.log(u"No match on EDR. Temporary entry to be nice on EDR's server.", "DEBUG")
+        return None
+
+    def are_stations_stale(self, star_system):
+        if not star_system:
+            return False
+        return self.edsm_stations_cache.is_stale(star_system.lower())
+        
+
+    def stations_in_system(self, star_system):
+        if not star_system:
+            return None
+        stations = self.edsm_stations_cache.get(star_system.lower())
+        cached = self.edsm_stations_cache.has_key(star_system.lower())
+        if cached or stations:
+            EDRLOG.log(u"Stations for system {} are in the cache.".format(star_system), "DEBUG")
+            return stations
+
+        stations = self.edsm_server.stations_in_system(star_system)
+        if stations:
+            self.edsm_stations_cache.set(star_system.lower(), stations)
+            EDRLOG.log(u"Cached {}'s stations".format(star_system), "DEBUG")
+            return stations
+
+        self.edsm_stations_cache.set(star_system.lower(), None)
+        EDRLOG.log(u"No match on EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
         return None
 
     def persist(self):
@@ -121,24 +184,104 @@ class EDRSystems(object):
         with open(self.EDSM_SYSTEMS_CACHE, 'wb') as handle:
             pickle.dump(self.edsm_systems_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+        with open(self.EDSM_STATIONS_CACHE, 'wb') as handle:
+            pickle.dump(self.edsm_stations_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        with open(self.EDSM_SYSTEMS_WITHIN_RADIUS_CACHE, 'wb') as handle:
+            pickle.dump(self.edsm_systems_within_radius_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        with open(self.EDSM_FACTIONS_CACHE, 'wb') as handle:
+            pickle.dump(self.edsm_factions_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
     def distance(self, source_system, destination_system):
         if source_system == destination_system:
             return 0
-        source = self.edsm_systems_cache.get(source_system.lower())
-        destination = self.edsm_systems_cache.get(destination_system.lower())
-        if not source:
-            source = self.edsm_server.system(source_system)
-            if source:
-                self.edsm_systems_cache.set(source_system.lower(), source)
-        if not destination:
-            destination = self.edsm_server.system(destination_system)
-            if destination:
-                self.edsm_systems_cache.set(destination_system.lower(), destination)
+        source = self.system(source_system)
+        destination = self.system(destination_system)
+ 
         if source and destination:
             source_coords = source[0]["coords"]
             dest_coords = destination[0]["coords"] 
             return sqrt((dest_coords["x"] - source_coords["x"])**2 + (dest_coords["y"] - source_coords["y"])**2 + (dest_coords["z"] - source_coords["z"])**2)
         raise ValueError('Unknown system')
+
+    
+    def system(self, name):
+        if not name:
+            return None
+
+        the_system = self.edsm_systems_cache.get(name.lower())
+        if the_system:
+            return the_system
+
+        the_system = self.edsm_server.system(name)
+        if the_system:
+            self.edsm_systems_cache.set(name.lower(), the_system)
+            return the_system
+        
+        raise ValueError('Unknown system')
+
+    def are_factions_stale(self, star_system):
+        if not star_system:
+            return False
+        return self.edsm_factions_cache.is_stale(star_system.lower())
+
+    def __factions(self, star_system):
+        if not star_system:
+            return None
+        factions = self.edsm_factions_cache.get(star_system.lower())
+        cached = self.edsm_factions_cache.has_key(star_system.lower())
+        if cached or factions:
+            EDRLOG.log(u"Factions for system {} are in the cache.".format(star_system), "DEBUG")
+            return factions
+
+        factions = self.edsm_server.factions_in_system(star_system)
+        if factions:
+            self.edsm_factions_cache.set(star_system.lower(), factions)
+            EDRLOG.log(u"Cached {}'s factions".format(star_system), "DEBUG")
+            return factions
+
+        self.edsm_factions_cache.set(star_system.lower(), None)
+        EDRLOG.log(u"No match on EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
+        return None
+
+    def system_state(self, star_system):
+        factions = self.__factions(star_system)
+        if not factions:
+            return None
+        
+        if not factions.get('controllingFaction', None) or not factions.get('factions', None):
+            EDRLOG.log(u"Badly formed factions data for system {}.".format(star_system), "INFO")
+            return None
+
+        controlling_faction_id = factions['controllingFaction']['id']
+        all_factions = factions['factions']
+        state = None
+        for faction in all_factions:
+            if faction['id'] == controlling_faction_id:
+                state = faction['state']
+                break
+
+        return state
+
+    def system_allegiance(self, star_system):
+        factions = self.__factions(star_system)
+        if not factions:
+            return None
+        
+        if not factions.get('controllingFaction', None):
+            EDRLOG.log(u"Badly formed factions data for system {}.".format(star_system), "INFO")
+            return None
+
+        return factions['controllingFaction'].get('allegiance', None)
+
+    def transfer_time(self, origin, destination):
+        dist = self.distance(origin, destination)
+        return int(ceil(dist * 9.75 + 300))
+
+    def jumping_time(self, origin, destination, jump_range, seconds_per_jump = 55):
+        dist = self.distance(origin, destination)
+        return int(ceil(dist / jump_range) * seconds_per_jump)
 
     def timespan_s(self):
         return edtime.EDTime.pretty_print_timespan(self.timespan, short=True, verbose=True)
@@ -164,9 +307,9 @@ class EDRSystems(object):
         sid = self.system_id(star_system)
         return self.sitreps_cache.has_key(sid)
 
-    def has_notams(self, star_system):
+    def has_notams(self, star_system, may_create=False):
         self.__update_if_stale()
-        sid = self.system_id(star_system)
+        sid = self.system_id(star_system, may_create)
         return self.notams_cache.has_key(sid)
 
     def __has_active_notams(self, system_id):
@@ -175,8 +318,8 @@ class EDRSystems(object):
             return False
         return len(self.__active_notams_for_sid(system_id)) > 0
 
-    def active_notams(self, star_system):
-        if self.has_notams(star_system):
+    def active_notams(self, star_system, may_create=False):
+        if self.has_notams(star_system, may_create):
             return self.__active_notams_for_sid(self.system_id(star_system))
         return None
 
@@ -434,6 +577,103 @@ class EDRSystems(object):
 
         return summary
 
+    def search_interstellar_factors(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+        checker = edrservicecheck.EDRStationServiceCheck('Interstellar Factors Contact')
+        checker.name = 'Interstellar Factors Contact'
+        checker.hint = 'Look for low security systems, or stations run by an anarchy faction regardless of system security'
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+
+    def search_raw_trader(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+        checker = edrservicecheck.EDRRawTraderCheck()
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+
+    def search_encoded_trader(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+        checker = edrservicecheck.EDREncodedTraderCheck()
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+
+    def search_manufactured_trader(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+        checker = edrservicecheck.EDRManufacturedTraderCheck()
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+
+    def search_black_market(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+        checker = edrservicecheck.EDRBlackMarketCheck()
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+
+    def search_staging_station(self, star_system, callback, permits = []):
+        checker = edrservicecheck.EDRStagingCheck(15)
+        self.__search_a_service(star_system, callback, checker, with_large_pad = True, override_radius = 15, permits = permits)
+
+    def search_shipyard(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+        checker = edrservicecheck.EDRStationFacilityCheck('Shipyard')
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+
+    def search_outfitting(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+        checker = edrservicecheck.EDRStationFacilityCheck('Outfitting')
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+
+    def search_market(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+        checker = edrservicecheck.EDRStationFacilityCheck('Market')
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+
+    def search_human_tech_broker(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+        checker = edrservicecheck.EDRHumanTechBrokerCheck()
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+
+    def search_guardian_tech_broker(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+        checker = edrservicecheck.EDRGuardianTechBrokerCheck()
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+
+    def search_pharmaceutical_isolators(self, star_system, callback, override_radius = None, permits = []):
+        checker = edrstatecheck.EDRPharmaceuticalIsolatorsCheck()
+        self.__search_a_state(star_system, callback, checker, override_radius, permits)
+
+    def __search_a_service(self, star_system, callback, checker, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+        sc_distance = override_sc_distance or self.reasonable_sc_distance
+        sc_distance = max(250, sc_distance)
+        radius = override_radius or self.reasonable_hs_radius
+        radius = min(60, radius)
+
+        finder = edrservicefinder.EDRServiceFinder(star_system, checker, self, callback)
+        finder.with_large_pad(with_large_pad)
+        finder.within_radius(radius)
+        finder.within_supercruise_distance(sc_distance)
+        finder.permits_in_possesion(permits)
+        finder.start()
+
+    def __search_a_state(self, star_system, callback, checker, override_radius = None, permits = []):
+        if not (self.in_bubble(star_system) or self.in_colonia(star_system)):
+            return #TODO callback with no result
+ 
+        radius = override_radius or self.reasonable_hs_radius
+        radius = min(60, radius)
+
+        finder = edrstatefinder.EDRStateFinder(star_system, checker, self, callback)
+        finder.within_radius(radius)
+        finder.permits_in_possesion(permits)
+        finder.start()
+
+    def systems_within_radius(self, star_system, override_radius = None):
+        if not star_system:
+            return None
+
+        radius = override_radius or self.reasonable_hs_radius
+        key = u"{}@{}".format(star_system.lower(), radius)
+        systems = self.edsm_systems_within_radius_cache.get(key)
+        cached = self.edsm_systems_within_radius_cache.has_key(key)
+        if cached or systems:
+            EDRLOG.log(u"Systems within {} of system {} are in the cache.".format(radius, star_system), "DEBUG")
+            return systems
+
+        systems = self.edsm_server.systems_within_radius(star_system, radius)
+        if systems:
+            self.edsm_systems_within_radius_cache.set(key, systems)
+            EDRLOG.log(u"Cached systems within {}LY of {}".format(radius, star_system), "DEBUG")
+            return systems
+
+        self.edsm_systems_within_radius_cache.set(key, None)
+        EDRLOG.log(u"No results from EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
+        return None
+
     def is_recent(self, timestamp, max_age):
         if timestamp is None:
             return False
@@ -489,3 +729,33 @@ class EDRSystems(object):
             updated = True
 
         return updated
+
+    def closest_destination(self, sysAndSta1, sysAndSta2, override_sc_distance = None):
+        if not sysAndSta1:
+            return sysAndSta2
+
+        if not sysAndSta2:
+            return sysAndSta1
+
+        sc_distance = override_sc_distance or self.reasonable_sc_distance 
+
+        if sysAndSta1['station']['distanceToArrival'] > sc_distance and sysAndSta2['station']['distanceToArrival'] > sc_distance:
+            if abs(sysAndSta1['distance'] - sysAndSta2['distance']) < 5:
+                return sysAndSta1 if sysAndSta1['station']['distanceToArrival'] < sysAndSta2['station']['distanceToArrival'] else sysAndSta2
+            else:
+                return sysAndSta1 if sysAndSta1['distance'] < sysAndSta2['distance'] else sysAndSta2
+    
+        if sysAndSta1['station']['distanceToArrival'] > sc_distance:
+            return sysAndSta2
+    
+        if sysAndSta2['station']['distanceToArrival'] > sc_distance:
+            return sysAndSta1
+
+        return sysAndSta1 if sysAndSta1['distance'] < sysAndSta2['distance'] else sysAndSta2
+
+    def in_bubble(self, system_name):
+        return self.distance(system_name, 'Sol') <= 500
+    
+    def in_colonia(self, system_name):
+        return self.distance(system_name, 'Colonia') <= 500
+

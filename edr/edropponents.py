@@ -23,13 +23,13 @@ class EDROpponents(object):
     ENEMIES = "Enemies"
 
     EDR_OPPONENTS_SIGHTINGS_CACHES = {
-        "Outlaws": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/outlaws_sigthings.p'),
-        "Enemies": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/enemies_sigthings.p')
+        "Outlaws": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/outlaws_sigthings.v2.p'),
+        "Enemies": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/enemies_sigthings.v2.p')
     }
 
     EDR_OPPONENTS_RECENTS_CACHES = {
-        "Outlaws": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/outlaws_recents.p'),
-        "Enemies": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/enemies_recents.p')
+        "Outlaws": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/outlaws_recents.v2.p'),
+        "Enemies": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/enemies_recents.v2.p')
     }
 
     def __init__(self, server, opponent_kind, client_callback):
@@ -79,8 +79,10 @@ class EDROpponents(object):
             return False
         endpoint = "{}{}".format(self.server.EDR_SERVER, self._node())
         self.realtime = edrrealtime.EDRRealtimeUpdates(self.realtime_callback, self.kind, endpoint, self.server.auth_token)
-        self.realtime.start()
-        return True
+        if self.server.preflight_realtime(self.kind):
+            self.realtime.start()
+            return True
+        return False
 
     def shutdown_comms_link(self):
         if self.realtime and self.realtime.is_live():

@@ -17,7 +17,7 @@ EDRLOG = edrlog.EDRLog()
 
 class EDRLegalRecords(object):
     EDR_LEGAL_RECORDS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/legal_records.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/legal_records.v2.p')
     
     def __init__(self, server):
         self.server = server

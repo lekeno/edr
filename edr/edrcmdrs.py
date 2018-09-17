@@ -12,11 +12,11 @@ EDRLOG = edrlog.EDRLog()
 class EDRCmdrs(object):
     #TODO these should be player and/or squadron specific
     EDR_CMDRS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/cmdrs.v5.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/cmdrs.v6.p')
     EDR_INARA_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/inara.v5.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/inara.v6.p')
     EDR_SQDRDEX_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/sqdrdex.v1.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/sqdrdex.v2.p')
 
     def __init__(self, edrserver, edrinara):
         self.server = edrserver
@@ -63,8 +63,9 @@ class EDRCmdrs(object):
         self.inara.cmdr_name = new_player_name
 
     def player_pledged_to(self, power, time_pledged=0):
+        edr_config = edrconfig.EDRConfig()
         delta = time_pledged - self._player.time_pledged if self._player.time_pledged else time_pledged
-        if power == self._player.power and delta <= 60*60*6: #TODO parameterize
+        if power == self._player.power and delta <= edr_config.noteworthy_pledge_threshold():
             EDRLOG.log(u"Skipping pledged_to (not noteworthy): current vs. proposed {} vs. {}; {} vs {}".format(self._player.power, power, self._player.time_pledged, time_pledged), "DEBUG")
             return False
         self._player.pledged_to(power, time_pledged)
@@ -120,15 +121,18 @@ class EDRCmdrs(object):
 
     def __edr_cmdr(self, cmdr_name, autocreate):
         profile = self.cmdrs_cache.get(cmdr_name.lower())
-        if profile:
+        cached = self.cmdrs_cache.has_key(cmdr_name.lower())
+        if cached or profile:
             EDRLOG.log(u"Cmdr {cmdr} is in the EDR cache with id={cid}".format(cmdr=cmdr_name,
-                                                                           cid=profile.cid),
+                                                                           cid=profile.cid if profile else 'N/A'),
                        "DEBUG")
             return profile
 
         profile = self.server.cmdr(cmdr_name, autocreate)
 
         if not profile:
+            self.cmdrs_cache.set(cmdr_name.lower(), None)
+            EDRLOG.log(u"No match on EDR. Temporary entry to be nice on EDR's server.", "DEBUG")
             return None
         dex_profile = self.server.cmdrdex(profile.cid)
         if dex_profile:
@@ -169,9 +173,10 @@ class EDRCmdrs(object):
 
     def __inara_cmdr(self, cmdr_name, check_inara_server):
         inara_profile = self.inara_cache.get(cmdr_name.lower())
-        if inara_profile:
+        cached = self.inara_cache.has_key(cmdr_name.lower())
+        if cached or inara_profile:
             EDRLOG.log(u"Cmdr {} is in the Inara cache (name={})".format(cmdr_name,
-                                                                         inara_profile.name),
+                                                                         inara_profile.name if inara_profile else 'N/A'),
                        "DEBUG")
         elif check_inara_server:
             EDRLOG.log(u"No match in Inara cache. Inara API call for {}.".format(cmdr_name), "INFO")
