@@ -1301,7 +1301,7 @@ class EDRClient(object):
                 self.__notify(_(u"EDR Search"), [_(u"{}: failed...").format(cresource), _(u"To learn how to use the feature, send: !help search")], clear_before = True)
             else:
                 self.status = _(u"{}: found").format(cresource)
-                self.__notify(u"{}".format(cresource), outcome)
+                self.__notify(u"{}".format(cresource), outcome, clear_before = True)
         except ValueError:
             self.status = _(u"{}: failed...").format(cresource)
             self.__notify(_(u"EDR Search"), [_(u"{}: failed...").format(cresource), _(u"To learn how to use the feature, send: !help search")], clear_before = True)

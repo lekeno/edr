@@ -248,11 +248,11 @@ class EDRSystems(object):
     def system_state(self, star_system):
         factions = self.__factions(star_system)
         if not factions:
-            return None
+            return (None, None)
         
         if not factions.get('controllingFaction', None) or not factions.get('factions', None):
             EDRLOG.log(u"Badly formed factions data for system {}.".format(star_system), "INFO")
-            return None
+            return (None, None)
 
         controlling_faction_id = factions['controllingFaction']['id']
         all_factions = factions['factions']
