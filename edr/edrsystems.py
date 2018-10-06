@@ -38,7 +38,7 @@ class EDRSystems(object):
     EDR_NOTAMS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/notams.v2.p')
     EDR_SITREPS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/sitreps.v2.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/sitreps.v3.p')
     EDR_TRAFFIC_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/traffic.v2.p')
     EDR_CRIMES_CACHE = os.path.join(
@@ -65,7 +65,7 @@ class EDRSystems(object):
 
         try:
             with open(self.EDR_SITREPS_CACHE, 'rb') as handle:
-                self.sitreps_cache = pickle.load(handle)
+                self.sitreps_cache = pickle.load(handle) 
         except:
             self.sitreps_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                   edr_config.sitreps_max_age())
@@ -205,7 +205,6 @@ class EDRSystems(object):
             return sqrt((dest_coords["x"] - source_coords["x"])**2 + (dest_coords["y"] - source_coords["y"])**2 + (dest_coords["z"] - source_coords["z"])**2)
         raise ValueError('Unknown system')
 
-    
     def system(self, name):
         if not name:
             return None
@@ -219,7 +218,7 @@ class EDRSystems(object):
             self.edsm_systems_cache.set(name.lower(), the_system)
             return the_system
         
-        raise ValueError('Unknown system')
+        return None
 
     def are_factions_stale(self, star_system):
         if not star_system:
@@ -235,6 +234,7 @@ class EDRSystems(object):
             EDRLOG.log(u"Factions for system {} are in the cache.".format(star_system), "DEBUG")
             return factions
 
+        EDRLOG.log(u"Factions for system {} are NOT in the cache.".format(star_system), "DEBUG")
         factions = self.edsm_server.factions_in_system(star_system)
         if factions:
             self.edsm_factions_cache.set(star_system.lower(), factions)
@@ -257,12 +257,14 @@ class EDRSystems(object):
         controlling_faction_id = factions['controllingFaction']['id']
         all_factions = factions['factions']
         state = None
+        updated = None
         for faction in all_factions:
             if faction['id'] == controlling_faction_id:
                 state = faction['state']
+                updated = faction['lastUpdate']
                 break
 
-        return state
+        return (state, updated)
 
     def system_allegiance(self, star_system):
         factions = self.__factions(star_system)
@@ -623,10 +625,6 @@ class EDRSystems(object):
         checker = edrservicecheck.EDRGuardianTechBrokerCheck()
         self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
 
-    def search_pharmaceutical_isolators(self, star_system, callback, override_radius = None, permits = []):
-        checker = edrstatecheck.EDRPharmaceuticalIsolatorsCheck()
-        self.__search_a_state(star_system, callback, checker, override_radius, permits)
-
     def __search_a_service(self, star_system, callback, checker, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
         sc_distance = override_sc_distance or self.reasonable_sc_distance
         sc_distance = max(250, sc_distance)
@@ -637,18 +635,6 @@ class EDRSystems(object):
         finder.with_large_pad(with_large_pad)
         finder.within_radius(radius)
         finder.within_supercruise_distance(sc_distance)
-        finder.permits_in_possesion(permits)
-        finder.start()
-
-    def __search_a_state(self, star_system, callback, checker, override_radius = None, permits = []):
-        if not (self.in_bubble(star_system) or self.in_colonia(star_system)):
-            return #TODO callback with no result
- 
-        radius = override_radius or self.reasonable_hs_radius
-        radius = min(60, radius)
-
-        finder = edrstatefinder.EDRStateFinder(star_system, checker, self, callback)
-        finder.within_radius(radius)
         finder.permits_in_possesion(permits)
         finder.start()
 
@@ -754,8 +740,14 @@ class EDRSystems(object):
         return sysAndSta1 if sysAndSta1['distance'] < sysAndSta2['distance'] else sysAndSta2
 
     def in_bubble(self, system_name):
-        return self.distance(system_name, 'Sol') <= 500
+        try:
+            return self.distance(system_name, 'Sol') <= 500
+        except ValueError:
+            return False
     
     def in_colonia(self, system_name):
-        return self.distance(system_name, 'Colonia') <= 500
+        try:
+            return self.distance(system_name, 'Colonia') <= 500
+        except ValueError:
+            return False
 

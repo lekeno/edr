@@ -184,10 +184,12 @@ def handle_movement_events(ed_player, entry):
     if entry["event"] in ["FSDJump", "SupercruiseEntry"]:
         place = "Supercruise"
         outcome["updated"] |= ed_player.update_place_if_obsolete(place, entry["timestamp"])
-        if entry["event"] == "FSDJump" and entry["SystemSecurity"]:
-            ed_player.location_security(entry["SystemSecurity"])
-            if ed_player.in_bad_neighborhood():
-                EDR_CLIENT.IN_GAME_MSG.warning(_(u"Anarchy system"), [_(u"Crimes will not be reported.")])
+        if entry["event"] == "FSDJump":
+            EDR_CLIENT.noteworthy(entry)
+            if entry["SystemSecurity"]:
+                ed_player.location_security(entry["SystemSecurity"])
+                if ed_player.in_bad_neighborhood():
+                    EDR_CLIENT.IN_GAME_MSG.warning(_(u"Anarchy system"), [_(u"Crimes will not be reported.")])
         outcome["reason"] = "Jump events"
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
 
@@ -407,7 +409,7 @@ def edr_update_cmdr_status(cmdr, reason_for_update):
 
     if not EDR_CLIENT.blip(cmdr.name, report):
         EDR_CLIENT.status = _(u"blip failed.")
-        EDR_CLIENT.evict_cmdr(cmdr.name) # TODO reconsider if needed, this was the source of multiple side effects :()
+        EDR_CLIENT.evict_cmdr(cmdr.name)
         return
 
     EDR_CLIENT.status = _(u"blip succeeded!")
@@ -790,6 +792,13 @@ def handle_bang_commands(cmdr, command, command_parts):
         if target_cmdr:
             EDRLOG.log(u"Explicit where command for {}".format(target_cmdr), "INFO")
             EDR_CLIENT.where(target_cmdr)
+    elif command == "!search":
+        resource = None
+        if len(command_parts) == 2:
+            resource = command_parts[1]
+        if resource:
+            EDRLOG.log(u"Search command for {}".format(resource), "INFO")
+            EDR_CLIENT.search_resource(resource)
     elif command in ["!distance", "!d"] and len(command_parts) >= 2:
         EDRLOG.log(u"Distance command", "INFO")
         systems = " ".join(command_parts[1:]).split(" > ", 1)

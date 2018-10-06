@@ -20,7 +20,8 @@ class HelpContent(object):
                 _(u" - !help powerplay: features for commanders pledged to a power"),
                 _(u" - !help cmdrdex: personalizing EDR's commanders database"),
                 _(u" - !help sqdrdex: tag other commanders as ally or enemy of your squadron"),
-                _(u" - !help nearby: command to find things around you or a specific system, e.g. interstellar factors"),
+                _(u" - !help nearby: commands to find services near you or a specific system, e.g. interstellar factors"),
+                _(u" - !help search: find the best spots to obtain specific resources, e.g. adaptive encryptors capture"),
                 _(u" - !help config: configuration options"),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
@@ -191,6 +192,20 @@ class HelpContent(object):
                 _(u" - '!staging' or '!staging Lave' to find a good staging station near your position or Lave, i.e. large pads, shipyard, outfitting, repair/rearm/refuel."),
                 _(u" - '!htb', '!humantechbroker' or '!htb Lave' to find a Human Tech Broker near your position or Lave"),
                 _(u" - '!gtb', '!guardiantechbroker' or '!gtb Lave' to find a Guardian Tech Broker near your position or Lave"),
+                u"⚶",
+                _(u"Send !clear in chat to clear everything on the overlay.")
+            ]
+        },
+        "search": {
+            "header": _(u"Find the best spots for specific resources"),
+            "details": [
+                _(u" - '!search resource' where resource is either the full name of the resource or an abbreviation, e.g. !search cadmium"),
+                _(u" - Abbreviations consist of the first three letters of a one-word resource, or the first letters of each words separated by a space:"),
+                _(u" - 'cad' for cadmium, 'a e c d' for abnormal compact emission data."),
+                _(u" - Very common and common resources are not supported, as it shouldn't be too hard to find them."),
+                _(u" - Some manufactured materials may not always return a result. Use the hints and Elite's galaxy map to find a good spot."),
+                _(u" - Finally, when jumping into a system, EDR will tell you if it has the right conditions for specific materials, e.g. Imperial Shielding (USS-HGE, +++++)."),
+                _(u" - The more '+', the higher the chances."),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
             ]

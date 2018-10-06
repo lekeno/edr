@@ -177,6 +177,9 @@ class EDVehicles(object):
         if name is None:
             return u"Unknown" # Note: this shouldn't be translated
 
+        if name in EDVehicles.CANONICAL_SHIP_NAMES.values():
+            return name # Already canonical
+
         if name.lower() in EDVehicles.CANONICAL_SHIP_NAMES:
             return EDVehicles.CANONICAL_SHIP_NAMES[name.lower()]
 
@@ -271,6 +274,12 @@ class EDCmdr(object):
 
     def in_a_wing(self):
         return len(self.wing) > 0
+
+    def needs_large_landing_pad(self):
+        unclear = [ "SRV", "Imperial Fighter", "F63 Condor", "Taipan Fighter", "Trident", "Javelin", "Lance", "Unknown", "Unknown (crew)", "Unknown (captain)" ]
+        large_ships =  [ "Orca", "Type-9 Heavy", "Type-10 Defender", "Beluga Liner", "Anaconda", "Federal Corvette", "Imperial Cutter", "Imperial Clipper", "Type-7 Transporter" ]
+
+        return self._ship is None or self._ship in large_ships or self._ship in unclear
         
     def leave_crew(self):
         if not self.crew:

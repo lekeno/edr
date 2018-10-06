@@ -9,15 +9,8 @@ class EDRStationServiceCheck(EDRSystemStationCheck):
         self.service = service
         self.name = service
         self.hint = None
-        self.systems_counter = 0
-        self.stations_counter = 0
-
-    def check_system(self, system):
-        self.systems_counter = self.systems_counter + 1
-        return True
 
     def check_station(self, station):
-        self.stations_counter = self.stations_counter + 1
         if not super(EDRStationServiceCheck, self).check_station(station):
             return False
 
@@ -109,7 +102,7 @@ class EDRRawTraderCheck(EDRMaterialTraderBasicCheck):
     def __init__(self):
         super(EDRRawTraderCheck, self).__init__()
         self.name = 'Raw material trader'
-        self.hint = _(u"Look for systems with medium-high security, an 'extraction' or 'refinery' economy, a rather large population (>= 1 million)")
+        self.hint = _(u"Found in systems with medium-high security, an 'extraction' or 'refinery' economy, a rather large population (>= 1 million)")
 
     def check_system(self, system):
         if not super(EDRRawTraderCheck, self).check_system(system):
@@ -125,7 +118,7 @@ class EDRManufacturedTraderCheck(EDRMaterialTraderBasicCheck):
     def __init__(self):
         super(EDRManufacturedTraderCheck, self).__init__()
         self.name = 'Manufactured material trader'
-        self.hint = _(u"Look for systems with medium-high security, an 'industrial' economy, and a rather large population (>= 1 million)")
+        self.hint = _(u"Found in systems with medium-high security, an 'industrial' economy, and a rather large population (>= 1 million)")
 
     def check_system(self, system):
         if not super(EDRManufacturedTraderCheck, self).check_system(system):
@@ -141,7 +134,7 @@ class EDREncodedTraderCheck(EDRMaterialTraderBasicCheck):
     def __init__(self):
         super(EDREncodedTraderCheck, self).__init__()
         self.name = 'Encoded data trader'
-        self.hint = _(u"Look for systems with medium-high security, a 'high tech' or 'military' economy, and a rather large population (>= 1 million)")
+        self.hint = _(u"Found in systems with medium-high security, a 'high tech' or 'military' economy, and a rather large population (>= 1 million)")
 
     def check_system(self, system):
         if not super(EDREncodedTraderCheck, self).check_system(system):
@@ -184,7 +177,7 @@ class EDRHumanTechBrokerCheck(EDRStationServiceCheck):
     def __init__(self):
         super(EDRHumanTechBrokerCheck, self).__init__('Technology Broker')
         self.name = _(u'Human Technology Broker')
-        self.hint = _(u"Look for systems with an 'Industrial' economy', and a rather large population (>= 1 million)")
+        self.hint = _(u"Found in systems with an 'Industrial' economy', and a rather large population (>= 1 million)")
 
     def check_system(self, system):
         if not super(EDRHumanTechBrokerCheck, self).check_system(system):
@@ -206,7 +199,7 @@ class EDRGuardianTechBrokerCheck(EDRStationServiceCheck):
     def __init__(self):
         super(EDRGuardianTechBrokerCheck, self).__init__('Technology Broker')
         self.name = _(u'Guardian Technology Broker')
-        self.hint = _(u"Look for systems with a 'high tech' economy', and a rather large population (>= 1 million)")
+        self.hint = _(u"Found in systems with a 'high tech' economy', and a rather large population (>= 1 million)")
 
     def check_system(self, system):
         if not super(EDRGuardianTechBrokerCheck, self).check_system(system):
