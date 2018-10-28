@@ -88,7 +88,6 @@ class EDRClient(object):
         self.edrsystems = edrsystems.EDRSystems(self.server)
         self.edrresourcefinder = edrresourcefinder.EDRResourceFinder(self.edrsystems)
         self.edrcmdrs = edrcmdrs.EDRCmdrs(self.server, self.inara)
-        self.player = self.edrcmdrs.player
         self.edropponents = {
             EDROpponents.OUTLAWS: EDROpponents(self.server, EDROpponents.OUTLAWS, self._realtime_callback),
             EDROpponents.ENEMIES: EDROpponents(self.server, EDROpponents.ENEMIES, self._realtime_callback),
@@ -179,6 +178,10 @@ class EDRClient(object):
         client_parts = map(int, self.edr_version.split('.'))
         advertised_parts = map(int, advertised_version.split('.'))
         return client_parts < advertised_parts
+
+    @property
+    def player(self):
+        return self.edrcmdrs.player
 
     @property
     def email(self):

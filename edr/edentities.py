@@ -2,6 +2,8 @@ import os
 import json
 
 import edtime
+from edvehicles import EDVehicleFactory 
+import edinstance
 import edrlog
 import edrconfig
 from edri18n import _, _c
@@ -143,6 +145,10 @@ class EDBounty(object):
     def is_significant(self):
         return self.value >= self.threshold
 
+    def __repr__(self):
+        return str(self.__dict__)
+   
+
     def pretty_print(self):
         readable = ""
         if self.value >= 10000000000:
@@ -168,29 +174,41 @@ class EDBounty(object):
             readable = _(u"{}").format(self.value)
         return readable
 
-class EDVehicles(object):
-    CANONICAL_SHIP_NAMES = json.loads(open(os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'data/shipnames.json')).read())
-
-    @staticmethod
-    def canonicalize(name):
-        if name is None:
-            return u"Unknown" # Note: this shouldn't be translated
-
-        if name in EDVehicles.CANONICAL_SHIP_NAMES.values():
-            return name # Already canonical
-
-        if name.lower() in EDVehicles.CANONICAL_SHIP_NAMES:
-            return EDVehicles.CANONICAL_SHIP_NAMES[name.lower()]
-
-        return name.lower()
+class EDSpaceDimension(object):
+    UNKNOWN = 0
+    NORMAL_SPACE = 1
+    SUPER_SPACE = 2
+    HYPER_SPACE = 3
 
 class EDLocation(object):
-    def __init__(self, star_system=None, place=None, security=None):
+    def __init__(self, star_system=None, place=None, security=None, space_dimension=EDSpaceDimension.UNKNOWN):
         self.star_system = star_system
         self.place = place
         self.security = security
+        self.space_dimension = space_dimension
     
+
+    def __repr__(self):
+        return str(self.__dict__)
+   
+    def in_normal_space(self):
+        return self.space_dimension == EDSpaceDimension.NORMAL_SPACE
+
+    def in_supercruise(self):
+        return self.space_dimension == EDSpaceDimension.SUPER_SPACE
+
+    def in_hyper_space(self):
+        return self.space_dimension == EDSpaceDimension.HYPER_SPACE
+
+    def to_normal_space(self):
+        self.space_dimension = EDSpaceDimension.NORMAL_SPACE
+
+    def to_supercruise(self):
+        self.space_dimension = EDSpaceDimension.SUPER_SPACE
+
+    def to_hyper_space(self):
+        self.space_dimension = EDSpaceDimension.HYPER_SPACE
+
     def is_anarchy_or_lawless(self):
         return self.security in ["$GAlAXY_MAP_INFO_state_anarchy;", "$GALAXY_MAP_INFO_state_lawless;"]
 
@@ -204,149 +222,62 @@ class EDLocation(object):
                 location += u", {place}".format(place=self.place)
         return location
 
-class EDCmdr(object):
-    def __init__(self):
-        self.name = None
-        self._ship = None
+class EDPlayer(object):
+    def __init__(self, name=None):
+        now = edtime.EDTime.py_epoch_now()
+        self._name = name
+        self.mothership = EDVehicleFactory.unknown_vehicle()
+        self.piloted_vehicle = self.mothership
+        self.srv = None
+        self.slf = None
         self.location = EDLocation()
-        self.game_mode = None
-        self.previous_mode = None
-        self.previous_wing = set()
-        self.from_birth = False
-        self._timestamp = edtime.EDTime()
-        self.wing = set()
-        self.friends = set()
-        self.crew = None
         self.powerplay = None
         self.squadron = None
         self.destroyed = False
-        self.target = None
+        self.wanted = False
+        self.enemy = False
+        self._bounty = None
+        self.timestamp = now
 
-    def in_solo_or_private(self):
-        return self.game_mode in ["Solo", "Group"]
+    def __repr__(self):
+        return str(self.__dict__)
 
-    def in_open(self):
-        return self.game_mode == "Open"
-
-    def inception(self):
-        self.from_birth = True
-        self.previous_mode = None
-        self.previous_wing = set()
-        self.wing = set()
-        self.crew = None
-        self.destroyed = False
-        self.target = None
-
+    def json(self):
+        return {
+            "timestamp": self.timestamp,
+            "wanted": self.wanted,
+            "bounty": self.bounty,
+            "enemy": self.enemy,
+            "vehicle": self.piloted_vehicle.json()
+        }
+    
     def killed(self):
-        self.previous_mode = self.game_mode 
-        self.previous_wing = self.wing.copy()
-        self.game_mode = None
-        self.wing = set()
-        self.crew = None
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
         self.destroyed = True
-        self.target = None
-
-    def resurrect(self):
-        self.game_mode = self.previous_mode 
-        self.wing = self.previous_wing.copy()
-        self.previous_mode = None
-        self.previous_wing = set()
-        self.destroyed = False
-        self.target = None
-
-    def leave_wing(self):
-        self.wing = set()
-
-    def join_wing(self, others):
-        self.wing = set(others)
-        self.crew = None
-
-    def add_to_wing(self, other):
-        self.wing.add(other)
-
-    def is_crew_member(self):
-        if not self.crew:
-            return False
-        return self.crew.captain != self.name
-
-    def in_a_crew(self):
-        return self.crew is not None
-
-    def in_a_wing(self):
-        return len(self.wing) > 0
+        self.wanted = False
+        self._bounty = None
+        if self.mothership:
+            self.mothership.destroy()
+        if self.srv:
+            self.srv.destroy()
+        if self.slf:
+            self.slf.destroy()    
+        self.to_normal_space()
 
     def needs_large_landing_pad(self):
-        unclear = [ "SRV", "Imperial Fighter", "F63 Condor", "Taipan Fighter", "Trident", "Javelin", "Lance", "Unknown", "Unknown (crew)", "Unknown (captain)" ]
-        large_ships =  [ "Orca", "Type-9 Heavy", "Type-10 Defender", "Beluga Liner", "Anaconda", "Federal Corvette", "Imperial Cutter", "Imperial Clipper", "Type-7 Transporter" ]
-
-        return self._ship is None or self._ship in large_ships or self._ship in unclear
-        
-    def leave_crew(self):
-        if not self.crew:
-            return
-        self.crew = None
-
-    def disband_crew(self):
-        if not self.crew:
-            return
-        self.crew.disband()
-
-    def join_crew(self, captain):
-        self.crew = EDRCrew(captain)
-        self.crew.add(self.name)
-        self.wing = set()
-        self.ship = u"Unknown"
-    
-    def add_to_crew(self, member):
-        if not self.crew:
-            self.crew = EDRCrew(self.name)
-            self.wing = set()
-        return self.crew.add(member)
-    
-    def remove_from_crew(self, member):
-        if not self.crew:
-            self.crew = EDRCrew(self.name)
-            self.wing = set()
-        return self.crew.remove(member)
-
-    def crew_time_elapsed(self, member):
-        if not self.crew:
-            return 0
-        return self.crew.duration(member)
-    
-    def is_captain(self, member=None):
-        if not self.crew:
-            return False
-        if not member:
-            member = self.name 
-        return self.crew.is_captain(member)
-
-    def is_friend_or_in_wing(self, interlocutor):
-        return interlocutor in self.friends or interlocutor in self.wing
-
-    def is_enemy_with(self, power):
-        if self.is_independent() or not power:
-            return False
-        return self.powerplay.is_enemy(power)
+        return self.mothership is None or self.mothership.needs_large_landing_pad()
 
     @property
-    def ship(self):
-        return self._ship
+    def vehicle(self):
+        return self.piloted_vehicle or self.mothership
 
-    @ship.setter
-    def ship(self, new_ship):
-        self._ship = EDVehicles.canonicalize(new_ship)
+    def vehicle_type(self):
+        return self.piloted_vehicle.type or self.mothership.type
 
     @property
-    def timestamp(self):
-        return self._timestamp.as_journal_timestamp()
-
-    @timestamp.setter
-    def timestamp(self, ed_timestamp):
-        self._timestamp.from_journal_timestamp(ed_timestamp)
-
-    def timestamp_js_epoch(self):
-        return self._timestamp.as_js_epoch()
+    def name(self):
+        return self._name
 
     @property
     def star_system(self):
@@ -354,6 +285,8 @@ class EDCmdr(object):
 
     @star_system.setter
     def star_system(self, star_system):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
         self.location.star_system = star_system
 
     @property
@@ -364,14 +297,135 @@ class EDCmdr(object):
         return self.location.place
 
     @place.setter
-
     def place(self, place):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
         self.location.place = place
+    
     def location_security(self, ed_security_state):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
         self.location.security = ed_security_state
 
     def in_bad_neighborhood(self):
         return self.location.is_anarchy_or_lawless()
+
+    def in_supercruise(self):
+        return self.location.space_dimension == EDSpaceDimension.SUPER_SPACE
+
+    def in_hyper_space(self):
+        return self.location.space_dimension == EDSpaceDimension.HYPER_SPACE
+
+    def in_normal_space(self):
+        return self.location.space_dimension == EDSpaceDimension.NORMAL_SPACE
+
+    def in_a_fight(self):
+        if not self.in_normal_space():
+            return False
+
+        if self.mothership and self.mothership.in_a_fight():
+            return True
+        
+        if self.slf and self.slf.in_a_fight():
+            return True
+
+        if self.srv and self.srv.in_a_fight():
+            return True
+        
+        return False
+
+    def in_mothership(self):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        if not self.mothership:
+            self.mothership = EDVehicleFactory.unknown_vehicle() 
+        self.piloted_vehicle = self.mothership
+
+    def in_srv(self):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        if not self.mothership or not self.mothership.supports_srv():
+            self.mothership = EDVehicleFactory.unknown_vehicle() 
+        if not self.srv:
+            self.srv = EDVehicleFactory.default_srv()
+        self.piloted_vehicle = self.srv
+
+    def in_slf(self):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        if not self.mothership or not self.mothership.supports_slf():
+            self.mothership = EDVehicleFactory.unknown_vehicle() 
+        if not self.slf:
+            self.slf = EDVehicleFactory.unknown_slf()
+        self.piloted_vehicle = self.slf
+
+    def docked(self, is_docked = True):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        if is_docked:
+            self.mothership.safe()
+            if self.slf:
+                self.slf.safe()
+            if self.srv:
+                self.srv.safe()
+
+    def hardpoints(self, deployed):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        self.piloted_vehicle.hardpoints(deployed)
+
+    def in_danger(self, danger = True):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        if not danger:
+            self.piloted_vehicle.safe()
+        else:
+            self.piloted_vehicle.unsafe()
+
+    def to_normal_space(self):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        self.location.space_dimension = EDSpaceDimension.NORMAL_SPACE
+        self.mothership.safe()
+        if self.slf:
+            self.slf.safe()
+        if self.srv:
+            self.srv.safe()
+
+    def to_super_space(self):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        self.location.space_dimension = EDSpaceDimension.SUPER_SPACE
+        self.mothership.safe()
+        if self.slf:
+            self.slf.safe()
+        if self.srv:
+            self.srv.safe()
+
+    def to_hyper_space(self):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        self.location.space_dimension = EDSpaceDimension.HYPER_SPACE
+        self.mothership.safe()
+        if self.slf:
+            self.slf.safe()
+        if self.srv:
+            self.srv.safe()
+
+    @property
+    def bounty(self):
+        if self._bounty:
+            return self._bounty.value
+        return 0
+
+    @bounty.setter
+    def bounty(self, credits):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        if credits:
+            self._bounty = EDBounty(credits)
+        else:
+            self._bounty = None
 
     @property
     def power(self):
@@ -386,6 +440,8 @@ class EDCmdr(object):
         return self.powerplay.time_pledged()
 
     def pledged_to(self, power, time_pledged):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
         self.powerplay = EDRPowerplay(power, time_pledged)
     
     def pledged_since(self):
@@ -437,33 +493,329 @@ class EDCmdr(object):
         return self.powerplay.is_fully_trusted()
 
     def has_partial_status(self):
-        return self._ship is None or self.location.star_system is None or self.location.place is None
+        return self.mothership is None or self.location.star_system is None or self.location.place is None
 
-    def update_ship_if_obsolete(self, ship, ed_timestamp):
-        if self._ship is None or self._ship != EDVehicles.canonicalize(ship):
-            EDRLOG.log(u"Updating ship info (was missing or obsolete). {old} vs. {ship}".format(old=self._ship, ship=ship), "DEBUG")
-            self._ship = EDVehicles.canonicalize(ship)
-            self._timestamp.from_journal_timestamp(ed_timestamp)
+    def update_vehicle_if_obsolete(self, vehicle, piloted=True):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        updated = False
+        if EDVehicleFactory.is_ship_launched_fighter(vehicle):
+            updated = self.__update_slf_if_obsolete(vehicle)
+            if not self.mothership.supports_slf():
+                self.mothership = EDVehicleFactory.unknown_vehicle()
+            if piloted:
+                self.piloted_vehicle = self.slf
+        elif EDVehicleFactory.is_surface_vehicle(vehicle):
+            updated = self.__update_srv_if_obsolete(vehicle)
+            if not self.mothership.supports_srv():
+                self.mothership = EDVehicleFactory.unknown_vehicle()
+            if piloted:
+                self.piloted_vehicle = self.srv
+        else:
+            updated = self.__update_mothership_if_obsolete(vehicle)
+            if piloted:
+                self.piloted_vehicle = self.mothership
+        return updated
+    
+    def __update_mothership_if_obsolete(self, vehicle):
+        if self.mothership is None or self.mothership.type != vehicle.type:
+            self.mothership = vehicle
             return True
-
         return False
 
+    def __update_slf_if_obsolete(self, vehicle):
+        if self.slf is None or self.slf.type != vehicle.type:
+            self.slf = vehicle
+            return True
+        return False
 
-    def update_star_system_if_obsolete(self, star_system, ed_timestamp):
+    def __update_srv_if_obsolete(self, vehicle):
+        if self.srv is None or self.srv.type != vehicle.type:
+            self.srv = vehicle
+            return True
+        return False
+
+    def update_star_system_if_obsolete(self, star_system):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
         if self.location.star_system is None or self.location.star_system != star_system:
             EDRLOG.log(u"Updating system info (was missing or obsolete). {old} vs. {system}".format(old=self.location.star_system, system=star_system), "INFO")
             self.location.star_system = star_system
-            self._timestamp.from_journal_timestamp(ed_timestamp)
             return True
-
         return False
 
-
-    def update_place_if_obsolete(self, place, ed_timestamp):
+    def update_place_if_obsolete(self, place):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
         if self.location.place is None or self.location.place != place:
             EDRLOG.log(u"Updating place info (was missing or obsolete). {old} vs. {place}".format(old=self.location.place, place=place), "INFO")
             self.location.place = place
-            self._timestamp.from_journal_timestamp(ed_timestamp)
             return True
-
         return False
+
+class EDPlayerOne(EDPlayer):
+    def __init__(self, name=None):
+        super(EDPlayerOne, self).__init__(name)
+        self.game_mode = None
+        self.previous_mode = None
+        self.previous_wing = set()
+        self.from_birth = False
+        self.wing = set()
+        self.friends = set()
+        self.crew = None
+        self.target = None
+        self.instance = edinstance.EDInstance()
+
+    def __repr__(self):
+        return str(self.__dict__)
+   
+    def force_new_name(self, new_name):
+        self._name = new_name
+
+    def in_solo_or_private(self):
+        return self.game_mode in ["Solo", "Group"]
+
+    def in_open(self):
+        return self.game_mode == "Open"
+
+    def inception(self):
+        self.from_birth = True
+        self.previous_mode = None
+        self.previous_wing = set()
+        self.wing = set()
+        self.crew = None
+        self.destroyed = False
+        self.target = None
+        self.wanted = False
+        self.mothership = EDVehicleFactory.unknown_vehicle()
+        self.piloted_vehicle = self.mothership
+        self.srv = None
+        self.slf = None
+        self.location = EDLocation()
+        self._bounty = None
+        self.instance.reset()
+        self.to_normal_space()
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+
+    def killed(self):
+        super(EDPlayerOne, self).killed()
+        self.previous_mode = self.game_mode
+        self.previous_wing = self.wing.copy()
+        self.game_mode = None
+        self.wing = set()
+        self.crew = None
+        self.target = None
+        self.instance.reset()
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+
+    def resurrect(self, rebought=True):
+        self.game_mode = self.previous_mode 
+        self.wing = self.previous_wing.copy()
+        self.previous_mode = None
+        self.previous_wing = set()
+        self.destroyed = False
+        self.target = None
+        self.to_normal_space()
+        self.instance.reset()
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        if rebought:
+            self.mothership.reset()
+            if self.slf:
+                self.slf.reset()
+            if self.srv:
+                self.srv.reset()
+        else:
+            self.mothership = EDVehicleFactory.unknown_vehicle()
+            self.piloted_vehicle = self.mothership
+            self.slf = None
+            self.srv = None
+
+    def leave_wing(self):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        self.wing = set()
+
+    def join_wing(self, others):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        self.wing = set(others)
+        self.crew = None
+
+    def add_to_wing(self, other):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        self.wing.add(other)
+
+    def is_crew_member(self):
+        if not self.crew:
+            return False
+        return self.crew.captain != self.name
+
+    def in_a_crew(self):
+        return self.crew is not None
+
+    def in_a_wing(self):
+        return len(self.wing) > 0
+
+    def leave_crew(self):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        if not self.crew:
+            return
+        self.crew = None
+        self.instance.reset()
+
+    def disband_crew(self):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        if not self.crew:
+            return
+        for member in self.crew.members:
+            self.instance.player_out(member)
+        self.crew.disband()
+
+    def join_crew(self, captain):
+        self.wing = set()
+        self.instance.reset()
+        self.crew = EDRCrew(captain)
+        self.crew.add(self.name)
+        self.instanced(captain)
+        self.mothership = EDVehicleFactory.unknown_vehicle()
+        self.piloted_vehicle = self.mothership
+        self.slf = None
+        self.srv = None
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+
+    def add_to_crew(self, member):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        if not self.crew:
+            self.crew = EDRCrew(self.name)
+            self.wing = set()
+            self.instance.reset()
+        self.instanced(member)
+        return self.crew.add(member)
+    
+    def remove_from_crew(self, member):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        if not self.crew:
+            self.crew = EDRCrew(self.name)
+            self.wing = set()
+            self.instance.reset()
+        self.instance.player_out(member)
+        return self.crew.remove(member)
+
+    def crew_time_elapsed(self, member):
+        if not self.crew:
+            return 0
+        return self.crew.duration(member)
+    
+    def is_captain(self, member=None):
+        if not self.crew:
+            return False
+        if not member:
+            member = self.name 
+        return self.crew.is_captain(member)
+
+    def is_friend_or_in_wing(self, interlocutor):
+        return interlocutor in self.friends or interlocutor in self.wing
+
+    def is_enemy_with(self, power):
+        if self.is_independent() or not power:
+            return False
+        return self.powerplay.is_enemy(power)
+
+    def to_normal_space(self):
+        if self.in_normal_space():
+            return
+        super(EDPlayerOne, self).to_normal_space()
+        self.instance.reset()
+
+    def to_super_space(self):
+        if self.in_supercruise():
+            return
+        super(EDPlayerOne, self).to_super_space()
+        self.instance.reset()
+
+    def to_hyper_space(self):
+        if self.in_hyper_space():
+            return
+        super(EDPlayerOne, self).to_hyper_space()
+        self.instance.reset()
+
+    def leave_vehicle(self):
+        self.mothership = EDVehicleFactory.unknown_vehicle()
+        self.piloted_vehicle = self.mothership
+        self.slf = None
+        self.srv = None
+        self.instance.reset()
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+
+    def targeting(self, cmdr):
+        self.instance.player_in(cmdr)
+        self.target = cmdr
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+
+    # TODO should call kill
+    def destroy(self, cmdr):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        self.instance.player_out(cmdr)
+        if self.target and self.target.name == cmdr.name:
+            self.target = None
+
+    def interdiction(self, interdicted, success):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        self.to_normal_space()
+        if success:
+            interdicted.location = self.location
+            self.instance.player_in(interdicted)
+
+    def interdicted(self, interdictor, success):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        if success:
+            self.to_normal_space()
+            interdictor.location = self.location
+            self.instance.player_in(interdictor)
+        else:
+            self.instance.player_out(interdictor)
+
+    def instanced(self, cmdr_name, ship_internal_name=None, piloted=True):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        cmdr = self.instance.player(cmdr_name)
+        if not cmdr:
+            cmdr = EDPlayer(cmdr_name)
+        cmdr.location = self.location
+        if ship_internal_name:
+            vehicle = EDVehicleFactory.from_internal_name(ship_internal_name)
+            cmdr.update_vehicle_if_obsolete(vehicle, piloted)
+        self.instance.player_in(cmdr)
+        return cmdr
+
+    def deinstanced(self, cmdr_name):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        self.instance.player_out(cmdr_name)
+
+    def attacked(self, target):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        if target == "Mothership":
+            self.mothership.attacked()
+        elif target == "Fighter":
+            if self.slf:
+                self.slf.attacked()
+            else:
+                EDRLOG.log(u"SLF attacked but player had none", "WARNING")
+        elif target == "You":
+            self.piloted_vehicle.attacked()
