@@ -24,9 +24,9 @@ class EDRResourceFinder(object):
         "core dynamics composites": "c d c", "imperial shielding": "i s", "improvised components": "i c", "military grade alloys": "m g a",
         "military supercapacitors": "m s", "pharmaceutical isolators": "p i", "proto light alloys": "p l a",
         "proto radiolic alloys": "p r a", "proto heat radiators": "p h r", "proprietary composites": "pr c",
-        "chemical manipulators": "c m", "compound shielding": "c s", "conductive polymers": "c p", "configurable components": "c c", "heat vanes": "h v",
+        "chemical manipulators": "c m", "compound shielding": "c s", "conductive polymers": "c p", "configurable components": "c co", "heat vanes": "h v",
         "polymer capacitors": "po c", "refined focus crystals": "r f c", "thermic alloys": "t a",
-        "chemical distillery": "c d", "conductive ceramics": "c c",
+        "chemical distillery": "c d", "conductive ceramics": "c ce",
         "high density composites": "h d c", "mechanical components": "m c",
         "polonium": "pol", "technetium": "tec", "yttrium": "ytt", "cadmium": "cad", "mercury": "mer", "selenium": "sel", "tin": "tin",
         "molybdenum": "mol", "niobium": "nio",
@@ -231,8 +231,33 @@ class EDRResourceFinder(object):
     def from_dav_hope(self, resource, reference_system, callback):
         distance = self.edr_systems.distance(reference_system, "Hyades Sector DR-V c2-23")
         pretty_dist = _(u"{distance:.3g}").format(distance=distance) if distance < 50.0 else _(u"{distance}").format(distance=int(distance))
+        probabilities = {
+            "chemical manipulators": 1.286,
+            "compound shielding": 0.744,
+            "conductive polymers": 1.286,
+            "configurable components": 1.000,
+            "heat vanes": 1.000,
+            "polymer capacitors": 1.286,
+            "refined focus crystals": 0.857,
+            "chemical distillery": 1.286,
+            "classified scan databanks": 1.143,
+            "conductive ceramics": 0.429,
+            "cracked industrial firmware": 0.857,
+            "electrochemical arrays": 0.714,
+            "focus crystal": 1.143,
+            "heat exchangers": 0.571,
+            "high density composites": 3.000,
+            "mechanical components": 1.286,
+            "phase alloys": 1.286,
+            "shielding sensors": 1.286,
+        }
+
+        probability = probabilities.get(resource.lower(), None)
+        first_line = _(u"Hyades Sector DR-V c2-23 ({}LY), Planet A 5 (60 LS), Dav's Hope at 44.8180 | -31.3893").format(pretty_dist)
+        if probability:
+            first_line += _(u"{resource} @ {probability}%").format(resource, int(100*probability))
         return [
-            _(u"Hyades Sector DR-V c2-23 ({}LY), Planet A 5 (60 LS), Dav's Hope at 44.8180 | -31.3893").format(pretty_dist),
+            first_line,
             _(u"Bring: advanced scanner, SRV."),
             _(u"Roam around to grab materials, repeat."),
             _(u"Search online for 'Dav's hope map' to find out which spots drop {}.").format(resource)
@@ -406,7 +431,8 @@ class EDRResourceFinder(object):
 
     def from_hacking(self, resource, reference_system, callback):
         pois = {
-            'Atins': {'name': 'Atins', 'loc': 'Scientific Installation near Planet 1', 'bring': _(u"Bring: 2 recon controllers, limpets, silent running ship."), 'what': _(u'Scan the installation, then the Comms array. Hack it. Run silent before the hacking begins / ends, avoid scans. Repeat.'), 'distanceToArrival': 11}
+            'Atins': {'name': 'Atins', 'loc': 'Scientific Installation near Planet 1', 'bring': _(u"Bring: 2 recon controllers, limpets, silent running ship."), 'what': _(u'Scan the installation, then the Comms array. Hack it. Run silent before the hacking begins / ends, avoid scans. Repeat.'), 'distanceToArrival': 11},
+            'Kemurukamar': {'name': 'Kemurukamar', 'loc': 'Pirate Cove near Planet A 1', 'bring': _(u"Bring: 2-3 recon controllers, limpets, silent running ship."), 'what': _(u"Scan the stranded mega-ship 'Blazin’ Dynamo', then the Comms and Data arrays. Hack them. Run silent before the hacking begins / ends, avoid scans. Repeat."), 'distanceToArrival': 1913},
         }
 
         alts = {
@@ -419,21 +445,36 @@ class EDRResourceFinder(object):
 
         hacking_poi_lut = {
             "modified embedded firmware": [
-                {'poi': 'Atins', 'probability': 0.343}
+                {'poi': 'Atins', 'probability': 0.343},
+                {'poi': 'Kemurukamar', 'probability': 3.000},
             ],
             "divergent scan data": [
                 {'poi': 'Atins', 'probability': 0.343},
+                {'poi': 'Kemurukamar', 'probability': 3.273},
             ],
             "security firmware patch": [
                 {'poi': 'Atins', 'probability': 0.171},
+                {'poi': 'Kemurukamar', 'probability': 3.545},
             ],
             "open symmetric keys": [
                 {'poi': 'Atins', 'probability': 0.171},
+                {'poi': 'Kemurukamar', 'probability': 2.182},
             ],
             "classified scan databank": [
                 {'poi': 'Atins', 'probability': 0.643},
+                {'poi': 'Kemurukamar', 'probability': 3.818},
             ],
         }
+
+        '''
+        TODO
+        Blazin'Dynamo at Kemurukamar
+        Peculiar Shield Frequency Data	g5	0.545
+        Classified Scan Fragment	g5	1.364
+        Aberrant Shield Pattern Analysis	g4	0.818
+        Cracked Industrial Firmware	g3	4.636
+        Untypical Shield Scans	g3	2.182
+        '''
 
         candidates = hacking_poi_lut.get(resource, None)
         if not candidates:
@@ -491,6 +532,11 @@ class EDRResourceFinder(object):
         if state == 'outbreak':
             if allegiance in ['alliance', 'independent'] or security == '$GAlAXY_MAP_INFO_state_anarchy;':
                 chance += '+'
+            elif allegiance == 'empire':
+                lchance = '+'
+                if population >= 1000000:
+                    lchance += '+' * int(max(3, math.log10(population / 100000)))
+                noteworthy.append(_(u'Imperial Shielding (USS-HGE, {})').format(lchance))
             noteworthy.append(_(u'Pharmaceutical Isolators (USS-HGE, {})').format(chance))
         elif state == ['none', 'election']:
             if allegiance == 'empire':
