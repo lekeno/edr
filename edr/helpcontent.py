@@ -16,6 +16,7 @@ class HelpContent(object):
                 _(u" - !help account: doing more with an EDR account (free)"),
                 _(u" - !help system: star system related features"),
                 _(u" - !help cmdr: commander related features"),
+                _(u" - !help central: dispatch a request to EDR central: general, police, fuel, repair"),
                 _(u" - !help enforcers: features for enforcers / bounty hunters"),
                 _(u" - !help powerplay: features for commanders pledged to a power"),
                 _(u" - !help cmdrdex: personalizing EDR's commanders database"),
@@ -69,7 +70,7 @@ class HelpContent(object):
                 u"⚶",
                 _(u"An EDR account is free and unlocks all of EDR's features. For instance:"),
                 _(u" - personalizing / augmenting EDR's commanders database."),
-                _(u" - reporting of traffic, outlaws and crimes."),
+                _(u" - reporting of traffic, outlaws, crimes, and fights."),
                 _(u" - reporting scans of commanders with legal status and bounties."),
                 _(u" - reporting and getting insights about powerplay enemies."),
                 u"⚶",
@@ -106,6 +107,23 @@ class HelpContent(object):
                 _(u" - Inara info: squadron and role if any (sometimes superseded by EDR)."),
                 _(u" - Personal tags/info from your CmdrDex if any (see !help cmdrdex)."),
                 _(u" - Legal record: # of clean vs. wanted scans, max and latest known bounties"),
+                u"⚶",
+                _(u"Send !clear in chat to clear everything on the overlay.")
+            ]
+        },
+        "central": {
+            "header": _(u"EDR Central"),
+            "details": [
+                _(u"You can dispatch a request to EDR Central's restricted discord channels."),
+                _(u"The request will automatically include your status (e.g. cmdr name, ship, etc.) and other relevant information."),
+                _(u" - '!edr your message.' to dispatch a generic message."),
+                _(u" - '!911 your message.' to dispatch a police request."),
+                _(u" - '!fuel your message.' to dispatch a fuel request."),
+                _(u" - '!repair your message.' to dispatch a repair request."),
+                _(u"If the message is successfully sent, you will see a confirmation with a codeword."),
+                _(u"If anyone is available, you should receive a friend request or a direct message."),
+                _(u"Identify trustworthy commanders by asking them for the codeword and checking their profile via EDR."),
+                _(u"Note: abusing this feature will result in revoking your access to EDR features."),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
             ]
@@ -209,12 +227,12 @@ class HelpContent(object):
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
             ]
-        }, 
+        },
         "config": {
             "header": _(u"Configuration options"),
             "details": [
                 _(u"EDR offers the following configuration options:"),
-                _(u" - !crimes [off|on]: to disable/enable crime reporting, e.g. '!crimes off' before an agreed upon duel."),
+                _(u" - !crimes [off|on]: to disable/enable crime and fight reporting, e.g. '!crimes off' before an agreed upon duel."),
                 _(u" - !audiocue [on|off|loud|soft] to control the audio cues, e.g. '!audiocue soft' for soft cues."),
                 _(u" - !overlay [on|off|] to enable/disable or verify the overlay, e.g. '!overlay' to check if it is enabled/working."),
                 _(u" - check the instructions in config/igm_config.v2.ini to customize the layout and timeouts."),

@@ -27,6 +27,9 @@ class EDRCrew(object):
             return True
         except:
             return False
+
+    def all_members(self):
+        return self.members.keys()
     
     def disband(self):
         self.members = {}
@@ -244,16 +247,16 @@ class EDPlayer(object):
 
     def json(self):
         return {
-            "timestamp": self.timestamp,
-            "wanted": self.wanted,
-            "bounty": self.bounty,
-            "enemy": self.enemy,
-            "vehicle": self.piloted_vehicle.json()
+            u"cmdr": self.name,
+            u"timestamp": self.timestamp * 1000,
+            u"wanted": self.wanted,
+            u"bounty": self.bounty,
+            u"enemy": self.enemy,
+            u"ship": self.piloted_vehicle.json()
         }
     
     def killed(self):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         self.destroyed = True
         self.wanted = False
         self._bounty = None
@@ -285,8 +288,7 @@ class EDPlayer(object):
 
     @star_system.setter
     def star_system(self, star_system):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         self.location.star_system = star_system
 
     @property
@@ -298,13 +300,11 @@ class EDPlayer(object):
 
     @place.setter
     def place(self, place):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         self.location.place = place
     
     def location_security(self, ed_security_state):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         self.location.security = ed_security_state
 
     def in_bad_neighborhood(self):
@@ -335,15 +335,13 @@ class EDPlayer(object):
         return False
 
     def in_mothership(self):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         if not self.mothership:
             self.mothership = EDVehicleFactory.unknown_vehicle() 
         self.piloted_vehicle = self.mothership
 
     def in_srv(self):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         if not self.mothership or not self.mothership.supports_srv():
             self.mothership = EDVehicleFactory.unknown_vehicle() 
         if not self.srv:
@@ -351,8 +349,7 @@ class EDPlayer(object):
         self.piloted_vehicle = self.srv
 
     def in_slf(self):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         if not self.mothership or not self.mothership.supports_slf():
             self.mothership = EDVehicleFactory.unknown_vehicle() 
         if not self.slf:
@@ -360,8 +357,7 @@ class EDPlayer(object):
         self.piloted_vehicle = self.slf
 
     def docked(self, is_docked = True):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         if is_docked:
             self.mothership.safe()
             if self.slf:
@@ -370,21 +366,18 @@ class EDPlayer(object):
                 self.srv.safe()
 
     def hardpoints(self, deployed):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         self.piloted_vehicle.hardpoints(deployed)
 
     def in_danger(self, danger = True):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         if not danger:
             self.piloted_vehicle.safe()
         else:
             self.piloted_vehicle.unsafe()
 
     def to_normal_space(self):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         self.location.space_dimension = EDSpaceDimension.NORMAL_SPACE
         self.mothership.safe()
         if self.slf:
@@ -393,8 +386,7 @@ class EDPlayer(object):
             self.srv.safe()
 
     def to_super_space(self):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         self.location.space_dimension = EDSpaceDimension.SUPER_SPACE
         self.mothership.safe()
         if self.slf:
@@ -403,8 +395,7 @@ class EDPlayer(object):
             self.srv.safe()
 
     def to_hyper_space(self):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         self.location.space_dimension = EDSpaceDimension.HYPER_SPACE
         self.mothership.safe()
         if self.slf:
@@ -420,8 +411,7 @@ class EDPlayer(object):
 
     @bounty.setter
     def bounty(self, credits):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         if credits:
             self._bounty = EDBounty(credits)
         else:
@@ -440,8 +430,7 @@ class EDPlayer(object):
         return self.powerplay.time_pledged()
 
     def pledged_to(self, power, time_pledged):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         self.powerplay = EDRPowerplay(power, time_pledged)
     
     def pledged_since(self):
@@ -496,8 +485,8 @@ class EDPlayer(object):
         return self.mothership is None or self.location.star_system is None or self.location.place is None
 
     def update_vehicle_if_obsolete(self, vehicle, piloted=True):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        if vehicle is None:
+            return False
         updated = False
         if EDVehicleFactory.is_ship_launched_fighter(vehicle):
             updated = self.__update_slf_if_obsolete(vehicle)
@@ -515,6 +504,8 @@ class EDPlayer(object):
             updated = self.__update_mothership_if_obsolete(vehicle)
             if piloted:
                 self.piloted_vehicle = self.mothership
+        if updated:
+            self._touch()
         return updated
     
     def __update_mothership_if_obsolete(self, vehicle):
@@ -536,8 +527,7 @@ class EDPlayer(object):
         return False
 
     def update_star_system_if_obsolete(self, star_system):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         if self.location.star_system is None or self.location.star_system != star_system:
             EDRLOG.log(u"Updating system info (was missing or obsolete). {old} vs. {system}".format(old=self.location.star_system, system=star_system), "INFO")
             self.location.star_system = star_system
@@ -545,13 +535,17 @@ class EDPlayer(object):
         return False
 
     def update_place_if_obsolete(self, place):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         if self.location.place is None or self.location.place != place:
             EDRLOG.log(u"Updating place info (was missing or obsolete). {old} vs. {place}".format(old=self.location.place, place=place), "INFO")
             self.location.place = place
             return True
         return False
+
+    def _touch(self):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+
 
 class EDPlayerOne(EDPlayer):
     def __init__(self, name=None):
@@ -563,11 +557,40 @@ class EDPlayerOne(EDPlayer):
         self.wing = set()
         self.friends = set()
         self.crew = None
-        self.target = None
+        self._target = None
         self.instance = edinstance.EDInstance()
 
     def __repr__(self):
         return str(self.__dict__)
+
+    @property
+    def target(self):
+        return self._target
+
+    @target.setter
+    def target(self, new_target):
+        self._target = new_target
+        self._touch()
+
+    def json(self, fuel_info=False):
+        result = {
+            u"cmdr": self.name,
+            u"timestamp": self.timestamp * 1000,
+            u"wanted": self.wanted,
+            u"bounty": self.bounty,
+            u"starSystem": self.star_system,
+            u"place": self.place,
+            u"wing": [ {u"cmdr": wingmate, u"instanced": self.is_instanced_with(wingmate)} for wingmate in self.wing if self.wing],
+            u"byPledge": self.powerplay.canonicalize() if self.powerplay else u'',
+            u"ship": self.piloted_vehicle.json(fuel_info=fuel_info),
+            u"target": self.target.json() if self.target else u''
+        }
+
+        result[u"crew"] = []
+        if self.crew:
+            result[u"crew"] = [ {u"cmdr": crew_member} for crew_member in self.crew.all_members()] 
+            
+        return result
    
     def force_new_name(self, new_name):
         self._name = new_name
@@ -595,8 +618,7 @@ class EDPlayerOne(EDPlayer):
         self._bounty = None
         self.instance.reset()
         self.to_normal_space()
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
 
     def killed(self):
         super(EDPlayerOne, self).killed()
@@ -607,8 +629,7 @@ class EDPlayerOne(EDPlayer):
         self.crew = None
         self.target = None
         self.instance.reset()
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
 
     def resurrect(self, rebought=True):
         self.game_mode = self.previous_mode 
@@ -619,8 +640,7 @@ class EDPlayerOne(EDPlayer):
         self.target = None
         self.to_normal_space()
         self.instance.reset()
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         if rebought:
             self.mothership.reset()
             if self.slf:
@@ -634,20 +654,17 @@ class EDPlayerOne(EDPlayer):
             self.srv = None
 
     def leave_wing(self):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
         self.wing = set()
+        self._touch()
 
     def join_wing(self, others):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
         self.wing = set(others)
         self.crew = None
+        self._touch()
 
     def add_to_wing(self, other):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
         self.wing.add(other)
+        self._touch()
 
     def is_crew_member(self):
         if not self.crew:
@@ -661,16 +678,14 @@ class EDPlayerOne(EDPlayer):
         return len(self.wing) > 0
 
     def leave_crew(self):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         if not self.crew:
             return
         self.crew = None
         self.instance.reset()
 
     def disband_crew(self):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         if not self.crew:
             return
         for member in self.crew.members:
@@ -687,12 +702,10 @@ class EDPlayerOne(EDPlayer):
         self.piloted_vehicle = self.mothership
         self.slf = None
         self.srv = None
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
 
     def add_to_crew(self, member):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         if not self.crew:
             self.crew = EDRCrew(self.name)
             self.wing = set()
@@ -701,8 +714,7 @@ class EDPlayerOne(EDPlayer):
         return self.crew.add(member)
     
     def remove_from_crew(self, member):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         if not self.crew:
             self.crew = EDRCrew(self.name)
             self.wing = set()
@@ -748,50 +760,64 @@ class EDPlayerOne(EDPlayer):
         super(EDPlayerOne, self).to_hyper_space()
         self.instance.reset()
 
+    #TODO limit to pvp fights against outlaws?
+    def in_a_pvp_fight(self):
+        if not self.in_a_fight():
+            return False
+
+        if self.instance.is_empty():
+            # Can't PvP if there is no one.
+            return False
+
+        wing_and_crew = self.crew.all_members() if self.crew else set()
+        wing_and_crew.add(self.wing)
+        if self.instance.anyone_beside(wing_and_crew):
+            return False
+
+        # TODO
+        return True
+
     def leave_vehicle(self):
         self.mothership = EDVehicleFactory.unknown_vehicle()
         self.piloted_vehicle = self.mothership
         self.slf = None
         self.srv = None
         self.instance.reset()
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
 
     def targeting(self, cmdr):
         self.instance.player_in(cmdr)
         self.target = cmdr
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
 
-    # TODO should call kill
     def destroy(self, cmdr):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
-        self.instance.player_out(cmdr)
+        self._touch()
+        cmdr.killed()
+        self.instance.player_out(cmdr.name) # TODO maybe better to have around or perhaps call instance update to capture death? Or maybe have an out tracking in instance?
         if self.target and self.target.name == cmdr.name:
             self.target = None
 
     def interdiction(self, interdicted, success):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         self.to_normal_space()
         if success:
             interdicted.location = self.location
             self.instance.player_in(interdicted)
 
     def interdicted(self, interdictor, success):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         if success:
             self.to_normal_space()
             interdictor.location = self.location
             self.instance.player_in(interdictor)
         else:
-            self.instance.player_out(interdictor)
+            self.instance.player_out(interdictor.cmdr_name)
+
+    def is_instanced_with(self, cmdr_name):
+        return self.instance.player(cmdr_name) != None
 
     def instanced(self, cmdr_name, ship_internal_name=None, piloted=True):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         cmdr = self.instance.player(cmdr_name)
         if not cmdr:
             cmdr = EDPlayer(cmdr_name)
@@ -803,13 +829,11 @@ class EDPlayerOne(EDPlayer):
         return cmdr
 
     def deinstanced(self, cmdr_name):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         self.instance.player_out(cmdr_name)
 
     def attacked(self, target):
-        now = edtime.EDTime.py_epoch_now()
-        self.timestamp = now
+        self._touch()
         if target == "Mothership":
             self.mothership.attacked()
         elif target == "Fighter":

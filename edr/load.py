@@ -188,6 +188,7 @@ def handle_movement_events(ed_player, entry):
         place = "Supercruise"
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         ed_player.wanted = entry.get("Wanted", False)
+        ed_player.mothership.fuel_level = entry.get("FuelLevel", ed_player.mothership.fuel_level)
         EDR_CLIENT.noteworthy(entry)
         if entry["SystemSecurity"]:
             ed_player.location_security(entry["SystemSecurity"])
@@ -236,7 +237,6 @@ def handle_change_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         ed_player.to_normal_space()
         if entry["event"] == "Docked":
-            # TODO clear fight/... state
             ed_player.wanted = entry.get("Wanted", False)
         outcome["reason"] = "Docking events"
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
@@ -266,7 +266,7 @@ def handle_lifecycle_events(ed_player, entry):
             if ed_player.srv:
                 ed_player.srv.skirmish()
             return
-        elif entry["MusicTrack"] == "Supercruise" and ed_player.in_a_fight():
+        elif entry["MusicTrack"] in ["Supercruise", "Exploration", "NoTrack"] and ed_player.in_a_fight():
             ed_player.in_danger(False)
             return
 
@@ -287,6 +287,7 @@ def handle_lifecycle_events(ed_player, entry):
         EDR_CLIENT.status = _(u"initialized.")
         EDRLOG.log(u"Journal player got created: accurate picture of friends/wings.",
                    "DEBUG")
+        return
 
     if entry["event"] in ["LoadGame"]:
         EDR_CLIENT.clear()
@@ -296,6 +297,14 @@ def handle_lifecycle_events(ed_player, entry):
         EDRLOG.log(u"Game mode is {}".format(ed_player.game_mode), "DEBUG")
         if not ed_player.in_solo_or_private():
             EDR_CLIENT.warmup()
+        return
+
+    if entry["event"] in ["Loadout"]:
+        if ed_player.mothership.id == entry.get("ShipID", None):
+            ed_player.mothership.update_from_loadout(entry)
+        else:
+            ed_player.update_vehicle_if_obsolete(EDVehicleFactory.from_load_game_event(entry), piloted=True)
+        return
 
 def handle_friends_events(ed_player, entry):
     if entry["event"] != "Friends":
@@ -385,10 +394,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     status_outcome = {"updated": False, "reason": "Unspecified"}
 
     vehicle = None
-    #TODO find out if EDMC's state already has 0-100 values for health.
     if ed_player.is_crew_member():
         vehicle = EDVehicleFactory.unknown_vehicle()
-    else:
+    elif state.get("ShipType", None):
         vehicle = EDVehicleFactory.from_edmc_state(state)
 
     status_outcome["updated"] = ed_player.update_vehicle_if_obsolete(vehicle)
@@ -417,8 +425,11 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         elif ("ScanStage" in entry and entry["ScanStage"] == 0) or ("TargetLocked" in entry and not entry["TargetLocked"]):
             ed_player.target = None
     
-    if entry["event"] in ["HullDamage", "UnderAttack", "SRVDestroyed", "FighterDestroyed", "HeatDamage", "ShieldState", "AfmuRepairs", "CockpitBreached", "RebootRepair", "RepairDrone", "SelfDestruct"]:
+    if entry["event"] in ["HullDamage", "UnderAttack", "SRVDestroyed", "FighterDestroyed", "HeatDamage", "ShieldState", "CockpitBreached", "SelfDestruct"]:
         handle_damage_events(ed_player, entry)
+
+    if entry["event"] in ["RefuelAll", "RefuelPartial", "Repair", "RepairAll", "AfmuRepairs", "RebootRepair", "RepairDrone"]:
+        handle_fixing_events(ed_player, entry)
 
     if entry["event"] in ["ReceiveText", "SendText"]:
         report_comms(ed_player, entry)
@@ -436,6 +447,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
                 crew_player = EDPlayer(member)
                 crew_player.mothership = vehicle
                 edr_submit_contact(crew_player, entry["timestamp"], source, ed_player)
+    
+    if ed_player.in_a_fight():
+        report_fight(ed_player)
 
 
 def edr_update_cmdr_status(cmdr, reason_for_update, timestamp):
@@ -551,6 +565,17 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim, timestamp):
     if not EDR_CLIENT.crime(criminal_cmdr.star_system, report):
         EDR_CLIENT.status = _(u"failed to report crime.")
         EDR_CLIENT.evict_system(criminal_cmdr.star_system)
+
+def report_fight(player):
+    if not player.in_open():
+        EDRLOG.log(u"Skipping reporting fight due to unconfirmed Open mode", "INFO")
+        EDR_CLIENT.status = _(u"not in Open? Start EDMC before Elite.")
+        return
+
+    report = player.json()
+    if not EDR_CLIENT.fight(report):
+        EDR_CLIENT.status = _(u"failed to report fight.")
+        EDR_CLIENT.evict_system(player.star_system)
 
 def edr_submit_contact(contact, timestamp, source, witness):
     """
@@ -668,6 +693,7 @@ def report_crime(cmdr, entry):
     :param entry:
     :return:
     """
+    # TODO call interdicted?
     player_one = EDR_CLIENT.player
     if entry["event"] in ["Interdicted", "EscapeInterdiction"]:
         if entry["IsPlayer"]:
@@ -745,22 +771,17 @@ def report_comms(player, entry):
                                player)
 
 def handle_damage_events(ed_player, entry):
-    if not entry["event"] in ["HullDamage", "UnderAttack", "SRVDestroyed", "FighterDestroyed", "HeatDamage", "ShieldState", "AfmuRepairs", "CockpitBreached", "RebootRepair", "RepairDrone", "SelfDestruct"]:
+    if not entry["event"] in ["HullDamage", "UnderAttack", "SRVDestroyed", "FighterDestroyed", "HeatDamage", "ShieldState", "CockpitBreached", "SelfDestruct"]:
         return False
 
-    # TODO repairdrone:
-    # Parameters:
-    #    HullRepaired
-    #    CockpitRepaired
-    #    CorrosionRepaired 
     if entry["event"] == "HullDamage":
         if entry.get("Fighter", False):
             if ed_player.slf:
-                ed_player.slf.taking_hull_damage(entry["Health"] * 100.0)
+                ed_player.slf.taking_hull_damage(entry["Health"] * 100.0) # HullDamage's Health is normalized to 0.0 ... 1.0
             else:
                 EDRLOG.log("SLF taking hull damage but player has none...", "WARNING")
         else:
-            ed_player.mothership.taking_hull_damage(entry["Health"] * 100.0)
+            ed_player.mothership.taking_hull_damage(entry["Health"] * 100.0) # HullDamage's Health is normalized to 0.0 ... 1.0
     elif entry["event"] == "CockpitBreached":
         ed_player.piloted_vehicle.cockpit_breached()
     elif entry["event"] == "ShieldState":
@@ -781,12 +802,36 @@ def handle_damage_events(ed_player, entry):
             EDRLOG.log("SLF got destroyed but player had none...", "WARNING")
     elif entry["event"] == "SelfDestruct":
         ed_player.piloted_vehicle.destroy()
-    elif entry["event"] == "AfmuRepairs":
-        ed_player.mothership.subsystem_health(entry["Module"], entry["Health"])
     else:
         return False
     return True
 
+def handle_fixing_events(ed_player, entry):
+    if entry["event"] not in ["RefuelAll", "RefuelPartial", "Repair", "RepairAll", "AfmuRepairs", "RebootRepair", "RepairDrone"]:
+        return False
+
+    if entry["event"] == "AfmuRepairs":
+        ed_player.mothership.subsystem_health(entry["Module"], entry["Health"] * 100.0) # AfmuRepairs' health is normalized to 0.0 ... 1.0
+    elif entry["event"] == "RefuelAll":
+        ed_player.mothership.refuel()
+    elif entry["event"] == "RefuelPartial":
+        ed_player.mothership.refuel(entry["Amount"])
+    elif entry["event"] == "RepairAll":
+        ed_player.mothership.repair()
+    elif entry["event"] == "Repair":
+        ed_player.mothership.repair(entry["Item"])
+    elif entry["event"] == "RepairDrone":
+        # TODO is it always the mothership? or pilotedship?
+        # TODO is it only when one's ship get repaired?
+        if entry.get("HullRepaired", None):
+            ed_player.mothership.hull_health = entry["HullRepaired"] # TODO it seems that the after repair value is in that field as a 0.0 to 100.0 range
+        if entry.get("CockpitRepaired", None):
+            ed_player.mothership.cockpit_health(entry["CockpitRepaired"])
+        if entry.get("CorrosionRepaired", None):
+            # TODO track this?
+            pass
+
+    
 def handle_scan_events(player, entry):
     if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0):
         return False
@@ -812,7 +857,6 @@ def handle_scan_events(player, entry):
         return False
 
     target = player.instanced(target_name, entry["Ship"], piloted)
-    # TODO set piloted ship
  
     edr_submit_contact(target, entry["timestamp"], "Ship targeted", player)
     if entry["ScanStage"] >= 2:
@@ -838,9 +882,6 @@ def handle_scan_events(player, entry):
         edr_submit_scan(scan, entry["timestamp"], "Ship targeted [{}]".format(entry["LegalStatus"]), player)
 
     player.targeting(target)
-    if player.in_a_fight():
-        # TODO we only care about fights with outlaws / opposite side
-        print player.instance.json()
     return True
 
 def handle_commands(cmdr, entry):
@@ -876,7 +917,8 @@ def handle_bang_commands(cmdr, command, command_parts):
         if len(command_parts) == 2:
             target_cmdr = command_parts[1]
         else:
-            target_cmdr = EDR_CLIENT.player.target
+            target = EDR_CLIENT.player.target
+            target_cmdr = target.name if target else None
         if target_cmdr:
             EDRLOG.log(u"Explicit who command for {}".format(target_cmdr), "INFO")
             EDR_CLIENT.who(target_cmdr)
@@ -907,7 +949,8 @@ def handle_bang_commands(cmdr, command, command_parts):
         if len(command_parts) == 2:
             target_cmdr = command_parts[1]
         else:
-            target_cmdr = EDR_CLIENT.player.target
+            target = EDR_CLIENT.player.target
+            target_cmdr = target.name if target else None
         if target_cmdr:
             EDRLOG.log(u"Explicit where command for {}".format(target_cmdr), "INFO")
             EDR_CLIENT.where(target_cmdr)
@@ -991,6 +1034,21 @@ def handle_bang_commands(cmdr, command, command_parts):
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = parameters[1] if len(parameters) > 1 else None
         EDR_CLIENT.guardian_tech_broker_near(search_center, override_sc_dist)
+    elif command in ["!edr", "!911", "!fuel", "!repair"]:
+        services = {
+            "!edr": "N/A",
+            "!911": "police",
+            "!fuel": "fuel",
+            "!repair": "repair"
+        }
+        service = services[command]
+        message = command_parts[1] if len(command_parts) == 2 else "N/A"
+        info = EDR_CLIENT.player.json(fuel_info=(service == "fuel"))
+        info["message"] = message
+        if service == "police":
+            info["instance"] = EDR_CLIENT.player.instance.json()
+        EDRLOG.log(u"Message to EDR Central for {} with {}".format(service, message), "INFO")
+        EDR_CLIENT.call_central(service, info)
     elif command == "!help":
         EDRLOG.log(u"Help command", "INFO")
         EDR_CLIENT.help("" if len(command_parts) == 1 else command_parts[1])
@@ -1068,7 +1126,8 @@ def get_target_cmdr(command_parts, entry, player):
             prefix = "$cmdr_decorate:#name="
             target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
         else:
-            target_cmdr = player.target
+            target = player.target
+            target_cmdr = target.name if target else None
     return target_cmdr
 
 def handle_minus_commands(command, command_parts, entry):
@@ -1120,7 +1179,8 @@ def handle_at_commands(entry):
             target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
             EDRLOG.log(u"Memo command for tagged cmdr {}".format(target_cmdr), "INFO")
         else:
-            target_cmdr = EDR_CLIENT.player.target
+            target = EDR_CLIENT.player.target
+            target_cmdr = target.name if target else None
     elif command.startswith("@# ") and len(command)>2:
         target_cmdr = command[3:]
         EDRLOG.log(u"Memo command for tagged cmdr {}".format(target_cmdr), "INFO")

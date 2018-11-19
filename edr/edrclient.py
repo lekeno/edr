@@ -26,6 +26,7 @@ import helpcontent
 import edtime
 import edrlegalrecords
 from edri18n import _, _c, _edr, set_language
+import random
 
 EDRLOG = edrlog.EDRLog()
 
@@ -57,6 +58,7 @@ class EDRClient(object):
         self.scans_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.scans_max_age())
         self.cognitive_scans_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
         self.alerts_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.alerts_max_age())
+        self.fights_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.fights_max_age())
 
         self._email = tk.StringVar(value=config.get("EDREmail"))
         self._password = tk.StringVar(value=config.get("EDRPassword"))
@@ -100,6 +102,7 @@ class EDRClient(object):
         self.motd = []
         self.tips = randomtips.RandomTips()
         self.help_content = helpcontent.HelpContent()
+        self._throttle_until_timestamp = None
 
     def loud_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "loud")
@@ -502,6 +505,11 @@ class EDRClient(object):
         last_report = self.traffic_cache.get(sighted_cmdr)
         return self.__novel_enough_situation(report, last_report)
 
+    def novel_enough_fight(self, involved_cmdr, fight):
+        last_fight = self.fights_cache.get(involved_cmdr)
+        # TODO perhaps the generic one isn't ideal since it doesn't check the changes in the payload...
+        return self.__novel_enough_situation(fight, last_fight)
+
     def outlaws_alerts_enabled(self, silent=True):
         return self._alerts_enabled(EDROpponents.OUTLAWS, silent)
     
@@ -678,6 +686,8 @@ class EDRClient(object):
             
             if oneliner:
                 summary.append(oneliner)
+            
+            self.alerts_cache.set(event["cmdr"].lower(), event)
         return summary
 
     def who(self, cmdr_name, autocreate=False):
@@ -879,6 +889,39 @@ class EDRClient(object):
             return True
         return False
 
+    def fight(self, fight):
+        if not self.crimes_reporting:
+            EDRLOG.log(u"Crimes reporting is off (!crimes on to re-enable).", "INFO")
+            self.status = _(u"Crimes reporting is off (!crimes on to re-enable)")
+            return True
+            
+        if self.player.in_bad_neighborhood():
+            EDRLOG.log(u"Fight not being reported because the player is in an anarchy.", "INFO")
+            self.status = _(u"Anarchy system (fights not reported).")
+            return True
+
+        if self.is_anonymous():
+            EDRLOG.log(u"Skipping fight report since the user is anonymous.", "INFO")
+            return True
+
+        if not self.novel_enough_fight(fight['cmdr'].lower(), fight):
+            EDRLOG.log(u"Skipping fight report (not novel enough).", "INFO")
+            return True
+
+        star_system = fight["starSystem"]
+        sid = self.edrsystems.system_id(star_system, may_create=True)
+        if sid is None:
+            EDRLOG.log(u"Failed to report fight in system {} : no id found.".format(star_system),
+                       "DEBUG")
+            return False
+
+        fight["instance"] = self.player.instance.noteworthy_changes_json()
+        if self.server.fight(sid, fight):
+            self.status = _(u"fight reported!")
+            self.fights_cache.set(fight["cmdr"].lower(), fight)
+            return True
+        return False
+
     def crew_report(self, report):
         if self.is_anonymous():
             EDRLOG.log(u"Skipping crew report since the user is anonymous.", "INFO")
@@ -897,6 +940,37 @@ class EDRClient(object):
             return True
         return False
 
+    def __throttling_duration(self):
+        now_epoch = edtime.EDTime.py_epoch_now()
+        if now_epoch > self._throttle_until_timestamp:
+            return 0
+        return self._throttle_until_timestamp - now_epoch
+
+    def call_central(self, service, info):
+        throttling = self.__throttling_duration()
+        if throttling:
+            self.status = _(u"Message not sent. Try again in {duration}.").format(duration=edtime.EDTime.pretty_print_timespan(throttling))
+            self.__notify(_(u"EDR central"), [self.status], clear_before = True)
+            return False
+
+        star_system = info["starSystem"]
+        sid = self.edrsystems.system_id(star_system, may_create=True)
+        if sid is None:
+            EDRLOG.log(u"Failed to call central from system {} : no id found.".format(star_system),
+                       "DEBUG")
+            return False
+        
+        prefix = random.choice(["alpha", "bravo", "charlie", "delta", "echo", "foxtrot", "golf", "hotel", "india", "juliet", "kilo", "lima", "mike", "november", "oscar", "papa", "quebec", "romeo", "sierra", "tango", "uniform", "victor", "whiskey", "x-ray", "yankee", "zulu"])
+        suffix = random.randint(0,999)
+        info["codeword"] = u"{}-{}".format(prefix, suffix)
+        if self.server.call_central(service, sid, info):
+            self.status = _(u"Message sent to EDR central")
+            self.__notify(_(u"EDR central"), [_(u"Message sent with codeword '{}'.").format(info["codeword"]), _(u"Ask the codeword to identify trusted commanders.")], clear_before = True)
+            self._throttle_until_timestamp = edtime.EDTime.py_epoch_now() + 60*5 #TODO parameterize
+            # TODO open a realtime channel
+            # TODO send further messages
+            return True
+        return False
 
     def tag_cmdr(self, cmdr_name, tag):
         if self.is_anonymous():

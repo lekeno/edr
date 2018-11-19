@@ -32,6 +32,9 @@ class EDRResourceFinder(object):
         "molybdenum": "mol", "niobium": "nio",
         "chromium": "chr", "vanadium": "van", "zinc": "zin", "germaniun": "ger", "manganese": "man",
         "boron": "bor",
+        "electrochemical arrays": "e a", "focus crystals": "f c",
+        "heat exchangers": "h e", "shielding sensors": "s s",
+        "phase alloys": "p a",
     }
 
     RESOURCE_SYNONYMS = {
@@ -71,6 +74,7 @@ class EDRResourceFinder(object):
         "p h r": "proto heat radiators", "proto heat radiator": "proto heat radiators", "proto heat": "proto heat radiators", "proto radiator": "proto heat radiators",
         "p c": "ambiguous abbreviation (pc)",
         "c c": "ambiguous abbreviation (cc)",
+        "c d": "chemical distillery",
         "pr c": "proprietary composites", "proprietary composite": "proprietary composites",
         "c m": "chemical manipulators", "c s": "compound shielding", "c p": "conductive polymers", "c co": "configurable components", "h v": "heat vanes",
         "po c": "polymer capacitors", "r f c": "refined focus crystals", "t a": "thermic alloys",
@@ -80,6 +84,11 @@ class EDRResourceFinder(object):
         "mer": "mercury", "sel": "selenium", "ars": "arsenic", "mol": "molybdenum",
         "nio": "niobium", "chr": "chromium", "van": "vanadium", "zin": "zinc", "ger": "germaniun", "man": "manganese",
         "bor": "boron",
+        "e a": "electrochemical arrays", "electrochemical array": "electrochemical arrays",
+        "f c": "focus crystals", "focus crystal": "focus crystals",
+        "h e": "heat exchangers", "heat exchanger": "heat exchangers",
+        "s s": "shielding sensors", "shielding sensor": "shielding sensors",
+        "p a": "phase alloys", "phase alloy": "phase alloys",
     }
 
     RESOURCE_CALLBACKS = {
@@ -110,10 +119,11 @@ class EDRResourceFinder(object):
         "military grade alloys": 'state_dependent_resource', "military supercapacitors": 'state_dependent_resource',
         "pharmaceutical isolators": 'state_dependent_resource', "proto light alloys": 'state_dependent_resource',
         "proto radiolic alloys": 'state_dependent_resource', "proto heat radiators": 'state_dependent_resource', "proprietary composites": 'state_dependent_resource',
-        "chemical manipulators": 'from_dav_hope', "compound shielding": 'from_dav_hope', "conductive polymers": 'from_dav_hope', "configurable components": 'from_dav_hope', "heat vanes": 'from_dav_hope',
-        "polymer capacitors": 'from_dav_hope', "refined focus crystals": 'from_dav_hope', "thermic alloys": "state_dependent_resource",
+        "chemical manipulators": 'from_surface_site', "compound shielding": 'from_surface_site', "conductive polymers": 'from_surface_site', "configurable components": 'from_dav_hope', "heat vanes": 'from_surface_site',
+        "polymer capacitors": 'from_surface_site', "refined focus crystals": 'from_surface_site', "thermic alloys": "state_dependent_resource",
         "high density composites": "from_dav_hope", "mechanical components": "from_dav_hope",
-        "conductive ceramics": "from_dav_hope",
+        "conductive ceramics": "from_surface_site", "chemical distillery": "from_surface_site",
+        "electrochemical arrays": "from_surface_site", "focus crystals": "from_surface_site", "heat exchangers": "from_surface_site", "shielding sensors": "from_surface_site", "phase alloys": "from_surface_site",
         "polonium": 'recommend_prospecting_planet', "technetium": 'recommend_prospecting_planet', "yttrium": 'recommend_prospecting_planet', "cadmium": 'recommend_prospecting_planet', "mercury": 'recommend_prospecting_planet', "selenium": 'recommend_prospecting_planet', "tin": 'recommend_prospecting_planet',
         "arsenic": 'recommend_prospecting_planet', "molybdenum": 'recommend_prospecting_planet',
         "niobium": 'recommend_prospecting_planet', "chromium": 'recommend_prospecting_planet',
@@ -205,6 +215,16 @@ class EDRResourceFinder(object):
         
         to_koli = self.edr_systems.distance(reference_system, "Koli Discii")
         to_hip = self.edr_systems.distance(reference_system, "HIP 16613")
+        to_renet = self.edr_systems.distance(reference_system, "Renet")
+        if resource.lower() in ["antimony", "tellurium", "ruthenium"] and to_renet < to_hip and to_renet < to_koli:
+            what = _(u"Break the cargo rack of the crashed Anaconda, repeat.")
+            pretty_dist = _(u"{distance:.3g}").format(distance=to_renet) if to_renet < 50.0 else _(u"{distance}").format(distance=int(to_renet))
+            return [
+                _(u"Renet ({}LY), Planet B 1 (378 LS), 14 | 135").format(pretty_dist),
+                _(u"Bring: SRV."),
+                what
+            ]
+
         what = _(u"Scan the 3 COMMS Control of the crashed Anaconda, repeat.") if self.__is_data(resource) else _(u"Break the 3 cargo racks of the crashed Anaconda, repeat.")
             
         if to_hip < to_koli:
@@ -228,6 +248,47 @@ class EDRResourceFinder(object):
                              "cracked industrial firmware", "specialized legacy firmware", "classified scan fragment",
                              "unusual encrypted files", "tagged encryption codes"]
 
+    def from_surface_site(self, resource, reference_system, callback):
+        to_research_5592 = self.edr_systems.distance(reference_system, "HR 5991")
+        to_dav_hope = self.edr_systems.distance(reference_system, "Hyades Sector DR-V c2-23")
+        if to_dav_hope < to_research_5592:
+            return self.from_dav_hope(resource, reference_system, callback)
+        else:
+            return self.from_research_facility_5592(resource, reference_system, callback)
+    
+    def from_research_facility_5592(self, resource, reference_system, callback):
+        distance = self.edr_systems.distance(reference_system, "HR 5991")
+        pretty_dist = _(u"{distance:.3g}").format(distance=distance) if distance < 50.0 else _(u"{distance}").format(distance=int(distance))
+        probabilities = {
+            'chemical manipulators': 1.03125,
+            'compound shielding': 0.75,
+            'conductive polymers': 0.75,
+            'heat vanes': 0.5625,
+            'polymer capacitors': 0.65625,
+            'refined focus crystals': 1.3125,
+            'chemical distillery': 1.125,
+            'classified scan databanks': 1.875,
+            'conductive ceramics': 0.46875,
+            'cracked industrial firmware': 0.1875,
+            'electrochemical arrays': 0.65625,
+            'focus crystals': 0.5625,
+            'heat exchangers': 0.75,
+            'shielding sensors': 1.03125,
+        }
+
+        probability = probabilities.get(resource.lower(), None)
+        first_line = _(u"HR 5991 ({}LY), Planet 1 B (TODO LS), Research Facility 5592 at at 33.4701 | -2.1706").format(pretty_dist)
+        if probability:
+            first_line += _(u" {resource} @ {probability}%").format(resource=resource, probability=int(100*probability))
+        alt_distance = self.edr_systems.distance(reference_system, "Hyades Sector DR-V c2-23")
+        alt_pretty_dist = _(u"{distance:.3g}").format(distance=alt_distance) if alt_distance < 50.0 else _(u"{distance}").format(distance=int(alt_distance))
+        return [
+            first_line,
+            _(u"Bring: advanced scanner, SRV."),
+            _(u"Roam around to grab materials, repeat."),
+            _(u"Alternative: 'Dav's hope' in Hyades Sector DR-V c2-23 ({}LY).").format(alt_pretty_dist)
+        ]
+    
     def from_dav_hope(self, resource, reference_system, callback):
         distance = self.edr_systems.distance(reference_system, "Hyades Sector DR-V c2-23")
         pretty_dist = _(u"{distance:.3g}").format(distance=distance) if distance < 50.0 else _(u"{distance}").format(distance=int(distance))
@@ -255,7 +316,7 @@ class EDRResourceFinder(object):
         probability = probabilities.get(resource.lower(), None)
         first_line = _(u"Hyades Sector DR-V c2-23 ({}LY), Planet A 5 (60 LS), Dav's Hope at 44.8180 | -31.3893").format(pretty_dist)
         if probability:
-            first_line += _(u"{resource} @ {probability}%").format(resource, int(100*probability))
+            first_line += _(u" {resource} @ {probability}%").format(resource=resource, probability=int(100*probability))
         return [
             first_line,
             _(u"Bring: advanced scanner, SRV."),
@@ -514,14 +575,25 @@ class EDRResourceFinder(object):
         ]
 
     def noteworthy_facts(self, fsdjump_event):
-        state = fsdjump_event.get('FactionState', '').lower()
+        state = ''
+        if "FactionState" not in fsdjump_event:
+            # New multi-states BGS in 3.3...
+            factions = fsdjump_event.get('Factions', [])
+            dominant_faction = fsdjump_event.get('SystemFaction', None)
+            for faction in factions:
+                if faction["Name"] == dominant_faction:
+                    state = faction["FactionState"]
+                    break
+        else:
+            state = fsdjump_event['FactionState'].lower()
+        
         
         if state not in ['outbreak', 'war', 'boom', 'civil unrest', 'war', 'civil war', 'famine', 'election', 'none']:
             return None 
 
         noteworthy = []
         chance = ''
-        allegiance = fsdjump_event.get('SystemAlliance', '').lower()
+        allegiance = fsdjump_event.get('SystemAllegiance', '').lower()
         security = fsdjump_event.get('SystemSecurity', '')
         population = fsdjump_event.get('Population', 0)
 

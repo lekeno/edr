@@ -26,6 +26,7 @@ class EDRServer(object):
         self.EDR_SERVER = config.edr_server()
         self.player_name = None
         self.version = edrconfig.EDRConfig().edr_version()
+        self._throttle_until_timestamp = None
 
     def login(self, email, password):
         self.REST_firebase.api_key = self.EDR_API_KEY
@@ -222,11 +223,24 @@ class EDRServer(object):
         records_over_timespan = int(max(1, round(timespan_seconds / 86400.0 * legal_records_perday)))
         return self.__get_recent(endpoint, timespan_seconds, limitToLast=records_over_timespan)
 
-    def crime(self,  system_id, info):
+    def crime(self, system_id, info):
         info["uid"] = self.uid()
         EDRLOG.log(u"Crime report for system {sid} with json:{json}".format(sid=system_id, json=info), "INFO")
         endpoint = "/v1/crimes/{system_id}/".format(system_id=system_id)
         return self.__post_json(endpoint, info)
+
+    def fight(self, system_id, info):
+        info["uid"] = self.uid()
+        EDRLOG.log(u"Fight report for system {sid} with json:{json}".format(sid=system_id, json=info), "INFO")
+        endpoint = "/v1/fights/{system_id}/".format(system_id=system_id)
+        return self.__post_json(endpoint, info)
+
+    def call_central(self, service, system_id, info):
+        info["uid"] = self.uid()
+        EDRLOG.log(u"Central call from system {sid} with json:{json}".format(sid=system_id, json=info), "INFO")
+        endpoint = "/v1/central/{service}/{system_id}/".format(service=service, system_id=system_id)
+        return self.__post_json(endpoint, info)
+
 
     def crew_report(self, crew_id, report):
         EDRLOG.log(u"Multicrew session report: {}".format(report), "INFO")

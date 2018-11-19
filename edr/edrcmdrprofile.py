@@ -289,7 +289,7 @@ class EDRCmdrProfile(object):
 
     def __sqdrdex_tag(self, tag):
         if self.sqdrdex_profile is None:
-            self.sqdrdex_profile = EDRCmdrDexProfile({}) #TODO should be a different class
+            self.sqdrdex_profile = EDRCmdrDexProfile({})
 
         return self.sqdrdex_profile.tag(tag)
 

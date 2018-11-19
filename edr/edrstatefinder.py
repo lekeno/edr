@@ -59,7 +59,6 @@ class EDRStateFinder(threading.Thread):
         return (best_system_so_far, best_grade_so_far)
 
     def close(self):
-        # TODO
         return None
 
     def __search(self, systems, best_system_so_far, best_grade_so_far):

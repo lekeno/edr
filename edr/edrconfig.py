@@ -97,6 +97,9 @@ class EDRConfig(object):
     def alerts_max_age(self):
         return int(self.config.get('lrucaches', 'alerts_max_age'))
 
+    def fights_max_age(self):
+        return int(self.config.get('lrucaches', 'fights_max_age'))
+
     def edsm_systems_max_age(self):
         return int(self.config.get('lrucaches', 'edsm_systems_max_age'))
 

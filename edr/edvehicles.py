@@ -1,7 +1,10 @@
+import re
 import os
 import json
 from edtime import EDTime
 import edrconfig
+import edrlog
+EDRLOG = edrlog.EDRLog()
 
 class EDVehicleSize(object):
     UNKNOWN = 1
@@ -23,13 +26,16 @@ class EDVehicle(object):
         self.shield_up = True
         self.subsystems = {}
         self.timestamp = now
-        self.fight = {"value": False, "large": False, "timestamp": now}
-        self.hardpoints_deployed = {"value": False, "timestamp": now}
-        self._attacked = {"value": False, "timestamp": now}
-        self.heat_damaged = {"value": False, "timestamp": now}
-        self.in_danger = {"value": False, "timestamp": now}
+        self.fight = {u"value": False, "large": False, u"timestamp": now}
+        self.hardpoints_deployed = {u"value": False, u"timestamp": now}
+        self._attacked = {u"value": False, u"timestamp": now}
+        self.heat_damaged = {u"value": False, u"timestamp": now}
+        self.in_danger = {u"value": False, u"timestamp": now}
         config = edrconfig.EDRConfig()
         self.fight_staleness_threshold = config.instance_fight_staleness_threshold()
+        self.seats = 1
+        self.fuel_capacity = None
+        self.fuel_level = None
         
     @property
     def hull_health(self):
@@ -51,56 +57,64 @@ class EDVehicle(object):
         self.timestamp = now
         self._shield_health = {"timestamp": now, "value": new_value}
 
-    # TODO transform pyhton timestamp to js timestamp * 1000
-    def json(self):
-        return {
-            "timestamp": int(self.timestamp * 1000),
-            "type": self.type,
-            "hull_health": self.__js_t_v(self._hull_health),
-            "shield_health": self.__js_t_v(self._shield_health),
-            "modules": self.key_subsystems()
+    def json(self, fuel_info=False):
+        result = {
+            u"timestamp": int(self.timestamp * 1000),
+            u"type": self.type,
+            u"hull_health": self.__js_t_v(self._hull_health),
+            u"shield_health": self.__js_t_v(self._shield_health),
+            u"key_subsystems": self.__key_subsystems()
         }
+        if fuel_info:
+            result[u"fuel_level"] = self.fuel_level
+            result[u"fuel_capacity"] = self.fuel_capacity
+
+        return result
 
     def __js_t_v(self, t_v):
-        result = t_v
-        result["timestamp"] = int(result["timestamp"]*1000)
-        return t_v
+        result = t_v.copy()
+        result["timestamp"] = int(t_v["timestamp"]*1000)
+        return result
 
-    def key_subsystems(self):
+    def __key_subsystems(self):
         key_prefixes_lut = {
-            "int_engine_": "thrusters",
-            "int_hyperdrive_": "fsd",
-            "int_powerdistributor_": "power distributor",
-
+            u"drive_": u"thrusters",
+            u"hyperdrive_": u"fsd",
+            u"powerdistributor_": u"power distributor",
+            u"shieldgenerator_": u"shield generator",
+            u"powerplant_": u"power plant"
         }
-        #  u'diamondbackxl_cockpit': 1.0
-        #  u'int_powerdistributor_size4_class5': 1.0, 
-        # 'int_shieldgenerator_size4_class3_fast': 0.995536,
-        #  u'int_sensors_size3_class2': 0.980392, 
-        # u'int_buggybay_size2_class2': 1.0, 
-        # u'int_powerplant_size4_class5': 1.0, 
-        # u'int_fuelscoop_size4_class5': 1.0, 
-        # u'int_detailedsurfacescanner_tiny': 1.0, 
-        # u'nameplate_combat02_white': 1.0, 
-        # u'int_planetapproachsuite': 1.0,
-        #  u'hpt_shieldbooster_size0_class1': 0.964773,
-        #  u'int_stellarbodydiscoveryscanner_advanced': 0.9875,
-        #  u'int_dockingcomputer_standard': 1.0, 
-        # u'voicepack_verity': 1.0,
-        #  u'decal_powerplay_mahon': 1.0,
-        #  u'int_fueltank_size5_class3': 1.0,
-        #  u'bobble_pilotmale': 1.0, 
-        # u'nameplate_shipid_white': 1.0
         key_subsys = {}
         for internal_name in self.subsystems:
-            if internal_name not in key_subsystems_lut:
+            if not internal_name.startswith(tuple(key_prefixes_lut.keys())):
                 continue
-            canonical_name = key_prefixes_lut[internal_name]
-            key_subsys[canonical_name] = self.subsystems[internal_name]
+            match = re.search('([a-zA-Z]*_)', internal_name)
+            if match:
+                prefix = match.group(1)
+                canonical_name = key_prefixes_lut[prefix]
+                key_subsys[canonical_name] = self.subsystems[internal_name]
         return key_subsys
 
     def __repr__(self):
         return str(self.__dict__)
+
+    def update_from_loadout(self, event):
+        other_id = event.get("ShipID", None)
+        other_type = EDVehicleFactory.canonicalize(event.get("Ship", "unknown")) 
+
+        if other_id != self.id or other_type != self.type:
+            EDRLOG.log(u"Mismatch between ID ({} vs {}) and/or Type ({} vs. {}), can't update from loadout".format(self.id, other_id, self.type, other_type), "WARNING")
+            return
+
+        self.identity = event.get('ShipIdent', None)
+        self.name = event.get('ShipName', None)
+        self.hull_health = event.get('HullHealth', None) * 100.0 # normalized to 0.0 ... 1.0
+        if not 'Modules' in event:
+            return
+        modules = event['Modules']
+        for module in modules:
+            health = modules[module]['Health'] * 100.0 if 'Health' in modules[module] else None 
+            self.subsystem_health(modules[module].get('Item', None), health)
 
     def reset(self):
         now = EDTime.py_epoch_now()
@@ -109,11 +123,11 @@ class EDVehicle(object):
         self.shield_health = 100.0
         self.shield_up = True
         self.subsystems = {}
-        self.fight = {"value": False, "large": False, "timestamp": now}
-        self.hardpoints_deployed = {"value": False, "timestamp": now}
-        self._attacked = {"value": False, "timestamp": now}
-        self.heat_damaged = {"value": False, "timestamp": now}
-        self.in_danger = {"value": False, "timestamp": now}
+        self.fight = {u"value": False, u"large": False, u"timestamp": now}
+        self.hardpoints_deployed = {u"value": False, u"timestamp": now}
+        self._attacked = {u"value": False, u"timestamp": now}
+        self.heat_damaged = {u"value": False, u"timestamp": now}
+        self.in_danger = {u"value": False, u"timestamp": now}
     
     def destroy(self):
         now = EDTime.py_epoch_now()
@@ -121,10 +135,17 @@ class EDVehicle(object):
         self.hull_health = 0.0
 
     def cockpit_breached(self):
+        self.cockpit_health(0.0)
+
+    def cockpit_health(self, value):
         now = EDTime.py_epoch_now()
         self.timestamp = now
-        # TODO canopy is not canopy...
-        self.subsystem_health("canopy", 0.0)
+        cockpit_suffix = "_cockpit"
+        for internal_name in self.subsystems:
+            if not internal_name.endswith(cockpit_suffix):
+                continue
+            self.subsystem_health(internal_name, value)
+            break
 
     def taking_hull_damage(self, remaining_health):
         now = EDTime.py_epoch_now()
@@ -134,14 +155,17 @@ class EDVehicle(object):
     def taking_heat_damage(self):
         now = EDTime.py_epoch_now()
         self.timestamp = now
-        self.heat_damaged = {"value": True, "timestamp": now}        
+        self.heat_damaged = {u"value": True, u"timestamp": now}        
 
     def subsystem_health(self, subsystem, health):
-        now = EDTime.py_epoch_now()
-        self.timestamp = now
         if subsystem is None:
             return
-        self.subsystems[subsystem] = {"timestamp": now, "value": health * 100}
+        canonical = EDVehicleFactory.normalize_module_name(subsystem)
+        if canonical.startswith("shieldgenerator_"):
+            self.shield_health = health
+        now = EDTime.py_epoch_now()
+        self.timestamp = now
+        self.subsystems[canonical] = {u"timestamp": now, u"value": health}
 
     def needs_large_landing_pad(self):
         return self.size in [EDVehicleSize.LARGE, EDVehicleSize.UNKNOWN]
@@ -152,36 +176,39 @@ class EDVehicle(object):
     def supports_srv(self):
         return True
 
+    def supports_crew(self):
+        return self.seats > 1
+
     def attacked(self):
         now = EDTime.py_epoch_now()
         self.timestamp = now
-        self._attacked = {"value": True, "timestamp": now}
+        self._attacked = {u"value": True, u"timestamp": now}
 
     def safe(self):
         now = EDTime.py_epoch_now()
-        self._attacked = {"value": False, "timestamp": now}
-        self.fight = {"value": False, "large": False, "timestamp": now}
-        self.in_danger = {"value": False, "timestamp": now}
+        self._attacked = {u"value": False, u"timestamp": now}
+        self.fight = {u"value": False, "large": False, u"timestamp": now}
+        self.in_danger = {u"value": False, u"timestamp": now}
     
     def unsafe(self):
         now = EDTime.py_epoch_now()
-        self.in_danger = {"value": True, "timestamp": now}
+        self.in_danger = {u"value": True, u"timestamp": now}
 
     def hardpoints(self, deployed):
-        self.hardpoints_deployed = {"value": deployed, "timestamp": EDTime.py_epoch_now()}
+        self.hardpoints_deployed = {u"value": deployed, u"timestamp": EDTime.py_epoch_now()}
 
     def shield_state(self, is_up):
-        # TODO should we be trying to do some heuristics with that?
-        self.shield_health = 0.0
+        if not is_up:
+            self.shield_health = 0.0
         self.shield_up = is_up
 
     def skirmish(self):
         now = EDTime.py_epoch_now()
-        self.fight = {"value": True, "large": False, "timestamp": now}
+        self.fight = {u"value": True, "large": False, u"timestamp": now}
 
     def battle(self):
         now = EDTime.py_epoch_now()
-        self.fight = {"value": True, "large": True, "timestamp": now}
+        self.fight = {u"value": True, "large": True, u"timestamp": now}
 
     def in_a_fight(self):
         if self.fight["value"]:
@@ -189,16 +216,19 @@ class EDVehicle(object):
             return (now >= self.fight["timestamp"]) and ((now - self.fight["timestamp"]) <= self.fight_staleness_threshold)
         return False
 
-    def under_attack(self):
-        # TODO have every inputs update a last attack timestamp instead of scouring around grabbing timestamps
-        '''
-        timestamps = []
-        if self.fight["value"]:
+    def refuel(self, amount=None):
+        if amount:
+            self.fuel_level += amount
+        else:
+            self.fuel_level = self.fuel_capacity
 
-        
-        now = EDTime.py_epoch_now()
-        return (now >= self.fight["timestamp"]) and ((now - self.fight["timestamp"]) <= self.fight_staleness_threshold)
-        '''
+    def repair(self, item=None):
+        if item:
+            self.subsystem_health(item, 1.0)
+        else:
+            self.hull_health = 1.0
+            for subsystem in self.subsystems:
+                self.subsystem_health(subsystem, 1.0)
 
     def __eq__(self, other):
         if not isinstance(other, EDVehicle):
@@ -231,6 +261,7 @@ class EDAdder(EDVehicle):
         super(EDAdder, self).__init__()
         self.type = u'Adder'
         self.size = EDVehicleSize.SMALL
+        self.seats = 2
 
 class EDViperMkIII(EDVehicle):
     def __init__(self):
@@ -243,6 +274,7 @@ class EDCobraMkIII(EDVehicle):
         super(EDCobraMkIII, self).__init__()
         self.type = u'Cobra Mk III'
         self.size = EDVehicleSize.SMALL
+        self.seats = 2
 
 class EDT6Transporter(EDVehicle):
     def __init__(self):
@@ -267,36 +299,42 @@ class EDAspExplorer(EDVehicle):
         super(EDAspExplorer, self).__init__()
         self.type = u'Asp Explorer'
         self.size = EDVehicleSize.MEDIUM
+        self.seats = 2
 
 class EDVulture(EDVehicle):
     def __init__(self):
         super(EDVulture, self).__init__()
         self.type = u'Vulture'
         self.size = EDVehicleSize.SMALL
+        self.seats = 2
 
 class EDImperialClipper(EDVehicle):
     def __init__(self):
         super(EDImperialClipper, self).__init__()
         self.type = u'Imperial Clipper'
         self.size = EDVehicleSize.LARGE
+        self.seats = 2
 
 class EDFederalDropship(EDVehicle):
     def __init__(self):
         super(EDFederalDropship, self).__init__()
         self.type = u'Federal Dropship'
         self.size = EDVehicleSize.MEDIUM
+        self.seats = 2
 
 class EDOrca(EDVehicle):
     def __init__(self):
         super(EDOrca, self).__init__()
         self.type = u'Orca'
         self.size = EDVehicleSize.LARGE
+        self.seats = 2
 
 class EDT9Heavy(EDVehicle):
     def __init__(self):
         super(EDT9Heavy, self).__init__()
         self.type = u'Type-9 Heavy'
         self.size = EDVehicleSize.LARGE
+        self.seats = 3
 
     def supports_slf(self):
         return True
@@ -306,6 +344,7 @@ class EDT10Defender(EDVehicle):
         super(EDT10Defender, self).__init__()
         self.type = u'Type-10 Defender'
         self.size = EDVehicleSize.LARGE
+        self.seats = 3
     
     def supports_slf(self):
         return True
@@ -315,12 +354,14 @@ class EDPython(EDVehicle):
         super(EDPython, self).__init__()
         self.type = u'Python'
         self.size = EDVehicleSize.MEDIUM
+        self.seats = 2
     
 class EDBelugaLiner(EDVehicle):
     def __init__(self):
         super(EDBelugaLiner, self).__init__()
         self.type = u'Beluga Liner'
         self.size = EDVehicleSize.LARGE
+        self.seats = 3
 
     def supports_slf(self):
         return True
@@ -330,12 +371,14 @@ class EDFerDeLance(EDVehicle):
         super(EDFerDeLance, self).__init__()
         self.type = u'Fer-de-Lance'
         self.size = EDVehicleSize.MEDIUM
+        self.seats = 2
 
 class EDAnaconda(EDVehicle):
     def __init__(self):
         super(EDAnaconda, self).__init__()
         self.type = u'Anaconda'
         self.size = EDVehicleSize.LARGE
+        self.seats = 3
 
     def supports_slf(self):
         return True
@@ -345,6 +388,7 @@ class EDFederalCorvette(EDVehicle):
         super(EDFederalCorvette, self).__init__()
         self.type = u'Federal Corvette'
         self.size = EDVehicleSize.LARGE
+        self.seats = 3
     
     def supports_slf(self):
         return True
@@ -354,6 +398,7 @@ class EDImperialCutter(EDVehicle):
         super(EDImperialCutter, self).__init__()
         self.type = u'Imperial Cutter'
         self.size = EDVehicleSize.LARGE
+        self.seats = 3
 
     def supports_slf(self):
         return True
@@ -387,12 +432,14 @@ class EDFederalAssaultShip(EDVehicle):
         super(EDFederalAssaultShip, self).__init__()
         self.type = u'Federal Assault Ship'
         self.size = EDVehicleSize.MEDIUM
+        self.seats = 2
 
 class EDFederalGunship(EDVehicle):
     def __init__(self):
         super(EDFederalGunship, self).__init__()
         self.type = u'Federal Gunship'
         self.size = EDVehicleSize.MEDIUM
+        self.seats = 2
 
     def supports_slf(self):
         return True
@@ -408,12 +455,14 @@ class EDCobraMkIV(EDVehicle):
         super(EDCobraMkIV, self).__init__()
         self.type = u'Cobra Mk IV'
         self.size = EDVehicleSize.SMALL
+        self.seats = 2
 
 class EDKeelback(EDVehicle):
     def __init__(self):
         super(EDKeelback, self).__init__()
         self.type = u'Keelback'
         self.size = EDVehicleSize.MEDIUM
+        self.seats = 2
 
     def supports_slf(self):
         return True
@@ -423,36 +472,55 @@ class EDAspScout(EDVehicle):
         super(EDAspScout, self).__init__()
         self.type = u'Asp Scout'
         self.size = EDVehicleSize.MEDIUM
+        self.seats = 2
 
 class EDAllianceChieftain(EDVehicle):
     def __init__(self):
         super(EDAllianceChieftain, self).__init__()
         self.type = u'Alliance Chieftain'
         self.size = EDVehicleSize.MEDIUM
-
-class EDAllianceCrusader(EDVehicle):
-    def __init__(self):
-        super(EDAllianceCrusader, self).__init__()
-        self.type = u'Alliance Crusader'
-        self.size = EDVehicleSize.MEDIUM
-
-    def supports_slf(self):
-        return True
+        self.seats = 2
 
 class EDAllianceChallenger(EDVehicle):
     def __init__(self):
         super(EDAllianceChallenger, self).__init__()
         self.type = u'Alliance Challenger'
         self.size = EDVehicleSize.MEDIUM
+        self.seats = 2
+
+class EDAllianceCrusader(EDVehicle):
+    def __init__(self):
+        super(EDAllianceCrusader, self).__init__()
+        self.type = u'Alliance Crusader'
+        self.size = EDVehicleSize.MEDIUM
+        self.seats = 3
+
+    def supports_slf(self):
+        return True
 
 class EDKraitMkII(EDVehicle):
     def __init__(self):
         super(EDKraitMkII, self).__init__()
         self.type = u'Krait Mk II'
         self.size = EDVehicleSize.MEDIUM
+        self.seats = 3
 
     def supports_slf(self):
         return True
+
+class EDKraitPhantom(EDVehicle):
+    def __init__(self):
+        super(EDKraitPhantom, self).__init__()
+        self.type = u'Krait Phantom'
+        self.size = EDVehicleSize.MEDIUM
+        self.seats = 2
+
+class EDMamba(EDVehicle):
+    def __init__(self):
+        super(EDMamba, self).__init__()
+        self.type = u'Mamba'
+        self.size = EDVehicleSize.MEDIUM
+        self.seats = 2
 
 class EDShipLaunchedFighter(EDVehicle):
     def __init__(self):
@@ -572,6 +640,8 @@ class EDVehicleFactory(object):
         "typex_2": EDAllianceCrusader,
         "typex_3": EDAllianceChallenger,
         "krait_mkii": EDKraitMkII,
+        "krait_light": EDKraitPhantom, 
+        "mamba": EDMamba,
         "empire_fighter": EDImperialFighter,
         "federation_fighter": EDF63Condor,
         "independent_fighter" : EDTaipanFighter,
@@ -601,6 +671,27 @@ class EDVehicleFactory(object):
         return name.lower()
 
     @staticmethod
+    def normalize_module_name(name):
+        normalized = name.lower()
+        
+        # prefix _name or _name; is not used in loadout or afmurepair events 
+        if normalized.endswith(u"_name"):
+            useless_suffix_length = len(u"_name")
+            normalized = normalized[:-useless_suffix_length]
+        elif normalized.endswith(u"_name;"):
+            useless_suffix_length = len(u"_name;")
+            normalized = normalized[:-useless_suffix_length]
+
+        if normalized.startswith(u"$"):
+            normalized = normalized[1:]
+
+        # just get rid of prefixes because sometimes int_ becomes ext_ depending on the event
+        if normalized.startswith((u"int_", u"ext_", u"hpt_")):
+            normalized = normalized[4:]
+        return normalized
+        
+
+    @staticmethod
     def from_edmc_state(state):
         name = state.get('ShipType', None)
 
@@ -618,11 +709,13 @@ class EDVehicleFactory(object):
         vehicle.hull_value = state.get('HullValue', None)
         vehicle.rebuy = state.get('Rebuy', None)
 
-        modules = state.get('Modules', None)
-        if modules:
-            for module in modules:
-                vehicle.subsystem_health(modules[module].get('Item', None), modules[module].get('Health', None))
+        if not 'Modules' in state:
+            return vehicle
 
+        modules = state['Modules']
+        for module in modules:
+            health = modules[module]['Health'] * 100.0 if 'Health' in modules[module] else None 
+            vehicle.subsystem_health(modules[module].get('Item', None), health)
         return vehicle
 
     @staticmethod
@@ -635,6 +728,26 @@ class EDVehicleFactory(object):
         vehicle.id = event.get('ShipID', None)
         vehicle.identity = event.get('ShipIdent', None)
         vehicle.name = event.get('ShipName', None)
+        vehicle.fuel_capacity = event.get('FuelCapacity', None)
+        vehicle.fuel_level = event.get('FuelLevel', None)
+        return vehicle
+
+    @staticmethod
+    def from_loadout_event(event):
+        vehicle = EDVehicleFactory.from_internal_name(event.get("Ship", 'unknown'))
+        vehicle.id = event.get('ShipID', None)
+        vehicle.identity = event.get('ShipIdent', None)
+        vehicle.name = event.get('ShipName', None)
+        vehicle.hull_health = event.get('HullHealth', None) * 100.0 # normalized to 0.0 ... 1.0
+        vehicle.fuel_capacity = event.get('FuelCapacity', None) #missing from loadout event...
+        vehicle.fuel_level = event.get('FuelLevel', None) #missing from loadout event...
+        if not 'Modules' in event:
+            return vehicle
+
+        modules = event['Modules']
+        for module in modules:
+            health = modules[module]['Health'] * 100.0 if 'Health' in modules[module] else None 
+            vehicle.subsystem_health(modules[module].get('Item', None), health)
         return vehicle
 
     @staticmethod
