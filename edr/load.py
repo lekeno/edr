@@ -189,7 +189,7 @@ def handle_movement_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         ed_player.wanted = entry.get("Wanted", False)
         ed_player.mothership.fuel_level = entry.get("FuelLevel", ed_player.mothership.fuel_level)
-        EDR_CLIENT.noteworthy(entry)
+        EDR_CLIENT.noteworthy_about_system(entry)
         if entry["SystemSecurity"]:
             ed_player.location_security(entry["SystemSecurity"])
             if ed_player.in_bad_neighborhood():
@@ -215,6 +215,21 @@ def handle_movement_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
         outcome["reason"] = "Approach event"
+    elif entry["event"] in ["ApproachBody"]:
+        place = entry["Body"]
+        outcome["updated"] |= ed_player.update_place_if_obsolete(place)
+        EDRLOG.log(u"Place changed: {}".format(place), "INFO")
+        outcome["reason"] = "Approach event"
+        if EDR_CLIENT.noteworthy_about_body(entry["StarSystem"], entry["Body"]) and ed_player.planetary_destination is None:
+            poi = EDR_CLIENT.closest_poi_on_body(entry["StarSystem"], entry["Body"], ed_player.piloted_vehicle.attitude)
+            ed_player.planetary_destination = edentities.EDPlanetaryLocation(poi)
+    elif entry["event"] in ["LeaveBody"]:
+        place = "Supercruise"
+        ed_player.planetary_destination = None
+        outcome["updated"] |= ed_player.update_place_if_obsolete(place)
+        EDRLOG.log(u"Place changed: {}".format(place), "INFO")
+        outcome["reason"] = "Leave event"
+        # TODO clear destination?
     return outcome
 
 def handle_change_events(ed_player, entry):
@@ -349,6 +364,16 @@ def dashboard_entry(cmdr, is_beta, entry):
     ed_player.in_danger(bool(entry['Flags'] & plug.FlagsIsInDanger))
     ed_player.hardpoints(bool(entry['Flags'] & plug.FlagsHardpointsDeployed))
 
+    attitude_keys = { "Latitude", "Longitude", "Heading", "Altitude"}
+    if entry.viewkeys() < attitude_keys:
+        return
+    
+    attitude = { key.lower():value for key,value in entry.items() if key in attitude_keys }
+    ed_player.piloted_vehicle.update_attitude(attitude)
+    if ed_player.planetary_destination:
+        EDR_CLIENT.show_navigation()
+        
+            
 def journal_entry(cmdr, is_beta, system, station, entry, state):
     """
     :param cmdr:
@@ -410,7 +435,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
             status_outcome["reason"] = outcome["reason"]
 
     if entry["event"] in ["SupercruiseExit", "FSDJump", "SupercruiseEntry", "StartJump",
-                          "ApproachSettlement"]:
+                          "ApproachSettlement", "ApproachBody", "LeaveBody"]:
         outcome = handle_movement_events(ed_player, entry)
         if outcome["updated"]:
             status_outcome["updated"] = True
@@ -430,6 +455,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     if entry["event"] in ["RefuelAll", "RefuelPartial", "Repair", "RepairAll", "AfmuRepairs", "RebootRepair", "RepairDrone"]:
         handle_fixing_events(ed_player, entry)
+
+    if entry["event"] in ["ModuleStore", "ModuleSell", "ModuleBuy", "ModuleRetrieve", "MassModuleStore"]:
+        handle_outfitting_events(ed_player, entry)
 
     if entry["event"] in ["ReceiveText", "SendText"]:
         report_comms(ed_player, entry)
@@ -831,6 +859,30 @@ def handle_fixing_events(ed_player, entry):
             # TODO track this?
             pass
 
+
+def handle_outfitting_events(player, entry):
+    if entry["event"] not in ["MassModuleStore", "ModuleStore", "ModuleSell", "ModuleBuy", "ModuleRetrieve"]:
+        return False
+
+    if entry["event"] == "MassModuleStore":
+        for item in entry["Items"]:
+            player.mothership.remove_subsystem(item["Name"])
+    elif entry["event"] == "ModuleStore":
+        player.mothership.remove_subsystem(entry["StoredItem"])
+        if entry.get("ReplacementItem", None):
+            player.mothership.add_subsystem(entry["ReplacementItem"])
+    elif entry["event"] == "ModuleBuy":
+        if entry.get("StoredItem", None):
+            player.mothership.remove_subsystem(entry["StoredItem"])
+        elif entry.get("SellItem", None):
+            player.mothership.remove_subsystem(entry["SellItem"])
+        player.mothership.add_subsystem(entry["BuyItem"])
+    elif entry["event"] == "ModuleSell":
+        player.mothership.remove_subsystem(entry["SellItem"])
+    elif entry["event"] == "ModuleRetrieve":
+        if entry.get("SwapOutItem", None):
+            player.mothership.remove_subsystem(entry["SwapOutItem"])
+        player.mothership.add_subsystem(entry["RetrievedItem"])
     
 def handle_scan_events(player, entry):
     if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0):
@@ -1049,6 +1101,16 @@ def handle_bang_commands(cmdr, command, command_parts):
             info["instance"] = EDR_CLIENT.player.instance.json()
         EDRLOG.log(u"Message to EDR Central for {} with {}".format(service, message), "INFO")
         EDR_CLIENT.call_central(service, info)
+    elif command == "!nav":
+        if len(command_parts) < 2:
+            EDRLOG.log(u"Not enough parameters for navigation command", "INFO")
+            return
+        lat_long = command_parts[1].split(" ")
+        if len(lat_long) != 2:
+            EDRLOG.log(u"Invalid parameters for navigation command", "INFO")
+            return
+        EDRLOG.log(u"Navigation command", "INFO")
+        EDR_CLIENT.navigation(lat_long[0], lat_long[1])
     elif command == "!help":
         EDRLOG.log(u"Help command", "INFO")
         EDR_CLIENT.help("" if len(command_parts) == 1 else command_parts[1])

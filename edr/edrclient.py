@@ -19,6 +19,7 @@ import ingamemsg
 import edrtogglingpanel
 import edrsystems
 import edrresourcefinder
+from edrbodiesofinterest import EDRBodiesOfInterest
 import edrcmdrs
 from edropponents import EDROpponents
 import randomtips
@@ -27,6 +28,7 @@ import edtime
 import edrlegalrecords
 from edri18n import _, _c, _edr, set_language
 import random
+import math
 
 EDRLOG = edrlog.EDRLog()
 
@@ -368,10 +370,61 @@ class EDRClient(object):
                                                 config.get("EDRAudioFeedbackVolume")), "DEBUG")
         self.login()
 
-    def noteworthy(self, fsdjump_event):
+    def noteworthy_about_system(self, fsdjump_event):
         facts = self.edrresourcefinder.noteworthy_facts(fsdjump_event)
+        header = _('Noteworthy about {}'.format(fsdjump_event['StarSystem']))
+        if not facts:
+            facts = EDRBodiesOfInterest.bodies_of_interest(fsdjump_event['StarSystem'])
+            header = _('Noteworthy stellar bodies in {}').format(fsdjump_event['StarSystem'])
+        
         if facts:
-            self.__notify('Noteworthy about {}'.format(fsdjump_event['StarSystem']), facts, clear_before = True)
+            self.__notify(header, facts, clear_before = True)
+            return
+
+    def noteworthy_about_body(self, star_system, body_name):
+        pois = EDRBodiesOfInterest.points_of_interest(star_system, body_name)
+        if not pois:
+            return False
+        facts = [poi["title"] for poi in pois]
+        self.__notify(_(u'Noteworthy about {}: {} sites').format(body_name, len(facts)), facts, clear_before = True)
+        return True
+
+    def closest_poi_on_body(self, star_system, body_name, attitude):
+        return EDRBodiesOfInterest.closest_point_of_interest(star_system, body_name, attitude)
+
+    def navigation(self, latitude, longitude):
+        position = {"latitude": float(latitude), "longitude": float(longitude)}
+        loc = edentities.EDPlanetaryLocation(position)
+        if loc.valid():
+            self.player.planetary_destination = loc
+            self.__notify(_(u'Assisted Navigation'), [_(u"Destination set to {} | {}").format(latitude, longitude), _(u"Guidance will be shown when approaching a stellar body")], clear_before = True)
+        else:
+            self.player.planetary_destination = None
+            self.__notify(_(u'Assisted Navigation'), [_(u"Invalid destination")], clear_before = True)
+
+    def show_navigation(self):
+        current = self.player.piloted_vehicle.attitude
+        destination = self.player.planetary_destination
+
+        if not destination or not current:
+            return
+        
+        if not current.valid() or not destination.valid():
+            return
+
+        pi_180 = math.pi/180.0
+        current_latitude = current.latitude * pi_180
+        destination_latitude = destination.latitude * pi_180
+        delta_longitude = (destination.longitude - current.longitude) * pi_180
+        delta_latitude = math.log(math.tan(math.pi/4.0 + destination_latitude/2.0)/math.tan(math.pi/4.0 + current_latitude/2.0))
+        bearing = math.atan2(delta_longitude, delta_latitude) / pi_180
+        if bearing < 0:
+            bearing += 360
+            
+        bearing = int(round(bearing, 0))
+        if self.visual_feedback:
+            self.IN_GAME_MSG.navigation(bearing, destination)
+        self.status = _(u"> {:03} < for Lat:{:.4f} Long:{:.4f}".format(bearing, destination.latitude, destination.longitude))
 
     def check_system(self, star_system, may_create=False):
         try:
@@ -1155,7 +1208,7 @@ class EDRClient(object):
                 self.IN_GAME_MSG.clear_notice()
             self.IN_GAME_MSG.notify(header, details)
         EDRLOG.log(u"[Alt] Notify about {}; details: {}".format(header, details[0]), "DEBUG")
-        self.ui.notify(header, details)        
+        self.ui.notify(header, details)
 
     def __commsjammed(self):
         self.__notify(_(u"Comms Link Error"), [_(u"EDR Central can't be reached at the moment"), _(u"Try again later or contact Cmdr LeKeno if it keeps failing")])
