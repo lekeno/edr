@@ -183,6 +183,27 @@ class EDSpaceDimension(object):
     SUPER_SPACE = 2
     HYPER_SPACE = 3
 
+class EDPlanetaryLocation(object):
+    def __init__(self, poi=None):
+        self.latitude = poi["latitude"] if poi else None
+        self.longitude = poi["longitude"] if poi else None
+        self.altitude = poi.get("altitude", 0.0) if poi else None
+        self.title = poi.get("title", None) if poi else None
+
+    def update(self, attitude):
+        self.latitude = attitude.get("latitude", None)
+        self.longitude = attitude.get("longitude", None)
+        self.altitude = attitude.get("altitude", None)
+
+    def valid(self):
+        if self.latitude is None or self.longitude is None or self.altitude is None:
+            return False
+        if abs(self.latitude) > 90:
+            return False
+        if abs(self.longitude) > 180:
+            return False
+        return True
+
 class EDLocation(object):
     def __init__(self, star_system=None, place=None, security=None, space_dimension=EDSpaceDimension.UNKNOWN):
         self.star_system = star_system
@@ -397,6 +418,7 @@ class EDPlayer(object):
     def to_hyper_space(self):
         self._touch()
         self.location.space_dimension = EDSpaceDimension.HYPER_SPACE
+        self.planetary_destination = None # leaving the system, so no point in keep a planetary destination
         self.mothership.safe()
         if self.slf:
             self.slf.safe()
@@ -559,6 +581,7 @@ class EDPlayerOne(EDPlayer):
         self.crew = None
         self._target = None
         self.instance = edinstance.EDInstance()
+        self.planetary_destination = None
 
     def __repr__(self):
         return str(self.__dict__)
