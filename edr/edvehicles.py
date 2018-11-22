@@ -6,6 +6,31 @@ import edrconfig
 import edrlog
 EDRLOG = edrlog.EDRLog()
 
+class EDVehicleAttitude(object):
+    def __init__(self):
+        self.latitude = None
+        self.longitude = None
+        self.altitude = None
+        self.heading = None
+
+    def update(self, attitude):
+        self.latitude = attitude.get("latitude", None)
+        self.longitude = attitude.get("longitude", None)
+        self.altitude = attitude.get("altitude", None)
+        self.heading = attitude.get("heading", None)
+
+    def valid(self):
+        if self.latitude is None or self.longitude is None or self.altitude is None or self.heading is None:
+            return False
+        if abs(self.latitude) > 90:
+            return False
+        if abs(self.longitude) > 180:
+            return False
+        if abs(self.heading) > 360:
+            return False
+        return True
+
+
 class EDVehicleSize(object):
     UNKNOWN = 1
     SMALL = 2
@@ -36,6 +61,7 @@ class EDVehicle(object):
         self.seats = 1
         self.fuel_capacity = None
         self.fuel_level = None
+        self.attitude = EDVehicleAttitude()
         
     @property
     def hull_health(self):
@@ -116,6 +142,9 @@ class EDVehicle(object):
             health = modules[module]['Health'] * 100.0 if 'Health' in modules[module] else None 
             self.subsystem_health(modules[module].get('Item', None), health)
 
+    def update_attitude(self, attitude):
+        self.attitude.update(attitude)
+
     def reset(self):
         now = EDTime.py_epoch_now()
         self.timestamp = now
@@ -166,6 +195,27 @@ class EDVehicle(object):
         now = EDTime.py_epoch_now()
         self.timestamp = now
         self.subsystems[canonical] = {u"timestamp": now, u"value": health}
+
+    def add_subsystems(self, subsystem):
+        if not subsystem:
+            return
+        canonical = EDVehicleFactory.normalize_module_name(subsystem)
+        now = EDTime.py_epoch_now()
+        self.timestamp = now
+        self.subsystems[canonical] = {u"timestamp": now, u"value": None}
+    
+    def remove_subsystem(self, subsystem):
+        if subsystem is None:
+            return
+        canonical = EDVehicleFactory.normalize_module_name(subsystem)
+        if canonical.startswith("shieldgenerator_"):
+            self.shield_health = 0.0
+        now = EDTime.py_epoch_now()
+        self.timestamp = now
+        try:
+            del self.subsystems[canonical]
+        except:
+            pass
 
     def needs_large_landing_pad(self):
         return self.size in [EDVehicleSize.LARGE, EDVehicleSize.UNKNOWN]
@@ -218,7 +268,7 @@ class EDVehicle(object):
 
     def refuel(self, amount=None):
         if amount:
-            self.fuel_level += amount
+            self.fuel_level = self.fuel_level + amount if self.fuel_level else amount
         else:
             self.fuel_level = self.fuel_capacity
 
@@ -709,13 +759,11 @@ class EDVehicleFactory(object):
         vehicle.hull_value = state.get('HullValue', None)
         vehicle.rebuy = state.get('Rebuy', None)
 
-        if not 'Modules' in state:
-            return vehicle
-
-        modules = state['Modules']
-        for module in modules:
-            health = modules[module]['Health'] * 100.0 if 'Health' in modules[module] else None 
-            vehicle.subsystem_health(modules[module].get('Item', None), health)
+        modules = state.get('Modules', None)
+        if modules:
+            for module in modules:
+                health = modules[module]['Health'] * 100.0 if 'Health' in modules[module] else None 
+                vehicle.subsystem_health(modules[module].get('Item', None), health)
         return vehicle
 
     @staticmethod
