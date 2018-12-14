@@ -27,6 +27,10 @@ EDRLOG = edrlog.EDRLog()
 class EDRSystems(object):
     EDR_SYSTEMS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/systems.v3.p')
+    EDR_RAW_MATERIALS_CACHE = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'cache/raw_materials.v1.p')
+    EDSM_BODIES_CACHE = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_bodies.v1.p')
     EDSM_SYSTEMS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_systems.v3.p')
     EDSM_STATIONS_CACHE = os.path.join(
@@ -56,6 +60,13 @@ class EDRSystems(object):
             self.systems_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                    edr_config.systems_max_age())
 
+        try:
+            with open(self.EDR_RAW_MATERIALS_CACHE, 'rb') as handle:
+                self.materials_cache = pickle.load(handle)
+        except:
+            self.materials_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                   edr_config.materials_max_age())
+        
         try:
             with open(self.EDR_NOTAMS_CACHE, 'rb') as handle:
                 self.notams_cache = pickle.load(handle)
@@ -90,6 +101,13 @@ class EDRSystems(object):
         except:
             self.edsm_systems_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                   edr_config.edsm_systems_max_age())
+
+        try:
+            with open(self.EDSM_BODIES_CACHE, 'rb') as handle:
+                self.edsm_bodies_cache = pickle.load(handle)
+        except:
+            self.edsm_bodies_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.edsm_bodies_max_age())
                                             
         try:
             with open(self.EDSM_STATIONS_CACHE, 'rb') as handle:
@@ -169,6 +187,9 @@ class EDRSystems(object):
         with open(self.EDR_SYSTEMS_CACHE, 'wb') as handle:
             pickle.dump(self.systems_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+        with open(self.EDR_RAW_MATERIALS_CACHE, 'wb') as handle:
+            pickle.dump(self.materials_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
         with open(self.EDR_NOTAMS_CACHE, 'wb') as handle:
             pickle.dump(self.notams_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
         
@@ -183,6 +204,9 @@ class EDRSystems(object):
 
         with open(self.EDSM_SYSTEMS_CACHE, 'wb') as handle:
             pickle.dump(self.edsm_systems_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        
+        with open(self.EDSM_BODIES_CACHE, 'wb') as handle:
+            pickle.dump(self.edsm_bodies_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         with open(self.EDSM_STATIONS_CACHE, 'wb') as handle:
             pickle.dump(self.edsm_stations_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -218,6 +242,40 @@ class EDRSystems(object):
             self.edsm_systems_cache.set(name.lower(), the_system)
             return the_system
         
+        return None
+
+    def materials_info(self, system_name, body_name, info):
+        if not system_name or not body_name:
+            return None
+
+        self.materials_cache.set(u"{}:{}".format(system_name.lower(), body_name.lower()), info)
+
+    def materials_on(self, system_name, body_name):
+        if not system_name or not body_name:
+            return None
+
+        materials = self.materials_cache.get(u"{}:{}".format(system_name.lower(), body_name.lower()))
+        if not materials:
+            # TODO
+            return None
+        return materials
+
+    def body(self, system_name, body_name):
+        if not system_name or not body_name:
+            return None
+
+        bodies = self.edsm_bodies_cache.get(system_name.lower())
+        if not bodies:
+            bodies = self.edsm_server.bodies(system_name)
+            if bodies:
+                self.edsm_bodies_cache.set(system_name.lower(), bodies)
+
+        if not bodies:            
+            return None
+
+        for body in bodies:
+            if body.get("name", None).lower() == body_name.lower():
+                return body
         return None
 
     def are_factions_stale(self, star_system):
