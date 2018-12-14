@@ -371,26 +371,55 @@ class EDRClient(object):
         self.login()
 
     def noteworthy_about_system(self, fsdjump_event):
-        facts = self.edrresourcefinder.noteworthy_facts(fsdjump_event)
+        facts = self.edrresourcefinder.assess_jump(fsdjump_event)
         header = _('Noteworthy about {}'.format(fsdjump_event['StarSystem']))
         if not facts:
             facts = EDRBodiesOfInterest.bodies_of_interest(fsdjump_event['StarSystem'])
             header = _('Noteworthy stellar bodies in {}').format(fsdjump_event['StarSystem'])
         
-        if facts:
-            self.__notify(header, facts, clear_before = True)
-            return
+        if not facts:
+            return False
+        self.__notify(header, facts, clear_before = True)
+        return True
 
     def noteworthy_about_body(self, star_system, body_name):
         pois = EDRBodiesOfInterest.points_of_interest(star_system, body_name)
-        if not pois:
+        if pois:
+            facts = [poi["title"] for poi in pois]
+            self.__notify(_(u'Noteworthy about {}: {} sites').format(body_name, len(facts)), facts, clear_before = True)
+            return True
+        materials_info = self.edrsystems.materials_on(star_system, body_name)
+        facts = self.edrresourcefinder.assess_materials_density(materials_info)
+        if facts:
+            self.__notify(_(u'Noteworthy about {}').format(body_name), facts, clear_before = True)
+
+    def noteworthy_about_scan(self, scan_event):
+        if not scan_event.viewkeys() & {'event', 'ScanType', 'Materials'}:
+            return
+
+        if scan_event["event"] != "Scan" or scan_event["ScanType"] != "Detailed":
+            return
+        facts = self.edrresourcefinder.assess_materials_density(scan_event["Materials"])
+        if facts:
+            self.__notify(_(u'Noteworthy about {}').format(scan_event["BodyName"]), facts, clear_before = True)
+
+    def noteworthy_about_signal(self, fss_event):
+        facts = self.edrresourcefinder.assess_signal(fss_event, self.player.location)
+        if not facts:
             return False
-        facts = [poi["title"] for poi in pois]
-        self.__notify(_(u'Noteworthy about {}: {} sites').format(body_name, len(facts)), facts, clear_before = True)
+        header = _(u'Signal insights')
+        self.__notify(header, facts, clear_before = True)
         return True
 
+    def process_scan(self, scan_event):
+        if "Materials" not in scan_event:
+            return False
+        self.edrsystems.materials_info(self.player.star_system, scan_event["BodyName"], scan_event["Materials"])
+
     def closest_poi_on_body(self, star_system, body_name, attitude):
-        return EDRBodiesOfInterest.closest_point_of_interest(star_system, body_name, attitude)
+        body = self.edrsystems.body(self.player.star_system, self.player.place)
+        radius = body.get("radius", None) if body else None
+        return EDRBodiesOfInterest.closest_point_of_interest(star_system, body_name, attitude, radius)
 
     def navigation(self, latitude, longitude):
         position = {"latitude": float(latitude), "longitude": float(longitude)}
@@ -412,19 +441,18 @@ class EDRClient(object):
         if not current.valid() or not destination.valid():
             return
 
-        pi_180 = math.pi/180.0
-        current_latitude = current.latitude * pi_180
-        destination_latitude = destination.latitude * pi_180
-        delta_longitude = (destination.longitude - current.longitude) * pi_180
-        delta_latitude = math.log(math.tan(math.pi/4.0 + destination_latitude/2.0)/math.tan(math.pi/4.0 + current_latitude/2.0))
-        bearing = math.atan2(delta_longitude, delta_latitude) / pi_180
-        if bearing < 0:
-            bearing += 360
-            
-        bearing = int(round(bearing, 0))
+        bearing = destination.bearing(current)
+        
+        body = self.edrsystems.body(self.player.star_system, self.player.place)
+        radius = body.get("radius", None) if body else None
+        distance = destination.distance(current, radius) if radius else None
+        if distance <= 1.0:
+            return
+        pitch = destination.pitch(current, distance) if distance and distance <= 700 else None
+                
         if self.visual_feedback:
-            self.IN_GAME_MSG.navigation(bearing, destination)
-        self.status = _(u"> {:03} < for Lat:{:.4f} Long:{:.4f}".format(bearing, destination.latitude, destination.longitude))
+            self.IN_GAME_MSG.navigation(bearing, destination, distance, pitch)
+        self.status = _(u"> {:03} < for Lat:{:.4f} Lon:{:.4f}".format(bearing, destination.latitude, destination.longitude))
 
     def check_system(self, star_system, may_create=False):
         try:
@@ -510,6 +538,8 @@ class EDRClient(object):
     def evict_cmdr(self, cmdr):
         self.edrcmdrs.evict(cmdr)
 
+#TODO merge the change made on my desktop machine
+
     def __novel_enough_situation(self, new, old, cognitive = False):
         if old is None:
             return True
@@ -558,10 +588,46 @@ class EDRClient(object):
         last_report = self.traffic_cache.get(sighted_cmdr)
         return self.__novel_enough_situation(report, last_report)
 
+    def __novel_enough_fight(self, new, old):
+        if old is None:
+            return True
+
+        if abs(new["ship"]["hullHealth"].get("value", 0) - old["ship"]["hullHealth"].get("value", 0)) > 20:
+            return True
+
+        if new["ship"]["shieldUp"] != old["ship"]["shieldUp"]:
+            return True
+
+        if "wanted" in new and ("wanted" not in old or new["wanted"] != old["wanted"]):
+            return True
+        
+        if "bounty" in new and ("bounty" not in old or new["bounty"] > old["bounty"]):
+            return True
+
+        if new.get("target", None):
+            if not old.get('target', None):
+                return True
+            if old["target"] and new["target"]["cmdr"] != old["target"]["cmdr"]:
+                return True
+            new_target_ship = new["target"]["ship"]
+            old_target_ship = old["target"]["ship"]
+            if abs(new_target_ship["hullHealth"].get("value", 0) - old_target_ship["hullHealth"].get("value", 0)) >= 20:
+                return True
+
+            if abs(new_target_ship["shieldHealth"].get("value", 0) - old_target_ship["shieldHealth"].get("value", 0)) >= 20:
+                return True
+
+            if "wanted" in new["target"] and ("wanted" not in old or new["target"]["wanted"] != old["target"]["wanted"]):
+                return True
+        
+            if "bounty" in new["target"] and ("bounty" not in old["target"] or new["target"]["bounty"] > old["target"]["bounty"]):
+                return True
+            
+        return False
+
     def novel_enough_fight(self, involved_cmdr, fight):
         last_fight = self.fights_cache.get(involved_cmdr)
-        # TODO perhaps the generic one isn't ideal since it doesn't check the changes in the payload...
-        return self.__novel_enough_situation(fight, last_fight)
+        return self.__novel_enough_fight(fight, last_fight)
 
     def outlaws_alerts_enabled(self, silent=True):
         return self._alerts_enabled(EDROpponents.OUTLAWS, silent)
@@ -946,34 +1012,38 @@ class EDRClient(object):
         if not self.crimes_reporting:
             EDRLOG.log(u"Crimes reporting is off (!crimes on to re-enable).", "INFO")
             self.status = _(u"Crimes reporting is off (!crimes on to re-enable)")
-            return True
+            return
             
         if self.player.in_bad_neighborhood():
             EDRLOG.log(u"Fight not being reported because the player is in an anarchy.", "INFO")
             self.status = _(u"Anarchy system (fights not reported).")
-            return True
+            return
 
         if self.is_anonymous():
             EDRLOG.log(u"Skipping fight report since the user is anonymous.", "INFO")
-            return True
+            return
+
+        if not self.player.recon_box.active:
+            if not self.player.recon_box.advertised:
+                self.__notify(_(u"Need assistance?"), [_(u"Flash your lights twice to report a PvP fight to enforcers."), _(u"Send '!crimes off' to make EDR go silent.")], clear_before=True)
+                self.player.recon_box.advertised = True
+            return
 
         if not self.novel_enough_fight(fight['cmdr'].lower(), fight):
             EDRLOG.log(u"Skipping fight report (not novel enough).", "INFO")
-            return True
+            return
 
         star_system = fight["starSystem"]
         sid = self.edrsystems.system_id(star_system, may_create=True)
         if sid is None:
             EDRLOG.log(u"Failed to report fight in system {} : no id found.".format(star_system),
                        "DEBUG")
-            return False
-
+            return
         fight["instance"] = self.player.instance.noteworthy_changes_json()
+        fight["keycode"] = self.player.recon_box.keycode
         if self.server.fight(sid, fight):
             self.status = _(u"fight reported!")
             self.fights_cache.set(fight["cmdr"].lower(), fight)
-            return True
-        return False
 
     def crew_report(self, report):
         if self.is_anonymous():
@@ -1013,15 +1083,11 @@ class EDRClient(object):
                        "DEBUG")
             return False
         
-        prefix = random.choice(["alpha", "bravo", "charlie", "delta", "echo", "foxtrot", "golf", "hotel", "india", "juliet", "kilo", "lima", "mike", "november", "oscar", "papa", "quebec", "romeo", "sierra", "tango", "uniform", "victor", "whiskey", "x-ray", "yankee", "zulu"])
-        suffix = random.randint(0,999)
-        info["codeword"] = u"{}-{}".format(prefix, suffix)
+        info["codeword"] = self.player.recon_box.gen_keycode()
         if self.server.call_central(service, sid, info):
             self.status = _(u"Message sent to EDR central")
             self.__notify(_(u"EDR central"), [_(u"Message sent with codeword '{}'.").format(info["codeword"]), _(u"Ask the codeword to identify trusted commanders.")], clear_before = True)
             self._throttle_until_timestamp = edtime.EDTime.py_epoch_now() + 60*5 #TODO parameterize
-            # TODO open a realtime channel
-            # TODO send further messages
             return True
         return False
 

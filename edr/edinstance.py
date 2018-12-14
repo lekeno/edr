@@ -19,6 +19,11 @@ class EDInstance(object):
             return None
         return self.players[cmdr_name.lower()]["player"]
 
+    def blip(self, cmdr_name):
+        if cmdr_name.lower() not in self.players:
+            return None
+        return self.players[cmdr_name.lower()]
+
     def player_in(self, cmdr):
         now = edtime.EDTime.py_epoch_now()
         self.timestamp = now
@@ -65,8 +70,8 @@ class EDInstance(object):
         self.last_check_timestamp = now
         self._touched = False
         return {
-            "timestamp": int(self.timestamp * 1000),
-            "players": players
+                "timestamp": int(self.timestamp * 1000),
+                "players": players
         }
 
     def json(self):

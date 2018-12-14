@@ -52,12 +52,14 @@ class EDVehicle(object):
         self.subsystems = {}
         self.timestamp = now
         self.fight = {u"value": False, "large": False, u"timestamp": now}
-        self.hardpoints_deployed = {u"value": False, u"timestamp": now}
+        self._hardpoints_deployed = {u"value": False, u"timestamp": now}
         self._attacked = {u"value": False, u"timestamp": now}
         self.heat_damaged = {u"value": False, u"timestamp": now}
-        self.in_danger = {u"value": False, u"timestamp": now}
+        self._in_danger = {u"value": False, u"timestamp": now}
+        self._low_fuel = {u"value": False, u"timestamp": now}
         config = edrconfig.EDRConfig()
         self.fight_staleness_threshold = config.instance_fight_staleness_threshold()
+        self.danger_staleness_threshold = config.instance_danger_staleness_threshold()
         self.seats = 1
         self.fuel_capacity = None
         self.fuel_level = None
@@ -83,17 +85,35 @@ class EDVehicle(object):
         self.timestamp = now
         self._shield_health = {"timestamp": now, "value": new_value}
 
+    @property
+    def low_fuel(self):
+        return self._low_fuel["value"]
+
+    @low_fuel.setter
+    def low_fuel(self, low):
+        before = self._low_fuel["value"]
+        now = EDTime.py_epoch_now()
+        self.timestamp = now
+        self._low_fuel = {"timestamp": now, "value": low}
+        if before != low and self.fuel_capacity:
+            if low:
+                self.fuel_level = min(self.fuel_level, self.fuel_capacity * .25)
+            else:
+                self.fuel_level = max(self.fuel_level, self.fuel_capacity * .25)
+
     def json(self, fuel_info=False):
         result = {
             u"timestamp": int(self.timestamp * 1000),
             u"type": self.type,
-            u"hull_health": self.__js_t_v(self._hull_health),
-            u"shield_health": self.__js_t_v(self._shield_health),
-            u"key_subsystems": self.__key_subsystems()
+            u"hullHealth": self.__js_t_v(self._hull_health),
+            u"shieldHealth": self.__js_t_v(self._shield_health),
+            u"shieldUp": self.shield_up,
+            u"keySubsystems": self.__key_subsystems()
         }
         if fuel_info:
-            result[u"fuel_level"] = self.fuel_level
-            result[u"fuel_capacity"] = self.fuel_capacity
+            result[u"fuelLevel"] = self.fuel_level
+            result[u"fuelCapacity"] = self.fuel_capacity
+            result[u"lowFuel"] = self.low_fuel
 
         return result
 
@@ -153,10 +173,10 @@ class EDVehicle(object):
         self.shield_up = True
         self.subsystems = {}
         self.fight = {u"value": False, u"large": False, u"timestamp": now}
-        self.hardpoints_deployed = {u"value": False, u"timestamp": now}
+        self._hardpoints_deployed = {u"value": False, u"timestamp": now}
         self._attacked = {u"value": False, u"timestamp": now}
         self.heat_damaged = {u"value": False, u"timestamp": now}
-        self.in_danger = {u"value": False, u"timestamp": now}
+        self._in_danger = {u"value": False, u"timestamp": now}
     
     def destroy(self):
         now = EDTime.py_epoch_now()
@@ -190,13 +210,11 @@ class EDVehicle(object):
         if subsystem is None:
             return
         canonical = EDVehicleFactory.normalize_module_name(subsystem)
-        if canonical.startswith("shieldgenerator_"):
-            self.shield_health = health
         now = EDTime.py_epoch_now()
         self.timestamp = now
         self.subsystems[canonical] = {u"timestamp": now, u"value": health}
 
-    def add_subsystems(self, subsystem):
+    def add_subsystem(self, subsystem):
         if not subsystem:
             return
         canonical = EDVehicleFactory.normalize_module_name(subsystem)
@@ -234,18 +252,36 @@ class EDVehicle(object):
         self.timestamp = now
         self._attacked = {u"value": True, u"timestamp": now}
 
+    def under_attack(self):
+        if self._attacked["value"]:
+            now = EDTime.py_epoch_now()
+            return (now >= self._attacked["timestamp"]) and ((now - self._attacked["timestamp"]) <= self.danger_staleness_threshold)
+        return False
+
     def safe(self):
         now = EDTime.py_epoch_now()
         self._attacked = {u"value": False, u"timestamp": now}
         self.fight = {u"value": False, "large": False, u"timestamp": now}
-        self.in_danger = {u"value": False, u"timestamp": now}
+        self._in_danger = {u"value": False, u"timestamp": now}
     
     def unsafe(self):
         now = EDTime.py_epoch_now()
-        self.in_danger = {u"value": True, u"timestamp": now}
+        self._in_danger = {u"value": True, u"timestamp": now}
+
+    def in_danger(self):
+        if self._in_danger["value"]:
+            now = EDTime.py_epoch_now()
+            return (now >= self._in_danger["timestamp"]) and ((now - self._in_danger["timestamp"]) <= self.danger_staleness_threshold)
+        return False
 
     def hardpoints(self, deployed):
-        self.hardpoints_deployed = {u"value": deployed, u"timestamp": EDTime.py_epoch_now()}
+        self._hardpoints_deployed = {u"value": deployed, u"timestamp": EDTime.py_epoch_now()}
+
+    def hardpoints_deployed(self):
+        if self._hardpoints_deployed["value"]:
+            now = EDTime.py_epoch_now()
+            return (now >= self._hardpoints_deployed["timestamp"]) and ((now - self._hardpoints_deployed["timestamp"]) <= self.fight_staleness_threshold)
+        return False
 
     def shield_state(self, is_up):
         if not is_up:
@@ -269,16 +305,24 @@ class EDVehicle(object):
     def refuel(self, amount=None):
         if amount:
             self.fuel_level = self.fuel_level + amount if self.fuel_level else amount
+            if self.fuel_capacity:
+                self.low_fuel = self.fuel_level < self.fuel_capacity * .25
         else:
+            self.low_fuel = False
             self.fuel_level = self.fuel_capacity
+
+    def fuel_scooping(self, new_level):
+        self.fuel_level = new_level
+        if self.fuel_capacity:
+            self.low_fuel = self.fuel_level < self.fuel_capacity * .25
 
     def repair(self, item=None):
         if item:
-            self.subsystem_health(item, 1.0)
+            self.subsystem_health(item, 100.0)
         else:
-            self.hull_health = 1.0
+            self.hull_health = 100.0
             for subsystem in self.subsystems:
-                self.subsystem_health(subsystem, 1.0)
+                self.subsystem_health(subsystem, 100.0)
 
     def __eq__(self, other):
         if not isinstance(other, EDVehicle):
@@ -724,7 +768,7 @@ class EDVehicleFactory(object):
     def normalize_module_name(name):
         normalized = name.lower()
         
-        # prefix _name or _name; is not used in loadout or afmurepair events 
+        # suffix _name or _name; is not used in loadout or afmurepair events 
         if normalized.endswith(u"_name"):
             useless_suffix_length = len(u"_name")
             normalized = normalized[:-useless_suffix_length]

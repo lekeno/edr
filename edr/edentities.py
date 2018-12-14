@@ -1,11 +1,13 @@
 import os
 import json
+import math
 
 import edtime
 from edvehicles import EDVehicleFactory 
 import edinstance
 import edrlog
 import edrconfig
+import edreconbox
 from edri18n import _, _c
 EDRLOG = edrlog.EDRLog()
 
@@ -204,13 +206,41 @@ class EDPlanetaryLocation(object):
             return False
         return True
 
+    def distance(self, loc, planet_radius):
+        dlat = math.radians(loc.latitude - self.latitude)
+        dlon = math.radians(loc.longitude - self.longitude)
+        lat1 = math.radians(self.latitude)
+        lat2 = math.radians(loc.latitude)
+        a = math.sin(dlat/2.0) * math.sin(dlat/2.0) + math.sin(dlon/2.0) * math.sin(dlon/2.0) * math.cos(lat1) * math.cos(lat2)
+        c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0-a))
+        return int(round(planet_radius * c, 0))
+
+    def bearing(self, loc):
+        current_latitude = math.radians(loc.latitude)
+        destination_latitude = math.radians(self.latitude)
+        delta_longitude = math.radians(self.longitude - loc.longitude)
+        delta_latitude = math.log(math.tan(math.pi/4.0 + destination_latitude/2.0)/math.tan(math.pi/4.0 + current_latitude/2.0))
+        bearing = math.degrees(math.atan2(delta_longitude, delta_latitude))
+        if bearing < 0:
+            bearing += 360
+            
+        return int(round(bearing, 0))
+
+    @staticmethod
+    def pitch(loc, distance):
+        if loc.altitude < 1.0 or abs(distance) < 1.0:
+            return None
+        pitch = -math.degrees(math.atan(loc.altitude / distance))
+        return int(round(pitch, 0))
+
 class EDLocation(object):
     def __init__(self, star_system=None, place=None, security=None, space_dimension=EDSpaceDimension.UNKNOWN):
         self.star_system = star_system
         self.place = place
         self.security = security
         self.space_dimension = space_dimension
-    
+        self.population = None
+        self.allegiance = None
 
     def __repr__(self):
         return str(self.__dict__)
@@ -344,13 +374,13 @@ class EDPlayer(object):
         if not self.in_normal_space():
             return False
 
-        if self.mothership and self.mothership.in_a_fight():
+        if self.mothership and self.mothership.in_a_fight() and self.mothership.in_danger():
             return True
         
-        if self.slf and self.slf.in_a_fight():
+        if self.slf and self.slf.in_a_fight() and self.slf.in_danger():
             return True
 
-        if self.srv and self.srv.in_a_fight():
+        if self.srv and self.srv.in_a_fight() and self.srv.in_danger():
             return True
         
         return False
@@ -568,6 +598,53 @@ class EDPlayer(object):
         now = edtime.EDTime.py_epoch_now()
         self.timestamp = now
 
+class EDWing(object):
+    def __init__(self, wingmates=set()):
+        self.wingmates = wingmates.copy()
+        self.timestamp = None
+        self.last_check_timestamp = None
+        self._touched = False        
+
+    def leave(self):
+        self.wingmates = set()
+        self._touch()
+
+    def join(self, others):
+        self.wingmates = set(others)
+        self._touch()
+
+    def add(self, other):
+        self.wingmates.add(other)
+        self._touch()
+
+    def formed(self):
+        return len(self.wingmates) > 0
+
+    def _touch(self):
+        now = edtime.EDTime.py_epoch_now()
+        self.timestamp = now
+        self._touched = True
+
+    def noteworthy_changes_json(self, instance):
+        changes = []
+        if not self._touched:
+            print "not touched"
+            for wingmate in self.wingmates:
+                if instance.player(wingmate) is None:
+                    print "not in instance {}".format(wingmate)
+                    continue
+                timestamp, _ = instance.blip(wingmate).values()
+                if timestamp >= self.last_check_timestamp:
+                    changes.append({u"cmdr": wingmate, u"instanced": True})
+                else:
+                    print "stale"
+        elif self.timestamp >= self.last_check_timestamp:
+            print "wing changes"
+            changes = [ {u"cmdr": wingmate, u"instanced": instance.player(wingmate) != None} for wingmate in self.wingmates],
+        self._touched = False
+        now = edtime.EDTime.py_epoch_now()
+        self.last_check_timestamp = now
+        return changes    
 
 class EDPlayerOne(EDPlayer):
     def __init__(self, name=None):
@@ -576,12 +653,13 @@ class EDPlayerOne(EDPlayer):
         self.previous_mode = None
         self.previous_wing = set()
         self.from_birth = False
-        self.wing = set()
+        self.wing = EDWing()
         self.friends = set()
         self.crew = None
         self._target = None
         self.instance = edinstance.EDInstance()
         self.planetary_destination = None
+        self.recon_box = edreconbox.EDReconBox()
 
     def __repr__(self):
         return str(self.__dict__)
@@ -595,6 +673,16 @@ class EDPlayerOne(EDPlayer):
         self._target = new_target
         self._touch()
 
+    def lowish_fuel(self):
+        if self.mothership.fuel_level is None or self.mothership.fuel_capacity is None:
+            return True # Better safe than sorry
+        return (self.mothership.fuel_level / self.mothership.fuel_capacity) <= 0.3
+
+    def heavily_damaged(self):
+        if self.mothership.hull_health is None:
+            return True # Better safe than sorry
+        return self.mothership.hull_health <= 50
+
     def json(self, fuel_info=False):
         result = {
             u"cmdr": self.name,
@@ -603,11 +691,14 @@ class EDPlayerOne(EDPlayer):
             u"bounty": self.bounty,
             u"starSystem": self.star_system,
             u"place": self.place,
-            u"wing": [ {u"cmdr": wingmate, u"instanced": self.is_instanced_with(wingmate)} for wingmate in self.wing if self.wing],
+            u"wingof": len(self.wing.wingmates),
+            u"wing": self.wing.noteworthy_changes_json(self.instance),
             u"byPledge": self.powerplay.canonicalize() if self.powerplay else u'',
             u"ship": self.piloted_vehicle.json(fuel_info=fuel_info),
             u"target": self.target.json() if self.target else u''
         }
+        # u"wing": [ {u"cmdr": wingmate, u"instanced": self.is_instanced_with(wingmate)} for wingmate in self.wing.wingmates if self.wing.formed()],
+        #TODO just recent changes? timestamp but would this mean just know of the wing after an IN 
 
         result[u"crew"] = []
         if self.crew:
@@ -628,7 +719,7 @@ class EDPlayerOne(EDPlayer):
         self.from_birth = True
         self.previous_mode = None
         self.previous_wing = set()
-        self.wing = set()
+        self.wing = EDWing()
         self.crew = None
         self.destroyed = False
         self.target = None
@@ -646,17 +737,18 @@ class EDPlayerOne(EDPlayer):
     def killed(self):
         super(EDPlayerOne, self).killed()
         self.previous_mode = self.game_mode
-        self.previous_wing = self.wing.copy()
+        self.previous_wing = self.wing.wingmates.copy()
         self.game_mode = None
-        self.wing = set()
+        self.wing = EDWing()
         self.crew = None
         self.target = None
         self.instance.reset()
+        self.recon_box.reset()
         self._touch()
 
     def resurrect(self, rebought=True):
         self.game_mode = self.previous_mode 
-        self.wing = self.previous_wing.copy()
+        self.wing = EDWing(self.previous_wing)
         self.previous_mode = None
         self.previous_wing = set()
         self.destroyed = False
@@ -676,19 +768,6 @@ class EDPlayerOne(EDPlayer):
             self.slf = None
             self.srv = None
 
-    def leave_wing(self):
-        self.wing = set()
-        self._touch()
-
-    def join_wing(self, others):
-        self.wing = set(others)
-        self.crew = None
-        self._touch()
-
-    def add_to_wing(self, other):
-        self.wing.add(other)
-        self._touch()
-
     def is_crew_member(self):
         if not self.crew:
             return False
@@ -697,8 +776,21 @@ class EDPlayerOne(EDPlayer):
     def in_a_crew(self):
         return self.crew is not None
 
+    def leave_wing(self):
+        self.wing.leave()
+        self._touch()
+
+    def join_wing(self, others):
+        self.wing.join(others)
+        self.crew = None
+        self._touch()
+
+    def add_to_wing(self, other):
+        self.wing.add(other)
+        self._touch()
+
     def in_a_wing(self):
-        return len(self.wing) > 0
+        return self.wing.formed()
 
     def leave_crew(self):
         self._touch()
@@ -716,7 +808,7 @@ class EDPlayerOne(EDPlayer):
         self.crew.disband()
 
     def join_crew(self, captain):
-        self.wing = set()
+        self.wing = EDWing()
         self.instance.reset()
         self.crew = EDRCrew(captain)
         self.crew.add(self.name)
@@ -731,7 +823,7 @@ class EDPlayerOne(EDPlayer):
         self._touch()
         if not self.crew:
             self.crew = EDRCrew(self.name)
-            self.wing = set()
+            self.wing = EDWing()
             self.instance.reset()
         self.instanced(member)
         return self.crew.add(member)
@@ -740,7 +832,7 @@ class EDPlayerOne(EDPlayer):
         self._touch()
         if not self.crew:
             self.crew = EDRCrew(self.name)
-            self.wing = set()
+            self.wing = EDWing()
             self.instance.reset()
         self.instance.player_out(member)
         return self.crew.remove(member)
@@ -758,7 +850,7 @@ class EDPlayerOne(EDPlayer):
         return self.crew.is_captain(member)
 
     def is_friend_or_in_wing(self, interlocutor):
-        return interlocutor in self.friends or interlocutor in self.wing
+        return interlocutor in self.friends or interlocutor in self.wing.wingmates
 
     def is_enemy_with(self, power):
         if self.is_independent() or not power:
@@ -776,15 +868,16 @@ class EDPlayerOne(EDPlayer):
             return
         super(EDPlayerOne, self).to_super_space()
         self.instance.reset()
+        self.recon_box.reset()
 
     def to_hyper_space(self):
         if self.in_hyper_space():
             return
         super(EDPlayerOne, self).to_hyper_space()
         self.instance.reset()
+        self.recon_box.reset()
 
-    #TODO limit to pvp fights against outlaws?
-    def in_a_pvp_fight(self):
+    def maybe_in_a_pvp_fight(self):
         if not self.in_a_fight():
             return False
 
@@ -792,12 +885,13 @@ class EDPlayerOne(EDPlayer):
             # Can't PvP if there is no one.
             return False
 
-        wing_and_crew = self.crew.all_members() if self.crew else set()
-        wing_and_crew.add(self.wing)
-        if self.instance.anyone_beside(wing_and_crew):
+        wing_and_crew = self.wing.wingmates.copy()
+        if self.crew:
+            wing_and_crew.update(self.crew.all_members() )
+        
+        if not self.instance.anyone_beside(wing_and_crew):
             return False
 
-        # TODO
         return True
 
     def leave_vehicle(self):
@@ -806,6 +900,7 @@ class EDPlayerOne(EDPlayer):
         self.slf = None
         self.srv = None
         self.instance.reset()
+        self.recon_box.reset()
         self._touch()
 
     def targeting(self, cmdr):
@@ -816,7 +911,7 @@ class EDPlayerOne(EDPlayer):
     def destroy(self, cmdr):
         self._touch()
         cmdr.killed()
-        self.instance.player_out(cmdr.name) # TODO maybe better to have around or perhaps call instance update to capture death? Or maybe have an out tracking in instance?
+        self.instance.player_out(cmdr.name)
         if self.target and self.target.name == cmdr.name:
             self.target = None
 
@@ -826,6 +921,8 @@ class EDPlayerOne(EDPlayer):
         if success:
             interdicted.location = self.location
             self.instance.player_in(interdicted)
+        else:
+            self.recon_box.reset()
 
     def interdicted(self, interdictor, success):
         self._touch()
@@ -835,6 +932,7 @@ class EDPlayerOne(EDPlayer):
             self.instance.player_in(interdictor)
         else:
             self.instance.player_out(interdictor.cmdr_name)
+            self.recon_box.reset()
 
     def is_instanced_with(self, cmdr_name):
         return self.instance.player(cmdr_name) != None

@@ -194,6 +194,8 @@ def handle_movement_events(ed_player, entry):
             ed_player.location_security(entry["SystemSecurity"])
             if ed_player.in_bad_neighborhood():
                 EDR_CLIENT.IN_GAME_MSG.warning(_(u"Anarchy system"), [_(u"Crimes will not be reported.")])
+        ed_player.location.population = entry.get('Population', 0)
+        ed_player.location.allegiance = entry.get('SystemAllegiance', 0)
         outcome["reason"] = "Jump events"
         ed_player.to_super_space()
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
@@ -229,7 +231,6 @@ def handle_movement_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
         outcome["reason"] = "Leave event"
-        # TODO clear destination?
     return outcome
 
 def handle_change_events(ed_player, entry):
@@ -242,6 +243,9 @@ def handle_change_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         ed_player.to_normal_space()
         ed_player.wanted = entry.get("Wanted", False)
+        ed_player.location_security(entry.get("SystemSecurity", None))
+        ed_player.location.population = entry.get("Population", None)
+        ed_player.location.allegiance = entry.get("SystemAllegiance", None)
         outcome["reason"] = "Location event"
         EDRLOG.log(u"Place changed: {} (location event)".format(place), "INFO")
         EDR_CLIENT.check_system(entry["StarSystem"], may_create=True)
@@ -359,16 +363,35 @@ def dashboard_entry(cmdr, is_beta, entry):
 
     if (entry['Flags'] & plug.FlagsInSRV):
         ed_player.in_srv()
-
+    
+    ed_player.piloted_vehicle.low_fuel = bool(entry['Flags'] & plug.FlagsLowFuel)
     ed_player.docked(bool(entry['Flags'] & plug.FlagsDocked))
-    ed_player.in_danger(bool(entry['Flags'] & plug.FlagsIsInDanger))
-    ed_player.hardpoints(bool(entry['Flags'] & plug.FlagsHardpointsDeployed))
+    unsafe = bool(entry['Flags'] & plug.FlagsIsInDanger)
+    ed_player.in_danger(unsafe)
+    deployed = bool(entry['Flags'] & plug.FlagsHardpointsDeployed)
+    ed_player.hardpoints(deployed)
+    
+    safe = not unsafe
+    retracted = not deployed
+    if ed_player.recon_box.active and (safe and retracted):
+        ed_player.recon_box.reset()
+        EDR_CLIENT.notify_with_details(_(u"EDR Central"), [_(u"Fight reporting disabled"), _(u"Looks like you are safe, and disengaged.")])
+    
+    if ed_player.in_normal_space() and ed_player.recon_box.process_signal(entry['Flags'] & plug.FlagsLightsOn):
+        if ed_player.recon_box.active:
+            EDR_CLIENT.notify_with_details(_(u"EDR Central"), [_(u"Fight reporting enabled"), _(u"Turn it off: flash your lights twice, or leave this area, or escape danger and retract hardpoints.")])
+        else:
+            EDR_CLIENT.notify_with_details(_(u"EDR Central"), [_(u"Fight reporting disabled"), _(u"Flash your lights twice to re-enable.")])
+
+        
 
     attitude_keys = { "Latitude", "Longitude", "Heading", "Altitude"}
     if entry.viewkeys() < attitude_keys:
         return
     
     attitude = { key.lower():value for key,value in entry.items() if key in attitude_keys }
+    if "altitude" in attitude:
+        attitude["altitude"] /= 1000.0
     ed_player.piloted_vehicle.update_attitude(attitude)
     if ed_player.planetary_destination:
         EDR_CLIENT.show_navigation()
@@ -441,6 +464,17 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
             status_outcome["updated"] = True
             status_outcome["reason"] = outcome["reason"]
 
+    if entry["event"] in ["FSSSignalDiscovered"]:
+        EDR_CLIENT.noteworthy_about_signal(entry)
+
+    if entry["event"] in ["NavBeaconScan"] and entry.get("NumBodies", 0):
+        EDR_CLIENT.notify_with_details(_(u"System info acquired"), [_(u"Approach a planet to get an assessment of its materials concentration.")])
+
+    if entry["event"] in ["Scan"]:
+        EDR_CLIENT.process_scan(entry)
+        if entry["ScanType"] == "Detailed":
+            EDR_CLIENT.noteworthy_about_scan(entry)
+
     if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PVPKill"]:
         report_crime(ed_player, entry)
 
@@ -453,7 +487,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["HullDamage", "UnderAttack", "SRVDestroyed", "FighterDestroyed", "HeatDamage", "ShieldState", "CockpitBreached", "SelfDestruct"]:
         handle_damage_events(ed_player, entry)
 
-    if entry["event"] in ["RefuelAll", "RefuelPartial", "Repair", "RepairAll", "AfmuRepairs", "RebootRepair", "RepairDrone"]:
+    if entry["event"] in ["FuelScoop", "RefuelAll", "RefuelPartial", "Repair", "RepairAll", "AfmuRepairs", "RebootRepair", "RepairDrone"]:
         handle_fixing_events(ed_player, entry)
 
     if entry["event"] in ["ModuleStore", "ModuleSell", "ModuleBuy", "ModuleRetrieve", "MassModuleStore"]:
@@ -476,8 +510,10 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
                 crew_player.mothership = vehicle
                 edr_submit_contact(crew_player, entry["timestamp"], source, ed_player)
     
-    if ed_player.in_a_fight():
+    if ed_player.maybe_in_a_pvp_fight():
         report_fight(ed_player)
+
+    print ed_player.json()
 
 
 def edr_update_cmdr_status(cmdr, reason_for_update, timestamp):
@@ -601,9 +637,7 @@ def report_fight(player):
         return
 
     report = player.json()
-    if not EDR_CLIENT.fight(report):
-        EDR_CLIENT.status = _(u"failed to report fight.")
-        EDR_CLIENT.evict_system(player.star_system)
+    EDR_CLIENT.fight(report)
 
 def edr_submit_contact(contact, timestamp, source, witness):
     """
@@ -721,12 +755,11 @@ def report_crime(cmdr, entry):
     :param entry:
     :return:
     """
-    # TODO call interdicted?
     player_one = EDR_CLIENT.player
     if entry["event"] in ["Interdicted", "EscapeInterdiction"]:
         if entry["IsPlayer"]:
             interdictor = player_one.instanced(entry["Interdictor"])
-            player_one.interdiction(interdictor, entry["event"] == "Interdicted")
+            player_one.interdicted(interdictor, entry["event"] == "Interdicted")
             edr_submit_crime([interdictor], entry["event"], cmdr, entry["timestamp"])
 
     if entry["event"] == "Died":
@@ -750,6 +783,7 @@ def report_crime(cmdr, entry):
             edr_submit_crime_self(cmdr, offence, interdicted, entry["timestamp"])
 
     if entry["event"] == "PVPKill":
+        # TODO I might have broken this
         EDRLOG.log(u"PVPKill!", "INFO")
         victim = player_one.instanced(entry["Victim"])
         victim.killed()
@@ -785,7 +819,17 @@ def report_comms(player, entry):
                 contact = player.instanced(from_cmdr)
                 edr_submit_contact(contact, entry["timestamp"],
                                    "Received text (non wing/friend player)", player)
-    elif entry["event"] == "SendText" and not entry["To"] in ["local", "wing"]:
+        elif entry["Channel"] in ["starsystem"]:
+            from_cmdr = entry["From"]
+            if entry["From"].startswith("$cmdr_decorate:#name="):
+                from_cmdr = entry["From"][len("$cmdr_decorate:#name="):-1]
+                EDRLOG.log(u"Text from {} in star system".format(from_cmdr), "INFO")
+                contact = EDPlayer(from_cmdr)
+                contact.location = player.location
+                contact.place = "Unknown"
+                edr_submit_contact(contact, entry["timestamp"],
+                                   "Received text (starsystem channel)", player)
+    elif entry["event"] == "SendText" and not entry["To"] in ["local", "wing", "starsystem", "squadron", "squadleaders"]:
         to_cmdr = entry["To"]
         if entry["To"].startswith("$cmdr_decorate:#name="):
             to_cmdr = entry["To"][len("$cmdr_decorate:#name="):-1]
@@ -835,11 +879,13 @@ def handle_damage_events(ed_player, entry):
     return True
 
 def handle_fixing_events(ed_player, entry):
-    if entry["event"] not in ["RefuelAll", "RefuelPartial", "Repair", "RepairAll", "AfmuRepairs", "RebootRepair", "RepairDrone"]:
+    if entry["event"] not in ["FuelScoop", "RefuelAll", "RefuelPartial", "Repair", "RepairAll", "AfmuRepairs", "RebootRepair", "RepairDrone"]:
         return False
 
     if entry["event"] == "AfmuRepairs":
         ed_player.mothership.subsystem_health(entry["Module"], entry["Health"] * 100.0) # AfmuRepairs' health is normalized to 0.0 ... 1.0
+    elif entry["event"] == "FuelScoop":
+        ed_player.mothership.fuel_scooping(entry["Total"])
     elif entry["event"] == "RefuelAll":
         ed_player.mothership.refuel()
     elif entry["event"] == "RefuelPartial":
@@ -849,16 +895,11 @@ def handle_fixing_events(ed_player, entry):
     elif entry["event"] == "Repair":
         ed_player.mothership.repair(entry["Item"])
     elif entry["event"] == "RepairDrone":
-        # TODO is it always the mothership? or pilotedship?
-        # TODO is it only when one's ship get repaired?
+        # TODO is it always the mothership? or pilotedship? is it only when one's ship get repaired?
         if entry.get("HullRepaired", None):
-            ed_player.mothership.hull_health = entry["HullRepaired"] # TODO it seems that the after repair value is in that field as a 0.0 to 100.0 range
+            ed_player.mothership.hull_health = entry["HullRepaired"]
         if entry.get("CockpitRepaired", None):
             ed_player.mothership.cockpit_health(entry["CockpitRepaired"])
-        if entry.get("CorrosionRepaired", None):
-            # TODO track this?
-            pass
-
 
 def handle_outfitting_events(player, entry):
     if entry["event"] not in ["MassModuleStore", "ModuleStore", "ModuleSell", "ModuleBuy", "ModuleRetrieve"]:
@@ -920,7 +961,7 @@ def handle_scan_events(player, entry):
     if entry["ScanStage"] == 3:
         target.wanted = entry["LegalStatus"] in ["Wanted", "WantedEnemy", "Warrant"]
         target.enemy = entry["LegalStatus"] in ["Enemy", "WantedEnemy", "Hunter"]
-        target.bounty = entry.get("Bounty", 0) if target.wanted else 0 # hmm TODO can't this just be get("Bounty", 0) ?
+        target.bounty = entry.get("Bounty", 0) if target.wanted else 0
         if "Subsystem" in entry and "SubsystemHealth" in entry:
             target.vehicle.subsystem_health(entry["Subsystem"], entry["SubsystemHealth"])
         
@@ -1088,13 +1129,21 @@ def handle_bang_commands(cmdr, command, command_parts):
         EDR_CLIENT.guardian_tech_broker_near(search_center, override_sc_dist)
     elif command in ["!edr", "!911", "!fuel", "!repair"]:
         services = {
-            "!edr": "N/A",
+            "!edr": "edr",
             "!911": "police",
             "!fuel": "fuel",
             "!repair": "repair"
         }
         service = services[command]
         message = command_parts[1] if len(command_parts) == 2 else "N/A"
+        if service == "fuel" and not cmdr.lowish_fuel():
+            EDRLOG.log(u"EDR Central for {} with {} not allowed (enough fuel)".format(service, message), "INFO")
+            EDR_CLIENT.notify_with_details("EDR Central", [_(u"Call rejected: you seem to have enough fuel."), _("Contact Cmdr LeKeno if this is inaccurate")])
+            return
+        if service == "repair" and not cmdr.heavily_damaged():
+            EDRLOG.log(u"EDR Central for {} with {} not allowed (no serious damage)".format(service, message), "INFO")
+            EDR_CLIENT.notify_with_details("EDR Central", [_(u"Call rejected: you seem to have enough hull left."), _("Contact Cmdr LeKeno if this is inaccurate")])
+            return
         info = EDR_CLIENT.player.json(fuel_info=(service == "fuel"))
         info["message"] = message
         if service == "police":
@@ -1104,6 +1153,15 @@ def handle_bang_commands(cmdr, command, command_parts):
     elif command == "!nav":
         if len(command_parts) < 2:
             EDRLOG.log(u"Not enough parameters for navigation command", "INFO")
+            return
+        if command_parts[1].lower() == "off":
+            EDRLOG.log(u"Clearing destination", "INFO")
+            EDR_CLIENT.player.planetary_destination = None
+            return
+        elif command_parts[1].lower() == "set" and EDR_CLIENT.player.piloted_vehicle.attitude.valid():
+            EDRLOG.log(u"Setting destination", "INFO")
+            attitude = EDR_CLIENT.player.piloted_vehicle.attitude
+            EDR_CLIENT.navigation(attitude.latitude, attitude.longitude)
             return
         lat_long = command_parts[1].split(" ")
         if len(lat_long) != 2:

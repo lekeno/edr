@@ -100,8 +100,14 @@ class EDRConfig(object):
     def fights_max_age(self):
         return int(self.config.get('lrucaches', 'fights_max_age'))
 
+    def materials_max_age(self):
+        return int(self.config.get('lrucaches', 'materials_max_age'))
+
     def edsm_systems_max_age(self):
         return int(self.config.get('lrucaches', 'edsm_systems_max_age'))
+
+    def edsm_bodies_max_age(self):
+        return int(self.config.get('lrucaches', 'edsm_bodies_max_age'))
 
     def edsm_stations_max_age(self):
         return int(self.config.get('lrucaches', 'edsm_stations_max_age'))
@@ -159,3 +165,6 @@ class EDRConfig(object):
 
     def instance_fight_staleness_threshold(self):
         return int(self.config.get('instance', 'fight_staleness_threshold'))
+
+    def instance_danger_staleness_threshold(self):
+        return int(self.config.get('instance', 'danger_staleness_threshold'))
