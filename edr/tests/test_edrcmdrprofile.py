@@ -7,7 +7,7 @@ from edrcmdrprofile import EDRCmdrProfile
 class TestEDRCmdrProfile(TestCase):
     def test_karma(self):
         cprof = EDRCmdrProfile()
-        for n in range(0, 9):
+        for _ in range(0, 9):
             karma = random.randint(cprof.min_karma(), cprof.max_karma())
             cprof.karma = karma
             self.assertEqual(cprof.karma, karma)
