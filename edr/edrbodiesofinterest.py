@@ -1,6 +1,8 @@
 import os
 import json
 
+from edentities import EDPlanetaryLocation
+
 class EDRBodiesOfInterest(object):
     BOI = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data/boi.json')).read())
 
@@ -20,10 +22,20 @@ class EDRBodiesOfInterest(object):
         return EDRBodiesOfInterest.BOI.get(c_star_system, {}).get(c_body_name, None)
 
     @staticmethod
-    def closest_point_of_interest(star_system, body_name, attitude):
+    def closest_point_of_interest(star_system, body_name, attitude, planet_radius):
         pois = EDRBodiesOfInterest.points_of_interest(star_system, body_name)
-        poi = pois[0] # TODO find the closest one
-        return poi
+        if not pois:
+            return None
+        if not planet_radius:
+            return pois[0]
+        closest = {"distance": None, "poi": None} 
+        for poi in pois:
+            destination = EDPlanetaryLocation(poi)
+            candidate = destination.distance(attitude, planet_radius)
+            if closest["distance"] is None or candidate < closest["distance"]:
+                closest["distance"] = candidate
+                closest["poi"] = poi
+        return closest["poi"]
 
 
     @staticmethod
