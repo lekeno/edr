@@ -1,9 +1,11 @@
+# coding= utf-8
 import os
 import sys
 
 import igmconfig
 import edrlog
 import textwrap
+from edri18n import _
 
 EDRLOG = edrlog.EDRLog()
 
@@ -123,14 +125,16 @@ class InGameMsg(object):
         self.__msg_header("sitrep", header)
         self.__msg_body("sitrep", details)
 
-    def navigation(self, bearing, destination):
+    def navigation(self, bearing, destination, distance=None, pitch=None):
         self.clear_navigation()
         if "panel" in self.cfg["navigation"]:
-            self.__shape("help", self.cfg["help"]["panel"])
-        header = u"> {0:03} <".format(bearing)
+            self.__shape("navigation", self.cfg["navigation"]["panel"])
+        header = u"› {:03} ‹     ↓ {:02} ↓".format(bearing, pitch) if pitch else u"> {:03} <".format(bearing)
         details = [destination.title] if destination.title else []
-        details.append(_(u"Lat: {}".format(destination.latitude)))
-        details.append(_(u"Lon: {}".format(destination.longitude)))
+        if distance:
+            details.append(_(u"Dis: {}km".format(int(distance))))
+        details.append(_(u"Lat: {:.4f}".format(destination.latitude)))
+        details.append(_(u"Lon: {:.4f}".format(destination.longitude)))
         self.__msg_header("navigation", header)
         self.__msg_body("navigation", details)
 
