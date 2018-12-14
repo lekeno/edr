@@ -4,8 +4,12 @@ import edrstatecheck
 import edrstatefinder
 from edri18n import _
 import math
+import json
+import os
 
 class EDRResourceFinder(object):
+
+    RAW_MATS = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data/raw.json')).read())
 
     SUPPORTED_RESOURCES = {
         "antimony": "ant", "tellurium": "tel", "ruthenium": "rut", "tungsten": "tun", "zirconium": "zir", "arsenic": "ars",
@@ -216,14 +220,24 @@ class EDRResourceFinder(object):
         to_koli = self.edr_systems.distance(reference_system, "Koli Discii")
         to_hip = self.edr_systems.distance(reference_system, "HIP 16613")
         to_renet = self.edr_systems.distance(reference_system, "Renet")
-        if resource.lower() in ["antimony", "tellurium", "ruthenium"] and to_renet < to_hip and to_renet < to_koli:
-            what = _(u"Break the cargo rack of the crashed Anaconda, repeat.")
-            pretty_dist = _(u"{distance:.3g}").format(distance=to_renet) if to_renet < 50.0 else _(u"{distance}").format(distance=int(to_renet))
-            return [
-                _(u"Renet ({}LY), Planet B 1 (378 LS), 14 | 135").format(pretty_dist),
-                _(u"Bring: SRV."),
-                what
-            ]
+        to_thoth = self.edr_systems.distance(reference_system, "Thoth")
+        if resource.lower() in ["antimony", "tellurium", "ruthenium"]:
+            if to_renet < to_hip and to_renet < to_koli and to_renet < to_thoth:
+                what = _(u"Break the cargo rack of the crashed Anaconda, repeat.")
+                pretty_dist = _(u"{distance:.3g}").format(distance=to_renet) if to_renet < 50.0 else _(u"{distance}").format(distance=int(to_renet))
+                return [
+                    _(u"Renet ({}LY), Planet B 1 (378 LS), 14 | 135").format(pretty_dist),
+                    _(u"Bring: SRV."),
+                    what
+                ]
+            elif to_thoth < to_hip and to_thoth < to_koli and to_thoth < to_renet:
+                what = _(u"Break the cargo rack of the crashed Anaconda, repeat.")
+                pretty_dist = _(u"{distance:.3g}").format(distance=to_renet) if to_thoth < 50.0 else _(u"{distance}").format(distance=int(to_thoth))
+                return [
+                    _(u"Thoth ({}LY), Planet 1 A (69 LS), -2.77 | 16.67").format(pretty_dist),
+                    _(u"Bring: SRV."),
+                    what
+                ]
 
         what = _(u"Scan the 3 COMMS Control of the crashed Anaconda, repeat.") if self.__is_data(resource) else _(u"Break the 3 cargo racks of the crashed Anaconda, repeat.")
             
@@ -277,7 +291,7 @@ class EDRResourceFinder(object):
         }
 
         probability = probabilities.get(resource.lower(), None)
-        first_line = _(u"HR 5991 ({}LY), Planet 1 B (TODO LS), Research Facility 5592 at at 33.4701 | -2.1706").format(pretty_dist)
+        first_line = _(u"HR 5991 ({}LY), Planet 1 B (2180 LS), Research Facility 5592 at 33.4701 | -2.1706").format(pretty_dist)
         if probability:
             first_line += _(u" {resource} @ {probability}%").format(resource=resource, probability=int(100*probability))
         alt_distance = self.edr_systems.distance(reference_system, "Hyades Sector DR-V c2-23")
@@ -574,29 +588,95 @@ class EDRResourceFinder(object):
             _(u'Higher chances in high population (high traffic) systems')
         ]
 
-    def noteworthy_facts(self, fsdjump_event):
-        state = ''
+    @staticmethod
+    def assess_jump(fsdjump_event):
+        allegiance = fsdjump_event.get('SystemAllegiance', '').lower()
+        security = fsdjump_event.get('SystemSecurity', '')
+        population = fsdjump_event.get('Population', 0)
         if "FactionState" not in fsdjump_event:
             # New multi-states BGS in 3.3...
+            states_and_influences = []
             factions = fsdjump_event.get('Factions', [])
-            dominant_faction = fsdjump_event.get('SystemFaction', None)
             for faction in factions:
-                if faction["Name"] == dominant_faction:
-                    state = faction["FactionState"]
-                    break
-        else:
-            state = fsdjump_event['FactionState'].lower()
+                states_and_influences.append({"state": faction["FactionState"], "influence": faction["Influence"]})
+            return EDRResourceFinder._assess_all_3_3(states_and_influences, security, population, allegiance)
         
+        state = fsdjump_event['FactionState'].lower()
         
+        return EDRResourceFinder._assess(state, security, population, allegiance)
+
+    @staticmethod
+    def assess_signal(fsssignal_event, location):
+        uss_type = fsssignal_event.get("USSType", None)    
+        if uss_type != "$USS_Type_VeryValuableSalvage;":
+            return None
+
+        state = EDRResourceFinder._simplified_state(fsssignal_event.get("SpawningState", None))
+        allegiance = location.allegiance
+        security = location.security
+        population = location.population
+        return EDRResourceFinder._assess(state, security, population, allegiance)
+
+    @staticmethod
+    def assess_materials_density(materials_density):
+        if not materials_density:
+            return None
+        noteworthy = []
+        for material in materials_density:
+            name = material["Name"]
+            if name not in EDRResourceFinder.RAW_MATS:
+                continue
+            reference = EDRResourceFinder.RAW_MATS[name]
+            if "typical" not in reference or "highest" not in reference:
+                continue
+            if material["Percent"] <= reference["typical"]:
+                continue
+
+            grade = (material["Percent"] - reference["typical"]) / (reference["highest"] - reference["typical"])
+            if grade < 0.5:
+                continue
+            chance = '+' * int(min(5, round((grade - 0.5)*10, 0)))
+            noteworthy.append(_(u"{raw}{chance} @ {actual:.1f}% (max={max:.1f}%)").format(raw=name, chance=chance, actual=material["Percent"], max=reference["highest"]))
+        return noteworthy
+
+    @staticmethod
+    def _simplified_state(internal_name):
+        if internal_name is None:
+            return None
+        state = internal_name.lower()
+        if state.endswith(u"_desc"):
+            useless_suffix_length = len(u"_desc")
+            state = state[:-useless_suffix_length]
+        elif state.endswith(u"_desc;"):
+            useless_suffix_length = len(u"_desc;")
+            state = state[:-useless_suffix_length]
+        if state.startswith(u"$"):
+            state = state[1:]
+        if state.startswith(u"factionstate_"):
+            useless_prefix_length = len(u"factionstate_")
+            state = state[useless_prefix_length:]
+        LUT = {
+            "": "none",
+            "none": "none",
+            "civilwar": "civil war",
+            "expansion": "expansion",
+            "election": "election",
+            "retreat": "retreat",
+            "war": "war",
+            "outbreak": "outbreak", # TODO just a guess
+            "civilunrest": "civil unrest", # TODO just a guess
+            "boom": "boom", # TODO just a guess
+            "famine": "famine", # TODO just a guess
+        }
+        return LUT.get(state, "other")
+
+    @staticmethod
+    def _assess(state, security, population, allegiance):
         if state not in ['outbreak', 'war', 'boom', 'civil unrest', 'war', 'civil war', 'famine', 'election', 'none']:
             return None 
 
         noteworthy = []
         chance = ''
-        allegiance = fsdjump_event.get('SystemAllegiance', '').lower()
-        security = fsdjump_event.get('SystemSecurity', '')
-        population = fsdjump_event.get('Population', 0)
-
         if population >= 1000000:
             chance += '+' * int(max(3, math.log10(population / 100000)))
         
@@ -641,3 +721,65 @@ class EDRResourceFinder(object):
             noteworthy.append(_(u'Datamined Wake Exception (Distribution Center, {})').format(chance))
 
         return noteworthy
+
+    @staticmethod    
+    def _assess_3_3(state, influence, security, population, allegiance):
+        if state not in ['outbreak', 'war', 'boom', 'civil unrest', 'war', 'civil war', 'famine', 'election', 'none']:
+            return None
+
+        noteworthy = []
+        chance = 1
+        if population >= 1000000:
+            chance += 1 * int(max(3, math.log10(population / 100000)))
+        
+        chance += 1
+        if state == 'outbreak':
+            if allegiance in ['alliance', 'independent'] or security == '$GAlAXY_MAP_INFO_state_anarchy;':
+                chance += 1
+            elif allegiance == 'empire':
+                lchance = 1
+                if population >= 1000000:
+                    lchance += 1 * int(max(3, math.log10(population / 100000)))
+                noteworthy.append(_(u'Imperial Shielding (USS-HGE)'))
+            noteworthy.append(_(u'Pharmaceutical Isolators (USS-HGE)'))
+        elif state == ['none', 'election']:
+            if allegiance == 'empire':
+                lchance = chance
+                lchance += 1
+                noteworthy.append(_(u'Imperial Shielding (USS-HGE)'))
+            if allegiance == 'federation':
+                lchance = chance
+                lchance += 1
+                noteworthy.append(_(u'Core Dynamics Composites (USS-HGE)')) 
+            if state == 'election' and allegiance in ['federation', 'empire']:
+                noteworthy.append(_(u'Proprietary Composites (USS-HGE)'))
+        elif state == 'boom':
+            noteworthy.append(_(u'Exquisite Focus Crystals (Mission rewards)'))
+            if allegiance in ['alliance', 'independent']:
+                chance += 1
+            noteworthy.append(_(u'Proto Light Alloys (USS-HGE)'))
+            noteworthy.append(_(u'Proto Heat Radiator (USS-HGE)'))
+            noteworthy.append(_(u'Proto Radiolic Alloys (USS-HGE)'))
+        elif state == 'civil unrest':
+            if allegiance in ['alliance', 'independent']:
+                chance += 1
+            noteworthy.append(_(u'Improvised Components (USS-HGE)'))
+        elif state in ['war', 'civil war']:
+            if allegiance in ['alliance', 'independent'] or security == '$GAlAXY_MAP_INFO_state_anarchy;':
+                chance += 1
+            noteworthy.append(_(u'Military Grade Alloy (USS-HGE)'))
+            noteworthy.append(_(u'Military Supercapacitors (USS-HGE)'))
+        elif state == 'famine':
+            noteworthy.append(_(u'Datamined Wake Exception (Distribution Center)'))
+
+        chance *= influence
+        return (chance, noteworthy)
+
+    @staticmethod
+    def _assess_all_3_3(states_and_influences, security, population, allegiance):
+        everything = []
+        for s_i in states_and_influences:
+            outcome = EDRResourceFinder._assess_3_3(s_i["state"], s_i["influence"], security, population, allegiance)
+            if outcome:
+                everything.append(outcome)
+        return everything
