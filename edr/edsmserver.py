@@ -28,6 +28,18 @@ class EDSMServer(object):
         
         return json.loads(resp.content)
 
+    def bodies(self, system_name):
+        params = {"systemName": system_name}
+        endpoint = "{}/api-system-v1/bodies".format(self.EDSM_SERVER)
+        resp = requests.get(endpoint, params=params)
+
+        if resp.status_code != requests.codes.ok:
+            EDRLOG.log(u"Failed to retrieve bodies for {} from EDSM: {}.".format(system_name, resp.status_code), "ERROR")
+            return None
+        
+        system_and_bodies = json.loads(resp.content)
+        return system_and_bodies.get("bodies", None)
+
     def systems_within_radius(self, system_name, radius):
         params = {"systemName": system_name, "showCoordinates": 1, "radius": radius, "showInformation": 1, "showId": 1, "showPermit": 1}
         endpoint = "{}/api-v1/sphere-systems".format(self.EDSM_SERVER)
