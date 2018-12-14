@@ -338,6 +338,84 @@
             }
         ]
     },
+    "california sector ba-a e6": {
+        "4": [
+            {
+                "title":  "Barnacle #1",
+                "latitude": 37.9339,
+                "longitude": -40.4353
+            },{
+                "title":  "Barnacle #2",
+                "latitude": 34.832,
+                "longitude": -40.392
+            },{
+                "title":  "Barnacle #3",
+                "latitude": 30.5814,
+                "longitude": -66.2712
+            },{
+                "title":  "Barnacle #4",
+                "latitude": -37.4567,
+                "longitude": 14.9971
+            }
+        ]
+    },
+    "california sector dl-y d4": {
+        "c 2": [
+            {
+                "title":  "Barnacle #1",
+                "latitude": 45.6905,
+                "longitude": -88.1535
+            }
+        ],
+        "c 3": [
+            {
+                "title":  "Barnacle #1",
+                "latitude": -21.6941,
+                "longitude": 23.0779
+            },{
+                "title":  "Barnacle #2",
+                "latitude": -34.46,
+                "longitude": -44.4367
+            }
+        ],
+        "c 4": [
+            {
+                "title":  "Barnacle #1",
+                "latitude": -29.4314,
+                "longitude": -54.3335
+            }
+        ],
+        "c 5": [
+            {
+                "title":  "Barnacle #1",
+                "latitude": -24.7449,
+                "longitude": -64.0429
+            }
+        ],
+        "c 6": [
+            {
+                "title":  "Barnacle #1",
+                "latitude": 10.357,
+                "longitude": -80.2207
+            }
+        ]
+    },
+    "california sector lc-v c2-10": {
+        "a 3": [
+            {
+                "title":  "Barnacle #1",
+                "latitude": -17.3842,
+                "longitude": -18.7939
+            }
+        ],
+        "b 1": [
+            {
+                "title":  "Barnacle #1",
+                "latitude": -56.2571,
+                "longitude": 108.4921
+            }
+        ]
+    },
     "merope": {
         "2 a": [
             {
