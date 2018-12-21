@@ -628,18 +628,13 @@ class EDWing(object):
     def noteworthy_changes_json(self, instance):
         changes = []
         if not self._touched:
-            print "not touched"
             for wingmate in self.wingmates:
                 if instance.player(wingmate) is None:
-                    print "not in instance {}".format(wingmate)
                     continue
                 timestamp, _ = instance.blip(wingmate).values()
                 if timestamp >= self.last_check_timestamp:
                     changes.append({u"cmdr": wingmate, u"instanced": True})
-                else:
-                    print "stale"
         elif self.timestamp >= self.last_check_timestamp:
-            print "wing changes"
             changes = [ {u"cmdr": wingmate, u"instanced": instance.player(wingmate) != None} for wingmate in self.wingmates],
         self._touched = False
         now = edtime.EDTime.py_epoch_now()
@@ -697,8 +692,6 @@ class EDPlayerOne(EDPlayer):
             u"ship": self.piloted_vehicle.json(fuel_info=fuel_info),
             u"target": self.target.json() if self.target else u''
         }
-        # u"wing": [ {u"cmdr": wingmate, u"instanced": self.is_instanced_with(wingmate)} for wingmate in self.wing.wingmates if self.wing.formed()],
-        #TODO just recent changes? timestamp but would this mean just know of the wing after an IN 
 
         result[u"crew"] = []
         if self.crew:

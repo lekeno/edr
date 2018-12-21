@@ -383,7 +383,8 @@ def dashboard_entry(cmdr, is_beta, entry):
         else:
             EDR_CLIENT.notify_with_details(_(u"EDR Central"), [_(u"Fight reporting disabled"), _(u"Flash your lights twice to re-enable.")])
 
-        
+
+    ed_player.piloted_vehicle.fuel_level = entry.get('Fuel', ed_player.piloted_vehicle.fuel_level)
 
     attitude_keys = { "Latitude", "Longitude", "Heading", "Altitude"}
     if entry.viewkeys() < attitude_keys:
@@ -468,7 +469,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         EDR_CLIENT.noteworthy_about_signal(entry)
 
     if entry["event"] in ["NavBeaconScan"] and entry.get("NumBodies", 0):
-        EDR_CLIENT.notify_with_details(_(u"System info acquired"), [_(u"Approach a planet to get an assessment of its materials concentration.")])
+        EDR_CLIENT.notify_with_details(_(u"System info acquired"), [_(u"Noteworthy material densities will be shown when approaching a planet.")])
 
     if entry["event"] in ["Scan"]:
         EDR_CLIENT.process_scan(entry)
@@ -512,8 +513,6 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     
     if ed_player.maybe_in_a_pvp_fight():
         report_fight(ed_player)
-
-    print ed_player.json()
 
 
 def edr_update_cmdr_status(cmdr, reason_for_update, timestamp):

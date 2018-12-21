@@ -289,6 +289,7 @@ class EDRClient(object):
     def shutdown(self, everything=False):
         self.edrcmdrs.persist()
         self.edrsystems.persist()
+        self.edrresourcefinder.persist()
         for kind in self.edropponents:
             self.edropponents[kind].persist()
             self.edropponents[kind].shutdown_comms_link()
@@ -372,7 +373,7 @@ class EDRClient(object):
 
     def noteworthy_about_system(self, fsdjump_event):
         facts = self.edrresourcefinder.assess_jump(fsdjump_event)
-        header = _('Noteworthy about {}'.format(fsdjump_event['StarSystem']))
+        header = _('Rare materials in {} (USS-HGE/EE, Mission Rewards)'.format(fsdjump_event['StarSystem']))
         if not facts:
             facts = EDRBodiesOfInterest.bodies_of_interest(fsdjump_event['StarSystem'])
             header = _('Noteworthy stellar bodies in {}').format(fsdjump_event['StarSystem'])
@@ -391,13 +392,12 @@ class EDRClient(object):
         materials_info = self.edrsystems.materials_on(star_system, body_name)
         facts = self.edrresourcefinder.assess_materials_density(materials_info)
         if facts:
-            self.__notify(_(u'Noteworthy about {}').format(body_name), facts, clear_before = True)
+            self.__notify(_(u'Noteworthy material densities on {}').format(body_name), facts, clear_before = True)
 
     def noteworthy_about_scan(self, scan_event):
-        if not scan_event.viewkeys() & {'event', 'ScanType', 'Materials'}:
-            return
-
         if scan_event["event"] != "Scan" or scan_event["ScanType"] != "Detailed":
+            return
+        if "Materials" not in scan_event or "BodyName" not in scan_event:
             return
         facts = self.edrresourcefinder.assess_materials_density(scan_event["Materials"])
         if facts:
@@ -407,7 +407,7 @@ class EDRClient(object):
         facts = self.edrresourcefinder.assess_signal(fss_event, self.player.location)
         if not facts:
             return False
-        header = _(u'Signal insights')
+        header = _(u'Signal Insights (potential outcomes)')
         self.__notify(header, facts, clear_before = True)
         return True
 
@@ -538,8 +538,6 @@ class EDRClient(object):
     def evict_cmdr(self, cmdr):
         self.edrcmdrs.evict(cmdr)
 
-#TODO merge the change made on my desktop machine
-
     def __novel_enough_situation(self, new, old, cognitive = False):
         if old is None:
             return True
@@ -592,38 +590,30 @@ class EDRClient(object):
         if old is None:
             return True
 
-        if abs(new["ship"]["hullHealth"].get("value", 0) - old["ship"]["hullHealth"].get("value", 0)) > 20:
+        if not new.get('target', None):
+            return False
+
+        if abs(new["ship"]["hullHealth"].get("value", 0) - old["ship"]["hullHealth"].get("value", 0)) >= 20:
             return True
 
         if new["ship"]["shieldUp"] != old["ship"]["shieldUp"]:
             return True
-
-        if "wanted" in new and ("wanted" not in old or new["wanted"] != old["wanted"]):
+     
+        if not old.get('target', None):
             return True
-        
-        if "bounty" in new and ("bounty" not in old or new["bounty"] > old["bounty"]):
+        new_target_ship = new["target"]["ship"]
+        previous_target = self.fights_cache.get(new["target"].lower())
+        if previous_target and new["target"]["cmdr"] != previous_target["cmdr"]:
             return True
 
-        if new.get("target", None):
-            if not old.get('target', None):
-                return True
-            if old["target"] and new["target"]["cmdr"] != old["target"]["cmdr"]:
-                return True
-            new_target_ship = new["target"]["ship"]
-            old_target_ship = old["target"]["ship"]
-            if abs(new_target_ship["hullHealth"].get("value", 0) - old_target_ship["hullHealth"].get("value", 0)) >= 20:
-                return True
+        old_target_ship = previous_target["ship"]
+        if abs(new_target_ship["hullHealth"].get("value", 0) - old_target_ship["hullHealth"].get("value", 0)) >= 20:
+            return True
 
-            if abs(new_target_ship["shieldHealth"].get("value", 0) - old_target_ship["shieldHealth"].get("value", 0)) >= 20:
-                return True
-
-            if "wanted" in new["target"] and ("wanted" not in old or new["target"]["wanted"] != old["target"]["wanted"]):
-                return True
-        
-            if "bounty" in new["target"] and ("bounty" not in old["target"] or new["target"]["bounty"] > old["target"]["bounty"]):
-                return True
-            
+        if abs(new_target_ship["shieldHealth"].get("value", 0) - old_target_ship["shieldHealth"].get("value", 0)) >= 50:
+            return True           
         return False
+
 
     def novel_enough_fight(self, involved_cmdr, fight):
         last_fight = self.fights_cache.get(involved_cmdr)
@@ -1044,6 +1034,8 @@ class EDRClient(object):
         if self.server.fight(sid, fight):
             self.status = _(u"fight reported!")
             self.fights_cache.set(fight["cmdr"].lower(), fight)
+            if fight["target"]:
+                self.fights_cache.set(fight["target"].lower(), fight["target"])
 
     def crew_report(self, report):
         if self.is_anonymous():
@@ -1085,8 +1077,15 @@ class EDRClient(object):
         
         info["codeword"] = self.player.recon_box.gen_keycode()
         if self.server.call_central(service, sid, info):
+            if service in ["fuel", "repair"]:
+                fuel_service = random.choice([{"name": "Fuel Rats", "url": "https://fuelrats.com/"}, {"name": "Repair Corgis", "url": "https://candycrewguild.space/"}])
+                attachment = [_(u"For good measure, also reach out to these folks with the info below:"), fuel_service["url"]]
+                fuel_info = "Fuel: {:.1f}/{:.0f}".format(info["ship"]["fuelLevel"], info["ship"]["fuelCapacity"]) if info["ship"].get("fuelLevel") else ""
+                hull_info = "Hull: {:.0f}%".format(info["ship"]["hullHealth"]["value"]) if info["ship"].get("hullHealth") else ""
+                attachment.append("{} ({}) in {}, {} - {} {}\nInfo provided by EDR.".format(info["cmdr"], info["ship"]["type"], info["starSystem"], info["place"], fuel_info, hull_info))
+                self.ui.notify(fuel_service["name"], attachment)
             self.status = _(u"Message sent to EDR central")
-            self.__notify(_(u"EDR central"), [_(u"Message sent with codeword '{}'.").format(info["codeword"]), _(u"Ask the codeword to identify trusted commanders.")], clear_before = True)
+            self.__notify(_(u"EDR central"), [_(u"Message sent with codeword '{}'.").format(info["codeword"]), _(u"Ask the codeword to identify trusted commanders."), _(u"Check ED Market Connector for instructions about other options")], clear_before = True)
             self._throttle_until_timestamp = edtime.EDTime.py_epoch_now() + 60*5 #TODO parameterize
             return True
         return False
