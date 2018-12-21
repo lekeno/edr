@@ -256,7 +256,7 @@ class EDRSystems(object):
 
         materials = self.materials_cache.get(u"{}:{}".format(system_name.lower(), body_name.lower()))
         if not materials:
-            # TODO
+            # TODO it would be nice to obtain data from other cmdrs...
             return None
         return materials
 
