@@ -94,11 +94,11 @@ class TestEDPlayerOne(TestCase):
         cmdr.join_wing(wing_members)
         for member in wing_members:
             self.assertTrue(cmdr.is_friend_or_in_wing(member))
-        self.assertEquals(len(cmdr.wing), 3)
+        self.assertEquals(len(cmdr.wing.wingmates), 3)
 
         self.assertFalse(cmdr.is_friend_or_in_wing("dummy"))
         cmdr.leave_wing()
-        self.assertEquals(len(cmdr.wing), 0)
+        self.assertEquals(len(cmdr.wing.wingmates), 0)
 
         for member in wing_members:
             self.assertFalse(cmdr.is_friend_or_in_wing(member))
@@ -111,9 +111,9 @@ class TestEDPlayerOne(TestCase):
             cmdr.add_to_wing(member)
             self.assertTrue(cmdr.is_friend_or_in_wing(member))
 
-        self.assertEquals(len(cmdr.wing), 3)
+        self.assertEquals(len(cmdr.wing.wingmates), 3)
         cmdr.add_to_wing(wing_members[0])
-        self.assertEquals(len(cmdr.wing), 3)
+        self.assertEquals(len(cmdr.wing.wingmates), 3)
 
         
         for member in wing_members:
