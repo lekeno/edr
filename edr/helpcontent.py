@@ -210,6 +210,7 @@ class HelpContent(object):
                 _(u" - '!staging' or '!staging Lave' to find a good staging station near your position or Lave, i.e. large pads, shipyard, outfitting, repair/rearm/refuel."),
                 _(u" - '!htb', '!humantechbroker' or '!htb Lave' to find a Human Tech Broker near your position or Lave"),
                 _(u" - '!gtb', '!guardiantechbroker' or '!gtb Lave' to find a Guardian Tech Broker near your position or Lave"),
+                _(u" - '!nav 12.3 -4.5', '!nav set' or '!nav off' to obtain planetary guidance for getting to a specific location"),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
             ]
