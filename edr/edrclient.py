@@ -1062,6 +1062,10 @@ class EDRClient(object):
         return self._throttle_until_timestamp - now_epoch
 
     def call_central(self, service, info):
+        if self.is_anonymous():
+            EDRLOG.log(u"Skipping EDR Central call since the user is anonymous.", "INFO")
+            self.advertise_full_account(_(u"Sorry, this feature only works with an EDR account."), passive=False)
+            return False
         throttling = self.__throttling_duration()
         if throttling:
             self.status = _(u"Message not sent. Try again in {duration}.").format(duration=edtime.EDTime.pretty_print_timespan(throttling))
@@ -1077,6 +1081,7 @@ class EDRClient(object):
         
         info["codeword"] = self.player.recon_box.gen_keycode()
         if self.server.call_central(service, sid, info):
+            details = [_(u"Message sent with codeword '{}'.").format(info["codeword"]), _(u"Ask the codeword to identify trusted commanders.")]
             if service in ["fuel", "repair"]:
                 fuel_service = random.choice([{"name": "Fuel Rats", "url": "https://fuelrats.com/"}, {"name": "Repair Corgis", "url": "https://candycrewguild.space/"}])
                 attachment = [_(u"For good measure, also reach out to these folks with the info below:"), fuel_service["url"]]
@@ -1084,8 +1089,9 @@ class EDRClient(object):
                 hull_info = "Hull: {:.0f}%".format(info["ship"]["hullHealth"]["value"]) if info["ship"].get("hullHealth") else ""
                 attachment.append("{} ({}) in {}, {} - {} {}\nInfo provided by EDR.".format(info["cmdr"], info["ship"]["type"], info["starSystem"], info["place"], fuel_info, hull_info))
                 self.ui.notify(fuel_service["name"], attachment)
+                details.append(_(u"Check ED Market Connector for instructions about other options"))
             self.status = _(u"Message sent to EDR central")
-            self.__notify(_(u"EDR central"), [_(u"Message sent with codeword '{}'.").format(info["codeword"]), _(u"Ask the codeword to identify trusted commanders."), _(u"Check ED Market Connector for instructions about other options")], clear_before = True)
+            self.__notify(_(u"EDR central"), details, clear_before = True)
             self._throttle_until_timestamp = edtime.EDTime.py_epoch_now() + 60*5 #TODO parameterize
             return True
         return False

@@ -92,7 +92,6 @@ DEFAULT_TIPS = {
         _(u"Send '!distance <system>' or '!d <system>': shows the distance to <system>."),
         _(u"Send '!distance Lave > Eravate' or '!d Lave > Eravate': shows the distance from Lave to Eravate."),
         _(u"Send '!search resource name', e.g. '!search cadmium', to find the closest hotspot for rare resources."),
-        _(u"Send '!search resource name', e.g. '!search cadmium', to find the closest hotspot for very rare/rare resources."),
         _(u"Send '!if' or '!if Lave' to find an Interstellar Factors near your position or a specific system."),
         _(u"Send '!raw' or '!raw Lave' to find a Raw Material Trader near your position or a specific system."),
         _(u"Send '!encoded', !enc' or '!enc Lave' to find an Encoded Data Trader near your position or a specific system."),

@@ -782,7 +782,6 @@ def report_crime(cmdr, entry):
             edr_submit_crime_self(cmdr, offence, interdicted, entry["timestamp"])
 
     if entry["event"] == "PVPKill":
-        # TODO I might have broken this
         EDRLOG.log(u"PVPKill!", "INFO")
         victim = player_one.instanced(entry["Victim"])
         victim.killed()
