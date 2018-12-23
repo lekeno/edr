@@ -678,7 +678,7 @@ class EDPlayerOne(EDPlayer):
             return True # Better safe than sorry
         return self.mothership.hull_health <= 50
 
-    def json(self, fuel_info=False):
+    def json(self, fuel_info=False, with_target=False):
         result = {
             u"cmdr": self.name,
             u"timestamp": self.timestamp * 1000,
@@ -689,9 +689,10 @@ class EDPlayerOne(EDPlayer):
             u"wingof": len(self.wing.wingmates),
             u"wing": self.wing.noteworthy_changes_json(self.instance),
             u"byPledge": self.powerplay.canonicalize() if self.powerplay else u'',
-            u"ship": self.piloted_vehicle.json(fuel_info=fuel_info),
-            u"target": self.target.json() if self.target else u''
+            u"ship": self.piloted_vehicle.json(fuel_info=fuel_info)
         }
+        if with_target:
+            result[u"target"] = self.target.json() if self.target else {}
 
         result[u"crew"] = []
         if self.crew:

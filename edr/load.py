@@ -635,7 +635,7 @@ def report_fight(player):
         EDR_CLIENT.status = _(u"not in Open? Start EDMC before Elite.")
         return
 
-    report = player.json()
+    report = player.json(with_target=True)
     EDR_CLIENT.fight(report)
 
 def edr_submit_contact(contact, timestamp, source, witness):
