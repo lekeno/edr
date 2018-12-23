@@ -138,8 +138,7 @@ class EDVehicle(object):
             if match:
                 prefix = match.group(1)
                 canonical_name = key_prefixes_lut[prefix]
-                key_subsys[canonical_name] = self.subsystems[internal_name]
-                key_subsys[canonical_name]["timestamp"] *= 1000
+                key_subsys[canonical_name] = self.__js_t_v(self.subsystems[internal_name])
         return key_subsys
 
     def __repr__(self):
