@@ -635,11 +635,11 @@ class EDWing(object):
                 if timestamp >= self.last_check_timestamp:
                     changes.append({u"cmdr": wingmate, u"instanced": True})
         elif self.timestamp >= self.last_check_timestamp:
-            changes = [ {u"cmdr": wingmate, u"instanced": instance.player(wingmate) != None} for wingmate in self.wingmates],
+            changes = [ {u"cmdr": wingmate, u"instanced": instance.player(wingmate) != None} for wingmate in self.wingmates]
         self._touched = False
         now = edtime.EDTime.py_epoch_now()
         self.last_check_timestamp = now
-        return changes    
+        return changes
 
 class EDPlayerOne(EDPlayer):
     def __init__(self, name=None):
