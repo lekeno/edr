@@ -601,12 +601,13 @@ class EDRClient(object):
      
         if not old.get('target', None):
             return True
-        new_target_ship = new["target"]["ship"]
-        previous_target = self.fights_cache.get(new["target"].lower())
-        if previous_target and new["target"]["cmdr"] != previous_target["cmdr"]:
+        
+        target_old_state = self.fights_cache.get(new["target"]["cmdr"].lower())
+        if not target_old_state:
             return True
 
-        old_target_ship = previous_target["ship"]
+        new_target_ship = new["target"]["ship"]
+        old_target_ship = target_old_state["ship"]
         if abs(new_target_ship["hullHealth"].get("value", 0) - old_target_ship["hullHealth"].get("value", 0)) >= 20:
             return True
 
@@ -1037,7 +1038,7 @@ class EDRClient(object):
             self.status = _(u"fight reported!")
             self.fights_cache.set(fight["cmdr"].lower(), fight)
             if fight["target"]:
-                self.fights_cache.set(fight["target"].lower(), fight["target"])
+                self.fights_cache.set(fight["target"]["cmdr"].lower(), fight["target"])
 
     def crew_report(self, report):
         if self.is_anonymous():
