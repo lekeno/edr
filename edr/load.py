@@ -893,7 +893,6 @@ def handle_fixing_events(ed_player, entry):
     elif entry["event"] == "Repair":
         ed_player.mothership.repair(entry["Item"])
     elif entry["event"] == "RepairDrone":
-        # TODO is it always the mothership? or pilotedship? is it only when one's ship get repaired?
         if entry.get("HullRepaired", None):
             ed_player.mothership.hull_health = entry["HullRepaired"]
         if entry.get("CockpitRepaired", None):
