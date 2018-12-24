@@ -7,7 +7,7 @@ from edrcmdrprofile import EDRCmdrProfile
 class TestEDRCmdrProfile(TestCase):
     def test_karma(self):
         cprof = EDRCmdrProfile()
-        for n in range(0, 9):
+        for _ in range(0, 9):
             karma = random.randint(cprof.min_karma(), cprof.max_karma())
             cprof.karma = karma
             self.assertEqual(cprof.karma, karma)
@@ -24,7 +24,7 @@ class TestEDRCmdrProfile(TestCase):
         cprof.karma = cprof.min_karma() - 1
         self.assertEqual(cprof.karma, cprof.min_karma())
         
-    def test_from_inara(self):
+"""     def test_from_inara(self):
         json_cmdr = {
             # TODO
         }
@@ -44,9 +44,9 @@ class TestEDRCmdrProfile(TestCase):
         self.assertIsNone(cprof.patreon)
         self.assertIsNone(cprof.dex_profile)
         self.assertIsNone(cprof.sqdrdex_profile)
-        self.assertIsNone(cprof.alignment_hints)
+        self.assertIsNone(cprof.alignment_hints) """
 
-    def test_from_dict(self):
+"""     def test_from_dict(self):
         json_cmdr = {
             # TODO
         }
@@ -67,7 +67,7 @@ class TestEDRCmdrProfile(TestCase):
         self.assertIsNone(cprof.squadron_rank)
         self.assertIsNone(cprof.role)
         self.assertIsNone(cprof.powerplay)
-
+ """
 
 if __name__ == '__main__':
     main()

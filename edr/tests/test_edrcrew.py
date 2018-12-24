@@ -79,7 +79,6 @@ class TestEDCrew(TestCase):
 
     def test_duration(self):
         captain = "LeKeno"
-        now = calendar.timegm(time.gmtime())
         crew = EDRCrew(captain)
         crew.add("Ozram")
         

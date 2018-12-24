@@ -113,7 +113,7 @@ class EDRServiceFinder(threading.Thread):
             if not self.checker.check_station(station):
                 continue
 
-            state = self.edr_systems.system_state(self.star_system)
+            (state, _) = self.edr_systems.system_state(self.star_system)
             state = state.lower() if state else state
             if state == u'lockdown':
                 continue
@@ -146,5 +146,4 @@ class EDRServiceFinder(threading.Thread):
         return self.closest_station_with_service(all_stations)
 
     def close(self):
-        # TODO
         return None

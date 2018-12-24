@@ -27,6 +27,10 @@ EDRLOG = edrlog.EDRLog()
 class EDRSystems(object):
     EDR_SYSTEMS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/systems.v3.p')
+    EDR_RAW_MATERIALS_CACHE = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'cache/raw_materials.v1.p')
+    EDSM_BODIES_CACHE = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_bodies.v1.p')
     EDSM_SYSTEMS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_systems.v3.p')
     EDSM_STATIONS_CACHE = os.path.join(
@@ -38,7 +42,7 @@ class EDRSystems(object):
     EDR_NOTAMS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/notams.v2.p')
     EDR_SITREPS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/sitreps.v2.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/sitreps.v3.p')
     EDR_TRAFFIC_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/traffic.v2.p')
     EDR_CRIMES_CACHE = os.path.join(
@@ -57,6 +61,13 @@ class EDRSystems(object):
                                                    edr_config.systems_max_age())
 
         try:
+            with open(self.EDR_RAW_MATERIALS_CACHE, 'rb') as handle:
+                self.materials_cache = pickle.load(handle)
+        except:
+            self.materials_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                   edr_config.materials_max_age())
+        
+        try:
             with open(self.EDR_NOTAMS_CACHE, 'rb') as handle:
                 self.notams_cache = pickle.load(handle)
         except:
@@ -65,7 +76,7 @@ class EDRSystems(object):
 
         try:
             with open(self.EDR_SITREPS_CACHE, 'rb') as handle:
-                self.sitreps_cache = pickle.load(handle)
+                self.sitreps_cache = pickle.load(handle) 
         except:
             self.sitreps_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                   edr_config.sitreps_max_age())
@@ -90,6 +101,13 @@ class EDRSystems(object):
         except:
             self.edsm_systems_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                   edr_config.edsm_systems_max_age())
+
+        try:
+            with open(self.EDSM_BODIES_CACHE, 'rb') as handle:
+                self.edsm_bodies_cache = pickle.load(handle)
+        except:
+            self.edsm_bodies_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.edsm_bodies_max_age())
                                             
         try:
             with open(self.EDSM_STATIONS_CACHE, 'rb') as handle:
@@ -169,6 +187,9 @@ class EDRSystems(object):
         with open(self.EDR_SYSTEMS_CACHE, 'wb') as handle:
             pickle.dump(self.systems_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+        with open(self.EDR_RAW_MATERIALS_CACHE, 'wb') as handle:
+            pickle.dump(self.materials_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
         with open(self.EDR_NOTAMS_CACHE, 'wb') as handle:
             pickle.dump(self.notams_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
         
@@ -183,6 +204,9 @@ class EDRSystems(object):
 
         with open(self.EDSM_SYSTEMS_CACHE, 'wb') as handle:
             pickle.dump(self.edsm_systems_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        
+        with open(self.EDSM_BODIES_CACHE, 'wb') as handle:
+            pickle.dump(self.edsm_bodies_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         with open(self.EDSM_STATIONS_CACHE, 'wb') as handle:
             pickle.dump(self.edsm_stations_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -205,7 +229,6 @@ class EDRSystems(object):
             return sqrt((dest_coords["x"] - source_coords["x"])**2 + (dest_coords["y"] - source_coords["y"])**2 + (dest_coords["z"] - source_coords["z"])**2)
         raise ValueError('Unknown system')
 
-    
     def system(self, name):
         if not name:
             return None
@@ -219,7 +242,41 @@ class EDRSystems(object):
             self.edsm_systems_cache.set(name.lower(), the_system)
             return the_system
         
-        raise ValueError('Unknown system')
+        return None
+
+    def materials_info(self, system_name, body_name, info):
+        if not system_name or not body_name:
+            return None
+
+        self.materials_cache.set(u"{}:{}".format(system_name.lower(), body_name.lower()), info)
+
+    def materials_on(self, system_name, body_name):
+        if not system_name or not body_name:
+            return None
+
+        materials = self.materials_cache.get(u"{}:{}".format(system_name.lower(), body_name.lower()))
+        if not materials:
+            # TODO it would be nice to obtain data from other cmdrs...
+            return None
+        return materials
+
+    def body(self, system_name, body_name):
+        if not system_name or not body_name:
+            return None
+
+        bodies = self.edsm_bodies_cache.get(system_name.lower())
+        if not bodies:
+            bodies = self.edsm_server.bodies(system_name)
+            if bodies:
+                self.edsm_bodies_cache.set(system_name.lower(), bodies)
+
+        if not bodies:            
+            return None
+
+        for body in bodies:
+            if body.get("name", None).lower() == body_name.lower():
+                return body
+        return None
 
     def are_factions_stale(self, star_system):
         if not star_system:
@@ -235,6 +292,7 @@ class EDRSystems(object):
             EDRLOG.log(u"Factions for system {} are in the cache.".format(star_system), "DEBUG")
             return factions
 
+        EDRLOG.log(u"Factions for system {} are NOT in the cache.".format(star_system), "DEBUG")
         factions = self.edsm_server.factions_in_system(star_system)
         if factions:
             self.edsm_factions_cache.set(star_system.lower(), factions)
@@ -248,21 +306,23 @@ class EDRSystems(object):
     def system_state(self, star_system):
         factions = self.__factions(star_system)
         if not factions:
-            return None
+            return (None, None)
         
         if not factions.get('controllingFaction', None) or not factions.get('factions', None):
             EDRLOG.log(u"Badly formed factions data for system {}.".format(star_system), "INFO")
-            return None
+            return (None, None)
 
         controlling_faction_id = factions['controllingFaction']['id']
         all_factions = factions['factions']
         state = None
+        updated = None
         for faction in all_factions:
             if faction['id'] == controlling_faction_id:
                 state = faction['state']
+                updated = faction['lastUpdate']
                 break
 
-        return state
+        return (state, updated)
 
     def system_allegiance(self, star_system):
         factions = self.__factions(star_system)
@@ -623,10 +683,6 @@ class EDRSystems(object):
         checker = edrservicecheck.EDRGuardianTechBrokerCheck()
         self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
 
-    def search_pharmaceutical_isolators(self, star_system, callback, override_radius = None, permits = []):
-        checker = edrstatecheck.EDRPharmaceuticalIsolatorsCheck()
-        self.__search_a_state(star_system, callback, checker, override_radius, permits)
-
     def __search_a_service(self, star_system, callback, checker, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
         sc_distance = override_sc_distance or self.reasonable_sc_distance
         sc_distance = max(250, sc_distance)
@@ -637,18 +693,6 @@ class EDRSystems(object):
         finder.with_large_pad(with_large_pad)
         finder.within_radius(radius)
         finder.within_supercruise_distance(sc_distance)
-        finder.permits_in_possesion(permits)
-        finder.start()
-
-    def __search_a_state(self, star_system, callback, checker, override_radius = None, permits = []):
-        if not (self.in_bubble(star_system) or self.in_colonia(star_system)):
-            return #TODO callback with no result
- 
-        radius = override_radius or self.reasonable_hs_radius
-        radius = min(60, radius)
-
-        finder = edrstatefinder.EDRStateFinder(star_system, checker, self, callback)
-        finder.within_radius(radius)
         finder.permits_in_possesion(permits)
         finder.start()
 
@@ -754,8 +798,14 @@ class EDRSystems(object):
         return sysAndSta1 if sysAndSta1['distance'] < sysAndSta2['distance'] else sysAndSta2
 
     def in_bubble(self, system_name):
-        return self.distance(system_name, 'Sol') <= 500
+        try:
+            return self.distance(system_name, 'Sol') <= 500
+        except ValueError:
+            return False
     
     def in_colonia(self, system_name):
-        return self.distance(system_name, 'Colonia') <= 500
+        try:
+            return self.distance(system_name, 'Colonia') <= 500
+        except ValueError:
+            return False
 

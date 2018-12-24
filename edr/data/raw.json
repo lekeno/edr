@@ -1,0 +1,192 @@
+{
+    "yttrium":{
+        "grade": 4,
+        "group": 1,
+        "highest": 2.6,
+        "typical": 0.7,
+        "sources":["prospecting"]
+    },
+    "vanadium":{
+        "grade": 2,
+        "group": 1,
+        "highest": 10.9,
+        "typical": 8.512,
+        "sources":["prospecting", "mining (ice)"]
+    },
+    "carbon":{
+        "grade": 1,
+        "group": 1,
+        "highest": 30.056,
+        "typical": 25.348,
+        "sources":["prospecting", "mining", "mining (ice)"]
+    },
+    "niobium":{
+        "grade": 3,
+        "group": 1,
+        "highest": 3.198,
+        "typical": 2.251,
+        "sources":["prospecting", "mission reward"]
+    },
+    "technetium":{
+        "grade": 4,
+        "group": 2,
+        "highest": 1.674,
+        "typical": 0.5,
+        "sources":["prospecting"]
+    },
+    "chromium":{
+        "grade": 2,
+        "group": 2,
+        "highest": 18.469,
+        "typical": 15.557,
+        "sources":["prospecting", "mining (ice)"]
+    },
+    "phosphorus":{
+        "grade": 1,
+        "group": 2,
+        "highest": 19.242,
+        "typical": 16.225,
+        "sources":["prospecting", "mining", "mining (ice)"]
+    },
+    "molybdenum":{
+        "grade": 3,
+        "group": 2,
+        "highest": 3.07,
+        "typical": 2.150,
+        "sources":["prospecting", "mission reward"]
+    },
+    "ruthenium":{
+        "grade": 4,
+        "group": 3,
+        "highest": 2.6,
+        "typical": 0.7,
+        "sources":["prospecting"]
+    },
+    "cadmium":{
+        "grade": 3,
+        "group": 3,
+        "highest": 3.7,
+        "typical": 2.6,
+        "sources":["prospecting", "mining"]
+    },
+    "sulphur":{
+        "grade": 1,
+        "group": 3,
+        "highest": 35.742,
+        "typical": 30.143,
+        "sources":["prospecting", "mining", "mining (ice)"]
+    },
+    "manganese":{
+        "grade": 2,
+        "group": 3,
+        "highest": 17.214,
+        "typical": 14.384,
+        "sources":["prospecting", "mission reward"]
+    },
+    "zinc":{
+        "grade": 2,
+        "group": 4,
+        "highest": 12.125,
+        "typical": 9.444,
+        "sources":["prospecting"]
+    },
+    "tin":{
+        "grade": 3,
+        "group": 4,
+        "highest": 3.1,
+        "typical": 2.194,
+        "sources":["prospecting"]
+    },
+    "iron":{
+        "grade": 1,
+        "group": 4,
+        "highest": 47.565,
+        "typical": 36.653,
+        "sources":["prospecting", "mining", "mining (ice)"]
+    },
+    "selenium":{
+        "grade": 4,
+        "group": 4,
+        "highest": 4.9,
+        "typical": 2.5,
+        "sources":["prospecting", "mission reward"]
+    },
+    "tellurium":{
+        "grade": 4,
+        "group": 5,
+        "highest": 1.7,
+        "typical": 0.8,
+        "sources":["prospecting"]
+    },
+    "tungsten":{
+        "grade": 3,
+        "highest": 2.612,
+        "typical": 1.8,
+        "group": 5,
+        "sources":["prospecting"]
+    },
+    "nickel":{
+        "grade": 1,
+        "group": 5,
+        "highest": 35.572,
+        "typical": 27.725,
+        "sources":["prospecting", "mining", "mining (ice)"]
+    },
+    "germanium":{
+        "grade": 2,
+        "group": 5,
+        "highest": 6.448,
+        "typical": 5.880,
+        "sources":["prospecting", "mission reward"]
+    },
+    "rhenium":{
+        "grade": 1,
+        "group": 6,
+        "sources":["mining"]
+    },
+    "mercury":{
+        "grade": 3,
+        "group": 6,
+        "highest": 2.044,
+        "typical": 1.083,
+        "sources":["prospecting"]
+    },
+    "arsenic":{
+        "grade": 2,
+        "group": 6,
+        "highest": 2.975,
+        "typical": 2.652,
+        "sources":["prospecting", "mining", "mission reward"]
+    },
+    "polonium":{
+        "grade": 4,
+        "group": 6,
+        "highest": 1.3,
+        "typical": 0.4,
+        "sources":["prospecting", "mission reward"]
+    },
+    "boron":{
+        "grade": 3,
+        "group": 7,
+        "sources":["mining"]
+    },
+    "lead":{
+        "grade": 1,
+        "group": 7,
+        "sources":["mining"]
+    },
+    "antimony":{
+        "grade": 4,
+        "group": 7,
+        "highest": 1.6,
+        "typical": 0.7,
+        "sources":["prospecting"]
+    },
+    "zirconium":{
+        "grade": 2,
+        "group": 7,
+        "highest": 5.523,
+        "typical": 3.948,
+        "sources":["prospecting", "mining"]
+    }
+}

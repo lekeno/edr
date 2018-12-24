@@ -1,9 +1,11 @@
+# coding= utf-8
 import os
 import sys
 
 import igmconfig
 import edrlog
 import textwrap
+from edri18n import _
 
 EDRLOG = edrlog.EDRLog()
 
@@ -23,7 +25,7 @@ except ImportError:
 import lrucache
 
 class InGameMsg(object):   
-    MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice", "help"]
+    MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice", "help", "navigation"]
 
     def __init__(self):
         self._overlay = edmcoverlay.Overlay()
@@ -123,6 +125,19 @@ class InGameMsg(object):
         self.__msg_header("sitrep", header)
         self.__msg_body("sitrep", details)
 
+    def navigation(self, bearing, destination, distance=None, pitch=None):
+        self.clear_navigation()
+        if "panel" in self.cfg["navigation"]:
+            self.__shape("navigation", self.cfg["navigation"]["panel"])
+        header = u"› {:03} ‹     ↓ {:02} ↓".format(bearing, pitch) if pitch else u"> {:03} <".format(bearing)
+        details = [destination.title] if destination.title else []
+        if distance:
+            details.append(_(u"Dis: {}km".format(int(distance))))
+        details.append(_(u"Lat: {:.4f}".format(destination.latitude)))
+        details.append(_(u"Lon: {:.4f}".format(destination.longitude)))
+        self.__msg_header("navigation", header)
+        self.__msg_body("navigation", details)
+
     def clear(self):
         for msg_id in self.msg_ids.keys():
             self.__clear(msg_id)
@@ -140,6 +155,9 @@ class InGameMsg(object):
     
     def clear_warning(self):
         self.__clear_kind("warning")
+
+    def clear_navigation(self):
+        self.__clear_kind("navigation")
 
     def __clear_kind(self, kind):
         tag = "EDR-{}".format(kind)

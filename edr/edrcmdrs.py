@@ -5,7 +5,7 @@ import edrconfig
 import edrinara
 import lrucache
 import edrlog
-from edentities import EDCmdr
+from edentities import EDPlayerOne
 
 EDRLOG = edrlog.EDRLog()
 
@@ -21,7 +21,7 @@ class EDRCmdrs(object):
     def __init__(self, edrserver, edrinara):
         self.server = edrserver
         self.inara = edrinara
-        self._player = EDCmdr()
+        self._player = EDPlayerOne()
         self.heartbeat_timestamp = None
  
         edr_config = edrconfig.EDRConfig()
@@ -57,7 +57,7 @@ class EDRCmdrs(object):
 
     def set_player_name(self, new_player_name):
         if (new_player_name != self._player.name):
-            self._player.name = new_player_name
+            self._player.force_new_name(new_player_name)
             self.inara.requester = new_player_name
             self.__update_squadron_info(force_update=True)
         self.inara.cmdr_name = new_player_name

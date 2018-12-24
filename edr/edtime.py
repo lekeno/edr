@@ -97,6 +97,9 @@ class EDTime(object, comparable.ComparableMixin):
 
     def as_journal_timestamp(self):
         return self._datetime.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+    def as_date(self):
+        return self._datetime.strftime('%Y-%m-%d')
         
     def as_immersive_date(self):
         immersive_datetime = self.__immmersive()
