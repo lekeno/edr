@@ -1143,8 +1143,6 @@ def handle_bang_commands(cmdr, command, command_parts):
             return
         info = EDR_CLIENT.player.json(fuel_info=(service == "fuel"))
         info["message"] = message
-        if service == "police":
-            info["instance"] = EDR_CLIENT.player.instance.json()
         EDRLOG.log(u"Message to EDR Central for {} with {}".format(service, message), "INFO")
         EDR_CLIENT.call_central(service, info)
     elif command == "!nav":

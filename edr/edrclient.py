@@ -1029,8 +1029,10 @@ class EDRClient(object):
             EDRLOG.log(u"Failed to report fight in system {} : no id found.".format(star_system),
                        "DEBUG")
             return
-        fight["instance"] = self.player.instance.noteworthy_changes_json()
-        fight["keycode"] = self.player.recon_box.keycode
+        instance_changes = self.player.instance.noteworthy_changes_json()
+        if instance_changes:
+            fight["instance"] = instance_changes
+        fight["codeword"] = self.player.recon_box.keycode
         if self.server.fight(sid, fight):
             self.status = _(u"fight reported!")
             self.fights_cache.set(fight["cmdr"].lower(), fight)
@@ -1515,8 +1517,9 @@ class EDRClient(object):
             pretty_dist = _(u"{dist:.3g}").format(dist=distance) if distance < 50.0 else _(u"{dist}").format(dist=int(distance))
             details.append(_(u"{} ({}LY, {})").format(result['name'], pretty_dist, '+' * grade))
             edt = edtime.EDTime()
-            edt.from_js_epoch(result['updateTime'] * 1000)
-            details.append(_(u"as of {}").format(edt.as_date()))
+            if 'updateTime' in result:
+                edt.from_js_epoch(result['updateTime'] * 1000)
+                details.append(_(u"as of {}").format(edt.as_date()))
             if checker.hint():
                 details.append(checker.hint())
             self.status = u"{}: {} ({}LY)".format(checker.name, result['name'], pretty_dist)
