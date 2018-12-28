@@ -202,6 +202,7 @@ class EDRFaction(object):
             outcomes.chances_of('Compound Shielding', grade+bonus, influence)
             outcomes.chances_of('Chemical Manipulators', grade+bonus, influence)
             outcomes.chances_of('Refined Focus Crystals', grade+bonus, influence)
+            outcomes.chances_of('Private Data Beacon', grade+bonus, influence)
         elif security == '$GAlAXY_MAP_INFO_state_anarchy;':
             outcomes.chances_of('Conductive Polymers', grade+bonus, influence)
             outcomes.chances_of('Heat Vanes', grade+bonus, influence)
