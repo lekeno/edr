@@ -990,7 +990,7 @@ def handle_commands(cmdr, entry):
         handle_minus_commands(command, command_parts, entry)
     elif command[0] == "@":
         handle_at_commands(entry)
-    elif command == "o7" and not entry["To"] in ["local", "voicechat", "wing", "friend"]:
+    elif command == "o7" and not entry["To"] in ["local", "voicechat", "wing", "friend", "starsystem", "squadron", "squadleaders"]:
         EDRLOG.log(u"Implicit who command for {}".format(entry["To"]), "INFO")
         to_cmdr = entry["To"]
         if entry["To"].startswith("$cmdr_decorate:#name="):
@@ -1237,7 +1237,7 @@ def handle_hash_commands(command, command_parts, entry):
 def get_target_cmdr(command_parts, entry, player):
     target_cmdr = command_parts[1] if len(command_parts) > 1 else None
     if target_cmdr is None:
-        if not entry["To"] in ["local", "voicechat", "wing", "friend"]:
+        if not entry["To"] in ["local", "voicechat", "wing", "friend", "starsystem", "squadron", "squadleaders"]:
             prefix = "$cmdr_decorate:#name="
             target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
         else:
@@ -1289,7 +1289,7 @@ def handle_at_commands(entry):
     target_cmdr = None
     
     if command == "@# ":
-        if not entry["To"] in ["local", "voicechat", "wing", "friend"]:
+        if not entry["To"] in ["local", "voicechat", "wing", "friend", "starsystem", "squadron", "squadleaders"]:
             prefix = "$cmdr_decorate:#name="
             target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
             EDRLOG.log(u"Memo command for tagged cmdr {}".format(target_cmdr), "INFO")
