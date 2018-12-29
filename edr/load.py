@@ -808,7 +808,7 @@ def report_comms(player, entry):
             from_cmdr = entry["From"]
             if entry["From"].startswith("$cmdr_decorate:#name="):
                 from_cmdr = entry["From"][len("$cmdr_decorate:#name="):-1]
-            if player.is_friend_or_in_wing(from_cmdr):
+            if player.is_friend(from_cmdr) or player.is_wingmate(from_cmdr):
                 EDRLOG.log(u"Text from {} friend / wing. Can't infer location".format(from_cmdr),
                            "INFO")
             else:
@@ -831,7 +831,7 @@ def report_comms(player, entry):
         to_cmdr = entry["To"]
         if entry["To"].startswith("$cmdr_decorate:#name="):
             to_cmdr = entry["To"][len("$cmdr_decorate:#name="):-1]
-        if player.is_friend_or_in_wing(to_cmdr):
+        if player.is_friend(to_cmdr) or player.is_wingmate(to_cmdr):
             EDRLOG.log(u"Sent text to {} friend/wing: can't infer location".format(to_cmdr), "INFO")            
         else:
             EDRLOG.log(u"Sent text to {} (not friend/wing) == same location".format(to_cmdr),

@@ -590,7 +590,11 @@ class EDRClient(object):
         if old is None:
             return True
 
-        if not new.get('target', None):
+        target_cmdr = new.get('target', None) 
+        if not target_cmdr:
+            return False
+
+        if self.player.is_wingmate(target_cmdr["cmdr"]):
             return False
 
         if abs(new["ship"]["hullHealth"].get("value", 0) - old["ship"]["hullHealth"].get("value", 0)) >= 20:
@@ -598,9 +602,11 @@ class EDRClient(object):
 
         if new["ship"]["shieldUp"] != old["ship"]["shieldUp"]:
             return True
+
      
         if not old.get('target', None):
             return True
+
         
         target_old_state = self.fights_cache.get(new["target"]["cmdr"].lower())
         if not target_old_state:
