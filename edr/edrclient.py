@@ -597,6 +597,12 @@ class EDRClient(object):
         if self.player.is_wingmate(target_cmdr["cmdr"]):
             return False
 
+        if self.edrcmdrs.is_friend(target_cmdr["cmdr"]):
+            return False
+
+        if self.edrcmdrs.is_ally(target_cmdr["cmdr"]):
+            return False
+
         if abs(new["ship"]["hullHealth"].get("value", 0) - old["ship"]["hullHealth"].get("value", 0)) >= 20:
             return True
 

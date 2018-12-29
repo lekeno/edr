@@ -218,6 +218,23 @@ class EDRCmdrs(object):
 
         return profile
 
+    def is_friend(self, cmdr_name):
+        profile = self.__edr_cmdr(cmdr_name, False)
+        if profile is None:
+            return False
+        return profile.friend
+
+    def is_ally(self, cmdr_name):
+        sqdr_id = self.__squadron_id() 
+        if not sqdr_id:
+            return False
+
+        profile = self.__edr_sqdrdex(cmdr_name, False)
+        if profile is None:
+            return False
+        
+        return profile.is_ally()
+
     def tag_cmdr(self, cmdr_name, tag):
         if tag in ["enemy", "ally"]:
             return self.__squadron_tag_cmdr(cmdr_name, tag)

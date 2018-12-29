@@ -68,6 +68,9 @@ class EDRCmdrDexProfile(object):
         self._iff = new_iff
         self.updated = now
     
+    def is_ally(self):
+        return self._iff == "ally"
+
     @property
     def friend(self):
         return self._friend
