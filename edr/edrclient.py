@@ -609,19 +609,21 @@ class EDRClient(object):
         if new["ship"]["shieldUp"] != old["ship"]["shieldUp"]:
             return True
 
-        target_old_state = self.fights_cache.get(new["target"]["cmdr"].lower())
-        if not target_old_state:
+        return self.__novel_enough_combat_contact(new["target"])
+
+    def __novel_enough_combat_contact(self, contact):
+        contact_old_state = self.fights_cache.get(contact["cmdr"].lower())
+        if not contact_old_state:
             return True
 
-        new_target_ship = new["target"]["ship"]
-        old_target_ship = target_old_state["ship"]
-        if abs(new_target_ship["hullHealth"].get("value", 0) - old_target_ship["hullHealth"].get("value", 0)) >= 20:
+        ship_new_state = contact["ship"]
+        ship_old_state = contact_old_state["ship"]
+        if abs(ship_new_state["hullHealth"].get("value", 0) - ship_old_state["hullHealth"].get("value", 0)) >= 20:
             return True
 
-        if abs(new_target_ship["shieldHealth"].get("value", 0) - old_target_ship["shieldHealth"].get("value", 0)) >= 50:
+        if abs(ship_new_state["shieldHealth"].get("value", 0) - ship_old_state["shieldHealth"].get("value", 0)) >= 50:
             return True           
         return False
-
 
     def novel_enough_fight(self, involved_cmdr, fight):
         last_fight = self.fights_cache.get(involved_cmdr)
@@ -1039,13 +1041,16 @@ class EDRClient(object):
             return
         instance_changes = self.player.instance.noteworthy_changes_json()
         if instance_changes:
-            fight["instance"] = instance_changes
+            fight["instance"] = filter(lambda x: self.__novel_enough_combat_contact(x), instance_changes)
         fight["codeword"] = self.player.recon_box.keycode
         if self.server.fight(sid, fight):
             self.status = _(u"fight reported!")
             self.fights_cache.set(fight["cmdr"].lower(), fight)
             if fight["target"]:
                 self.fights_cache.set(fight["target"]["cmdr"].lower(), fight["target"])
+            if fight["instance"]:
+                for change in fight["instance"]:
+                    self.fights_cache.set(change["cmdr"].lower(), change)
 
     def crew_report(self, report):
         if self.is_anonymous():
