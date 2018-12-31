@@ -169,7 +169,7 @@ class EDRCmdrs(object):
         self.sqdrdex_cache.set(u"{}:{}".format(sqdr_id, cmdr_name.lower()), profile)
         EDRLOG.log(u"Cached EDR SqdrDex {sqid} entry for {cmdr}@{cid}".format(sqid=sqdr_id,
                                                                 cmdr=cmdr_name, cid=profile.cid), "DEBUG")
-        return profile
+        return profile.sqdrdex_profile
 
     def __inara_cmdr(self, cmdr_name, check_inara_server):
         inara_profile = self.inara_cache.get(cmdr_name.lower())
@@ -222,7 +222,7 @@ class EDRCmdrs(object):
         profile = self.__edr_cmdr(cmdr_name, False)
         if profile is None:
             return False
-        return profile.friend
+        return profile.is_friend()
 
     def is_ally(self, cmdr_name):
         sqdr_id = self.__squadron_id() 
@@ -230,10 +230,9 @@ class EDRCmdrs(object):
             return False
 
         profile = self.__edr_sqdrdex(cmdr_name, False)
-        if profile is None:
-            return False
-        
-        return profile.is_ally()
+        if profile:
+            return profile.is_ally()
+        return False
 
     def tag_cmdr(self, cmdr_name, tag):
         if tag in ["enemy", "ally"]:

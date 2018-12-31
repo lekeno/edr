@@ -333,6 +333,16 @@ class EDRCmdrProfile(object):
             self.dex_profile = None
         return True
     
+    def is_friend(self):
+        if self.dex_profile:
+            return self.dex_profile.friend
+        return False
+
+    def is_ally(self):
+        if self.sqdrdex_profile:
+            return self.sqdrdex_profile.is_ally()
+        return False
+
     def is_dangerous(self, powerplay=None):
         if self.sqdrdex_profile:
             return self.sqdrdex_profile._iff == "enemy"
