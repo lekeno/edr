@@ -609,11 +609,6 @@ class EDRClient(object):
         if new["ship"]["shieldUp"] != old["ship"]["shieldUp"]:
             return True
 
-     
-        if not old.get('target', None):
-            return True
-
-        
         target_old_state = self.fights_cache.get(new["target"]["cmdr"].lower())
         if not target_old_state:
             return True
