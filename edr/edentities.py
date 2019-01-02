@@ -8,6 +8,7 @@ import edinstance
 import edrlog
 import edrconfig
 import edreconbox
+import edrinventory
 from edri18n import _, _c
 EDRLOG = edrlog.EDRLog()
 
@@ -655,6 +656,7 @@ class EDPlayerOne(EDPlayer):
         self.instance = edinstance.EDInstance()
         self.planetary_destination = None
         self.recon_box = edreconbox.EDReconBox()
+        self.inventory = edrinventory.EDRInventory()
 
     def __repr__(self):
         return str(self.__dict__)

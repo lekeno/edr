@@ -372,7 +372,7 @@ class EDRClient(object):
         self.login()
 
     def noteworthy_about_system(self, fsdjump_event):
-        facts = self.edrresourcefinder.assess_jump(fsdjump_event)
+        facts = self.edrresourcefinder.assess_jump(fsdjump_event, self.player.inventory)
         header = _('Rare materials in {} (USS-HGE/EE, Mission Rewards)'.format(fsdjump_event['StarSystem']))
         if not facts:
             facts = EDRBodiesOfInterest.bodies_of_interest(fsdjump_event['StarSystem'])
@@ -399,12 +399,12 @@ class EDRClient(object):
             return
         if "Materials" not in scan_event or "BodyName" not in scan_event:
             return
-        facts = self.edrresourcefinder.assess_materials_density(scan_event["Materials"])
+        facts = self.edrresourcefinder.assess_materials_density(scan_event["Materials"], self.player.inventory)
         if facts:
             self.__notify(_(u'Noteworthy about {}').format(scan_event["BodyName"]), facts, clear_before = True)
 
     def noteworthy_about_signal(self, fss_event):
-        facts = self.edrresourcefinder.assess_signal(fss_event, self.player.location)
+        facts = self.edrresourcefinder.assess_signal(fss_event, self.player.location, self.player.inventory)
         if not facts:
             return False
         header = _(u'Signal Insights (potential outcomes)')

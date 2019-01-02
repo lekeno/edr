@@ -497,6 +497,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["ReceiveText", "SendText"]:
         report_comms(ed_player, entry)
 
+    if entry["event"] in ["Materials", "MaterialCollected", "MaterialDiscarded", "EngineerContribution", "EngineerCraft", "MaterialTrade", "MissionCompleted", "ScientificResearch", "TechnologyBroker", "Synthesis"]:
+        handle_material_events(ed_player, entry)
+
     if entry["event"] in ["SendText"]:
         handle_commands(ed_player, entry)
 
@@ -973,6 +976,25 @@ def handle_scan_events(player, entry):
 
     player.targeting(target)
     return True
+
+def handle_material_events(cmdr, entry):
+    if entry["event"] == "Materials":
+        cmdr.inventory.initialize(entry)
+    elif entry["event"] == "MaterialCollected":
+        cmdr.inventory.collected(entry)
+    elif entry["event"] == "MaterialDiscarded":
+        cmdr.inventory.discarded(entry)
+    elif entry["event"] == "EngineerContribution":
+        cmdr.inventory.donated_engineer(entry)
+    elif entry["event"] == "ScientificResearch":
+        cmdr.inventory.donated_science(entry)
+    elif entry["event"] in ["EngineerCraft", "TechnologyBroker", "Synthesis"]:
+        ingredients = entry["Ingredients"] if entry["event"] == "EngineerCraft" else entry["Materials"]
+        cmdr.inventory.consumed(ingredients)
+    elif entry["event"] == "MaterialTrade":
+        cmdr.inventory.traded(entry)
+    elif entry["event"] == "MissionCompleted":
+        cmdr.inventory.rewarded(entry)
 
 def handle_commands(cmdr, entry):
     if not entry["event"] == "SendText":

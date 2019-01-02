@@ -593,7 +593,9 @@ class EDRResourceFinder(object):
             _(u'Higher chances in high population (high traffic) systems')
         ]
 
-    def assess_jump(self, fsdjump_event):
+    #TODO use inventory for relative reference
+
+    def assess_jump(self, fsdjump_event, inventory):
         if not "Factions" in fsdjump_event:
             return None
         security = fsdjump_event.get('SystemSecurity', '')
@@ -602,7 +604,7 @@ class EDRResourceFinder(object):
         self.edr_factions.process(factions, fsdjump_event["StarSystem"])
         return self.edr_factions.summarize_yields(fsdjump_event["StarSystem"], security, population)
         
-    def assess_signal(self, fsssignal_event, location):
+    def assess_signal(self, fsssignal_event, location, inventory):
         uss_type = fsssignal_event.get("USSType", None)    
         state = edrfactions.EDRFaction._simplified_state(fsssignal_event.get("SpawningState", None))
         faction = self.edr_factions.get(fsssignal_event.get("SpawningFaction", ""), location.star_system)
@@ -618,7 +620,7 @@ class EDRResourceFinder(object):
 
 
     @staticmethod
-    def assess_materials_density(materials_density):
+    def assess_materials_density(materials_density, inventory):
         if not materials_density:
             return None
         noteworthy = []
