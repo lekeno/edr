@@ -75,19 +75,19 @@ class EDRFaction(object):
 
         return len(relevant_states) > 0
 
-    def hge_yield(self, security, population, spawning_state):
+    def hge_yield(self, security, population, spawning_state, inventory):
         if self.name is None:
             return [_(u"Unknown")]
         primary_state = spawning_state == self.state
         assessment = self._assess_hge(spawning_state, self.influence, self.allegiance, security, population, primary_state)
-        return assessment.outcomes.keys()   
+        return [u"{}".format(inventory.oneliner(material)) for material in assessment.outcomes.keys()]
 
-    def ee_yield(self, security, population, spawning_state):
+    def ee_yield(self, security, population, spawning_state, inventory):
         if self.name is None:
             return [_(u"Private Data Beacon")]
         primary_state = spawning_state == self.state
         assessment = self._assess_ee(spawning_state, self.influence, self.allegiance, security, population, primary_state)
-        return assessment.outcomes.keys()  
+        return [u"{}".format(inventory.oneliner(material)) for material in assessment.outcomes.keys()]
 
     def assess(self, security, population):
         if not self.chance_of_rare_mats():
@@ -294,7 +294,7 @@ class EDRFactions(object):
             assessments[faction] = factions_in_system[faction].assess(security, population)
         return assessments
 
-    def summarize_yields(self, star_system, security, population):
+    def summarize_yields(self, star_system, security, population, inventory):
         assessment = self.assess(star_system, security, population)
         if not assessment:
             return None
@@ -312,4 +312,4 @@ class EDRFactions(object):
                 if yields.get(material, None) is None:
                     yields[material] = 0
                 yields[material] += chance
-        return ["{:.0f}%: {}".format(chance*100.0, material.title()) for (material, chance) in sorted(yields.items(), key=lambda x: x[1], reverse=True)]
+        return [u"{:.0f}%: {}".format(chance*100.0, inventory.oneliner(material.title())) for (material, chance) in sorted(yields.items(), key=lambda x: x[1], reverse=True)]

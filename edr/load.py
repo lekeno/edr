@@ -428,6 +428,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] == "Friends":
         handle_friends_events(ed_player, entry)
 
+    if entry["event"] in ["Materials", "MaterialCollected", "MaterialDiscarded", "EngineerContribution", "EngineerCraft", "MaterialTrade", "MissionCompleted", "ScientificResearch", "TechnologyBroker", "Synthesis"]:
+        handle_material_events(ed_player, entry)
+
     if ed_player.in_solo_or_private():
         EDR_CLIENT.status = _(u"disabled in Solo/Private.")
         EDRLOG.log(u"Game mode is {}: skip!".format(ed_player.game_mode), "INFO")
@@ -496,9 +499,6 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     if entry["event"] in ["ReceiveText", "SendText"]:
         report_comms(ed_player, entry)
-
-    if entry["event"] in ["Materials", "MaterialCollected", "MaterialDiscarded", "EngineerContribution", "EngineerCraft", "MaterialTrade", "MissionCompleted", "ScientificResearch", "TechnologyBroker", "Synthesis"]:
-        handle_material_events(ed_player, entry)
 
     if entry["event"] in ["SendText"]:
         handle_commands(ed_player, entry)
@@ -978,7 +978,9 @@ def handle_scan_events(player, entry):
     return True
 
 def handle_material_events(cmdr, entry):
+    print entry
     if entry["event"] == "Materials":
+        print "initialize"
         cmdr.inventory.initialize(entry)
     elif entry["event"] == "MaterialCollected":
         cmdr.inventory.collected(entry)
@@ -995,6 +997,9 @@ def handle_material_events(cmdr, entry):
         cmdr.inventory.traded(entry)
     elif entry["event"] == "MissionCompleted":
         cmdr.inventory.rewarded(entry)
+	print cmdr.inventory.encoded
+    print cmdr.inventory.raw
+    print cmdr.inventory.manufactured
 
 def handle_commands(cmdr, entry):
     if not entry["event"] == "SendText":

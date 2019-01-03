@@ -593,8 +593,6 @@ class EDRResourceFinder(object):
             _(u'Higher chances in high population (high traffic) systems')
         ]
 
-    #TODO use inventory for relative reference
-
     def assess_jump(self, fsdjump_event, inventory):
         if not "Factions" in fsdjump_event:
             return None
@@ -602,7 +600,7 @@ class EDRResourceFinder(object):
         population = fsdjump_event.get('Population', 0)
         factions = fsdjump_event.get('Factions', [])
         self.edr_factions.process(factions, fsdjump_event["StarSystem"])
-        return self.edr_factions.summarize_yields(fsdjump_event["StarSystem"], security, population)
+        return self.edr_factions.summarize_yields(fsdjump_event["StarSystem"], security, population, inventory)
         
     def assess_signal(self, fsssignal_event, location, inventory):
         uss_type = fsssignal_event.get("USSType", None)    
@@ -613,9 +611,9 @@ class EDRResourceFinder(object):
         security = location.security
         population = location.population
         if uss_type == "$USS_Type_VeryValuableSalvage;":        
-            return faction.hge_yield(security, population, state)
+            return faction.hge_yield(security, population, state, inventory)
         elif uss_type == "$USS_Type_ValuableSalvage;":
-            return faction.ee_yield(security, population, state)
+            return faction.ee_yield(security, population, state, inventory)
         return None
 
 
@@ -636,5 +634,6 @@ class EDRResourceFinder(object):
 
             grade = (material["Percent"] - reference["typical"]) / (reference["highest"] - reference["typical"])
             chance = '+' * int(min(5, round(abs(grade)*5, 0)))
-            noteworthy.append(_(u"{raw}{chance} @ {actual:.1f}% (median={typical:.1f}%; max={max:.1f}%)").format(raw=name, chance=chance, actual=material["Percent"], typical=reference["typical"], max=reference["highest"]))
+            oneliner = inventory.oneliner(name)
+            noteworthy.append(_(u"{raw} {chance} @ {actual:.1f}% (median={typical:.1f}%; max={max:.1f}%)").format(raw=oneliner, chance=chance, actual=material["Percent"], typical=reference["typical"], max=reference["highest"]))
         return noteworthy

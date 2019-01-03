@@ -390,7 +390,7 @@ class EDRClient(object):
             self.__notify(_(u'Noteworthy about {}: {} sites').format(body_name, len(facts)), facts, clear_before = True)
             return True
         materials_info = self.edrsystems.materials_on(star_system, body_name)
-        facts = self.edrresourcefinder.assess_materials_density(materials_info)
+        facts = self.edrresourcefinder.assess_materials_density(materials_info, self.player.inventory)
         if facts:
             self.__notify(_(u'Noteworthy material densities on {}').format(body_name), facts, clear_before = True)
 
