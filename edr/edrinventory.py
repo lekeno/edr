@@ -122,24 +122,51 @@ class EDRInventory(object):
         "guardian_moduleblueprint": {"localized": _(u"Guardian Module Blueprint Fragment"), "category": "encoded", "grade": 5},
         "ancientculturaldata": {"localized": _(u"Pattern Beta Obelisk Data"), "category": "encoded", "grade": 2},
         "ancientlanguagedata": {"localized": _(u"Pattern Delta Obelisk Data"), "category": "encoded", "grade": 4},
+        "guardian_vesselblueprint": {"localized": _(u"Guardian Starship Blueprint Fragment"), "category": "encoded", "grade": 5},
+        "guardian_weaponblueprint": {"localized": _(u"Guardian Weapon Blueprint Fragment"), "category": "encoded", "grade": 5},
+        "ancienttechnologicaldata": {"localized": _(u"Pattern Epsilon Obelisk Data"), "category": "encoded", "grade": 5},
+        "tg_shipsystemsdata": {"localized": _(u"Ship Systems Data"), "category": "encoded", "grade": 3},
+        "tg_shipflightdata": {"localized": _(u"Ship Flight Data"), "category": "encoded", "grade": 3},
+        "unknownshipsignature": {"localized": _(u"Thargoid Ship Signature"), "category": "encoded", "grade": 3},
+        "tg_structuraldata": {"localized": _(u"Thargoid Structural Data"), "category": "encoded", "grade": 2},
+        "unknownwakedata": {"localized": _(u"Thargoid Wake Data"), "category": "encoded", "grade": 4},
+        "tg_biomechanicalconduits": {"localized": _(u"Bio-Mechanical Conduits"), "category": "manufactured", "grade": 3},
+        "tg_propulsionelement": {"localized": _(u"Propulsion Elements"), "category": "manufactured", "grade": 3},
+        "unknowncarapace": {"localized": _(u"Thargoid Carapace"), "category": "manufactured", "grade": 2},
+        "unknownenergycell": {"localized": _(u"Thargoid Energy Cell"), "category": "manufactured", "grade": 3},
+        "unknownorganiccircuitry": {"localized": _(u"Thargoid Organic Circuitry"), "category": "manufactured", "grade": 5},
+        "unknowntechnologycomponents": {"localized": _(u"Thargoid Technological Components"), "category": "manufactured", "grade": 4}
     }
 
-    INTERNAL_NAMES_LUT = { u'classified scan databanks': 'scandatabanks', u'conductive components': 'conductivecomponents', u'abnormal compact emissions data': 'compactemissionsdata', u'germanium': 'germanium', u'atypical disrupted wake echoes': 'disruptedwakeechoes', u'crystal shards': 'crystalshards', u'selenium': 'selenium', u'technetium': 'technetium', u'galvanising alloys': 'galvanisingalloys', u'improvised components': 'improvisedcomponents', u'cracked industrial firmware': 'industrialfirmware', u'guardian technology component': 'guardian_techcomponent', u'heat resistant ceramics': 'heatresistantceramics', u'unexpected emission data': 'emissiondata', u'tungsten': 'tungsten', u'exceptional scrambled emission data': 'scrambledemissiondata', u'thermic alloys': 'thermicalloys', u'molybdenum': 'molybdenum', u'atypical encryption archives': 'encryptionarchives', u'salvaged alloys': 'salvagedalloys', u'pharmaceutical isolators': 'pharmaceuticalisolators', u'divergent scan data': 'encodedscandata', u'anomalous fsd telemetry': 'fsdtelemetry', u'pattern delta obelisk data': 'ancientlanguagedata', u'worn shield emitters': 'wornshieldemitters', u'strange wake solutions': 'wakesolutions', u'tempered alloys': 'temperedalloys', u'zinc': 'zinc', u'mechanical equipment': 'mechanicalequipment', u'eccentric hyperspace trajectories': 'hyperspacetrajectories', u'grid resistors': 'gridresistors', u'unusual encrypted files': 'encryptedfiles', u'peculiar shield frequency data': 'shieldfrequencydata', u'specialised legacy firmware': 'legacyfirmware', u'flawed focus crystals': 'uncutfocuscrystals', u'pattern beta obelisk data': 'ancientculturaldata', u'antimony': 'antimony', u'untypical shield scans': 'shielddensityreports', u'focus crystals': 'focuscrystals', u'lead': 'lead', u'heat dispersion plate': 'heatdispersionplate', u'irregular emission data': 'archivedemissiondata', u'guardian module blueprint fragment': 'guardian_moduleblueprint', u'yttrium': 'yttrium', u'mechanical scrap': 'mechanicalscrap', u'biotech conductors': 'biotechconductors', u'military grade alloys': 'militarygradealloys', u'basic conductors': 'basicconductors', u'boron': 'boron', u'carbon': 'carbon', u'unidentified scan archives': 'scanarchives', u'imperial shielding': 'imperialshielding', u'chemical distillery': 'chemicaldistillery', u'guardian wreckage components': 'guardian_sentinel_wreckagecomponents', u'proto radiolic alloys': 'protoradiolicalloys', u'cadmium': 'cadmium', u'filament composites': 'filamentcomposites', u'exquisite focus crystals': 'exquisitefocuscrystals', u'electrochemical arrays': 'electrochemicalarrays', u'mechanical components': 'mechanicalcomponents', u'pattern alpha obelisk data': 'ancientbiologicaldata', u'arsenic': 'arsenic', u'chromium': 'chromium', u'conductive ceramics': 'conductiveceramics', u'mercury': 'mercury', u'chemical processors': 'chemicalprocessors', u'pattern gamma obelisk data': 'ancienthistoricaldata', u'proprietary composites': 'fedproprietarycomposites', u'proto light alloys': 'protolightalloys', u'datamined wake exceptions': 'dataminedwake', u'adaptive encryptors capture': 'adaptiveencryptors', u'open symmetric keys': 'symmetrickeys', u'nickel': 'nickel', u'ruthenium': 'ruthenium', u'guardian sentinel weapon parts': 'guardian_sentinel_weaponparts', u'decoded emission data': 'decodedemissiondata', u'guardian power cell': 'guardian_powercell', u'chemical storage units': 'chemicalstorageunits', u'sulphur': 'sulphur', u'anomalous bulk scan data': 'bulkscandata', u'refined focus crystals': 'refinedfocuscrystals', u'zirconium': 'zirconium', u'heat vanes': 'heatvanes', u'niobium': 'niobium', u'iron': 'iron', u'conductive polymers': 'conductivepolymers', u'configurable components': 'configurablecomponents', u'rhenium': 'rhenium', u'security firmware patch': 'securityfirmware', u'aberrant shield pattern analysis': 'shieldpatternanalysis', u'modified consumer firmware': 'consumerfirmware', u'military supercapacitors': 'militarysupercapacitors', u'heat conduction wiring': 'heatconductionwiring', u'inconsistent shield soak analysis': 'shieldsoakanalysis', u'distorted shield cycle recordings': 'shieldcyclerecordings', u'shield emitters': 'shieldemitters', u'tin': 'tin', u'chemical manipulators': 'chemicalmanipulators', u'hybrid capacitors': 'hybridcapacitors', u'tagged encryption codes': 'encryptioncodes', u'classified scan fragment': 'classifiedscandata', u'polymer capacitors': 'polymercapacitors', u'precipitated alloys': 'precipitatedalloys', u'heat exchangers': 'heatexchangers', u'polonium': 'polonium', u'core dynamics composites': 'fedcorecomposites', u'high density composites': 'highdensitycomposites', u'modified embedded firmware': 'embeddedfirmware', u'phosphorus': 'phosphorus', u'guardian power conduit': 'guardian_powerconduit', u'vanadium': 'vanadium', u'shielding sensors': 'shieldingsensors', u'compound shielding': 'compoundshielding', u'manganese': 'manganese', u'compact composites': 'compactcomposites', u'tellurium': 'tellurium', u'phase alloys': 'phasealloys' }
-
-    #TODO guardian vessel blueprint segment, G5 guardian_vesselblueprint, Guardian Starship Blueprint Fragment
-    #TODO guardian weapon bluepring segment, g5, guardian_weaponblueprint, Guardian Weapon Blueprint Fragment
-    #TODO guardian pattern epsilon, g5, ancienttechnologicaldata", "Name_Localised":"Pattern Epsilon Obelisk Data
-    #TODO ship systems data, g3, tg_shipsystemsdata, Ship Systems Data
-    #TODO ship flight data, g3, tg_shipflightdata, Ship Flight Data
-    #TODO thargoid ship signature, g3, unknownshipsignature", "Name_Localised":"Thargoid Ship Signature
-    #TODO thargoid structural data, g2, tg_structuraldata", "Name_Localised":"Thargoid Structural Data
-    #TODO thargoid wake data, g4, unknownwakedata", "Name_Localised":"Thargoid Wake Data
-    #TODO bio-mechanical conduits, g3, tg_biomechanicalconduits", "Name_Localised":"Bio-Mechanical Conduits
-    #TODO propulsion elements, g3, tg_propulsionelement", "Name_Localised":"Propulsion Elements
-    #TODO thargoid carapace, g2, unknowncarapace", "Name_Localised":"Thargoid Carapace
-    #TODO thargoid energy cell, g3, unknownenergycell", "Name_Localised":"Thargoid Energy Cell
-    #TODO thargoid organic circuitry, g5, unknownorganiccircuitry", "Name_Localised":"Thargoid Organic Circuitry
-    #TODO thargoid technological components, g4, unknowntechnologycomponents", "Name_Localised":"Thargoid Technological Components
+    INTERNAL_NAMES_LUT = { u'classified scan databanks': 'scandatabanks', u'conductive components': 'conductivecomponents', u'abnormal compact emissions data': 'compactemissionsdata', u'germanium': 'germanium',
+        u'atypical disrupted wake echoes': 'disruptedwakeechoes', u'crystal shards': 'crystalshards', u'selenium': 'selenium', u'technetium': 'technetium', u'galvanising alloys': 'galvanisingalloys',
+        u'improvised components': 'improvisedcomponents', u'cracked industrial firmware': 'industrialfirmware', u'guardian technology component': 'guardian_techcomponent', u'heat resistant ceramics': 'heatresistantceramics',
+        u'unexpected emission data': 'emissiondata', u'tungsten': 'tungsten', u'exceptional scrambled emission data': 'scrambledemissiondata', u'thermic alloys': 'thermicalloys', u'molybdenum': 'molybdenum',
+        u'atypical encryption archives': 'encryptionarchives', u'salvaged alloys': 'salvagedalloys', u'pharmaceutical isolators': 'pharmaceuticalisolators', u'divergent scan data': 'encodedscandata',
+        u'anomalous fsd telemetry': 'fsdtelemetry', u'pattern delta obelisk data': 'ancientlanguagedata', u'worn shield emitters': 'wornshieldemitters', u'strange wake solutions': 'wakesolutions',
+        u'tempered alloys': 'temperedalloys', u'zinc': 'zinc', u'mechanical equipment': 'mechanicalequipment', u'eccentric hyperspace trajectories': 'hyperspacetrajectories', u'grid resistors': 'gridresistors', 
+        u'unusual encrypted files': 'encryptedfiles', u'peculiar shield frequency data': 'shieldfrequencydata', u'specialised legacy firmware': 'legacyfirmware', u'flawed focus crystals': 'uncutfocuscrystals', 
+        u'pattern beta obelisk data': 'ancientculturaldata', u'antimony': 'antimony', u'untypical shield scans': 'shielddensityreports', u'focus crystals': 'focuscrystals', u'lead': 'lead', 
+        u'heat dispersion plate': 'heatdispersionplate', u'irregular emission data': 'archivedemissiondata', u'guardian module blueprint fragment': 'guardian_moduleblueprint', u'yttrium': 'yttrium', 
+        u'mechanical scrap': 'mechanicalscrap', u'biotech conductors': 'biotechconductors', u'military grade alloys': 'militarygradealloys', u'basic conductors': 'basicconductors', u'boron': 'boron', u'carbon': 'carbon', 
+        u'unidentified scan archives': 'scanarchives', u'imperial shielding': 'imperialshielding', u'chemical distillery': 'chemicaldistillery', u'guardian wreckage components': 'guardian_sentinel_wreckagecomponents', 
+        u'proto radiolic alloys': 'protoradiolicalloys', u'cadmium': 'cadmium', u'filament composites': 'filamentcomposites', u'exquisite focus crystals': 'exquisitefocuscrystals', u'electrochemical arrays': 'electrochemicalarrays', 
+        u'mechanical components': 'mechanicalcomponents', u'pattern alpha obelisk data': 'ancientbiologicaldata', u'arsenic': 'arsenic', u'chromium': 'chromium', u'conductive ceramics': 'conductiveceramics', u'mercury': 'mercury', 
+        u'chemical processors': 'chemicalprocessors', u'pattern gamma obelisk data': 'ancienthistoricaldata', u'proprietary composites': 'fedproprietarycomposites', u'proto light alloys': 'protolightalloys', 
+        u'datamined wake exceptions': 'dataminedwake', u'adaptive encryptors capture': 'adaptiveencryptors', u'open symmetric keys': 'symmetrickeys', u'nickel': 'nickel', u'ruthenium': 'ruthenium', 
+        u'guardian sentinel weapon parts': 'guardian_sentinel_weaponparts', u'decoded emission data': 'decodedemissiondata', u'guardian power cell': 'guardian_powercell', u'chemical storage units': 'chemicalstorageunits', 
+        u'sulphur': 'sulphur', u'anomalous bulk scan data': 'bulkscandata', u'refined focus crystals': 'refinedfocuscrystals', u'zirconium': 'zirconium', u'heat vanes': 'heatvanes', u'niobium': 'niobium', u'iron': 'iron', 
+        u'conductive polymers': 'conductivepolymers', u'configurable components': 'configurablecomponents', u'rhenium': 'rhenium', u'security firmware patch': 'securityfirmware', u'aberrant shield pattern analysis': 'shieldpatternanalysis',
+        u'modified consumer firmware': 'consumerfirmware', u'military supercapacitors': 'militarysupercapacitors', u'heat conduction wiring': 'heatconductionwiring', u'inconsistent shield soak analysis': 'shieldsoakanalysis',
+        u'distorted shield cycle recordings': 'shieldcyclerecordings', u'shield emitters': 'shieldemitters', u'tin': 'tin', u'chemical manipulators': 'chemicalmanipulators', u'hybrid capacitors': 'hybridcapacitors',
+        u'tagged encryption codes': 'encryptioncodes', u'classified scan fragment': 'classifiedscandata', u'polymer capacitors': 'polymercapacitors', u'precipitated alloys': 'precipitatedalloys', 
+        u'heat exchangers': 'heatexchangers', u'polonium': 'polonium', u'core dynamics composites': 'fedcorecomposites', u'high density composites': 'highdensitycomposites', u'modified embedded firmware': 'embeddedfirmware',
+        u'phosphorus': 'phosphorus', u'guardian power conduit': 'guardian_powerconduit', u'vanadium': 'vanadium', u'shielding sensors': 'shieldingsensors', u'compound shielding': 'compoundshielding', 
+        u'manganese': 'manganese', u'compact composites': 'compactcomposites', u'tellurium': 'tellurium', u'phase alloys': 'phasealloys', u'thargoid organic circuitry': u'unknownorganiccircuitry', 
+        u'thargoid energy cell': u'unknownenergycell', u'thargoid structural data': u'tg_structuraldata', u'thargoid ship signature': u'unknownshipsignature', u'thargoid carapace': u'unknowncarapace', 
+        u'propulsion elements': u'tg_propulsionelement', u'guardian weapon blueprint fragment': u'guardian_weaponblueprint', u'guardian starship blueprint fragment': u'guardian_vesselblueprint', 
+        u'pattern epsilon obelisk data': u'ancienttechnologicaldata', u'bio-mechanical conduits': u'tg_biomechanicalconduits', u'ship flight data': u'tg_shipflightdata', u'thargoid wake data': u'unknownwakedata', 
+        u'thargoid technological components': u'unknowntechnologycomponents', u'ship systems data': u'tg_shipsystemsdata'}
 
     def __init__(self):
         self.encoded = {}
@@ -167,17 +194,18 @@ class EDRInventory(object):
 
     def count(self, name):
         cname = self.__c_name(name)
-		category = self.category(cname)
+        category = self.category(cname)
         if category == "encoded":
             return self.encoded.get(cname, 0)
         elif category == "raw":
             return self.raw.get(cname, 0)
         elif category == "manufactured":
             return self.manufactured.get(cname, 0)
+        return 0
 
     def oneliner(self, name):
         cname = self.__c_name(name)
-		category = self.category(cname)
+        category = self.category(cname)
         entry = self.MATERIALS_LUT.get(cname, None)
         if not category or not entry:
             return name
