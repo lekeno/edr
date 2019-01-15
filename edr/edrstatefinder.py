@@ -50,6 +50,8 @@ class EDRStateFinder(threading.Thread):
                     return (best_system_so_far, best_grade_so_far)
 
         systems = self.edr_systems.systems_within_radius(self.star_system, self.radius)
+        if not systems:
+            return (None, None)
         
         (best_system_so_far, best_grade_so_far) = self.__search(systems, best_system_so_far, best_grade_so_far)
         if not best_system_so_far:
@@ -63,6 +65,8 @@ class EDRStateFinder(threading.Thread):
 
     def __search(self, systems, best_system_so_far, best_grade_so_far):
         trials = 0
+        if not systems:
+            return (None, None)
         for system in systems:
             grade = self.checker.grade_system(system)
             accessible = not system.get('requirePermit', False) or (system.get('requirePermit', False) and system['name'] in self.permits)
