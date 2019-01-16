@@ -661,6 +661,9 @@ class EDPlayerOne(EDPlayer):
     def __repr__(self):
         return str(self.__dict__)
 
+    def persist(self):
+        self.inventory.persist()
+
     @property
     def target(self):
         return self._target
@@ -876,6 +879,12 @@ class EDPlayerOne(EDPlayer):
         self.instance.reset()
         self.recon_box.reset()
 
+    def wing_and_crew(self):
+        wing_and_crew = self.wing.wingmates.copy()
+        if self.crew:
+            wing_and_crew.update(self.crew.all_members() )
+        return wing_and_crew
+
     def maybe_in_a_pvp_fight(self):
         if not self.in_a_fight():
             return False
@@ -883,12 +892,8 @@ class EDPlayerOne(EDPlayer):
         if self.instance.is_empty():
             # Can't PvP if there is no one.
             return False
-
-        wing_and_crew = self.wing.wingmates.copy()
-        if self.crew:
-            wing_and_crew.update(self.crew.all_members() )
         
-        if not self.instance.anyone_beside(wing_and_crew):
+        if not self.instance.anyone_beside(self.wing_and_crew()):
             return False
 
         return True

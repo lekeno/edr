@@ -1,7 +1,15 @@
 # coding= utf-8
+import pickle
+import os
 from edri18n import _
 
 class EDRInventory(object):
+    EDR_INVENTORY_ENCODED_CACHE = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'cache/encoded_mats.v1.p')
+    EDR_INVENTORY_RAW_CACHE = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'cache/raw_mats.v1.p')
+    EDR_INVENTORY_MANUFACTURED_CACHE = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'cache/manufactured_mats.v1.p')    
 
     MATERIALS_LUT = {
         "zinc": {"localized": _(u"Zinc"), "category": "raw", "grade": 2},
@@ -169,9 +177,23 @@ class EDRInventory(object):
         u'thargoid technological components': u'unknowntechnologycomponents', u'ship systems data': u'tg_shipsystemsdata'}
 
     def __init__(self):
-        self.encoded = {}
-        self.raw = {}
-        self.manufactured = {}
+        try:
+            with open(self.EDR_INVENTORY_ENCODED_CACHE, 'rb') as handle:
+                self.encoded = pickle.load(handle)
+        except:
+            self.encoded = {}
+
+        try:
+            with open(self.EDR_INVENTORY_RAW_CACHE, 'rb') as handle:
+                self.raw = pickle.load(handle)
+        except:
+            self.raw = {}
+
+        try:
+            with open(self.EDR_INVENTORY_MANUFACTURED_CACHE, 'rb') as handle:
+                self.manufactured = pickle.load(handle)
+        except:
+            self.manufactured = {}
 
     def initialize(self, materials):
         for thing in materials.get("Encoded", []):
@@ -185,6 +207,16 @@ class EDRInventory(object):
         for thing in materials.get("Manufactured", []):
             cname = self.__c_name(thing["Name"])
             self.manufactured[cname] = thing["Count"]
+
+    def persist(self):
+        with open(self.EDR_INVENTORY_ENCODED_CACHE, 'wb') as handle:
+            pickle.dump(self.encoded, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        with open(self.EDR_INVENTORY_MANUFACTURED_CACHE, 'wb') as handle:
+            pickle.dump(self.manufactured, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        with open(self.EDR_INVENTORY_RAW_CACHE, 'wb') as handle:
+            pickle.dump(self.raw, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     def collected(self, info):
         self.add(info["Category"], info["Name"], info["Count"])
