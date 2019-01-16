@@ -55,6 +55,21 @@ class EDInstance(object):
                 return True
         return False
 
+    def presence_of_outlaws(self, edrcmdrs, bounty_threshold=10000, karma_threshold=-200, ignorables=None):
+        canonical_ignorables = [c.lower() for c in ignorables]
+        for player in self.players:
+            if player.lower() in canonical_ignorables:
+                continue
+            profile = None
+            try:
+                profile = edrcmdrs.cmdr(player.name)
+                if profile.karma <= karma_threshold:
+                    return True
+            except:
+                pass
+            if player.bounty >= bounty_threshold:
+                return True if not profile else not(profile.is_friend() or profile.is_ally())
+
     def players_nb(self):
         return len(self.players)
 

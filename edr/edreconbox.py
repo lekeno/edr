@@ -9,6 +9,7 @@ class EDReconBox(object):
         self.active = False
         self.required_length = 4
         self.advertised = False
+        self.forced = False
         self.keycode = EDReconBox.gen_keycode()
 
     def process_signal(self, is_high):
@@ -27,11 +28,16 @@ class EDReconBox(object):
             return True
         return False
 
+    def activate(self):
+        self.active = True
+        self.forced = True
+    
     def reset(self):
         self.sequence = ""
         self.last_change = None
         self.active = False
         self.advertised = False
+        self.forced = False
         self.keycode = EDReconBox.gen_keycode()
 
     @staticmethod
