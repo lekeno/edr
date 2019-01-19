@@ -177,6 +177,8 @@ class EDRInventory(object):
         u'thargoid technological components': u'unknowntechnologycomponents', u'ship systems data': u'tg_shipsystemsdata'}
 
     def __init__(self):
+        self.initialized = False
+        self.inconsistencies = False
         try:
             with open(self.EDR_INVENTORY_ENCODED_CACHE, 'rb') as handle:
                 self.encoded = pickle.load(handle)
@@ -194,6 +196,7 @@ class EDRInventory(object):
                 self.manufactured = pickle.load(handle)
         except:
             self.manufactured = {}
+        self.__check()
 
     def initialize(self, materials):
         for thing in materials.get("Encoded", []):
@@ -207,6 +210,26 @@ class EDRInventory(object):
         for thing in materials.get("Manufactured", []):
             cname = self.__c_name(thing["Name"])
             self.manufactured[cname] = thing["Count"]
+        self.initialized = True
+        self.inconsistencies = False
+
+    def initialize_with_edmc(self, state):
+        for thing in state.get("Encoded", {}):
+            cname = self.__c_name(thing)
+            self.encoded[cname] = state["Encoded"][thing]
+
+        for thing in state.get("Raw", {}):
+            cname = self.__c_name(thing)
+            self.raw[cname] = state["Raw"][thing]
+
+        for thing in state.get("Manufactured", {}):
+            cname = self.__c_name(thing)
+            self.manufactured[cname] = state["Manufactured"][thing]
+        self.initialized = True
+        self.inconsistencies = False
+
+    def stale_or_incorrect(self):
+        return not self.initialized or self.inconsistencies
 
     def persist(self):
         with open(self.EDR_INVENTORY_ENCODED_CACHE, 'wb') as handle:
@@ -245,6 +268,30 @@ class EDRInventory(object):
         grades = [u"?", u"Ⅰ", u"Ⅱ", u"Ⅲ", u"Ⅳ", u"Ⅴ"]
         slots = [u"?", u"300", u"250", u"200", u"150", u"100"]
         return u"{} (Grade {}; {}/{})".format(entry["localized"], grades[entry["grade"]], count or u"?", slots[entry["grade"]])
+
+    def __check(self):
+        self.inconsistencies = False
+        for collection in [self.encoded, self.raw, self.manufactured]:
+            for thing in collection:
+                self.__check_item(thing)
+                if self.inconsistencies:
+                    return False
+        return True
+    
+    def __check_item(self, name):
+        cname = self.__c_name(name)
+        entry = self.MATERIALS_LUT.get(cname, None)
+        if not entry:
+            return False
+        count = self.count(cname)
+        if count < 0:
+            self.inconsistencies = True
+            return False
+        max_for_slot = self.slots(name)
+        if count > max_for_slot:
+            self.inconsistencies = True
+            return False
+        return True
 
     def donated_engineer(self, info):
         if info["Type"] != "Material":

@@ -261,7 +261,7 @@ def handle_change_events(ed_player, entry):
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
     return outcome
 
-def handle_lifecycle_events(ed_player, entry):
+def handle_lifecycle_events(ed_player, entry, state):
     if entry["event"] == "Music":
         if entry["MusicTrack"] == "MainMenu" and not ed_player.is_crew_member():
             # Checking for 'is_crew_member' because "MainMenu" shows up when joining a multicrew session
@@ -309,6 +309,8 @@ def handle_lifecycle_events(ed_player, entry):
         return
 
     if entry["event"] in ["LoadGame"]:
+        if ed_player.inventory.stale_or_incorrect():
+            ed_player.inventory.initialize_with_edmc(state)
         EDR_CLIENT.clear()
         ed_player.inception()
         ed_player.game_mode = entry["GameMode"]
@@ -414,7 +416,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         return
 
     if entry["event"] in ["Shutdown", "ShutDown", "Music", "Resurrect", "Fileheader", "LoadGame"]:
-        handle_lifecycle_events(ed_player, entry)
+        handle_lifecycle_events(ed_player, entry, state)
     
     if entry["event"].startswith("Powerplay"):
         EDRLOG.log(u"Powerplay event: {}".format(entry), "INFO")
@@ -429,7 +431,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         handle_friends_events(ed_player, entry)
 
     if entry["event"] in ["Materials", "MaterialCollected", "MaterialDiscarded", "EngineerContribution", "EngineerCraft", "MaterialTrade", "MissionCompleted", "ScientificResearch", "TechnologyBroker", "Synthesis"]:
-        handle_material_events(ed_player, entry)
+        handle_material_events(ed_player, entry, state)
 
     if ed_player.in_solo_or_private():
         EDR_CLIENT.status = _(u"disabled in Solo/Private.")
@@ -977,10 +979,10 @@ def handle_scan_events(player, entry):
     player.targeting(target)
     return True
 
-def handle_material_events(cmdr, entry):
-    print entry
+def handle_material_events(cmdr, entry, state):
+    if cmdr.inventory.stale_or_incorrect():
+        cmdr.inventory.initialize_with_edmc(state)
     if entry["event"] == "Materials":
-        print "initialize"
         cmdr.inventory.initialize(entry)
     elif entry["event"] == "MaterialCollected":
         cmdr.inventory.collected(entry)
@@ -997,10 +999,7 @@ def handle_material_events(cmdr, entry):
         cmdr.inventory.traded(entry)
     elif entry["event"] == "MissionCompleted":
         cmdr.inventory.rewarded(entry)
-	print cmdr.inventory.encoded
-    print cmdr.inventory.raw
-    print cmdr.inventory.manufactured
-
+	
 def handle_commands(cmdr, entry):
     if not entry["event"] == "SendText":
         return
