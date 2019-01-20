@@ -316,8 +316,7 @@ def handle_lifecycle_events(ed_player, entry, state):
         ed_player.game_mode = entry["GameMode"]
         ed_player.update_vehicle_if_obsolete(EDVehicleFactory.from_load_game_event(entry), piloted=True)
         EDRLOG.log(u"Game mode is {}".format(ed_player.game_mode), "DEBUG")
-        if not ed_player.in_solo_or_private():
-            EDR_CLIENT.warmup()
+        EDR_CLIENT.warmup()
         return
 
     if entry["event"] in ["Loadout"]:
@@ -433,11 +432,6 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["Materials", "MaterialCollected", "MaterialDiscarded", "EngineerContribution", "EngineerCraft", "MaterialTrade", "MissionCompleted", "ScientificResearch", "TechnologyBroker", "Synthesis"]:
         handle_material_events(ed_player, entry, state)
 
-    if ed_player.in_solo_or_private():
-        EDR_CLIENT.status = _(u"disabled in Solo/Private.")
-        EDRLOG.log(u"Game mode is {}: skip!".format(ed_player.game_mode), "INFO")
-        return
-
     if "Crew" in entry["event"]:
         handle_multicrew_events(ed_player, entry)
         
@@ -527,9 +521,7 @@ def edr_update_cmdr_status(cmdr, reason_for_update, timestamp):
     :param reason_for_update:
     :return:
     """
-
     if not cmdr.in_open():
-        EDR_CLIENT.status = _(u"not in Open? Start EDMC before Elite.")
         EDRLOG.log(u"Skipping cmdr update due to unconfirmed Open mode", "ERROR")
         return
 
@@ -569,7 +561,7 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
     """
     if not victim.in_open():
         EDRLOG.log(u"Skipping submit crime (wing) due to unconfirmed Open mode", "INFO")
-        EDR_CLIENT.status = _(u"not in Open? Start EDMC before Elite.")
+        EDR_CLIENT.status = _(u"Crime reporting disabled in solo/private modes.")
         return
 
     criminals = []
@@ -608,7 +600,7 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim, timestamp):
     """
     if not criminal_cmdr.in_open():
         EDRLOG.log(u"Skipping submit crime (self) due to unconfirmed Open mode", "INFO")
-        EDR_CLIENT.status = _(u"not in Open? Start EDMC before Elite.")
+        EDR_CLIENT.status = _(u"Crime reporting disabled in solo/private modes.")
         return
 
     edt = EDTime()
@@ -637,7 +629,7 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim, timestamp):
 def report_fight(player):
     if not player.in_open():
         EDRLOG.log(u"Skipping reporting fight due to unconfirmed Open mode", "INFO")
-        EDR_CLIENT.status = _(u"not in Open? Start EDMC before Elite.")
+        EDR_CLIENT.status = _(u"Fight reporting disabled in solo/private modes.")
         return
 
     report = player.json(with_target=True)
@@ -666,11 +658,6 @@ def edr_submit_contact(contact, timestamp, source, witness):
         "byPledge": witness.powerplay.canonicalize() if witness.powerplay else ""
     }
 
-    if not witness.in_open():
-        EDRLOG.log(u"Skipping submit contact due to unconfirmed Open mode", "INFO")
-        EDR_CLIENT.status = _(u"not in Open? Start EDMC before Elite.")
-        return
-
     if witness.has_partial_status():
         EDRLOG.log(u"Skipping cmdr update due to partial status", "INFO")
         return
@@ -695,7 +682,7 @@ def edr_submit_scan(scan, timestamp, source, witness):
 
     if not witness.in_open():
         EDRLOG.log(u"Scan not submitted due to unconfirmed Open mode", "INFO")
-        EDR_CLIENT.status = _(u"not in Open? Start EDMC before Elite.")
+        EDR_CLIENT.status = _(u"Scan reporting disabled in solo/private modes.")
         return
 
     if witness.has_partial_status():
@@ -732,7 +719,7 @@ def edr_submit_traffic(contact, timestamp, source, witness):
 
     if not witness.in_open():
         EDRLOG.log(u"Skipping submit traffic due to unconfirmed Open mode", "INFO")
-        EDR_CLIENT.status = _(u"not in Open? Start EDMC before Elite.")
+        EDR_CLIENT.status = _(u"Traffic reporting disabled in solo/private modes.")
         return
 
     if witness.has_partial_status():
@@ -746,7 +733,7 @@ def edr_submit_traffic(contact, timestamp, source, witness):
 def edr_submit_multicrew_session(player, report):
     if not player.in_open() and not player.destroyed:
         EDRLOG.log(u"Skipping submit multicrew report: not in Open and not destroyed", "INFO")
-        EDR_CLIENT.status = _(u"not in Open? Start EDMC before Elite.")
+        EDR_CLIENT.status = _(u"Multicrew reporting disabled in private mode.")
         return
 
     if not EDR_CLIENT.crew_report(report):
