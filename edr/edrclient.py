@@ -29,6 +29,7 @@ import edrlegalrecords
 from edri18n import _, _c, _edr, set_language
 import random
 import math
+import clippy
 
 EDRLOG = edrlog.EDRLog()
 
@@ -615,7 +616,7 @@ class EDRClient(object):
         return self.__novel_enough_combat_contact(new["target"])
 
     def __novel_enough_combat_contact(self, contact):
-        contact_old_state = self.fights_cache.get(contact["cmdr"].lower())
+        contact_old_state = self.fights_cache.get(contact["cmdr"].lower()) # TODO: error
         if not contact_old_state:
             return True
 
@@ -785,6 +786,7 @@ class EDRClient(object):
             EDRLOG.log(u"Skipped realtime {} event because it wasn't worth alerting about: {}.".format(kind, event), "DEBUG")
         else:
             location = edentities.EDLocation(event["starSystem"], event["place"])
+            clippy.copy(event["starSystem"])
             distance = None
             try:
                 distance = self.edrsystems.distance(self.player.star_system, location.star_system)
@@ -1050,14 +1052,15 @@ class EDRClient(object):
             return
         instance_changes = self.player.instance.noteworthy_changes_json()
         if instance_changes:
-            fight["instance"] = filter(lambda x: self.__novel_enough_combat_contact(x), instance_changes)
+            instance_changes["players"] = filter(lambda x: self.__novel_enough_combat_contact(x), instance_changes["players"])
+            fight["instance"] = instance_changes
         fight["codeword"] = self.player.recon_box.keycode
         if self.server.fight(sid, fight):
             self.status = _(u"fight reported!")
             self.fights_cache.set(fight["cmdr"].lower(), fight)
-            if fight["target"]:
+            if fight.get("target", None):
                 self.fights_cache.set(fight["target"]["cmdr"].lower(), fight["target"])
-            if fight["instance"]:
+            if fight.get("instance", None):
                 for change in fight["instance"]:
                     self.fights_cache.set(change["cmdr"].lower(), change)
 
@@ -1112,6 +1115,7 @@ class EDRClient(object):
             details = [_(u"Message sent with codeword '{}'.").format(info["codeword"]), _(u"Ask the codeword to identify trusted commanders.")]
             if service in ["fuel", "repair"]:
                 fuel_service = random.choice([{"name": "Fuel Rats", "url": "https://fuelrats.com/"}, {"name": "Repair Corgis", "url": "https://candycrewguild.space/"}])
+                clippy.copy(fuel_service["url"])
                 attachment = [_(u"For good measure, also reach out to these folks with the info below:"), fuel_service["url"]]
                 fuel_info = "Fuel: {:.1f}/{:.0f}".format(info["ship"]["fuelLevel"], info["ship"]["fuelCapacity"]) if info["ship"].get("fuelLevel") else ""
                 hull_info = "Hull: {:.0f}%".format(info["ship"]["hullHealth"]["value"]) if info["ship"].get("hullHealth") else ""
@@ -1494,6 +1498,7 @@ class EDRClient(object):
             details.append(_(u"{station} ({type}), {sc_dist}").format(station=result['station']['name'], type=result['station']['type'], sc_dist=pretty_sc_dist))
             details.append(_(u"as of {date}").format(date=result['station']['updateTime']['information']))
             self.status = u"{item}: {system}, {dist} - {station} ({type}), {sc_dist}".format(item=soi_checker.name, system=result['name'], dist=pretty_dist, station=result['station']['name'], type=result['station']['type'], sc_dist=pretty_sc_dist)
+            clippy.copy(result["name"])
         else:
             self.status = _(u"{}: nothing within [{}LY, {}LS] of {}".format(soi_checker.name, int(radius), int(sc), reference))
             checked = _("checked {} systems").format(soi_checker.systems_counter) 
@@ -1553,6 +1558,7 @@ class EDRClient(object):
             if checker.hint():
                 details.append(checker.hint())
             self.status = u"{}: {} ({}LY)".format(checker.name, result['name'], pretty_dist)
+            clippy.copy(result["name"])
         else:
             self.status = _(u"{}: nothing within [{}LY] of {}".format(checker.name, int(radius), reference))
             checked = _("checked {} systems").format(checker.systems_counter) 
