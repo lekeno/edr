@@ -25,7 +25,7 @@ class ToggledFrame(tk.Frame):
                                             variable=self.show, foreground=conf.rgb("status", "check"))
         self.toggle_button.pack(side="right", expand=1, anchor="e")
 
-        self.sub_frame = tk.Frame(self, relief="sunken", borderwidth=1)
+        self.sub_frame = tk.Frame(self, relief="flat", borderwidth=0)
 
     def toggle(self):
         if bool(self.show.get()):
@@ -42,7 +42,7 @@ class EDRTogglingPanel(ToggledFrame):
         self.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
         self.output = tk.Text(self.sub_frame, width=conf.len("general", "body"), height=conf.body_rows("general"),
                                                 background=conf.rgb("general", "fill"), foreground=conf.rgb("general", "body"),
-                                                wrap=tk.WORD, padx=4)
+                                                wrap=tk.WORD, padx=4, borderwidth=0)
         self.output.pack(fill="x", expand=1)
 
         self.__configure_tags(conf)
