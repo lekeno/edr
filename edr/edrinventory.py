@@ -311,9 +311,9 @@ class EDRInventory(object):
 
     def traded(self, info):
         paid = info["Paid"]
-        self.substract(paid["Category"], paid["Name"], paid["Quantity"])
+        self.substract(paid["Category"], paid["Material"], paid["Quantity"])
         received = info["Received"]
-        self.substract(received["Category"], received["Name"], received["Quantity"])
+        self.substract(received["Category"], received["Material"], received["Quantity"])
 
     def rewarded(self, info):
         # TODO Does Search And Rescue give material rewards??
