@@ -1,6 +1,7 @@
 """
 Plugin for "EDR"
 """
+import re
 import plug
 from edrclient import EDRClient
 from edentities import EDPlayerOne, EDPlayer
@@ -384,8 +385,11 @@ def dashboard_entry(cmdr, is_beta, entry):
         else:
             EDR_CLIENT.notify_with_details(_(u"EDR Central"), [_(u"Fight reporting disabled"), _(u"Flash your lights twice to re-enable.")])
 
-
-    ed_player.piloted_vehicle.fuel_level = entry.get('Fuel', ed_player.piloted_vehicle.fuel_level)
+    fuel = entry.get('Fuel', None)
+    if fuel:
+        main = fuel.get('FuelMain', ed_player.piloted_vehicle.fuel_level)
+        reservoir = fuel.get('FuelReservoir', 0)
+        ed_player.piloted_vehicle.fuel_level = main + reservoir
 
     attitude_keys = { "Latitude", "Longitude", "Heading", "Altitude"}
     if entry.viewkeys() < attitude_keys:
@@ -831,6 +835,11 @@ def report_comms(player, entry):
             contact = player.instanced(to_cmdr)
             edr_submit_contact(contact, entry["timestamp"], "Sent text (non wing/friend player)",
                                player)
+
+    # Not The Perfect URL regexp but that should be good enough
+    m = re.match(r".*(https?://[0-9a-z.\-]*\.[0-9a-z\-]*) ?.*", entry["Message"], flags=re.IGNORECASE)
+    if m and m.group(1):
+        EDR_CLIENT.linkable_status(m.group(1))
 
 def handle_damage_events(ed_player, entry):
     if not entry["event"] in ["HullDamage", "UnderAttack", "SRVDestroyed", "FighterDestroyed", "HeatDamage", "ShieldState", "CockpitBreached", "SelfDestruct"]:

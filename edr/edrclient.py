@@ -214,6 +214,11 @@ class EDRClient(object):
         self._status.set(new_status)
         self.ui.nolink()
 
+    def linkable_status(self, link, new_status = None):
+        #TODO verify if this needs to be truncated
+        self._status.set(new_status if new_status else link)
+        self.ui.link(link)
+
     @property
     def visual_feedback(self):
         if self._visual_feedback.get() == 0:
@@ -354,8 +359,9 @@ class EDRClient(object):
             self.status = _(u"mandatory update pending (relaunch EDMC)") if self.mandatory_update else _(u"update pending (relaunch EDMC to apply)")
         else:
             # Translators: this is shown in EDMC's status
-            self.status = _(u"mandatory EDR update!") if self.mandatory_update else _(u"please update EDR!")
-            self.ui.link("https://github.com/lekeno/edr/releases/latest")
+            status = _(u"mandatory EDR update!") if self.mandatory_update else _(u"please update EDR!")
+            link = "https://github.com/lekeno/edr/releases/latest"
+            self.linkable_status(link, status)
             
 
     def prefs_changed(self):
@@ -510,7 +516,7 @@ class EDRClient(object):
                 details.append(u"{}: {}".format(section, "; ".join(summary[section])))
             if details:
                 header = _(u"SITREPS") if self.player.in_open() else _(u"SITREPS (Open)")
-                self.__sitrep(_(u"SITREPS"), details)
+                self.__sitrep(header, details)
         except edrserver.CommsJammedError:
             self.__commsjammed()
 
@@ -616,7 +622,7 @@ class EDRClient(object):
         return self.__novel_enough_combat_contact(new["target"])
 
     def __novel_enough_combat_contact(self, contact):
-        contact_old_state = self.fights_cache.get(contact["cmdr"].lower()) # TODO: error
+        contact_old_state = self.fights_cache.get(contact["cmdr"].lower())
         if not contact_old_state:
             return True
 
@@ -1060,8 +1066,8 @@ class EDRClient(object):
             self.fights_cache.set(fight["cmdr"].lower(), fight)
             if fight.get("target", None):
                 self.fights_cache.set(fight["target"]["cmdr"].lower(), fight["target"])
-            if fight.get("instance", None):
-                for change in fight["instance"]:
+            if fight.get("instance", None) and fight["instance"].get("players", None):
+                for change in fight["instance"]["players"]:
                     self.fights_cache.set(change["cmdr"].lower(), change)
 
     def crew_report(self, report):
@@ -1115,14 +1121,19 @@ class EDRClient(object):
             details = [_(u"Message sent with codeword '{}'.").format(info["codeword"]), _(u"Ask the codeword to identify trusted commanders.")]
             if service in ["fuel", "repair"]:
                 fuel_service = random.choice([{"name": "Fuel Rats", "url": "https://fuelrats.com/"}, {"name": "Repair Corgis", "url": "https://candycrewguild.space/"}])
-                clippy.copy(fuel_service["url"])
                 attachment = [_(u"For good measure, also reach out to these folks with the info below:"), fuel_service["url"]]
                 fuel_info = "Fuel: {:.1f}/{:.0f}".format(info["ship"]["fuelLevel"], info["ship"]["fuelCapacity"]) if info["ship"].get("fuelLevel") else ""
                 hull_info = "Hull: {:.0f}%".format(info["ship"]["hullHealth"]["value"]) if info["ship"].get("hullHealth") else ""
-                attachment.append("{} ({}) in {}, {} - {} {}\nInfo provided by EDR.".format(info["cmdr"], info["ship"]["type"], info["starSystem"], info["place"], fuel_info, hull_info))
+                info = u"{} ({}) in {}, {} - {} {}\nInfo provided by EDR.".format(info["cmdr"], info["ship"]["type"], info["starSystem"], info["place"], fuel_info, hull_info)
+                clippy.copy(info)
+                attachment.append(info)
                 self.ui.notify(fuel_service["name"], attachment)
                 details.append(_(u"Check ED Market Connector for instructions about other options"))
-            self.status = _(u"Message sent to EDR central")
+                status = _(u"Sent to EDR central - Also try: {}").format(fuel_service["name"])
+                link = fuel_service["url"]
+                self.linkable_status(link, status)
+            else:
+                self.status = _(u"Message sent to EDR central")
             self.__notify(_(u"EDR central"), details, clear_before = True)
             self._throttle_until_timestamp = edtime.EDTime.py_epoch_now() + 60*5 #TODO parameterize
             return True
