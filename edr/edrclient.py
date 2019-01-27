@@ -253,6 +253,10 @@ class EDRClient(object):
         self.edrcmdrs.set_player_name(name)
         self.server.set_player_name(name)
 
+    def game_mode(self, mode):
+        self.player.game_mode = mode
+        self.server.set_game_mode(mode)
+
     def pledged_to(self, power, time_pledged=0):
         if self.server.is_anonymous():
             EDRLOG.log(u"Skipping pledged_to call since the user is anonymous.", "INFO")

@@ -270,7 +270,7 @@ def handle_lifecycle_events(ed_player, entry, state):
             # { "timestamp":"2018-06-19T13:06:04Z", "event":"QuitACrew", "Captain":"Dummy" }
             # { "timestamp":"2018-06-19T13:06:16Z", "event":"Music", "MusicTrack":"MainMenu" }
             EDR_CLIENT.clear()
-            ed_player.game_mode = None
+            EDR_CLIENT.game_mode(None)
             ed_player.leave_wing()
             ed_player.leave_crew()
             ed_player.leave_vehicle()
@@ -314,9 +314,9 @@ def handle_lifecycle_events(ed_player, entry, state):
             ed_player.inventory.initialize_with_edmc(state)
         EDR_CLIENT.clear()
         ed_player.inception()
-        ed_player.game_mode = entry["GameMode"]
+        EDR_CLIENT.game_mode(entry["GameMode"])
         ed_player.update_vehicle_if_obsolete(EDVehicleFactory.from_load_game_event(entry), piloted=True)
-        EDRLOG.log(u"Game mode is {}".format(ed_player.game_mode), "DEBUG")
+        EDRLOG.log(u"Game mode is {}".format(entry["GameMode"]), "DEBUG")
         EDR_CLIENT.warmup()
         return
 
@@ -412,6 +412,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     :param state:
     :return:
     """
+    EDR_CLIENT.player_name(cmdr)
     ed_player = EDR_CLIENT.player
     ed_player.friends = state["Friends"]
 
@@ -442,7 +443,6 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["WingAdd", "WingJoin", "WingLeave"]:
         handle_wing_events(ed_player, entry)
 
-    EDR_CLIENT.player_name(cmdr)
     status_outcome = {"updated": False, "reason": "Unspecified"}
 
     vehicle = None

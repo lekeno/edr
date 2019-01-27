@@ -25,6 +25,7 @@ class EDRServer(object):
         self.EDR_API_KEY = config.edr_api_key()
         self.EDR_SERVER = config.edr_server()
         self.player_name = None
+        self.game_mode = None
         self.version = edrconfig.EDRConfig().edr_version()
         self._throttle_until_timestamp = None
 
@@ -40,6 +41,9 @@ class EDRServer(object):
 
     def set_player_name(self, name):
         self.player_name = name
+
+    def set_game_mode(self, mode):
+        self.game_mode = mode
 
     def is_authenticated(self):
         return self.REST_firebase.is_valid_auth_token()
@@ -412,7 +416,7 @@ class EDRServer(object):
 
     def __preflight(self, api_name, param):
         headers = {"Authorization": "Bearer {}".format(self.auth_token()), "EDR-Version": "v{}".format(self.version) }
-        json = { "name": self.player_name, "timestamp": {".sv": "timestamp"}, "param": param, "api": api_name }
+        json = { "name": self.player_name, "timestamp": {".sv": "timestamp"}, "param": param, "api": api_name, "mode": self.game_mode }
         EDRLOG.log(u"Preflight request for {} with {}".format(api_name, json), "DEBUG")
         endpoint = "https://us-central1-blistering-inferno-4028.cloudfunctions.net/edr/v1/preflight/{uid}".format(server=self.EDR_SERVER, uid=self.uid())
         EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
