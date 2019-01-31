@@ -68,6 +68,9 @@ class EDRCmdrDexProfile(object):
         self._iff = new_iff
         self.updated = now
     
+    def is_ally(self):
+        return self._iff == "ally"
+
     @property
     def friend(self):
         return self._friend
@@ -330,6 +333,16 @@ class EDRCmdrProfile(object):
             self.dex_profile = None
         return True
     
+    def is_friend(self):
+        if self.dex_profile:
+            return self.dex_profile.friend
+        return False
+
+    def is_ally(self):
+        if self.sqdrdex_profile:
+            return self.sqdrdex_profile.is_ally()
+        return False
+
     def is_dangerous(self, powerplay=None):
         if self.sqdrdex_profile:
             return self.sqdrdex_profile._iff == "enemy"

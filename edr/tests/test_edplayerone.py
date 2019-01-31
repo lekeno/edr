@@ -88,20 +88,20 @@ class TestEDPlayerOne(TestCase):
         cmdr.inception()
         wing_members = ["Ozram", "Arguendo", "Patch"]
         for member in wing_members:
-            self.assertFalse(cmdr.is_friend_or_in_wing(member))
-        self.assertFalse(cmdr.is_friend_or_in_wing("dummy"))
+            self.assertFalse(cmdr.is_wingmate(member))
+        self.assertFalse(cmdr.is_wingmate("dummy"))
 
         cmdr.join_wing(wing_members)
         for member in wing_members:
-            self.assertTrue(cmdr.is_friend_or_in_wing(member))
+            self.assertTrue(cmdr.is_wingmate(member))
         self.assertEquals(len(cmdr.wing.wingmates), 3)
 
-        self.assertFalse(cmdr.is_friend_or_in_wing("dummy"))
+        self.assertFalse(cmdr.is_wingmate("dummy"))
         cmdr.leave_wing()
         self.assertEquals(len(cmdr.wing.wingmates), 0)
 
         for member in wing_members:
-            self.assertFalse(cmdr.is_friend_or_in_wing(member))
+            self.assertFalse(cmdr.is_wingmate(member))
     
     def test_add_to_wing(self):
         cmdr = EDPlayerOne()
@@ -109,7 +109,7 @@ class TestEDPlayerOne(TestCase):
         wing_members = ["Ozram", "Arguendo", "Patch"]
         for member in wing_members:
             cmdr.add_to_wing(member)
-            self.assertTrue(cmdr.is_friend_or_in_wing(member))
+            self.assertTrue(cmdr.is_wingmate(member))
 
         self.assertEquals(len(cmdr.wing.wingmates), 3)
         cmdr.add_to_wing(wing_members[0])
@@ -117,9 +117,9 @@ class TestEDPlayerOne(TestCase):
 
         
         for member in wing_members:
-            self.assertTrue(cmdr.is_friend_or_in_wing(member))
+            self.assertTrue(cmdr.is_wingmate(member))
 
-        self.assertFalse(cmdr.is_friend_or_in_wing("dummy"))
+        self.assertFalse(cmdr.is_wingmate("dummy"))
     
     def test_vehicle_type(self):
         cmdr = EDPlayerOne()

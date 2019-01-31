@@ -21,7 +21,7 @@ class EDRMaterialOutcomes(object):
             grade = current_grade * (current_likelihood/base) + grade * (likelihood/base)
             likelihood = 1.0 - (1.0 - current_likelihood)*(1.0 - likelihood)
         source_lut = {
-            "datamined wake exception": "Distribution Center",
+            "datamined wake exceptions": "Distribution Center",
             "exquisite focus crystals": "Mission rewards"
         }
         source = source_lut.get(material, _(u"USS-HGE")) 
@@ -75,19 +75,19 @@ class EDRFaction(object):
 
         return len(relevant_states) > 0
 
-    def hge_yield(self, security, population, spawning_state):
+    def hge_yield(self, security, population, spawning_state, inventory):
         if self.name is None:
             return [_(u"Unknown")]
         primary_state = spawning_state == self.state
         assessment = self._assess_hge(spawning_state, self.influence, self.allegiance, security, population, primary_state)
-        return assessment.outcomes.keys()   
+        return [u"{}".format(inventory.oneliner(material)) for material in assessment.outcomes.keys()]
 
-    def ee_yield(self, security, population, spawning_state):
+    def ee_yield(self, security, population, spawning_state, inventory):
         if self.name is None:
             return [_(u"Private Data Beacon")]
         primary_state = spawning_state == self.state
         assessment = self._assess_ee(spawning_state, self.influence, self.allegiance, security, population, primary_state)
-        return assessment.outcomes.keys()  
+        return [u"{}".format(inventory.oneliner(material)) for material in assessment.outcomes.keys()]
 
     def assess(self, security, population):
         if not self.chance_of_rare_mats():
@@ -129,7 +129,7 @@ class EDRFaction(object):
             if allegiance in ['alliance', 'independent']:
                 grade += 1
             outcomes.chances_of('Proto Light Alloys', grade+bonus, influence)
-            outcomes.chances_of('Proto Heat Radiator', grade+bonus, influence)
+            outcomes.chances_of('Proto Heat Radiators', grade+bonus, influence)
             outcomes.chances_of('Proto Radiolic Alloys', grade+bonus, influence)
         elif state == 'civil unrest':
             if allegiance in ['alliance', 'independent']:
@@ -138,10 +138,10 @@ class EDRFaction(object):
         elif state in ['war', 'civil war']:
             if allegiance in ['alliance', 'independent'] or security == '$GAlAXY_MAP_INFO_state_anarchy;':
                 grade += 1
-            outcomes.chances_of('Military Grade Alloy', grade+bonus, influence)
+            outcomes.chances_of('Military Grade Alloys', grade+bonus, influence)
             outcomes.chances_of('Military Supercapacitors', grade+bonus, influence)
         elif state == 'famine':
-            outcomes.chances_of('Datamined Wake Exception', grade+bonus, influence)
+            outcomes.chances_of('Datamined Wake Exceptions', grade+bonus, influence)
         
         return outcomes
 
@@ -172,7 +172,7 @@ class EDRFaction(object):
             if allegiance in ['alliance', 'independent']:
                 grade += 1
             outcomes.chances_of('Proto Light Alloys', grade+bonus, influence)
-            outcomes.chances_of('Proto Heat Radiator', grade+bonus, influence)
+            outcomes.chances_of('Proto Heat Radiators', grade+bonus, influence)
             outcomes.chances_of('Proto Radiolic Alloys', grade+bonus, influence)
         elif state == 'civil unrest':
             if allegiance in ['alliance', 'independent']:
@@ -181,7 +181,7 @@ class EDRFaction(object):
         elif state in ['war', 'civil war']:
             if allegiance in ['alliance', 'independent'] or security == '$GAlAXY_MAP_INFO_state_anarchy;':
                 grade += 1
-            outcomes.chances_of('Military Grade Alloy', grade+bonus, influence)
+            outcomes.chances_of('Military Grade Alloys', grade+bonus, influence)
             outcomes.chances_of('Military Supercapacitors', grade+bonus, influence)
         return outcomes
 
@@ -202,6 +202,7 @@ class EDRFaction(object):
             outcomes.chances_of('Compound Shielding', grade+bonus, influence)
             outcomes.chances_of('Chemical Manipulators', grade+bonus, influence)
             outcomes.chances_of('Refined Focus Crystals', grade+bonus, influence)
+            outcomes.chances_of('Private Data Beacon', grade+bonus, influence)
         elif security == '$GAlAXY_MAP_INFO_state_anarchy;':
             outcomes.chances_of('Conductive Polymers', grade+bonus, influence)
             outcomes.chances_of('Heat Vanes', grade+bonus, influence)
@@ -293,7 +294,7 @@ class EDRFactions(object):
             assessments[faction] = factions_in_system[faction].assess(security, population)
         return assessments
 
-    def summarize_yields(self, star_system, security, population):
+    def summarize_yields(self, star_system, security, population, inventory):
         assessment = self.assess(star_system, security, population)
         if not assessment:
             return None
@@ -311,4 +312,4 @@ class EDRFactions(object):
                 if yields.get(material, None) is None:
                     yields[material] = 0
                 yields[material] += chance
-        return ["{:.0f}%: {}".format(chance*100.0, material.title()) for (material, chance) in sorted(yields.items(), key=lambda x: x[1], reverse=True)]
+        return [u"{:.0f}%: {}".format(chance*100.0, inventory.oneliner(material.title())) for (material, chance) in sorted(yields.items(), key=lambda x: x[1], reverse=True)]

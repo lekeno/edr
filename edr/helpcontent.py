@@ -74,7 +74,7 @@ class HelpContent(object):
                 _(u" - reporting scans of commanders with legal status and bounties."),
                 _(u" - reporting and getting insights about powerplay enemies."),
                 u"⚶",
-                _(u"These insights will also help other EDR users so consider applying for an EDR account at https://lekeno.github.io/"),
+                _(u"These insights will also help other EDR users so consider applying for an EDR account at https://edrecon.com/account"),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
             ]

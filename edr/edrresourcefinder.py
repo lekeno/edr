@@ -7,6 +7,7 @@ from edri18n import _
 import math
 import json
 import os
+import clippy
 
 class EDRResourceFinder(object):
 
@@ -200,6 +201,7 @@ class EDRResourceFinder(object):
             to_jameson = self.edr_systems.distance(reference_system, "HIP 12099")
             if to_bugkiller <= to_jameson:
                 pretty_dist = _(u"{distance:.3g}").format(distance=to_bugkiller) if to_bugkiller < 50.0 else _(u"{distance}").format(distance=int(to_bugkiller))
+                clippy.copy("HIP 16613")
                 return [
                     _(u"HIP 16613 ({}LY), Planet 1 A (1.4k LS), -11.0093 | -95.6755").format(pretty_dist),
                     _(u"Bring: advanced scanner, SRV."),
@@ -207,6 +209,7 @@ class EDRResourceFinder(object):
                 ]
             else:
                 pretty_dist = _(u"{distance:.3g}").format(distance=to_jameson) if to_jameson < 50.0 else _(u"{distance}").format(distance=int(to_jameson))
+                clippy.copy("HIP 12099")
                 return [
                     _(u"HIP 12099 ({}LY), Planet 1 B (1.1k LS), -54.3803 | -50.3575").format(pretty_dist),
                     _(u"Bring: advanced scanner, SRV."),
@@ -216,6 +219,7 @@ class EDRResourceFinder(object):
         if resource.lower() in ["classified scan fragment", "unusual encrypted files", "tagged encrypted codes", "specialized legacy firmware"]:
             distance = self.edr_systems.distance(reference_system, "Koli Discii")
             pretty_dist = _(u"{distance:.3g}").format(distance=distance) if distance < 50.0 else _(u"{distance}").format(distance=int(distance))
+            clippy.copy("Koli Discii")
             return [
                 _(u"Koli Discii ({}LY), Planet C 6 A (91k LS), 28.577 | 7.219").format(pretty_dist),
                 _(u"Bring: advanced scanner, SRV."),
@@ -230,6 +234,7 @@ class EDRResourceFinder(object):
             if to_renet < to_hip and to_renet < to_koli and to_renet < to_thoth:
                 what = _(u"Break the cargo rack of the crashed Anaconda, repeat.")
                 pretty_dist = _(u"{distance:.3g}").format(distance=to_renet) if to_renet < 50.0 else _(u"{distance}").format(distance=int(to_renet))
+                clippy.copy("Renet")
                 return [
                     _(u"Renet ({}LY), Planet B 1 (378 LS), 14 | 135").format(pretty_dist),
                     _(u"Bring: SRV."),
@@ -238,6 +243,7 @@ class EDRResourceFinder(object):
             elif to_thoth < to_hip and to_thoth < to_koli and to_thoth < to_renet:
                 what = _(u"Break the cargo rack of the crashed Anaconda, repeat.")
                 pretty_dist = _(u"{distance:.3g}").format(distance=to_renet) if to_thoth < 50.0 else _(u"{distance}").format(distance=int(to_thoth))
+                clippy.copy("Thoth")
                 return [
                     _(u"Thoth ({}LY), Planet 1 A (69 LS), -2.77 | 16.67").format(pretty_dist),
                     _(u"Bring: SRV."),
@@ -248,6 +254,7 @@ class EDRResourceFinder(object):
             
         if to_hip < to_koli:
             pretty_dist = _(u"{distance:.3g}").format(distance=to_hip) if to_hip < 50.0 else _(u"{distance}").format(distance=int(to_hip))
+            clippy.copy("HIP 16613")
             return [
                 _(u"HIP 16613 ({}LY), Planet 1 A (1.4k LS), -11.0093 | -95.6755").format(pretty_dist),
                 _(u"Bring: advanced scanner, SRV."),
@@ -255,6 +262,7 @@ class EDRResourceFinder(object):
             ]
         
         pretty_dist = _(u"{distance:.3g}").format(distance=to_koli) if to_koli < 50.0 else _(u"{distance}").format(distance=int(to_koli))
+        clippy.copy("Koli Discii")
         return [
             _(u"Koli Discii ({}LY), Planet C 6 A (91k LS), 28.577 | 7.219").format(pretty_dist),
             _(u"Bring: advanced scanner, SRV."),
@@ -301,6 +309,7 @@ class EDRResourceFinder(object):
             first_line += _(u" {resource} @ {probability}%").format(resource=resource, probability=int(100*probability))
         alt_distance = self.edr_systems.distance(reference_system, "Hyades Sector DR-V c2-23")
         alt_pretty_dist = _(u"{distance:.3g}").format(distance=alt_distance) if alt_distance < 50.0 else _(u"{distance}").format(distance=int(alt_distance))
+        clippy.copy("HR 5991")
         return [
             first_line,
             _(u"Bring: advanced scanner, SRV."),
@@ -336,6 +345,7 @@ class EDRResourceFinder(object):
         first_line = _(u"Hyades Sector DR-V c2-23 ({}LY), Planet A 5 (60 LS), Dav's Hope at 44.8180 | -31.3893").format(pretty_dist)
         if probability:
             first_line += _(u" {resource} @ {probability}%").format(resource=resource, probability=int(100*probability))
+        clippy.copy("Hyades Sector DR-V c2-23")
         return [
             first_line,
             _(u"Bring: advanced scanner, SRV."),
@@ -356,6 +366,7 @@ class EDRResourceFinder(object):
 
         distance = self.edr_systems.distance(reference_system, "Isinor")
         pretty_dist = _(u"{distance:.3g}").format(distance=distance) if distance < 50.0 else _(u"{distance}").format(distance=int(distance))
+        clippy.copy("Isinor")
         return [
             _(u"Isinor ({}LY), Planet A 5 (60 LS), Permit locked (missions or exploration data for 'Chapter of Isinor')").format(pretty_dist),
             _(u"Bring: permit, decent shields"),
@@ -503,6 +514,7 @@ class EDRResourceFinder(object):
                 best = planet
         
         pretty_dist = _(u"{distance:.3g}").format(distance=best_distance) if best_distance < 50.0 else _(u"{distance}").format(distance=int(best_distance))
+        clippy.copy(best["name"])
         return [
             _(u'{} ({}LY), Planet {} ({}LS, {}G), {} @ {}%').format(best['name'], pretty_dist, best['planet'], best['distanceToArrival'], best['gravity'], resource, int(100*best['concentration'])),
             _(u"Bring: advanced scanner, SRV."),
@@ -571,6 +583,7 @@ class EDRResourceFinder(object):
         pretty_dist = _(u"{distance:.3g}").format(distance=best_distance) if best_distance < 50.0 else _(u"{distance}").format(distance=int(best_distance))
         poi = pois[best['poi']]
 
+        clippy.copy(poi['name'])
         if best.get('gravity', None):
             return [
                 _(u'{} ({}LY), {} ({}LS, {}G), {} @ {}%').format(poi['name'], pretty_dist, poi['loc'], poi['distanceToArrival'], poi['gravity'], resource, int(100*best['probability'])),
@@ -593,16 +606,16 @@ class EDRResourceFinder(object):
             _(u'Higher chances in high population (high traffic) systems')
         ]
 
-    def assess_jump(self, fsdjump_event):
+    def assess_jump(self, fsdjump_event, inventory):
         if not "Factions" in fsdjump_event:
             return None
         security = fsdjump_event.get('SystemSecurity', '')
         population = fsdjump_event.get('Population', 0)
         factions = fsdjump_event.get('Factions', [])
         self.edr_factions.process(factions, fsdjump_event["StarSystem"])
-        return self.edr_factions.summarize_yields(fsdjump_event["StarSystem"], security, population)
+        return self.edr_factions.summarize_yields(fsdjump_event["StarSystem"], security, population, inventory)
         
-    def assess_signal(self, fsssignal_event, location):
+    def assess_signal(self, fsssignal_event, location, inventory):
         uss_type = fsssignal_event.get("USSType", None)    
         state = edrfactions.EDRFaction._simplified_state(fsssignal_event.get("SpawningState", None))
         faction = self.edr_factions.get(fsssignal_event.get("SpawningFaction", ""), location.star_system)
@@ -611,14 +624,14 @@ class EDRResourceFinder(object):
         security = location.security
         population = location.population
         if uss_type == "$USS_Type_VeryValuableSalvage;":        
-            return faction.hge_yield(security, population, state)
+            return faction.hge_yield(security, population, state, inventory)
         elif uss_type == "$USS_Type_ValuableSalvage;":
-            return faction.ee_yield(security, population, state)
+            return faction.ee_yield(security, population, state, inventory)
         return None
 
 
     @staticmethod
-    def assess_materials_density(materials_density):
+    def assess_materials_density(materials_density, inventory):
         if not materials_density:
             return None
         noteworthy = []
@@ -634,5 +647,6 @@ class EDRResourceFinder(object):
 
             grade = (material["Percent"] - reference["typical"]) / (reference["highest"] - reference["typical"])
             chance = '+' * int(min(5, round(abs(grade)*5, 0)))
-            noteworthy.append(_(u"{raw}{chance} @ {actual:.1f}% (median={typical:.1f}%; max={max:.1f}%)").format(raw=name, chance=chance, actual=material["Percent"], typical=reference["typical"], max=reference["highest"]))
+            oneliner = inventory.oneliner(name)
+            noteworthy.append(_(u"{raw} {chance} @ {actual:.1f}% (median={typical:.1f}%; max={max:.1f}%)").format(raw=oneliner, chance=chance, actual=material["Percent"], typical=reference["typical"], max=reference["highest"]))
         return noteworthy

@@ -58,22 +58,27 @@ class EDRServiceFinder(threading.Thread):
                     serviceAlt['station'] = candidate
 
         systems = self.edr_systems.systems_within_radius(self.star_system, self.radius)
+        if not systems:
+            return None
 
         candidates = {'prime': servicePrime, 'alt': serviceAlt}
         candidates = self.__search(systems, candidates)
-        serviceAlt = candidates['alt']
-        servicePrime = candidates['prime']
-
-        if not servicePrime and not serviceAlt:
-            shuffle(systems)
-            candidates = self.__search(systems, candidates)
+        if candidates:
             serviceAlt = candidates['alt']
             servicePrime = candidates['prime']
+        else:
+            shuffle(systems)
+            candidates = self.__search(systems, candidates)
+            if candidates:
+                serviceAlt = candidates['alt']
+                servicePrime = candidates['prime']
 
         return servicePrime if servicePrime else serviceAlt
 
     def __search(self, systems, candidates):
         trials = 0
+        if not systems:
+            return None
         for system in systems:
             possibility = self.checker.check_system(system)
             accessible = not system.get('requirePermit', False) or (system.get('requirePermit', False) and system['name'] in self.permits)
