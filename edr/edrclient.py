@@ -323,13 +323,13 @@ class EDRClient(object):
         frame.columnconfigure(1, weight=1)
 
         # Translators: this is shown in the preferences panel
-        ttkHyperlinkLabel.HyperlinkLabel(frame, text=_(u"EDR website"), background=notebook.Label().cget('background'), url="https://github.com/lekeno/edr/", underline=True).grid(padx=10, sticky=tk.W)       
+        ttkHyperlinkLabel.HyperlinkLabel(frame, text=_(u"EDR website"), background=notebook.Label().cget('background'), url="https://edrecon.com", underline=True).grid(padx=10, sticky=tk.W)       
 
         # Translators: this is shown in the preferences panel
         notebook.Label(frame, text=_(u'Credentials')).grid(padx=10, sticky=tk.W)
         ttk.Separator(frame, orient=tk.HORIZONTAL).grid(columnspan=2, padx=10, pady=2, sticky=tk.EW)
         # Translators: this is shown in the preferences panel
-        cred_label = notebook.Label(frame, text=_(u'Log in with your EDR account for full access'))
+        cred_label = notebook.Label(frame, text=_(u'Log in with your EDR account for full access (https://edrecon.com/account)'))
         cred_label.grid(padx=10, columnspan=2, sticky=tk.W)
 
         notebook.Label(frame, text=_(u"Email")).grid(padx=10, row=11, sticky=tk.W)
@@ -364,7 +364,7 @@ class EDRClient(object):
         else:
             # Translators: this is shown in EDMC's status
             status = _(u"mandatory EDR update!") if self.mandatory_update else _(u"please update EDR!")
-            link = "https://github.com/lekeno/edr/releases/latest"
+            link = "https://edrecon.com/latest"
             self.linkable_status(link, status)
             
 
@@ -673,7 +673,7 @@ class EDRClient(object):
                 details = _(u"{} alerts already enabled").format(_(kind))
             elif kind == EDROpponents.ENEMIES:
                 if self.is_anonymous():
-                    details = _(u"Request an EDR account to access enemy alerts (https://lekeno.github.io)")
+                    details = _(u"Request an EDR account to access enemy alerts (https://edrecon.com/account)")
                 elif not self.player.power:
                     details = _(u"Pledge to a power to access enemy alerts")
                 elif self.player.time_pledged < self.enemy_alerts_pledge_threshold:
@@ -1348,7 +1348,7 @@ class EDRClient(object):
             if (now_epoch - self.previous_ad) <= self.edr_needs_u_novelty_threshold:
                 return False
 
-        self.__notify(_(u"EDR needs you!"), [context, u"--", _(u"Apply for an account at https://lekeno.github.io/"), _(u"It's free, no strings attached.")], clear_before=True)
+        self.__notify(_(u"EDR needs you!"), [context, u"--", _(u"Apply for an account at https://edrecon.com/account"), _(u"It's free, no strings attached.")], clear_before=True)
         self.previous_ad = now_epoch
         return True
 
