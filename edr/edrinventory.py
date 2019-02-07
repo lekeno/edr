@@ -89,7 +89,7 @@ class EDRInventory(object):
         "filamentcomposites": {"localized": _(u"Filament Composites"), "category": "manufactured", "grade": 2},
         "compactcomposites": {"localized": _(u"Compact Composites"), "category": "manufactured", "grade": 1},
         "chemicalstorageunits": {"localized": _(u"Chemical Storage Units"), "category": "manufactured", "grade": 1},
-        "protoheatradiator": {"localized": _(u"Proto Heat Radiators"), "category": "manufactured", "grade": 5},
+        "protoheatradiators": {"localized": _(u"Proto Heat Radiators"), "category": "manufactured", "grade": 5},
         "guardian_powerconduit": {"localized": _(u"Guardian Power Conduit"), "category": "manufactured", "grade": 2},
         "guardian_powercell": {"localized": _(u"Guardian Power Cell"), "category": "manufactured", "grade": 1},
         "guardian_techcomponent": {"localized": _(u"Guardian Technology Component"), "category": "manufactured", "grade": 3},
@@ -313,7 +313,7 @@ class EDRInventory(object):
         paid = info["Paid"]
         self.substract(paid["Category"], paid["Material"], paid["Quantity"])
         received = info["Received"]
-        self.substract(received["Category"], received["Material"], received["Quantity"])
+        self.add(received["Category"], received["Material"], received["Quantity"])
 
     def rewarded(self, info):
         # TODO Does Search And Rescue give material rewards??
