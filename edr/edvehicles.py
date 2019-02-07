@@ -44,7 +44,9 @@ class EDVehicle(object):
         self.name = None
         self.id = None
         self.identity = None
-        self.rebuy = 0
+        self.rebuy = None
+        self._value = None
+        self.hot = False
         now = EDTime.py_epoch_now()
         self._hull_health = {"timestamp": now, "value": 100.0}
         self._shield_health = {"timestamp": now, "value": 100.0}
@@ -74,6 +76,15 @@ class EDVehicle(object):
         now = EDTime.py_epoch_now()
         self.timestamp = now
         self._hull_health = {"timestamp": now, "value": new_value}
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, new_value):
+        self._value = new_value
+        self.rebuy = .1 * new_value
 
     @property
     def shield_health(self):
@@ -337,18 +348,21 @@ class EDSidewinder(EDVehicle):
         super(EDSidewinder, self).__init__()
         self.type = u'Sidewinder'
         self.size = EDVehicleSize.SMALL
+        self.value = 31000
 
 class EDHauler(EDVehicle):
     def __init__(self):
         super(EDHauler, self).__init__()
         self.type = u'Hauler'
         self.size = EDVehicleSize.SMALL
+        self.value = 51720
 
 class EDEagle(EDVehicle):
     def __init__(self):
         super(EDEagle, self).__init__()
         self.type = u'Eagle'
         self.size = EDVehicleSize.SMALL
+        self.value = 43800
 
 class EDAdder(EDVehicle):
     def __init__(self):
@@ -356,12 +370,14 @@ class EDAdder(EDVehicle):
         self.type = u'Adder'
         self.size = EDVehicleSize.SMALL
         self.seats = 2
+        self.value = 86472
 
 class EDViperMkIII(EDVehicle):
     def __init__(self):
         super(EDViperMkIII, self).__init__()
         self.type = u'Viper Mk III'
         self.size = EDVehicleSize.SMALL
+        self.value = 141592
 
 class EDCobraMkIII(EDVehicle):
     def __init__(self):
@@ -369,24 +385,28 @@ class EDCobraMkIII(EDVehicle):
         self.type = u'Cobra Mk III'
         self.size = EDVehicleSize.SMALL
         self.seats = 2
+        self.value = 346634
 
 class EDT6Transporter(EDVehicle):
     def __init__(self):
         super(EDT6Transporter, self).__init__()
         self.type = u'Type-6 Transporter'
         self.size = EDVehicleSize.MEDIUM
+        self.value = 1044612
 
 class EDDolphin(EDVehicle):
     def __init__(self):
         super(EDDolphin, self).__init__()
         self.type = u'Dolphin'
         self.size = EDVehicleSize.SMALL
+        self.value = 1334244
 
 class EDT7Transporter(EDVehicle):
     def __init__(self):
         super(EDT7Transporter, self).__init__()
         self.type = u'Type-7 Transporter'
         self.size = EDVehicleSize.LARGE
+        self.value = 17469174
 
 class EDAspExplorer(EDVehicle):
     def __init__(self):
@@ -394,6 +414,7 @@ class EDAspExplorer(EDVehicle):
         self.type = u'Asp Explorer'
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
+        self.value = 6650520
 
 class EDVulture(EDVehicle):
     def __init__(self):
@@ -401,6 +422,7 @@ class EDVulture(EDVehicle):
         self.type = u'Vulture'
         self.size = EDVehicleSize.SMALL
         self.seats = 2
+        self.value = 4922534
 
 class EDImperialClipper(EDVehicle):
     def __init__(self):
@@ -408,6 +430,7 @@ class EDImperialClipper(EDVehicle):
         self.type = u'Imperial Clipper'
         self.size = EDVehicleSize.LARGE
         self.seats = 2
+        self.value = 22256248
 
 class EDFederalDropship(EDVehicle):
     def __init__(self):
@@ -415,6 +438,7 @@ class EDFederalDropship(EDVehicle):
         self.type = u'Federal Dropship'
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
+        self.value = 14273598
 
 class EDOrca(EDVehicle):
     def __init__(self):
@@ -422,6 +446,7 @@ class EDOrca(EDVehicle):
         self.type = u'Orca'
         self.size = EDVehicleSize.LARGE
         self.seats = 2
+        self.value = 48529270
 
 class EDT9Heavy(EDVehicle):
     def __init__(self):
@@ -429,6 +454,7 @@ class EDT9Heavy(EDVehicle):
         self.type = u'Type-9 Heavy'
         self.size = EDVehicleSize.LARGE
         self.seats = 3
+        self.value = 77693648
 
     def supports_slf(self):
         return True
@@ -439,6 +465,7 @@ class EDT10Defender(EDVehicle):
         self.type = u'Type-10 Defender'
         self.size = EDVehicleSize.LARGE
         self.seats = 3
+        self.value = 124874411
     
     def supports_slf(self):
         return True
@@ -449,6 +476,7 @@ class EDPython(EDVehicle):
         self.type = u'Python'
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
+        self.value = 56824391
     
 class EDBelugaLiner(EDVehicle):
     def __init__(self):
@@ -456,6 +484,7 @@ class EDBelugaLiner(EDVehicle):
         self.type = u'Beluga Liner'
         self.size = EDVehicleSize.LARGE
         self.seats = 3
+        self.value = 84492158
 
     def supports_slf(self):
         return True
@@ -466,6 +495,7 @@ class EDFerDeLance(EDVehicle):
         self.type = u'Fer-de-Lance'
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
+        self.value = 51556410
 
 class EDAnaconda(EDVehicle):
     def __init__(self):
@@ -473,6 +503,7 @@ class EDAnaconda(EDVehicle):
         self.type = u'Anaconda'
         self.size = EDVehicleSize.LARGE
         self.seats = 3
+        self.value = 146402444
 
     def supports_slf(self):
         return True
@@ -483,6 +514,7 @@ class EDFederalCorvette(EDVehicle):
         self.type = u'Federal Corvette'
         self.size = EDVehicleSize.LARGE
         self.seats = 3
+        self.value = 187402444
     
     def supports_slf(self):
         return True
@@ -493,6 +525,7 @@ class EDImperialCutter(EDVehicle):
         self.type = u'Imperial Cutter'
         self.size = EDVehicleSize.LARGE
         self.seats = 3
+        self.value = 208402444
 
     def supports_slf(self):
         return True
@@ -502,24 +535,28 @@ class EDDiamondbackScout(EDVehicle):
         super(EDDiamondbackScout, self).__init__()
         self.type = u'Diamondback Scout'
         self.size = EDVehicleSize.SMALL
+        self.value = 561244
 
 class EDImperialCourier(EDVehicle):
     def __init__(self):
         super(EDImperialCourier, self).__init__()
         self.type = u'Imperial Courier'
         self.size = EDVehicleSize.SMALL
+        self.value = 2539844
 
 class EDDiamondbackExplorer(EDVehicle):
     def __init__(self):
         super(EDDiamondbackExplorer, self).__init__()
         self.type = u'Diamondback Explorer'
         self.size = EDVehicleSize.SMALL
+        self.value = 1891674
 
 class EDImperialEagle(EDVehicle):
     def __init__(self):
         super(EDImperialEagle, self).__init__()
         self.type = u'Imperial Eagle'
         self.size = EDVehicleSize.SMALL
+        self.value = 109492
 
 class EDFederalAssaultShip(EDVehicle):
     def __init__(self):
@@ -527,6 +564,7 @@ class EDFederalAssaultShip(EDVehicle):
         self.type = u'Federal Assault Ship'
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
+        self.value = 19774598
 
 class EDFederalGunship(EDVehicle):
     def __init__(self):
@@ -534,6 +572,7 @@ class EDFederalGunship(EDVehicle):
         self.type = u'Federal Gunship'
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
+        self.value = 35773598
 
     def supports_slf(self):
         return True
@@ -543,6 +582,7 @@ class EDViperMkIV(EDVehicle):
         super(EDViperMkIV, self).__init__()
         self.type = u'Viper Mk IV'
         self.size = EDVehicleSize.SMALL
+        self.value = 434844
 
 class EDCobraMkIV(EDVehicle):
     def __init__(self):
@@ -550,6 +590,7 @@ class EDCobraMkIV(EDVehicle):
         self.type = u'Cobra Mk IV'
         self.size = EDVehicleSize.SMALL
         self.seats = 2
+        self.value = 744574
 
 class EDKeelback(EDVehicle):
     def __init__(self):
@@ -557,6 +598,7 @@ class EDKeelback(EDVehicle):
         self.type = u'Keelback'
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
+        self.value = 3123064
 
     def supports_slf(self):
         return True
@@ -567,6 +609,7 @@ class EDAspScout(EDVehicle):
         self.type = u'Asp Scout'
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
+        self.value = 3959064
 
 class EDAllianceChieftain(EDVehicle):
     def __init__(self):
@@ -574,6 +617,7 @@ class EDAllianceChieftain(EDVehicle):
         self.type = u'Alliance Chieftain'
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
+        self.value = 18952161
 
 class EDAllianceChallenger(EDVehicle):
     def __init__(self):
@@ -581,6 +625,7 @@ class EDAllianceChallenger(EDVehicle):
         self.type = u'Alliance Challenger'
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
+        self.value = 30540973
 
 class EDAllianceCrusader(EDVehicle):
     def __init__(self):
@@ -588,6 +633,7 @@ class EDAllianceCrusader(EDVehicle):
         self.type = u'Alliance Crusader'
         self.size = EDVehicleSize.MEDIUM
         self.seats = 3
+        self.value = 23635619
 
     def supports_slf(self):
         return True
@@ -598,6 +644,7 @@ class EDKraitMkII(EDVehicle):
         self.type = u'Krait Mk II'
         self.size = EDVehicleSize.MEDIUM
         self.seats = 3
+        self.value = 45660416
 
     def supports_slf(self):
         return True
@@ -608,6 +655,7 @@ class EDKraitPhantom(EDVehicle):
         self.type = u'Krait Phantom'
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
+        self.value = 44139676
 
 class EDMamba(EDVehicle):
     def __init__(self):
@@ -615,6 +663,7 @@ class EDMamba(EDVehicle):
         self.type = u'Mamba'
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
+        self.value = 56289969
 
 class EDShipLaunchedFighter(EDVehicle):
     def __init__(self):
@@ -840,6 +889,15 @@ class EDVehicleFactory(object):
         for module in modules:
             health = modules[module]['Health'] * 100.0 if 'Health' in modules[module] else None 
             vehicle.subsystem_health(modules[module].get('Item', None), health)
+        return vehicle
+
+    @staticmethod
+    def from_stored_ship(ship_info):
+        vehicle = EDVehicleFactory.from_internal_name(ship_info.get("ShipType", 'unknown'))
+        vehicle.id = ship_info.get('ShipID', None)
+        vehicle.name = ship_info.get('Name', None)
+        vehicle.value = ship_info.get('Value', None)
+        vehicle.hot = ship_info.get('Hot', None)
         return vehicle
 
     @staticmethod

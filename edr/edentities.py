@@ -657,6 +657,7 @@ class EDPlayerOne(EDPlayer):
         self.planetary_destination = None
         self.recon_box = edreconbox.EDReconBox()
         self.inventory = edrinventory.EDRInventory()
+        self.fleet = edrfleet.EDRFleet()
 
     def __repr__(self):
         return str(self.__dict__)
