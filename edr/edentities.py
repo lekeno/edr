@@ -646,6 +646,7 @@ class EDPlayerOne(EDPlayer):
     def __init__(self, name=None):
         super(EDPlayerOne, self).__init__(name)
         self.game_mode = None
+        self.private_group = None
         self.previous_mode = None
         self.previous_wing = set()
         self.from_birth = False
@@ -712,6 +713,9 @@ class EDPlayerOne(EDPlayer):
     def in_solo_or_private(self):
         return self.game_mode in ["Solo", "Group"]
 
+    def in_solo(self):
+        return self.game_mode == "Solo"
+
     def in_open(self):
         return self.game_mode == "Open"
 
@@ -737,8 +741,10 @@ class EDPlayerOne(EDPlayer):
     def killed(self):
         super(EDPlayerOne, self).killed()
         self.previous_mode = self.game_mode
+        self.previous_private_group = self.private_group
         self.previous_wing = self.wing.wingmates.copy()
         self.game_mode = None
+        self.private_group = None
         self.wing = EDWing()
         self.crew = None
         self.target = None
@@ -747,7 +753,8 @@ class EDPlayerOne(EDPlayer):
         self._touch()
 
     def resurrect(self, rebought=True):
-        self.game_mode = self.previous_mode 
+        self.game_mode = self.previous_mode
+        self.private_group = self.previous_private_group
         self.wing = EDWing(self.previous_wing)
         self.previous_mode = None
         self.previous_wing = set()

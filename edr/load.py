@@ -314,7 +314,7 @@ def handle_lifecycle_events(ed_player, entry, state):
             ed_player.inventory.initialize_with_edmc(state)
         EDR_CLIENT.clear()
         ed_player.inception()
-        EDR_CLIENT.game_mode(entry["GameMode"])
+        EDR_CLIENT.game_mode(entry["GameMode"], entry.get("Group", None))
         ed_player.update_vehicle_if_obsolete(EDVehicleFactory.from_load_game_event(entry), piloted=True)
         EDRLOG.log(u"Game mode is {}".format(entry["GameMode"]), "DEBUG")
         EDR_CLIENT.warmup()
@@ -542,7 +542,9 @@ def edr_update_cmdr_status(cmdr, reason_for_update, timestamp):
         "ship": cmdr.vehicle_type(),
         "timestamp": edt.as_js_epoch(),
         "source": reason_for_update,
-        "reportedBy": cmdr.name
+        "reportedBy": cmdr.name,
+        "mode": cmdr.game_mode,
+        "group": cmdr.private_group
     }
 
     EDRLOG.log(u"report: {}".format(report), "DEBUG")
@@ -586,7 +588,9 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
         "victim": victim.name,
         "victimShip": victim.vehicle_type(),
         "reportedBy": victim.name,
-        "byPledge": victim.powerplay.canonicalize() if victim.powerplay else ""
+        "byPledge": victim.powerplay.canonicalize() if victim.powerplay else "",
+        "mode": victim.game_mode,
+        "group": victim.private_group
     }
 
     if not EDR_CLIENT.crime(victim.star_system, report):
@@ -621,7 +625,9 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim, timestamp):
         "victim": victim.name,
         "victimShip": victim.vehicle_type(),
         "reportedBy": criminal_cmdr.name,
-        "byPledge": criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else ""
+        "byPledge": criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else "",
+        "mode": criminal_cmdr.game_mode,
+        "group": criminal_cmdr.private_group
     }
 
     EDRLOG.log(u"Perpetrated crime: {}".format(report), "DEBUG")
@@ -659,7 +665,9 @@ def edr_submit_contact(contact, timestamp, source, witness):
         "ship" : contact.vehicle_type(),
         "source": source,
         "reportedBy": witness.name,
-        "byPledge": witness.powerplay.canonicalize() if witness.powerplay else ""
+        "byPledge": witness.powerplay.canonicalize() if witness.powerplay else "",
+        "mode": witness.game_mode,
+        "group": witness.private_group
     }
 
     if witness.has_partial_status():
@@ -683,6 +691,8 @@ def edr_submit_scan(scan, timestamp, source, witness):
     report["source"] = source
     report["reportedBy"] = witness.name
     report["byPledge"] = witness.powerplay.canonicalize() if witness.powerplay else ""
+    report["mode"] = witness.game_mode
+    report["group"] = witness.private_group
 
     if not witness.in_open():
         EDRLOG.log(u"Scan not submitted due to unconfirmed Open mode", "INFO")
@@ -718,7 +728,9 @@ def edr_submit_traffic(contact, timestamp, source, witness):
         "ship" : contact.vehicle_type(),
         "source": source,
         "reportedBy": witness.name,
-        "byPledge": witness.powerplay.canonicalize() if witness.powerplay else ""
+        "byPledge": witness.powerplay.canonicalize() if witness.powerplay else "",
+        "mode": witness.game_mode,
+        "group": witness.private_group
     }
 
     if not witness.in_open():
