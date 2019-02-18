@@ -271,7 +271,7 @@ class EDRClient(object):
         self.server.logout()
         if self.server.login(self.email, self.password):
             # Translators: this is shown on EDMC's status bar when the authentication succeeds
-            self.status = _(u"authenticated.")
+            self.status = _(u"authenticated.") if self.is_anonymous() else _(u"authenticated (guest).")
             return True
         # Translators: this is shown on EDMC's status bar when the authentication fails
         self.status = _(u"not authenticated.")
@@ -352,7 +352,7 @@ class EDRClient(object):
                              variable=self._audio_feedback).grid(padx=10, row=17, sticky=tk.W)
 
         if self.server.is_authenticated():
-            self.status = _(u"authenticated.")
+            self.status = _(u"authenticated.") if self.is_anonymous() else _(u"authenticated (guest).")
         else:
             self.status = _(u"not authenticated.")
 
@@ -1128,10 +1128,7 @@ class EDRClient(object):
             EDRLOG.log(u"Skipping EDR Central call since the user is anonymous.", "INFO")
             self.advertise_full_account(_(u"Sorry, this feature only works with an EDR account."), passive=False)
             return False
-        if not self.player.in_open(): #TODO allow for private group?
-            EDRLOG.log(u"Skipping EDR Central call since the user is not in open.", "INFO")
-            self.__notify(_(u"EDR Central"), [_(u"Sorry, this feature only works in Open mode.")], clear_before=True)
-            return False
+        
         throttling = self.__throttling_duration()
         if throttling:
             self.status = _(u"Message not sent. Try again in {duration}.").format(duration=edtime.EDTime.pretty_print_timespan(throttling))
