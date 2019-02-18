@@ -271,7 +271,7 @@ class EDRClient(object):
         self.server.logout()
         if self.server.login(self.email, self.password):
             # Translators: this is shown on EDMC's status bar when the authentication succeeds
-            self.status = _(u"authenticated.") if self.is_anonymous() else _(u"authenticated (guest).")
+            self.status = _(u"authenticated (guest).") if self.is_anonymous() else _(u"authenticated.")
             return True
         # Translators: this is shown on EDMC's status bar when the authentication fails
         self.status = _(u"not authenticated.")
@@ -352,7 +352,7 @@ class EDRClient(object):
                              variable=self._audio_feedback).grid(padx=10, row=17, sticky=tk.W)
 
         if self.server.is_authenticated():
-            self.status = _(u"authenticated.") if self.is_anonymous() else _(u"authenticated (guest).")
+            self.status = _(u"authenticated (guest).") if self.is_anonymous() else _(u"authenticated.")
         else:
             self.status = _(u"not authenticated.")
 
