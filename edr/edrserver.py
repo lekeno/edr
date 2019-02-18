@@ -1,5 +1,4 @@
 import json
-import urllib
 import calendar
 import time
 
@@ -9,7 +8,6 @@ import edrconfig
 import edrlog
 
 import requests
-import urllib
 
 
 EDRLOG = edrlog.EDRLog()
@@ -160,9 +158,9 @@ class EDRServer(object):
             raise CommsJammedError("cmdr")
         cmdr_profile = edrcmdrprofile.EDRCmdrProfile()
 
-        params = { "orderBy": '"cname"', "equalTo": json.dumps(urllib.quote_plus(cmdr.lower().encode('utf-8'))), "limitToFirst": 1, "auth": self.auth_token()}
+        params = { "orderBy": '"cname"', "equalTo": json.dumps(cmdr.lower().encode('utf-8')), "limitToFirst": 1, "auth": self.auth_token()}
         endpoint = "{}/v1/cmdrs.json".format(self.EDR_SERVER)
-        EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
+        EDRLOG.log(u"Endpoint: {} with params={}".format(endpoint, params), "DEBUG")
         resp = requests.get(endpoint, params=params)
 
         if resp.status_code != requests.codes.ok:
