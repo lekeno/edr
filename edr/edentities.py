@@ -658,7 +658,6 @@ class EDPlayerOne(EDPlayer):
         self.planetary_destination = None
         self.recon_box = edreconbox.EDReconBox()
         self.inventory = edrinventory.EDRInventory()
-        self.fleet = edrfleet.EDRFleet()
 
     def __repr__(self):
         return str(self.__dict__)
@@ -696,7 +695,9 @@ class EDPlayerOne(EDPlayer):
             u"wingof": len(self.wing.wingmates),
             u"wing": self.wing.noteworthy_changes_json(self.instance),
             u"byPledge": self.powerplay.canonicalize() if self.powerplay else u'',
-            u"ship": self.piloted_vehicle.json(fuel_info=fuel_info)
+            u"ship": self.piloted_vehicle.json(fuel_info=fuel_info),
+            u"mode": self.game_mode,
+            u"group": self.private_group
         }
         if with_target:
             result[u"target"] = self.target.json() if self.target else {}
