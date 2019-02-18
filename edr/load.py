@@ -253,7 +253,7 @@ def handle_change_events(ed_player, entry):
 
     if entry["event"] in ["Undocked", "Docked", "DockingCancelled", "DockingDenied",
                           "DockingGranted", "DockingRequested", "DockingTimeout"]:
-        place = entry["StationName"]
+        place = entry.get("StationName", "Unknown")
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         ed_player.to_normal_space()
         if entry["event"] == "Docked":
@@ -829,12 +829,12 @@ def report_comms(player, entry):
             from_cmdr = entry["From"]
             if entry["From"].startswith("$cmdr_decorate:#name="):
                 from_cmdr = entry["From"][len("$cmdr_decorate:#name="):-1]
-                EDRLOG.log(u"Text from {} in star system".format(from_cmdr), "INFO")
-                contact = EDPlayer(from_cmdr)
-                contact.location = player.location
-                contact.place = "Unknown"
-                edr_submit_contact(contact, entry["timestamp"],
-                                   "Received text (starsystem channel)", player)
+            EDRLOG.log(u"Text from {} in star system".format(from_cmdr), "INFO")
+            contact = EDPlayer(from_cmdr)
+            contact.location = player.location
+            contact.place = "Unknown"
+            edr_submit_contact(contact, entry["timestamp"],
+                                "Received text (starsystem channel)", player)
     elif entry["event"] == "SendText" and not entry["To"] in ["local", "wing", "starsystem", "squadron", "squadleaders"]:
         to_cmdr = entry["To"]
         if entry["To"].startswith("$cmdr_decorate:#name="):
