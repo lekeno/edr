@@ -525,8 +525,8 @@ def edr_update_cmdr_status(cmdr, reason_for_update, timestamp):
     :param reason_for_update:
     :return:
     """
-    if not cmdr.in_open():
-        EDRLOG.log(u"Skipping cmdr update due to unconfirmed Open mode", "ERROR")
+    if not cmdr.in_solo():
+        EDRLOG.log(u"Skipping cmdr update due to Solo mode", "ERROR")
         return
 
     if cmdr.has_partial_status():
