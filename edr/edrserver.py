@@ -1,5 +1,4 @@
 import json
-import urllib
 import calendar
 import time
 
@@ -9,7 +8,6 @@ import edrconfig
 import edrlog
 
 import requests
-import urllib
 
 
 EDRLOG = edrlog.EDRLog()
@@ -26,6 +24,7 @@ class EDRServer(object):
         self.EDR_SERVER = config.edr_server()
         self.player_name = None
         self.game_mode = None
+        self.private_group = None
         self.version = edrconfig.EDRConfig().edr_version()
         self._throttle_until_timestamp = None
 
@@ -42,8 +41,9 @@ class EDRServer(object):
     def set_player_name(self, name):
         self.player_name = name
 
-    def set_game_mode(self, mode):
+    def set_game_mode(self, mode, group = None):
         self.game_mode = mode
+        self.private_group = group
 
     def is_authenticated(self):
         return self.REST_firebase.is_valid_auth_token()
@@ -158,9 +158,9 @@ class EDRServer(object):
             raise CommsJammedError("cmdr")
         cmdr_profile = edrcmdrprofile.EDRCmdrProfile()
 
-        params = { "orderBy": '"cname"', "equalTo": json.dumps(urllib.quote_plus(cmdr.lower().encode('utf-8'))), "limitToFirst": 1, "auth": self.auth_token()}
+        params = { "orderBy": '"cname"', "equalTo": json.dumps(cmdr.lower().encode('utf-8')), "limitToFirst": 1, "auth": self.auth_token()}
         endpoint = "{}/v1/cmdrs.json".format(self.EDR_SERVER)
-        EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
+        EDRLOG.log(u"Endpoint: {} with params={}".format(endpoint, params), "DEBUG")
         resp = requests.get(endpoint, params=params)
 
         if resp.status_code != requests.codes.ok:
@@ -416,7 +416,7 @@ class EDRServer(object):
 
     def __preflight(self, api_name, param):
         headers = {"Authorization": "Bearer {}".format(self.auth_token()), "EDR-Version": "v{}".format(self.version) }
-        json = { "name": self.player_name, "timestamp": {".sv": "timestamp"}, "param": param, "api": api_name, "mode": self.game_mode }
+        json = { "name": self.player_name, "timestamp": {".sv": "timestamp"}, "param": param, "api": api_name, "mode": self.game_mode, "group": self.private_group }
         EDRLOG.log(u"Preflight request for {} with {}".format(api_name, json), "DEBUG")
         endpoint = "https://us-central1-blistering-inferno-4028.cloudfunctions.net/edr/v1/preflight/{uid}".format(server=self.EDR_SERVER, uid=self.uid())
         EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
