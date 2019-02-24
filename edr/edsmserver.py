@@ -12,6 +12,8 @@ EDRLOG = edrlog.EDRLog()
 
 class EDSMServer(object):
 
+    SESSION = requests.Session()
+
     def __init__(self):
         config = edrconfig.EDRConfig()
         self.EDSM_API_KEY = config.edsm_api_key()
@@ -20,7 +22,7 @@ class EDSMServer(object):
     def system(self, system_name):
         params = {"systemName": system_name, "showCoordinates": 1, "showInformation":1, "showId": 1}
         endpoint = "{}/api-v1/systems".format(self.EDSM_SERVER)
-        resp = requests.get(endpoint, params=params)
+        resp = EDSMServer.SESSION.get(endpoint, params=params)
 
         if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Failed to retrieve system {} from EDSM: {}.".format(system_name, resp.status_code), "ERROR")
@@ -31,7 +33,7 @@ class EDSMServer(object):
     def bodies(self, system_name):
         params = {"systemName": system_name}
         endpoint = "{}/api-system-v1/bodies".format(self.EDSM_SERVER)
-        resp = requests.get(endpoint, params=params)
+        resp = EDSMServer.SESSION.get(endpoint, params=params)
 
         if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Failed to retrieve bodies for {} from EDSM: {}.".format(system_name, resp.status_code), "ERROR")
@@ -43,7 +45,7 @@ class EDSMServer(object):
     def systems_within_radius(self, system_name, radius):
         params = {"systemName": system_name, "showCoordinates": 1, "radius": radius, "showInformation": 1, "showId": 1, "showPermit": 1}
         endpoint = "{}/api-v1/sphere-systems".format(self.EDSM_SERVER)
-        resp = requests.get(endpoint, params=params)
+        resp = EDSMServer.SESSION.get(endpoint, params=params)
 
         if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Failed to retrieve system {} from EDSM: {}.".format(system_name, resp.status_code), "ERROR")
@@ -59,7 +61,7 @@ class EDSMServer(object):
     def stations_in_system(self, system_name):
         params = {"systemName": system_name}
         endpoint = "{}/api-system-v1/stations".format(self.EDSM_SERVER)
-        resp = requests.get(endpoint, params=params)
+        resp = EDSMServer.SESSION.get(endpoint, params=params)
 
         if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Failed to retrieve system {} from EDSM: {}.".format(system_name, resp.status_code), "ERROR")
@@ -75,7 +77,7 @@ class EDSMServer(object):
     def factions_in_system(self, system_name):
         params = {"systemName": system_name}
         endpoint = "{}/api-system-v1/factions".format(self.EDSM_SERVER)
-        resp = requests.get(endpoint, params=params)
+        resp = EDSMServer.SESSION.get(endpoint, params=params)
 
         if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Failed to retrieve state for system {} from EDSM: {}.".format(system_name, resp.status_code), "ERROR")

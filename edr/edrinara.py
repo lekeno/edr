@@ -10,6 +10,8 @@ EDRLOG = edrlog.EDRLog()
 
 class EDRInara(object):
 
+    SESSION = requests.Session()
+
     def __init__(self):
         config = edrconfig.EDRConfig()
         self.version = config.edr_version()
@@ -43,7 +45,7 @@ class EDRInara(object):
     def __cmdr(self, cmdr_name):
         payload = { "header": self.__api_header(), "events" : [self.__api_cmdrprofile(cmdr_name)] }
 
-        resp = requests.post(self.INARA_ENDPOINT, json=payload)
+        resp = EDRInara.SESSION.post(self.INARA_ENDPOINT, json=payload)
         if resp.status_code != requests.codes.ok:
             EDRLOG.log(u"Failed to obtain cmdr profile from Inara. code={code}, content={content}".format(code=resp.status_code, content=resp.content), "ERROR")
             return None

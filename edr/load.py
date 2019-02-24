@@ -249,7 +249,7 @@ def handle_change_events(ed_player, entry):
         ed_player.location.allegiance = entry.get("SystemAllegiance", None)
         outcome["reason"] = "Location event"
         EDRLOG.log(u"Place changed: {} (location event)".format(place), "INFO")
-        EDR_CLIENT.check_system(entry["StarSystem"], may_create=True)
+        EDR_CLIENT.check_system(entry["StarSystem"], may_create=True, coords=entry.get("StarPos", None))
 
     if entry["event"] in ["Undocked", "Docked", "DockingCancelled", "DockingDenied",
                           "DockingGranted", "DockingRequested", "DockingTimeout"]:
@@ -1014,6 +1014,8 @@ def handle_commands(cmdr, entry):
 
     command_parts = entry["Message"].split(" ", 1)
     command = command_parts[0].lower()
+    if not command:
+        return
     if command[0] == "!":
         handle_bang_commands(cmdr, command, command_parts)
     elif command[0] == "?":
@@ -1263,7 +1265,7 @@ def handle_hash_commands(command, command_parts, entry):
     elif (command == "#=" or command == "#friend"):
         EDRLOG.log(u"Tag friend command for {}".format(target_cmdr), "INFO")
         EDR_CLIENT.tag_cmdr(target_cmdr, "friend")
-    elif (command[0] == "#" and len(command) > 1):
+    elif (len(command) > 1 and command[0] == "#"):
         tag = command[1:]
         EDRLOG.log(u"Tag command for {} with {}".format(target_cmdr, tag), "INFO")
         EDR_CLIENT.tag_cmdr(target_cmdr, tag)
@@ -1306,7 +1308,7 @@ def handle_minus_commands(command, command_parts, entry):
     elif command == "-#=" or command == "-#friend":
         EDRLOG.log(u"Remove friend tag for {}".format(target_cmdr), "INFO")
         EDR_CLIENT.untag_cmdr(target_cmdr, "friend")
-    elif (command[0] == "-#" and len(command) > 2):
+    elif (len(command) > 2 and command[0] == "-#"):
         tag = command[2:]
         EDRLOG.log(u"Remove tag {} for {}".format(tag, target_cmdr), "INFO")
         EDR_CLIENT.untag_cmdr(target_cmdr, tag)

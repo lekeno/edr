@@ -171,7 +171,7 @@ class EDRProtoHeatRadiatorCheck(EDRBasicStateCheck):
 
     def __init__(self):
         super(EDRProtoHeatRadiatorCheck, self).__init__()
-        self.name = 'Proto Heat Radiator'
+        self.name = 'Proto Heat Radiators'
         self.mandatory_state('boom')
         self.optional_allegiance('independent')
         self.optional_allegiance('alliance')

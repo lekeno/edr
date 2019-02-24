@@ -385,6 +385,7 @@ class EDRClient(object):
         self.login()
 
     def noteworthy_about_system(self, fsdjump_event):
+        self.edrsystems.system_id(fsdjump_event['StarSystem'], may_create=True, coords=fsdjump_event.get("StarPos", None))
         facts = self.edrresourcefinder.assess_jump(fsdjump_event, self.player.inventory)
         header = _('Rare materials in {} (USS-HGE/EE, Mission Rewards)'.format(fsdjump_event['StarSystem']))
         if not facts:
@@ -467,11 +468,11 @@ class EDRClient(object):
             self.IN_GAME_MSG.navigation(bearing, destination, distance, pitch)
         self.status = _(u"> {:03} < for Lat:{:.4f} Lon:{:.4f}".format(bearing, destination.latitude, destination.longitude))
 
-    def check_system(self, star_system, may_create=False):
+    def check_system(self, star_system, may_create=False, coords=None):
         try:
             EDRLOG.log(u"Check system called: {}".format(star_system), "INFO")
             details = []
-            notams = self.edrsystems.active_notams(star_system, may_create)
+            notams = self.edrsystems.active_notams(star_system, may_create, coords)
             if notams:
                 EDRLOG.log(u"NOTAMs for {}: {}".format(star_system, notams), "DEBUG")
                 details += notams

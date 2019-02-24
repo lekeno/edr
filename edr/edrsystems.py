@@ -26,7 +26,7 @@ EDRLOG = edrlog.EDRLog()
 
 class EDRSystems(object):
     EDR_SYSTEMS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/systems.v3.p')
+        os.path.abspath(os.path.dirname(__file__)), 'cache/systems.v4.p')
     EDR_RAW_MATERIALS_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/raw_materials.v1.p')
     EDSM_BODIES_CACHE = os.path.join(
@@ -139,19 +139,30 @@ class EDRSystems(object):
         self.server = server
         self.edsm_server = edsmserver.EDSMServer()
 
-    def system_id(self, star_system, may_create=False):
+    def system_id(self, star_system, may_create=False, coords=None):
         if not star_system:
             return None
-        sid = self.systems_cache.get(star_system.lower())
+        system = self.systems_cache.get(star_system.lower())
         cached = self.systems_cache.has_key(star_system.lower())
-        if cached or sid:
-            EDRLOG.log(u"System {} is in the cache with id={}".format(star_system, sid), "DEBUG")
+        if cached and system is None:
+            EDRLOG.log(u"Temporary entry for System {} in the cache".format(star_system), "DEBUG")
+            return None
+
+        if cached and system:
+            sid = system.keys()[0]
+            if may_create and coords and not "coords" in system[sid]:
+                EDRLOG.log(u"System {} is in the cache with id={} but missing coords".format(star_system, sid), "DEBUG")
+                system = self.server.system(star_system, may_create, coords)
+                if system:
+                    self.systems_cache.set(star_system.lower(), system)
+                sid = system.keys()[0]
             return sid
 
-        sid = self.server.system_id(star_system, may_create)
-        if sid:
-            self.systems_cache.set(star_system.lower(), sid)
-            EDRLOG.log(u"Cached {}'s id={}".format(star_system, sid), "DEBUG")
+        system = self.server.system(star_system, may_create, coords)
+        if system:
+            self.systems_cache.set(star_system.lower(), system)
+            sid = system.keys()[0]
+            EDRLOG.log(u"Cached {}'s info with id={}".format(star_system, sid), "DEBUG")
             return sid
 
         self.systems_cache.set(star_system.lower(), None)
@@ -367,9 +378,9 @@ class EDRSystems(object):
         sid = self.system_id(star_system)
         return self.sitreps_cache.has_key(sid)
 
-    def has_notams(self, star_system, may_create=False):
+    def has_notams(self, star_system, may_create=False, coords=None):
         self.__update_if_stale()
-        sid = self.system_id(star_system, may_create)
+        sid = self.system_id(star_system, may_create, coords)
         return self.notams_cache.has_key(sid)
 
     def __has_active_notams(self, system_id):
@@ -378,8 +389,8 @@ class EDRSystems(object):
             return False
         return len(self.__active_notams_for_sid(system_id)) > 0
 
-    def active_notams(self, star_system, may_create=False):
-        if self.has_notams(star_system, may_create):
+    def active_notams(self, star_system, may_create=False, coords=None):
+        if self.has_notams(star_system, may_create, coords=None):
             return self.__active_notams_for_sid(self.system_id(star_system))
         return None
 
