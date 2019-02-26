@@ -71,6 +71,8 @@ class ClosableSSEClient(SSEClient):
 
 class RemoteThread(threading.Thread):
 
+    SESSION = requests.Session()
+
     def __init__(self, message_queue, endpoint, authenticator, minutes_ago=5):
         self.message_queue = message_queue
         self.endpoint = endpoint
@@ -87,7 +89,7 @@ class RemoteThread(threading.Thread):
         params = { "orderBy": '"timestamp"', "startAt": nowish, "limitToLast": 10}
         if self.authenticator:
             params["auth"] = self.authenticator()
-        self.sse = ClosableSSEClient(self.endpoint, params=params, chunk_size=1)
+        self.sse = ClosableSSEClient(self.endpoint, params=params, chunk_size=1, session=RemoteThread.SESSION)
     
     def run(self):
         self._setup_sse()

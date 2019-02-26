@@ -89,7 +89,7 @@ class EDRInventory(object):
         "filamentcomposites": {"localized": _(u"Filament Composites"), "category": "manufactured", "grade": 2},
         "compactcomposites": {"localized": _(u"Compact Composites"), "category": "manufactured", "grade": 1},
         "chemicalstorageunits": {"localized": _(u"Chemical Storage Units"), "category": "manufactured", "grade": 1},
-        "protoheatradiator": {"localized": _(u"Proto Heat Radiators"), "category": "manufactured", "grade": 5},
+        "protoheatradiators": {"localized": _(u"Proto Heat Radiators"), "category": "manufactured", "grade": 5},
         "guardian_powerconduit": {"localized": _(u"Guardian Power Conduit"), "category": "manufactured", "grade": 2},
         "guardian_powercell": {"localized": _(u"Guardian Power Cell"), "category": "manufactured", "grade": 1},
         "guardian_techcomponent": {"localized": _(u"Guardian Technology Component"), "category": "manufactured", "grade": 3},
@@ -158,7 +158,7 @@ class EDRInventory(object):
         u'heat dispersion plate': 'heatdispersionplate', u'irregular emission data': 'archivedemissiondata', u'guardian module blueprint fragment': 'guardian_moduleblueprint', u'yttrium': 'yttrium', 
         u'mechanical scrap': 'mechanicalscrap', u'biotech conductors': 'biotechconductors', u'military grade alloys': 'militarygradealloys', u'basic conductors': 'basicconductors', u'boron': 'boron', u'carbon': 'carbon', 
         u'unidentified scan archives': 'scanarchives', u'imperial shielding': 'imperialshielding', u'chemical distillery': 'chemicaldistillery', u'guardian wreckage components': 'guardian_sentinel_wreckagecomponents', 
-        u'proto radiolic alloys': 'protoradiolicalloys', u'cadmium': 'cadmium', u'filament composites': 'filamentcomposites', u'exquisite focus crystals': 'exquisitefocuscrystals', u'electrochemical arrays': 'electrochemicalarrays', 
+        u'proto radiolic alloys': 'protoradiolicalloys', u'proto heat radiators': 'protoheatradiators', u'cadmium': 'cadmium', u'filament composites': 'filamentcomposites', u'exquisite focus crystals': 'exquisitefocuscrystals', u'electrochemical arrays': 'electrochemicalarrays', 
         u'mechanical components': 'mechanicalcomponents', u'pattern alpha obelisk data': 'ancientbiologicaldata', u'arsenic': 'arsenic', u'chromium': 'chromium', u'conductive ceramics': 'conductiveceramics', u'mercury': 'mercury', 
         u'chemical processors': 'chemicalprocessors', u'pattern gamma obelisk data': 'ancienthistoricaldata', u'proprietary composites': 'fedproprietarycomposites', u'proto light alloys': 'protolightalloys', 
         u'datamined wake exceptions': 'dataminedwake', u'adaptive encryptors capture': 'adaptiveencryptors', u'open symmetric keys': 'symmetrickeys', u'nickel': 'nickel', u'ruthenium': 'ruthenium', 
@@ -313,7 +313,7 @@ class EDRInventory(object):
         paid = info["Paid"]
         self.substract(paid["Category"], paid["Material"], paid["Quantity"])
         received = info["Received"]
-        self.substract(received["Category"], received["Material"], received["Quantity"])
+        self.add(received["Category"], received["Material"], received["Quantity"])
 
     def rewarded(self, info):
         # TODO Does Search And Rescue give material rewards??

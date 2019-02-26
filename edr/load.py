@@ -249,11 +249,11 @@ def handle_change_events(ed_player, entry):
         ed_player.location.allegiance = entry.get("SystemAllegiance", None)
         outcome["reason"] = "Location event"
         EDRLOG.log(u"Place changed: {} (location event)".format(place), "INFO")
-        EDR_CLIENT.check_system(entry["StarSystem"], may_create=True)
+        EDR_CLIENT.check_system(entry["StarSystem"], may_create=True, coords=entry.get("StarPos", None))
 
     if entry["event"] in ["Undocked", "Docked", "DockingCancelled", "DockingDenied",
                           "DockingGranted", "DockingRequested", "DockingTimeout"]:
-        place = entry["StationName"]
+        place = entry.get("StationName", "Unknown")
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         ed_player.to_normal_space()
         if entry["event"] == "Docked":
@@ -314,7 +314,7 @@ def handle_lifecycle_events(ed_player, entry, state):
             ed_player.inventory.initialize_with_edmc(state)
         EDR_CLIENT.clear()
         ed_player.inception()
-        EDR_CLIENT.game_mode(entry["GameMode"])
+        EDR_CLIENT.game_mode(entry["GameMode"], entry.get("Group", None))
         ed_player.update_vehicle_if_obsolete(EDVehicleFactory.from_load_game_event(entry), piloted=True)
         EDRLOG.log(u"Game mode is {}".format(entry["GameMode"]), "DEBUG")
         EDR_CLIENT.warmup()
@@ -525,8 +525,8 @@ def edr_update_cmdr_status(cmdr, reason_for_update, timestamp):
     :param reason_for_update:
     :return:
     """
-    if not cmdr.in_open():
-        EDRLOG.log(u"Skipping cmdr update due to unconfirmed Open mode", "ERROR")
+    if cmdr.in_solo():
+        EDRLOG.log(u"Skipping cmdr update due to Solo mode", "ERROR")
         return
 
     if cmdr.has_partial_status():
@@ -542,7 +542,9 @@ def edr_update_cmdr_status(cmdr, reason_for_update, timestamp):
         "ship": cmdr.vehicle_type(),
         "timestamp": edt.as_js_epoch(),
         "source": reason_for_update,
-        "reportedBy": cmdr.name
+        "reportedBy": cmdr.name,
+        "mode": cmdr.game_mode,
+        "group": cmdr.private_group
     }
 
     EDRLOG.log(u"report: {}".format(report), "DEBUG")
@@ -586,7 +588,9 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
         "victim": victim.name,
         "victimShip": victim.vehicle_type(),
         "reportedBy": victim.name,
-        "byPledge": victim.powerplay.canonicalize() if victim.powerplay else ""
+        "byPledge": victim.powerplay.canonicalize() if victim.powerplay else "",
+        "mode": victim.game_mode,
+        "group": victim.private_group
     }
 
     if not EDR_CLIENT.crime(victim.star_system, report):
@@ -621,7 +625,9 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim, timestamp):
         "victim": victim.name,
         "victimShip": victim.vehicle_type(),
         "reportedBy": criminal_cmdr.name,
-        "byPledge": criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else ""
+        "byPledge": criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else "",
+        "mode": criminal_cmdr.game_mode,
+        "group": criminal_cmdr.private_group
     }
 
     EDRLOG.log(u"Perpetrated crime: {}".format(report), "DEBUG")
@@ -659,7 +665,9 @@ def edr_submit_contact(contact, timestamp, source, witness):
         "ship" : contact.vehicle_type(),
         "source": source,
         "reportedBy": witness.name,
-        "byPledge": witness.powerplay.canonicalize() if witness.powerplay else ""
+        "byPledge": witness.powerplay.canonicalize() if witness.powerplay else "",
+        "mode": witness.game_mode,
+        "group": witness.private_group
     }
 
     if witness.has_partial_status():
@@ -683,6 +691,8 @@ def edr_submit_scan(scan, timestamp, source, witness):
     report["source"] = source
     report["reportedBy"] = witness.name
     report["byPledge"] = witness.powerplay.canonicalize() if witness.powerplay else ""
+    report["mode"] = witness.game_mode
+    report["group"] = witness.private_group
 
     if not witness.in_open():
         EDRLOG.log(u"Scan not submitted due to unconfirmed Open mode", "INFO")
@@ -718,7 +728,9 @@ def edr_submit_traffic(contact, timestamp, source, witness):
         "ship" : contact.vehicle_type(),
         "source": source,
         "reportedBy": witness.name,
-        "byPledge": witness.powerplay.canonicalize() if witness.powerplay else ""
+        "byPledge": witness.powerplay.canonicalize() if witness.powerplay else "",
+        "mode": witness.game_mode,
+        "group": witness.private_group
     }
 
     if not witness.in_open():
@@ -817,12 +829,12 @@ def report_comms(player, entry):
             from_cmdr = entry["From"]
             if entry["From"].startswith("$cmdr_decorate:#name="):
                 from_cmdr = entry["From"][len("$cmdr_decorate:#name="):-1]
-                EDRLOG.log(u"Text from {} in star system".format(from_cmdr), "INFO")
-                contact = EDPlayer(from_cmdr)
-                contact.location = player.location
-                contact.place = "Unknown"
-                edr_submit_contact(contact, entry["timestamp"],
-                                   "Received text (starsystem channel)", player)
+            EDRLOG.log(u"Text from {} in star system".format(from_cmdr), "INFO")
+            contact = EDPlayer(from_cmdr)
+            contact.location = player.location
+            contact.place = "Unknown"
+            edr_submit_contact(contact, entry["timestamp"],
+                                "Received text (starsystem channel)", player)
     elif entry["event"] == "SendText" and not entry["To"] in ["local", "wing", "starsystem", "squadron", "squadleaders"]:
         to_cmdr = entry["To"]
         if entry["To"].startswith("$cmdr_decorate:#name="):
@@ -1002,6 +1014,8 @@ def handle_commands(cmdr, entry):
 
     command_parts = entry["Message"].split(" ", 1)
     command = command_parts[0].lower()
+    if not command:
+        return
     if command[0] == "!":
         handle_bang_commands(cmdr, command, command_parts)
     elif command[0] == "?":
@@ -1251,7 +1265,7 @@ def handle_hash_commands(command, command_parts, entry):
     elif (command == "#=" or command == "#friend"):
         EDRLOG.log(u"Tag friend command for {}".format(target_cmdr), "INFO")
         EDR_CLIENT.tag_cmdr(target_cmdr, "friend")
-    elif (command[0] == "#" and len(command) > 1):
+    elif (len(command) > 1 and command[0] == "#"):
         tag = command[1:]
         EDRLOG.log(u"Tag command for {} with {}".format(target_cmdr, tag), "INFO")
         EDR_CLIENT.tag_cmdr(target_cmdr, tag)
@@ -1294,7 +1308,7 @@ def handle_minus_commands(command, command_parts, entry):
     elif command == "-#=" or command == "-#friend":
         EDRLOG.log(u"Remove friend tag for {}".format(target_cmdr), "INFO")
         EDR_CLIENT.untag_cmdr(target_cmdr, "friend")
-    elif (command[0] == "-#" and len(command) > 2):
+    elif (len(command) > 2 and command[0] == "-#"):
         tag = command[2:]
         EDRLOG.log(u"Remove tag {} for {}".format(tag, target_cmdr), "INFO")
         EDR_CLIENT.untag_cmdr(target_cmdr, tag)
