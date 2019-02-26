@@ -136,7 +136,7 @@ class EDRServer(object):
                     EDRLOG.log(u"Failed to create new star system.", "ERROR")
                     return None
                 the_system = json.loads(resp.content)
-                EDRLOG.log(u"Created system {} in EDR with id={}.".format(star_system, system.values()[0]), "DEBUG")
+                EDRLOG.log(u"Created system {} in EDR with id={}.".format(star_system, the_system.values()[0]), "DEBUG")
             else:
                 return None
         else:
