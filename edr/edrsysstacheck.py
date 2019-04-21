@@ -27,3 +27,6 @@ class EDRSystemStationCheck(object):
             return False
         
         return station['distanceToArrival'] < self.max_sc_distance
+
+    def is_service_availability_ambiguous(self, station):
+        return False
