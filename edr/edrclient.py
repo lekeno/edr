@@ -1263,6 +1263,28 @@ class EDRClient(object):
         except edrserver.CommsJammedError:
             self.__commsjammed()
 
+    def where_ship(self, name_or_type):
+        results = self.player.fleet.where(name_or_type)
+        if results:
+            hits = []
+            random.shuffle(results)
+            in_clipboard = False
+            for hit in results:
+                transit = _(u" @ {}").format(edtime.EDTime.t_plus_py(hit[3])) if hit[3] else u""
+                if hit[0]:
+                    hits.append(_(u"'{}' ({}): {}{}").format(hit[0], hit[1], hit[2], transit))
+                else:
+                    hits.append(_(u"{}: {}{}").format(hit[1], hit[2], transit))
+                if not in_clipboard and hit[2]:
+                    clippy.copy(hit[2])
+                    in_clipboard = True
+            self.__notify(_(u"Ship locator"), hits, clear_before = True)
+        elif results == False:
+            self.__notify(_(u"Ship locator"), [_(u"No info about your fleet."), _(u"Visit a shipyard to update your fleet info.")], clear_before = True)
+        else:
+            self.__notify(_(u"Ship locator"), [_(u"Couldn't find anything")], clear_before = True)
+
+
     def outlaws(self):
         try:
             return self._opponents(EDROpponents.OUTLAWS)
@@ -1534,7 +1556,7 @@ class EDRClient(object):
             pretty_sc_dist = _(u"{dist}LS").format(dist=int(sc_distance))
             details.append(_(u"{system}, {dist}").format(system=result['name'], dist=pretty_dist))
             details.append(_(u"{station} ({type}), {sc_dist}").format(station=result['station']['name'], type=result['station']['type'], sc_dist=pretty_sc_dist))
-            details.append(_(u"as of {date}").format(date=result['station']['updateTime']['information']))
+            details.append(_(u"as of {date} {ci}").format(date=result['station']['updateTime']['information'],ci=result.get('comment', '')))
             self.status = u"{item}: {system}, {dist} - {station} ({type}), {sc_dist}".format(item=soi_checker.name, system=result['name'], dist=pretty_dist, station=result['station']['name'], type=result['station']['type'], sc_dist=pretty_sc_dist)
             clippy.copy(result["name"])
         else:

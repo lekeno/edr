@@ -10,6 +10,7 @@ import edrconfig
 import edreconbox
 import edrinventory
 from edri18n import _, _c
+import edrfleet
 EDRLOG = edrlog.EDRLog()
 
 class EDRCrew(object):
@@ -658,6 +659,7 @@ class EDPlayerOne(EDPlayer):
         self.planetary_destination = None
         self.recon_box = edreconbox.EDReconBox()
         self.inventory = edrinventory.EDRInventory()
+        self.fleet = edrfleet.EDRFleet()
 
     def __repr__(self):
         return str(self.__dict__)
@@ -977,3 +979,6 @@ class EDPlayerOne(EDPlayer):
                 EDRLOG.log(u"SLF attacked but player had none", "WARNING")
         elif target == "You":
             self.piloted_vehicle.attacked()
+
+    def update_fleet(self, stored_ships_entry):
+        self.fleet.update(stored_ships_entry)

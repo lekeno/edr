@@ -23,6 +23,7 @@ class HelpContent(object):
                 _(u" - !help sqdrdex: tag other commanders as ally or enemy of your squadron"),
                 _(u" - !help nearby: commands to find services near you or a specific system, e.g. interstellar factors"),
                 _(u" - !help search: find the best spots to obtain specific resources, e.g. adaptive encryptors capture"),
+                _(u" - !help ship: find out where you've parked your ships"),
                 _(u" - !help config: configuration options"),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
@@ -225,6 +226,16 @@ class HelpContent(object):
                 _(u" - Some manufactured materials may not always return a result. Use the hints and Elite's galaxy map to find a good spot."),
                 _(u" - Finally, when jumping into a system, EDR will tell you if it has the right conditions for specific materials, e.g. Imperial Shielding (USS-HGE, +++++)."),
                 _(u" - The more '+', the higher the chances."),
+                u"⚶",
+                _(u"Send !clear in chat to clear everything on the overlay.")
+            ]
+        },
+        "ship": {
+            "header": _(u"Find where you parked your ship"),
+            "details": [
+                _(u" - '!ship name_or_type' where name_or_type is either a ship name or type."),
+                _(u" - '!ship fdl' will show where your Fer-de-Lance ships are parked."),
+                _(u" - '!ship In Front of Things' will show where your ship(s) named 'In Front of Things' are."),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
             ]
