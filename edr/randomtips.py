@@ -105,7 +105,9 @@ DEFAULT_TIPS = {
         _(u"Send '!repair optional message' to dispatch a repair request to EDR Central's discord server (be mindful). Also, check the UI in EDMC for Repair Corgis instructions."),
         _(u"Send '!nav 45.3 -3.5' for getting planetary guidance to a specific location, e.g. 45.3 longitude, -3.5 latitude."),
         _(u"Send '!nav off' to clear the navigation data."),
-        _(u"Send '!nav set' to mark your current location as your navigation target.")
+        _(u"Send '!nav set' to mark your current location as your navigation target."),
+        _(u"Send '!ship fdl' to find out where you've parked your Fer-de-Lance."),
+        _(u"Send '!ship In Front Of Things' to find out where you've parked your ship named 'In Front of Things'.")
     ],
     "OPEN tips": [
         _(u"Never fly what you can't afford to lose. Check your rebuy and credit balance on your right panel."),

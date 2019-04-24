@@ -25,7 +25,7 @@ class EDRInventory(object):
         "manganese": {"localized": _(u"Manganese"), "category": "raw", "grade": 2},
         "chromium": {"localized": _(u"Chromium"), "category": "raw", "grade": 2},
         "molybdenum": {"localized": _(u"Molybdenum"), "category": "raw", "grade": 3},
-        "technetium": {"localized": _(u"Technetium"), "category": "raw", "grade": 3},
+        "technetium": {"localized": _(u"Technetium"), "category": "raw", "grade": 4},
         "tin": {"localized": _(u"Tin"), "category": "raw", "grade": 3},
         "arsenic": {"localized": _(u"Arsenic"), "category": "raw", "grade": 2},
         "cadmium": {"localized": _(u"Cadmium"), "category": "raw", "grade": 3},

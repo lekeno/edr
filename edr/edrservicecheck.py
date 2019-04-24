@@ -98,6 +98,7 @@ class EDRMaterialTraderBasicCheck(EDRStationServiceCheck):
         
         return True
 
+
 class EDRRawTraderCheck(EDRMaterialTraderBasicCheck):
     def __init__(self):
         super(EDRRawTraderCheck, self).__init__()
@@ -113,6 +114,10 @@ class EDRRawTraderCheck(EDRMaterialTraderBasicCheck):
         
         return info['economy'].lower() in ['extraction', 'refinery']
 
+    def is_service_availability_ambiguous(self, station):
+        if not station or station.get("secondEconomy", None):
+            return False
+        return station["secondEconomy"].lower() in ['industrial', 'high tech', 'military']
 
 class EDRManufacturedTraderCheck(EDRMaterialTraderBasicCheck):
     def __init__(self):
@@ -129,6 +134,9 @@ class EDRManufacturedTraderCheck(EDRMaterialTraderBasicCheck):
         
         return info['economy'].lower() == 'industrial'
 
+    def is_service_availability_ambiguous(self, station):
+        return station.get("secondEconomy", '').lower() in ['extraction', 'refinery', 'high tech', 'military']
+
 
 class EDREncodedTraderCheck(EDRMaterialTraderBasicCheck):
     def __init__(self):
@@ -144,6 +152,9 @@ class EDREncodedTraderCheck(EDRMaterialTraderBasicCheck):
         info['economy'] = info.get('economy', 'N/A')
 
         return info['economy'].lower() in ['high tech', 'military']
+
+    def is_service_availability_ambiguous(self, station):
+        return station.get("secondEconomy", '').lower() in ['extraction', 'refinery', 'industrial']
 
 
 class EDRBlackMarketCheck(EDRStationServiceCheck):
@@ -195,6 +206,9 @@ class EDRHumanTechBrokerCheck(EDRStationServiceCheck):
 
         return info['economy'].lower() == 'industrial'
     
+    def is_service_availability_ambiguous(self, station):
+        return station.get("secondEconomy", '').lower() in ['high tech']
+    
 class EDRGuardianTechBrokerCheck(EDRStationServiceCheck):
     def __init__(self):
         super(EDRGuardianTechBrokerCheck, self).__init__('Technology Broker')
@@ -216,3 +230,6 @@ class EDRGuardianTechBrokerCheck(EDRStationServiceCheck):
             return False
 
         return info['economy'].lower() == 'high tech'
+
+    def is_service_availability_ambiguous(self, station):
+        return station.get("secondEconomy", '').lower() in ['industrial']

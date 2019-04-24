@@ -14,6 +14,7 @@ from edri18n import _, _c
 
 EDR_CLIENT = EDRClient()
 EDRLOG = EDRLog()
+LAST_KNOWN_SHIP_NAME = ""
 
 def plugin_start():
     """
@@ -323,6 +324,8 @@ def handle_lifecycle_events(ed_player, entry, state):
     if entry["event"] in ["Loadout"]:
         if ed_player.mothership.id == entry.get("ShipID", None):
             ed_player.mothership.update_from_loadout(entry)
+            global LAST_KNOWN_SHIP_NAME
+            LAST_KNOWN_SHIP_NAME = ed_player.mothership.name
         else:
             ed_player.update_vehicle_if_obsolete(EDVehicleFactory.from_load_game_event(entry), piloted=True)
         return
@@ -419,8 +422,11 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if not prerequisites(EDR_CLIENT, is_beta):
         return
 
-    if entry["event"] in ["Shutdown", "ShutDown", "Music", "Resurrect", "Fileheader", "LoadGame"]:
+    if entry["event"] in ["Shutdown", "ShutDown", "Music", "Resurrect", "Fileheader", "LoadGame", "Loadout"]:
         handle_lifecycle_events(ed_player, entry, state)
+
+    if entry["event"] in ["SetUserShipName", "SellShipOnRebuy", "ShipyardBuy", "ShipyardNew", "ShipyardSell", "ShipyardTransfer", "ShipyardSwap"]:
+        handle_fleet_events(entry)
     
     if entry["event"].startswith("Powerplay"):
         EDRLOG.log(u"Powerplay event: {}".format(entry), "INFO")
@@ -436,6 +442,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     if entry["event"] in ["Materials", "MaterialCollected", "MaterialDiscarded", "EngineerContribution", "EngineerCraft", "MaterialTrade", "MissionCompleted", "ScientificResearch", "TechnologyBroker", "Synthesis"]:
         handle_material_events(ed_player, entry, state)
+
+    if entry["event"] == "StoredShips":
+        ed_player.update_fleet(entry)
 
     if "Crew" in entry["event"]:
         handle_multicrew_events(ed_player, entry)
@@ -1200,6 +1209,10 @@ def handle_bang_commands(cmdr, command, command_parts):
             return
         EDRLOG.log(u"Navigation command", "INFO")
         EDR_CLIENT.navigation(lat_long[0], lat_long[1])
+    elif command == "!ship" and len(command_parts) == 2:
+        name_or_type = command_parts[1]
+        EDRLOG.log(u"Ship search command for {}".format(name_or_type), "INFO")
+        EDR_CLIENT.where_ship(name_or_type)
     elif command == "!help":
         EDRLOG.log(u"Help command", "INFO")
         EDR_CLIENT.help("" if len(command_parts) == 1 else command_parts[1])
@@ -1389,3 +1402,26 @@ def audiocue_command(param):
         EDR_CLIENT.soft_audio_feedback()
         EDR_CLIENT.audio_feedback = True
         EDR_CLIENT.notify_with_details("EDR audio cues", ["Enabled", "Soft"])
+
+def handle_fleet_events(entry):
+    global LAST_KNOWN_SHIP_NAME
+    if entry["event"] not in ["SetUserShipName", "SellShipOnRebuy", "ShipyardBuy", "ShipyardNew", "ShipyardSell", "ShipyardTransfer", "ShipyardSwap"]:
+        return
+    ed_player = EDR_CLIENT.player
+    if entry["event"] == "SetUserShipName":
+        ed_player.fleet.rename(entry)
+        ed_player.mothership.update_name(entry)
+        LAST_KNOWN_SHIP_NAME = ed_player.mothership.name
+    elif entry["event"] in ["SellShipOnRebuy", "ShipyardSell"]:
+        ed_player.fleet.sell(entry)
+    elif entry["event"] == "ShipyardBuy":
+        ed_player.fleet.buy(entry, ed_player.star_system, ed_player.mothership.name)
+    elif entry["event"] == "ShipyardNew":
+        ed_player.fleet.new(entry, ed_player.star_system)
+    elif entry["event"] == "ShipyardTransfer":
+        ed_player.fleet.transfer(entry, ed_player.star_system)
+    elif entry["event"] == "ShipyardSwap":
+        # Name is overwritten...
+        ed_player.fleet.swap(entry, ed_player.star_system, LAST_KNOWN_SHIP_NAME)
+        LAST_KNOWN_SHIP_NAME = ed_player.mothership.name
+

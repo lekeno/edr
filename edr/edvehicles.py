@@ -170,9 +170,18 @@ class EDVehicle(object):
             return
         modules = event['Modules']
         for module in modules:
-            health = modules[module]['Health'] * 100.0 if 'Health' in modules[module] else None 
-            self.subsystem_health(modules[module].get('Item', None), health)
+            health = module['Health'] * 100.0 if 'Health' in module else None 
+            self.subsystem_health(module.get('Item', None), health)
 
+    def update_name(self, event):
+        other_id = event.get("ShipID", None)
+        other_type = EDVehicleFactory.canonicalize(event.get("Ship", "unknown")) 
+        if other_id != self.id or other_type != self.type:
+            EDRLOG.log(u"Mismatch between ID ({} vs {}) and/or Type ({} vs. {}), can't update name/identity".format(self.id, other_id, self.type, other_type), "WARNING")
+            return
+        self.identity = event.get('UserShipId', None)
+        self.name = event.get('UserShipName', None)
+        
     def update_attitude(self, attitude):
         self.attitude.update(attitude)
 

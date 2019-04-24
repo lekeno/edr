@@ -25,6 +25,15 @@ class EDTime(object, comparable.ComparableMixin):
             return _c(u"short notation for t-minus|-{}").format(EDTime.pretty_print_timespan(ago, short=True))
         # Translators: this is to show how long ago an event took place, keep it short, e.g. T-{} would show something like T-3H
         return u"T-{}".format(EDTime.pretty_print_timespan(ago))
+    
+    @staticmethod
+    def t_plus_py(py_epoch_later, short=False):
+        ahead = int(py_epoch_later - EDTime.py_epoch_now())
+        if short:
+            # Translators: this is to show how long ahead an event will take place, keep it ultra-short, e.g. +{} would show something like +3H
+            return _c(u"short notation for t-plus|+{}").format(EDTime.pretty_print_timespan(ahead, short=True))
+        # Translators: this is to show how long ahead an event will take place, keep it short, e.g. T+{} would show something like T+3H
+        return u"T+{}".format(EDTime.pretty_print_timespan(ahead))
 
     @staticmethod
     def pretty_print_timespan(timespan, short=False, verbose=False):

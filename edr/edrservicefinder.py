@@ -1,5 +1,6 @@
 import threading
 from random import shuffle
+from edri18n import _
 
 class EDRServiceFinder(threading.Thread):
 
@@ -47,15 +48,18 @@ class EDRServiceFinder(threading.Thread):
         if possibility and accessible:
             candidate = self.__service_in_system(system)
             if candidate:
+                ambiguous = self.checker.is_service_availability_ambiguous(candidate)
                 check_sc_distance = candidate['distanceToArrival'] <= self.sc_distance
                 check_landing_pads = self.__has_large_lading_pads(candidate['type']) if self.large_pad_required else True
-                if check_sc_distance and check_landing_pads:
+                if check_sc_distance and check_landing_pads and not ambiguous:
                     servicePrime = system
                     servicePrime['station'] = candidate
                     return servicePrime
                 else:
                     serviceAlt = system
                     serviceAlt['station'] = candidate
+                    if ambiguous:
+                        serviceAlt['comment'] = _(u"[Confidence: LOW]")
 
         systems = self.edr_systems.systems_within_radius(self.star_system, self.radius)
         if not systems:
@@ -63,7 +67,7 @@ class EDRServiceFinder(threading.Thread):
 
         candidates = {'prime': servicePrime, 'alt': serviceAlt}
         candidates = self.__search(systems, candidates)
-        if candidates:
+        if candidates and candidates.get('prime', None):
             serviceAlt = candidates['alt']
             servicePrime = candidates['prime']
         else:
@@ -94,16 +98,19 @@ class EDRServiceFinder(threading.Thread):
             if candidate:
                 check_sc_distance = candidate['distanceToArrival'] <= self.sc_distance
                 check_landing_pads = self.__has_large_lading_pads(candidate['type']) if self.large_pad_required else True
-                if check_sc_distance and check_landing_pads:
+                ambiguous = self.checker.is_service_availability_ambiguous(candidate)
+                if check_sc_distance and check_landing_pads and not ambiguous:
                     trialed = system
                     trialed['station'] = candidate
                     closest = self.edr_systems.closest_destination(trialed, candidates['prime'])
                     candidates['prime'] = closest
                 else:
+                    if ambiguous:
+                        candidate['comment'] = _(u"[Confidence: LOW]")
                     trialed = system
                     trialed['station'] = candidate
                     closest = self.edr_systems.closest_destination(trialed, candidates['alt'])
-                    candidates['alt'] = closest
+                    candidates['alt'] = closest                    
 
             if candidates['prime']:
                 break
