@@ -143,7 +143,7 @@ class EDRPowerplay(object):
         #TODO return true if enough time has passed (parameterize)
 
 
-class EDBounty(object):
+class EDFineOrBounty(object):
     def __init__(self, value):
         self.value = value
         config = edrconfig.EDRConfig()
@@ -293,6 +293,7 @@ class EDPlayer(object):
         self.wanted = False
         self.enemy = False
         self._bounty = None
+        self._fine = None
         self.timestamp = now
 
     def __repr__(self):
@@ -313,6 +314,7 @@ class EDPlayer(object):
         self.destroyed = True
         self.wanted = False
         self._bounty = None
+        self._fine = None
         if self.mothership:
             self.mothership.destroy()
         if self.srv:
@@ -467,9 +469,23 @@ class EDPlayer(object):
     def bounty(self, credits):
         self._touch()
         if credits:
-            self._bounty = EDBounty(credits)
+            self._bounty = EDFineOrBounty(credits)
         else:
             self._bounty = None
+
+    property
+    def fine(self):
+        if self._fine:
+            return self._fine.value
+        return 0
+
+    @fine.setter
+    def fine(self, credits):
+        self._touch()
+        if credits:
+            self._fine = EDFine(credits)
+        else:
+            self._fine = None
 
     @property
     def power(self):
@@ -650,7 +666,7 @@ class EDPlayerOne(EDPlayer):
         self.private_group = None
         self.previous_mode = None
         self.previous_wing = set()
-        self.from_birth = False
+        self.from_genesis = False
         self.wing = EDWing()
         self.friends = set()
         self.crew = None
@@ -722,8 +738,9 @@ class EDPlayerOne(EDPlayer):
     def in_open(self):
         return self.game_mode == "Open"
 
-    def inception(self):
-        self.from_birth = True
+    def inception(self, genesis=False):
+        if genesis:
+            self.from_genesis = True
         self.previous_mode = None
         self.previous_wing = set()
         self.wing = EDWing()
