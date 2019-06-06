@@ -15,7 +15,7 @@ import edrconfig
 import edrlog
 import lrucache
 import edsmserver
-from edentities import EDBounty
+from edentities import EDFineOrBounty
 from edri18n import _, _c, _edr
 import edrservicecheck
 import edrservicefinder
@@ -576,7 +576,7 @@ class EDRSystems(object):
                     karma = traffic.get("karma", 0)
                     if not karma > 0:
                         karma = min(karma, traffic.get("dkarma", 0))
-                    bounty = EDBounty(traffic.get("bounty", 0))
+                    bounty = EDFineOrBounty(traffic.get("bounty", 0))
                     enemy = traffic.get("enemy", False)
                     by_pledge = traffic.get("byPledge", None)
                     if karma < 0 or bounty.is_significant():
@@ -609,7 +609,7 @@ class EDRSystems(object):
                             karma = criminal.get("karma", 0)
                             if not karma > 0:
                                 karma = min(karma, criminal.get("dkarma", 0))
-                            bounty = EDBounty(traffic.get("bounty", 0))
+                            bounty = EDFineOrBounty(traffic.get("bounty", 0))
                             enemy = traffic.get("enemy", False)
                             by_pledge = traffic.get("byPledge", None)
                             if karma < 0 or bounty.is_significant():

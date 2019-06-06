@@ -1,39 +1,39 @@
 import config_tests
 from unittest import TestCase, main
-from edentities import EDBounty
+from edentities import EDFineOrBounty
 
-class TestEDBounty(TestCase):
+class TestEDFineOrBounty(TestCase):
     def test_significant(self):
-        bounty = EDBounty(12344)
+        bounty = EDFineOrBounty(12344)
         bounty.threshold = 12345
         self.assertFalse(bounty.is_significant())
 
-        bounty = EDBounty(12345)
+        bounty = EDFineOrBounty(12345)
         bounty.threshold = 12345
         self.assertTrue(bounty.is_significant())
 
-        bounty = EDBounty(12346)
+        bounty = EDFineOrBounty(12346)
         bounty.threshold = 12345
         self.assertTrue(bounty.is_significant())
 
 
     def test_pretty_print(self):
-        bounty = EDBounty(999)
+        bounty = EDFineOrBounty(999)
         self.assertEqual(bounty.pretty_print(), "999")
 
-        bounty = EDBounty(1000)
+        bounty = EDFineOrBounty(1000)
         self.assertEqual(bounty.pretty_print(), "1.0 k")
 
-        bounty = EDBounty(9999)
+        bounty = EDFineOrBounty(9999)
         self.assertEqual(bounty.pretty_print(), "10.0 k")
 
-        bounty = EDBounty(12345)
+        bounty = EDFineOrBounty(12345)
         self.assertEqual(bounty.pretty_print(), "12 k")
 
-        bounty = EDBounty(99999)
+        bounty = EDFineOrBounty(99999)
         self.assertEqual(bounty.pretty_print(), "99 k")
 
-        bounty = EDBounty(100000)
+        bounty = EDFineOrBounty(100000)
         self.assertEqual(bounty.pretty_print(), "100 k")
 
 

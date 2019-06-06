@@ -720,7 +720,7 @@ class EDRClient(object):
         if min_bounty:
             try:
                 new_value = int(min_bounty)
-                self.notify_with_details(_(u"EDR Alerts"), [_(u"minimum bounty set to {min_bounty} cr for {kind}").format(min_bounty=edentities.EDBounty(new_value).pretty_print(), kind=_(kind))])
+                self.notify_with_details(_(u"EDR Alerts"), [_(u"minimum bounty set to {min_bounty} cr for {kind}").format(min_bounty=edentities.EDFineOrBounty(new_value).pretty_print(), kind=_(kind))])
             except ValueError:
                 self.notify_with_details(_(u"EDR Alerts"), [_(u"invalid value for minimum bounty")])
                 new_value = None
@@ -816,7 +816,7 @@ class EDRClient(object):
                 oneliner += _(u" [{distance:.3g} ly]").format(distance=distance) if distance < 50.0 else _(u" [{distance} ly]").format(distance=int(distance))
             if event.get("wanted", None):
                 if event["bounty"] > 0:
-                    oneliner += _(u" wanted for {bounty} cr").format(bounty=edentities.EDBounty(event["bounty"]).pretty_print())
+                    oneliner += _(u" wanted for {bounty} cr").format(bounty=edentities.EDFineOrBounty(event["bounty"]).pretty_print())
                 else:
                     oneliner += _(u" wanted somewhere")
             
@@ -923,7 +923,7 @@ class EDRClient(object):
         if self.novel_enough_scan(cmdr_id, scan, cognitive = True):
             profile = self.cmdr(cmdr_name, check_inara_server=True)
             legal = self.edrlegal.summarize_recents(profile.cid)
-            bounty = edentities.EDBounty(scan["bounty"]) if scan["bounty"] else None
+            bounty = edentities.EDFineOrBounty(scan["bounty"]) if scan["bounty"] else None
             if profile and (self.player.name != cmdr_name):
                 if profile.is_dangerous(self.player.powerplay):
                     # Translators: this is shown via EDMC's EDR status line upon contact with a known outlaw
@@ -933,7 +933,7 @@ class EDRClient(object):
                     if scan["enemy"]:
                         status += _(u"PP Enemy (weapons free). ")
                     if scan["bounty"]:
-                        status += _(u"Wanted for {} cr").format(edentities.EDBounty(scan["bounty"]).pretty_print())
+                        status += _(u"Wanted for {} cr").format(edentities.EDFineOrBounty(scan["bounty"]).pretty_print())
                     elif scan["wanted"]:
                         status += _(u"Wanted somewhere. A Kill-Warrant-Scan will reveal their highest bounty.")
                     if status:
@@ -945,7 +945,7 @@ class EDRClient(object):
                     self.status = _(u"Intel for cmdr {}.").format(cmdr_name)
                     details = [profile.short_profile(self.player.powerplay)]
                     if bounty:
-                        details.append(_(u"Wanted for {} cr").format(edentities.EDBounty(scan["bounty"]).pretty_print()))
+                        details.append(_(u"Wanted for {} cr").format(edentities.EDFineOrBounty(scan["bounty"]).pretty_print()))
                     elif scan["wanted"]:
                         details.append(_(u"Wanted somewhere but it could be minor offenses."))
                     if legal:
