@@ -304,7 +304,7 @@ def handle_lifecycle_events(ed_player, entry, state):
 
     if entry["event"] in ["Fileheader"] and entry["part"] == 1:
         EDR_CLIENT.clear()
-        ed_player.inception()
+        ed_player.inception(genesis=True)
         EDR_CLIENT.status = _(u"initialized.")
         EDRLOG.log(u"Journal player got created: accurate picture of friends/wings.",
                    "DEBUG")
@@ -488,7 +488,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         if entry["ScanType"] == "Detailed":
             EDR_CLIENT.noteworthy_about_scan(entry)
 
-    if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PVPKill"]:
+    if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PVPKill", "CrimeVictim"]:
         report_crime(ed_player, entry)
 
     if entry["event"] in ["ShipTargeted"]:
@@ -777,8 +777,7 @@ def report_crime(cmdr, entry):
             interdictor = player_one.instanced(entry["Interdictor"])
             player_one.interdicted(interdictor, entry["event"] == "Interdicted")
             edr_submit_crime([interdictor], entry["event"], cmdr, entry["timestamp"])
-
-    if entry["event"] == "Died":
+    elif entry["event"] == "Died":
         if "Killers" in entry:
             criminal_cmdrs = []
             for killer in entry["Killers"]:
@@ -790,20 +789,25 @@ def report_crime(cmdr, entry):
             criminal_cmdr = player_one.instanced(entry["KillerName"][5:], entry["KillerShip"])
             edr_submit_crime([criminal_cmdr], "Murder", cmdr, entry["timestamp"])
         player_one.killed()
-
-    if entry["event"] == "Interdiction":
+    elif entry["event"] == "Interdiction":
         if entry["IsPlayer"]:
             offence = "Interdiction" if entry["Success"] else "Failed interdiction"
             interdicted = player_one.instanced(entry["Interdicted"])
             player_one.interdiction(interdicted, entry["Success"])
             edr_submit_crime_self(cmdr, offence, interdicted, entry["timestamp"])
-
-    if entry["event"] == "PVPKill":
+    elif entry["event"] == "PVPKill":
         EDRLOG.log(u"PVPKill!", "INFO")
         victim = player_one.instanced(entry["Victim"])
         victim.killed()
         edr_submit_crime_self(cmdr, "Murder", victim, entry["timestamp"])
         player_one.destroy(victim)
+    elif entry["event"] == "CrimeVictim":
+        offender = player_one.instanced(entry["Offender"])
+        offender.bounty = entry.get("Bounty", None)
+        offender.fine = entry.get("Fine", None)
+        edr_submit_crime([offender], entry["CrimeType"], cmdr, entry["timestamp"])
+
+
 
 
 def report_comms(player, entry):
@@ -829,11 +833,15 @@ def report_comms(player, entry):
                 EDRLOG.log(u"Text from {} friend / wing. Can't infer location".format(from_cmdr),
                            "INFO")
             else:
-                EDRLOG.log(u"Text from {} (not friend/wing) == same location".format(from_cmdr),
-                           "INFO")
-                contact = player.instanced(from_cmdr)
-                edr_submit_contact(contact, entry["timestamp"],
-                                   "Received text (non wing/friend player)", player)
+                if player.from_genesis:
+                    EDRLOG.log(u"Text from {} (not friend/wing) == same location".format(from_cmdr),
+                            "INFO")
+                    contact = player.instanced(from_cmdr)
+                    edr_submit_contact(contact, entry["timestamp"],
+                                    "Received text (non wing/friend player)", player)
+                else:
+                    EDRLOG.log(u"Received text from {}. Player not created from game start => can't infer location".format(from_cmdr),
+                        "INFO")
         elif entry["Channel"] in ["starsystem"]:
             from_cmdr = entry["From"]
             if entry["From"].startswith("$cmdr_decorate:#name="):
@@ -851,11 +859,15 @@ def report_comms(player, entry):
         if player.is_friend(to_cmdr) or player.is_wingmate(to_cmdr):
             EDRLOG.log(u"Sent text to {} friend/wing: can't infer location".format(to_cmdr), "INFO")            
         else:
-            EDRLOG.log(u"Sent text to {} (not friend/wing) == same location".format(to_cmdr),
-                       "INFO")
-            contact = player.instanced(to_cmdr)
-            edr_submit_contact(contact, entry["timestamp"], "Sent text (non wing/friend player)",
-                               player)
+            if player.from_genesis:
+                EDRLOG.log(u"Sent text to {} (not friend/wing) == same location".format(to_cmdr),
+                        "INFO")
+                contact = player.instanced(to_cmdr)
+                edr_submit_contact(contact, entry["timestamp"], "Sent text (non wing/friend player)",
+                                player)
+            else:
+                EDRLOG.log(u"Sent text to {}. Player not created from game start => can't infer location".format(to_cmdr),
+                        "INFO")
 
     # Not The Perfect URL regexp but that should be good enough
     m = re.match(r".*(https?://[0-9a-z.\-]*\.[0-9a-z\-]*) ?.*", entry["Message"], flags=re.IGNORECASE)
