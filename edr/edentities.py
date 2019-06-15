@@ -154,7 +154,11 @@ class EDFineOrBounty(object):
 
     def __repr__(self):
         return str(self.__dict__)
-   
+
+
+    def __iadd__(self, other):
+        self.value += other
+        return self 
 
     def pretty_print(self):
         readable = ""
@@ -294,6 +298,7 @@ class EDPlayer(object):
         self.enemy = False
         self._bounty = None
         self._fine = None
+        self.targeted = False
         self.timestamp = now
 
     def __repr__(self):
@@ -315,6 +320,7 @@ class EDPlayer(object):
         self.wanted = False
         self._bounty = None
         self._fine = None
+        self.targeted = False
         if self.mothership:
             self.mothership.destroy()
         if self.srv:
@@ -435,6 +441,7 @@ class EDPlayer(object):
         self._touch()
         self.location.space_dimension = EDSpaceDimension.NORMAL_SPACE
         self.mothership.safe()
+        self.targeted = False
         if self.slf:
             self.slf.safe()
         if self.srv:
@@ -444,6 +451,7 @@ class EDPlayer(object):
         self._touch()
         self.location.space_dimension = EDSpaceDimension.SUPER_SPACE
         self.mothership.safe()
+        self.targeted = False
         if self.slf:
             self.slf.safe()
         if self.srv:
@@ -454,6 +462,7 @@ class EDPlayer(object):
         self.location.space_dimension = EDSpaceDimension.HYPER_SPACE
         self.planetary_destination = None # leaving the system, so no point in keep a planetary destination
         self.mothership.safe()
+        self.targeted = False
         if self.slf:
             self.slf.safe()
         if self.srv:
@@ -473,7 +482,7 @@ class EDPlayer(object):
         else:
             self._bounty = None
 
-    property
+    @property
     def fine(self):
         if self._fine:
             return self._fine.value
@@ -483,7 +492,7 @@ class EDPlayer(object):
     def fine(self, credits):
         self._touch()
         if credits:
-            self._fine = EDFine(credits)
+            self._fine = EDFineOrBounty(credits)
         else:
             self._fine = None
 
@@ -689,7 +698,12 @@ class EDPlayerOne(EDPlayer):
 
     @target.setter
     def target(self, new_target):
+        if self._target:
+            self._target.targeted = False
+            self._target._touch()
         self._target = new_target
+        new_target.targeted = True
+        new_target._touch()
         self._touch()
 
     def lowish_fuel(self):

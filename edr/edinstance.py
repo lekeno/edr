@@ -94,5 +94,19 @@ class EDInstance(object):
         result = {}
         for cmdr_name in self.players:
             timestamp, player = self.players[cmdr_name.lower()].values()
+            if cmdr_name.targeted:
+                now = edtime.EDTime.py_epoch_now()
+                timestamp = now
             result[cmdr_name.lower()] = {"timestamp": int(timestamp*1000), "player": player.json()}
+        return result
+
+    def debug_repr(self):
+        result = []
+        result.append(u"T:{} ; last_check:{} ; touched: {}".format(edtime.EDTime.t_minus(self.timestamp*1000), edtime.EDTime.t_minus(self.last_check_timestamp*1000) if self.last_check_timestamp else "", self._touched))
+        for cmdr_name in self.players:
+            timestamp, player = self.players[cmdr_name.lower()].values()
+            now = edtime.EDTime.py_epoch_now()
+            if player.targeted:
+                timestamp = now
+            result.append(u"{} at {}: {} {}".format(cmdr_name, edtime.EDTime.t_minus(timestamp*1000), "[TGT]" if player.targeted else "", player.json()))
         return result
