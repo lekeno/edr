@@ -584,7 +584,7 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
         EDRLOG.log(u"Appending criminal {} with ship {}".format(criminal_cmdr.name,
                                                                 criminal_cmdr.vehicle_type()),
                    "DEBUG")
-        criminals.append({"name": criminal_cmdr.name, "ship": criminal_cmdr.vehicle_type()})
+        criminals.append({"name": criminal_cmdr.name, "ship": criminal_cmdr.vehicle_type(), "bounty": criminal_cmdr.bounty, "fine": criminal_cmdr.fine})
 
     edt = EDTime()
     edt.from_journal_timestamp(timestamp)
@@ -803,11 +803,9 @@ def report_crime(cmdr, entry):
         player_one.destroy(victim)
     elif entry["event"] == "CrimeVictim":
         offender = player_one.instanced(entry["Offender"])
-        offender.bounty = entry.get("Bounty", None)
-        offender.fine = entry.get("Fine", None)
+        offender.bounty += entry.get("Bounty", None)
+        offender.fine += entry.get("Fine", None)
         edr_submit_crime([offender], entry["CrimeType"], cmdr, entry["timestamp"])
-
-
 
 
 def report_comms(player, entry):
@@ -850,6 +848,7 @@ def report_comms(player, entry):
             contact = EDPlayer(from_cmdr)
             contact.location = player.location
             contact.place = "Unknown"
+            # TODO add blip to systemwideinstance ?
             edr_submit_contact(contact, entry["timestamp"],
                                 "Received text (starsystem channel)", player)
     elif entry["event"] == "SendText" and not entry["To"] in ["local", "wing", "starsystem", "squadron", "squadleaders"]:

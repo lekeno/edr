@@ -19,7 +19,11 @@ class EDTime(object, comparable.ComparableMixin):
 
     @staticmethod
     def t_minus(js_epoch_then, short=False):
-        ago = int((EDTime.js_epoch_now() - js_epoch_then) / 1000)
+        return EDTime.t_minus_py(int(js_epoch_then / 1000))
+
+    @staticmethod
+    def t_minus_py(py_epoch_then, short=False):
+        ago = EDTime.py_epoch_now() - py_epoch_then
         if short:
             # Translators: this is to show how long ago an event took place, keep it ultra-short, e.g. -{} would show something like -3H
             return _c(u"short notation for t-minus|-{}").format(EDTime.pretty_print_timespan(ago, short=True))
