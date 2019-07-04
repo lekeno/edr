@@ -134,7 +134,9 @@ class EDRResourceFinder(object):
         "arsenic": 'recommend_prospecting_planet', "molybdenum": 'recommend_prospecting_planet',
         "niobium": 'recommend_prospecting_planet', "chromium": 'recommend_prospecting_planet',
         "vanadium": 'recommend_prospecting_planet', "zinc": 'recommend_prospecting_planet',
-        "germaniun": 'recommend_prospecting_planet', "man": 'recommend_prospecting_planet',
+        "germaniun": 'recommend_prospecting_planet', "manganese": 'recommend_prospecting_planet',
+        "tellurium": 'recommend_prospecting_planet',
+        "ruthenium": 'recommend_prospecting_planet', "antimony": 'recommend_prospecting_planet',
         "boron": 'mat_trader_mining_all',
         "ambiguous abbreviation (pc)": "ambiguous_p_c",
         "ambiguous abbreviation (cc)": "ambiguous_c_c",
@@ -428,76 +430,83 @@ class EDRResourceFinder(object):
             _(u"More efficient: exchange other materials at a raw material trader, send !raw to find the closest one.")
         ] 
 
-
+    
     def recommend_prospecting_planet(self, resource, reference_system, callback):
         planets_lut = {
-            'polonium': [ {'name': 'HIP 59646', 'planet': '1', 'concentration':	0.013, 'gravity': 1.35, 'distanceToArrival': 66},
-                          {'name': 'Tiris', 'planet': '1 c', 'concentration': 0.012, 'gravity': 0.13, 'distanceToArrival': 17},
-                          {'name': 'LTT 6705', 'planet': 'A 2', 'concentration': 0.012, 'gravity': 0.93, 'distanceToArrival': 25},
-                          {'name': 'HIP 22286', 'planet': '2', 'concentration': 0.013, 'gravity': 1.49, 'distanceToArrival': 16}
+            'tellurium': [ { 'name': 'HIP 36601', 'planet': 'C 3 b', 'gravity': 0.04, 'distanceToArrival': 153683, 'type': 'crystals'}],
+            'ruthenium': [{ 'name': 'HIP 36601', 'planet': 'C 1 d', 'gravity': 0.08, 'distanceToArrival': 154104, 'type': 'crystals'}
             ],
-            'technetium': [ {'name': 'HIP 108602', 'planet': 'B 2', 'concentration': 0.015, 'gravity': 0.10, 'distanceToArrival': 468},
-                            {'name': 'Kadaren', 'planet': '2', 'concentration':	0.015, 'gravity': 1.23, 'distanceToArrival': 26},
-                            {'name': 'Nihal', 'planet': '1', 'concentration': 0.014, 'gravity': 1.29, 'distanceToArrival': 335}
+            'antimony': [ { 'name': 'Outotz LS-K D8-3', 'planet': 'B 5 c', 'gravity': 0.07, 'distanceToArrival': 310673, 'type': 'crystals'}],
+            'polonium': [ {'name': 'HIP 59646', 'planet': '1', 'concentration':	0.013, 'gravity': 1.35, 'distanceToArrival': 66, 'type': 'rocks'},
+                          {'name': 'Tiris', 'planet': '1 c', 'concentration': 0.012, 'gravity': 0.13, 'distanceToArrival': 17}, 'type': 'rocks',
+                          {'name': 'LTT 6705', 'planet': 'A 2', 'concentration': 0.012, 'gravity': 0.93, 'distanceToArrival': 25, 'type': 'rocks'},
+                          {'name': 'HIP 22286', 'planet': '2', 'concentration': 0.013, 'gravity': 1.49, 'distanceToArrival': 16, 'type': 'rocks'},
+                          { 'name': 'HIP 36601', 'planet': 'C 1 a', 'gravity': 0.09, 'distanceToArrival': 154099, 'type': 'crystals'}
             ],
-            'yttrium':    [ {'name': 'Mse', 'planet': 'B 1', 'concentration': 0.026, 'gravity': 0.29, 'distanceToArrival': 962},
-                            {'name': 'Epsilon Ceti', 'planet': 'A 1', 'concentration':	0.025, 'gravity': 1.92, 'distanceToArrival': 85},
-                            {'name': 'Hip 20485', 'planet': 'A 1', 'concentration': 0.025, 'gravity': 0.24, 'distanceToArrival': 11}
+            'technetium': [ {'name': 'HIP 108602', 'planet': 'B 2', 'concentration': 0.015, 'gravity': 0.10, 'distanceToArrival': 468, 'type': 'rocks'},
+                            {'name': 'Kadaren', 'planet': '2', 'concentration':	0.015, 'gravity': 1.23, 'distanceToArrival': 26, 'type': 'rocks'},
+                            {'name': 'Nihal', 'planet': '1', 'concentration': 0.014, 'gravity': 1.29, 'distanceToArrival': 335, 'type': 'rocks'},
+                            { 'name': 'HIP 36601', 'planet': 'C 5 a', 'gravity': 0.03, 'distanceToArrival': 154093, 'type': 'crystals'}
             ],
-            'cadmium':    [ {'name': 'Anca', 'planet': 'A 1', 'concentration': 0.033, 'gravity': 0.09, 'distanceToArrival': 6},
-                            {'name': 'Tiris', 'planet': '1 C', 'concentration':	0.033, 'gravity': 0.13, 'distanceToArrival': 17},
-                            {'name': 'Col 285 Sector SU-E c12-23', 'planet': '1', 'concentration': 0.037, 'gravity': 1.5, 'distanceToArrival': 9}
+            'yttrium':    [ {'name': 'Mse', 'planet': 'B 1', 'concentration': 0.026, 'gravity': 0.29, 'distanceToArrival': 962, 'type': 'rocks'},
+                            {'name': 'Epsilon Ceti', 'planet': 'A 1', 'concentration':	0.025, 'gravity': 1.92, 'distanceToArrival': 85, 'type': 'rocks'},
+                            {'name': 'Hip 20485', 'planet': 'A 1', 'concentration': 0.025, 'gravity': 0.24, 'distanceToArrival': 11, 'type': 'rocks'},
+                            { 'name': 'Outotz LS-K D8-3', 'planet': 'B 5 a', 'gravity': 0.09, 'distanceToArrival': 310675, 'type': 'crystals'}
             ],
-            'mercury':    [ {'name': 'Mse', 'planet': 'B 1', 'concentration': 0.019, 'gravity': 0.29, 'distanceToArrival': 962},
-                            {'name': 'Kadaren', 'planet': '2', 'concentration':	0.018, 'gravity': 1.23, 'distanceToArrival': 26},
-                            {'name': 'Clota', 'planet': '1', 'concentration': 0.019, 'gravity': 1.51, 'distanceToArrival': 12},
-                            {'name': 'HIP 22286', 'planet': '2', 'concentration': 0.019, 'gravity': 1.49, 'distanceToArrival': 16}
+            'cadmium':    [ {'name': 'Anca', 'planet': 'A 1', 'concentration': 0.033, 'gravity': 0.09, 'distanceToArrival': 6, 'type': 'rocks'},
+                            {'name': 'Tiris', 'planet': '1 C', 'concentration':	0.033, 'gravity': 0.13, 'distanceToArrival': 17, 'type': 'rocks'},
+                            {'name': 'Col 285 Sector SU-E c12-23', 'planet': '1', 'concentration': 0.037, 'gravity': 1.5, 'distanceToArrival': 9, 'type': 'rocks'}
             ],
-            'selenium':   [ {'name': 'LHS 417', 'planet': '9 E A', 'concentration': 0.049, 'gravity': 0.03, 'distanceToArrival': 3776},
-                            {'name': 'Jeng', 'planet': 'A 1 D A', 'concentration':	0.049, 'gravity': 0.03, 'distanceToArrival': 828},
-                            {'name': 'Kandanda', 'planet': '3 D A', 'concentration': 0.048, 'gravity': 0.03, 'distanceToArrival': 2548}
+            'mercury':    [ {'name': 'Mse', 'planet': 'B 1', 'concentration': 0.019, 'gravity': 0.29, 'distanceToArrival': 962, 'type': 'rocks'},
+                            {'name': 'Kadaren', 'planet': '2', 'concentration':	0.018, 'gravity': 1.23, 'distanceToArrival': 26, 'type': 'rocks'},
+                            {'name': 'Clota', 'planet': '1', 'concentration': 0.019, 'gravity': 1.51, 'distanceToArrival': 12, 'type': 'rocks'},
+                            {'name': 'HIP 22286', 'planet': '2', 'concentration': 0.019, 'gravity': 1.49, 'distanceToArrival': 16, 'type': 'rocks'}
             ],
-            'tin':        [ {'name': '102 Iota Tauri', 'planet': 'B 2 A', 'concentration': 0.03, 'gravity': 0.19, 'distanceToArrival': 3776},
-                            {'name': 'Nu Tauri', 'planet': '1', 'concentration':	0.029, 'gravity': 2.29, 'distanceToArrival': 828},
-                            {'name': 'Col 285 Sector SU-E c12-23', 'planet': '1', 'concentration': 0.031, 'gravity': 1.5, 'distanceToArrival': 2548},
-                            {'name': 'Dhakhan', 'planet': 'C 2', 'concentration': 0.028, 'gravity': 0.08, 'distanceToArrival': 13361},
-                            {'name': 'HIP 22286', 'planet': '2', 'concentration': 0.029, 'gravity': 1.49, 'distanceToArrival': 16}
+            'selenium':   [ {'name': 'LHS 417', 'planet': '9 E A', 'concentration': 0.049, 'gravity': 0.03, 'distanceToArrival': 3776, 'type': 'rocks'},
+                            {'name': 'Jeng', 'planet': 'A 1 D A', 'concentration':	0.049, 'gravity': 0.03, 'distanceToArrival': 828, 'type': 'rocks'},
+                            {'name': 'Kandanda', 'planet': '3 D A', 'concentration': 0.048, 'gravity': 0.03, 'distanceToArrival': 2548, 'type': 'rocks'}
             ],
-            'arsenic':    [ {'name': 'Masszony', 'planet': '1 A A', 'concentration': 0.029, 'gravity': 0.09, 'distanceToArrival': 2114},
-                            {'name': 'HIP 15304', 'planet': '6 C A', 'concentration':	0.029, 'gravity': 0.06, 'distanceToArrival': 3601},
-                            {'name': 'El Tio', 'planet': '3 E A', 'concentration':	0.029, 'gravity': 0.05, 'distanceToArrival':1142 },
-                            {'name': 'Col 285 Sector SU-E c12-23', 'planet': '1', 'concentration': 0.022, 'gravity': 1.5, 'distanceToArrival': 2548},
-                            {'name': 'Hyades Sector DR-V c2-23', 'planet': 'A 3', 'concentration': 0.024, 'gravity': 0.08, 'distanceToArrival': 23}
+            'tin':        [ {'name': '102 Iota Tauri', 'planet': 'B 2 A', 'concentration': 0.03, 'gravity': 0.19, 'distanceToArrival': 3776, 'type': 'rocks'},
+                            {'name': 'Nu Tauri', 'planet': '1', 'concentration':	0.029, 'gravity': 2.29, 'distanceToArrival': 828, 'type': 'rocks'},
+                            {'name': 'Col 285 Sector SU-E c12-23', 'planet': '1', 'concentration': 0.031, 'gravity': 1.5, 'distanceToArrival': 2548, 'type': 'rocks'},
+                            {'name': 'Dhakhan', 'planet': 'C 2', 'concentration': 0.028, 'gravity': 0.08, 'distanceToArrival': 13361, 'type': 'rocks'},
+                            {'name': 'HIP 22286', 'planet': '2', 'concentration': 0.029, 'gravity': 1.49, 'distanceToArrival': 16, 'type': 'rocks'}
             ],
-            'molybdenum': [ {'name': 'Mse', 'planet': 'B 1', 'concentration': 0.028, 'gravity': 0.29, 'distanceToArrival': 962},
-                            {'name': 'Tiris', 'planet': '1 c', 'concentration': 0.028, 'gravity': 0.13, 'distanceToArrival': 17},
-                            {'name': 'Hip 20485', 'planet': 'A 1', 'concentration': 0.028, 'gravity': 0.24, 'distanceToArrival': 11}
+            'arsenic':    [ {'name': 'Masszony', 'planet': '1 A A', 'concentration': 0.029, 'gravity': 0.09, 'distanceToArrival': 2114, 'type': 'rocks'},
+                            {'name': 'HIP 15304', 'planet': '6 C A', 'concentration':	0.029, 'gravity': 0.06, 'distanceToArrival': 3601, 'type': 'rocks'},
+                            {'name': 'El Tio', 'planet': '3 E A', 'concentration':	0.029, 'gravity': 0.05, 'distanceToArrival':1142, 'type': 'rocks'},
+                            {'name': 'Col 285 Sector SU-E c12-23', 'planet': '1', 'concentration': 0.022, 'gravity': 1.5, 'distanceToArrival': 2548, 'type': 'rocks'},
+                            {'name': 'Hyades Sector DR-V c2-23', 'planet': 'A 3', 'concentration': 0.024, 'gravity': 0.08, 'distanceToArrival': 23, 'type': 'rocks'}
             ],
-            'niobium':    [ {'name': '102 Iota Tauri', 'planet': 'B 2 A', 'concentration': 0.03, 'gravity': 0.19, 'distanceToArrival': 3776},
-                            {'name': 'LTT 6705', 'planet': 'A 2', 'concentration': 0.029, 'gravity': 0.93, 'distanceToArrival': 25},
-                            {'name': 'Alpha Chamaelontis', 'planet': 'B 1 A', 'concentration': 0.029, 'gravity': 0.13, 'distanceToArrival': 1786},
+            'molybdenum': [ {'name': 'Mse', 'planet': 'B 1', 'concentration': 0.028, 'gravity': 0.29, 'distanceToArrival': 962, 'type': 'rocks'},
+                            {'name': 'Tiris', 'planet': '1 c', 'concentration': 0.028, 'gravity': 0.13, 'distanceToArrival': 17, 'type': 'rocks'},
+                            {'name': 'Hip 20485', 'planet': 'A 1', 'concentration': 0.028, 'gravity': 0.24, 'distanceToArrival': 11, 'type': 'rocks'}
             ],
-            'chromium':   [ {'name': 'CPD-60 604', 'planet': 'B 1', 'concentration': 0.175, 'gravity': 0.32, 'distanceToArrival': 157},
-                            {'name': 'Aurgel', 'planet': 'B 1', 'concentration': 0.177, 'gravity': 0.74, 'distanceToArrival': 9},
-                            {'name': 'HIP 27123', 'planet': 'A 1', 'concentration': 0.182, 'gravity': 0.45, 'distanceToArrival': 54},
+            'niobium':    [ {'name': '102 Iota Tauri', 'planet': 'B 2 A', 'concentration': 0.03, 'gravity': 0.19, 'distanceToArrival': 3776, 'type': 'rocks'},
+                            {'name': 'LTT 6705', 'planet': 'A 2', 'concentration': 0.029, 'gravity': 0.93, 'distanceToArrival': 25, 'type': 'rocks'},
+                            {'name': 'Alpha Chamaelontis', 'planet': 'B 1 A', 'concentration': 0.029, 'gravity': 0.13, 'distanceToArrival': 1786, 'type': 'rocks'},
             ],
-            'germanium':  [ {'name': 'Vega', 'planet': '2 D A', 'concentration': 0.062, 'gravity': 0.10, 'distanceToArrival': 1801},
-                            {'name': 'HIP 113858', 'planet': '4 B A', 'concentration': 0.063, 'gravity': 0.09, 'distanceToArrival': 3055},
-                            {'name': 'Ernueken', 'planet': '7 F A', 'concentration': 0.063, 'gravity': 0.06, 'distanceToArrival': 2597},
+            'chromium':   [ {'name': 'CPD-60 604', 'planet': 'B 1', 'concentration': 0.175, 'gravity': 0.32, 'distanceToArrival': 157, 'type': 'rocks'},
+                            {'name': 'Aurgel', 'planet': 'B 1', 'concentration': 0.177, 'gravity': 0.74, 'distanceToArrival': 9, 'type': 'rocks'},
+                            {'name': 'HIP 27123', 'planet': 'A 1', 'concentration': 0.182, 'gravity': 0.45, 'distanceToArrival': 54, 'type': 'rocks'},
             ],
-            'manganese':  [ {'name': 'LTT 8419', 'planet': 'A 1 A', 'concentration': 0.163, 'gravity': 0.18, 'distanceToArrival': 25},
-                            {'name': 'Kadaren', 'planet': '2', 'concentration':	0.171, 'gravity': 1.23, 'distanceToArrival': 26},
-                            {'name': 'HIP 48141', 'planet': 'C 1 A', 'concentration': 0.165, 'gravity': 0.06, 'distanceToArrival': 180},
+            'germanium':  [ {'name': 'Vega', 'planet': '2 D A', 'concentration': 0.062, 'gravity': 0.10, 'distanceToArrival': 1801, 'type': 'rocks'},
+                            {'name': 'HIP 113858', 'planet': '4 B A', 'concentration': 0.063, 'gravity': 0.09, 'distanceToArrival': 3055, 'type': 'rocks'},
+                            {'name': 'Ernueken', 'planet': '7 F A', 'concentration': 0.063, 'gravity': 0.06, 'distanceToArrival': 2597, 'type': 'rocks'},
             ],
-            'vanadium':   [ {'name': '102 Iota Tauri', 'planet': 'B 2 A', 'concentration': 0.109, 'gravity': 0.19, 'distanceToArrival': 3776},
-                            {'name': 'Nu Tauri', 'planet': '1', 'concentration':	0.109, 'gravity': 2.29, 'distanceToArrival': 828},
-                            {'name': 'Clota', 'planet': '1', 'concentration': 0.107, 'gravity': 1.51, 'distanceToArrival': 12},
-                            {'name': 'Dhakhan', 'planet': 'C 2', 'concentration': 0.105, 'gravity': 0.08, 'distanceToArrival': 13361},
-                            {'name': 'HIP 22286', 'planet': '2', 'concentration': 0.109, 'gravity': 1.49, 'distanceToArrival': 16}
+            'manganese':  [ {'name': 'LTT 8419', 'planet': 'A 1 A', 'concentration': 0.163, 'gravity': 0.18, 'distanceToArrival': 25, 'type': 'rocks'},
+                            {'name': 'Kadaren', 'planet': '2', 'concentration':	0.171, 'gravity': 1.23, 'distanceToArrival': 26, 'type': 'rocks'},
+                            {'name': 'HIP 48141', 'planet': 'C 1 A', 'concentration': 0.165, 'gravity': 0.06, 'distanceToArrival': 180, 'type': 'rocks'},
             ],
-            'zinc':       [ {'name': 'LTT 6705', 'planet': 'A 2', 'concentration': 0.115, 'gravity': 0.93, 'distanceToArrival': 25},
-                            {'name': 'Alpha Chamaelontis', 'planet': 'B 1 A', 'concentration': 0.114, 'gravity': 0.13, 'distanceToArrival': 1786},
-                            {'name': 'Epsilon Ceti', 'planet': 'A 1', 'concentration':	0.113, 'gravity': 1.92, 'distanceToArrival': 85},
+            'vanadium':   [ {'name': '102 Iota Tauri', 'planet': 'B 2 A', 'concentration': 0.109, 'gravity': 0.19, 'distanceToArrival': 3776, 'type': 'rocks'},
+                            {'name': 'Nu Tauri', 'planet': '1', 'concentration':	0.109, 'gravity': 2.29, 'distanceToArrival': 828, 'type': 'rocks'},
+                            {'name': 'Clota', 'planet': '1', 'concentration': 0.107, 'gravity': 1.51, 'distanceToArrival': 12, 'type': 'rocks'},
+                            {'name': 'Dhakhan', 'planet': 'C 2', 'concentration': 0.105, 'gravity': 0.08, 'distanceToArrival': 13361, 'type': 'rocks'},
+                            {'name': 'HIP 22286', 'planet': '2', 'concentration': 0.109, 'gravity': 1.49, 'distanceToArrival': 16, 'type': 'rocks'}
+            ],
+            'zinc':       [ {'name': 'LTT 6705', 'planet': 'A 2', 'concentration': 0.115, 'gravity': 0.93, 'distanceToArrival': 25, 'type': 'rocks'},
+                            {'name': 'Alpha Chamaelontis', 'planet': 'B 1 A', 'concentration': 0.114, 'gravity': 0.13, 'distanceToArrival': 1786, 'type': 'rocks'},
+                            {'name': 'Epsilon Ceti', 'planet': 'A 1', 'concentration':	0.113, 'gravity': 1.92, 'distanceToArrival': 85, 'type': 'rocks'},
             ],
         }
 
@@ -515,11 +524,20 @@ class EDRResourceFinder(object):
         
         pretty_dist = _(u"{distance:.3g}").format(distance=best_distance) if best_distance < 50.0 else _(u"{distance}").format(distance=int(best_distance))
         clippy.copy(best["name"])
-        return [
-            _(u'{} ({}LY), Planet {} ({}LS, {}G), {} @ {}%').format(best['name'], pretty_dist, best['planet'], best['distanceToArrival'], best['gravity'], resource, int(100*best['concentration'])),
-            _(u"Bring: advanced scanner, SRV."),
-            _(u"Break some rocks. Higher chances of Very Rare and Rare resources in metallic meteorite, metallic outcrop and mesosiderite.")
-        ]
+        if best.get("type", None) is 'crystals':
+            return [
+                _(u'{} ({}LY), Planet {} ({}LS, {}G), {} @ biological sites').format(best['name'], pretty_dist, best['planet'], best['distanceToArrival'], best['gravity'], resource),
+                _(u"Bring: detailed surface scanner, SRV, synth materials for SRV fuel and ammo."),
+                _(u"Surface scan the planet to find biological sites."),
+                _(u"Land, deploy SRV to break crystalline clusters, scoop grade 4 materials.")
+            ]            
+        else:
+            return [
+                _(u'{} ({}LY), Planet {} ({}LS, {}G), {} @ {}%').format(best['name'], pretty_dist, best['planet'], best['distanceToArrival'], best['gravity'], resource, int(100*best['concentration'])),
+                _(u"Bring: advanced scanner, SRV."),
+                _(u"Break some rocks. Higher chances of Very Rare and Rare resources in metallic meteorite, metallic outcrop and mesosiderite.")
+            ]
+
 
     def from_hacking(self, resource, reference_system, callback):
         pois = {
