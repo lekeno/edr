@@ -4,6 +4,9 @@ import math
 
 from edvehicles import EDVehicleFactory
 import edtime
+import edrlog
+
+EDRLOG = edrlog.EDRLog()
 
 class EDRFleet(object):
 
@@ -44,17 +47,23 @@ class EDRFleet(object):
 
     def __init__(self):
         path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'db/fleet')
-        self.db = sqlite3.connect(path) # TODO parameterize
-        cursor = self.db.cursor()
-        cursor.execute('''CREATE TABLE IF NOT EXISTS
-                      ships(id INTEGER PRIMARY KEY, type TEXT, localised TEXT, name TEXT,
-                      star_system TEXT, ship_market_id INTEGER, value INTEGER, hot INTEGER, piloted INTEGER DEFAULT 0, eta INTEGER DEFAULT 0)''')
-        cursor.execute('''CREATE TABLE IF NOT EXISTS
-                      transits(id INTEGER PRIMARY KEY AUTOINCREMENT, ship_id INTEGER, eta INTEGER, source_system TEXT,
-                      destination_system TEXT, source_market_id INTEGER, destination_market_id INTEGER)''')
-        self.db.commit()
+        try:
+            self.db = sqlite3.connect(path)
+            cursor = self.db.cursor()
+            cursor.execute('''CREATE TABLE IF NOT EXISTS
+                        ships(id INTEGER PRIMARY KEY, type TEXT, localised TEXT, name TEXT,
+                        star_system TEXT, ship_market_id INTEGER, value INTEGER, hot INTEGER, piloted INTEGER DEFAULT 0, eta INTEGER DEFAULT 0)''')
+            cursor.execute('''CREATE TABLE IF NOT EXISTS
+                        transits(id INTEGER PRIMARY KEY AUTOINCREMENT, ship_id INTEGER, eta INTEGER, source_system TEXT,
+                        destination_system TEXT, source_market_id INTEGER, destination_market_id INTEGER)''')
+            self.db.commit()
+        except:
+            EDRLOG(u"Couldn't open/create the fleet database", "ERROR");
+            self.db = None
     
     def update(self, event):
+        if self.db is None:
+            return
         local_system = event.get("StarSystem", None)
         local_station = event.get("StationName", None)
         local_market_id = event.get("MarketID", None)
@@ -97,6 +106,8 @@ class EDRFleet(object):
             pass
 
     def where(self, type_or_name):
+        if self.db is None:
+            return
         self.__update()
         ship_type = self.SHIP_TYPE_LUT.get(type_or_name.lower(), type_or_name)
         check = self.db.execute("SELECT id from ships limit 1")
@@ -106,11 +117,15 @@ class EDRFleet(object):
         return cursor.fetchall()
 
     def sell(self, sell_event):
+        if self.db is None:
+            return
         if sell_event.get("event", None) not in ["ShipyardSell", "SellShipOnREbuy"]:
             return
         self.__sold(sell_event["SellShipID"])
 
     def buy(self, buy_event, star_system, storing_ship_name):
+        if self.db is None:
+            return
         if buy_event.get("event", None) != "ShipyardBuy":
             return
         
@@ -129,6 +144,8 @@ class EDRFleet(object):
     # TODO fix the no info on your fleet when there is some
 
     def new(self, new_event, star_system):
+        if self.db is None:
+            return
         if new_event.get("event", None) != "ShipyardNew":
             return
         ship_id = new_event.get("NewShipID", None)
@@ -143,11 +160,15 @@ class EDRFleet(object):
                         VALUES(?,?,?,?,?,?,?,?,?)''', (ship_id, ship_type, localised_type, name, star_system, market_id, value, hot, piloted))
 
     def __sold(self, ship_id):
+        if self.db is None:
+            return
         self.db.execute('DELETE from ships WHERE id=?', (ship_id, ))
         self.db.execute('DELETE from transits WHERE ship_id=?', (ship_id, ))
         self.db.commit()
 
     def rename(self, rename_event):
+        if self.db is None:
+            return
         if rename_event.get("event", None) != "SetUserShipName":
             return
         
@@ -158,6 +179,8 @@ class EDRFleet(object):
         self.db.commit()
 
     def swap(self, swap_event, star_system, storing_ship_name):
+        if self.db is None:
+            return
         if swap_event.get("event", None) != "ShipyardSwap":
             return
         
@@ -179,6 +202,8 @@ class EDRFleet(object):
 
 
     def transfer(self, transfer_event, dst_system, dst_market_id=""):
+        if self.db is None:
+            return
         if transfer_event.get("event", None) != "ShipyardTransfer":
             return
 
