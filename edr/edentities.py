@@ -702,8 +702,9 @@ class EDPlayerOne(EDPlayer):
             self._target.targeted = False
             self._target._touch()
         self._target = new_target
-        new_target.targeted = True
-        new_target._touch()
+        if new_target:
+            new_target.targeted = True
+            new_target._touch()
         self._touch()
 
     def lowish_fuel(self):
