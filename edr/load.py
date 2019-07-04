@@ -263,7 +263,7 @@ def handle_change_events(ed_player, entry):
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
     return outcome
 
-def handle_lifecycle_events(ed_player, entry, state):
+def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
     if entry["event"] == "Music":
         if entry["MusicTrack"] == "MainMenu" and not ed_player.is_crew_member():
             # Checking for 'is_crew_member' because "MainMenu" shows up when joining a multicrew session
@@ -314,7 +314,10 @@ def handle_lifecycle_events(ed_player, entry, state):
         if ed_player.inventory.stale_or_incorrect():
             ed_player.inventory.initialize_with_edmc(state)
         EDR_CLIENT.clear()
-        ed_player.inception()
+        ed_player.inception(genesis=from_genesis)
+        if from_genesis:
+            EDRLOG.log(u"Heuristics genesis: probably accurate picture of friends/wings.",
+                   "DEBUG")
         EDR_CLIENT.game_mode(entry["GameMode"], entry.get("Group", None))
         ed_player.update_vehicle_if_obsolete(EDVehicleFactory.from_load_game_event(entry), piloted=True)
         EDRLOG.log(u"Game mode is {}".format(entry["GameMode"]), "DEBUG")
@@ -418,12 +421,16 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     EDR_CLIENT.player_name(cmdr)
     ed_player = EDR_CLIENT.player
     ed_player.friends = state["Friends"]
-
+        
     if not prerequisites(EDR_CLIENT, is_beta):
         return
 
     if entry["event"] in ["Shutdown", "ShutDown", "Music", "Resurrect", "Fileheader", "LoadGame", "Loadout"]:
-        handle_lifecycle_events(ed_player, entry, state)
+        from_genesis = False
+        if "first_run" not in journal_entry.__dict__:
+            journal_entry.first_run = False
+            from_genesis = (entry["event"] == "LoadGame") and (cmdr and system is None and station is None)
+        handle_lifecycle_events(ed_player, entry, state, from_genesis)
 
     if entry["event"] in ["SetUserShipName", "SellShipOnRebuy", "ShipyardBuy", "ShipyardNew", "ShipyardSell", "ShipyardTransfer", "ShipyardSwap"]:
         handle_fleet_events(entry)
