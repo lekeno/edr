@@ -1,0 +1,3386 @@
+{
+    "hpt_mining_abrblstr_fixed_small": {
+        "powergen": 0,
+        "powerdraw": 0.34
+    },
+    "hpt_mining_abrblstr_turret_small": {
+        "powergen": 0,
+        "powerdraw": 0.47
+    },
+    "int_repairer_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0.54
+    },
+    "int_repairer_size1_class2": {
+        "powergen": 0,
+        "powerdraw": 0.72
+    },
+    "int_repairer_size1_class3": {
+        "powergen": 0,
+        "powerdraw": 0.9
+    },
+    "int_repairer_size1_class4": {
+        "powergen": 0,
+        "powerdraw": 1.04
+    },
+    "int_repairer_size1_class5": {
+        "powergen": 0,
+        "powerdraw": 1.26
+    },
+    "int_repairer_size2_class1": {
+        "powergen": 0,
+        "powerdraw": 0.68
+    },
+    "int_repairer_size2_class2": {
+        "powergen": 0,
+        "powerdraw": 0.9
+    },
+    "int_repairer_size2_class3": {
+        "powergen": 0,
+        "powerdraw": 1.13
+    },
+    "int_repairer_size2_class4": {
+        "powergen": 0,
+        "powerdraw": 1.29
+    },
+    "int_repairer_size2_class5": {
+        "powergen": 0,
+        "powerdraw": 1.58
+    },
+    "int_repairer_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0.81
+    },
+    "int_repairer_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 1.08
+    },
+    "int_repairer_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 1.35
+    },
+    "int_repairer_size3_class4": {
+        "powergen": 0,
+        "powerdraw": 1.55
+    },
+    "int_repairer_size3_class5": {
+        "powergen": 0,
+        "powerdraw": 1.89
+    },
+    "int_repairer_size4_class1": {
+        "powergen": 0,
+        "powerdraw": 0.99
+    },
+    "int_repairer_size4_class2": {
+        "powergen": 0,
+        "powerdraw": 1.32
+    },
+    "int_repairer_size4_class3": {
+        "powergen": 0,
+        "powerdraw": 1.65
+    },
+    "int_repairer_size4_class4": {
+        "powergen": 0,
+        "powerdraw": 1.9
+    },
+    "int_repairer_size4_class5": {
+        "powergen": 0,
+        "powerdraw": 2.31
+    },
+    "int_repairer_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 1.17
+    },
+    "int_repairer_size5_class2": {
+        "powergen": 0,
+        "powerdraw": 1.56
+    },
+    "int_repairer_size5_class3": {
+        "powergen": 0,
+        "powerdraw": 1.95
+    },
+    "int_repairer_size5_class4": {
+        "powergen": 0,
+        "powerdraw": 2.24
+    },
+    "int_repairer_size5_class5": {
+        "powergen": 0,
+        "powerdraw": 2.73
+    },
+    "int_repairer_size6_class1": {
+        "powergen": 0,
+        "powerdraw": 1.4
+    },
+    "int_repairer_size6_class2": {
+        "powergen": 0,
+        "powerdraw": 1.86
+    },
+    "int_repairer_size6_class3": {
+        "powergen": 0,
+        "powerdraw": 2.33
+    },
+    "int_repairer_size6_class4": {
+        "powergen": 0,
+        "powerdraw": 2.67
+    },
+    "int_repairer_size6_class5": {
+        "powergen": 0,
+        "powerdraw": 3.26
+    },
+    "int_repairer_size7_class1": {
+        "powergen": 0,
+        "powerdraw": 1.58
+    },
+    "int_repairer_size7_class2": {
+        "powergen": 0,
+        "powerdraw": 2.1
+    },
+    "int_repairer_size7_class3": {
+        "powergen": 0,
+        "powerdraw": 2.63
+    },
+    "int_repairer_size7_class4": {
+        "powergen": 0,
+        "powerdraw": 3.02
+    },
+    "int_repairer_size7_class5": {
+        "powergen": 0,
+        "powerdraw": 3.68
+    },
+    "int_repairer_size8_class1": {
+        "powergen": 0,
+        "powerdraw": 1.8
+    },
+    "int_repairer_size8_class2": {
+        "powergen": 0,
+        "powerdraw": 2.4
+    },
+    "int_repairer_size8_class3": {
+        "powergen": 0,
+        "powerdraw": 3
+    },
+    "int_repairer_size8_class4": {
+        "powergen": 0,
+        "powerdraw": 3.45
+    },
+    "int_repairer_size8_class5": {
+        "powergen": 0,
+        "powerdraw": 4.2
+    },
+    "hpt_atdumbfiremissile_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 1.2
+    },
+    "hpt_atdumbfiremissile_turret_medium": {
+        "powergen": 0,
+        "powerdraw": 1.2
+    },
+    "hpt_atdumbfiremissile_fixed_large": {
+        "powergen": 0,
+        "powerdraw": 1.62
+    },
+    "hpt_atdumbfiremissile_turret_large": {
+        "powergen": 0,
+        "powerdraw": 1.75
+    },
+    "hpt_atmulticannon_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 0.46
+    },
+    "hpt_atmulticannon_turret_medium": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "hpt_atmulticannon_fixed_large": {
+        "powergen": 0,
+        "powerdraw": 0.64
+    },
+    "hpt_atmulticannon_turret_large": {
+        "powergen": 0,
+        "powerdraw": 0.64
+    },
+    "hpt_beamlaser_fixed_small": {
+        "powergen": 0,
+        "powerdraw": 0.62
+    },
+    "hpt_beamlaser_gimbal_small": {
+        "powergen": 0,
+        "powerdraw": 0.6
+    },
+    "hpt_beamlaser_turret_small": {
+        "powergen": 0,
+        "powerdraw": 0.57
+    },
+    "hpt_beamlaser_fixed_small_heat": {
+        "powergen": 0,
+        "powerdraw": 0.62
+    },
+    "hpt_beamlaser_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 1.01
+    },
+    "hpt_beamlaser_gimbal_medium": {
+        "powergen": 0,
+        "powerdraw": 1
+    },
+    "hpt_beamlaser_turret_medium": {
+        "powergen": 0,
+        "powerdraw": 0.93
+    },
+    "hpt_beamlaser_fixed_large": {
+        "powergen": 0,
+        "powerdraw": 1.62
+    },
+    "hpt_beamlaser_gimbal_large": {
+        "powergen": 0,
+        "powerdraw": 1.6
+    },
+    "hpt_beamlaser_turret_large": {
+        "powergen": 0,
+        "powerdraw": 1.51
+    },
+    "hpt_beamlaser_fixed_huge": {
+        "powergen": 0,
+        "powerdraw": 2.61
+    },
+    "hpt_beamlaser_gimbal_huge": {
+        "powergen": 0,
+        "powerdraw": 2.57
+    },
+    "int_shieldgenerator_size1_class3_fast": {
+        "powergen": 0,
+        "powerdraw": 1.2
+    },
+    "int_shieldgenerator_size2_class3_fast": {
+        "powergen": 0,
+        "powerdraw": 1.5
+    },
+    "int_shieldgenerator_size3_class3_fast": {
+        "powergen": 0,
+        "powerdraw": 1.8
+    },
+    "int_shieldgenerator_size4_class3_fast": {
+        "powergen": 0,
+        "powerdraw": 2.2
+    },
+    "int_shieldgenerator_size5_class3_fast": {
+        "powergen": 0,
+        "powerdraw": 2.6
+    },
+    "int_shieldgenerator_size6_class3_fast": {
+        "powergen": 0,
+        "powerdraw": 3.1
+    },
+    "int_shieldgenerator_size7_class3_fast": {
+        "powergen": 0,
+        "powerdraw": 3.5
+    },
+    "int_shieldgenerator_size8_class3_fast": {
+        "powergen": 0,
+        "powerdraw": 4
+    },
+    "hpt_pulselaserburst_fixed_small": {
+        "powergen": 0,
+        "powerdraw": 0.65
+    },
+    "hpt_pulselaserburst_gimbal_small": {
+        "powergen": 0,
+        "powerdraw": 0.64
+    },
+    "hpt_pulselaserburst_turret_small": {
+        "powergen": 0,
+        "powerdraw": 0.6
+    },
+    "hpt_pulselaserburst_fixed_small_scatter": {
+        "powergen": 0,
+        "powerdraw": 0.8
+    },
+    "hpt_pulselaserburst_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 1.05
+    },
+    "hpt_pulselaserburst_gimbal_medium": {
+        "powergen": 0,
+        "powerdraw": 1.04
+    },
+    "hpt_pulselaserburst_turret_medium": {
+        "powergen": 0,
+        "powerdraw": 0.98
+    },
+    "hpt_pulselaserburst_fixed_large": {
+        "powergen": 0,
+        "powerdraw": 1.66
+    },
+    "hpt_pulselaserburst_gimbal_large": {
+        "powergen": 0,
+        "powerdraw": 1.65
+    },
+    "hpt_pulselaserburst_turret_large": {
+        "powergen": 0,
+        "powerdraw": 1.57
+    },
+    "hpt_pulselaserburst_fixed_huge": {
+        "powergen": 0,
+        "powerdraw": 2.58
+    },
+    "hpt_pulselaserburst_gimbal_huge": {
+        "powergen": 0,
+        "powerdraw": 2.59
+    },
+    "int_passengercabin_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_passengercabin_size4_class2": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_passengercabin_size5_class2": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_passengercabin_size6_class2": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "hpt_cannon_fixed_small": {
+        "powergen": 0,
+        "powerdraw": 0.34
+    },
+    "hpt_cannon_gimbal_small": {
+        "powergen": 0,
+        "powerdraw": 0.38
+    },
+    "hpt_cannon_turret_small": {
+        "powergen": 0,
+        "powerdraw": 0.32
+    },
+    "hpt_cannon_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 0.49
+    },
+    "hpt_cannon_gimbal_medium": {
+        "powergen": 0,
+        "powerdraw": 0.54
+    },
+    "hpt_cannon_turret_medium": {
+        "powergen": 0,
+        "powerdraw": 0.45
+    },
+    "hpt_cannon_fixed_large": {
+        "powergen": 0,
+        "powerdraw": 0.67
+    },
+    "hpt_cannon_gimbal_large": {
+        "powergen": 0,
+        "powerdraw": 0.75
+    },
+    "hpt_cannon_turret_large": {
+        "powergen": 0,
+        "powerdraw": 0.64
+    },
+    "hpt_cannon_fixed_huge": {
+        "powergen": 0,
+        "powerdraw": 0.92
+    },
+    "hpt_cannon_gimbal_huge": {
+        "powergen": 0,
+        "powerdraw": 1.03
+    },
+    "int_cargorack_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_cargorack_size2_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_cargorack_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_cargorack_size4_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_cargorack_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_cargorack_size6_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_cargorack_size7_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_cargorack_size8_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_corrosionproofcargorack_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_corrosionproofcargorack_size1_class2": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_corrosionproofcargorack_size2_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_corrosionproofcargorack_size4_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "hpt_cargoscanner_size0_class1": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "hpt_cargoscanner_size0_class2": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "hpt_cargoscanner_size0_class3": {
+        "powergen": 0,
+        "powerdraw": 0.8
+    },
+    "hpt_cargoscanner_size0_class4": {
+        "powergen": 0,
+        "powerdraw": 1.6
+    },
+    "hpt_cargoscanner_size0_class5": {
+        "powergen": 0,
+        "powerdraw": 3.2
+    },
+    "hpt_chafflauncher_tiny": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "int_dronecontrol_collection_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0.14
+    },
+    "int_dronecontrol_collection_size1_class2": {
+        "powergen": 0,
+        "powerdraw": 0.18
+    },
+    "int_dronecontrol_collection_size1_class3": {
+        "powergen": 0,
+        "powerdraw": 0.23
+    },
+    "int_dronecontrol_collection_size1_class4": {
+        "powergen": 0,
+        "powerdraw": 0.28
+    },
+    "int_dronecontrol_collection_size1_class5": {
+        "powergen": 0,
+        "powerdraw": 0.32
+    },
+    "int_dronecontrol_collection_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "int_dronecontrol_collection_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 0.27
+    },
+    "int_dronecontrol_collection_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 0.34
+    },
+    "int_dronecontrol_collection_size3_class4": {
+        "powergen": 0,
+        "powerdraw": 0.41
+    },
+    "int_dronecontrol_collection_size3_class5": {
+        "powergen": 0,
+        "powerdraw": 0.48
+    },
+    "int_dronecontrol_collection_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 0.3
+    },
+    "int_dronecontrol_collection_size5_class2": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "int_dronecontrol_collection_size5_class3": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "int_dronecontrol_collection_size5_class4": {
+        "powergen": 0,
+        "powerdraw": 0.6
+    },
+    "int_dronecontrol_collection_size5_class5": {
+        "powergen": 0,
+        "powerdraw": 0.7
+    },
+    "int_dronecontrol_collection_size7_class1": {
+        "powergen": 0,
+        "powerdraw": 0.41
+    },
+    "int_dronecontrol_collection_size7_class2": {
+        "powergen": 0,
+        "powerdraw": 0.55
+    },
+    "int_dronecontrol_collection_size7_class3": {
+        "powergen": 0,
+        "powerdraw": 0.69
+    },
+    "int_dronecontrol_collection_size7_class4": {
+        "powergen": 0,
+        "powerdraw": 0.83
+    },
+    "int_dronecontrol_collection_size7_class5": {
+        "powergen": 0,
+        "powerdraw": 0.97
+    },
+    "int_dronecontrol_decontamination_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0.18
+    },
+    "int_dronecontrol_decontamination_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "int_dronecontrol_decontamination_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "int_dronecontrol_decontamination_size7_class1": {
+        "powergen": 0,
+        "powerdraw": 0.97
+    },
+    "int_dockingcomputer_standard": {
+        "powergen": 0,
+        "powerdraw": 0.39
+    },
+    "int_dockingcomputer_advanced": {
+        "powergen": 0,
+        "powerdraw": 0.45
+    },
+    "int_passengercabin_size2_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_passengercabin_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_passengercabin_size4_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_passengercabin_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_passengercabin_size6_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "hpt_electroniccountermeasure_tiny": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "hpt_causticmissile_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 1.2
+    },
+    "int_fighterbay_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 0.25
+    },
+    "int_fighterbay_size6_class1": {
+        "powergen": 0,
+        "powerdraw": 0.35
+    },
+    "int_fighterbay_size7_class1": {
+        "powergen": 0,
+        "powerdraw": 0.35
+    },
+    "int_passengercabin_size4_class3": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_passengercabin_size5_class3": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_passengercabin_size6_class3": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "hpt_slugshot_fixed_small": {
+        "powergen": 0,
+        "powerdraw": 0.45
+    },
+    "hpt_slugshot_gimbal_small": {
+        "powergen": 0,
+        "powerdraw": 0.59
+    },
+    "hpt_slugshot_turret_small": {
+        "powergen": 0,
+        "powerdraw": 0.42
+    },
+    "hpt_slugshot_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 0.74
+    },
+    "hpt_slugshot_gimbal_medium": {
+        "powergen": 0,
+        "powerdraw": 1.03
+    },
+    "hpt_slugshot_turret_medium": {
+        "powergen": 0,
+        "powerdraw": 0.79
+    },
+    "hpt_slugshot_fixed_large": {
+        "powergen": 0,
+        "powerdraw": 1.02
+    },
+    "hpt_slugshot_gimbal_large": {
+        "powergen": 0,
+        "powerdraw": 1.55
+    },
+    "hpt_slugshot_turret_large": {
+        "powergen": 0,
+        "powerdraw": 1.29
+    },
+    "hpt_slugshot_fixed_large_range": {
+        "powergen": 0,
+        "powerdraw": 1.02
+    },
+    "int_hyperdrive_size8_class1": {
+        "powergen": 0,
+        "powerdraw": 0.56
+    },
+    "int_hyperdrive_size8_class2": {
+        "powergen": 0,
+        "powerdraw": 0.63
+    },
+    "int_hyperdrive_size8_class3": {
+        "powergen": 0,
+        "powerdraw": 0.7
+    },
+    "int_hyperdrive_size8_class4": {
+        "powergen": 0,
+        "powerdraw": 0.88
+    },
+    "int_hyperdrive_size8_class5": {
+        "powergen": 0,
+        "powerdraw": 1.05
+    },
+    "int_hyperdrive_size7_class1": {
+        "powergen": 0,
+        "powerdraw": 0.48
+    },
+    "int_hyperdrive_size7_class2": {
+        "powergen": 0,
+        "powerdraw": 0.54
+    },
+    "int_hyperdrive_size7_class3": {
+        "powergen": 0,
+        "powerdraw": 0.6
+    },
+    "int_hyperdrive_size7_class4": {
+        "powergen": 0,
+        "powerdraw": 0.75
+    },
+    "int_hyperdrive_size7_class5": {
+        "powergen": 0,
+        "powerdraw": 0.9
+    },
+    "int_hyperdrive_size6_class1": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "int_hyperdrive_size6_class2": {
+        "powergen": 0,
+        "powerdraw": 0.45
+    },
+    "int_hyperdrive_size6_class3": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "int_hyperdrive_size6_class4": {
+        "powergen": 0,
+        "powerdraw": 0.63
+    },
+    "int_hyperdrive_size6_class5": {
+        "powergen": 0,
+        "powerdraw": 0.75
+    },
+    "int_hyperdrive_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 0.32
+    },
+    "int_hyperdrive_size5_class2": {
+        "powergen": 0,
+        "powerdraw": 0.36
+    },
+    "int_hyperdrive_size5_class3": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "int_hyperdrive_size5_class4": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "int_hyperdrive_size5_class5": {
+        "powergen": 0,
+        "powerdraw": 0.6
+    },
+    "int_hyperdrive_size4_class1": {
+        "powergen": 0,
+        "powerdraw": 0.24
+    },
+    "int_hyperdrive_size4_class2": {
+        "powergen": 0,
+        "powerdraw": 0.27
+    },
+    "int_hyperdrive_size4_class3": {
+        "powergen": 0,
+        "powerdraw": 0.3
+    },
+    "int_hyperdrive_size4_class4": {
+        "powergen": 0,
+        "powerdraw": 0.38
+    },
+    "int_hyperdrive_size4_class5": {
+        "powergen": 0,
+        "powerdraw": 0.45
+    },
+    "int_hyperdrive_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0.24
+    },
+    "int_hyperdrive_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 0.27
+    },
+    "int_hyperdrive_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 0.3
+    },
+    "int_hyperdrive_size3_class4": {
+        "powergen": 0,
+        "powerdraw": 0.38
+    },
+    "int_hyperdrive_size3_class5": {
+        "powergen": 0,
+        "powerdraw": 0.45
+    },
+    "int_hyperdrive_size2_class1": {
+        "powergen": 0,
+        "powerdraw": 0.16
+    },
+    "int_hyperdrive_size2_class2": {
+        "powergen": 0,
+        "powerdraw": 0.18
+    },
+    "int_hyperdrive_size2_class3": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "int_hyperdrive_size2_class4": {
+        "powergen": 0,
+        "powerdraw": 0.25
+    },
+    "int_hyperdrive_size2_class5": {
+        "powergen": 0,
+        "powerdraw": 0.3
+    },
+    "int_fsdinterdictor_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0.14
+    },
+    "int_fsdinterdictor_size1_class2": {
+        "powergen": 0,
+        "powerdraw": 0.18
+    },
+    "int_fsdinterdictor_size1_class3": {
+        "powergen": 0,
+        "powerdraw": 0.23
+    },
+    "int_fsdinterdictor_size1_class4": {
+        "powergen": 0,
+        "powerdraw": 0.28
+    },
+    "int_fsdinterdictor_size1_class5": {
+        "powergen": 0,
+        "powerdraw": 0.32
+    },
+    "int_fsdinterdictor_size2_class1": {
+        "powergen": 0,
+        "powerdraw": 0.17
+    },
+    "int_fsdinterdictor_size2_class2": {
+        "powergen": 0,
+        "powerdraw": 0.22
+    },
+    "int_fsdinterdictor_size2_class3": {
+        "powergen": 0,
+        "powerdraw": 0.28
+    },
+    "int_fsdinterdictor_size2_class4": {
+        "powergen": 0,
+        "powerdraw": 0.34
+    },
+    "int_fsdinterdictor_size2_class5": {
+        "powergen": 0,
+        "powerdraw": 0.39
+    },
+    "int_fsdinterdictor_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "int_fsdinterdictor_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 0.27
+    },
+    "int_fsdinterdictor_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 0.34
+    },
+    "int_fsdinterdictor_size3_class4": {
+        "powergen": 0,
+        "powerdraw": 0.41
+    },
+    "int_fsdinterdictor_size3_class5": {
+        "powergen": 0,
+        "powerdraw": 0.48
+    },
+    "int_fsdinterdictor_size4_class1": {
+        "powergen": 0,
+        "powerdraw": 0.25
+    },
+    "int_fsdinterdictor_size4_class2": {
+        "powergen": 0,
+        "powerdraw": 0.33
+    },
+    "int_fsdinterdictor_size4_class3": {
+        "powergen": 0,
+        "powerdraw": 0.41
+    },
+    "int_fsdinterdictor_size4_class4": {
+        "powergen": 0,
+        "powerdraw": 0.49
+    },
+    "int_fsdinterdictor_size4_class5": {
+        "powergen": 0,
+        "powerdraw": 0.57
+    },
+    "hpt_cloudscanner_size0_class1": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "hpt_cloudscanner_size0_class2": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "hpt_cloudscanner_size0_class3": {
+        "powergen": 0,
+        "powerdraw": 0.8
+    },
+    "hpt_cloudscanner_size0_class4": {
+        "powergen": 0,
+        "powerdraw": 1.6
+    },
+    "hpt_cloudscanner_size0_class5": {
+        "powergen": 0,
+        "powerdraw": 3.2
+    },
+    "int_fuelscoop_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0.14
+    },
+    "int_fuelscoop_size1_class2": {
+        "powergen": 0,
+        "powerdraw": 0.18
+    },
+    "int_fuelscoop_size1_class3": {
+        "powergen": 0,
+        "powerdraw": 0.23
+    },
+    "int_fuelscoop_size1_class4": {
+        "powergen": 0,
+        "powerdraw": 0.28
+    },
+    "int_fuelscoop_size1_class5": {
+        "powergen": 0,
+        "powerdraw": 0.32
+    },
+    "int_fuelscoop_size2_class1": {
+        "powergen": 0,
+        "powerdraw": 0.17
+    },
+    "int_fuelscoop_size2_class2": {
+        "powergen": 0,
+        "powerdraw": 0.22
+    },
+    "int_fuelscoop_size2_class3": {
+        "powergen": 0,
+        "powerdraw": 0.28
+    },
+    "int_fuelscoop_size2_class4": {
+        "powergen": 0,
+        "powerdraw": 0.34
+    },
+    "int_fuelscoop_size2_class5": {
+        "powergen": 0,
+        "powerdraw": 0.39
+    },
+    "int_fuelscoop_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "int_fuelscoop_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 0.27
+    },
+    "int_fuelscoop_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 0.34
+    },
+    "int_fuelscoop_size3_class4": {
+        "powergen": 0,
+        "powerdraw": 0.41
+    },
+    "int_fuelscoop_size3_class5": {
+        "powergen": 0,
+        "powerdraw": 0.48
+    },
+    "int_fuelscoop_size4_class1": {
+        "powergen": 0,
+        "powerdraw": 0.25
+    },
+    "int_fuelscoop_size4_class2": {
+        "powergen": 0,
+        "powerdraw": 0.33
+    },
+    "int_fuelscoop_size4_class3": {
+        "powergen": 0,
+        "powerdraw": 0.41
+    },
+    "int_fuelscoop_size4_class4": {
+        "powergen": 0,
+        "powerdraw": 0.49
+    },
+    "int_fuelscoop_size4_class5": {
+        "powergen": 0,
+        "powerdraw": 0.57
+    },
+    "int_fuelscoop_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 0.3
+    },
+    "int_fuelscoop_size5_class2": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "int_fuelscoop_size5_class3": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "int_fuelscoop_size5_class4": {
+        "powergen": 0,
+        "powerdraw": 0.6
+    },
+    "int_fuelscoop_size5_class5": {
+        "powergen": 0,
+        "powerdraw": 0.7
+    },
+    "int_fuelscoop_size6_class1": {
+        "powergen": 0,
+        "powerdraw": 0.35
+    },
+    "int_fuelscoop_size6_class2": {
+        "powergen": 0,
+        "powerdraw": 0.47
+    },
+    "int_fuelscoop_size6_class3": {
+        "powergen": 0,
+        "powerdraw": 0.59
+    },
+    "int_fuelscoop_size6_class4": {
+        "powergen": 0,
+        "powerdraw": 0.71
+    },
+    "int_fuelscoop_size6_class5": {
+        "powergen": 0,
+        "powerdraw": 0.83
+    },
+    "int_fuelscoop_size7_class1": {
+        "powergen": 0,
+        "powerdraw": 0.41
+    },
+    "int_fuelscoop_size7_class2": {
+        "powergen": 0,
+        "powerdraw": 0.55
+    },
+    "int_fuelscoop_size7_class3": {
+        "powergen": 0,
+        "powerdraw": 0.69
+    },
+    "int_fuelscoop_size7_class4": {
+        "powergen": 0,
+        "powerdraw": 0.83
+    },
+    "int_fuelscoop_size7_class5": {
+        "powergen": 0,
+        "powerdraw": 0.97
+    },
+    "int_fuelscoop_size8_class1": {
+        "powergen": 0,
+        "powerdraw": 0.48
+    },
+    "int_fuelscoop_size8_class2": {
+        "powergen": 0,
+        "powerdraw": 0.64
+    },
+    "int_fuelscoop_size8_class3": {
+        "powergen": 0,
+        "powerdraw": 0.8
+    },
+    "int_fuelscoop_size8_class4": {
+        "powergen": 0,
+        "powerdraw": 0.96
+    },
+    "int_fuelscoop_size8_class5": {
+        "powergen": 0,
+        "powerdraw": 1.12
+    },
+    "int_fueltank_size1_class3": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_fueltank_size2_class3": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_fueltank_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_fueltank_size4_class3": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_fueltank_size5_class3": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_fueltank_size6_class3": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_fueltank_size7_class3": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_fueltank_size8_class3": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_dronecontrol_fueltransfer_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0.18
+    },
+    "int_dronecontrol_fueltransfer_size1_class2": {
+        "powergen": 0,
+        "powerdraw": 0.14
+    },
+    "int_dronecontrol_fueltransfer_size1_class3": {
+        "powergen": 0,
+        "powerdraw": 0.23
+    },
+    "int_dronecontrol_fueltransfer_size1_class4": {
+        "powergen": 0,
+        "powerdraw": 0.32
+    },
+    "int_dronecontrol_fueltransfer_size1_class5": {
+        "powergen": 0,
+        "powerdraw": 0.28
+    },
+    "int_dronecontrol_fueltransfer_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0.27
+    },
+    "int_dronecontrol_fueltransfer_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "int_dronecontrol_fueltransfer_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 0.34
+    },
+    "int_dronecontrol_fueltransfer_size3_class4": {
+        "powergen": 0,
+        "powerdraw": 0.48
+    },
+    "int_dronecontrol_fueltransfer_size3_class5": {
+        "powergen": 0,
+        "powerdraw": 0.41
+    },
+    "int_dronecontrol_fueltransfer_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "int_dronecontrol_fueltransfer_size5_class2": {
+        "powergen": 0,
+        "powerdraw": 0.3
+    },
+    "int_dronecontrol_fueltransfer_size5_class3": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "int_dronecontrol_fueltransfer_size5_class4": {
+        "powergen": 0,
+        "powerdraw": 0.97
+    },
+    "int_dronecontrol_fueltransfer_size5_class5": {
+        "powergen": 0,
+        "powerdraw": 0.6
+    },
+    "int_dronecontrol_fueltransfer_size7_class1": {
+        "powergen": 0,
+        "powerdraw": 0.55
+    },
+    "int_dronecontrol_fueltransfer_size7_class2": {
+        "powergen": 0,
+        "powerdraw": 0.41
+    },
+    "int_dronecontrol_fueltransfer_size7_class3": {
+        "powergen": 0,
+        "powerdraw": 0.69
+    },
+    "int_dronecontrol_fueltransfer_size7_class4": {
+        "powergen": 0,
+        "powerdraw": 0.97
+    },
+    "int_dronecontrol_fueltransfer_size7_class5": {
+        "powergen": 0,
+        "powerdraw": 0.83
+    },
+    "int_guardianfsdbooster_size1": {
+        "powergen": 0,
+        "powerdraw": 0.75
+    },
+    "int_guardianfsdbooster_size2": {
+        "powergen": 0,
+        "powerdraw": 0.98
+    },
+    "int_guardianfsdbooster_size3": {
+        "powergen": 0,
+        "powerdraw": 1.27
+    },
+    "int_guardianfsdbooster_size4": {
+        "powergen": 0,
+        "powerdraw": 1.65
+    },
+    "int_guardianfsdbooster_size5": {
+        "powergen": 0,
+        "powerdraw": 2.14
+    },
+    "hpt_guardian_gausscannon_fixed_small": {
+        "powergen": 0,
+        "powerdraw": 1.91
+    },
+    "hpt_guardian_gausscannon_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 2.61
+    },
+    "int_guardianhullreinforcement_size1_class2": {
+        "powergen": 0,
+        "powerdraw": 0.56
+    },
+    "int_guardianhullreinforcement_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0.45
+    },
+    "int_guardianhullreinforcement_size2_class2": {
+        "powergen": 0,
+        "powerdraw": 0.79
+    },
+    "int_guardianhullreinforcement_size2_class1": {
+        "powergen": 0,
+        "powerdraw": 0.68
+    },
+    "int_guardianhullreinforcement_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 1.01
+    },
+    "int_guardianhullreinforcement_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0.9
+    },
+    "int_guardianhullreinforcement_size4_class2": {
+        "powergen": 0,
+        "powerdraw": 1.24
+    },
+    "int_guardianhullreinforcement_size4_class1": {
+        "powergen": 0,
+        "powerdraw": 1.13
+    },
+    "int_guardianhullreinforcement_size5_class2": {
+        "powergen": 0,
+        "powerdraw": 1.46
+    },
+    "int_guardianhullreinforcement_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 1.35
+    },
+    "int_guardianmodulereinforcement_size1_class2": {
+        "powergen": 0,
+        "powerdraw": 0.34
+    },
+    "int_guardianmodulereinforcement_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0.27
+    },
+    "int_guardianmodulereinforcement_size2_class2": {
+        "powergen": 0,
+        "powerdraw": 0.47
+    },
+    "int_guardianmodulereinforcement_size2_class1": {
+        "powergen": 0,
+        "powerdraw": 0.41
+    },
+    "int_guardianmodulereinforcement_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 0.61
+    },
+    "int_guardianmodulereinforcement_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0.54
+    },
+    "int_guardianmodulereinforcement_size4_class2": {
+        "powergen": 0,
+        "powerdraw": 0.74
+    },
+    "int_guardianmodulereinforcement_size4_class1": {
+        "powergen": 0,
+        "powerdraw": 0.68
+    },
+    "int_guardianmodulereinforcement_size5_class2": {
+        "powergen": 0,
+        "powerdraw": 0.88
+    },
+    "int_guardianmodulereinforcement_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 0.81
+    },
+    "hpt_guardian_plasmalauncher_fixed_small": {
+        "powergen": 0,
+        "powerdraw": 1.4
+    },
+    "hpt_guardian_plasmalauncher_turret_small": {
+        "powergen": 0,
+        "powerdraw": 1.6
+    },
+    "hpt_guardian_plasmalauncher_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 2.13
+    },
+    "hpt_guardian_plasmalauncher_turret_medium": {
+        "powergen": 0,
+        "powerdraw": 2.01
+    },
+    "hpt_guardian_plasmalauncher_fixed_large": {
+        "powergen": 0,
+        "powerdraw": 3.1
+    },
+    "hpt_guardian_plasmalauncher_turret_large": {
+        "powergen": 0,
+        "powerdraw": 2.53
+    },
+    "hpt_guardian_shardcannon_fixed_small": {
+        "powergen": 0,
+        "powerdraw": 0.87
+    },
+    "hpt_guardian_shardcannon_turret_small": {
+        "powergen": 0,
+        "powerdraw": 0.72
+    },
+    "hpt_guardian_shardcannon_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 1.21
+    },
+    "hpt_guardian_shardcannon_turret_medium": {
+        "powergen": 0,
+        "powerdraw": 1.16
+    },
+    "hpt_guardian_shardcannon_fixed_large": {
+        "powergen": 0,
+        "powerdraw": 1.68
+    },
+    "hpt_guardian_shardcannon_turret_large": {
+        "powergen": 0,
+        "powerdraw": 1.39
+    },
+    "int_guardianshieldreinforcement_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0.35
+    },
+    "int_guardianshieldreinforcement_size1_class2": {
+        "powergen": 0,
+        "powerdraw": 0.46
+    },
+    "int_guardianshieldreinforcement_size2_class1": {
+        "powergen": 0,
+        "powerdraw": 0.56
+    },
+    "int_guardianshieldreinforcement_size2_class2": {
+        "powergen": 0,
+        "powerdraw": 0.67
+    },
+    "int_guardianshieldreinforcement_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 0.84
+    },
+    "int_guardianshieldreinforcement_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0.74
+    },
+    "int_guardianshieldreinforcement_size4_class1": {
+        "powergen": 0,
+        "powerdraw": 0.95
+    },
+    "int_guardianshieldreinforcement_size4_class2": {
+        "powergen": 0,
+        "powerdraw": 1.05
+    },
+    "int_guardianshieldreinforcement_size5_class2": {
+        "powergen": 0,
+        "powerdraw": 1.26
+    },
+    "int_guardianshieldreinforcement_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 1.16
+    },
+    "int_dronecontrol_resourcesiphon_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0.12
+    },
+    "int_dronecontrol_resourcesiphon_size1_class2": {
+        "powergen": 0,
+        "powerdraw": 0.16
+    },
+    "int_dronecontrol_resourcesiphon_size1_class3": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "int_dronecontrol_resourcesiphon_size1_class4": {
+        "powergen": 0,
+        "powerdraw": 0.24
+    },
+    "int_dronecontrol_resourcesiphon_size1_class5": {
+        "powergen": 0,
+        "powerdraw": 0.28
+    },
+    "int_dronecontrol_resourcesiphon_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0.18
+    },
+    "int_dronecontrol_resourcesiphon_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 0.24
+    },
+    "int_dronecontrol_resourcesiphon_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 0.3
+    },
+    "int_dronecontrol_resourcesiphon_size3_class4": {
+        "powergen": 0,
+        "powerdraw": 0.36
+    },
+    "int_dronecontrol_resourcesiphon_size3_class5": {
+        "powergen": 0,
+        "powerdraw": 0.42
+    },
+    "int_dronecontrol_resourcesiphon_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 0.3
+    },
+    "int_dronecontrol_resourcesiphon_size5_class2": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "int_dronecontrol_resourcesiphon_size5_class3": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "int_dronecontrol_resourcesiphon_size5_class4": {
+        "powergen": 0,
+        "powerdraw": 0.6
+    },
+    "int_dronecontrol_resourcesiphon_size5_class5": {
+        "powergen": 0,
+        "powerdraw": 0.7
+    },
+    "int_dronecontrol_resourcesiphon_size7_class1": {
+        "powergen": 0,
+        "powerdraw": 0.42
+    },
+    "int_dronecontrol_resourcesiphon_size7_class2": {
+        "powergen": 0,
+        "powerdraw": 0.56
+    },
+    "int_dronecontrol_resourcesiphon_size7_class3": {
+        "powergen": 0,
+        "powerdraw": 0.7
+    },
+    "int_dronecontrol_resourcesiphon_size7_class4": {
+        "powergen": 0,
+        "powerdraw": 0.84
+    },
+    "int_dronecontrol_resourcesiphon_size7_class5": {
+        "powergen": 0,
+        "powerdraw": 0.98
+    },
+    "hpt_heatsinklauncher_turret_tiny": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "int_hullreinforcement_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_hullreinforcement_size1_class2": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_hullreinforcement_size2_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_hullreinforcement_size2_class2": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_hullreinforcement_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_hullreinforcement_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_hullreinforcement_size4_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_hullreinforcement_size4_class2": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_hullreinforcement_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_hullreinforcement_size5_class2": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "hpt_crimescanner_size0_class1": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "hpt_crimescanner_size0_class2": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "hpt_crimescanner_size0_class3": {
+        "powergen": 0,
+        "powerdraw": 0.8
+    },
+    "hpt_crimescanner_size0_class4": {
+        "powergen": 0,
+        "powerdraw": 1.6
+    },
+    "hpt_crimescanner_size0_class5": {
+        "powergen": 0,
+        "powerdraw": 3.2
+    },
+    "int_lifesupport_size8_class1": {
+        "powergen": 0,
+        "powerdraw": 0.8
+    },
+    "int_lifesupport_size8_class2": {
+        "powergen": 0,
+        "powerdraw": 0.9
+    },
+    "int_lifesupport_size8_class3": {
+        "powergen": 0,
+        "powerdraw": 1
+    },
+    "int_lifesupport_size8_class4": {
+        "powergen": 0,
+        "powerdraw": 1.1
+    },
+    "int_lifesupport_size8_class5": {
+        "powergen": 0,
+        "powerdraw": 1.2
+    },
+    "int_lifesupport_size7_class1": {
+        "powergen": 0,
+        "powerdraw": 0.72
+    },
+    "int_lifesupport_size7_class2": {
+        "powergen": 0,
+        "powerdraw": 0.81
+    },
+    "int_lifesupport_size7_class3": {
+        "powergen": 0,
+        "powerdraw": 0.9
+    },
+    "int_lifesupport_size7_class4": {
+        "powergen": 0,
+        "powerdraw": 0.99
+    },
+    "int_lifesupport_size7_class5": {
+        "powergen": 0,
+        "powerdraw": 1.08
+    },
+    "int_lifesupport_size6_class1": {
+        "powergen": 0,
+        "powerdraw": 0.64
+    },
+    "int_lifesupport_size6_class2": {
+        "powergen": 0,
+        "powerdraw": 0.72
+    },
+    "int_lifesupport_size6_class3": {
+        "powergen": 0,
+        "powerdraw": 0.8
+    },
+    "int_lifesupport_size6_class4": {
+        "powergen": 0,
+        "powerdraw": 0.88
+    },
+    "int_lifesupport_size6_class5": {
+        "powergen": 0,
+        "powerdraw": 0.96
+    },
+    "int_lifesupport_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 0.57
+    },
+    "int_lifesupport_size5_class2": {
+        "powergen": 0,
+        "powerdraw": 0.64
+    },
+    "int_lifesupport_size5_class3": {
+        "powergen": 0,
+        "powerdraw": 0.71
+    },
+    "int_lifesupport_size5_class4": {
+        "powergen": 0,
+        "powerdraw": 0.78
+    },
+    "int_lifesupport_size5_class5": {
+        "powergen": 0,
+        "powerdraw": 0.85
+    },
+    "int_lifesupport_size4_class1": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "int_lifesupport_size4_class2": {
+        "powergen": 0,
+        "powerdraw": 0.56
+    },
+    "int_lifesupport_size4_class3": {
+        "powergen": 0,
+        "powerdraw": 0.62
+    },
+    "int_lifesupport_size4_class4": {
+        "powergen": 0,
+        "powerdraw": 0.68
+    },
+    "int_lifesupport_size4_class5": {
+        "powergen": 0,
+        "powerdraw": 0.74
+    },
+    "int_lifesupport_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0.42
+    },
+    "int_lifesupport_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 0.48
+    },
+    "int_lifesupport_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 0.53
+    },
+    "int_lifesupport_size3_class4": {
+        "powergen": 0,
+        "powerdraw": 0.58
+    },
+    "int_lifesupport_size3_class5": {
+        "powergen": 0,
+        "powerdraw": 0.64
+    },
+    "int_lifesupport_size2_class1": {
+        "powergen": 0,
+        "powerdraw": 0.37
+    },
+    "int_lifesupport_size2_class2": {
+        "powergen": 0,
+        "powerdraw": 0.41
+    },
+    "int_lifesupport_size2_class3": {
+        "powergen": 0,
+        "powerdraw": 0.46
+    },
+    "int_lifesupport_size2_class4": {
+        "powergen": 0,
+        "powerdraw": 0.51
+    },
+    "int_lifesupport_size2_class5": {
+        "powergen": 0,
+        "powerdraw": 0.55
+    },
+    "int_lifesupport_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0.32
+    },
+    "int_lifesupport_size1_class2": {
+        "powergen": 0,
+        "powerdraw": 0.36
+    },
+    "int_lifesupport_size1_class3": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "int_lifesupport_size1_class4": {
+        "powergen": 0,
+        "powerdraw": 0.44
+    },
+    "int_lifesupport_size1_class5": {
+        "powergen": 0,
+        "powerdraw": 0.48
+    },
+    "int_passengercabin_size5_class4": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_passengercabin_size6_class4": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_metaalloyhullreinforcement_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_metaalloyhullreinforcement_size1_class2": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_metaalloyhullreinforcement_size2_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_metaalloyhullreinforcement_size2_class2": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_metaalloyhullreinforcement_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_metaalloyhullreinforcement_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_metaalloyhullreinforcement_size4_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_metaalloyhullreinforcement_size4_class2": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_metaalloyhullreinforcement_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_metaalloyhullreinforcement_size5_class2": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "hpt_minelauncher_fixed_small": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "hpt_minelauncher_fixed_small_impulse": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "hpt_minelauncher_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "hpt_mininglaser_fixed_small": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "hpt_mininglaser_turret_small": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "hpt_mininglaser_fixed_small_advanced": {
+        "powergen": 0,
+        "powerdraw": 0.7
+    },
+    "hpt_mininglaser_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 0.75
+    },
+    "hpt_mininglaser_turret_medium": {
+        "powergen": 0,
+        "powerdraw": 0.75
+    },
+    "hpt_dumbfiremissilerack_fixed_small": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "hpt_basicmissilerack_fixed_small": {
+        "powergen": 0,
+        "powerdraw": 0.6
+    },
+    "hpt_dumbfiremissilerack_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 1.2
+    },
+    "hpt_basicmissilerack_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 1.2
+    },
+    "hpt_dumbfiremissilerack_fixed_medium_lasso": {
+        "powergen": 0,
+        "powerdraw": 1.2
+    },
+    "hpt_drunkmissilerack_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 1.2
+    },
+    "hpt_dumbfiremissilerack_fixed_large": {
+        "powergen": 0,
+        "powerdraw": 1.62
+    },
+    "hpt_basicmissilerack_fixed_large": {
+        "powergen": 0,
+        "powerdraw": 1.62
+    },
+    "int_modulereinforcement_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_modulereinforcement_size1_class2": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_modulereinforcement_size2_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_modulereinforcement_size2_class2": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_modulereinforcement_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_modulereinforcement_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_modulereinforcement_size4_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_modulereinforcement_size4_class2": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_modulereinforcement_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_modulereinforcement_size5_class2": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "hpt_multicannon_fixed_small": {
+        "powergen": 0,
+        "powerdraw": 0.28
+    },
+    "hpt_multicannon_gimbal_small": {
+        "powergen": 0,
+        "powerdraw": 0.37
+    },
+    "hpt_multicannon_turret_small": {
+        "powergen": 0,
+        "powerdraw": 0.26
+    },
+    "hpt_multicannon_fixed_small_strong": {
+        "powergen": 0,
+        "powerdraw": 0.28
+    },
+    "hpt_multicannon_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 0.46
+    },
+    "hpt_multicannon_gimbal_medium": {
+        "powergen": 0,
+        "powerdraw": 0.64
+    },
+    "hpt_multicannon_turret_medium": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "hpt_multicannon_fixed_large": {
+        "powergen": 0,
+        "powerdraw": 0.64
+    },
+    "hpt_multicannon_gimbal_large": {
+        "powergen": 0,
+        "powerdraw": 0.97
+    },
+    "hpt_multicannon_turret_large": {
+        "powergen": 0,
+        "powerdraw": 0.86
+    },
+    "hpt_multicannon_fixed_huge": {
+        "powergen": 0,
+        "powerdraw": 0.73
+    },
+    "hpt_multicannon_gimbal_huge": {
+        "powergen": 0,
+        "powerdraw": 1.22
+    },
+    "int_planetapproachsuite": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_buggybay_size2_class1": {
+        "powergen": 0,
+        "powerdraw": 0.25
+    },
+    "int_buggybay_size2_class2": {
+        "powergen": 0,
+        "powerdraw": 0.75
+    },
+    "int_buggybay_size4_class1": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "int_buggybay_size4_class2": {
+        "powergen": 0,
+        "powerdraw": 1.2
+    },
+    "int_buggybay_size6_class1": {
+        "powergen": 0,
+        "powerdraw": 0.6
+    },
+    "int_buggybay_size6_class2": {
+        "powergen": 0,
+        "powerdraw": 1.8
+    },
+    "hpt_plasmaaccelerator_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 1.43
+    },
+    "hpt_plasmaaccelerator_fixed_large": {
+        "powergen": 0,
+        "powerdraw": 1.97
+    },
+    "hpt_plasmaaccelerator_fixed_large_advanced": {
+        "powergen": 0,
+        "powerdraw": 1.97
+    },
+    "hpt_plasmaaccelerator_fixed_huge": {
+        "powergen": 0,
+        "powerdraw": 2.63
+    },
+    "hpt_plasmapointdefence_turret_tiny": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "int_powerdistributor_size8_class1": {
+        "powergen": 0,
+        "powerdraw": 0.64
+    },
+    "int_powerdistributor_size8_class2": {
+        "powergen": 0,
+        "powerdraw": 0.72
+    },
+    "int_powerdistributor_size8_class3": {
+        "powergen": 0,
+        "powerdraw": 0.8
+    },
+    "int_powerdistributor_size8_class4": {
+        "powergen": 0,
+        "powerdraw": 0.88
+    },
+    "int_powerdistributor_size8_class5": {
+        "powergen": 0,
+        "powerdraw": 0.96
+    },
+    "int_powerdistributor_size7_class1": {
+        "powergen": 0,
+        "powerdraw": 0.59
+    },
+    "int_powerdistributor_size7_class2": {
+        "powergen": 0,
+        "powerdraw": 0.67
+    },
+    "int_powerdistributor_size7_class3": {
+        "powergen": 0,
+        "powerdraw": 0.74
+    },
+    "int_powerdistributor_size7_class4": {
+        "powergen": 0,
+        "powerdraw": 0.81
+    },
+    "int_powerdistributor_size7_class5": {
+        "powergen": 0,
+        "powerdraw": 0.89
+    },
+    "int_powerdistributor_size6_class1": {
+        "powergen": 0,
+        "powerdraw": 0.54
+    },
+    "int_powerdistributor_size6_class2": {
+        "powergen": 0,
+        "powerdraw": 0.61
+    },
+    "int_powerdistributor_size6_class3": {
+        "powergen": 0,
+        "powerdraw": 0.68
+    },
+    "int_powerdistributor_size6_class4": {
+        "powergen": 0,
+        "powerdraw": 0.75
+    },
+    "int_powerdistributor_size6_class5": {
+        "powergen": 0,
+        "powerdraw": 0.82
+    },
+    "int_powerdistributor_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "int_powerdistributor_size5_class2": {
+        "powergen": 0,
+        "powerdraw": 0.56
+    },
+    "int_powerdistributor_size5_class3": {
+        "powergen": 0,
+        "powerdraw": 0.62
+    },
+    "int_powerdistributor_size5_class4": {
+        "powergen": 0,
+        "powerdraw": 0.68
+    },
+    "int_powerdistributor_size5_class5": {
+        "powergen": 0,
+        "powerdraw": 0.74
+    },
+    "int_powerdistributor_size4_class1": {
+        "powergen": 0,
+        "powerdraw": 0.45
+    },
+    "int_powerdistributor_size4_class2": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "int_powerdistributor_size4_class3": {
+        "powergen": 0,
+        "powerdraw": 0.56
+    },
+    "int_powerdistributor_size4_class4": {
+        "powergen": 0,
+        "powerdraw": 0.62
+    },
+    "int_powerdistributor_size4_class5": {
+        "powergen": 0,
+        "powerdraw": 0.67
+    },
+    "int_powerdistributor_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "int_powerdistributor_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 0.45
+    },
+    "int_powerdistributor_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "int_powerdistributor_size3_class4": {
+        "powergen": 0,
+        "powerdraw": 0.55
+    },
+    "int_powerdistributor_size3_class5": {
+        "powergen": 0,
+        "powerdraw": 0.6
+    },
+    "int_powerdistributor_size2_class1": {
+        "powergen": 0,
+        "powerdraw": 0.36
+    },
+    "int_powerdistributor_size2_class2": {
+        "powergen": 0,
+        "powerdraw": 0.41
+    },
+    "int_powerdistributor_size2_class3": {
+        "powergen": 0,
+        "powerdraw": 0.45
+    },
+    "int_powerdistributor_size2_class4": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "int_powerdistributor_size2_class5": {
+        "powergen": 0,
+        "powerdraw": 0.54
+    },
+    "int_powerdistributor_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0.32
+    },
+    "int_powerdistributor_size1_class2": {
+        "powergen": 0,
+        "powerdraw": 0.36
+    },
+    "int_powerdistributor_size1_class3": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "int_powerdistributor_size1_class4": {
+        "powergen": 0,
+        "powerdraw": 0.44
+    },
+    "int_powerdistributor_size1_class5": {
+        "powergen": 0,
+        "powerdraw": 0.48
+    },
+    "int_guardianpowerdistributor_size1": {
+        "powergen": 0,
+        "powerdraw": 0.62
+    },
+    "int_guardianpowerdistributor_size2": {
+        "powergen": 0,
+        "powerdraw": 0.73
+    },
+    "int_guardianpowerdistributor_size3": {
+        "powergen": 0,
+        "powerdraw": 0.78
+    },
+    "int_guardianpowerdistributor_size4": {
+        "powergen": 0,
+        "powerdraw": 0.87
+    },
+    "int_guardianpowerdistributor_size5": {
+        "powergen": 0,
+        "powerdraw": 0.96
+    },
+    "int_guardianpowerdistributor_size6": {
+        "powergen": 0,
+        "powerdraw": 1.07
+    },
+    "int_guardianpowerdistributor_size7": {
+        "powergen": 0,
+        "powerdraw": 1.16
+    },
+    "int_guardianpowerdistributor_size8": {
+        "powergen": 0,
+        "powerdraw": 1.25
+    },
+    "int_powerplant_size8_class1": {
+        "powergen": 24,
+        "powerdraw": 0
+    },
+    "int_powerplant_size8_class2": {
+        "powergen": 27,
+        "powerdraw": 0
+    },
+    "int_powerplant_size8_class3": {
+        "powergen": 30,
+        "powerdraw": 0
+    },
+    "int_powerplant_size8_class4": {
+        "powergen": 33,
+        "powerdraw": 0
+    },
+    "int_powerplant_size8_class5": {
+        "powergen": 36,
+        "powerdraw": 0
+    },
+    "int_powerplant_size7_class1": {
+        "powergen": 20,
+        "powerdraw": 0
+    },
+    "int_powerplant_size7_class2": {
+        "powergen": 22.5,
+        "powerdraw": 0
+    },
+    "int_powerplant_size7_class3": {
+        "powergen": 25,
+        "powerdraw": 0
+    },
+    "int_powerplant_size7_class4": {
+        "powergen": 27.5,
+        "powerdraw": 0
+    },
+    "int_powerplant_size7_class5": {
+        "powergen": 30,
+        "powerdraw": 0
+    },
+    "int_powerplant_size6_class1": {
+        "powergen": 16.8,
+        "powerdraw": 0
+    },
+    "int_powerplant_size6_class2": {
+        "powergen": 18.9,
+        "powerdraw": 0
+    },
+    "int_powerplant_size6_class3": {
+        "powergen": 21,
+        "powerdraw": 0
+    },
+    "int_powerplant_size6_class4": {
+        "powergen": 23.1,
+        "powerdraw": 0
+    },
+    "int_powerplant_size6_class5": {
+        "powergen": 25.2,
+        "powerdraw": 0
+    },
+    "int_powerplant_size5_class1": {
+        "powergen": 13.6,
+        "powerdraw": 0
+    },
+    "int_powerplant_size5_class2": {
+        "powergen": 15.3,
+        "powerdraw": 0
+    },
+    "int_powerplant_size5_class3": {
+        "powergen": 17,
+        "powerdraw": 0
+    },
+    "int_powerplant_size5_class4": {
+        "powergen": 18.7,
+        "powerdraw": 0
+    },
+    "int_powerplant_size5_class5": {
+        "powergen": 20.4,
+        "powerdraw": 0
+    },
+    "int_powerplant_size4_class1": {
+        "powergen": 10.4,
+        "powerdraw": 0
+    },
+    "int_powerplant_size4_class2": {
+        "powergen": 11.7,
+        "powerdraw": 0
+    },
+    "int_powerplant_size4_class3": {
+        "powergen": 13,
+        "powerdraw": 0
+    },
+    "int_powerplant_size4_class4": {
+        "powergen": 14.3,
+        "powerdraw": 0
+    },
+    "int_powerplant_size4_class5": {
+        "powergen": 15.6,
+        "powerdraw": 0
+    },
+    "int_powerplant_size3_class1": {
+        "powergen": 8,
+        "powerdraw": 0
+    },
+    "int_powerplant_size3_class2": {
+        "powergen": 9,
+        "powerdraw": 0
+    },
+    "int_powerplant_size3_class3": {
+        "powergen": 10,
+        "powerdraw": 0
+    },
+    "int_powerplant_size3_class4": {
+        "powergen": 11,
+        "powerdraw": 0
+    },
+    "int_powerplant_size3_class5": {
+        "powergen": 12,
+        "powerdraw": 0
+    },
+    "int_powerplant_size2_class1": {
+        "powergen": 6.4,
+        "powerdraw": 0
+    },
+    "int_powerplant_size2_class2": {
+        "powergen": 7.2,
+        "powerdraw": 0
+    },
+    "int_powerplant_size2_class3": {
+        "powergen": 8,
+        "powerdraw": 0
+    },
+    "int_powerplant_size2_class4": {
+        "powergen": 8.8,
+        "powerdraw": 0
+    },
+    "int_powerplant_size2_class5": {
+        "powergen": 9.6,
+        "powerdraw": 0
+    },
+    "int_guardianpowerplant_size2": {
+        "powergen": 12.7,
+        "powerdraw": 0
+    },
+    "int_guardianpowerplant_size3": {
+        "powergen": 15.8,
+        "powerdraw": 0
+    },
+    "int_guardianpowerplant_size4": {
+        "powergen": 20.6,
+        "powerdraw": 0
+    },
+    "int_guardianpowerplant_size5": {
+        "powergen": 26.9,
+        "powerdraw": 0
+    },
+    "int_guardianpowerplant_size6": {
+        "powergen": 33.3,
+        "powerdraw": 0
+    },
+    "int_guardianpowerplant_size7": {
+        "powergen": 39.6,
+        "powerdraw": 0
+    },
+    "int_guardianpowerplant_size8": {
+        "powergen": 47.5,
+        "powerdraw": 0
+    },
+    "int_shieldgenerator_size1_class5_strong": {
+        "powergen": 0,
+        "powerdraw": 2.52
+    },
+    "int_shieldgenerator_size2_class5_strong": {
+        "powergen": 0,
+        "powerdraw": 3.15
+    },
+    "int_shieldgenerator_size3_class5_strong": {
+        "powergen": 0,
+        "powerdraw": 3.78
+    },
+    "int_shieldgenerator_size4_class5_strong": {
+        "powergen": 0,
+        "powerdraw": 4.62
+    },
+    "int_shieldgenerator_size5_class5_strong": {
+        "powergen": 0,
+        "powerdraw": 5.46
+    },
+    "int_shieldgenerator_size6_class5_strong": {
+        "powergen": 0,
+        "powerdraw": 6.51
+    },
+    "int_shieldgenerator_size7_class5_strong": {
+        "powergen": 0,
+        "powerdraw": 7.35
+    },
+    "int_shieldgenerator_size8_class5_strong": {
+        "powergen": 0,
+        "powerdraw": 8.4
+    },
+    "int_dronecontrol_prospector_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0.18
+    },
+    "int_dronecontrol_prospector_size1_class2": {
+        "powergen": 0,
+        "powerdraw": 0.14
+    },
+    "int_dronecontrol_prospector_size1_class3": {
+        "powergen": 0,
+        "powerdraw": 0.23
+    },
+    "int_dronecontrol_prospector_size1_class4": {
+        "powergen": 0,
+        "powerdraw": 0.32
+    },
+    "int_dronecontrol_prospector_size1_class5": {
+        "powergen": 0,
+        "powerdraw": 0.28
+    },
+    "int_dronecontrol_prospector_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0.27
+    },
+    "int_dronecontrol_prospector_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "int_dronecontrol_prospector_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 0.34
+    },
+    "int_dronecontrol_prospector_size3_class4": {
+        "powergen": 0,
+        "powerdraw": 0.48
+    },
+    "int_dronecontrol_prospector_size3_class5": {
+        "powergen": 0,
+        "powerdraw": 0.41
+    },
+    "int_dronecontrol_prospector_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "int_dronecontrol_prospector_size5_class2": {
+        "powergen": 0,
+        "powerdraw": 0.3
+    },
+    "int_dronecontrol_prospector_size5_class3": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "int_dronecontrol_prospector_size5_class4": {
+        "powergen": 0,
+        "powerdraw": 0.97
+    },
+    "int_dronecontrol_prospector_size5_class5": {
+        "powergen": 0,
+        "powerdraw": 0.6
+    },
+    "int_dronecontrol_prospector_size7_class1": {
+        "powergen": 0,
+        "powerdraw": 0.55
+    },
+    "int_dronecontrol_prospector_size7_class2": {
+        "powergen": 0,
+        "powerdraw": 0.41
+    },
+    "int_dronecontrol_prospector_size7_class3": {
+        "powergen": 0,
+        "powerdraw": 0.69
+    },
+    "int_dronecontrol_prospector_size7_class4": {
+        "powergen": 0,
+        "powerdraw": 0.97
+    },
+    "int_dronecontrol_prospector_size7_class5": {
+        "powergen": 0,
+        "powerdraw": 0.83
+    },
+    "hpt_pulselaser_fixed_small": {
+        "powergen": 0,
+        "powerdraw": 0.39
+    },
+    "hpt_pulselaser_gimbal_small": {
+        "powergen": 0,
+        "powerdraw": 0.39
+    },
+    "hpt_pulselaser_turret_small": {
+        "powergen": 0,
+        "powerdraw": 0.38
+    },
+    "hpt_pulselaser_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 0.6
+    },
+    "hpt_pulselaser_gimbal_medium": {
+        "powergen": 0,
+        "powerdraw": 0.6
+    },
+    "hpt_pulselaser_turret_medium": {
+        "powergen": 0,
+        "powerdraw": 0.58
+    },
+    "hpt_pulselaser_fixed_medium_disruptor": {
+        "powergen": 0,
+        "powerdraw": 0.7
+    },
+    "hpt_pulselaser_fixed_large": {
+        "powergen": 0,
+        "powerdraw": 0.9
+    },
+    "hpt_pulselaser_gimbal_large": {
+        "powergen": 0,
+        "powerdraw": 0.92
+    },
+    "hpt_pulselaser_turret_large": {
+        "powergen": 0,
+        "powerdraw": 0.89
+    },
+    "hpt_pulselaser_fixed_huge": {
+        "powergen": 0,
+        "powerdraw": 1.33
+    },
+    "hpt_pulselaser_gimbal_huge": {
+        "powergen": 0,
+        "powerdraw": 1.37
+    },
+    "hpt_mrascanner_size0_class5": {
+        "powergen": 0,
+        "powerdraw": 3.2
+    },
+    "hpt_mrascanner_size0_class4": {
+        "powergen": 0,
+        "powerdraw": 1.6
+    },
+    "hpt_mrascanner_size0_class3": {
+        "powergen": 0,
+        "powerdraw": 0.8
+    },
+    "hpt_mrascanner_size0_class2": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "hpt_mrascanner_size0_class1": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "hpt_railgun_fixed_small": {
+        "powergen": 0,
+        "powerdraw": 1.15
+    },
+    "hpt_railgun_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 1.63
+    },
+    "hpt_railgun_fixed_medium_burst": {
+        "powergen": 0,
+        "powerdraw": 1.63
+    },
+    "int_dronecontrol_recon_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0.18
+    },
+    "int_dronecontrol_recon_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "int_dronecontrol_recon_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "int_dronecontrol_recon_size7_class1": {
+        "powergen": 0,
+        "powerdraw": 0.97
+    },
+    "int_refinery_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0.14
+    },
+    "int_refinery_size1_class2": {
+        "powergen": 0,
+        "powerdraw": 0.18
+    },
+    "int_refinery_size1_class3": {
+        "powergen": 0,
+        "powerdraw": 0.23
+    },
+    "int_refinery_size1_class4": {
+        "powergen": 0,
+        "powerdraw": 0.28
+    },
+    "int_refinery_size1_class5": {
+        "powergen": 0,
+        "powerdraw": 0.32
+    },
+    "int_refinery_size2_class1": {
+        "powergen": 0,
+        "powerdraw": 0.17
+    },
+    "int_refinery_size2_class2": {
+        "powergen": 0,
+        "powerdraw": 0.22
+    },
+    "int_refinery_size2_class3": {
+        "powergen": 0,
+        "powerdraw": 0.28
+    },
+    "int_refinery_size2_class4": {
+        "powergen": 0,
+        "powerdraw": 0.34
+    },
+    "int_refinery_size2_class5": {
+        "powergen": 0,
+        "powerdraw": 0.39
+    },
+    "int_refinery_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "int_refinery_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 0.27
+    },
+    "int_refinery_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 0.34
+    },
+    "int_refinery_size3_class4": {
+        "powergen": 0,
+        "powerdraw": 0.41
+    },
+    "int_refinery_size3_class5": {
+        "powergen": 0,
+        "powerdraw": 0.48
+    },
+    "int_refinery_size4_class1": {
+        "powergen": 0,
+        "powerdraw": 0.25
+    },
+    "int_refinery_size4_class2": {
+        "powergen": 0,
+        "powerdraw": 0.33
+    },
+    "int_refinery_size4_class3": {
+        "powergen": 0,
+        "powerdraw": 0.41
+    },
+    "int_refinery_size4_class4": {
+        "powergen": 0,
+        "powerdraw": 0.49
+    },
+    "int_refinery_size4_class5": {
+        "powergen": 0,
+        "powerdraw": 0.57
+    },
+    "hpt_flakmortar_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 1.2
+    },
+    "hpt_flakmortar_turret_medium": {
+        "powergen": 0,
+        "powerdraw": 1.2
+    },
+    "hpt_flechettelauncher_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 1.2
+    },
+    "hpt_flechettelauncher_turret_medium": {
+        "powergen": 0,
+        "powerdraw": 1.2
+    },
+    "int_dronecontrol_repair_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0.18
+    },
+    "int_dronecontrol_repair_size1_class2": {
+        "powergen": 0,
+        "powerdraw": 0.14
+    },
+    "int_dronecontrol_repair_size1_class3": {
+        "powergen": 0,
+        "powerdraw": 0.23
+    },
+    "int_dronecontrol_repair_size1_class4": {
+        "powergen": 0,
+        "powerdraw": 0.32
+    },
+    "int_dronecontrol_repair_size1_class5": {
+        "powergen": 0,
+        "powerdraw": 0.28
+    },
+    "int_dronecontrol_repair_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0.27
+    },
+    "int_dronecontrol_repair_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "int_dronecontrol_repair_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 0.34
+    },
+    "int_dronecontrol_repair_size3_class4": {
+        "powergen": 0,
+        "powerdraw": 0.48
+    },
+    "int_dronecontrol_repair_size3_class5": {
+        "powergen": 0,
+        "powerdraw": 0.41
+    },
+    "int_dronecontrol_repair_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "int_dronecontrol_repair_size5_class2": {
+        "powergen": 0,
+        "powerdraw": 0.3
+    },
+    "int_dronecontrol_repair_size5_class3": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "int_dronecontrol_repair_size5_class4": {
+        "powergen": 0,
+        "powerdraw": 0.97
+    },
+    "int_dronecontrol_repair_size5_class5": {
+        "powergen": 0,
+        "powerdraw": 0.6
+    },
+    "int_dronecontrol_repair_size7_class1": {
+        "powergen": 0,
+        "powerdraw": 0.55
+    },
+    "int_dronecontrol_repair_size7_class2": {
+        "powergen": 0,
+        "powerdraw": 0.41
+    },
+    "int_dronecontrol_repair_size7_class3": {
+        "powergen": 0,
+        "powerdraw": 0.69
+    },
+    "int_dronecontrol_repair_size7_class4": {
+        "powergen": 0,
+        "powerdraw": 0.97
+    },
+    "int_dronecontrol_repair_size7_class5": {
+        "powergen": 0,
+        "powerdraw": 0.83
+    },
+    "int_dronecontrol_unkvesselresearch": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "hpt_mining_seismchrgwarhd_turret_medium": {
+        "powergen": 0,
+        "powerdraw": 1.2
+    },
+    "hpt_mining_seismchrgwarhd_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 1.2
+    },
+    "int_sensors_size8_class1": {
+        "powergen": 0,
+        "powerdraw": 0.55
+    },
+    "int_sensors_size8_class2": {
+        "powergen": 0,
+        "powerdraw": 0.62
+    },
+    "int_sensors_size8_class3": {
+        "powergen": 0,
+        "powerdraw": 0.69
+    },
+    "int_sensors_size8_class4": {
+        "powergen": 0,
+        "powerdraw": 1.14
+    },
+    "int_sensors_size8_class5": {
+        "powergen": 0,
+        "powerdraw": 2.07
+    },
+    "int_sensors_size7_class1": {
+        "powergen": 0,
+        "powerdraw": 0.47
+    },
+    "int_sensors_size7_class2": {
+        "powergen": 0,
+        "powerdraw": 0.53
+    },
+    "int_sensors_size7_class3": {
+        "powergen": 0,
+        "powerdraw": 0.59
+    },
+    "int_sensors_size7_class4": {
+        "powergen": 0,
+        "powerdraw": 0.97
+    },
+    "int_sensors_size7_class5": {
+        "powergen": 0,
+        "powerdraw": 1.77
+    },
+    "int_sensors_size6_class1": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "int_sensors_size6_class2": {
+        "powergen": 0,
+        "powerdraw": 0.45
+    },
+    "int_sensors_size6_class3": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "int_sensors_size6_class4": {
+        "powergen": 0,
+        "powerdraw": 0.83
+    },
+    "int_sensors_size6_class5": {
+        "powergen": 0,
+        "powerdraw": 1.5
+    },
+    "int_sensors_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 0.33
+    },
+    "int_sensors_size5_class2": {
+        "powergen": 0,
+        "powerdraw": 0.37
+    },
+    "int_sensors_size5_class3": {
+        "powergen": 0,
+        "powerdraw": 0.41
+    },
+    "int_sensors_size5_class4": {
+        "powergen": 0,
+        "powerdraw": 0.68
+    },
+    "int_sensors_size5_class5": {
+        "powergen": 0,
+        "powerdraw": 1.23
+    },
+    "int_sensors_size4_class1": {
+        "powergen": 0,
+        "powerdraw": 0.27
+    },
+    "int_sensors_size4_class2": {
+        "powergen": 0,
+        "powerdraw": 0.31
+    },
+    "int_sensors_size4_class3": {
+        "powergen": 0,
+        "powerdraw": 0.34
+    },
+    "int_sensors_size4_class4": {
+        "powergen": 0,
+        "powerdraw": 0.56
+    },
+    "int_sensors_size4_class5": {
+        "powergen": 0,
+        "powerdraw": 1.02
+    },
+    "int_sensors_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0.22
+    },
+    "int_sensors_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 0.25
+    },
+    "int_sensors_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 0.28
+    },
+    "int_sensors_size3_class4": {
+        "powergen": 0,
+        "powerdraw": 0.46
+    },
+    "int_sensors_size3_class5": {
+        "powergen": 0,
+        "powerdraw": 0.84
+    },
+    "int_sensors_size2_class1": {
+        "powergen": 0,
+        "powerdraw": 0.18
+    },
+    "int_sensors_size2_class2": {
+        "powergen": 0,
+        "powerdraw": 0.21
+    },
+    "int_sensors_size2_class3": {
+        "powergen": 0,
+        "powerdraw": 0.23
+    },
+    "int_sensors_size2_class4": {
+        "powergen": 0,
+        "powerdraw": 0.38
+    },
+    "int_sensors_size2_class5": {
+        "powergen": 0,
+        "powerdraw": 0.69
+    },
+    "int_sensors_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0.16
+    },
+    "int_sensors_size1_class2": {
+        "powergen": 0,
+        "powerdraw": 0.18
+    },
+    "int_sensors_size1_class3": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "int_sensors_size1_class4": {
+        "powergen": 0,
+        "powerdraw": 0.33
+    },
+    "int_sensors_size1_class5": {
+        "powergen": 0,
+        "powerdraw": 0.6
+    },
+    "hpt_shieldbooster_size0_class1": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "hpt_shieldbooster_size0_class2": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "hpt_shieldbooster_size0_class3": {
+        "powergen": 0,
+        "powerdraw": 0.7
+    },
+    "hpt_shieldbooster_size0_class4": {
+        "powergen": 0,
+        "powerdraw": 1
+    },
+    "hpt_shieldbooster_size0_class5": {
+        "powergen": 0,
+        "powerdraw": 1.2
+    },
+    "int_shieldcellbank_size1_class1": {
+        "powergen": 0,
+        "powerdraw": 0.41
+    },
+    "int_shieldcellbank_size1_class2": {
+        "powergen": 0,
+        "powerdraw": 0.55
+    },
+    "int_shieldcellbank_size1_class3": {
+        "powergen": 0,
+        "powerdraw": 0.69
+    },
+    "int_shieldcellbank_size1_class4": {
+        "powergen": 0,
+        "powerdraw": 0.83
+    },
+    "int_shieldcellbank_size1_class5": {
+        "powergen": 0,
+        "powerdraw": 0.97
+    },
+    "int_shieldcellbank_size2_class1": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "int_shieldcellbank_size2_class2": {
+        "powergen": 0,
+        "powerdraw": 0.67
+    },
+    "int_shieldcellbank_size2_class3": {
+        "powergen": 0,
+        "powerdraw": 0.84
+    },
+    "int_shieldcellbank_size2_class4": {
+        "powergen": 0,
+        "powerdraw": 1.01
+    },
+    "int_shieldcellbank_size2_class5": {
+        "powergen": 0,
+        "powerdraw": 1.18
+    },
+    "int_shieldcellbank_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0.61
+    },
+    "int_shieldcellbank_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 0.82
+    },
+    "int_shieldcellbank_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 1.02
+    },
+    "int_shieldcellbank_size3_class4": {
+        "powergen": 0,
+        "powerdraw": 1.22
+    },
+    "int_shieldcellbank_size3_class5": {
+        "powergen": 0,
+        "powerdraw": 1.43
+    },
+    "int_shieldcellbank_size4_class1": {
+        "powergen": 0,
+        "powerdraw": 0.74
+    },
+    "int_shieldcellbank_size4_class2": {
+        "powergen": 0,
+        "powerdraw": 0.98
+    },
+    "int_shieldcellbank_size4_class3": {
+        "powergen": 0,
+        "powerdraw": 1.23
+    },
+    "int_shieldcellbank_size4_class4": {
+        "powergen": 0,
+        "powerdraw": 1.48
+    },
+    "int_shieldcellbank_size4_class5": {
+        "powergen": 0,
+        "powerdraw": 1.72
+    },
+    "int_shieldcellbank_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 0.9
+    },
+    "int_shieldcellbank_size5_class2": {
+        "powergen": 0,
+        "powerdraw": 1.2
+    },
+    "int_shieldcellbank_size5_class3": {
+        "powergen": 0,
+        "powerdraw": 1.5
+    },
+    "int_shieldcellbank_size5_class4": {
+        "powergen": 0,
+        "powerdraw": 1.8
+    },
+    "int_shieldcellbank_size5_class5": {
+        "powergen": 0,
+        "powerdraw": 2.1
+    },
+    "int_shieldcellbank_size6_class1": {
+        "powergen": 0,
+        "powerdraw": 1.06
+    },
+    "int_shieldcellbank_size6_class2": {
+        "powergen": 0,
+        "powerdraw": 1.42
+    },
+    "int_shieldcellbank_size6_class3": {
+        "powergen": 0,
+        "powerdraw": 1.77
+    },
+    "int_shieldcellbank_size6_class4": {
+        "powergen": 0,
+        "powerdraw": 2.12
+    },
+    "int_shieldcellbank_size6_class5": {
+        "powergen": 0,
+        "powerdraw": 2.48
+    },
+    "int_shieldcellbank_size7_class1": {
+        "powergen": 0,
+        "powerdraw": 1.24
+    },
+    "int_shieldcellbank_size7_class2": {
+        "powergen": 0,
+        "powerdraw": 1.66
+    },
+    "int_shieldcellbank_size7_class3": {
+        "powergen": 0,
+        "powerdraw": 2.07
+    },
+    "int_shieldcellbank_size7_class4": {
+        "powergen": 0,
+        "powerdraw": 2.48
+    },
+    "int_shieldcellbank_size7_class5": {
+        "powergen": 0,
+        "powerdraw": 2.9
+    },
+    "int_shieldcellbank_size8_class1": {
+        "powergen": 0,
+        "powerdraw": 1.44
+    },
+    "int_shieldcellbank_size8_class2": {
+        "powergen": 0,
+        "powerdraw": 1.92
+    },
+    "int_shieldcellbank_size8_class3": {
+        "powergen": 0,
+        "powerdraw": 2.4
+    },
+    "int_shieldcellbank_size8_class4": {
+        "powergen": 0,
+        "powerdraw": 2.88
+    },
+    "int_shieldcellbank_size8_class5": {
+        "powergen": 0,
+        "powerdraw": 3.36
+    },
+    "int_shieldgenerator_size1_class5": {
+        "powergen": 0,
+        "powerdraw": 1.68
+    },
+    "int_shieldgenerator_size2_class1": {
+        "powergen": 0,
+        "powerdraw": 0.9
+    },
+    "int_shieldgenerator_size2_class2": {
+        "powergen": 0,
+        "powerdraw": 1.2
+    },
+    "int_shieldgenerator_size2_class3": {
+        "powergen": 0,
+        "powerdraw": 1.5
+    },
+    "int_shieldgenerator_size2_class4": {
+        "powergen": 0,
+        "powerdraw": 1.8
+    },
+    "int_shieldgenerator_size2_class5": {
+        "powergen": 0,
+        "powerdraw": 2.1
+    },
+    "int_shieldgenerator_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 1.08
+    },
+    "int_shieldgenerator_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 1.44
+    },
+    "int_shieldgenerator_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 1.8
+    },
+    "int_shieldgenerator_size3_class4": {
+        "powergen": 0,
+        "powerdraw": 2.16
+    },
+    "int_shieldgenerator_size3_class5": {
+        "powergen": 0,
+        "powerdraw": 2.52
+    },
+    "int_shieldgenerator_size4_class1": {
+        "powergen": 0,
+        "powerdraw": 1.32
+    },
+    "int_shieldgenerator_size4_class2": {
+        "powergen": 0,
+        "powerdraw": 1.76
+    },
+    "int_shieldgenerator_size4_class3": {
+        "powergen": 0,
+        "powerdraw": 2.2
+    },
+    "int_shieldgenerator_size4_class4": {
+        "powergen": 0,
+        "powerdraw": 2.64
+    },
+    "int_shieldgenerator_size4_class5": {
+        "powergen": 0,
+        "powerdraw": 3.08
+    },
+    "int_shieldgenerator_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 1.56
+    },
+    "int_shieldgenerator_size5_class2": {
+        "powergen": 0,
+        "powerdraw": 2.08
+    },
+    "int_shieldgenerator_size5_class3": {
+        "powergen": 0,
+        "powerdraw": 2.6
+    },
+    "int_shieldgenerator_size5_class4": {
+        "powergen": 0,
+        "powerdraw": 3.12
+    },
+    "int_shieldgenerator_size5_class5": {
+        "powergen": 0,
+        "powerdraw": 3.64
+    },
+    "int_shieldgenerator_size6_class1": {
+        "powergen": 0,
+        "powerdraw": 1.86
+    },
+    "int_shieldgenerator_size6_class2": {
+        "powergen": 0,
+        "powerdraw": 2.48
+    },
+    "int_shieldgenerator_size6_class3": {
+        "powergen": 0,
+        "powerdraw": 3.1
+    },
+    "int_shieldgenerator_size6_class4": {
+        "powergen": 0,
+        "powerdraw": 3.72
+    },
+    "int_shieldgenerator_size6_class5": {
+        "powergen": 0,
+        "powerdraw": 4.34
+    },
+    "int_shieldgenerator_size7_class1": {
+        "powergen": 0,
+        "powerdraw": 2.1
+    },
+    "int_shieldgenerator_size7_class2": {
+        "powergen": 0,
+        "powerdraw": 2.8
+    },
+    "int_shieldgenerator_size7_class3": {
+        "powergen": 0,
+        "powerdraw": 3.5
+    },
+    "int_shieldgenerator_size7_class4": {
+        "powergen": 0,
+        "powerdraw": 4.2
+    },
+    "int_shieldgenerator_size7_class5": {
+        "powergen": 0,
+        "powerdraw": 4.9
+    },
+    "int_shieldgenerator_size8_class1": {
+        "powergen": 0,
+        "powerdraw": 2.4
+    },
+    "int_shieldgenerator_size8_class2": {
+        "powergen": 0,
+        "powerdraw": 3.2
+    },
+    "int_shieldgenerator_size8_class3": {
+        "powergen": 0,
+        "powerdraw": 4
+    },
+    "int_shieldgenerator_size8_class4": {
+        "powergen": 0,
+        "powerdraw": 4.8
+    },
+    "int_shieldgenerator_size8_class5": {
+        "powergen": 0,
+        "powerdraw": 5.6
+    },
+    "hpt_plasmashockcannon_fixed_large": {
+        "powergen": 0,
+        "powerdraw": 0.89
+    },
+    "hpt_plasmashockcannon_gimbal_large": {
+        "powergen": 0,
+        "powerdraw": 0.89
+    },
+    "hpt_plasmashockcannon_turret_large": {
+        "powergen": 0,
+        "powerdraw": 0.64
+    },
+    "hpt_plasmashockcannon_gimbal_medium": {
+        "powergen": 0,
+        "powerdraw": 0.89
+    },
+    "hpt_plasmashockcannon_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 0.57
+    },
+    "hpt_plasmashockcannon_turret_medium": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "hpt_plasmashockcannon_fixed_small": {
+        "powergen": 0,
+        "powerdraw": 0.41
+    },
+    "hpt_plasmashockcannon_gimbal_small": {
+        "powergen": 0,
+        "powerdraw": 0.47
+    },
+    "hpt_plasmashockcannon_turret_small": {
+        "powergen": 0,
+        "powerdraw": 0.54
+    },
+    "hpt_antiunknownshutdown_tiny": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "hpt_mining_subsurfdispmisle_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 1.01
+    },
+    "hpt_mining_subsurfdispmisle_turret_medium": {
+        "powergen": 0,
+        "powerdraw": 0.93
+    },
+    "hpt_mining_subsurfdispmisle_fixed_small": {
+        "powergen": 0,
+        "powerdraw": 0.42
+    },
+    "hpt_mining_subsurfdispmisle_turret_small": {
+        "powergen": 0,
+        "powerdraw": 0.42
+    },
+    "int_supercruiseassist": {
+        "powergen": 0,
+        "powerdraw": 0.3
+    },
+    "int_detailedsurfacescanner_tiny": {
+        "powergen": 0,
+        "powerdraw": 0
+    },
+    "int_engine_size8_class1": {
+        "powergen": 0,
+        "powerdraw": 7.2
+    },
+    "int_engine_size8_class2": {
+        "powergen": 0,
+        "powerdraw": 8.1
+    },
+    "int_engine_size8_class3": {
+        "powergen": 0,
+        "powerdraw": 9
+    },
+    "int_engine_size8_class4": {
+        "powergen": 0,
+        "powerdraw": 9.9
+    },
+    "int_engine_size8_class5": {
+        "powergen": 0,
+        "powerdraw": 10.8
+    },
+    "int_engine_size7_class1": {
+        "powergen": 0,
+        "powerdraw": 6.08
+    },
+    "int_engine_size7_class2": {
+        "powergen": 0,
+        "powerdraw": 6.84
+    },
+    "int_engine_size7_class3": {
+        "powergen": 0,
+        "powerdraw": 7.6
+    },
+    "int_engine_size7_class4": {
+        "powergen": 0,
+        "powerdraw": 8.36
+    },
+    "int_engine_size7_class5": {
+        "powergen": 0,
+        "powerdraw": 9.12
+    },
+    "int_engine_size6_class1": {
+        "powergen": 0,
+        "powerdraw": 5.04
+    },
+    "int_engine_size6_class2": {
+        "powergen": 0,
+        "powerdraw": 5.67
+    },
+    "int_engine_size6_class3": {
+        "powergen": 0,
+        "powerdraw": 6.3
+    },
+    "int_engine_size6_class4": {
+        "powergen": 0,
+        "powerdraw": 6.93
+    },
+    "int_engine_size6_class5": {
+        "powergen": 0,
+        "powerdraw": 7.56
+    },
+    "int_engine_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 4.08
+    },
+    "int_engine_size5_class2": {
+        "powergen": 0,
+        "powerdraw": 4.59
+    },
+    "int_engine_size5_class3": {
+        "powergen": 0,
+        "powerdraw": 5.1
+    },
+    "int_engine_size5_class4": {
+        "powergen": 0,
+        "powerdraw": 5.61
+    },
+    "int_engine_size5_class5": {
+        "powergen": 0,
+        "powerdraw": 6.12
+    },
+    "int_engine_size4_class1": {
+        "powergen": 0,
+        "powerdraw": 3.28
+    },
+    "int_engine_size4_class2": {
+        "powergen": 0,
+        "powerdraw": 3.69
+    },
+    "int_engine_size4_class3": {
+        "powergen": 0,
+        "powerdraw": 4.1
+    },
+    "int_engine_size4_class4": {
+        "powergen": 0,
+        "powerdraw": 4.51
+    },
+    "int_engine_size4_class5": {
+        "powergen": 0,
+        "powerdraw": 4.92
+    },
+    "int_engine_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 2.48
+    },
+    "int_engine_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 2.79
+    },
+    "int_engine_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 3.1
+    },
+    "int_engine_size3_class4": {
+        "powergen": 0,
+        "powerdraw": 3.41
+    },
+    "int_engine_size3_class5": {
+        "powergen": 0,
+        "powerdraw": 3.72
+    },
+    "int_engine_size2_class1": {
+        "powergen": 0,
+        "powerdraw": 2
+    },
+    "int_engine_size2_class2": {
+        "powergen": 0,
+        "powerdraw": 2.25
+    },
+    "int_engine_size2_class3": {
+        "powergen": 0,
+        "powerdraw": 2.5
+    },
+    "int_engine_size2_class4": {
+        "powergen": 0,
+        "powerdraw": 2.75
+    },
+    "int_engine_size2_class5": {
+        "powergen": 0,
+        "powerdraw": 3
+    },
+    "int_engine_size3_class5_fast": {
+        "powergen": 0,
+        "powerdraw": 5
+    },
+    "int_engine_size2_class5_fast": {
+        "powergen": 0,
+        "powerdraw": 4
+    },
+    "hpt_advancedtorppylon_fixed_small": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "hpt_advancedtorppylon_fixed_medium": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
+    "hpt_advancedtorppylon_fixed_large": {
+        "powergen": 0,
+        "powerdraw": 0.6
+    },
+    "hpt_xenoscanner_basic_tiny": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    }
+}

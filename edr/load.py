@@ -1231,6 +1231,9 @@ def handle_bang_commands(cmdr, command, command_parts):
         name_or_type = command_parts[1]
         EDRLOG.log(u"Ship search command for {}".format(name_or_type), "INFO")
         EDR_CLIENT.where_ship(name_or_type)
+    elif command == "!assess":
+        EDRLOG.log(u"Build assessment command", "INFO")
+        EDR_CLIENT.assess_build()
     elif command == "!help":
         EDRLOG.log(u"Help command", "INFO")
         EDR_CLIENT.help("" if len(command_parts) == 1 else command_parts[1])

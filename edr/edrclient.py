@@ -26,6 +26,8 @@ import randomtips
 import helpcontent
 import edtime
 import edrlegalrecords
+import edrxzibit
+
 from edri18n import _, _c, _edr, set_language
 import random
 import math
@@ -548,6 +550,27 @@ class EDRClient(object):
             self.__commsjammed()
             return None
 
+    def assess_build(self):
+        vehicle = self.player.vehicle
+        modules = vehicle.modules
+        if not modules:
+            return #TODO error message
+        
+        build_master = edrxzibit.EDRXzibit(modules) 
+        assessment = build_master.assess_power_priorities()
+        if not assessment:
+            self.__notify(_(u"Power Priorities Assessment"), [_(u"Yo dawg, sorry but I can't help with dat.")], clear_before=True)
+        formatted_assessment = []
+        grades = ['F', 'E', 'D', 'C', 'B-', 'B', 'B+', 'A-', 'A', 'A+']
+        for fraction in sorted(assessment):
+            grade = grades[int(assessment[fraction]["grade"]*(len(grades)-1))]
+            formatted_assessment.append(_(u"{}: {}\t⚡: {}").format(grade, assessment[fraction]["situation"], assessment[fraction]["annotation"]))
+            recommendation = _(u"   ⚑: {}").format(assessment[fraction]["recommendation"]) if "recommendation" in assessment[fraction] else u""
+            praise = _(u"  ✓: {}").format(assessment[fraction]["praise"]) if "praise" in assessment[fraction] else u""
+            formatted_assessment.append(_(u"{}{}").format(recommendation, praise))
+        self.__notify(_(u"Power Priorities Assessment"), formatted_assessment, clear_before=True)
+        
+    
     def evict_system(self, star_system):
         self.edrsystems.evict(star_system)
 

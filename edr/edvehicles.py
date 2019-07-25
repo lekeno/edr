@@ -66,6 +66,7 @@ class EDVehicle(object):
         self.fuel_capacity = None
         self.fuel_level = None
         self.attitude = EDVehicleAttitude()
+        self.modules = None
         
     @property
     def hull_health(self):
@@ -168,8 +169,8 @@ class EDVehicle(object):
         self.hull_health = event.get('HullHealth', None) * 100.0 # normalized to 0.0 ... 1.0
         if not 'Modules' in event:
             return
-        modules = event['Modules']
-        for module in modules:
+        self.modules = event['Modules']
+        for module in self.modules:
             health = module['Health'] * 100.0 if 'Health' in module else None 
             self.subsystem_health(module.get('Item', None), health)
 
@@ -197,6 +198,7 @@ class EDVehicle(object):
         self._attacked = {u"value": False, u"timestamp": now}
         self.heat_damaged = {u"value": False, u"timestamp": now}
         self._in_danger = {u"value": False, u"timestamp": now}
+        self.modules = None
     
     def destroy(self):
         now = EDTime.py_epoch_now()
