@@ -554,7 +554,8 @@ class EDRClient(object):
         vehicle = self.player.vehicle
         modules = vehicle.modules
         if not modules:
-            return #TODO error message
+            self.__notify(_(u"Power Priorities Assessment"), [_(u"Yo dawg, U sure that you got modules on this?")], clear_before=True)
+            return
         
         build_master = edrxzibit.EDRXzibit(modules) 
         assessment = build_master.assess_power_priorities()
@@ -564,7 +565,8 @@ class EDRClient(object):
         grades = ['F', 'E', 'D', 'C', 'B-', 'B', 'B+', 'A-', 'A', 'A+']
         for fraction in sorted(assessment):
             grade = grades[int(assessment[fraction]["grade"]*(len(grades)-1))]
-            formatted_assessment.append(_(u"{}: {}\t⚡: {}").format(grade, assessment[fraction]["situation"], assessment[fraction]["annotation"]))
+            powered = _(u"\t⚡: {}").format(assessment[fraction]["annotation"]) if assessment[fraction]["annotation"] else u""
+            formatted_assessment.append(_(u"{}: {}{}").format(grade, assessment[fraction]["situation"], powered))
             recommendation = _(u"   ⚑: {}").format(assessment[fraction]["recommendation"]) if "recommendation" in assessment[fraction] else u""
             praise = _(u"  ✓: {}").format(assessment[fraction]["praise"]) if "praise" in assessment[fraction] else u""
             formatted_assessment.append(_(u"{}{}").format(recommendation, praise))

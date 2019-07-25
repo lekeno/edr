@@ -59,7 +59,6 @@ class EDRXzibit(object):
 
         if len(functional["modules"]) == 0:
             assessment["grade"] = 0
-            assessment["annotation"] = _(u"no powered up modules!")
         else:
             assessment["grade"] = 0.2
 
@@ -77,6 +76,12 @@ class EDRXzibit(object):
             "situation": _(u"Recovered PP (50% after 5s; {0:.2f}MW)").format(self.power_capacity * .5),
             "annotation": u", ".join(functional["priorities"]),
         }
+        
+        if len(functional["modules"]) == 0:
+            assessment["grade"] = 0
+        else:
+            assessment["grade"] = 0.2
+
         if 'int_hyperdrive' not in functional["modules"]:
             assessment["grade"] = 0
             assessment["recommendation"] = _(u"Keep your FSD below the 50% line.")
