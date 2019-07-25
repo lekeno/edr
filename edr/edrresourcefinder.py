@@ -102,6 +102,8 @@ class EDRResourceFinder(object):
         "exquisite focus crystals": 'mission_reward_only',
         "antimony": 'recommend_crashed_site',
         "tellurium": 'recommend_crashed_site', "ruthenium": 'recommend_crashed_site', "tungsten": 'recommend_crashed_site',
+        "tellurium": 'recommend_prospecting_planet', # TODO
+        "ruthenium": 'recommend_prospecting_planet', "antimony": 'recommend_prospecting_planet', # TODO
         "zirconium": 'recommend_crashed_site', "adaptive encryptors capture": 'recommend_crashed_site',
         "atypical encryption archives": 'recommend_crashed_site', "modified consumer firmware": 'recommend_crashed_site',
         "modified embedded firmware": 'from_hacking',
@@ -135,8 +137,6 @@ class EDRResourceFinder(object):
         "niobium": 'recommend_prospecting_planet', "chromium": 'recommend_prospecting_planet',
         "vanadium": 'recommend_prospecting_planet', "zinc": 'recommend_prospecting_planet',
         "germaniun": 'recommend_prospecting_planet', "manganese": 'recommend_prospecting_planet',
-        "tellurium": 'recommend_prospecting_planet',
-        "ruthenium": 'recommend_prospecting_planet', "antimony": 'recommend_prospecting_planet',
         "boron": 'mat_trader_mining_all',
         "ambiguous abbreviation (pc)": "ambiguous_p_c",
         "ambiguous abbreviation (cc)": "ambiguous_c_c",
@@ -438,7 +438,7 @@ class EDRResourceFinder(object):
             ],
             'antimony': [ { 'name': 'Outotz LS-K D8-3', 'planet': 'B 5 c', 'gravity': 0.07, 'distanceToArrival': 310673, 'type': 'crystals'}],
             'polonium': [ {'name': 'HIP 59646', 'planet': '1', 'concentration':	0.013, 'gravity': 1.35, 'distanceToArrival': 66, 'type': 'rocks'},
-                          {'name': 'Tiris', 'planet': '1 c', 'concentration': 0.012, 'gravity': 0.13, 'distanceToArrival': 17}, 'type': 'rocks',
+                          {'name': 'Tiris', 'planet': '1 c', 'concentration': 0.012, 'gravity': 0.13, 'distanceToArrival': 17, 'type': 'rocks'},
                           {'name': 'LTT 6705', 'planet': 'A 2', 'concentration': 0.012, 'gravity': 0.93, 'distanceToArrival': 25, 'type': 'rocks'},
                           {'name': 'HIP 22286', 'planet': '2', 'concentration': 0.013, 'gravity': 1.49, 'distanceToArrival': 16, 'type': 'rocks'},
                           { 'name': 'HIP 36601', 'planet': 'C 1 a', 'gravity': 0.09, 'distanceToArrival': 154099, 'type': 'crystals'}
@@ -464,7 +464,8 @@ class EDRResourceFinder(object):
             ],
             'selenium':   [ {'name': 'LHS 417', 'planet': '9 E A', 'concentration': 0.049, 'gravity': 0.03, 'distanceToArrival': 3776, 'type': 'rocks'},
                             {'name': 'Jeng', 'planet': 'A 1 D A', 'concentration':	0.049, 'gravity': 0.03, 'distanceToArrival': 828, 'type': 'rocks'},
-                            {'name': 'Kandanda', 'planet': '3 D A', 'concentration': 0.048, 'gravity': 0.03, 'distanceToArrival': 2548, 'type': 'rocks'}
+                            {'name': 'Kandanda', 'planet': '3 D A', 'concentration': 0.048, 'gravity': 0.03, 'distanceToArrival': 2548, 'type': 'rocks'},
+                            # TODO CPD-51 3323 planet 1 D A Crystalline fragments for selenium
             ],
             'tin':        [ {'name': '102 Iota Tauri', 'planet': 'B 2 A', 'concentration': 0.03, 'gravity': 0.19, 'distanceToArrival': 3776, 'type': 'rocks'},
                             {'name': 'Nu Tauri', 'planet': '1', 'concentration':	0.029, 'gravity': 2.29, 'distanceToArrival': 828, 'type': 'rocks'},
@@ -529,7 +530,7 @@ class EDRResourceFinder(object):
                 _(u'{} ({}LY), Planet {} ({}LS, {}G), {} @ biological sites').format(best['name'], pretty_dist, best['planet'], best['distanceToArrival'], best['gravity'], resource),
                 _(u"Bring: detailed surface scanner, SRV, synth materials for SRV fuel and ammo."),
                 _(u"Surface scan the planet to find biological sites."),
-                _(u"Land, deploy SRV to break crystalline clusters, scoop grade 4 materials.")
+                _(u"Land, deploy SRV to break crystalline shards, scoop grade 4 materials.")
             ]            
         else:
             return [
