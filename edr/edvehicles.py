@@ -3,6 +3,7 @@ import os
 import json
 from edtime import EDTime
 import edrconfig
+import edmodule
 import edrlog
 EDRLOG = edrlog.EDRLog()
 
@@ -66,7 +67,9 @@ class EDVehicle(object):
         self.fuel_capacity = None
         self.fuel_level = None
         self.attitude = EDVehicleAttitude()
+        self.slots = {}
         self.modules = None
+        self.power_capacity = None
         
     @property
     def hull_health(self):
@@ -170,9 +173,25 @@ class EDVehicle(object):
         if not 'Modules' in event:
             return
         self.modules = event['Modules']
+        self.slots = {}
         for module in self.modules:
+            ed_module = edmodule.EDModule(module)
+            self.slots[module['Slot']] = ed_module
+            if module.get("Slot", "").lower() == "powerplant":
+                self.power_capacity = ed_module.power_generation
             health = module['Health'] * 100.0 if 'Health' in module else None 
             self.subsystem_health(module.get('Item', None), health)
+
+    def update_modules(self, modules_info):
+        for module in modules_info:
+            slot_name = module.get("Slot", None)
+            print slot_name
+            if slot_name in self.slots:
+                print "updating module"
+                self.slots[slot_name].update(module)
+            else:
+                print "adding module"
+                self.slots[slot_name] = edmodule.EDModule(module)            
 
     def update_name(self, event):
         other_id = event.get("ShipID", None)
@@ -199,6 +218,7 @@ class EDVehicle(object):
         self.heat_damaged = {u"value": False, u"timestamp": now}
         self._in_danger = {u"value": False, u"timestamp": now}
         self.modules = None
+        self.slots = {}
     
     def destroy(self):
         now = EDTime.py_epoch_now()

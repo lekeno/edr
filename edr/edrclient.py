@@ -550,23 +550,30 @@ class EDRClient(object):
             self.__commsjammed()
             return None
 
-    def assess_build(self):
+    def eval_build(self, eval_type):
+        canonical_commands = ["power"]
+        synonym_commands = ["priority", "pp", "priorities"]
+        supported_commands = set(canonical_commands + synonym_commands)
+        if eval_type not in supported_commands:
+            self.__notify(_(u"EDR Evals"), [_(u"Yo dawg, I don't do evals for '{}'. Try {} instead.").format(eval_type, ", ".join(canonical_commands))], clear_before=True)
+            return
+
         vehicle = self.player.vehicle
-        modules = vehicle.modules
-        if not modules:
+        if not vehicle.modules:
             self.__notify(_(u"Power Priorities Assessment"), [_(u"Yo dawg, U sure that you got modules on this?")], clear_before=True)
             return
         
-        build_master = edrxzibit.EDRXzibit(modules) 
+        build_master = edrxzibit.EDRXzibit(vehicle)
         assessment = build_master.assess_power_priorities()
         if not assessment:
             self.__notify(_(u"Power Priorities Assessment"), [_(u"Yo dawg, sorry but I can't help with dat.")], clear_before=True)
+            return
         formatted_assessment = []
         grades = ['F', 'E', 'D', 'C', 'B-', 'B', 'B+', 'A-', 'A', 'A+']
         for fraction in sorted(assessment):
             grade = grades[int(assessment[fraction]["grade"]*(len(grades)-1))]
-            powered = _(u"\t⚡: {}").format(assessment[fraction]["annotation"]) if assessment[fraction]["annotation"] else u""
-            formatted_assessment.append(_(u"{}: {}{}").format(grade, assessment[fraction]["situation"], powered))
+            powered = _(u"⚡: {}").format(assessment[fraction]["annotation"]) if assessment[fraction]["annotation"] else u""
+            formatted_assessment.append(_(u"{}: {}\t{}").format(grade, assessment[fraction]["situation"], powered))
             recommendation = _(u"   ⚑: {}").format(assessment[fraction]["recommendation"]) if "recommendation" in assessment[fraction] else u""
             praise = _(u"  ✓: {}").format(assessment[fraction]["praise"]) if "praise" in assessment[fraction] else u""
             formatted_assessment.append(_(u"{}{}").format(recommendation, praise))
@@ -859,12 +866,12 @@ class EDRClient(object):
                 EDRLOG.log(u"Who {} : {}".format(cmdr_name, profile.short_profile(self.player.powerplay)), "INFO")
                 legal = self.edrlegal.summarize_recents(profile.cid)
                 if legal:
-                    self.__intel(cmdr_name, [profile.short_profile(self.player.powerplay), legal])
+                    self.__intel(cmdr_name, [profile.short_profile(self.player.powerplay), legal], clear_before=True)
                 else:
-                    self.__intel(cmdr_name, [profile.short_profile(self.player.powerplay)])
+                    self.__intel(cmdr_name, [profile.short_profile(self.player.powerplay)], clear_before=True)
             else:
                 EDRLOG.log(u"Who {} : no info".format(cmdr_name), "INFO")
-                self.__intel(cmdr_name, [_("No info about {cmdr}").format(cmdr=cmdr_name)])
+                self.__intel(cmdr_name, [_("No info about {cmdr}").format(cmdr=cmdr_name)], clear_before=True)
         except edrserver.CommsJammedError:
             self.__commsjammed()    
 
@@ -907,7 +914,7 @@ class EDRClient(object):
         if profile and (self.player.name != cmdr_name) and profile.is_dangerous(self.player.powerplay):
             self.status = _(u"{} is bad news.").format(cmdr_name)
             if self.novel_enough_blip(cmdr_id, blip, cognitive = True):
-                self.__warning(_(u"Warning!"), [profile.short_profile(self.player.powerplay)])
+                self.__warning(_(u"Warning!"), [profile.short_profile(self.player.powerplay)], clear_before=True)
                 self.cognitive_blips_cache.set(cmdr_id, blip)
                 if self.player.in_open() and self.is_anonymous() and profile.is_dangerous(self.player.powerplay):
                     self.advertise_full_account(_("You could have helped other EDR users by reporting this outlaw."))
@@ -965,7 +972,7 @@ class EDRClient(object):
                         details.append(status)
                     if legal:
                         details.append(legal)
-                    self.__warning(_(u"Warning!"), details)
+                    self.__warning(_(u"Warning!"), details, clear_before=True)
                 elif self.intel_even_if_clean or (scan["wanted"] and bounty.is_significant()):
                     self.status = _(u"Intel for cmdr {}.").format(cmdr_name)
                     details = [profile.short_profile(self.player.powerplay)]
@@ -975,7 +982,7 @@ class EDRClient(object):
                         details.append(_(u"Wanted somewhere but it could be minor offenses."))
                     if legal:
                         details.append(legal)
-                    self.__intel(_(u"Intel"), details)
+                    self.__intel(_(u"Intel"), details, clear_before=True)
                 if not self.player.in_solo() and (self.is_anonymous() and (profile.is_dangerous(self.player.powerplay) or (scan["wanted"] and bounty.is_significant()))):
                     # Translators: this is shown to users who don't yet have an EDR account
                     self.advertise_full_account(_(u"You could have helped other EDR users by reporting this outlaw."))
@@ -1279,12 +1286,12 @@ class EDRClient(object):
             if report:
                 self.status = _(u"got info about {}").format(cmdr_name)
                 header = _(u"Intel for {}") if self.player.in_open() else _(u"Intel for {} (Open)")
-                self.__intel(header.format(cmdr_name), report["readable"])
+                self.__intel(header.format(cmdr_name), report["readable"], clear_before=True)
             else:
                 EDRLOG.log(u"Where {} : no info".format(cmdr_name), "INFO")
                 self.status = _(u"no info about {}").format(cmdr_name)
                 header = _(u"Intel for {}") if self.player.in_open() else _(u"Intel for {} (Open)")
-                self.__intel(header.format(cmdr_name), [_(u"Not recently sighted or not an outlaw.")])
+                self.__intel(header.format(cmdr_name), [_(u"Not recently sighted or not an outlaw.")], clear_before=True)
         except edrserver.CommsJammedError:
             self.__commsjammed()
 

@@ -10,6 +10,7 @@ from edtime import EDTime
 from edrlog import EDRLog
 import edentities
 import edrautoupdater
+import edmodulesinforeader
 from edri18n import _, _c
 
 EDR_CLIENT = EDRClient()
@@ -434,6 +435,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     if entry["event"] in ["SetUserShipName", "SellShipOnRebuy", "ShipyardBuy", "ShipyardNew", "ShipyardSell", "ShipyardTransfer", "ShipyardSwap"]:
         handle_fleet_events(entry)
+
+    if entry["event"] in ["ModuleInfo"]:
+        handle_modules_events(ed_player, entry)
     
     if entry["event"].startswith("Powerplay"):
         EDRLOG.log(u"Powerplay event: {}".format(entry), "INFO")
@@ -600,7 +604,7 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
         "place": victim.place,
         "timestamp": edt.as_js_epoch(),
         "criminals": criminals,
-        "offence": offence,
+        "offence": offence.capitalize(),
         "victim": victim.name,
         "victimShip": victim.vehicle_type(),
         "reportedBy": victim.name,
@@ -637,7 +641,7 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim, timestamp):
             {"name": criminal_cmdr.name,
              "ship" : criminal_cmdr.vehicle_type(),
             }],
-        "offence": offence,
+        "offence": offence.capitalize(),
         "victim": victim.name,
         "victimShip": victim.vehicle_type(),
         "reportedBy": criminal_cmdr.name,
@@ -1231,9 +1235,10 @@ def handle_bang_commands(cmdr, command, command_parts):
         name_or_type = command_parts[1]
         EDRLOG.log(u"Ship search command for {}".format(name_or_type), "INFO")
         EDR_CLIENT.where_ship(name_or_type)
-    elif command == "!assess":
-        EDRLOG.log(u"Build assessment command", "INFO")
-        EDR_CLIENT.assess_build()
+    elif command == "!eval" and len(command_parts) == 2:
+        eval_type = command_parts[1]
+        EDRLOG.log(u"Eval command for {}".format(eval_type), "INFO")
+        EDR_CLIENT.eval_build(eval_type)
     elif command == "!help":
         EDRLOG.log(u"Help command", "INFO")
         EDR_CLIENT.help("" if len(command_parts) == 1 else command_parts[1])
@@ -1446,3 +1451,8 @@ def handle_fleet_events(entry):
         ed_player.fleet.swap(entry, ed_player.star_system, LAST_KNOWN_SHIP_NAME)
         LAST_KNOWN_SHIP_NAME = ed_player.mothership.name
 
+def handle_modules_events(ed_player, entry):
+    if entry["event"] == "ModuleInfo":
+        reader = edmodulesinforeader.EDModulesInfoReader()
+        modules = reader.process()
+        ed_player.mothership.update_modules(modules)
