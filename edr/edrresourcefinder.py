@@ -8,6 +8,7 @@ import math
 import json
 import os
 import clippy
+import random
 
 class EDRResourceFinder(object):
 
@@ -100,10 +101,8 @@ class EDRResourceFinder(object):
     RESOURCE_CALLBACKS = {
         "biotech conductors": 'mission_reward_only',
         "exquisite focus crystals": 'mission_reward_only',
-        "antimony": 'recommend_crashed_site',
-        "tellurium": 'recommend_crashed_site', "ruthenium": 'recommend_crashed_site', "tungsten": 'recommend_crashed_site',
-        "tellurium": 'recommend_prospecting_planet', # TODO
-        "ruthenium": 'recommend_prospecting_planet', "antimony": 'recommend_prospecting_planet', # TODO
+        "tellurium": 'recommend_planet_or_crashed_site', "ruthenium": 'recommend_planet_or_crashed_site', "tungsten": 'recommend_crashed_site',
+        "antimony": 'recommend_planet_or_crashed_site',
         "zirconium": 'recommend_crashed_site', "adaptive encryptors capture": 'recommend_crashed_site',
         "atypical encryption archives": 'recommend_crashed_site', "modified consumer firmware": 'recommend_crashed_site',
         "modified embedded firmware": 'from_hacking',
@@ -428,9 +427,14 @@ class EDRResourceFinder(object):
         return  [
             _(u"Can be found by mining asteroids in planet rings."),
             _(u"More efficient: exchange other materials at a raw material trader, send !raw to find the closest one.")
-        ] 
-
+        ]
     
+    def recommend_planet_or_crashed_site(self, resource, reference_system, callback):
+        if random.random() < 0.5:
+            return self.recommend_crashed_site(resource, reference_system, callback)
+        else:
+            return self.recommend_prospecting_planet(resource, reference_system, callback)
+
     def recommend_prospecting_planet(self, resource, reference_system, callback):
         planets_lut = {
             'tellurium': [ { 'name': 'HIP 36601', 'planet': 'C 3 b', 'gravity': 0.04, 'distanceToArrival': 153683, 'type': 'crystals'}],
