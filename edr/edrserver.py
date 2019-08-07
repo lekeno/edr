@@ -30,6 +30,7 @@ class EDRServer(object):
         self.private_group = None
         self.version = edrconfig.EDRConfig().edr_version()
         self._throttle_until_timestamp = None
+        self.anonymous_reports = True
 
     def login(self, email, password):
         self.REST_firebase.api_key = self.EDR_API_KEY
@@ -218,6 +219,7 @@ class EDRServer(object):
 
     def __post_json(self, endpoint, json_payload):
         params = { "auth" : self.auth_token()}
+        json_payload["anonymous"] = self.anonymous_reports
         endpoint = "{server}{endpoint}.json".format(server=self.EDR_SERVER, endpoint=endpoint)
         EDRLOG.log(u"Post JSON {} to {}".format(json_payload, endpoint), "DEBUG")
         resp = EDRServer.SESSION.post(endpoint, params=params, json=json_payload)

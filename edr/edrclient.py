@@ -82,7 +82,11 @@ class EDRClient(object):
         audio = 1 if config.get("EDRAudioFeedback") == "True" else 0
         self._audio_feedback = tk.IntVar(value=audio)
 
+        anonymous_reports = 0 if config.get("EDRNonAnonymousReports") == "True" else 1
+        self._anonymous_reports = tk.IntVar(value=anonymous_reports)
+
         self.server = edrserver.EDRServer()
+        self.server.anonymous_reports = self.anonymous_reports
         self.inara = edrinara.EDRInara()
         
         self.realtime_params = {
@@ -128,6 +132,7 @@ class EDRClient(object):
         c_visual_alt_feedback = config.get("EDRVisualAltFeedback")
         c_audio_feedback = config.get("EDRAudioFeedback")
         c_audio_volume = config.get("EDRAudioFeedbackVolume")
+        c_non_anonymous_reports = config.get("EDRNonAnonymousReports")
 
         if c_email is None:
             self._email.set("")
@@ -158,6 +163,12 @@ class EDRClient(object):
             self.loud_audio_feedback()
         else:
             self.soft_audio_feedback()
+
+        if c_non_anonymous_reports is None or c_non_anonymous_reports == "False":
+            self.anonymous_report = 1
+        else:
+            self.anonymous_report = 0
+
 
 
     def check_version(self):
@@ -250,6 +261,15 @@ class EDRClient(object):
     @audio_feedback.setter
     def audio_feedback(self, new_value):
         self._audio_feedback.set(new_value)
+
+    @property
+    def anonymous_reports(self):
+        return self._anonymous_reports.get() == 1
+
+    @anonymous_reports.setter
+    def anonymous_reports(self, new_value):
+        self._anonymous_reports.set(new_value)
+        self.server.anonymous_reports = bool(new_value)
 
     def player_name(self, name):
         self.edrcmdrs.set_player_name(name)
@@ -354,7 +374,12 @@ class EDRClient(object):
                              variable=self._audio_feedback).grid(padx=10, row=17, sticky=tk.W)
 
         if self.server.is_authenticated():
-            self.status = _(u"authenticated (guest).") if self.is_anonymous() else _(u"authenticated.")
+            if self.is_anonymous():
+                self.status = _(u"authenticated (guest).")
+            else:
+                self.status = _(u"authenticated.")
+                notebook.Checkbutton(frame, text=_(u"Redact my info in broadcasted reports"),
+                             variable=self._anonymous_reports).grid(padx=10, row=18, sticky=tk.W)
         else:
             self.status = _(u"not authenticated.")
 
@@ -382,8 +407,10 @@ class EDRClient(object):
         config.set("EDRPassword", self.password)
         config.set("EDRVisualFeedback", "True" if self.visual_feedback else "False")
         config.set("EDRAudioFeedback", "True" if self.audio_feedback else "False")
+        config.set("EDRNonAnonymousReports", "False" if self.anonymous_reports else "True")
         EDRLOG.log(u"Audio cues: {}, {}".format(config.get("EDRAudioFeedback"),
                                                 config.get("EDRAudioFeedbackVolume")), "DEBUG")
+        EDRLOG.log(u"Non-anonymous reports: {}".format(config.get("EDRNonAnonymousReports")), "DEBUG")
         self.login()
 
     def noteworthy_about_system(self, fsdjump_event):
@@ -555,21 +582,25 @@ class EDRClient(object):
         synonym_commands = ["priority", "pp", "priorities"]
         supported_commands = set(canonical_commands + synonym_commands)
         if eval_type not in supported_commands:
-            self.__notify(_(u"EDR Evals"), [_(u"Yo dawg, I don't do evals for '{}'. Try {} instead.").format(eval_type, ", ".join(canonical_commands))], clear_before=True)
+            self.__notify(_(u"EDR Evals"), [_(u"Yo dawg, I don't do evals for '{}'").format(eval_type), _(u"Try {} instead.").format(", ".join(canonical_commands))], clear_before=True)
             return
 
-        vehicle = self.player.vehicle
+        vehicle = self.player.mothership
         if not vehicle.modules:
-            self.__notify(_(u"Power Priorities Assessment"), [_(u"Yo dawg, U sure that you got modules on this?")], clear_before=True)
+            self.__notify(_(u"Basic Power Assessment"), [_(u"Yo dawg, U sure that you got modules on this?")], clear_before=True)
+            return
+
+        if vehicle.module_info_timestamp and vehicle.slots_timestamp < vehicle.module_info_timestamp:
+            self.__notify(_(u"Basic Power Assessment"), [_(u"Yo dawg, the info I got from FDev might be stale."), _(u"Try again later after a bunch of random actions."), _(u"Or try this: relog, look at your modules, try again.")], clear_before=True)
             return
         
         build_master = edrxzibit.EDRXzibit(vehicle)
         assessment = build_master.assess_power_priorities()
         if not assessment:
-            self.__notify(_(u"Power Priorities Assessment"), [_(u"Yo dawg, sorry but I can't help with dat.")], clear_before=True)
+            self.__notify(_(u"Basic Power Assessment"), [_(u"Yo dawg, sorry but I can't help with dat.")], clear_before=True)
             return
         formatted_assessment = []
-        grades = ['F', 'E', 'D', 'C', 'B-', 'B', 'B+', 'A-', 'A', 'A+']
+        grades = [u'F', u'E', u'D', u'C', u'B-', u'B', u'B+', u'A-', u'A', u'A+']
         for fraction in sorted(assessment):
             grade = grades[int(assessment[fraction]["grade"]*(len(grades)-1))]
             powered = _(u"⚡: {}").format(assessment[fraction]["annotation"]) if assessment[fraction]["annotation"] else u""
@@ -577,7 +608,7 @@ class EDRClient(object):
             recommendation = _(u"   ⚑: {}").format(assessment[fraction]["recommendation"]) if "recommendation" in assessment[fraction] else u""
             praise = _(u"  ✓: {}").format(assessment[fraction]["praise"]) if "praise" in assessment[fraction] else u""
             formatted_assessment.append(_(u"{}{}").format(recommendation, praise))
-        self.__notify(_(u"Power Priorities Assessment"), formatted_assessment, clear_before=True)
+        self.__notify(_(u"Basic Power Assessment (β; oddities? relog, look at your modules)"), formatted_assessment, clear_before=True)
         
     
     def evict_system(self, star_system):
