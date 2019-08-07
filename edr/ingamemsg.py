@@ -9,17 +9,14 @@ from edri18n import _
 
 EDRLOG = edrlog.EDRLog()
 
-_thisdir = os.path.abspath(os.path.dirname(__file__))
-_overlay_dir = os.path.join(_thisdir, u"EDMCOverlay")
+_overlay_dir = os.path.join(os.path.dirname(__file__).decode('utf-8'), u'EDMCOverlay')
+
 if _overlay_dir not in sys.path:
-    # fails if a user has non asciii characters
-    # EDRLOG.log(u"adding {} to sys.path".format(_overlay_dir), "DEBUG")
     sys.path.append(_overlay_dir)
 
 try:
     import edmcoverlay
 except ImportError:
-    EDRLOG.log(sys.path, "DEBUG")
     raise Exception(str(sys.path))
 
 import lrucache
