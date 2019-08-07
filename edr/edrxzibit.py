@@ -11,19 +11,21 @@ POWER_DATA = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file
 class EDRXzibit(object):
  
     def __init__(self, vehicle):
+        EDRLOG.log(u"Xzibit is checking your ship", "DEBUG")
         self.power_capacity = vehicle.power_capacity
-        
-        self.per_prio = {"1": { "powerdraw": 0, "modules": []}, "2": { "powerdraw": 0, "modules": []}, "3": { "powerdraw": 0, "modules": []}, "4": { "powerdraw": 0, "modules": []}, "5": { "powerdraw": 0, "modules": []}}
+        EDRLOG.log(u" Power cap: {}".format(self.power_capacity), "DEBUG")
+        self.per_prio = {"1": { "modules": []}, "2": { "modules": []}, "3": { "modules": []}, "4": { "modules": []}, "5": { "modules": []}}
         for slot in vehicle.slots:
             ed_module = vehicle.slots[slot]
+            EDRLOG.log(u" {}: {}".format(slot, ed_module), "DEBUG")
             if ed_module.is_valid():
                 prio = str(ed_module.priority)
-                self.per_prio[prio]["powerdraw"] += ed_module.power_draw if ed_module.on else 0
+                EDRLOG.log(u"  added to prio {}".format(prio), "DEBUG")
                 self.per_prio[prio]["modules"].append(ed_module)
 
     def assess_power_priorities(self):
         if not self.power_capacity:
-            print "No power"
+            EDRLOG.log(u"A ship without any power?!", "DEBUG")
             return None
 
         yo_dawg = self._yo_dawg_meme()
@@ -42,25 +44,31 @@ class EDRXzibit(object):
         threshold = self.power_capacity * percent
         within_modules = set()
         within_priorities = []
+        EDRLOG.log(u"Looking at what's functional within {}MW".format(threshold), "DEBUG")
         for pri in sorted(self.per_prio.keys()):
-            power_draw += self.per_prio[pri]["powerdraw"]
+            EDRLOG.log(u" P{} is next. Power draw: {}MW so far".format(pri, power_draw), "DEBUG")
             if power_draw > threshold:
+                EDRLOG.log(u" {} is over the cap {} => aborting".format(power_draw, threshold), "DEBUG")
                 break
             
             tentative_within_modules = set()
             for ed_module in self.per_prio[pri]["modules"]:
                 if not ed_module.on and not ed_module.generic_name() in required:
+                    EDRLOG.log(u" skipping {}".format(ed_module), "DEBUG")
                     continue
                 tentative_within_modules.add(ed_module.generic_name())
-                if not ed_module.on:
-                    power_draw += ed_module.power_draw
+                power_draw += ed_module.power_draw
+                EDRLOG.log(u" adding {}. Power draw so far: {} vs. {}".format(ed_module, power_draw, threshold), "DEBUG")
                 
             if power_draw > threshold:
+                EDRLOG.log(u" {} is over the cap {} => not adding anything from {}".format(power_draw, threshold, tentative_within_modules), "DEBUG")
                 break
             
             within_priorities.append(u"P{}".format(pri))
             within_modules |= tentative_within_modules
 
+        EDRLOG.log(u" within modules: {}".format(within_modules), "DEBUG")
+        EDRLOG.log(u" within priorities: {}".format(within_priorities), "DEBUG")
         return {"modules": within_modules, "priorities": within_priorities}
 
     def _assess_busted_powerplant(self):
@@ -84,26 +92,36 @@ class EDRXzibit(object):
 
         return assessment
 
+
     def _assess_recovered_powerplant(self):
-        required = set(["int_hyperdrive"])
+        required = set(['int_hyperdrive', 'int_engine'])
+        if self._has_shield():
+            required.add('int_shieldgenerator')
         functional = self._functional_at(.5, required)
         assessment = {
             "situation": _(u"Recovered PP (50% after 5s; {0:.2f}MW)").format(self.power_capacity * .5),
             "annotation": u", ".join(functional["priorities"]),
         }
         
+        missing = [EDRXzibit.__readable_name(module) for module in required - functional["modules"]]
         if len(functional["modules"]) == 0:
             assessment["grade"] = 0
-        else:
-            assessment["grade"] = 0.2
+            assessment["recommendation"] = _(u"Keep your {} below the 50% line.").format(', '.join(missing))
+            return assessment
 
-        if 'int_hyperdrive' not in functional["modules"]:
-            assessment["grade"] = 0
-            assessment["recommendation"] = _(u"Keep your FSD below the 50% line.")
+        if not required.issubset(functional["modules"]):
+            present = [EDRXzibit.__readable_name(module) for module in required.intersection(functional["modules"])]
+            if present:
+                assessment["grade"] = 1.0/len(required) * len(present)
+                assessment["recommendation"] = _(u"Keep your {} below the 50% line.").format(', '.join(missing))
+                assessment["praise"] = _(u"Good job with your {}.").format(', '.join(present))
+            else:
+                assessment["grade"] = 0.2
+                assessment["recommendation"] = _(u"Keep your {} below the 50% line.").format(', '.join(missing))
         else:
-            assessment["grade"] = 1.0
-            assessment["praise"] = _(u"Good job on keeping your FSD below the 50% line.")
-
+            assessment["grade"] = 1.0,
+            assessment["praise"] = _(u"Good job on keeping your {} below 50%.").format(', '.join(missing))
+            
         return assessment
     
     def _assess_malfunctioning_powerplant(self):
