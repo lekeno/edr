@@ -14,10 +14,23 @@ class EDModule(object):
         self.on = module.get("On", False)
 
     def update(self, module):
-        self.power_draw = module["Power"] if "Power" in module else self.power_draw
+        prev_power_draw = self.power_draw
+        prev_priority = self.priority
+        prev_cname = self.cname
+        prev_on = self.on
+
+        EDRLOG.log(u"before: {}, {}, {}, {}".format(prev_cname, prev_power_draw, prev_priority, prev_on), "DEBUG")
+
+        self.power_draw = module["Power"] if "Power" in module else EDModule.__get_power_draw(module)
         self.priority = EDModule.__get_priority(module)
         self.cname = module["Item"].lower() if "Item" in module else None
-        self.on = module.get("On", True) #TODO unclear if modulesinfo contains that info in some sort
+        self.on = module.get("On", True)
+
+        updated = prev_power_draw != self.power_draw or prev_priority != self.priority or prev_cname != self.cname or prev_on != self.on
+        if updated:
+            EDRLOG.log(u"after: {}, {}, {}, {}".format(self.cname, self.power_draw, self.priority, self.on), "DEBUG")
+        return updated
+
 
     def is_valid(self):
         return not (self.priority is None or self.power_draw is None or self.cname is None)
@@ -38,6 +51,9 @@ class EDModule(object):
 
     def is_shield(self):
         return self.cname.startswith('int_shieldgenerator')
+
+    def __repr__(self):
+        return str(self.__dict__)
 
     @staticmethod
     def __get_power_draw(module):
@@ -61,6 +77,10 @@ class EDModule(object):
 
     @staticmethod
     def __get_priority(module):
+        if module["Item"].lower().startswith('int_guardian') and 'Priority' not in module:
+            # Since the last patch in April, some?all? the Guardian modules have a fixed priority and are always on...
+            # Both Priority and Powr draw are missing in modulesinfo.json. 
+            return 1
         return module["Priority"] + 1 if "Priority" in module else None
 
     @staticmethod

@@ -4,6 +4,7 @@ import json
 from edtime import EDTime
 import edrconfig
 import edmodule
+import edmodulesinforeader
 import edrlog
 EDRLOG = edrlog.EDRLog()
 
@@ -67,6 +68,8 @@ class EDVehicle(object):
         self.fuel_capacity = None
         self.fuel_level = None
         self.attitude = EDVehicleAttitude()
+        self.module_info_timestamp = None
+        self.slots_timestamp = None
         self.slots = {}
         self.modules = None
         self.power_capacity = None
@@ -174,6 +177,9 @@ class EDVehicle(object):
             return
         self.modules = event['Modules']
         self.slots = {}
+        timestamp = EDTime() 
+        self.slots_timestamp = timestamp.from_journal_timestamp(event['timestamp']) if 'timestamp' in event else timestamp
+        self.module_info_timestamp = self.slots_timestamp # To prevent reading stale data from modulesinfo.json
         for module in self.modules:
             ed_module = edmodule.EDModule(module)
             self.slots[module['Slot']] = ed_module
@@ -182,16 +188,46 @@ class EDVehicle(object):
             health = module['Health'] * 100.0 if 'Health' in module else None 
             self.subsystem_health(module.get('Item', None), health)
 
-    def update_modules(self, modules_info):
-        for module in modules_info:
+    def update_modules(self):
+        reader = edmodulesinforeader.EDModulesInfoReader()
+        modules_info = reader.process()
+        stale = (self.slots_timestamp is None) or (self.module_info_timestamp and (self.slots_timestamp.as_py_epoch() < self.module_info_timestamp.as_py_epoch()))
+        if not stale:
+            EDRLOG.log(u"Modules info: up-to-date", "DEBUG")
+            return True
+
+        if not modules_info or not modules_info.get("Modules", None):
+            EDRLOG.log(u"No info on modules!", "DEBUG")
+            return False
+
+        timestamp = EDTime()
+        timestamp.from_journal_timestamp(modules_info['timestamp'])
+        if self.slots_timestamp and (timestamp.as_py_epoch() < self.slots_timestamp.as_py_epoch() or timestamp.as_py_epoch() < self.module_info_timestamp.as_py_epoch()):
+            EDRLOG.log(u"Stale info in modulesinfo.json: {} vs. {})".format(timestamp, self.slots_timestamp), "DEBUG")
+            return False
+        
+        EDRLOG.log(u"Trying an update of modules: json@{}, slots@{}, panel looked@{}".format(timestamp, self.slots_timestamp, self.module_info_timestamp), "DEBUG")
+        updated = self.slots_timestamp is None
+        EDRLOG.log(u"This will be our first time with actual info", "DEBUG")
+        self.slots_timestamp = timestamp
+        modules = modules_info.get("Modules", [])
+        print modules
+        for module in modules:
+            print module
             slot_name = module.get("Slot", None)
-            print slot_name
             if slot_name in self.slots:
-                print "updating module"
-                self.slots[slot_name].update(module)
+                module_updated = self.slots[slot_name].update(module)
+                if self.slots[slot_name].power_draw > 0:
+                    if module_updated:
+                        EDRLOG.log(u"{} in {}: power_draw: {}, priority: {}".format(self.slots[slot_name].cname, slot_name, self.slots[slot_name].power_draw, self.slots[slot_name].priority), "DEBUG")
+                    updated |= module_updated
             else:
-                print "adding module"
-                self.slots[slot_name] = edmodule.EDModule(module)            
+                the_module = edmodule.EDModule(module)
+                self.slots[slot_name] = the_module
+                if the_module.power_draw > 0 or the_module.power_generation > 0:
+                    EDRLOG.log(u"[New] {} in {}: power_draw: {}, priority: {}".format(self.slots[slot_name].cname, slot_name, self.slots[slot_name].power_draw, self.slots[slot_name].priority), "DEBUG")
+                updated |= the_module.power_draw > 0 or the_module.power_generation > 0
+        return updated
 
     def update_name(self, event):
         other_id = event.get("ShipID", None)
@@ -219,6 +255,8 @@ class EDVehicle(object):
         self._in_danger = {u"value": False, u"timestamp": now}
         self.modules = None
         self.slots = {}
+        self.slots_timestamp = None
+        self.module_info_timestamp = None
     
     def destroy(self):
         now = EDTime.py_epoch_now()
@@ -248,6 +286,13 @@ class EDVehicle(object):
         self.timestamp = now
         self.heat_damaged = {u"value": True, u"timestamp": now}        
 
+    def outfit_probably_changed(self, timestamp=None):
+        edt = EDTime()
+        if timestamp:
+            edt.from_journal_timestamp(timestamp)
+        self.module_info_timestamp = edt
+
+
     def subsystem_health(self, subsystem, health):
         if subsystem is None:
             return
@@ -262,6 +307,7 @@ class EDVehicle(object):
         canonical = EDVehicleFactory.normalize_module_name(subsystem)
         now = EDTime.py_epoch_now()
         self.timestamp = now
+        self.outfit_probably_changed()
         self.subsystems[canonical] = {u"timestamp": now, u"value": None}
     
     def remove_subsystem(self, subsystem):
@@ -274,6 +320,7 @@ class EDVehicle(object):
         self.timestamp = now
         try:
             del self.subsystems[canonical]
+            self.outfit_probably_changed()
         except:
             pass
 

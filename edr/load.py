@@ -10,7 +10,6 @@ from edtime import EDTime
 from edrlog import EDRLog
 import edentities
 import edrautoupdater
-import edmodulesinforeader
 from edri18n import _, _c
 
 EDR_CLIENT = EDRClient()
@@ -814,9 +813,18 @@ def report_crime(cmdr, entry):
         player_one.destroy(victim)
     elif entry["event"] == "CrimeVictim":
         offender = player_one.instanced(entry["Offender"])
-        offender.bounty += entry.get("Bounty", None)
-        offender.fine += entry.get("Fine", None)
+        if "Bounty" in entry:
+            offender.bounty += entry["Bounty"]
+        if "Fine" in entry:
+            offender.fine += entry["Fine"]
         edr_submit_crime([offender], entry["CrimeType"], cmdr, entry["timestamp"])
+    elif entry["event"] == "CommitCrime" and "Victim" in entry:
+        victim = player_one.instanced(entry["Victim"])
+        if "Bounty" in entry:
+            player_one.bounty += entry["Bounty"]
+        if "Fine" in entry:
+            player_one.fine += entry["Fine"]
+        edr_submit_crime_self(player_one, entry["CrimeType"], victim, entry["timestamp"])
 
 
 def report_comms(player, entry):
@@ -1238,7 +1246,10 @@ def handle_bang_commands(cmdr, command, command_parts):
     elif command == "!eval" and len(command_parts) == 2:
         eval_type = command_parts[1]
         EDRLOG.log(u"Eval command for {}".format(eval_type), "INFO")
-        EDR_CLIENT.eval_build(eval_type)
+        if EDR_CLIENT.player.mothership.update_modules():
+            EDR_CLIENT.eval_build(eval_type)
+        else:
+            EDR_CLIENT.notify_with_details(_(u"Loadout information is stale"), [_(u"Congrats, you've found a bug in Elite!"), _(u"The modules info isn't updated right away :("), _(u"Try again after moving around or relog and check your modules.")])
     elif command == "!help":
         EDRLOG.log(u"Help command", "INFO")
         EDR_CLIENT.help("" if len(command_parts) == 1 else command_parts[1])
@@ -1453,6 +1464,5 @@ def handle_fleet_events(entry):
 
 def handle_modules_events(ed_player, entry):
     if entry["event"] == "ModuleInfo":
-        reader = edmodulesinforeader.EDModulesInfoReader()
-        modules = reader.process()
-        ed_player.mothership.update_modules(modules)
+        EDRLOG.log(u"ModuleInfo event", "DEBUG")
+        ed_player.mothership.outfit_probably_changed(entry["timestamp"])

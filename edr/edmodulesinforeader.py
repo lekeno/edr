@@ -15,6 +15,6 @@ class EDModulesInfoReader(object):
                 data = h.read().strip()
                 if data:	# Can be empty if polling while the file is being re-written
                     entry = json.loads(data)
-                    return entry.get("Modules", None)
+                    return entry
         except:
             EDRLOG.log(u"Couldn't process modulesinfo", "WARNING")
