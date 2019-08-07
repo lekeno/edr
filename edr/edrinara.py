@@ -47,7 +47,7 @@ class EDRInara(object):
 
         resp = EDRInara.SESSION.post(self.INARA_ENDPOINT, json=payload)
         if resp.status_code != requests.codes.ok:
-            EDRLOG.log(u"Failed to obtain cmdr profile from Inara. code={code}, content={content}".format(code=resp.status_code, content=resp.content), "ERROR")
+            EDRLOG.log(u"Failed to obtain cmdr profile from Inara. code={code}".format(code=resp.status_code), "ERROR")
             return None
         
         EDRLOG.log(u"Obtained a response from the Inara API.", "INFO")
