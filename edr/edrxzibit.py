@@ -75,7 +75,7 @@ class EDRXzibit(object):
         required = set(["int_hyperdrive"])
         functional = self._functional_at(.2, required)
         assessment = {
-            "situation": _(u"Busted PP (20% for 5s; {0:.2f}MW)").format(self.power_capacity * .2),
+            "situation": _(u"Busted PP (20 pct for 5s; {0:.2f}MW)").format(self.power_capacity * .2),
             "annotation": u", ".join(functional["priorities"]),
         }
 
@@ -85,10 +85,10 @@ class EDRXzibit(object):
             assessment["grade"] = 0.2
 
         if 'int_hyperdrive' not in functional["modules"]:
-            assessment["recommendation"] = _(u"Keep your FSD below the 20% line.")
+            assessment["recommendation"] = _(u"Keep your FSD below the 20 pct line.")
         else:
             assessment["grade"] = 1.0
-            assessment["praise"] = _(u"Good job on keeping your FSD below the 20% line.")
+            assessment["praise"] = _(u"Good job on keeping your FSD below the 20 pct line.")
 
         return assessment
 
@@ -99,28 +99,28 @@ class EDRXzibit(object):
             required.add('int_shieldgenerator')
         functional = self._functional_at(.5, required)
         assessment = {
-            "situation": _(u"Recovered PP (50% after 5s; {0:.2f}MW)").format(self.power_capacity * .5),
+            "situation": _(u"Recovered PP (50 pct after 5s; {0:.2f}MW)").format(self.power_capacity * .5),
             "annotation": u", ".join(functional["priorities"]),
         }
         
         missing = [EDRXzibit.__readable_name(module) for module in required - functional["modules"]]
         if len(functional["modules"]) == 0:
             assessment["grade"] = 0
-            assessment["recommendation"] = _(u"Keep your {} below the 50% line.").format(', '.join(missing))
+            assessment["recommendation"] = _(u"Keep your {} below the 50 pct line.").format(', '.join(missing))
             return assessment
 
         if not required.issubset(functional["modules"]):
             present = [EDRXzibit.__readable_name(module) for module in required.intersection(functional["modules"])]
             if present:
                 assessment["grade"] = 1.0/len(required) * len(present)
-                assessment["recommendation"] = _(u"Keep your {} below the 50% line.").format(', '.join(missing))
+                assessment["recommendation"] = _(u"Keep your {} below the 50 pct line.").format(', '.join(missing))
                 assessment["praise"] = _(u"Good job with your {}.").format(', '.join(present))
             else:
                 assessment["grade"] = 0.2
-                assessment["recommendation"] = _(u"Keep your {} below the 50% line.").format(', '.join(missing))
+                assessment["recommendation"] = _(u"Keep your {} below the 50 pct line.").format(', '.join(missing))
         else:
             assessment["grade"] = 1.0,
-            assessment["praise"] = _(u"Good job on keeping your {} below 50%.").format(', '.join(missing))
+            assessment["praise"] = _(u"Good job on keeping your {} below 50 pct.").format(', '.join(missing))
             
         return assessment
     
@@ -130,28 +130,28 @@ class EDRXzibit(object):
             required.add('int_shieldgenerator')
         functional = self._functional_at(.4, required)
         assessment = {
-            "situation": _(u"Malfunctioning PP (40% for 5s; {0:.2f}MW)").format(self.power_capacity * .4),
+            "situation": _(u"Malfunctioning PP (40 pct for 5s; {0:.2f}MW)").format(self.power_capacity * .4),
             "annotation": u", ".join(functional["priorities"]),
         }
         
         missing = [EDRXzibit.__readable_name(module) for module in required - functional["modules"]]
         if len(functional["modules"]) == 0:
             assessment["grade"] = 0
-            assessment["recommendation"] = _(u"Keep your {} below the 40% line.").format(', '.join(missing))
+            assessment["recommendation"] = _(u"Keep your {} below the 40 pct line.").format(', '.join(missing))
             return assessment
 
         if not required.issubset(functional["modules"]):
             present = [EDRXzibit.__readable_name(module) for module in required.intersection(functional["modules"])]
             if present:
                 assessment["grade"] = 1.0/len(required) * len(present)
-                assessment["recommendation"] = _(u"Keep your {} below the 40% line.").format(', '.join(missing))
+                assessment["recommendation"] = _(u"Keep your {} below the 40 pct line.").format(', '.join(missing))
                 assessment["praise"] = _(u"Good job with your {}.").format(', '.join(present))
             else:
                 assessment["grade"] = 0.2
-                assessment["recommendation"] = _(u"Keep your {} below the 40% line.").format(', '.join(missing))
+                assessment["recommendation"] = _(u"Keep your {} below the 40 pct line.").format(', '.join(missing))
         else:
             assessment["grade"] = 1.0,
-            assessment["praise"] = _(u"Good job on keeping your {} below 40%.").format(', '.join(missing))
+            assessment["praise"] = _(u"Good job on keeping your {} below 40 pct.").format(', '.join(missing))
             
         return assessment
 
