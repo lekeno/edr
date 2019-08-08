@@ -498,7 +498,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         if entry["ScanType"] == "Detailed":
             EDR_CLIENT.noteworthy_about_scan(entry)
 
-    if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PVPKill", "CrimeVictim"]:
+    if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PVPKill", "CrimeVictim", "CommitCrime"]:
         report_crime(ed_player, entry)
 
     if entry["event"] in ["ShipTargeted"]:
@@ -819,12 +819,13 @@ def report_crime(cmdr, entry):
             offender.fine += entry["Fine"]
         edr_submit_crime([offender], entry["CrimeType"], cmdr, entry["timestamp"])
     elif entry["event"] == "CommitCrime" and "Victim" in entry:
-        victim = player_one.instanced(entry["Victim"])
-        if "Bounty" in entry:
-            player_one.bounty += entry["Bounty"]
-        if "Fine" in entry:
-            player_one.fine += entry["Fine"]
-        edr_submit_crime_self(player_one, entry["CrimeType"], victim, entry["timestamp"])
+        if player_one.is_instanced_with(entry["Victim"]):
+            victim = player_one.instanced(entry["Victim"])
+            if "Bounty" in entry:
+                player_one.bounty += entry["Bounty"]
+            if "Fine" in entry:
+                player_one.fine += entry["Fine"]
+            edr_submit_crime_self(player_one, entry["CrimeType"], victim, entry["timestamp"])
 
 
 def report_comms(player, entry):
