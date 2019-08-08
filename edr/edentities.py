@@ -129,7 +129,10 @@ class EDRPowerplay(object):
         return self.pledged_to
 
     def canonicalize(self):
-        return self.pledged_to.lower().replace(" ", "_")
+        if self.pledged_to:
+            return self.pledged_to.lower().replace(" ", "_")
+        else:
+            return ""
 
     def time_pledged(self):
         return edtime.EDTime.py_epoch_now() - self.since
@@ -510,7 +513,10 @@ class EDPlayer(object):
 
     def pledged_to(self, power, time_pledged):
         self._touch()
-        self.powerplay = EDRPowerplay(power, time_pledged)
+        if power is None:
+            self.powerplay = None
+        else:
+            self.powerplay = EDRPowerplay(power, time_pledged)
     
     def pledged_since(self):
         if self.is_independent():
