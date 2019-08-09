@@ -211,9 +211,7 @@ class EDVehicle(object):
         EDRLOG.log(u"This will be our first time with actual info", "DEBUG")
         self.slots_timestamp = timestamp
         modules = modules_info.get("Modules", [])
-        print modules
         for module in modules:
-            print module
             slot_name = module.get("Slot", None)
             if slot_name in self.slots:
                 module_updated = self.slots[slot_name].update(module)
