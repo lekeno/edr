@@ -187,7 +187,7 @@ class EDRServer(object):
 
         params = { "orderBy": '"cname"', "equalTo": json.dumps(cmdr.lower().encode('utf-8')), "limitToFirst": 1, "auth": self.auth_token()}
         endpoint = "{}/v1/cmdrs.json".format(self.EDR_SERVER)
-        EDRLOG.log(u"Endpoint: {} with params={}".format(endpoint, params), "DEBUG")
+        EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = EDRServer.SESSION.get(endpoint, params=params)
 
         if resp.status_code != requests.codes.ok:

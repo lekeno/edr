@@ -86,11 +86,9 @@ class EDRClient(object):
 
         anonymous_reports = _(u"Auto")
         self.server.anonymous_reports = None
-        print "anonymous_report is set to None"
         if config.get("EDRRedactMyInfo") in [_(u"Always"), _(U"Never")]:
             anonymous_reports = config.get("EDRRedactMyInfo")
             self.server.anonymous_reports = anonymous_reports == _(u"Always")
-            print "anonymous_report is set to {}, server {}".format(anonymous_reports, self.server.anonymous_reports)
         self._anonymous_reports = tk.StringVar(value=anonymous_reports)
 
         self.inara = edrinara.EDRInara()
@@ -276,10 +274,8 @@ class EDRClient(object):
         self._anonymous_reports.set(new_value)
         if new_value is None or new_value == _(u"Auto"):
             self.server.anonymous_reports = None
-            print "server anonymous reports set to None"
         elif new_value in [_(u"Always"), _(u"Never")]:
             self.server.anonymous_reports = (new_value == _(u"Always")) 
-            print "server anonymous reports set to {}".format(self.server.anonymous_reports)
 
 
     def player_name(self, name):
@@ -378,7 +374,6 @@ class EDRClient(object):
         ttk.Separator(frame, orient=tk.HORIZONTAL).grid(columnspan=2, padx=10, pady=2, sticky=tk.EW)
         notebook.Label(frame, text=_("Redact my info")).grid(padx=10, row = 16, sticky=tk.W)
         choices = { _(u'Auto'),_(u'Always'),_(u'Never')}
-        print "UI: anonymous_report var:{}, value {}".format(self._anonymous_reports, self.anonymous_reports)
         popupMenu = notebook.OptionMenu(frame, self._anonymous_reports, self.anonymous_reports, *choices)
         popupMenu.grid(padx=10, row=16, column=1, sticky=tk.EW)
         popupMenu["menu"].configure(background="white", foreground="black")
@@ -426,7 +421,6 @@ class EDRClient(object):
         config.set("EDRPassword", self.password)
         config.set("EDRVisualFeedback", "True" if self.visual_feedback else "False")
         config.set("EDRAudioFeedback", "True" if self.audio_feedback else "False")
-        print "pref changed: anonymous_reports: {}".format(self.anonymous_reports)
         config.set("EDRRedactMyInfo", self.anonymous_reports)
         EDRLOG.log(u"Audio cues: {}, {}".format(config.get("EDRAudioFeedback"),
                                                 config.get("EDRAudioFeedbackVolume")), "DEBUG")
