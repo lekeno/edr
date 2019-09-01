@@ -263,7 +263,7 @@ def handle_change_events(ed_player, entry):
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
     return outcome
 
-def handle_lifecycle_events(ed_player, entry, state):
+def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
     if entry["event"] == "Music":
         if entry["MusicTrack"] == "MainMenu" and not ed_player.is_crew_member():
             # Checking for 'is_crew_member' because "MainMenu" shows up when joining a multicrew session
@@ -304,7 +304,7 @@ def handle_lifecycle_events(ed_player, entry, state):
 
     if entry["event"] in ["Fileheader"] and entry["part"] == 1:
         EDR_CLIENT.clear()
-        ed_player.inception()
+        ed_player.inception(genesis=True)
         EDR_CLIENT.status = _(u"initialized.")
         EDRLOG.log(u"Journal player got created: accurate picture of friends/wings.",
                    "DEBUG")
@@ -314,7 +314,10 @@ def handle_lifecycle_events(ed_player, entry, state):
         if ed_player.inventory.stale_or_incorrect():
             ed_player.inventory.initialize_with_edmc(state)
         EDR_CLIENT.clear()
-        ed_player.inception()
+        ed_player.inception(genesis=from_genesis)
+        if from_genesis:
+            EDRLOG.log(u"Heuristics genesis: probably accurate picture of friends/wings.",
+                   "DEBUG")
         EDR_CLIENT.game_mode(entry["GameMode"], entry.get("Group", None))
         ed_player.update_vehicle_if_obsolete(EDVehicleFactory.from_load_game_event(entry), piloted=True)
         EDRLOG.log(u"Game mode is {}".format(entry["GameMode"]), "DEBUG")
@@ -418,15 +421,22 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     EDR_CLIENT.player_name(cmdr)
     ed_player = EDR_CLIENT.player
     ed_player.friends = state["Friends"]
-
+        
     if not prerequisites(EDR_CLIENT, is_beta):
         return
 
     if entry["event"] in ["Shutdown", "ShutDown", "Music", "Resurrect", "Fileheader", "LoadGame", "Loadout"]:
-        handle_lifecycle_events(ed_player, entry, state)
+        from_genesis = False
+        if "first_run" not in journal_entry.__dict__:
+            journal_entry.first_run = False
+            from_genesis = (entry["event"] == "LoadGame") and (cmdr and system is None and station is None)
+        handle_lifecycle_events(ed_player, entry, state, from_genesis)
 
     if entry["event"] in ["SetUserShipName", "SellShipOnRebuy", "ShipyardBuy", "ShipyardNew", "ShipyardSell", "ShipyardTransfer", "ShipyardSwap"]:
         handle_fleet_events(entry)
+
+    if entry["event"] in ["ModuleInfo"]:
+        handle_modules_events(ed_player, entry)
     
     if entry["event"].startswith("Powerplay"):
         EDRLOG.log(u"Powerplay event: {}".format(entry), "INFO")
@@ -488,7 +498,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         if entry["ScanType"] == "Detailed":
             EDR_CLIENT.noteworthy_about_scan(entry)
 
-    if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PVPKill"]:
+    if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PVPKill", "CrimeVictim", "CommitCrime"]:
         report_crime(ed_player, entry)
 
     if entry["event"] in ["ShipTargeted"]:
@@ -584,7 +594,7 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
         EDRLOG.log(u"Appending criminal {} with ship {}".format(criminal_cmdr.name,
                                                                 criminal_cmdr.vehicle_type()),
                    "DEBUG")
-        criminals.append({"name": criminal_cmdr.name, "ship": criminal_cmdr.vehicle_type()})
+        criminals.append({"name": criminal_cmdr.name, "ship": criminal_cmdr.vehicle_type(), "bounty": criminal_cmdr.bounty, "fine": criminal_cmdr.fine})
 
     edt = EDTime()
     edt.from_journal_timestamp(timestamp)
@@ -593,7 +603,7 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
         "place": victim.place,
         "timestamp": edt.as_js_epoch(),
         "criminals": criminals,
-        "offence": offence,
+        "offence": offence.capitalize(),
         "victim": victim.name,
         "victimShip": victim.vehicle_type(),
         "reportedBy": victim.name,
@@ -630,7 +640,7 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim, timestamp):
             {"name": criminal_cmdr.name,
              "ship" : criminal_cmdr.vehicle_type(),
             }],
-        "offence": offence,
+        "offence": offence.capitalize(),
         "victim": victim.name,
         "victimShip": victim.vehicle_type(),
         "reportedBy": criminal_cmdr.name,
@@ -777,8 +787,7 @@ def report_crime(cmdr, entry):
             interdictor = player_one.instanced(entry["Interdictor"])
             player_one.interdicted(interdictor, entry["event"] == "Interdicted")
             edr_submit_crime([interdictor], entry["event"], cmdr, entry["timestamp"])
-
-    if entry["event"] == "Died":
+    elif entry["event"] == "Died":
         if "Killers" in entry:
             criminal_cmdrs = []
             for killer in entry["Killers"]:
@@ -790,20 +799,33 @@ def report_crime(cmdr, entry):
             criminal_cmdr = player_one.instanced(entry["KillerName"][5:], entry["KillerShip"])
             edr_submit_crime([criminal_cmdr], "Murder", cmdr, entry["timestamp"])
         player_one.killed()
-
-    if entry["event"] == "Interdiction":
+    elif entry["event"] == "Interdiction":
         if entry["IsPlayer"]:
             offence = "Interdiction" if entry["Success"] else "Failed interdiction"
             interdicted = player_one.instanced(entry["Interdicted"])
             player_one.interdiction(interdicted, entry["Success"])
             edr_submit_crime_self(cmdr, offence, interdicted, entry["timestamp"])
-
-    if entry["event"] == "PVPKill":
+    elif entry["event"] == "PVPKill":
         EDRLOG.log(u"PVPKill!", "INFO")
         victim = player_one.instanced(entry["Victim"])
         victim.killed()
         edr_submit_crime_self(cmdr, "Murder", victim, entry["timestamp"])
         player_one.destroy(victim)
+    elif entry["event"] == "CrimeVictim":
+        offender = player_one.instanced(entry["Offender"])
+        if "Bounty" in entry:
+            offender.bounty += entry["Bounty"]
+        if "Fine" in entry:
+            offender.fine += entry["Fine"]
+        edr_submit_crime([offender], entry["CrimeType"], cmdr, entry["timestamp"])
+    elif entry["event"] == "CommitCrime" and "Victim" in entry:
+        if player_one.is_instanced_with(entry["Victim"]):
+            victim = player_one.instanced(entry["Victim"])
+            if "Bounty" in entry:
+                player_one.bounty += entry["Bounty"]
+            if "Fine" in entry:
+                player_one.fine += entry["Fine"]
+            edr_submit_crime_self(player_one, entry["CrimeType"], victim, entry["timestamp"])
 
 
 def report_comms(player, entry):
@@ -829,11 +851,15 @@ def report_comms(player, entry):
                 EDRLOG.log(u"Text from {} friend / wing. Can't infer location".format(from_cmdr),
                            "INFO")
             else:
-                EDRLOG.log(u"Text from {} (not friend/wing) == same location".format(from_cmdr),
-                           "INFO")
-                contact = player.instanced(from_cmdr)
-                edr_submit_contact(contact, entry["timestamp"],
-                                   "Received text (non wing/friend player)", player)
+                if player.from_genesis:
+                    EDRLOG.log(u"Text from {} (not friend/wing) == same location".format(from_cmdr),
+                            "INFO")
+                    contact = player.instanced(from_cmdr)
+                    edr_submit_contact(contact, entry["timestamp"],
+                                    "Received text (non wing/friend player)", player)
+                else:
+                    EDRLOG.log(u"Received text from {}. Player not created from game start => can't infer location".format(from_cmdr),
+                        "INFO")
         elif entry["Channel"] in ["starsystem"]:
             from_cmdr = entry["From"]
             if entry["From"].startswith("$cmdr_decorate:#name="):
@@ -842,6 +868,7 @@ def report_comms(player, entry):
             contact = EDPlayer(from_cmdr)
             contact.location = player.location
             contact.place = "Unknown"
+            # TODO add blip to systemwideinstance ?
             edr_submit_contact(contact, entry["timestamp"],
                                 "Received text (starsystem channel)", player)
     elif entry["event"] == "SendText" and not entry["To"] in ["local", "wing", "starsystem", "squadron", "squadleaders"]:
@@ -851,11 +878,15 @@ def report_comms(player, entry):
         if player.is_friend(to_cmdr) or player.is_wingmate(to_cmdr):
             EDRLOG.log(u"Sent text to {} friend/wing: can't infer location".format(to_cmdr), "INFO")            
         else:
-            EDRLOG.log(u"Sent text to {} (not friend/wing) == same location".format(to_cmdr),
-                       "INFO")
-            contact = player.instanced(to_cmdr)
-            edr_submit_contact(contact, entry["timestamp"], "Sent text (non wing/friend player)",
-                               player)
+            if player.from_genesis:
+                EDRLOG.log(u"Sent text to {} (not friend/wing) == same location".format(to_cmdr),
+                        "INFO")
+                contact = player.instanced(to_cmdr)
+                edr_submit_contact(contact, entry["timestamp"], "Sent text (non wing/friend player)",
+                                player)
+            else:
+                EDRLOG.log(u"Sent text to {}. Player not created from game start => can't infer location".format(to_cmdr),
+                        "INFO")
 
     # Not The Perfect URL regexp but that should be good enough
     m = re.match(r".*(https?://[0-9a-z.\-]*\.[0-9a-z\-]*) ?.*", entry["Message"], flags=re.IGNORECASE)
@@ -1213,6 +1244,13 @@ def handle_bang_commands(cmdr, command, command_parts):
         name_or_type = command_parts[1]
         EDRLOG.log(u"Ship search command for {}".format(name_or_type), "INFO")
         EDR_CLIENT.where_ship(name_or_type)
+    elif command == "!eval" and len(command_parts) == 2:
+        eval_type = command_parts[1]
+        EDRLOG.log(u"Eval command for {}".format(eval_type), "INFO")
+        if EDR_CLIENT.player.mothership.update_modules():
+            EDR_CLIENT.eval_build(eval_type)
+        else:
+            EDR_CLIENT.notify_with_details(_(u"Loadout information is stale"), [_(u"Congrats, you've found a bug in Elite!"), _(u"The modules info isn't updated right away :("), _(u"Try again after moving around or relog and check your modules.")])
     elif command == "!help":
         EDRLOG.log(u"Help command", "INFO")
         EDR_CLIENT.help("" if len(command_parts) == 1 else command_parts[1])
@@ -1425,3 +1463,7 @@ def handle_fleet_events(entry):
         ed_player.fleet.swap(entry, ed_player.star_system, LAST_KNOWN_SHIP_NAME)
         LAST_KNOWN_SHIP_NAME = ed_player.mothership.name
 
+def handle_modules_events(ed_player, entry):
+    if entry["event"] == "ModuleInfo":
+        EDRLOG.log(u"ModuleInfo event", "DEBUG")
+        ed_player.mothership.outfit_probably_changed(entry["timestamp"])

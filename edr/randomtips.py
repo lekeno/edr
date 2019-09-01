@@ -107,7 +107,8 @@ DEFAULT_TIPS = {
         _(u"Send '!nav off' to clear the navigation data."),
         _(u"Send '!nav set' to mark your current location as your navigation target."),
         _(u"Send '!ship fdl' to find out where you've parked your Fer-de-Lance."),
-        _(u"Send '!ship In Front Of Things' to find out where you've parked your ship named 'In Front of Things'.")
+        _(u"Send '!ship In Front Of Things' to find out where you've parked your ship named 'In Front of Things'."),
+        _(u"Send '!eval power' to get an assessment of your power priorities.")
     ],
     "OPEN tips": [
         _(u"Never fly what you can't afford to lose. Check your rebuy and credit balance on your right panel."),

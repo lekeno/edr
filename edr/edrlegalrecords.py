@@ -10,7 +10,7 @@ import edrserver
 import edrlog
 import edtime
 from collections import deque
-from edentities import EDBounty
+from edentities import EDFineOrBounty
 from edri18n import _, _c
 
 EDRLOG = edrlog.EDRLog()
@@ -59,8 +59,8 @@ class EDRLegalRecords(object):
         timespan = edtime.EDTime.pretty_print_timespan(self.timespan, short=True, verbose=True)
         if bounties["max"] or bounties["last"]["value"]:
             tminus = edtime.EDTime.t_minus(bounties["last"]["timestamp"], short=True)
-            max_bounty = EDBounty(bounties["max"]).pretty_print()
-            last_bounty = EDBounty(bounties["last"]["value"]).pretty_print()
+            max_bounty = EDFineOrBounty(bounties["max"]).pretty_print()
+            last_bounty = EDFineOrBounty(bounties["last"]["value"]).pretty_print()
             # Translators: this is a summary of a cmdr's recent legal history for the 'last {}' days, number of clean and wanted scans, max and last bounties
             summary = _(u"[Last {}] clean:{} / wanted:{} max={} cr, {} cr in {} {}").format(timespan, counters["clean"], counters["wanted"], max_bounty, last_bounty, bounties["last"]["starSystem"], tminus)
         else:

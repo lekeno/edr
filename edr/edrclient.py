@@ -26,6 +26,8 @@ import randomtips
 import helpcontent
 import edtime
 import edrlegalrecords
+import edrxzibit
+
 from edri18n import _, _c, _edr, set_language
 import random
 import math
@@ -81,6 +83,14 @@ class EDRClient(object):
         self._audio_feedback = tk.IntVar(value=audio)
 
         self.server = edrserver.EDRServer()
+
+        anonymous_reports = _(u"Auto")
+        self.server.anonymous_reports = None
+        if config.get("EDRRedactMyInfo") in [_(u"Always"), _(U"Never")]:
+            anonymous_reports = config.get("EDRRedactMyInfo")
+            self.server.anonymous_reports = anonymous_reports == _(u"Always")
+        self._anonymous_reports = tk.StringVar(value=anonymous_reports)
+
         self.inara = edrinara.EDRInara()
         
         self.realtime_params = {
@@ -126,6 +136,7 @@ class EDRClient(object):
         c_visual_alt_feedback = config.get("EDRVisualAltFeedback")
         c_audio_feedback = config.get("EDRAudioFeedback")
         c_audio_volume = config.get("EDRAudioFeedbackVolume")
+        c_redact_my_info = config.get("EDRRedactMyInfo")
 
         if c_email is None:
             self._email.set("")
@@ -156,6 +167,11 @@ class EDRClient(object):
             self.loud_audio_feedback()
         else:
             self.soft_audio_feedback()
+
+        if c_redact_my_info is None:
+            self.anonymous_reports = _(u"Auto")
+        elif c_redact_my_info in [_(u"Always"), _(u"Never")]:
+            self.anonymous_reports = c_redact_my_info
 
 
     def check_version(self):
@@ -249,6 +265,19 @@ class EDRClient(object):
     def audio_feedback(self, new_value):
         self._audio_feedback.set(new_value)
 
+    @property
+    def anonymous_reports(self):
+        return self._anonymous_reports.get()
+
+    @anonymous_reports.setter
+    def anonymous_reports(self, new_value):
+        self._anonymous_reports.set(new_value)
+        if new_value is None or new_value == _(u"Auto"):
+            self.server.anonymous_reports = None
+        elif new_value in [_(u"Always"), _(u"Never")]:
+            self.server.anonymous_reports = (new_value == _(u"Always")) 
+
+
     def player_name(self, name):
         self.edrcmdrs.set_player_name(name)
         self.server.set_player_name(name)
@@ -341,20 +370,32 @@ class EDRClient(object):
         notebook.Entry(frame, textvariable=self._password,
                        show=u'*').grid(padx=10, row=12, column=1, sticky=tk.EW)
 
+        notebook.Label(frame, text=_(u'Sitrep Broadcasts')).grid(padx=10, row=14, sticky=tk.W)
+        ttk.Separator(frame, orient=tk.HORIZONTAL).grid(columnspan=2, padx=10, pady=2, sticky=tk.EW)
+        notebook.Label(frame, text=_("Redact my info")).grid(padx=10, row = 16, sticky=tk.W)
+        choices = { _(u'Auto'),_(u'Always'),_(u'Never')}
+        popupMenu = notebook.OptionMenu(frame, self._anonymous_reports, self.anonymous_reports, *choices)
+        popupMenu.grid(padx=10, row=16, column=1, sticky=tk.EW)
+        popupMenu["menu"].configure(background="white", foreground="black")
+
+        if self.server.is_authenticated():
+            if self.is_anonymous():
+                self.status = _(u"authenticated (guest).")
+            else:
+                self.status = _(u"authenticated.")
+        else:
+            self.status = _(u"not authenticated.")
+
         # Translators: this is shown in the preferences panel as a heading for feedback options (e.g. overlay, audio cues)
-        notebook.Label(frame, text=_(u"EDR Feedback:")).grid(padx=10, row=14, sticky=tk.W)
+        notebook.Label(frame, text=_(u"EDR Feedback:")).grid(padx=10, row=17, sticky=tk.W)
         ttk.Separator(frame, orient=tk.HORIZONTAL).grid(columnspan=2, padx=10, pady=2, sticky=tk.EW)
         
         notebook.Checkbutton(frame, text=_(u"Overlay"),
-                             variable=self._visual_feedback).grid(padx=10, row=16,
+                             variable=self._visual_feedback).grid(padx=10, row=19,
                                                                   sticky=tk.W)
         notebook.Checkbutton(frame, text=_(u"Sound"),
-                             variable=self._audio_feedback).grid(padx=10, row=17, sticky=tk.W)
+                             variable=self._audio_feedback).grid(padx=10, row=20, sticky=tk.W)
 
-        if self.server.is_authenticated():
-            self.status = _(u"authenticated (guest).") if self.is_anonymous() else _(u"authenticated.")
-        else:
-            self.status = _(u"not authenticated.")
 
         return frame
 
@@ -380,8 +421,10 @@ class EDRClient(object):
         config.set("EDRPassword", self.password)
         config.set("EDRVisualFeedback", "True" if self.visual_feedback else "False")
         config.set("EDRAudioFeedback", "True" if self.audio_feedback else "False")
+        config.set("EDRRedactMyInfo", self.anonymous_reports)
         EDRLOG.log(u"Audio cues: {}, {}".format(config.get("EDRAudioFeedback"),
                                                 config.get("EDRAudioFeedbackVolume")), "DEBUG")
+        EDRLOG.log(u"Anonymous reports: {}".format(config.get("EDRRedactMyInfo")), "DEBUG")
         self.login()
 
     def noteworthy_about_system(self, fsdjump_event):
@@ -548,6 +591,40 @@ class EDRClient(object):
             self.__commsjammed()
             return None
 
+    def eval_build(self, eval_type):
+        canonical_commands = ["power"]
+        synonym_commands = ["priority", "pp", "priorities"]
+        supported_commands = set(canonical_commands + synonym_commands)
+        if eval_type not in supported_commands:
+            self.__notify(_(u"EDR Evals"), [_(u"Yo dawg, I don't do evals for '{}'").format(eval_type), _(u"Try {} instead.").format(", ".join(canonical_commands))], clear_before=True)
+            return
+
+        vehicle = self.player.mothership
+        if not vehicle.modules:
+            self.__notify(_(u"Basic Power Assessment"), [_(u"Yo dawg, U sure that you got modules on this?")], clear_before=True)
+            return
+
+        if vehicle.module_info_timestamp and vehicle.slots_timestamp < vehicle.module_info_timestamp:
+            self.__notify(_(u"Basic Power Assessment"), [_(u"Yo dawg, the info I got from FDev might be stale."), _(u"Try again later after a bunch of random actions."), _(u"Or try this: relog, look at your modules, try again.")], clear_before=True)
+            return
+        
+        build_master = edrxzibit.EDRXzibit(vehicle)
+        assessment = build_master.assess_power_priorities()
+        if not assessment:
+            self.__notify(_(u"Basic Power Assessment"), [_(u"Yo dawg, sorry but I can't help with dat.")], clear_before=True)
+            return
+        formatted_assessment = []
+        grades = [u'F', u'E', u'D', u'C', u'B-', u'B', u'B+', u'A-', u'A', u'A+']
+        for fraction in sorted(assessment):
+            grade = grades[int(assessment[fraction]["grade"]*(len(grades)-1))]
+            powered = _(u"⚡: {}").format(assessment[fraction]["annotation"]) if assessment[fraction]["annotation"] else u""
+            formatted_assessment.append(_(u"{}: {}\t{}").format(grade, assessment[fraction]["situation"], powered))
+            recommendation = _(u"   ⚑: {}").format(assessment[fraction]["recommendation"]) if "recommendation" in assessment[fraction] else u""
+            praise = _(u"  ✓: {}").format(assessment[fraction]["praise"]) if "praise" in assessment[fraction] else u""
+            formatted_assessment.append(_(u"{}{}").format(recommendation, praise))
+        self.__notify(_(u"Basic Power Assessment (β; oddities? relog, look at your modules)"), formatted_assessment, clear_before=True)
+        
+    
     def evict_system(self, star_system):
         self.edrsystems.evict(star_system)
 
@@ -720,7 +797,7 @@ class EDRClient(object):
         if min_bounty:
             try:
                 new_value = int(min_bounty)
-                self.notify_with_details(_(u"EDR Alerts"), [_(u"minimum bounty set to {min_bounty} cr for {kind}").format(min_bounty=edentities.EDBounty(new_value).pretty_print(), kind=_(kind))])
+                self.notify_with_details(_(u"EDR Alerts"), [_(u"minimum bounty set to {min_bounty} cr for {kind}").format(min_bounty=edentities.EDFineOrBounty(new_value).pretty_print(), kind=_(kind))])
             except ValueError:
                 self.notify_with_details(_(u"EDR Alerts"), [_(u"invalid value for minimum bounty")])
                 new_value = None
@@ -816,7 +893,7 @@ class EDRClient(object):
                 oneliner += _(u" [{distance:.3g} ly]").format(distance=distance) if distance < 50.0 else _(u" [{distance} ly]").format(distance=int(distance))
             if event.get("wanted", None):
                 if event["bounty"] > 0:
-                    oneliner += _(u" wanted for {bounty} cr").format(bounty=edentities.EDBounty(event["bounty"]).pretty_print())
+                    oneliner += _(u" wanted for {bounty} cr").format(bounty=edentities.EDFineOrBounty(event["bounty"]).pretty_print())
                 else:
                     oneliner += _(u" wanted somewhere")
             
@@ -834,12 +911,12 @@ class EDRClient(object):
                 EDRLOG.log(u"Who {} : {}".format(cmdr_name, profile.short_profile(self.player.powerplay)), "INFO")
                 legal = self.edrlegal.summarize_recents(profile.cid)
                 if legal:
-                    self.__intel(cmdr_name, [profile.short_profile(self.player.powerplay), legal])
+                    self.__intel(cmdr_name, [profile.short_profile(self.player.powerplay), legal], clear_before=True)
                 else:
-                    self.__intel(cmdr_name, [profile.short_profile(self.player.powerplay)])
+                    self.__intel(cmdr_name, [profile.short_profile(self.player.powerplay)], clear_before=True)
             else:
                 EDRLOG.log(u"Who {} : no info".format(cmdr_name), "INFO")
-                self.__intel(cmdr_name, [_("No info about {cmdr}").format(cmdr=cmdr_name)])
+                self.__intel(cmdr_name, [_("No info about {cmdr}").format(cmdr=cmdr_name)], clear_before=True)
         except edrserver.CommsJammedError:
             self.__commsjammed()    
 
@@ -882,7 +959,7 @@ class EDRClient(object):
         if profile and (self.player.name != cmdr_name) and profile.is_dangerous(self.player.powerplay):
             self.status = _(u"{} is bad news.").format(cmdr_name)
             if self.novel_enough_blip(cmdr_id, blip, cognitive = True):
-                self.__warning(_(u"Warning!"), [profile.short_profile(self.player.powerplay)])
+                self.__warning(_(u"Warning!"), [profile.short_profile(self.player.powerplay)], clear_before=True)
                 self.cognitive_blips_cache.set(cmdr_id, blip)
                 if self.player.in_open() and self.is_anonymous() and profile.is_dangerous(self.player.powerplay):
                     self.advertise_full_account(_("You could have helped other EDR users by reporting this outlaw."))
@@ -923,7 +1000,7 @@ class EDRClient(object):
         if self.novel_enough_scan(cmdr_id, scan, cognitive = True):
             profile = self.cmdr(cmdr_name, check_inara_server=True)
             legal = self.edrlegal.summarize_recents(profile.cid)
-            bounty = edentities.EDBounty(scan["bounty"]) if scan["bounty"] else None
+            bounty = edentities.EDFineOrBounty(scan["bounty"]) if scan["bounty"] else None
             if profile and (self.player.name != cmdr_name):
                 if profile.is_dangerous(self.player.powerplay):
                     # Translators: this is shown via EDMC's EDR status line upon contact with a known outlaw
@@ -933,24 +1010,24 @@ class EDRClient(object):
                     if scan["enemy"]:
                         status += _(u"PP Enemy (weapons free). ")
                     if scan["bounty"]:
-                        status += _(u"Wanted for {} cr").format(edentities.EDBounty(scan["bounty"]).pretty_print())
+                        status += _(u"Wanted for {} cr").format(edentities.EDFineOrBounty(scan["bounty"]).pretty_print())
                     elif scan["wanted"]:
                         status += _(u"Wanted somewhere. A Kill-Warrant-Scan will reveal their highest bounty.")
                     if status:
                         details.append(status)
                     if legal:
                         details.append(legal)
-                    self.__warning(_(u"Warning!"), details)
+                    self.__warning(_(u"Warning!"), details, clear_before=True)
                 elif self.intel_even_if_clean or (scan["wanted"] and bounty.is_significant()):
                     self.status = _(u"Intel for cmdr {}.").format(cmdr_name)
                     details = [profile.short_profile(self.player.powerplay)]
                     if bounty:
-                        details.append(_(u"Wanted for {} cr").format(edentities.EDBounty(scan["bounty"]).pretty_print()))
+                        details.append(_(u"Wanted for {} cr").format(edentities.EDFineOrBounty(scan["bounty"]).pretty_print()))
                     elif scan["wanted"]:
                         details.append(_(u"Wanted somewhere but it could be minor offenses."))
                     if legal:
                         details.append(legal)
-                    self.__intel(_(u"Intel"), details)
+                    self.__intel(_(u"Intel"), details, clear_before=True)
                 if not self.player.in_solo() and (self.is_anonymous() and (profile.is_dangerous(self.player.powerplay) or (scan["wanted"] and bounty.is_significant()))):
                     # Translators: this is shown to users who don't yet have an EDR account
                     self.advertise_full_account(_(u"You could have helped other EDR users by reporting this outlaw."))
@@ -1254,12 +1331,12 @@ class EDRClient(object):
             if report:
                 self.status = _(u"got info about {}").format(cmdr_name)
                 header = _(u"Intel for {}") if self.player.in_open() else _(u"Intel for {} (Open)")
-                self.__intel(header.format(cmdr_name), report["readable"])
+                self.__intel(header.format(cmdr_name), report["readable"], clear_before=True)
             else:
                 EDRLOG.log(u"Where {} : no info".format(cmdr_name), "INFO")
                 self.status = _(u"no info about {}").format(cmdr_name)
                 header = _(u"Intel for {}") if self.player.in_open() else _(u"Intel for {} (Open)")
-                self.__intel(header.format(cmdr_name), [_(u"Not recently sighted or not an outlaw.")])
+                self.__intel(header.format(cmdr_name), [_(u"Not recently sighted or not an outlaw.")], clear_before=True)
         except edrserver.CommsJammedError:
             self.__commsjammed()
 

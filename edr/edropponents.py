@@ -13,7 +13,7 @@ import edrserver
 import edrrealtime
 import edrlog
 import edtime
-from edentities import EDBounty
+from edentities import EDFineOrBounty
 from edri18n import _, _c
 
 EDRLOG = edrlog.EDRLog()
@@ -131,7 +131,7 @@ class EDROpponents(object):
             cmdr = (sighting["cmdr"][:29] + u'…') if len(sighting["cmdr"]) > 30 else sighting["cmdr"]
             starSystem = (sighting["starSystem"][:50] + u'…') if len(sighting["starSystem"]) > 50 else sighting["starSystem"]    
             if sighting.get("bounty", None) > 0:
-                neat_bounty = EDBounty(sighting["bounty"]).pretty_print()
+                neat_bounty = EDFineOrBounty(sighting["bounty"]).pretty_print()
                 # Translators: this is a one-liner for the recently sighted opponents; Keep it short! T{t:<2} is to show how long ago e.g. T-4H (4 hours ago) 
                 return _(u"T{t:<2}: {name} in {system}, wanted for {bounty}").format(t=t_minus, name=cmdr, system=starSystem, bounty=neat_bounty)
             else:
@@ -153,7 +153,7 @@ class EDROpponents(object):
             # Translators: this is for the recently sighted outlaw feature; it shows which ship they were flying at the time
             readable.append(_(u"Spaceship: {}").format(sighting["ship"]))
         if sighting.get("bounty", None) > 0:
-            neat_bounty = EDBounty(sighting["bounty"]).pretty_print()
+            neat_bounty = EDFineOrBounty(sighting["bounty"]).pretty_print()
             # Translators: this is for the recently sighted outlaw feature; it shows their bounty if any
             readable.append(_(u"Wanted for {} credits").format(neat_bounty))
         return readable

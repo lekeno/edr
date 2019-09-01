@@ -115,7 +115,7 @@ class EDRRawTraderCheck(EDRMaterialTraderBasicCheck):
         return info['economy'].lower() in ['extraction', 'refinery']
 
     def is_service_availability_ambiguous(self, station):
-        if not station or station.get("secondEconomy", None):
+        if not station or not station.get("secondEconomy", None):
             return False
         return station["secondEconomy"].lower() in ['industrial', 'high tech', 'military']
 

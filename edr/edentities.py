@@ -129,7 +129,10 @@ class EDRPowerplay(object):
         return self.pledged_to
 
     def canonicalize(self):
-        return self.pledged_to.lower().replace(" ", "_")
+        if self.pledged_to:
+            return self.pledged_to.lower().replace(" ", "_")
+        else:
+            return ""
 
     def time_pledged(self):
         return edtime.EDTime.py_epoch_now() - self.since
@@ -143,7 +146,7 @@ class EDRPowerplay(object):
         #TODO return true if enough time has passed (parameterize)
 
 
-class EDBounty(object):
+class EDFineOrBounty(object):
     def __init__(self, value):
         self.value = value
         config = edrconfig.EDRConfig()
@@ -154,7 +157,11 @@ class EDBounty(object):
 
     def __repr__(self):
         return str(self.__dict__)
-   
+
+
+    def __iadd__(self, other):
+        self.value += other
+        return self 
 
     def pretty_print(self):
         readable = ""
@@ -293,6 +300,8 @@ class EDPlayer(object):
         self.wanted = False
         self.enemy = False
         self._bounty = None
+        self._fine = None
+        self.targeted = False
         self.timestamp = now
 
     def __repr__(self):
@@ -313,6 +322,8 @@ class EDPlayer(object):
         self.destroyed = True
         self.wanted = False
         self._bounty = None
+        self._fine = None
+        self.targeted = False
         if self.mothership:
             self.mothership.destroy()
         if self.srv:
@@ -433,6 +444,7 @@ class EDPlayer(object):
         self._touch()
         self.location.space_dimension = EDSpaceDimension.NORMAL_SPACE
         self.mothership.safe()
+        self.targeted = False
         if self.slf:
             self.slf.safe()
         if self.srv:
@@ -442,6 +454,7 @@ class EDPlayer(object):
         self._touch()
         self.location.space_dimension = EDSpaceDimension.SUPER_SPACE
         self.mothership.safe()
+        self.targeted = False
         if self.slf:
             self.slf.safe()
         if self.srv:
@@ -452,6 +465,7 @@ class EDPlayer(object):
         self.location.space_dimension = EDSpaceDimension.HYPER_SPACE
         self.planetary_destination = None # leaving the system, so no point in keep a planetary destination
         self.mothership.safe()
+        self.targeted = False
         if self.slf:
             self.slf.safe()
         if self.srv:
@@ -467,9 +481,23 @@ class EDPlayer(object):
     def bounty(self, credits):
         self._touch()
         if credits:
-            self._bounty = EDBounty(credits)
+            self._bounty = EDFineOrBounty(credits)
         else:
             self._bounty = None
+
+    @property
+    def fine(self):
+        if self._fine:
+            return self._fine.value
+        return 0
+
+    @fine.setter
+    def fine(self, credits):
+        self._touch()
+        if credits:
+            self._fine = EDFineOrBounty(credits)
+        else:
+            self._fine = None
 
     @property
     def power(self):
@@ -485,7 +513,10 @@ class EDPlayer(object):
 
     def pledged_to(self, power, time_pledged):
         self._touch()
-        self.powerplay = EDRPowerplay(power, time_pledged)
+        if power is None:
+            self.powerplay = None
+        else:
+            self.powerplay = EDRPowerplay(power, time_pledged)
     
     def pledged_since(self):
         if self.is_independent():
@@ -650,7 +681,7 @@ class EDPlayerOne(EDPlayer):
         self.private_group = None
         self.previous_mode = None
         self.previous_wing = set()
-        self.from_birth = False
+        self.from_genesis = False
         self.wing = EDWing()
         self.friends = set()
         self.crew = None
@@ -673,7 +704,13 @@ class EDPlayerOne(EDPlayer):
 
     @target.setter
     def target(self, new_target):
+        if self._target:
+            self._target.targeted = False
+            self._target._touch()
         self._target = new_target
+        if new_target:
+            new_target.targeted = True
+            new_target._touch()
         self._touch()
 
     def lowish_fuel(self):
@@ -722,8 +759,9 @@ class EDPlayerOne(EDPlayer):
     def in_open(self):
         return self.game_mode == "Open"
 
-    def inception(self):
-        self.from_birth = True
+    def inception(self, genesis=False):
+        if genesis:
+            self.from_genesis = True
         self.previous_mode = None
         self.previous_wing = set()
         self.wing = EDWing()

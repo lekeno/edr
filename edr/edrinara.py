@@ -44,12 +44,16 @@ class EDRInara(object):
 
     def __cmdr(self, cmdr_name):
         payload = { "header": self.__api_header(), "events" : [self.__api_cmdrprofile(cmdr_name)] }
-
-        resp = EDRInara.SESSION.post(self.INARA_ENDPOINT, json=payload)
-        if resp.status_code != requests.codes.ok:
-            EDRLOG.log(u"Failed to obtain cmdr profile from Inara. code={code}, content={content}".format(code=resp.status_code, content=resp.content), "ERROR")
+        resp = None
+        try:
+            resp = EDRInara.SESSION.post(self.INARA_ENDPOINT, json=payload)
+            if resp.status_code != requests.codes.ok:
+                EDRLOG.log(u"Failed to obtain cmdr profile from Inara. code={code}".format(code=resp.status_code), "ERROR")
+                return None
+        except:
+            EDRLOG.log(u"Communication with Inara failed: code={code}".format(code=resp.status_code), "ERROR")
             return None
-        
+            
         EDRLOG.log(u"Obtained a response from the Inara API.", "INFO")
         try:
             json_resp = json.loads(resp.content)
