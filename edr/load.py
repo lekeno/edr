@@ -811,21 +811,20 @@ def report_crime(cmdr, entry):
         victim.killed()
         edr_submit_crime_self(cmdr, "Murder", victim, entry["timestamp"])
         player_one.destroy(victim)
-    elif entry["event"] == "CrimeVictim":
+    elif entry["event"] == "CrimeVictim" and "Offender" in entry and player_one.name and (entry["Offender"].lower() != player_one.name.lower()):
         offender = player_one.instanced(entry["Offender"])
         if "Bounty" in entry:
             offender.bounty += entry["Bounty"]
         if "Fine" in entry:
             offender.fine += entry["Fine"]
         edr_submit_crime([offender], entry["CrimeType"], cmdr, entry["timestamp"])
-    elif entry["event"] == "CommitCrime" and "Victim" in entry:
-        if player_one.is_instanced_with(entry["Victim"]):
-            victim = player_one.instanced(entry["Victim"])
-            if "Bounty" in entry:
-                player_one.bounty += entry["Bounty"]
-            if "Fine" in entry:
-                player_one.fine += entry["Fine"]
-            edr_submit_crime_self(player_one, entry["CrimeType"], victim, entry["timestamp"])
+    elif entry["event"] == "CommitCrime" and "Victim" in entry and player_one.name and (entry["Victim"].lower() != player_one.name.lower()):
+        victim = player_one.instanced(entry["Victim"])
+        if "Bounty" in entry:
+            player_one.bounty += entry["Bounty"]
+        if "Fine" in entry:
+            player_one.fine += entry["Fine"]
+        edr_submit_crime_self(player_one, entry["CrimeType"], victim, entry["timestamp"])
 
 
 def report_comms(player, entry):
