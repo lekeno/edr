@@ -1016,7 +1016,7 @@ def handle_scan_events(player, entry):
     if entry["ScanStage"] == 3:
         target.wanted = entry["LegalStatus"] in ["Wanted", "WantedEnemy", "Warrant"]
         target.enemy = entry["LegalStatus"] in ["Enemy", "WantedEnemy", "Hunter"]
-        target.bounty = entry.get("Bounty", 0) if target.wanted else 0
+        target.bounty = entry.get("Bounty", 0)
         if "Subsystem" in entry and "SubsystemHealth" in entry:
             target.vehicle.subsystem_health(entry["Subsystem"], entry["SubsystemHealth"])
         
