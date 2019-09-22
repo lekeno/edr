@@ -21,6 +21,7 @@ class EDRInara(object):
         self.INARA_ENDPOINT = config.inara_endpoint()
         self.requester = None
         self.backoff_until = 0 
+        self.attempt = 0
 
     def squadron(self, cmdr_name):
         if self.requester is None:
@@ -70,6 +71,7 @@ class EDRInara(object):
                 return None
             if json_resp["events"][0]["eventStatus"] == 204:
                 EDRLOG.log(u"cmdr {} was not found via the Inara API.".format(cmdr_name), "INFO")
+                self.attempt = 0
                 return None
             elif json_resp["events"][0]["eventStatus"] != requests.codes.ok:
                 EDRLOG.log(u"Error from Inara API. code={code}, content={content}".format(code=resp.status_code, content=resp.content), "ERROR")
@@ -82,6 +84,7 @@ class EDRInara(object):
 
         try:
             json_resp = json.loads(resp.content)["events"][0]["eventData"]
+            self.attempt = 0
             return json_resp
         except:
             EDRLOG.log(u"Malformed cmdr profile response from Inara API? code={code}, content={content}".format(code=resp.status_code, content=resp.content), "ERROR")
@@ -110,7 +113,7 @@ class EDRInara(object):
         base = 10
         cap = 60 * 60 * 2
         self.attempt += 1
-        self.backoff_until = EDTime.py_epoch_now() + min(cap, base * 2 ** attempt) + random.randint(0, 60)
+        self.backoff_until = EDTime.py_epoch_now() + min(cap, base * 2 ** self.attempt) + random.randint(0, 60)
         EDRLOG.log(u"Exponential backoff for Inara API calls: attempts={}, until={}".format(self.attempt, self.backoff_until), "DEBUG")
 
     def __should_hold_back(self):
