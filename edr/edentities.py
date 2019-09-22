@@ -296,6 +296,7 @@ class EDPlayer(object):
         self.location = EDLocation()
         self.powerplay = None
         self.squadron = None
+        self.sqid = None
         self.destroyed = False
         self.wanted = False
         self.enemy = False
@@ -511,7 +512,7 @@ class EDPlayer(object):
             return None
         return self.powerplay.time_pledged()
 
-    def pledged_to(self, power, time_pledged):
+    def pledged_to(self, power, time_pledged=0):
         self._touch()
         if power is None:
             self.powerplay = None

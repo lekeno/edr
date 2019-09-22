@@ -695,6 +695,9 @@ def edr_submit_contact(contact, timestamp, source, witness):
         "group": witness.private_group
     }
 
+    if contact.sqid:
+        report["sqid"] = contact.sqid
+
     if witness.has_partial_status():
         EDRLOG.log(u"Skipping cmdr update due to partial status", "INFO")
         return
@@ -1005,6 +1008,8 @@ def handle_scan_events(player, entry):
         return False
 
     target = player.instanced(target_name, entry["Ship"], piloted)
+    target.sqid = entry.get("SquadronID", None)
+    target.pledged_to(entry.get("Power", None))
  
     edr_submit_contact(target, entry["timestamp"], "Ship targeted", player)
     if entry["ScanStage"] >= 2:
@@ -1027,6 +1032,10 @@ def handle_scan_events(player, entry):
             "enemy": target.enemy,
             "bounty": target.bounty
         }
+        if target.sqid:
+            scan["sqid"] = target.sqid
+        if target.power:
+            scan["power"] = target.power
         edr_submit_scan(scan, entry["timestamp"], "Ship targeted [{}]".format(entry["LegalStatus"]), player)
 
     player.targeting(target)
