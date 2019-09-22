@@ -594,7 +594,10 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
         EDRLOG.log(u"Appending criminal {} with ship {}".format(criminal_cmdr.name,
                                                                 criminal_cmdr.vehicle_type()),
                    "DEBUG")
-        criminals.append({"name": criminal_cmdr.name, "ship": criminal_cmdr.vehicle_type(), "enemy": criminal_cmdr.enemy, "wanted": criminal_cmdr.wanted, "bounty": criminal_cmdr.bounty, "fine": criminal_cmdr.fine})
+        blob = {"name": criminal_cmdr.name, "ship": criminal_cmdr.vehicle_type(), "enemy": criminal_cmdr.enemy, "wanted": criminal_cmdr.wanted, "bounty": criminal_cmdr.bounty, "fine": criminal_cmdr.fine}
+        if criminal_cmdr.power:
+            blob["power"] = criminal_cmdr.power
+        criminals.append(blob)
 
     edt = EDTime()
     edt.from_journal_timestamp(timestamp)
@@ -654,6 +657,9 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim, timestamp):
         "mode": criminal_cmdr.game_mode,
         "group": criminal_cmdr.private_group
     }
+
+    if criminal_cmdr.power:
+        report["criminals"][0]["power"] = criminal_cmdr.power
 
     EDRLOG.log(u"Perpetrated crime: {}".format(report), "DEBUG")
 
