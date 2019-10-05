@@ -188,7 +188,7 @@ class EDRCmdrProfile(object):
         self._karma = min(max(EDRCmdrProfile.min_karma(), new_karma), EDRCmdrProfile.max_karma())
 
     def from_inara_api(self, json_cmdr):
-        self.name = json_cmdr.get("commanderName", "")
+        self.name = json_cmdr["commanderName"] if "commanderName" in json_cmdr else json_cmdr.get("userName", "")
         wing = json_cmdr.get("commanderWing", None)
         self.squadron = wing["wingName"] if wing else None
         self.squadron_id = wing["wingID"] if wing else None
