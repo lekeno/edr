@@ -69,7 +69,8 @@ class EDRServer(object):
         if not response:
             return False
         
-        if response.status_code in [200, 404]:
+        EDRLOG.log(u"Checking response: service={}, status={}".format(service, response.status_code), "DEBUG")
+        if response.status_code in [200, 404, 401, 403, 204]:
             self.backoff[service].reset()
         elif response.status_code in [429, 500]:
             self.backoff[service].throttle()
@@ -77,12 +78,10 @@ class EDRServer(object):
         return response.status_code == 200
 
     def __process_inara_response(self, resp):
-        print resp
         if not resp:
             return None
 
         json_resp = json.loads(resp)
-        print json_resp
         if not json_resp.get("body", None):
             return None
         
@@ -109,7 +108,6 @@ class EDRServer(object):
         try:
             data = body["events"][0]["eventData"]
             self.backoff["Inara"].reset()
-            print data
             return data
         except:
             EDRLOG.log(u"Malformed cmdr profile response from Inara API? content={}".format(resp), "ERROR")
@@ -322,7 +320,6 @@ class EDRServer(object):
 
         cmdr_profile = edrcmdrprofile.EDRCmdrProfile()
         cmdr_profile.from_inara_api(processed)
-        print cmdr_profile
         return cmdr_profile
 
     def __post_json(self, endpoint, json_payload, service):
