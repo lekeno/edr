@@ -22,17 +22,6 @@ class EDRInara(object):
         self.requester = None
         self.backoff_until = 0 
         self.attempt = 0
-
-    def squadron(self, cmdr_name):
-        if self.requester is None:
-            return None
-        json_resp = self.__cmdr(cmdr_name)
-        try:
-            squadron = json_resp["commanderWing"]
-            return { "id": squadron["wingID"], "name": squadron["wingName"], "rank": squadron["wingMemberRank"] }
-        except:
-            return None
-
     
     def cmdr(self, cmdr_name):
         if self.requester is None:
