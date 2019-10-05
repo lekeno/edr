@@ -309,7 +309,7 @@ class EDPlayer(object):
         return str(self.__dict__)
 
     def json(self):
-        return {
+        blob = {
             u"cmdr": self.name,
             u"timestamp": self.timestamp * 1000,
             u"wanted": self.wanted,
@@ -317,6 +317,12 @@ class EDPlayer(object):
             u"enemy": self.enemy,
             u"ship": self.piloted_vehicle.json()
         }
+        if self.power:
+            blob["power"] = self.power
+        
+        if self.sqid:
+            blob["sqid"] = self.sqid
+        return blob
     
     def killed(self):
         self._touch()
