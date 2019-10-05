@@ -570,7 +570,6 @@ def edr_update_cmdr_status(cmdr, reason_for_update, timestamp):
 
     if not EDR_CLIENT.blip(cmdr.name, report):
         EDR_CLIENT.status = _(u"blip failed.")
-        EDR_CLIENT.evict_cmdr(cmdr.name)
         return
 
     EDR_CLIENT.status = _(u"blip succeeded!")
@@ -710,8 +709,7 @@ def edr_submit_contact(contact, timestamp, source, witness):
 
     if not EDR_CLIENT.blip(contact.name, report):
         EDR_CLIENT.status = _(u"failed to report contact.")
-        EDR_CLIENT.evict_cmdr(contact.name)
-
+        
     edr_submit_traffic(contact, timestamp, source, witness)
 
 def edr_submit_scan(scan, timestamp, source, witness):
@@ -739,8 +737,7 @@ def edr_submit_scan(scan, timestamp, source, witness):
 
     if not EDR_CLIENT.scanned(scan["cmdr"], report):
         EDR_CLIENT.status = _(u"failed to report scan.")
-        EDR_CLIENT.evict_cmdr(scan["cmdr"])
-
+        
 def edr_submit_traffic(contact, timestamp, source, witness):
     """
     Report a contact with a cmdr
