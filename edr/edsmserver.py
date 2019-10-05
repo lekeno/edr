@@ -1,11 +1,9 @@
 import json
-import urllib
 
 import edrconfig
 import edrlog
 
 import requests
-import urllib
 
 
 EDRLOG = edrlog.EDRLog()
