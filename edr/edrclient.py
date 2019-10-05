@@ -12,7 +12,6 @@ import edrconfig
 import lrucache
 import edentities
 import edrserver
-import edrinara
 import audiofeedback
 import edrlog
 import ingamemsg
@@ -91,7 +90,6 @@ class EDRClient(object):
             self.server.anonymous_reports = anonymous_reports == _(u"Always")
         self._anonymous_reports = tk.StringVar(value=anonymous_reports)
 
-        self.inara = edrinara.EDRInara()
         
         self.realtime_params = {
             EDROpponents.OUTLAWS: { "min_bounty": None if config.get("EDROutlawsAlertsMinBounty") == "None" else config.getint("EDROutlawsAlertsMinBounty"),
@@ -102,7 +100,7 @@ class EDRClient(object):
         
         self.edrsystems = edrsystems.EDRSystems(self.server)
         self.edrresourcefinder = edrresourcefinder.EDRResourceFinder(self.edrsystems)
-        self.edrcmdrs = edrcmdrs.EDRCmdrs(self.server, self.inara)
+        self.edrcmdrs = edrcmdrs.EDRCmdrs(self.server)
         self.edropponents = {
             EDROpponents.OUTLAWS: EDROpponents(self.server, EDROpponents.OUTLAWS, self._realtime_callback),
             EDROpponents.ENEMIES: EDROpponents(self.server, EDROpponents.ENEMIES, self._realtime_callback),
@@ -627,9 +625,6 @@ class EDRClient(object):
     
     def evict_system(self, star_system):
         self.edrsystems.evict(star_system)
-
-    def evict_cmdr(self, cmdr):
-        self.edrcmdrs.evict(cmdr)
 
     def __novel_enough_situation(self, new, old, cognitive = False):
         if old is None:
