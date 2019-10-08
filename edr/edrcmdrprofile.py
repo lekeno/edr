@@ -361,7 +361,6 @@ class EDRCmdrProfile(object):
             return None
 
         total_hints = float(sum([hints for hints in self.alignment_hints.values()]))
-        #TODO increase threshold by an order of magnitude when there are more EDR users
         if (total_hints < 10):
             return u"[!{} ?{} +{}]".format(self.alignment_hints["outlaw"], self.alignment_hints["neutral"], self.alignment_hints["enforcer"])
         return u"[!{:.0%} ?{:.0%} +{:.0%}]".format(self.alignment_hints["outlaw"] / total_hints, self.alignment_hints["neutral"] / total_hints, self.alignment_hints["enforcer"] / total_hints)
