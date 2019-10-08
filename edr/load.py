@@ -501,6 +501,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PVPKill", "CrimeVictim", "CommitCrime"]:
         report_crime(ed_player, entry)
 
+    if entry["event"] in ["PayFines", "PayBounties"]:
+        handle_legal_fees(ed_player, entry)
+
     if entry["event"] in ["ShipTargeted"]:
         if "ScanStage" in entry and entry["ScanStage"] > 0:
             handle_scan_events(ed_player, entry)
@@ -985,7 +988,26 @@ def handle_outfitting_events(player, entry):
         if entry.get("SwapOutItem", None):
             player.mothership.remove_subsystem(entry["SwapOutItem"])
         player.mothership.add_subsystem(entry["RetrievedItem"])
+
+def handle_legal_fees(player, entry):
+    if entry["event"] not in ["PayFines", "PayBounties"]:
+       return False
     
+    #TODO this should be on a ship whose id is in the entry rather than the player
+    if entry["event"] == "PayFines":
+        if entry["AllFines"]:
+            player.fines = 0
+        else:
+            true_amount = entry["Amount"] * (1.0 - entry.get("BrokerPercentage", 0)/100.0)
+            player.fines = max(0, player.fines - true_amount)
+    elif entry["event"] == "PayBounties":
+        if entry["AllFines"]:
+            player.bounty = 0
+        else:
+            true_amount = entry["Amount"] * (1.0 - entry.get("BrokerPercentage", 0)/100.0)
+            player.bounty = max(0, player.bounty - true_amount)
+
+
 def handle_scan_events(player, entry):
     if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0):
         return False
@@ -1037,8 +1059,13 @@ def handle_scan_events(player, entry):
         }
         if target.sqid:
             scan["sqid"] = target.sqid
+
         if target.power:
             scan["power"] = target.power
+        elif not player.is_independent():
+            # Note: power is only present in shiptargeted events if the player is pledged
+            # This means that we can only know that the target is independent if a player is pledged and the power attribute is missing
+            scan["power"] = "Independent"
         edr_submit_scan(scan, entry["timestamp"], "Ship targeted [{}]".format(entry["LegalStatus"]), player)
 
     player.targeting(target)
