@@ -145,6 +145,28 @@ class EDRPowerplay(object):
         return False
         #TODO return true if enough time has passed (parameterize)
 
+class EDPowerplayUnknown(EDPowerplay):
+    def __init__(self):
+        super(EDPowerplay, self).__init__(u"Unknown", edtime.EDTime.py_epoch_now())
+
+    def is_enemy(self, power): 
+        return False
+
+    def pretty_print(self):
+        return u"Unknown"
+
+    def canonicalize(self):
+        return u"Unknown"
+
+    def time_pledged(self):
+        return 0
+
+    def is_somewhat_trusted(self):
+        return False
+
+    def is_fully_trusted(self):
+        return False
+    
 
 class EDFineOrBounty(object):
     def __init__(self, value):
@@ -294,7 +316,7 @@ class EDPlayer(object):
         self.srv = None
         self.slf = None
         self.location = EDLocation()
-        self.powerplay = None
+        self.powerplay = EDPowerplayUnknown()
         self.squadron = None
         self.sqid = None
         self.destroyed = False
@@ -684,6 +706,7 @@ class EDWing(object):
 class EDPlayerOne(EDPlayer):
     def __init__(self, name=None):
         super(EDPlayerOne, self).__init__(name)
+        self.powerplay = None
         self.game_mode = None
         self.private_group = None
         self.previous_mode = None
