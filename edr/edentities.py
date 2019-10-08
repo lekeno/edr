@@ -121,7 +121,9 @@ class EDRPowerplay(object):
             "pranav_antal": "Antal",
             "yuri_grom": "Yuri",
             "zachary_hudson": "Zachary",
-            "zemina_torval": "Zemina",   
+            "zemina_torval": "Zemina",
+            "independent": "Independent",
+            "unknown": "Unknown"  
         }
 
         if self.pledged_to in POWERS_AFFILIATION:
@@ -145,7 +147,7 @@ class EDRPowerplay(object):
         return False
         #TODO return true if enough time has passed (parameterize)
 
-class EDPowerplayUnknown(EDPowerplay):
+class EDRPowerplayUnknown(EDRPowerplay):
     def __init__(self):
         super(EDPowerplay, self).__init__(u"Unknown", edtime.EDTime.py_epoch_now())
 
@@ -156,7 +158,7 @@ class EDPowerplayUnknown(EDPowerplay):
         return u"Unknown"
 
     def canonicalize(self):
-        return u"Unknown"
+        return u"unknown"
 
     def time_pledged(self):
         return 0
@@ -316,7 +318,7 @@ class EDPlayer(object):
         self.srv = None
         self.slf = None
         self.location = EDLocation()
-        self.powerplay = EDPowerplayUnknown()
+        self.powerplay = EDRPowerplayUnknown()
         self.squadron = None
         self.sqid = None
         self.destroyed = False
