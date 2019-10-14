@@ -149,7 +149,7 @@ class EDRPowerplay(object):
 
 class EDRPowerplayUnknown(EDRPowerplay):
     def __init__(self):
-        super(EDPowerplay, self).__init__(u"Unknown", edtime.EDTime.py_epoch_now())
+        super(EDRPowerplayUnknown, self).__init__(u"Unknown", edtime.EDTime.py_epoch_now())
 
     def is_enemy(self, power): 
         return False
@@ -338,11 +338,10 @@ class EDPlayer(object):
             u"timestamp": self.timestamp * 1000,
             u"wanted": self.wanted,
             u"bounty": self.bounty,
+            u"power": self.powerplay.canonicalize() if self.powerplay else u'',
             u"enemy": self.enemy,
-            u"ship": self.piloted_vehicle.json()
+            u"ship": self.piloted_vehicle.json(),
         }
-        if self.power:
-            blob["power"] = self.power
         
         if self.sqid:
             blob["sqid"] = self.sqid
