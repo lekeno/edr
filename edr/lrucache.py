@@ -36,8 +36,9 @@ class LRUCache(object):
             self.cache.pop(key)
         except KeyError:
             pass
-
-        now = datetime.datetime.now() - datetime.timedelta(self.max_age + 60*60*24)
+        
+        trytomorrow = self.max_age.total_seconds() - 60*60*24
+        now = datetime.datetime.now() - datetime.timedelta(seconds=trytomorrow)
         self.cache[key] = { "datetime": now, "content": entry["content"]}
         self.last_updated = now
 
