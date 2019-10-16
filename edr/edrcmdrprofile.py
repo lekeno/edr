@@ -188,7 +188,7 @@ class EDRCmdrProfile(object):
         self._karma = min(max(EDRCmdrProfile.min_karma(), new_karma), EDRCmdrProfile.max_karma())
 
     def from_inara_api(self, json_cmdr):
-        self.name = json_cmdr.get("commanderName", "")
+        self.name = json_cmdr["commanderName"] if "commanderName" in json_cmdr else json_cmdr.get("userName", "")
         wing = json_cmdr.get("commanderWing", None)
         self.squadron = wing["wingName"] if wing else None
         self.squadron_id = wing["wingID"] if wing else None
@@ -361,7 +361,6 @@ class EDRCmdrProfile(object):
             return None
 
         total_hints = float(sum([hints for hints in self.alignment_hints.values()]))
-        #TODO increase threshold by an order of magnitude when there are more EDR users
         if (total_hints < 10):
             return u"[!{} ?{} +{}]".format(self.alignment_hints["outlaw"], self.alignment_hints["neutral"], self.alignment_hints["enforcer"])
         return u"[!{:.0%} ?{:.0%} +{:.0%}]".format(self.alignment_hints["outlaw"] / total_hints, self.alignment_hints["neutral"] / total_hints, self.alignment_hints["enforcer"] / total_hints)

@@ -28,11 +28,6 @@ class EDRXzibit(object):
             EDRLOG.log(u"A ship without any power?!", "DEBUG")
             return None
 
-        yo_dawg = self._yo_dawg_meme()
-        if yo_dawg:
-            name = EDRXzibit.__readable_name(yo_dawg)
-            return _(u"Yo dawg, I heard you like {} so I put more {} in your ship.").format(name, name)
-
         assessment = {}
         assessment["20"] = self._assess_busted_powerplant()
         assessment["50"] = self._assess_recovered_powerplant()
@@ -77,6 +72,7 @@ class EDRXzibit(object):
         assessment = {
             "situation": _(u"Busted PP (20 pct for 5s; {0:.2f}MW)").format(self.power_capacity * .2),
             "annotation": u", ".join(functional["priorities"]),
+            "grade": 0.0,
         }
 
         if len(functional["modules"]) == 0:
@@ -101,6 +97,7 @@ class EDRXzibit(object):
         assessment = {
             "situation": _(u"Recovered PP (50 pct after 5s; {0:.2f}MW)").format(self.power_capacity * .5),
             "annotation": u", ".join(functional["priorities"]),
+            "grade": 0.0,
         }
         
         missing = [EDRXzibit.__readable_name(module) for module in required - functional["modules"]]
@@ -132,6 +129,7 @@ class EDRXzibit(object):
         assessment = {
             "situation": _(u"Malfunctioning PP (40 pct for 5s; {0:.2f}MW)").format(self.power_capacity * .4),
             "annotation": u", ".join(functional["priorities"]),
+            "grade": 0.0,
         }
         
         missing = [EDRXzibit.__readable_name(module) for module in required - functional["modules"]]
@@ -154,20 +152,6 @@ class EDRXzibit(object):
             assessment["praise"] = _(u"Good job on keeping your {} below 40 pct.").format(', '.join(missing))
             
         return assessment
-
-    def _yo_dawg_meme(self):
-        pointless_dupes = {'int_dockingcomputer_standard': 0, 'int_dockingcomputer_advanced':0, 'hpt_cargoscanner':0, 'int_fuelscoop':0, 'hpt_crimescanner':0, 'int_supercruiseassist':0, 'int_detailedsurfacescanner_tiny':0}
-        for pri in sorted(self.per_prio.keys()):
-            for ed_module in self.per_prio[pri]["modules"]:
-                gname = ed_module.generic_name()
-                if gname not in pointless_dupes:
-                    continue
-                pointless_dupes[gname] +=1
-                if pointless_dupes[gname] >= 2:
-                    return gname
-        
-        if (pointless_dupes['int_dockingcomputer_standard'] + pointless_dupes['int_dockingcomputer_advanced']) >= 2:
-            return 'int_dockingcomputer'
 
     @staticmethod
     def __readable_name(name):

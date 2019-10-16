@@ -2,7 +2,6 @@ import os
 import pickle
 from edtime import EDTime
 import edrconfig
-import edrinara
 import lrucache
 import edrlog
 from edentities import EDPlayerOne
@@ -18,9 +17,8 @@ class EDRCmdrs(object):
     EDR_SQDRDEX_CACHE = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'cache/sqdrdex.v2.p')
 
-    def __init__(self, edrserver, edrinara):
+    def __init__(self, edrserver):
         self.server = edrserver
-        self.inara = edrinara
         self._player = EDPlayerOne()
         self.heartbeat_timestamp = None
  
@@ -58,9 +56,7 @@ class EDRCmdrs(object):
     def set_player_name(self, new_player_name):
         if (new_player_name != self._player.name):
             self._player.force_new_name(new_player_name)
-            self.inara.requester = new_player_name
             self.__update_squadron_info(force_update=True)
-        self.inara.cmdr_name = new_player_name
 
     def player_pledged_to(self, power, time_pledged=0):
         edr_config = edrconfig.EDRConfig()
@@ -114,7 +110,7 @@ class EDRCmdrs(object):
         try:
             sqdr_id = self.__squadron_id()
             if sqdr_id:
-                sq_cmdr_key = "{}:{}".format(sqdr_id, cmdr.lower())
+                sq_cmdr_key = u"{}:{}".format(sqdr_id, cmdr.lower())
                 del self.sqdrdex_cache[sq_cmdr_key]
         except KeyError:
             pass
@@ -172,15 +168,17 @@ class EDRCmdrs(object):
         return profile.sqdrdex_profile
 
     def __inara_cmdr(self, cmdr_name, check_inara_server):
-        inara_profile = self.inara_cache.get(cmdr_name.lower())
+        inara_profile = None
+        stale = self.inara_cache.is_stale(cmdr_name.lower())
         cached = self.inara_cache.has_key(cmdr_name.lower())
-        if cached or inara_profile:
+        if cached and not stale:
+            inara_profile = self.inara_cache.get(cmdr_name.lower())
             EDRLOG.log(u"Cmdr {} is in the Inara cache (name={})".format(cmdr_name,
                                                                          inara_profile.name if inara_profile else 'N/A'),
                        "DEBUG")
         elif check_inara_server:
-            EDRLOG.log(u"No match in Inara cache. Inara API call for {}.".format(cmdr_name), "INFO")
-            inara_profile = self.inara.cmdr(cmdr_name)
+            EDRLOG.log(u"Stale {} or not cached {} in Inara cache. Inara API call for {}.".format(stale, cached, cmdr_name), "INFO")
+            inara_profile = self.server.inara_cmdr(cmdr_name)
 
             if inara_profile and inara_profile.name.lower() == cmdr_name.lower():
                 self.inara_cache.set(cmdr_name.lower(), inara_profile)
@@ -189,6 +187,10 @@ class EDRCmdrs(object):
                                                                           inara_profile.squadron,
                                                                           inara_profile.role,
                                                                           inara_profile.powerplay), "DEBUG")
+            elif self.inara_cache.has_key(cmdr_name.lower()):
+                inara_profile = self.inara_cache.peek(cmdr_name.lower())
+                self.inara_cache.refresh(cmdr_name.lower())
+                EDRLOG.log(u"Refresh and re-use stale match in Inara cache.", "INFO")
             else:
                 inara_profile = None
                 self.inara_cache.set(cmdr_name.lower(), None)

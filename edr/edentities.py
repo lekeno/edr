@@ -121,7 +121,9 @@ class EDRPowerplay(object):
             "pranav_antal": "Antal",
             "yuri_grom": "Yuri",
             "zachary_hudson": "Zachary",
-            "zemina_torval": "Zemina",   
+            "zemina_torval": "Zemina",
+            "independent": "Independent",
+            "unknown": "Unknown"  
         }
 
         if self.pledged_to in POWERS_AFFILIATION:
@@ -145,6 +147,28 @@ class EDRPowerplay(object):
         return False
         #TODO return true if enough time has passed (parameterize)
 
+class EDRPowerplayUnknown(EDRPowerplay):
+    def __init__(self):
+        super(EDRPowerplayUnknown, self).__init__(u"Unknown", edtime.EDTime.py_epoch_now())
+
+    def is_enemy(self, power): 
+        return False
+
+    def pretty_print(self):
+        return u"Unknown"
+
+    def canonicalize(self):
+        return u"unknown"
+
+    def time_pledged(self):
+        return 0
+
+    def is_somewhat_trusted(self):
+        return False
+
+    def is_fully_trusted(self):
+        return False
+    
 
 class EDFineOrBounty(object):
     def __init__(self, value):
@@ -294,8 +318,9 @@ class EDPlayer(object):
         self.srv = None
         self.slf = None
         self.location = EDLocation()
-        self.powerplay = None
+        self.powerplay = EDRPowerplayUnknown()
         self.squadron = None
+        self.sqid = None
         self.destroyed = False
         self.wanted = False
         self.enemy = False
@@ -308,14 +333,19 @@ class EDPlayer(object):
         return str(self.__dict__)
 
     def json(self):
-        return {
+        blob = {
             u"cmdr": self.name,
             u"timestamp": self.timestamp * 1000,
             u"wanted": self.wanted,
             u"bounty": self.bounty,
+            u"power": self.powerplay.canonicalize() if self.powerplay else u'',
             u"enemy": self.enemy,
-            u"ship": self.piloted_vehicle.json()
+            u"ship": self.piloted_vehicle.json(),
         }
+        
+        if self.sqid:
+            blob["sqid"] = self.sqid
+        return blob
     
     def killed(self):
         self._touch()
@@ -511,7 +541,7 @@ class EDPlayer(object):
             return None
         return self.powerplay.time_pledged()
 
-    def pledged_to(self, power, time_pledged):
+    def pledged_to(self, power, time_pledged=0):
         self._touch()
         if power is None:
             self.powerplay = None
@@ -677,6 +707,7 @@ class EDWing(object):
 class EDPlayerOne(EDPlayer):
     def __init__(self, name=None):
         super(EDPlayerOne, self).__init__(name)
+        self.powerplay = None
         self.game_mode = None
         self.private_group = None
         self.previous_mode = None

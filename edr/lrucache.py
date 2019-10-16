@@ -27,6 +27,21 @@ class LRUCache(object):
     def has_key(self, key):
         return key in self.cache
 
+    def refresh(self, key):
+        if not self.has_key(key):
+            return
+        
+        entry = self.cache[key]
+        try:
+            self.cache.pop(key)
+        except KeyError:
+            pass
+        
+        trytomorrow = self.max_age.total_seconds() - 60*60*24
+        now = datetime.datetime.now() - datetime.timedelta(seconds=trytomorrow)
+        self.cache[key] = { "datetime": now, "content": entry["content"]}
+        self.last_updated = now
+
     def get(self, key):
         if self.capacity <= 0:
             return None
@@ -71,6 +86,22 @@ class LRUCache(object):
             self.cache.pop(key)
         except KeyError:
             pass
+
+    def peek(self, key):
+        if self.capacity <= 0:
+            return None
+
+        if not self.has_key(key):
+            return None
+
+        try:
+            entry = self.cache[key]
+            self.cache[key] = self.cache.pop(key)
+            return entry["content"]
+        except KeyError:
+            pass
+        
+        return None
 
     def reset(self):
         self.cache = collections.OrderedDict()

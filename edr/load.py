@@ -501,6 +501,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PVPKill", "CrimeVictim", "CommitCrime"]:
         report_crime(ed_player, entry)
 
+    if entry["event"] in ["PayFines", "PayBounties"]:
+        handle_legal_fees(ed_player, entry)
+
     if entry["event"] in ["ShipTargeted"]:
         if "ScanStage" in entry and entry["ScanStage"] > 0:
             handle_scan_events(ed_player, entry)
@@ -570,7 +573,6 @@ def edr_update_cmdr_status(cmdr, reason_for_update, timestamp):
 
     if not EDR_CLIENT.blip(cmdr.name, report):
         EDR_CLIENT.status = _(u"blip failed.")
-        EDR_CLIENT.evict_cmdr(cmdr.name)
         return
 
     EDR_CLIENT.status = _(u"blip succeeded!")
@@ -594,7 +596,10 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
         EDRLOG.log(u"Appending criminal {} with ship {}".format(criminal_cmdr.name,
                                                                 criminal_cmdr.vehicle_type()),
                    "DEBUG")
-        criminals.append({"name": criminal_cmdr.name, "ship": criminal_cmdr.vehicle_type(), "bounty": criminal_cmdr.bounty, "fine": criminal_cmdr.fine})
+        blob = {"name": criminal_cmdr.name, "ship": criminal_cmdr.vehicle_type(), "enemy": criminal_cmdr.enemy, "wanted": criminal_cmdr.wanted, "bounty": criminal_cmdr.bounty, "fine": criminal_cmdr.fine}
+        if criminal_cmdr.power:
+            blob["power"] = criminal_cmdr.power
+        criminals.append(blob)
 
     edt = EDTime()
     edt.from_journal_timestamp(timestamp)
@@ -639,15 +644,24 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim, timestamp):
         "criminals" : [
             {"name": criminal_cmdr.name,
              "ship" : criminal_cmdr.vehicle_type(),
+             "wanted": criminal_cmdr.wanted,
+             "bounty": criminal_cmdr.bounty,
+             "fine": criminal_cmdr.fine
             }],
         "offence": offence.capitalize(),
         "victim": victim.name,
         "victimShip": victim.vehicle_type(),
         "reportedBy": criminal_cmdr.name,
         "byPledge": criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else "",
+        "victimWanted": victim.wanted,
+        "victimBounty": victim.bounty,
+        "victimEnemy": victim.enemy,
         "mode": criminal_cmdr.game_mode,
         "group": criminal_cmdr.private_group
     }
+
+    if criminal_cmdr.power:
+        report["criminals"][0]["power"] = criminal_cmdr.power
 
     EDRLOG.log(u"Perpetrated crime: {}".format(report), "DEBUG")
 
@@ -689,14 +703,16 @@ def edr_submit_contact(contact, timestamp, source, witness):
         "group": witness.private_group
     }
 
+    if contact.sqid:
+        report["sqid"] = contact.sqid
+
     if witness.has_partial_status():
         EDRLOG.log(u"Skipping cmdr update due to partial status", "INFO")
         return
 
     if not EDR_CLIENT.blip(contact.name, report):
         EDR_CLIENT.status = _(u"failed to report contact.")
-        EDR_CLIENT.evict_cmdr(contact.name)
-
+        
     edr_submit_traffic(contact, timestamp, source, witness)
 
 def edr_submit_scan(scan, timestamp, source, witness):
@@ -724,8 +740,7 @@ def edr_submit_scan(scan, timestamp, source, witness):
 
     if not EDR_CLIENT.scanned(scan["cmdr"], report):
         EDR_CLIENT.status = _(u"failed to report scan.")
-        EDR_CLIENT.evict_cmdr(scan["cmdr"])
-
+        
 def edr_submit_traffic(contact, timestamp, source, witness):
     """
     Report a contact with a cmdr
@@ -811,21 +826,20 @@ def report_crime(cmdr, entry):
         victim.killed()
         edr_submit_crime_self(cmdr, "Murder", victim, entry["timestamp"])
         player_one.destroy(victim)
-    elif entry["event"] == "CrimeVictim":
+    elif entry["event"] == "CrimeVictim" and "Offender" in entry and player_one.name and (entry["Offender"].lower() != player_one.name.lower()):
         offender = player_one.instanced(entry["Offender"])
         if "Bounty" in entry:
             offender.bounty += entry["Bounty"]
         if "Fine" in entry:
             offender.fine += entry["Fine"]
         edr_submit_crime([offender], entry["CrimeType"], cmdr, entry["timestamp"])
-    elif entry["event"] == "CommitCrime" and "Victim" in entry:
-        if player_one.is_instanced_with(entry["Victim"]):
-            victim = player_one.instanced(entry["Victim"])
-            if "Bounty" in entry:
-                player_one.bounty += entry["Bounty"]
-            if "Fine" in entry:
-                player_one.fine += entry["Fine"]
-            edr_submit_crime_self(player_one, entry["CrimeType"], victim, entry["timestamp"])
+    elif entry["event"] == "CommitCrime" and "Victim" in entry and player_one.name and (entry["Victim"].lower() != player_one.name.lower()):
+        victim = player_one.instanced(entry["Victim"])
+        if "Bounty" in entry:
+            player_one.bounty += entry["Bounty"]
+        if "Fine" in entry:
+            player_one.fine += entry["Fine"]
+        edr_submit_crime_self(player_one, entry["CrimeType"], victim, entry["timestamp"])
 
 
 def report_comms(player, entry):
@@ -974,7 +988,26 @@ def handle_outfitting_events(player, entry):
         if entry.get("SwapOutItem", None):
             player.mothership.remove_subsystem(entry["SwapOutItem"])
         player.mothership.add_subsystem(entry["RetrievedItem"])
+
+def handle_legal_fees(player, entry):
+    if entry["event"] not in ["PayFines", "PayBounties"]:
+       return False
     
+    #TODO this should be on a ship whose id is in the entry rather than the player
+    if entry["event"] == "PayFines":
+        if entry["AllFines"]:
+            player.fines = 0
+        else:
+            true_amount = entry["Amount"] * (1.0 - entry.get("BrokerPercentage", 0)/100.0)
+            player.fines = max(0, player.fines - true_amount)
+    elif entry["event"] == "PayBounties":
+        if entry["AllFines"]:
+            player.bounty = 0
+        else:
+            true_amount = entry["Amount"] * (1.0 - entry.get("BrokerPercentage", 0)/100.0)
+            player.bounty = max(0, player.bounty - true_amount)
+
+
 def handle_scan_events(player, entry):
     if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0):
         return False
@@ -1000,6 +1033,8 @@ def handle_scan_events(player, entry):
         return False
 
     target = player.instanced(target_name, entry["Ship"], piloted)
+    target.sqid = entry.get("SquadronID", None)
+    target.pledged_to(entry.get("Power", None))
  
     edr_submit_contact(target, entry["timestamp"], "Ship targeted", player)
     if entry["ScanStage"] >= 2:
@@ -1011,7 +1046,7 @@ def handle_scan_events(player, entry):
     if entry["ScanStage"] == 3:
         target.wanted = entry["LegalStatus"] in ["Wanted", "WantedEnemy", "Warrant"]
         target.enemy = entry["LegalStatus"] in ["Enemy", "WantedEnemy", "Hunter"]
-        target.bounty = entry.get("Bounty", 0) if target.wanted else 0
+        target.bounty = entry.get("Bounty", 0)
         if "Subsystem" in entry and "SubsystemHealth" in entry:
             target.vehicle.subsystem_health(entry["Subsystem"], entry["SubsystemHealth"])
         
@@ -1022,6 +1057,15 @@ def handle_scan_events(player, entry):
             "enemy": target.enemy,
             "bounty": target.bounty
         }
+        if target.sqid:
+            scan["sqid"] = target.sqid
+
+        if target.power:
+            scan["power"] = target.power
+        elif not player.is_independent():
+            # Note: power is only present in shiptargeted events if the player is pledged
+            # This means that we can only know that the target is independent if a player is pledged and the power attribute is missing
+            scan["power"] = "Independent"
         edr_submit_scan(scan, entry["timestamp"], "Ship targeted [{}]".format(entry["LegalStatus"]), player)
 
     player.targeting(target)
