@@ -274,7 +274,6 @@ class EDRServer(object):
                 params = { "auth" : self.auth_token() }
                 endpoint = "{}/v1/cmdrs.json".format(self.EDR_SERVER)
                 resp = self.__post(endpoint, "EDR", params=params, json={"name": cmdr, "uid" : self.uid(), "requester" : self.player_name})
-                print resp
                 if not self.__check_response(resp, "EDR", "Post cmdr"):
                     EDRLOG.log(u"Failed to retrieve cmdr key.", "ERROR")
                     return None
