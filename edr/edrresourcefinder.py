@@ -558,7 +558,7 @@ class EDRResourceFinder(object):
                 { 'system': 'HIP 80266', 'ring': '6 ring A', 'distanceToRing': 2978, 'tuple': 2, 'by': 'Kaostic'},
                 { 'system': 'HIP 19054', 'ring': '1 ring A', 'distanceToRing': 1713, 'tuple': 2, 'by': 'Ace Rimmer'},
                 { 'system': 'Eol Prou QX-T d3-415', 'ring': '4 ring A', 'distanceToRing': 3127, 'tuple': 1, 'by': 'Derek Poulter'},
-                { 'system': 'Eol Prou PH-K c9-497', 'ring': 'A3 ring A', 'distanceToRing': 10000, 'tuple': 1, 'by': 'Derek Poulter''}, # 10000 is fake TODO get the actual distance
+                { 'system': 'Eol Prou PH-K c9-497', 'ring': 'A3 ring A', 'distanceToRing': 2043, 'tuple': 1, 'by': 'Derek Poulter'},
                 { 'system': 'Eol Prou RS-T d3-660', 'ring': 'ABC3 ring A', 'distanceToRing': 5948, 'tuple': 2, 'by': 'Fuchsov'},
                 { 'system': 'Eol Prou PC-K c9-104', 'ring': '3 ring A', 'distanceToRing': 3027, 'tuple': 2, 'by': 'Fuchsov'},
                 { 'system': 'Eol Prou HQ-N c7-13', 'ring': '4 ring A', 'distanceToRing': 390, 'tuple': 2, 'by': 'Kit Carter'},
@@ -573,18 +573,18 @@ class EDRResourceFinder(object):
                 { 'system': 'HIP 37222', 'ring': '3 ring A', 'distanceToRing': 2019, 'tuple': 2, 'by': None}
             ],
             'low temperature diamond': [
-                {'system':'Borann', 'ring':'A2 ring B', 'distanceToRing': TODO, 'tuple': 3, 'by': 'haltingpoint'},
-                {'system':'Tjupali', 'ring':'8 ring A', 'distanceToRing': TODO, 'tuple': 2, 'by': None},
-                {'system':'HIP 7799', 'ring':'BCD7 ring A', 'distanceToRing': TODO, 'tuple': 2, 'by': None},
-                {'system':'HIP 39383', 'ring':'BC7 ring B', 'distanceToRing': TODO, 'tuple': 2, 'by': None},
-                {'system':'Arietis Sector FG-X b1-5', 'ring':'8 ring B', 'distanceToRing': TODO, 'tuple': 2, 'by': None},
-                {'system':'Col 285 Sector SU-F c11-19', 'ring':'ABC1 ring A', 'distanceToRing': TODO, 'tuple': 2, 'by': 'ElectricNacho'},
-                {'system':'Hyades Sector SD-T c3-4', 'ring':'4 ring B', 'distanceToRing': TODO, 'tuple': 2, 'by': None},
-                {'system':'Bokomu', 'ring':'2 ring B', 'distanceToRing': TODO, 'tuple': 2, 'by': None},
-                {'system':'Pleiades Sector VZ-O b6-3', 'ring':'9 ring A', 'distanceToRing': TODO, 'tuple': 2, 'by': None},
-                {'system':'Lagoon Sector BW-M b7-2', 'ring':'A5 ring A', 'distanceToRing': TODO, 'tuple': 3, 'by': 'thicky_kemp'},
-                {'system':'Eol Prou HG-M c8-9', 'ring':'BC3 ring A', 'distanceToRing': TODO, 'tuple': 3, 'by': None},
-                {'system':'Coeus', 'ring':'A2 ring B', 'distanceToRing': TODO, 'tuple': 2, 'by': None},
+                {'system':'Borann', 'ring':'A2 ring B', 'distanceToRing': 902, 'tuple': 3, 'by': 'haltingpoint'},
+                {'system':'Tjupali', 'ring':'8 ring A', 'distanceToRing': 1448, 'tuple': 2, 'by': None},
+                {'system':'HIP 7799', 'ring':'BCD7 ring A', 'distanceToRing': 101999, 'tuple': 2, 'by': None},
+                {'system':'HIP 39383', 'ring':'BC7 ring B', 'distanceToRing': 384698, 'tuple': 2, 'by': None},
+                {'system':'Arietis Sector FG-X b1-5', 'ring':'8 ring B', 'distanceToRing': 943, 'tuple': 2, 'by': None},
+                {'system':'Col 285 Sector SU-F c11-19', 'ring':'ABC1 ring A', 'distanceToRing': 3143, 'tuple': 2, 'by': 'ElectricNacho'},
+                {'system':'Hyades Sector SD-T c3-4', 'ring':'4 ring B', 'distanceToRing': 736, 'tuple': 2, 'by': None},
+                {'system':'Bokomu', 'ring':'2 ring B', 'distanceToRing': 1664, 'tuple': 2, 'by': None},
+                {'system':'Pleiades Sector VZ-O b6-3', 'ring':'9 ring A', 'distanceToRing': 1414, 'tuple': 2, 'by': None},
+                {'system':'Lagoon Sector BW-M b7-2', 'ring':'A5 ring A', 'distanceToRing': 1948, 'tuple': 3, 'by': 'thicky_kemp'},
+                {'system':'Eol Prou HG-M c8-9', 'ring':'BC3 ring A', 'distanceToRing': 29911, 'tuple': 3, 'by': None},
+                {'system':'Coeus', 'ring':'A2 ring B', 'distanceToRing': 1590, 'tuple': 2, 'by': None},
             ]
         }
 
