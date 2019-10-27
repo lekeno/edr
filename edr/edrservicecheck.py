@@ -135,7 +135,9 @@ class EDRManufacturedTraderCheck(EDRMaterialTraderBasicCheck):
         return info['economy'].lower() == 'industrial'
 
     def is_service_availability_ambiguous(self, station):
-        return station.get("secondEconomy", '').lower() in ['extraction', 'refinery', 'high tech', 'military']
+        if not station or not station.get("secondEconomy", None):
+            return False
+        return station["secondEconomy"].lower() in ['extraction', 'refinery', 'high tech', 'military']
 
 
 class EDREncodedTraderCheck(EDRMaterialTraderBasicCheck):
@@ -154,7 +156,9 @@ class EDREncodedTraderCheck(EDRMaterialTraderBasicCheck):
         return info['economy'].lower() in ['high tech', 'military']
 
     def is_service_availability_ambiguous(self, station):
-        return station.get("secondEconomy", '').lower() in ['extraction', 'refinery', 'industrial']
+        if not station or not station.get("secondEconomy", None):
+            return False
+        return station["secondEconomy"].lower() in ['extraction', 'refinery', 'industrial']
 
 
 class EDRBlackMarketCheck(EDRStationServiceCheck):
@@ -207,7 +211,9 @@ class EDRHumanTechBrokerCheck(EDRStationServiceCheck):
         return info['economy'].lower() == 'industrial'
     
     def is_service_availability_ambiguous(self, station):
-        return station.get("secondEconomy", '').lower() in ['high tech']
+        if not station or not station.get("secondEconomy", None):
+            return False
+        return station["secondEconomy"].lower() in ['high tech']
     
 class EDRGuardianTechBrokerCheck(EDRStationServiceCheck):
     def __init__(self):
@@ -232,4 +238,6 @@ class EDRGuardianTechBrokerCheck(EDRStationServiceCheck):
         return info['economy'].lower() == 'high tech'
 
     def is_service_availability_ambiguous(self, station):
-        return station.get("secondEconomy", '').lower() in ['industrial']
+        if not station or not station.get("secondEconomy", None):
+            return False
+        return station["secondEconomy"].lower() in ['industrial']
