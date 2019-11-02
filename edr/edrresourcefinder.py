@@ -552,7 +552,7 @@ class EDRResourceFinder(object):
     def recommend_prospecting_ring(self, resource, reference_system, callback):
         rings_lut = {
             'painite': [
-                { 'system': 'HR 6844', 'ring': 'A 3 ring A', 'distanceToRing': 1196, 'tuple': 2, 'by': 'GramNam'}
+                { 'system': 'HR 6844', 'ring': 'A 3 ring A', 'distanceToRing': 1196, 'tuple': 2, 'by': 'GramNam'},
                 { 'system': 'HIP 76772', 'ring': '2 ring A', 'distanceToRing': 1696, 'tuple': 2, 'by': 'Boc Soma'},
                 { 'system': 'HIP 73269', 'ring': 'A 1 ring A', 'distanceToRing': 2156, 'tuple': 2, 'by': 'Flemming'},
                 { 'system': 'HIP 80266', 'ring': '6 ring A', 'distanceToRing': 2978, 'tuple': 2, 'by': 'Kaostic'},
@@ -572,7 +572,7 @@ class EDRResourceFinder(object):
                 { 'system': 'Xi-2 Lupi', 'ring': 'A2 ring A', 'distanceToRing': 1426, 'tuple': 2, 'by': None},
                 { 'system': 'HIP 37222', 'ring': '3 ring A', 'distanceToRing': 2019, 'tuple': 2, 'by': None}
             ],
-            'low temperature diamond': [
+            'low temperature diamonds': [
                 {'system':'Borann', 'ring':'A2 ring B', 'distanceToRing': 902, 'tuple': 3, 'by': 'haltingpoint'},
                 {'system':'Tjupali', 'ring':'8 ring A', 'distanceToRing': 1448, 'tuple': 2, 'by': None},
                 {'system':'HIP 7799', 'ring':'BCD7 ring A', 'distanceToRing': 101999, 'tuple': 2, 'by': None},
@@ -603,13 +603,13 @@ class EDRResourceFinder(object):
         pretty_dist = _(u"{distance:.3g}").format(distance=best_distance) if best_distance < 50.0 else _(u"{distance}").format(distance=int(best_distance))
         clippy.copy(best["system"])
 
-        resource_grade = _(u"{}{}").format(resource, u"+"*best[tuple])
+        resource_grade = _(u"{}{}").format(resource, u"+"*best['tuple'])
         by_line = _(u"by Cmdr {}").format(best['by']) if best['by'] else u""
         return [
                 _(u'{} ({}LY), Ring {} ({}LS): {} {}').format(best['system'], pretty_dist, best['ring'], best['distanceToRing'], resource_grade, by_line),
                 _(u"Bring: detailed surface scanner, prospector & collector limpets, mining lasers."),
-                _(u"Scan the ring to find overlapping painite hotspots."),
-                _(u"Drop in there, prospect asteroids, mine the ones with painite, collect, repeat.")
+                _(u"Scan the ring to find overlapping {} hotspots.").format(resource),
+                _(u"Drop in there, prospect asteroids, mine the ones with {}, collect, repeat.").format(resource)
         ]
 
 
