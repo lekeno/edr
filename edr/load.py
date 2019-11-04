@@ -1065,7 +1065,7 @@ def handle_scan_events(player, entry):
         elif not player.is_independent():
             # Note: power is only present in shiptargeted events if the player is pledged
             # This means that we can only know that the target is independent if a player is pledged and the power attribute is missing
-            scan["power"] = "Independent"
+            scan["power"] = "independent"
         edr_submit_scan(scan, entry["timestamp"], "Ship targeted [{}]".format(entry["LegalStatus"]), player)
 
     player.targeting(target)
