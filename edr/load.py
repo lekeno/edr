@@ -834,12 +834,13 @@ def report_crime(cmdr, entry):
             offender.fine += entry["Fine"]
         edr_submit_crime([offender], entry["CrimeType"], cmdr, entry["timestamp"])
     elif entry["event"] == "CommitCrime" and "Victim" in entry and player_one.name and (entry["Victim"].lower() != player_one.name.lower()):
-        victim = player_one.instanced(entry["Victim"])
-        if "Bounty" in entry:
-            player_one.bounty += entry["Bounty"]
-        if "Fine" in entry:
-            player_one.fine += entry["Fine"]
-        edr_submit_crime_self(player_one, entry["CrimeType"], victim, entry["timestamp"])
+        irrelevant_pattern = re.compile("^(\$([a-z]+_)+[a-z]+;)$")
+        if not irrelevant_pattern.match(entry["Victim"]):
+            if "Bounty" in entry:
+                player_one.bounty += entry["Bounty"]
+            if "Fine" in entry:
+                player_one.fine += entry["Fine"]
+            edr_submit_crime_self(player_one, entry["CrimeType"], victim, entry["timestamp"])
 
 
 def report_comms(player, entry):
