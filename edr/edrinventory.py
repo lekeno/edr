@@ -267,7 +267,7 @@ class EDRInventory(object):
         count = self.count(cname)
         grades = [u"?", u"Ⅰ", u"Ⅱ", u"Ⅲ", u"Ⅳ", u"Ⅴ"]
         slots = [u"?", u"300", u"250", u"200", u"150", u"100"]
-        return u"{} (Grade {}; {}/{})".format(_(entry["raw"]), grades[entry["grade"]], count or u"?", slots[entry["grade"]])
+        return u"{} (Grade {}; {}/{})".format(_(entry["raw"]), grades[entry["grade"]], count, slots[entry["grade"]])
 
     def __check(self):
         self.inconsistencies = False
