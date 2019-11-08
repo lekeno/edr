@@ -39,6 +39,9 @@ class EDRResourceFinder(object):
         "molybdenum": "mol", "niobium": "nio",
         "chromium": "chr", "vanadium": "van", "zinc": "zin", "germaniun": "ger", "manganese": "man",
         "boron": "bor",
+        "painite": "pai",
+        "bromellite": "bro",
+        "low temperature diamonds": "l t d",
         "electrochemical arrays": "e a", "focus crystals": "f c",
         "heat exchangers": "h e", "shielding sensors": "s s",
         "phase alloys": "p a",
@@ -90,6 +93,9 @@ class EDRResourceFinder(object):
         "pol": "polonium", "polo": "polonium", "tec": "technetium", "ytt": "yttrium", "cad": "cadmium",
         "mer": "mercury", "sel": "selenium", "ars": "arsenic", "mol": "molybdenum",
         "nio": "niobium", "chr": "chromium", "van": "vanadium", "zin": "zinc", "ger": "germaniun", "man": "manganese",
+        "ltd": "low temperature diamonds", "l t d": "low temperature diamonds", "low temperature diamond": "low temperature diamonds",
+        "pain": "painite", "pai": "painite",
+        "brom": "bromellite", "bro": "bromellite",
         "bor": "boron",
         "e a": "electrochemical arrays", "electrochemical array": "electrochemical arrays",
         "f c": "focus crystals", "focus crystal": "focus crystals",
@@ -136,6 +142,9 @@ class EDRResourceFinder(object):
         "niobium": 'recommend_prospecting_planet', "chromium": 'recommend_prospecting_planet',
         "vanadium": 'recommend_prospecting_planet', "zinc": 'recommend_prospecting_planet',
         "germaniun": 'recommend_prospecting_planet', "manganese": 'recommend_prospecting_planet',
+        "painite": 'recommend_prospecting_ring',
+        "bromellite": 'recommend_prospecting_ring',
+        "low temperature diamonds": 'recommend_prospecting_ring',
         "boron": 'mat_trader_mining_all',
         "ambiguous abbreviation (pc)": "ambiguous_p_c",
         "ambiguous abbreviation (cc)": "ambiguous_c_c",
@@ -542,6 +551,75 @@ class EDRResourceFinder(object):
                 _(u"Bring: advanced scanner, SRV."),
                 _(u"Break some rocks. Higher chances of Very Rare and Rare resources in metallic meteorite, metallic outcrop and mesosiderite.")
             ]
+
+    def recommend_prospecting_ring(self, resource, reference_system, callback):
+        rings_lut = {
+            'painite': [
+                { 'system': 'HR 6844', 'ring': 'A 3 ring A', 'distanceToRing': 1196, 'tuple': 2, 'by': 'GramNam'},
+                { 'system': 'HIP 76772', 'ring': '2 ring A', 'distanceToRing': 1696, 'tuple': 2, 'by': 'Boc Soma'},
+                { 'system': 'HIP 73269', 'ring': 'A 1 ring A', 'distanceToRing': 2156, 'tuple': 2, 'by': 'Flemming'},
+                { 'system': 'HIP 80266', 'ring': '6 ring A', 'distanceToRing': 2978, 'tuple': 2, 'by': 'Kaostic'},
+                { 'system': 'HIP 19054', 'ring': '1 ring A', 'distanceToRing': 1713, 'tuple': 2, 'by': 'Ace Rimmer'},
+                { 'system': 'Eol Prou QX-T d3-415', 'ring': '4 ring A', 'distanceToRing': 3127, 'tuple': 1, 'by': 'Derek Poulter'},
+                { 'system': 'Eol Prou PH-K c9-497', 'ring': 'A3 ring A', 'distanceToRing': 2043, 'tuple': 1, 'by': 'Derek Poulter'},
+                { 'system': 'Eol Prou RS-T d3-660', 'ring': 'ABC3 ring A', 'distanceToRing': 5948, 'tuple': 2, 'by': 'Fuchsov'},
+                { 'system': 'Eol Prou PC-K c9-104', 'ring': '3 ring A', 'distanceToRing': 3027, 'tuple': 2, 'by': 'Fuchsov'},
+                { 'system': 'Eol Prou HQ-N c7-13', 'ring': '4 ring A', 'distanceToRing': 390, 'tuple': 2, 'by': 'Kit Carter'},
+                { 'system': 'Randgnid', 'ring': '4 ring A', 'distanceToRing': 468, 'tuple': 2, 'by': 'Schmictic'},
+                { 'system': 'Hyades Sector DB-X d1-112', 'ring': '2 ring A', 'distanceToRing': 2396, 'tuple': 2, 'by': None},
+                { 'system': 'Omicron Capricorni B', 'ring': 'B1 ring A', 'distanceToRing': 11524, 'tuple': 2, 'by': None},
+                { 'system': 'HIP 21991', '1 ring A': '4 ring A', 'distanceToRing': 1184, 'tuple': 2, 'by': None},
+                { 'system': 'HIP 59425', '2 ring A': '4 ring A', 'distanceToRing': 1787, 'tuple': 2, 'by': None},
+                { 'system': 'HIP 66481', 'ring': '8 ring A', 'distanceToRing': 1350, 'tuple': 2, 'by': None},
+                { 'system': 'HIP 25368', 'ring': '1 ring A', 'distanceToRing': 53, 'tuple': 2, 'by': None},
+                { 'system': 'Xi-2 Lupi', 'ring': 'A2 ring A', 'distanceToRing': 1426, 'tuple': 2, 'by': None},
+                { 'system': 'HIP 37222', 'ring': '3 ring A', 'distanceToRing': 2019, 'tuple': 2, 'by': None}
+            ],
+            'low temperature diamonds': [
+                {'system':'Borann', 'ring':'A2 ring B', 'distanceToRing': 902, 'tuple': 3, 'by': 'haltingpoint'},
+                {'system':'Tjupali', 'ring':'8 ring A', 'distanceToRing': 1448, 'tuple': 2, 'by': None},
+                {'system':'HIP 7799', 'ring':'BCD7 ring A', 'distanceToRing': 101999, 'tuple': 2, 'by': None},
+                {'system':'HIP 39383', 'ring':'BC7 ring B', 'distanceToRing': 384698, 'tuple': 2, 'by': None},
+                {'system':'Arietis Sector FG-X b1-5', 'ring':'8 ring B', 'distanceToRing': 943, 'tuple': 2, 'by': None},
+                {'system':'Col 285 Sector SU-F c11-19', 'ring':'ABC1 ring A', 'distanceToRing': 3143, 'tuple': 2, 'by': 'ElectricNacho'},
+                {'system':'Hyades Sector SD-T c3-4', 'ring':'4 ring B', 'distanceToRing': 736, 'tuple': 2, 'by': None},
+                {'system':'Bokomu', 'ring':'2 ring B', 'distanceToRing': 1664, 'tuple': 2, 'by': None},
+                {'system':'Pleiades Sector VZ-O b6-3', 'ring':'9 ring A', 'distanceToRing': 1414, 'tuple': 2, 'by': None},
+                {'system':'Lagoon Sector BW-M b7-2', 'ring':'A5 ring A', 'distanceToRing': 1948, 'tuple': 3, 'by': 'thicky_kemp'},
+                {'system':'Eol Prou HG-M c8-9', 'ring':'BC3 ring A', 'distanceToRing': 29911, 'tuple': 3, 'by': None},
+                {'system':'Coeus', 'ring':'A2 ring B', 'distanceToRing': 1590, 'tuple': 2, 'by': None},
+            ],
+            'bromellite': [
+                { 'system': 'Irusan', 'ring': '3 ring B', 'distanceToRing': 1715, 'tuple': 3, 'by': 'SpanningTheBlack & BeornK'},
+                { 'system': 'Ngorowai', 'ring': ' A 15 ring A', 'distanceToRing': 2315, 'tuple': 2, 'by': 'Merganser'},
+                { 'system': 'Lyncis Sector AV-Y c8', 'ring': '3 ring A', 'distanceToRing': 21713, 'tuple': 2, 'by': 'AnubisNor'},
+                { 'system': 'Pleiades Sector VZ-O b6-3', 'ring': '8 ring B', 'distanceToRing': 1078, 'tuple': 2, 'by': 'Norrwin'}, 
+            ]
+        }
+
+        candidates = rings_lut.get(resource, None)
+        if not candidates:
+            return False
+
+        best_distance = None
+        best = None
+        for ring in candidates:
+            distance = self.edr_systems.distance(reference_system, ring['system'])
+            if best_distance is None or distance < best_distance:
+                best_distance = distance
+                best = ring
+        
+        pretty_dist = _(u"{distance:.3g}").format(distance=best_distance) if best_distance < 50.0 else _(u"{distance}").format(distance=int(best_distance))
+        clippy.copy(best["system"])
+
+        resource_grade = _(u"{}{}").format(resource, u"+"*best['tuple'])
+        by_line = _(u"by Cmdr {}").format(best['by']) if best['by'] else u""
+        return [
+                _(u'{sys} ({sdist}LY), {body} ({bdist}LS): {grade} {by}').format(sys=best['system'], sdist=pretty_dist, body=best['ring'], bdist=best['distanceToRing'], grade=resource_grade, by=by_line),
+                _(u"Bring: detailed surface scanner, prospector & collector limpets, mining lasers."),
+                _(u"Scan the ring to find overlapping {} hotspots.").format(resource),
+                _(u"Drop in there, prospect asteroids, mine the ones with {}, collect, repeat.").format(resource)
+        ]
 
 
     def from_hacking(self, resource, reference_system, callback):

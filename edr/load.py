@@ -827,19 +827,27 @@ def report_crime(cmdr, entry):
         edr_submit_crime_self(cmdr, "Murder", victim, entry["timestamp"])
         player_one.destroy(victim)
     elif entry["event"] == "CrimeVictim" and "Offender" in entry and player_one.name and (entry["Offender"].lower() != player_one.name.lower()):
-        offender = player_one.instanced(entry["Offender"])
-        if "Bounty" in entry:
-            offender.bounty += entry["Bounty"]
-        if "Fine" in entry:
-            offender.fine += entry["Fine"]
-        edr_submit_crime([offender], entry["CrimeType"], cmdr, entry["timestamp"])
+        irrelevant_pattern = re.compile("^(\$([A-Za-z0-9]+_)+[A-Za-z0-9]+;)$")
+        if not irrelevant_pattern.match(entry["Offender"]) and player_one.is_instanced_with(entry["Offender"]):
+            offender = player_one.instanced(entry["Offender"])
+            if "Bounty" in entry:
+                offender.bounty += entry["Bounty"]
+            if "Fine" in entry:
+                offender.fine += entry["Fine"]
+            edr_submit_crime([offender], u"{} (CrimeVictim)".format(entry["CrimeType"]), cmdr, entry["timestamp"])
+        else:
+            EDRLOG.log(u"Ignoring 'CrimeVictim' event: offender={}; instanced_with={}".format(entry["Offender"], player_one.is_instanced_with(entry["Offender"])), "DEBUG")
     elif entry["event"] == "CommitCrime" and "Victim" in entry and player_one.name and (entry["Victim"].lower() != player_one.name.lower()):
-        victim = player_one.instanced(entry["Victim"])
-        if "Bounty" in entry:
-            player_one.bounty += entry["Bounty"]
-        if "Fine" in entry:
-            player_one.fine += entry["Fine"]
-        edr_submit_crime_self(player_one, entry["CrimeType"], victim, entry["timestamp"])
+        irrelevant_pattern = re.compile("^(\$([A-Za-z0-9]+_)+[A-Za-z0-9]+;)$")
+        if not irrelevant_pattern.match(entry["Victim"]) and player_one.is_instanced_with(entry["Victim"]):
+            victim = player_one.instanced(entry["Victim"])
+            if "Bounty" in entry:
+                player_one.bounty += entry["Bounty"]
+            if "Fine" in entry:
+                player_one.fine += entry["Fine"]
+            edr_submit_crime_self(player_one, u"{} (CommitCrime)".format(entry["CrimeType"]), victim, entry["timestamp"])
+        else:
+            EDRLOG.log(u"Ignoring 'CommitCrime' event: Victim={}; instanced_with={}".format(entry["Victim"], player_one.is_instanced_with(entry["Victim"])), "DEBUG")
 
 
 def report_comms(player, entry):
@@ -1065,7 +1073,7 @@ def handle_scan_events(player, entry):
         elif not player.is_independent():
             # Note: power is only present in shiptargeted events if the player is pledged
             # This means that we can only know that the target is independent if a player is pledged and the power attribute is missing
-            scan["power"] = "Independent"
+            scan["power"] = "independent"
         edr_submit_scan(scan, entry["timestamp"], "Ship targeted [{}]".format(entry["LegalStatus"]), player)
 
     player.targeting(target)
