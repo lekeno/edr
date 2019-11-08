@@ -40,6 +40,7 @@ class EDRResourceFinder(object):
         "chromium": "chr", "vanadium": "van", "zinc": "zin", "germaniun": "ger", "manganese": "man",
         "boron": "bor",
         "painite": "pai",
+        "bromellite": "bro",
         "low temperature diamonds": "l t d",
         "electrochemical arrays": "e a", "focus crystals": "f c",
         "heat exchangers": "h e", "shielding sensors": "s s",
@@ -94,6 +95,7 @@ class EDRResourceFinder(object):
         "nio": "niobium", "chr": "chromium", "van": "vanadium", "zin": "zinc", "ger": "germaniun", "man": "manganese",
         "ltd": "low temperature diamonds", "l t d": "low temperature diamonds", "low temperature diamond": "low temperature diamonds",
         "pain": "painite", "pai": "painite",
+        "brom": "bromellite", "bro": "bromellite",
         "bor": "boron",
         "e a": "electrochemical arrays", "electrochemical array": "electrochemical arrays",
         "f c": "focus crystals", "focus crystal": "focus crystals",
@@ -141,6 +143,7 @@ class EDRResourceFinder(object):
         "vanadium": 'recommend_prospecting_planet', "zinc": 'recommend_prospecting_planet',
         "germaniun": 'recommend_prospecting_planet', "manganese": 'recommend_prospecting_planet',
         "painite": 'recommend_prospecting_ring',
+        "bromellite": 'recommend_prospecting_ring',
         "low temperature diamonds": 'recommend_prospecting_ring',
         "boron": 'mat_trader_mining_all',
         "ambiguous abbreviation (pc)": "ambiguous_p_c",
@@ -585,6 +588,12 @@ class EDRResourceFinder(object):
                 {'system':'Lagoon Sector BW-M b7-2', 'ring':'A5 ring A', 'distanceToRing': 1948, 'tuple': 3, 'by': 'thicky_kemp'},
                 {'system':'Eol Prou HG-M c8-9', 'ring':'BC3 ring A', 'distanceToRing': 29911, 'tuple': 3, 'by': None},
                 {'system':'Coeus', 'ring':'A2 ring B', 'distanceToRing': 1590, 'tuple': 2, 'by': None},
+            ],
+            'bromellite': [
+                { 'system': 'Irusan', 'ring': '3 ring B', 'distanceToRing': 1715, 'tuple': 3, 'by': 'SpanningTheBlack & BeornK'},
+                { 'system': 'Ngorowai', 'ring': ' A 15 ring A', 'distanceToRing': 2315, 'tuple': 2, 'by': 'Merganser'},
+                { 'system': 'Lyncis Sector AV-Y c8', 'ring': '3 ring A', 'distanceToRing': 21713, 'tuple': 2, 'by': 'AnubisNor'},
+                { 'system': 'Pleiades Sector VZ-O b6-3', 'ring': '8 ring B', 'distanceToRing': 1078, 'tuple': 2, 'by': 'Norrwin'}, 
             ]
         }
 
