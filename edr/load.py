@@ -827,7 +827,7 @@ def report_crime(cmdr, entry):
         edr_submit_crime_self(cmdr, "Murder", victim, entry["timestamp"])
         player_one.destroy(victim)
     elif entry["event"] == "CrimeVictim" and "Offender" in entry and player_one.name and (entry["Offender"].lower() != player_one.name.lower()):
-        irrelevant_pattern = re.compile("^(\$([a-z]+_)+[a-z]+;)$")
+        irrelevant_pattern = re.compile("^(\$([A-Za-z0-9]+_)+[A-Za-z0-9]+;)$")
         if not irrelevant_pattern.match(entry["Offender"]) and player_one.is_instanced_with(entry["Offender"]):
             offender = player_one.instanced(entry["Offender"])
             if "Bounty" in entry:
@@ -835,8 +835,10 @@ def report_crime(cmdr, entry):
             if "Fine" in entry:
                 offender.fine += entry["Fine"]
             edr_submit_crime([offender], u"{} (CrimeVictim)".format(entry["CrimeType"]), cmdr, entry["timestamp"])
+        else:
+            EDRLOG.log(u"Ignoring 'CrimeVictim' event: offender={}; instanced_with={}".format(entry["Offender"], player_one.is_instanced_with(entry["Offender"])), "DEBUG")
     elif entry["event"] == "CommitCrime" and "Victim" in entry and player_one.name and (entry["Victim"].lower() != player_one.name.lower()):
-        irrelevant_pattern = re.compile("^(\$([a-z]+_)+[a-z]+;)$")
+        irrelevant_pattern = re.compile("^(\$([A-Za-z0-9]+_)+[A-Za-z0-9]+;)$")
         if not irrelevant_pattern.match(entry["Victim"]) and player_one.is_instanced_with(entry["Victim"]):
             victim = player_one.instanced(entry["Victim"])
             if "Bounty" in entry:
@@ -844,6 +846,8 @@ def report_crime(cmdr, entry):
             if "Fine" in entry:
                 player_one.fine += entry["Fine"]
             edr_submit_crime_self(player_one, u"{} (CommitCrime)".format(entry["CrimeType"]), victim, entry["timestamp"])
+        else:
+            EDRLOG.log(u"Ignoring 'CommitCrime' event: Victim={}; instanced_with={}".format(entry["Victim"], player_one.is_instanced_with(entry["Victim"])), "DEBUG")
 
 
 def report_comms(player, entry):
