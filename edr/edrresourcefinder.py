@@ -615,7 +615,7 @@ class EDRResourceFinder(object):
         resource_grade = _(u"{}{}").format(resource, u"+"*best['tuple'])
         by_line = _(u"by Cmdr {}").format(best['by']) if best['by'] else u""
         return [
-                _(u'{} ({}LY), Ring {} ({}LS): {} {}').format(best['system'], pretty_dist, best['ring'], best['distanceToRing'], resource_grade, by_line),
+                _(u'{sys} ({sdist}LY), {body} ({bdist}LS): {grade} {by}').format(sys=best['system'], sdist=pretty_dist, body=best['ring'], bdist=best['distanceToRing'], grade=resource_grade, by=by_line),
                 _(u"Bring: detailed surface scanner, prospector & collector limpets, mining lasers."),
                 _(u"Scan the ring to find overlapping {} hotspots.").format(resource),
                 _(u"Drop in there, prospect asteroids, mine the ones with {}, collect, repeat.").format(resource)
