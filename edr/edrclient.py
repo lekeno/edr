@@ -114,6 +114,7 @@ class EDRClient(object):
         self.tips = randomtips.RandomTips()
         self.help_content = helpcontent.HelpContent()
         self._throttle_until_timestamp = None
+        self.ui.notify(_(u"Troubleshooting"), [_(u"If the overlay doesn't show up, try one of the following:"), _(u" - In Elite: go to graphics options, and select Borderless or Windowed."), _(" - With Elite and EDR launched, check that EDMCOverlay.exe is running in the task manager"), _(" - Reach out to LeKeno on discord (LeKeno#8484) or the Elite forums (LeKeno)")])
 
     def loud_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "loud")
@@ -322,7 +323,7 @@ class EDRClient(object):
         details.append(_(u"-- Feeling lost? Send !help via the in-game chat --"))
         details.append(self.tips.tip())
         # Translators: this is shown when EDR warms-up via the overlay
-        self.__notify(_(u"EDR v{} by LeKeno (Cobra Kai)").format(self.edr_version), details, clear_before=True)
+        self.__notify(_(u"EDR v{} by LeKeno").format(self.edr_version), details, clear_before=True)
 
     def shutdown(self, everything=False):
         self.edrcmdrs.persist()

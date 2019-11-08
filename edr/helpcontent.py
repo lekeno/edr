@@ -33,7 +33,7 @@ class HelpContent(object):
             "header": _(u"About EDR"),
             "details": [
                 _(u"ED Recon is a third party plugin for Elite Dangerous. Its purpose is to provide insights about outlaws to traders, explorers, and bounty hunters."),
-                _(u" - EDR is in beta, is developed by LeKeno from Cobra Kai, and uses a customized version of Ian Norton's EDMCOverlay for the overlay."),
+                _(u" - EDR is in beta, is developed by LeKeno, and uses a customized version of Ian Norton's EDMCOverlay for the overlay."),
                 _(u" - It is TOS compliant because it uses Elite Dangerous's player journal which has been designed for third party consumption."),
                 _(u" - EDR is free to use but you can support EDR's development and server costs at https://patreon.com/lekeno"),
                 _(u" - Got feedback or questions? Please file bugs, feature requests or questions at https://github.com/lekeno/edr/issues/"),
