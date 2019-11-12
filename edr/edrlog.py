@@ -13,7 +13,7 @@ class EDRLog(object):
         if not self.is_important_enough(level):
             return
 
-        print "[EDR]" + msg.encode(sys.getdefaultencoding(), 'replace')
+        print("[EDR]" + msg.encode(sys.getdefaultencoding(), 'replace'))
 
 
     def is_important_enough(self, level):
