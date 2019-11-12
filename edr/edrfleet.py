@@ -1,4 +1,5 @@
 import os
+import sys
 import sqlite3
 import math
 
@@ -46,7 +47,7 @@ class EDRFleet(object):
 
 
     def __init__(self):
-        path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'db/fleet')
+        path = os.path.join(os.path.abspath(os.path.dirname(__file__)).decodde(sys.getfilesystemencoding()), 'db/fleet')
         try:
             self.db = sqlite3.connect(path)
             cursor = self.db.cursor()
@@ -58,7 +59,7 @@ class EDRFleet(object):
                         destination_system TEXT, source_market_id INTEGER, destination_market_id INTEGER)''')
             self.db.commit()
         except:
-            EDRLOG(u"Couldn't open/create the fleet database", "ERROR");
+            EDRLOG.log(u"Couldn't open/create the fleet database", "ERROR");
             self.db = None
     
     def update(self, event):

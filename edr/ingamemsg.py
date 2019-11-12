@@ -9,7 +9,7 @@ from edri18n import _
 
 EDRLOG = edrlog.EDRLog()
 
-_overlay_dir = os.path.join(os.path.dirname(__file__).decode('utf-8'), u'EDMCOverlay')
+_overlay_dir = os.path.join(os.path.dirname(__file__).decode(sys.getfilesystemencoding()), u'EDMCOverlay')
 
 if _overlay_dir not in sys.path:
     sys.path.append(_overlay_dir)
