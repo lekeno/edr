@@ -16,6 +16,9 @@ EDR_CLIENT = EDRClient()
 EDRLOG = EDRLog()
 LAST_KNOWN_SHIP_NAME = ""
 
+def plugin_start3(plugin_dir):
+    return plugin_start()
+
 def plugin_start():
     """
     Start up EDR, try to login
@@ -53,11 +56,11 @@ def plugin_app(parent):
     return EDR_CLIENT.app_ui(parent)
 
 
-def plugin_prefs(parent):
+def plugin_prefs(parent, cmdr, is_beta):
     return EDR_CLIENT.prefs_ui(parent)
 
 
-def prefs_changed():
+def prefs_changed(cmdr, is_beta):
     EDR_CLIENT.prefs_changed()
 
 def prerequisites(edr_client, is_beta):
