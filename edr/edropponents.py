@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
+from __future__ import absolute_import, division
 
 import datetime
 import time
@@ -115,7 +116,7 @@ class EDROpponents(object):
         js_epoch_now = 1000 * time.mktime(now.timetuple())
         processed = []
         for sighting in self.recents:
-            if (js_epoch_now - sighting["timestamp"]) / 1000 > self.timespan:
+            if (js_epoch_now - sighting["timestamp"]) // 1000 > self.timespan:
                 continue
             if sighting["cmdr"] not in processed:
                 summary.append(self.__readable_opponent_sighting(sighting, one_liner=True))

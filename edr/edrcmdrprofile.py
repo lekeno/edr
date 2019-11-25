@@ -1,9 +1,12 @@
 # coding= utf-8
-import edrlog
-import edtime
-from edri18n import _, _c
+from __future__ import absolute_import
+from __future__ import division
 
-EDRLOG = edrlog.EDRLog()
+from .edrlog import EDRLog
+from .edtime import EDTime
+from .edri18n import _, _c
+
+EDRLOG = EDRLog()
 
 class EDRCmdrDexProfile(object):
     @staticmethod
@@ -24,7 +27,7 @@ class EDRCmdrDexProfile(object):
         self._friend = dex_dict.get("friend", False)
         self._memo = dex_dict.get("memo", None)
 
-        now = edtime.EDTime.js_epoch_now()
+        now = EDTime.js_epoch_now()
         self.created = dex_dict.get("created", now)
         self.updated = dex_dict.get("updated", now)
 
@@ -35,7 +38,7 @@ class EDRCmdrDexProfile(object):
 
     @alignment.setter
     def alignment(self, new_alignment):
-        now = edtime.EDTime.js_epoch_now()
+        now = EDTime.js_epoch_now()
         if (new_alignment is None):
             self._alignment = None
             self.updated = now
@@ -55,7 +58,7 @@ class EDRCmdrDexProfile(object):
 
     @iff.setter
     def iff(self, new_iff):
-        now = edtime.EDTime.js_epoch_now()
+        now = EDTime.js_epoch_now()
         if (new_iff is None):
             self._iff = None
             self.updated = now
@@ -80,7 +83,7 @@ class EDRCmdrDexProfile(object):
         if is_friend == self._friend:
             return False
         self._friend = is_friend
-        self.updated = edtime.EDTime.js_epoch_now()
+        self.updated = EDTime.js_epoch_now()
         return True
 
     def is_useless(self):
@@ -93,7 +96,7 @@ class EDRCmdrDexProfile(object):
     @memo.setter
     def memo(self, message):
         self._memo = message
-        self.updated = edtime.EDTime.js_epoch_now()
+        self.updated = EDTime.js_epoch_now()
         return True
 
     def __all_tags(self):
@@ -129,7 +132,7 @@ class EDRCmdrDexProfile(object):
             return True
         elif tag not in self.tags:
             self.tags.add(tag)
-            self.updated = edtime.EDTime.js_epoch_now()
+            self.updated = EDTime.js_epoch_now()
             return True
 
         return False
@@ -148,7 +151,7 @@ class EDRCmdrDexProfile(object):
             return True
         elif tag in self.tags:
             self.tags.remove(tag)
-            self.updated = edtime.EDTime.js_epoch_now()
+            self.updated = EDTime.js_epoch_now()
             return True
 
         return False
@@ -363,7 +366,7 @@ class EDRCmdrProfile(object):
         total_hints = float(sum([hints for hints in self.alignment_hints.values()]))
         if (total_hints < 10):
             return u"[!{} ?{} +{}]".format(self.alignment_hints["outlaw"], self.alignment_hints["neutral"], self.alignment_hints["enforcer"])
-        return u"[!{:.0%} ?{:.0%} +{:.0%}]".format(self.alignment_hints["outlaw"] / total_hints, self.alignment_hints["neutral"] / total_hints, self.alignment_hints["enforcer"] / total_hints)
+        return u"[!{:.0%} ?{:.0%} +{:.0%}]".format(self.alignment_hints["outlaw"] // total_hints, self.alignment_hints["neutral"] // total_hints, self.alignment_hints["enforcer"] // total_hints)
 
     def short_profile(self, powerplay=None):
         edr_parts = []

@@ -3,7 +3,8 @@
 
 import os
 import json
-from edri18n import _, _c
+
+def _(message): return message
 
 class HelpContent(object):
 
@@ -267,3 +268,5 @@ class HelpContent(object):
         if category in self.content.keys():
             return self.content[category]
         return None
+
+del _

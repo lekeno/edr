@@ -1,9 +1,12 @@
-import edrconfig
-import lrucache
+from __future__ import absolute_import, division
+
 import os
 import pickle
 import math
-from edri18n import _
+
+from .edrconfig import EDRConfig
+from .lrucache import LRUCache
+from .edri18n import _
 
 class EDRMaterialOutcomes(object):
     def __init__(self):
@@ -18,11 +21,11 @@ class EDRMaterialOutcomes(object):
             current_grade = self.outcomes[material.lower()]["grade"]
             rolls = self.outcomes[material.lower()]["rolls"] + rolls
             base = current_likelihood + likelihood
-            grade = current_grade * (current_likelihood/base) + grade * (likelihood/base)
+            grade = current_grade * (current_likelihood // base) + grade * (likelihood // base)
             likelihood = 1.0 - (1.0 - current_likelihood)*(1.0 - likelihood)
         source_lut = {
-            "datamined wake exceptions": "Distribution Center",
-            "exquisite focus crystals": "Mission rewards"
+            u"datamined wake exceptions": u"Distribution Center",
+            u"exquisite focus crystals": u"Mission rewards"
         }
         source = source_lut.get(material, _(u"USS-HGE")) 
         self.outcomes[material.lower()] = {"likelihood": likelihood, "grade": grade, "rolls": rolls, "source": source}
@@ -40,7 +43,7 @@ class EDRMaterialOutcomes(object):
             return None
 
         grade = self.outcomes[material]["grade"]
-        likelihood = self.outcomes[material]["likelihood"] / len(self.outcomes)
+        likelihood = self.outcomes[material]["likelihood"] // len(self.outcomes)
         return (int(grade), likelihood)
 
 class EDRFaction(object):
@@ -106,7 +109,7 @@ class EDRFaction(object):
         grade = 2 if primary_state else 1
         bonus = 0
         if population >= 1000000:
-            bonus = int(max(3, math.log10(population / 100000)))
+            bonus = int(max(3, math.log10(population // 100000)))
         outcomes = EDRMaterialOutcomes()
         if state == 'outbreak':
             if allegiance in ['alliance', 'independent'] or security == '$GAlAXY_MAP_INFO_state_anarchy;':
@@ -150,7 +153,7 @@ class EDRFaction(object):
         grade = 2 if primary_state else 1
         bonus = 0
         if population >= 1000000:
-            bonus = int(max(3, math.log10(population / 100000)))
+            bonus = int(max(3, math.log10(population // 100000)))
         outcomes = EDRMaterialOutcomes()
         if state == 'outbreak':
             if allegiance in ['alliance', 'independent'] or security == '$GAlAXY_MAP_INFO_state_anarchy;':
@@ -190,7 +193,7 @@ class EDRFaction(object):
         grade = 2 if primary_state else 1
         bonus = 0
         if population >= 1000000:
-            bonus = int(max(3, math.log10(population / 100000)))
+            bonus = int(max(3, math.log10(population // 100000)))
         outcomes = EDRMaterialOutcomes()
         if security == '$SYSTEM_SECURITY_low;':
             outcomes.chances_of('Configurable Components', grade+bonus, influence)
@@ -215,7 +218,7 @@ class EDRFaction(object):
         grade = 2 if primary_state else 1
         bonus = 0
         if population >= 1000000:
-            bonus = int(max(3, math.log10(population / 100000)))
+            bonus = int(max(3, math.log10(population // 100000)))
         outcomes = EDRMaterialOutcomes()
         outcomes.chances_of('Thermic Alloys', grade+bonus, influence)
         if security == '$GAlAXY_MAP_INFO_state_anarchy;':
@@ -258,13 +261,13 @@ class EDRFactions(object):
         os.path.abspath(os.path.dirname(__file__)), 'cache/edr_factions.v1.p')
 
     def __init__(self):
-        edr_config = edrconfig.EDRConfig()
+        edr_config = EDRConfig()
 
         try:
             with open(self.EDR_FACTIONS_CACHE, 'rb') as handle:
                 self.factions_cache = pickle.load(handle)
         except:
-            self.factions_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+            self.factions_cache = LRUCache(edr_config.lru_max_size(),
                                                    edr_config.factions_max_age())
         
     def persist(self):

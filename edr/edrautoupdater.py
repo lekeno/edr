@@ -1,11 +1,13 @@
+from __future__ import absolute_import
+
 import requests
 import zipfile
 import os
 import json
 import datetime
-import edrlog
+from .edrlog import EDRLog
 
-EDRLOG = edrlog.EDRLog()
+EDRLOG = EDRLog()
 
 class EDRAutoUpdater(object):
     REPO = "lekeno/edr"

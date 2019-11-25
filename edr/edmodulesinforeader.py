@@ -1,8 +1,11 @@
+from __future__ import absolute_import
+
 import json
 from os.path import join
 from config import config
-import edrlog
-EDRLOG = edrlog.EDRLog()
+from .edrlog import EDRLog
+
+EDRLOG = EDRLog()
 
 class EDModulesInfoReader(object):
     def __init__(self):
@@ -17,4 +20,4 @@ class EDModulesInfoReader(object):
                     entry = json.loads(data)
                     return entry
         except:
-            EDRLOG.log(u"Couldn't process modulesinfo", "WARNING")
+            EDRLOG.log(u"Couldn't process modulesinfo", u"WARNING")

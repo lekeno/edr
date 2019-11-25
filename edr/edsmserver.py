@@ -1,19 +1,21 @@
+from __future__ import absolute_import
+
 import json
 
-import edrconfig
-import edrlog
+from .edrconfig import EDRConfig
+from .edrlog import EDRLog
 
 import requests
 
 
-EDRLOG = edrlog.EDRLog()
+EDRLOG = EDRLog()
 
 class EDSMServer(object):
 
     SESSION = requests.Session()
 
     def __init__(self):
-        config = edrconfig.EDRConfig()
+        config = EDRConfig()
         self.EDSM_API_KEY = config.edsm_api_key()
         self.EDSM_SERVER = config.edsm_server()
 

@@ -1,13 +1,15 @@
-from sseclient import SSEClient
-from Queue import Queue
+from __future__ import absolute_import
+
+from queue import Queue
 import requests
 import json
 import threading
 import socket
 import sys
 
-import edtime
-from edrlog import EDRLog
+from .sseclient import SSEClient
+from .edtime import EDTime
+from .edrlog import EDRLog
 
 class EDRRealtimeUpdates(object):
     def __init__(self, callback, kind, endpoint, authenticator):
@@ -85,7 +87,7 @@ class RemoteThread(threading.Thread):
         if self.sse:
             self.sse.close()
             self.sse = None
-        nowish = edtime.EDTime.js_epoch_now() - 1000*60*self.minutes_ago
+        nowish = EDTime.js_epoch_now() - 1000*60*self.minutes_ago
         params = { "orderBy": '"timestamp"', "startAt": nowish, "limitToLast": 10}
         if self.authenticator:
             params["auth"] = self.authenticator()

@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from sys import platform
 import os.path
 

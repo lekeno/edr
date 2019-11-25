@@ -1,8 +1,11 @@
+from __future__ import absolute_import
+
 import json
 import re
 import os
-import edrlog
-EDRLOG = edrlog.EDRLog()
+
+from .edrlog import EDRLog
+EDRLOG = EDRLog()
 POWER_DATA = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data/modules_power_data.json')).read())
 
 class EDModule(object):

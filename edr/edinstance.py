@@ -1,15 +1,17 @@
-import edtime
+from __future__ import absolute_import
+
+from .edtime import EDTime
 
 class EDInstance(object):
     def __init__(self):
-        now = edtime.EDTime.py_epoch_now()
+        now = EDTime.py_epoch_now()
         self.timestamp = now
         self.last_check_timestamp = None
         self._touched = True
         self.players = {}
 
     def reset(self):
-        now = edtime.EDTime.py_epoch_now()
+        now = EDTime.py_epoch_now()
         self.timestamp = now
         self.players = {}
         self._touched = True
@@ -17,7 +19,7 @@ class EDInstance(object):
     def player(self, cmdr_name):
         if cmdr_name.lower() not in self.players:
             return None
-        return self.players[cmdr_name.lower()]["player"]
+        return self.players[cmdr_name.lower()][u"player"]
 
     def blip(self, cmdr_name):
         if cmdr_name.lower() not in self.players:
@@ -25,13 +27,13 @@ class EDInstance(object):
         return self.players[cmdr_name.lower()]
 
     def player_in(self, cmdr):
-        now = edtime.EDTime.py_epoch_now()
+        now = EDTime.py_epoch_now()
         self.timestamp = now
-        self.players[cmdr.name.lower()] = {"timestamp": now, "player": cmdr}
+        self.players[cmdr.name.lower()] = {u"timestamp": now, u"player": cmdr}
         self._touched = True
 
     def player_out(self, cmdr_name):
-        now = edtime.EDTime.py_epoch_now()
+        now = EDTime.py_epoch_now()
         try:
             del self.players[cmdr_name.lower()]
             self.timestamp = now
@@ -75,7 +77,7 @@ class EDInstance(object):
         return len(self.players)
 
     def noteworthy_changes_json(self):
-        now = edtime.EDTime.py_epoch_now()
+        now = EDTime.py_epoch_now()
         if not self._touched:
             return None
         players = []
@@ -95,18 +97,18 @@ class EDInstance(object):
         for cmdr_name in self.players:
             timestamp, player = self.players[cmdr_name.lower()].values()
             if cmdr_name.targeted:
-                now = edtime.EDTime.py_epoch_now()
+                now = EDTime.py_epoch_now()
                 timestamp = now
             result[cmdr_name.lower()] = {"timestamp": int(timestamp*1000), "player": player.json()}
         return result
 
     def debug_repr(self):
         result = []
-        result.append(u"T:{} ; last_check:{} ; touched: {}".format(edtime.EDTime.t_minus(self.timestamp*1000), edtime.EDTime.t_minus(self.last_check_timestamp*1000) if self.last_check_timestamp else "", self._touched))
+        result.append(u"T:{} ; last_check:{} ; touched: {}".format(EDTime.t_minus(self.timestamp*1000), EDTime.t_minus(self.last_check_timestamp*1000) if self.last_check_timestamp else "", self._touched))
         for cmdr_name in self.players:
             timestamp, player = self.players[cmdr_name.lower()].values()
-            now = edtime.EDTime.py_epoch_now()
+            now = EDTime.py_epoch_now()
             if player.targeted:
                 timestamp = now
-            result.append(u"{} at {}: {} {}".format(cmdr_name, edtime.EDTime.t_minus(timestamp*1000), "[TGT]" if player.targeted else "", player.json()))
+            result.append(u"{} at {}: {} {}".format(cmdr_name, EDTime.t_minus(timestamp*1000), "[TGT]" if player.targeted else "", player.json()))
         return result

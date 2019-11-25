@@ -152,7 +152,7 @@ class EDRServer(object):
     def notams(self, timespan_seconds):
         now_epoch_js = int(1000 * calendar.timegm(time.gmtime()))
         past_epoch_js = int(now_epoch_js - (1000 * timespan_seconds))
-        future_epoch_js = 1830000000000L
+        future_epoch_js = 1830000000000
 
         params = {"orderBy": '"timestamp"', "startAt": past_epoch_js, "endAt": future_epoch_js, "auth": self.auth_token(), "limitToLast": 10}
         resp = self.__get("{}/v1/notams.json".format(self.EDR_SERVER), "EDR", params)

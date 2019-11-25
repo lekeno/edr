@@ -1,7 +1,10 @@
 # coding= utf-8
+from __future__ import absolute_import
+
 import pickle
 import os
-from edri18n import _
+
+from .edri18n import _
 
 class EDRInventory(object):
     EDR_INVENTORY_ENCODED_CACHE = os.path.join(
