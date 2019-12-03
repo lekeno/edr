@@ -6,15 +6,17 @@ import json
 import os
 import random
 
-from .clippy import copy
-from .edrfactions import EDRFactions
-from .edrstatecheck import *
-from .edrstatefinder import EDRStateFinder
-from .edri18n import _
+from clippy import copy
+from edrfactions import EDRFactions, EDRFaction
+import edrstatecheck
+from edrstatefinder import EDRStateFinder
+from edri18n import _
+from edrrawdepletables import EDRRawDepletables
+import utils2to3
 
 class EDRResourceFinder(object):
 
-    RAW_MATS = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data/raw.json')).read())
+    RAW_MATS = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'raw.json')).read())
 
     SUPPORTED_RESOURCES = {
         "antimony": "ant", "tellurium": "tel", "ruthenium": "rut", "tungsten": "tun", "zirconium": "zir", "arsenic": "ars",
@@ -109,9 +111,9 @@ class EDRResourceFinder(object):
     RESOURCE_CALLBACKS = {
         "biotech conductors": 'mission_reward_only',
         "exquisite focus crystals": 'mission_reward_only',
-        "tellurium": 'recommend_planet_or_crashed_site', "ruthenium": 'recommend_planet_or_crashed_site', "tungsten": 'recommend_crashed_site',
-        "antimony": 'recommend_planet_or_crashed_site',
-        "zirconium": 'recommend_crashed_site', "adaptive encryptors capture": 'recommend_crashed_site',
+        "tellurium": 'recommend_planet_or_crashed_site_or_depletable', "ruthenium": 'recommend_planet_or_crashed_site_or_depletable', "tungsten": 'recommend_crashed_site_or_depletable',
+        "antimony": 'recommend_planet_or_crashed_site_or_depletable',
+        "zirconium": 'recommend_crashed_site_or_depletable', "adaptive encryptors capture": 'recommend_crashed_site',
         "atypical encryption archives": 'recommend_crashed_site', "modified consumer firmware": 'recommend_crashed_site',
         "modified embedded firmware": 'from_hacking',
         "divergent scan data": 'from_hacking',
@@ -139,11 +141,11 @@ class EDRResourceFinder(object):
         "high density composites": "from_dav_hope", "mechanical components": "from_dav_hope",
         "conductive ceramics": "from_surface_site", "chemical distillery": "from_surface_site",
         "electrochemical arrays": "from_surface_site", "focus crystals": "from_surface_site", "heat exchangers": "from_surface_site", "shielding sensors": "from_surface_site", "phase alloys": "from_surface_site",
-        "polonium": 'recommend_prospecting_planet', "technetium": 'recommend_prospecting_planet', "yttrium": 'recommend_prospecting_planet', "cadmium": 'recommend_prospecting_planet', "mercury": 'recommend_prospecting_planet', "selenium": 'recommend_prospecting_planet', "tin": 'recommend_prospecting_planet',
-        "arsenic": 'recommend_prospecting_planet', "molybdenum": 'recommend_prospecting_planet',
-        "niobium": 'recommend_prospecting_planet', "chromium": 'recommend_prospecting_planet',
-        "vanadium": 'recommend_prospecting_planet', "zinc": 'recommend_prospecting_planet',
-        "germaniun": 'recommend_prospecting_planet', "manganese": 'recommend_prospecting_planet',
+        "polonium": 'recommend_prospecting_planet', "technetium": 'recommend_planet_or_depletable', "yttrium": 'recommend_planet_or_depletable', "cadmium": 'recommend_planet_or_depletable', "mercury": 'recommend_planet_or_depletable', "selenium": 'recommend_planet_or_depletable', "tin": 'recommend_planet_or_depletable',
+        "arsenic": 'recommend_planet_or_depletable', "molybdenum": 'recommend_planet_or_depletable',
+        "niobium": 'recommend_planet_or_depletable', "chromium": 'recommend_planet_or_depletable',
+        "vanadium": 'recommend_planet_or_depletable', "zinc": 'recommend_planet_or_depletable',
+        "germanium": 'recommend_planet_or_depletable', "manganese": 'recommend_planet_or_depletable',
         "painite": 'recommend_prospecting_ring',
         "bromellite": 'recommend_prospecting_ring',
         "low temperature diamonds": 'recommend_prospecting_ring',
@@ -201,6 +203,14 @@ class EDRResourceFinder(object):
             _(u" - '!search c co' for configurable components"),
         ]
     
+    def recommend_crashed_site_or_depletable(self, resource, reference_system, callback):
+        suggestion = None
+        if random.random() < 0.5:
+            suggestion = self.recommend_raw_depletable(resource, reference_system, callback)
+        if not suggestion:
+            suggestion = self.recommend_crashed_site(resource, reference_system, callback)
+        return suggestion
+
     def recommend_crashed_site(self, resource, reference_system, callback):
         if resource is None:
             return False
@@ -440,11 +450,25 @@ class EDRResourceFinder(object):
             _(u"More efficient: exchange other materials at a raw material trader, send !raw to find the closest one.")
         ]
     
-    def recommend_planet_or_crashed_site(self, resource, reference_system, callback):
+    def recommend_planet_or_crashed_site_or_depletable(self, resource, reference_system, callback):
+        suggestion = None
+        r = random.random()
+        if r < 0.3333:
+            suggestion = self.recommend_raw_depletable(resource, reference_system, callback)
+        if not suggestion and (r >= 0.3333 and r < 0.6666):
+            suggestion = self.recommend_prospecting_planet(resource, reference_system, callback)
+        if not suggestion or r >= 0.6666:
+            suggestion = self.recommend_crashed_site(resource, reference_system, callback)            
+        return suggestion
+
+    def recommend_planet_or_depletable(self, resource, reference_system, callback):
+        suggestion = None
         if random.random() < 0.5:
-            return self.recommend_crashed_site(resource, reference_system, callback)
-        else:
-            return self.recommend_prospecting_planet(resource, reference_system, callback)
+            suggestion = self.recommend_raw_depletable(resource, reference_system, callback)
+        if not suggestion:
+            suggestion = self.recommend_prospecting_planet(resource, reference_system, callback)
+        return suggestion
+
 
     def recommend_prospecting_planet(self, resource, reference_system, callback):
         planets_lut = {
@@ -553,6 +577,29 @@ class EDRResourceFinder(object):
                 _(u"Bring: advanced scanner, SRV."),
                 _(u"Break some rocks. Higher chances of Very Rare and Rare resources in metallic meteorite, metallic outcrop and mesosiderite.")
             ]
+
+    def recommend_raw_depletable(self, resource, reference_system, callback):
+        depletables = EDRRawDepletables()
+        candidates = depletables.hotspots(resource)
+        if not candidates:
+            return False
+
+        best_distance = None
+        best = None
+        for hotspot in candidates:
+            distance = self.edr_systems.distance(reference_system, hotspot[0])
+            if best_distance is None or distance < best_distance:
+                best_distance = distance
+                best = hotspot
+        
+        pretty_dist = _(u"{distance:.3g}").format(distance=best_distance) if best_distance < 50.0 else _(u"{distance}").format(distance=int(best_distance))
+        copy(best[0])
+        return [
+            _(u'{} ({}LY), Planet {} ({}LS, {}G), {}').format(best[0], pretty_dist, best[1], best[3], best[2], best[4]),
+            _(u"Bring: SRV, synth materials for SRV fuel and ammo."),
+            _(u"Get within 500LS of the planet to find the tourist spot."),
+            _(u"Land, deploy SRV to break the crystals, and scoop high grade materials.")
+        ]
 
     def recommend_prospecting_ring(self, resource, reference_system, callback):
         rings_lut = {
@@ -720,10 +767,10 @@ class EDRResourceFinder(object):
         
     def assess_signal(self, fsssignal_event, location, inventory):
         uss_type = fsssignal_event.get("USSType", None)    
-        state = edrfactions.EDRFaction._simplified_state(fsssignal_event.get("SpawningState", None))
+        state = EDRFaction._simplified_state(fsssignal_event.get("SpawningState", None))
         faction = self.edr_factions.get(fsssignal_event.get("SpawningFaction", ""), location.star_system)
         if faction is None:
-            faction = edrfactions.EDRFaction({"Name": fsssignal_event.get("SpawningFaction", None), "FactionState": state })            
+            faction = EDRFaction({"Name": fsssignal_event.get("SpawningFaction", None), "FactionState": state })            
         security = location.security
         population = location.population
         if uss_type == "$USS_Type_VeryValuableSalvage;":        
