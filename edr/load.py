@@ -6,6 +6,7 @@ import plug
 from edrclient import EDRClient
 from edentities import EDPlayerOne, EDPlayer
 from edvehicles import EDVehicleFactory
+from edrrawdepletables import EDRRawDepletables
 from edtime import EDTime
 from edrlog import EDRLog
 import edentities
@@ -490,6 +491,10 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
             status_outcome["updated"] = True
             status_outcome["reason"] = outcome["reason"]
 
+    if entry["event"] == "Touchdown" and entry.get("PlayerControlled", None) and entry.get("NearestDestination", None):
+        depletables = EDRRawDepletables()
+        depletables.visit(entry["NearestDestination"])
+        
     if entry["event"] in ["FSSSignalDiscovered"]:
         EDR_CLIENT.noteworthy_about_signal(entry)
 
