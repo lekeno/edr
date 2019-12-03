@@ -605,8 +605,7 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
                                                                 criminal_cmdr.vehicle_type()),
                    "DEBUG")
         blob = {"name": criminal_cmdr.name, "ship": criminal_cmdr.vehicle_type(), "enemy": criminal_cmdr.enemy, "wanted": criminal_cmdr.wanted, "bounty": criminal_cmdr.bounty, "fine": criminal_cmdr.fine}
-        if criminal_cmdr.power:
-            blob["power"] = criminal_cmdr.power
+        blob["power"] = criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else u"",
         criminals.append(blob)
 
     edt = EDTime()
@@ -620,7 +619,7 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
         "victim": victim.name,
         "victimShip": victim.vehicle_type(),
         "reportedBy": victim.name,
-        "byPledge": victim.powerplay.canonicalize() if victim.powerplay else "",
+        "byPledge": victim.powerplay.canonicalize() if victim.powerplay else u"",
         "mode": victim.game_mode,
         "group": victim.private_group
     }
@@ -660,7 +659,7 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim, timestamp):
         "victim": victim.name,
         "victimShip": victim.vehicle_type(),
         "reportedBy": criminal_cmdr.name,
-        "byPledge": criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else "",
+        "byPledge": criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else u"",
         "victimWanted": victim.wanted,
         "victimBounty": victim.bounty,
         "victimEnemy": victim.enemy,
@@ -668,8 +667,7 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim, timestamp):
         "group": criminal_cmdr.private_group
     }
 
-    if criminal_cmdr.power:
-        report["criminals"][0]["power"] = criminal_cmdr.power
+    report["criminals"][0]["power"] = criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else u"",
 
     EDRLOG.log(u"Perpetrated crime: {}".format(report), "DEBUG")
 
@@ -1077,7 +1075,7 @@ def handle_scan_events(player, entry):
             scan["sqid"] = target.sqid
 
         if target.power:
-            scan["power"] = target.power
+            scan["power"] = target.powerplay.canonicalize() if target.powerplay else u""
         elif not player.is_independent():
             # Note: power is only present in shiptargeted events if the player is pledged
             # This means that we can only know that the target is independent if a player is pledged and the power attribute is missing
