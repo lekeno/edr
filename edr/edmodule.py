@@ -4,9 +4,11 @@ import json
 import re
 import os
 
-from .edrlog import EDRLog
+from edrlog import EDRLog
+import utils2to3
+
 EDRLOG = EDRLog()
-POWER_DATA = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data/modules_power_data.json')).read())
+POWER_DATA = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'modules_power_data.json')).read())
 
 class EDModule(object):
     def __init__(self, module):

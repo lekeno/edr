@@ -3,22 +3,20 @@ from __future__ import absolute_import, division
 import os
 import pickle
 
-from .edtime import EDTime
-from .edrconfig import EDRConfig
-from .lrucache import LRUCache
-from .edrlog import EDRLog
-from .edentities import EDPlayerOne
+from edtime import EDTime
+from edrconfig import EDRConfig
+from lrucache import LRUCache
+from edrlog import EDRLog
+from edentities import EDPlayerOne
+import utils2to3
 
 EDRLOG = EDRLog()
 
 class EDRCmdrs(object):
     #TODO these should be player and/or squadron specific
-    EDR_CMDRS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/cmdrs.v7.p')
-    EDR_INARA_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/inara.v7.p')
-    EDR_SQDRDEX_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/sqdrdex.v2.p')
+    EDR_CMDRS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'cmdrs.v7.p')
+    EDR_INARA_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'inara.v7.p')
+    EDR_SQDRDEX_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'sqdrdex.v2.p')
 
     def __init__(self, edrserver):
         self.server = edrserver

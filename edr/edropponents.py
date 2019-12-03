@@ -16,6 +16,7 @@ import edrlog
 import edtime
 from edentities import EDFineOrBounty
 from edri18n import _, _c
+import utils2to3
 
 EDRLOG = edrlog.EDRLog()
 
@@ -24,13 +25,13 @@ class EDROpponents(object):
     ENEMIES = "Enemies"
 
     EDR_OPPONENTS_SIGHTINGS_CACHES = {
-        "Outlaws": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/outlaws_sigthings.v2.p'),
-        "Enemies": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/enemies_sigthings.v2.p')
+        "Outlaws": utils2to3.abspathmaker(__file__, 'cache', 'outlaws_sigthings.v2.p'),
+        "Enemies": utils2to3.abspathmaker(__file__, 'cache', 'enemies_sigthings.v2.p')
     }
 
     EDR_OPPONENTS_RECENTS_CACHES = {
-        "Outlaws": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/outlaws_recents.v2.p'),
-        "Enemies": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/enemies_recents.v2.p')
+        "Outlaws": utils2to3.abspathmaker(__file__, 'cache', 'outlaws_recents.v2.p'),
+        "Enemies": utils2to3.abspathmaker(__file__, 'cache', 'enemies_recents.v2.p')
     }
 
     def __init__(self, server, opponent_kind, client_callback):

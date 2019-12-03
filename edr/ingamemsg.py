@@ -6,10 +6,11 @@ import igmconfig
 import edrlog
 import textwrap
 from edri18n import _
+import utils2to3
 
 EDRLOG = edrlog.EDRLog()
 
-_overlay_dir = os.path.join(os.path.dirname(__file__).decode(sys.getfilesystemencoding()), u'EDMCOverlay')
+_overlay_dir = utils2to3.pathmaker(__file__, u'EDMCOverlay')
 
 if _overlay_dir not in sys.path:
     sys.path.append(_overlay_dir)

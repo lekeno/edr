@@ -5,9 +5,11 @@ from __future__ import absolute_import
 import gettext
 import os
 
+import utils2to3
+
 
 CONTEXT_SEPARATOR = u"|"
-L10N_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'l10n')
+L10N_DIR = utils2to3.abspathmaker(__file__, 'l10n')
 language = None
 translate = gettext.translation('edr', L10N_DIR, fallback=True, codeset="utf-8")
 

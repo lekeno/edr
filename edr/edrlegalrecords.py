@@ -6,19 +6,19 @@ import time
 import os
 import pickle
 
-from .lrucache import LRUCache
-from .edrconfig import EDRConfig
-from .edrlog import EDRLog
-from .edtime import EDTime
+from lrucache import LRUCache
+from edrconfig import EDRConfig
+from edrlog import EDRLog
+from edtime import EDTime
 from collections import deque
 from edentities import EDFineOrBounty
 from edri18n import _, _c
+import utils2to3
 
 EDRLOG = EDRLog()
 
 class EDRLegalRecords(object):
-    EDR_LEGAL_RECORDS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/legal_records.v2.p')
+    EDR_LEGAL_RECORDS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'legal_records.v2.p')
     
     def __init__(self, server):
         self.server = server

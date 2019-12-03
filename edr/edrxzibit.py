@@ -4,8 +4,10 @@ import os
 import edrlog
 import edmodule
 from edri18n import _
+import utils2to3
+
 EDRLOG = edrlog.EDRLog()
-POWER_DATA = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data/modules_power_data.json')).read())
+POWER_DATA = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'modules_power_data.json')).read())
 
 
 class EDRXzibit(object):

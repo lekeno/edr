@@ -4,9 +4,10 @@ import os
 import pickle
 import math
 
-from .edrconfig import EDRConfig
-from .lrucache import LRUCache
-from .edri18n import _
+from edrconfig import EDRConfig
+from lrucache import LRUCache
+from edri18n import _
+import utils2to3
 
 class EDRMaterialOutcomes(object):
     def __init__(self):
@@ -257,8 +258,7 @@ class EDRFaction(object):
         return LUT.get(state, state)
 
 class EDRFactions(object):
-    EDR_FACTIONS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/edr_factions.v1.p')
+    EDR_FACTIONS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edr_factions.v1.p')
 
     def __init__(self):
         edr_config = EDRConfig()

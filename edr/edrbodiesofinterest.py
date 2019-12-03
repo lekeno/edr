@@ -3,10 +3,11 @@ from __future__ import absolute_import
 import os
 import json
 
-from .edentities import EDPlanetaryLocation
+import utils2to3
+from edentities import EDPlanetaryLocation
 
 class EDRBodiesOfInterest(object):
-    BOI = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data/boi.json')).read())
+    BOI = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'boi.json')).read())
 
     @staticmethod
     def bodies_of_interest(star_system):
