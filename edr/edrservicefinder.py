@@ -1,6 +1,9 @@
 import threading
 from random import shuffle
 from edri18n import _
+from edrlog import EDRLog
+
+EDRLOG = EDRLog()
 
 class EDRServiceFinder(threading.Thread):
 
@@ -45,13 +48,16 @@ class EDRServiceFinder(threading.Thread):
         system['distance'] = 0
         possibility = self.checker.check_system(system)
         accessible = not system.get('requirePermit', False) or (system.get('requirePermit', False) and system['name'] in self.permits)
+        EDRLOG.log(u"System {}: possibility {}, accessible {}".format(system['name'], possibility, accessible), "DEBUG")
         if possibility and accessible:
             candidate = self.__service_in_system(system)
             if candidate:
                 ambiguous = self.checker.is_service_availability_ambiguous(candidate)
                 check_sc_distance = candidate['distanceToArrival'] <= self.sc_distance
                 check_landing_pads = self.__has_large_lading_pads(candidate['type']) if self.large_pad_required else True
+                EDRLOG.log(u"System {} is a candidate: ambiguous {}, sc_distance {}, landing_pads {}".format(system['name'], ambiguous, check_sc_distance, check_landing_pads), "DEBUG")
                 if check_sc_distance and check_landing_pads and not ambiguous:
+                    EDRLOG.log(u"System {} is a prime candidate. Stopping here.".format(system['name']), "DEBUG")
                     servicePrime = system
                     servicePrime['station'] = candidate
                     return servicePrime
@@ -71,6 +77,7 @@ class EDRServiceFinder(threading.Thread):
             serviceAlt = candidates['alt']
             servicePrime = candidates['prime']
         else:
+            EDRLOG.log(u"Couldn't find any candidate so far. Trying again after a shuffle", "DEBUG")
             shuffle(systems)
             candidates = self.__search(systems, candidates)
             if candidates:
@@ -86,12 +93,14 @@ class EDRServiceFinder(threading.Thread):
         for system in systems:
             possibility = self.checker.check_system(system)
             accessible = not system.get('requirePermit', False) or (system.get('requirePermit', False) and system['name'] in self.permits)
+            EDRLOG.log(u"System {}: possibility {}, accessible {}".format(system['name'], possibility, accessible), "DEBUG")
             if not possibility or not accessible:
                 continue
 
             if self.edr_systems.are_stations_stale(system['name']):
                 trials = trials + 1
                 if trials > self.max_trials:
+                    EDRLOG.log(u"Tried too many. Aborting here.", "DEBUG")
                     break
             
             candidate = self.__service_in_system(system)
@@ -99,10 +108,12 @@ class EDRServiceFinder(threading.Thread):
                 check_sc_distance = candidate['distanceToArrival'] <= self.sc_distance
                 check_landing_pads = self.__has_large_lading_pads(candidate['type']) if self.large_pad_required else True
                 ambiguous = self.checker.is_service_availability_ambiguous(candidate)
+                EDRLOG.log(u"System {} is a candidate: ambiguous {}, sc_distance {}, landing_pads {}".format(system['name'], ambiguous, check_sc_distance, check_landing_pads), "DEBUG")
                 if check_sc_distance and check_landing_pads and not ambiguous:
                     trialed = system
                     trialed['station'] = candidate
                     closest = self.edr_systems.closest_destination(trialed, candidates['prime'])
+                    EDRLOG.log(u"Prime Trial {}, closest {}".format(system['name'], closest['name']), "DEBUG")
                     candidates['prime'] = closest
                 else:
                     if ambiguous:
@@ -110,9 +121,11 @@ class EDRServiceFinder(threading.Thread):
                     trialed = system
                     trialed['station'] = candidate
                     closest = self.edr_systems.closest_destination(trialed, candidates['alt'])
+                    EDRLOG.log(u"Trial {}, closest {}".format(system['name'], closest['name']), "DEBUG")
                     candidates['alt'] = closest                    
 
             if candidates['prime']:
+                EDRLOG.log(u"Prime found, breaking here.", "DEBUG")
                 break
 
         return candidates

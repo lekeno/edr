@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
-from .edri18n import _, _c, _edr
-from .edrsysstacheck import EDRSystemStationCheck
+from edri18n import _, _c, _edr
+from edrsysstacheck import EDRSystemStationCheck
 
 
 class EDRStationServiceCheck(EDRSystemStationCheck):

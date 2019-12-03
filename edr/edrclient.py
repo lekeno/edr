@@ -1,39 +1,40 @@
 # coding= utf-8
 from __future__ import absolute_import
-from builtins import map, filter
+#from builtins import map, filter
 
 import datetime
 import time
 import random
 import math
 
-import tkinter as tk
+#import tkinter as tk
+import Tkinter as tk
 import ttk
 import ttkHyperlinkLabel
 import myNotebook as notebook
 from config import config
 
-from .edrconfig import EDRConfig
-from .lrucache import LRUCache
-from .edentities import EDPlanetaryLocation, EDFineOrBounty, EDLocation
-from .edrserver import EDRServer, CommsJammedError
-from .audiofeedback import AudioFeedback
-from .edrlog import EDRLog
-from .ingamemsg import InGameMsg
-from .edrtogglingpanel import EDRTogglingPanel
-from .edrsystems import EDRSystems
-from .edrresourcefinder import EDRResourceFinder
-from .edrbodiesofinterest import EDRBodiesOfInterest
-from .edrcmdrs import EDRCmdrs
-from .edropponents import EDROpponents
-from .randomtips import RandomTips
-from .helpcontent import HelpContent
-from .edtime import EDTime
-from .edrlegalrecords import EDRLegalRecords
-from .edrxzibit import EDRXzibit
+from edrconfig import EDRConfig
+from lrucache import LRUCache
+from edentities import EDPlanetaryLocation, EDFineOrBounty, EDLocation
+from edrserver import EDRServer, CommsJammedError
+from audiofeedback import AudioFeedback
+from edrlog import EDRLog
+from ingamemsg import InGameMsg
+from edrtogglingpanel import EDRTogglingPanel
+from edrsystems import EDRSystems
+from edrresourcefinder import EDRResourceFinder
+from edrbodiesofinterest import EDRBodiesOfInterest
+from edrcmdrs import EDRCmdrs
+from edropponents import EDROpponents
+from randomtips import RandomTips
+from helpcontent import HelpContent
+from edtime import EDTime
+from edrlegalrecords import EDRLegalRecords
+from edrxzibit import EDRXzibit
 
-from .edri18n import _, _c, _edr, set_language
-from .clippy import copy
+from edri18n import _, _c, _edr, set_language
+from clippy import copy
 
 EDRLOG = EDRLog()
 
@@ -41,7 +42,7 @@ class EDRClient(object):
     AUDIO_FEEDBACK = AudioFeedback()
 
     def __init__(self):
-        edr_config = edrconfig.EDRConfig()
+        edr_config = EDRConfig()
         set_language(config.get("language"))
 
         self.edr_version = edr_config.edr_version()
@@ -102,7 +103,7 @@ class EDRClient(object):
         }
         
         self.edrsystems = EDRSystems(self.server)
-        self.edrresourcefinder = edrresourcefinder.EDRResourceFinder(self.edrsystems)
+        self.edrresourcefinder = EDRResourceFinder(self.edrsystems)
         self.edrcmdrs = EDRCmdrs(self.server)
         self.edropponents = {
             EDROpponents.OUTLAWS: EDROpponents(self.server, EDROpponents.OUTLAWS, self._realtime_callback),
@@ -1486,7 +1487,7 @@ class EDRClient(object):
             return
 
         try:
-            self.edrsystems.search_interstellar_factors(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad, override_sc_distance = override_sc_distance)
+            self.edrsystems.search_interstellar_factors(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"I.Factors: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Interstellar Factors: searching...")], clear_before = True)
@@ -1507,7 +1508,7 @@ class EDRClient(object):
             return
 
         try:
-            self.edrsystems.search_raw_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad, override_sc_distance = override_sc_distance)
+            self.edrsystems.search_raw_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"Raw mat. trader: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Raw material trader: searching...")], clear_before = True)
@@ -1528,7 +1529,7 @@ class EDRClient(object):
             return
 
         try:
-            self.edrsystems.search_encoded_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad, override_sc_distance = override_sc_distance)
+            self.edrsystems.search_encoded_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"Encoded data trader: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Encoded data trader: searching...")], clear_before = True)
@@ -1550,7 +1551,7 @@ class EDRClient(object):
             return
         
         try:
-            self.edrsystems.search_manufactured_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad, override_sc_distance = override_sc_distance)
+            self.edrsystems.search_manufactured_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"Manufactured mat. trader: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Manufactured material trader: searching...")], clear_before = True)
@@ -1593,7 +1594,7 @@ class EDRClient(object):
             return
 
         try:
-            self.edrsystems.search_human_tech_broker(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad, override_sc_distance = override_sc_distance)
+            self.edrsystems.search_human_tech_broker(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"Human tech broker: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Human tech broker: searching...")], clear_before = True)
@@ -1614,7 +1615,7 @@ class EDRClient(object):
             return
 
         try:
-            self.edrsystems.search_guardian_tech_broker(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad, override_sc_distance = override_sc_distance)
+            self.edrsystems.search_guardian_tech_broker(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"Guardian tech broker: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Guardian tech broker: searching...")], clear_before = True)

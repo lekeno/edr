@@ -21,32 +21,22 @@ import edrservicecheck
 import edrservicefinder
 import edrstatecheck
 import edrstatefinder
+import utils2to3
 
 EDRLOG = edrlog.EDRLog()
 
 class EDRSystems(object):
-    EDR_SYSTEMS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/systems.v4.p')
-    EDR_RAW_MATERIALS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/raw_materials.v1.p')
-    EDSM_BODIES_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_bodies.v1.p')
-    EDSM_SYSTEMS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_systems.v3.p')
-    EDSM_STATIONS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_stations.v1.p')
-    EDSM_SYSTEMS_WITHIN_RADIUS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_systems_radius.v1.p')
-    EDSM_FACTIONS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/edsm_factions.v1.p')
-    EDR_NOTAMS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/notams.v2.p')
-    EDR_SITREPS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/sitreps.v3.p')
-    EDR_TRAFFIC_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/traffic.v2.p')
-    EDR_CRIMES_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/crimes.v2.p')
+    EDR_SYSTEMS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'systems.v4.p')
+    EDR_RAW_MATERIALS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'raw_materials.v1.p')
+    EDSM_BODIES_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_bodies.v1.p')
+    EDSM_SYSTEMS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_systems.v3.p')
+    EDSM_STATIONS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_stations.v1.p')
+    EDSM_SYSTEMS_WITHIN_RADIUS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_systems_radius.v2.p')
+    EDSM_FACTIONS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_factions.v1.p')
+    EDR_NOTAMS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'notams.v2.p')
+    EDR_SITREPS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'sitreps.v3.p')
+    EDR_TRAFFIC_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'traffic.v2.p')
+    EDR_CRIMES_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'crimes.v2.p')
 
     def __init__(self, server):
         self.reasonable_sc_distance = 1500
@@ -717,10 +707,11 @@ class EDRSystems(object):
         cached = self.edsm_systems_within_radius_cache.has_key(key)
         if cached or systems:
             EDRLOG.log(u"Systems within {} of system {} are in the cache.".format(radius, star_system), "DEBUG")
-            return systems
+            return sorted(systems, key = lambda i: i['distance'])
 
         systems = self.edsm_server.systems_within_radius(star_system, radius)
         if systems:
+            systems = sorted(systems, key = lambda i: i['distance']) 
             self.edsm_systems_within_radius_cache.set(key, systems)
             EDRLOG.log(u"Cached systems within {}LY of {}".format(radius, star_system), "DEBUG")
             return systems
