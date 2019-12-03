@@ -2,9 +2,9 @@
 from __future__ import absolute_import
 from __future__ import division
 
-from .edrlog import EDRLog
-from .edtime import EDTime
-from .edri18n import _, _c
+from edrlog import EDRLog
+from edtime import EDTime
+from edri18n import _, _c
 
 EDRLOG = EDRLog()
 

@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import collections
 import datetime
 
-from .edrlog import EDRLog
+from edrlog import EDRLog
 
 EDRLOG = EDRLog()
 

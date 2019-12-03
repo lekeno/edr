@@ -1,8 +1,8 @@
 from __future__ import absolute_import
 
-from six.moves.tkinter import Tkinter as tk
+import Tkinter as tk
 import ttk
-from .igmconfig import IGMConfig
+from igmconfig import IGMConfig
 import ttkHyperlinkLabel
 
 class ToggledFrame(tk.Frame):

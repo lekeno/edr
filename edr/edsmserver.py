@@ -2,8 +2,8 @@ from __future__ import absolute_import
 
 import json
 
-from .edrconfig import EDRConfig
-from .edrlog import EDRLog
+from edrconfig import EDRConfig
+from edrlog import EDRLog
 
 import requests
 

@@ -16,7 +16,10 @@ class EDRLog(object):
         if not self.is_important_enough(level):
             return
 
-        print("[EDR]" + msg.encode(sys.getdefaultencoding(), 'replace'))
+        if sys.version_info.major == 2:
+            print("[EDR]" + msg.encode(sys.getdefaultencoding(), 'replace'))
+        else:
+            print("[EDR]" + msg)
 
 
     def is_important_enough(self, level):

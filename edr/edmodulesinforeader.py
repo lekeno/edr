@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import json
 from os.path import join
 from config import config
-from .edrlog import EDRLog
+from edrlog import EDRLog
 
 EDRLOG = EDRLog()
 

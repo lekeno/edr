@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from .edtime import EDTime
+from edtime import EDTime
 import random
 
 class EDReconBox(object):

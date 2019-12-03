@@ -1,15 +1,16 @@
 from __future__ import absolute_import
 
-from queue import Queue
+#from queue import Queue
 import requests
 import json
 import threading
 import socket
 import sys
+from Queue import Queue
 
-from .sseclient import SSEClient
-from .edtime import EDTime
-from .edrlog import EDRLog
+from sseclient import SSEClient
+from edtime import EDTime
+from edrlog import EDRLog
 
 class EDRRealtimeUpdates(object):
     def __init__(self, callback, kind, endpoint, authenticator):
