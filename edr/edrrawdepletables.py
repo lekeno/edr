@@ -725,7 +725,7 @@ class EDRRawDepletables(object):
     ]
 
     def __init__(self):
-        path = utils2to3.abspathmaker(__file__, 'data', 'rawdepletables')
+        path = utils2to3.abspathmaker(__file__, 'db', 'rawdepletables')
         try:
             self.db = sqlite3.connect(path)
             cursor = self.db.cursor()
