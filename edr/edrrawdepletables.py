@@ -768,7 +768,7 @@ class EDRRawDepletables(object):
 
     def __replenished_margin(self):
         margin = 1*60*60
-        return EDTime.py_epoch_now() - (7*24*60*60 + margin)
+        return EDTime.py_epoch_now() - (14*24*60*60 + margin)
 
     def hotspots(self, resource_name):
         if self.db is None:
