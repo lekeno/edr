@@ -1009,13 +1009,13 @@ def handle_legal_fees(player, entry):
     
     #TODO this should be on a ship whose id is in the entry rather than the player
     if entry["event"] == "PayFines":
-        if entry["AllFines"]:
+        if entry.get("AllFines", None):
             player.fines = 0
         else:
             true_amount = entry["Amount"] * (1.0 - entry.get("BrokerPercentage", 0)/100.0)
             player.fines = max(0, player.fines - true_amount)
     elif entry["event"] == "PayBounties":
-        if entry["AllFines"]:
+        if entry.get("AllFines", None):
             player.bounty = 0
         else:
             true_amount = entry["Amount"] * (1.0 - entry.get("BrokerPercentage", 0)/100.0)
