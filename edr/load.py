@@ -605,7 +605,7 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
                                                                 criminal_cmdr.vehicle_type()),
                    "DEBUG")
         blob = {"name": criminal_cmdr.name, "ship": criminal_cmdr.vehicle_type(), "enemy": criminal_cmdr.enemy, "wanted": criminal_cmdr.wanted, "bounty": criminal_cmdr.bounty, "fine": criminal_cmdr.fine}
-        blob["power"] = criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else u"",
+        blob["power"] = criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else u""
         criminals.append(blob)
 
     edt = EDTime()
@@ -667,7 +667,7 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim, timestamp):
         "group": criminal_cmdr.private_group
     }
 
-    report["criminals"][0]["power"] = criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else u"",
+    report["criminals"][0]["power"] = criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else u""
 
     EDRLOG.log(u"Perpetrated crime: {}".format(report), "DEBUG")
 
