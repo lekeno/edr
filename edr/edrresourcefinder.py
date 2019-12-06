@@ -595,7 +595,7 @@ class EDRResourceFinder(object):
         pretty_dist = _(u"{distance:.3g}").format(distance=best_distance) if best_distance < 50.0 else _(u"{distance}").format(distance=int(best_distance))
         copy(best[0])
         return [
-            _(u'{} ({}LY), Planet {} ({}LS, {}G), {}@{}').format(best[0], pretty_dist, best[1], best[3], best[2], best[4], best[6]),
+            _(u'{} ({}LY), Planet {} ({}LS, {}G), {} @ {}%').format(best[0], pretty_dist, best[1], best[3], best[2], best[4], int(100*best[6])),
             _(u"Bring: SRV, synth materials for SRV fuel and ammo."),
             _(u"Get within 500LS of the planet to find the tourist spot."),
             _(u"Land, deploy SRV to break the crystals, and scoop high grade materials.")
