@@ -6,6 +6,7 @@ import edrconfig
 import edmodule
 import edmodulesinforeader
 import edrlog
+import utils2to3
 EDRLOG = edrlog.EDRLog()
 
 class EDVehicleAttitude(object):
@@ -873,8 +874,7 @@ class EDVehicleFactory(object):
         "unknown (captain)": EDCaptainUnknownVehicle
     }
 
-    CANONICAL_SHIP_NAMES = json.loads(open(os.path.join(
-    os.path.abspath(os.path.dirname(__file__)), 'data/shipnames.json')).read())
+    CANONICAL_SHIP_NAMES = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'shipnames.json')).read())
 
     @staticmethod
     def canonicalize(name):

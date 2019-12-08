@@ -1,5 +1,9 @@
+from __future__ import absolute_import
+
 from sys import platform
 import os.path
+
+import utils2to3
 
 if platform == 'darwin':
 
@@ -8,16 +12,16 @@ if platform == 'darwin':
     class AudioFeedback(object):
 
         def __init__(self):
-            self.snd_warn = NSSound.alloc().initWithContentsOfFile_byReference_(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sounds/snd_warn.wav'), False)
-            self.snd_notify = NSSound.alloc().initWithContentsOfFile_byReference_(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sounds/snd_notify.wav'), False)
+            self.snd_warn = NSSound.alloc().initWithContentsOfFile_byReference_(utils2to3.abspathmaker(__file__, 'sounds', 'snd_warn.wav'), False)
+            self.snd_notify = NSSound.alloc().initWithContentsOfFile_byReference_(utils2to3.abspathmaker(__file__, 'sounds', 'snd_notify.wav'), False)
 
         def soft(self):
-            self.snd_warn = NSSound.alloc().initWithContentsOfFile_byReference_(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sounds/snd_warn_soft.wav'), False)
-            self.snd_notify = NSSound.alloc().initWithContentsOfFile_byReference_(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sounds/snd_notify_soft.wav'), False)
+            self.snd_warn = NSSound.alloc().initWithContentsOfFile_byReference_(utils2to3.abspathmaker(__file__, 'sounds', 'snd_warn_soft.wav'), False)
+            self.snd_notify = NSSound.alloc().initWithContentsOfFile_byReference_(utils2to3.abspathmaker(__file__, 'sounds', 'snd_notify_soft.wav'), False)
 
         def loud(self):
-            self.snd_warn = NSSound.alloc().initWithContentsOfFile_byReference_(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sounds/snd_warn.wav'), False)
-            self.snd_notify = NSSound.alloc().initWithContentsOfFile_byReference_(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sounds/snd_notify.wav'), False)
+            self.snd_warn = NSSound.alloc().initWithContentsOfFile_byReference_(utils2to3.abspathmaker(__file__, 'sounds', 'snd_warn.wav'), False)
+            self.snd_notify = NSSound.alloc().initWithContentsOfFile_byReference_(utils2to3.abspathmaker(__file__, 'sounds', 'snd_notify.wav'), False)
 
         def warn(self):
             self.snd_warn.play()
@@ -31,18 +35,18 @@ elif platform == 'win32':
 
     class AudioFeedback(object):
         def __init__(self):
-            self.snd_warn = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sounds/snd_warn.wav')
-            self.snd_notify = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sounds/snd_notify.wav')
+            self.snd_warn = utils2to3.abspathmaker(__file__, 'sounds', 'snd_warn.wav')
+            self.snd_notify = utils2to3.abspathmaker(__file__, 'sounds', 'snd_notify.wav')
 
 
         def soft(self):
-            self.snd_warn = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sounds/snd_warn_soft.wav')
-            self.snd_notify = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sounds/snd_notify_soft.wav')
+            self.snd_warn = utils2to3.abspathmaker(__file__, 'sounds', 'snd_warn_soft.wav')
+            self.snd_notify = utils2to3.abspathmaker(__file__, 'sounds', 'snd_notify_soft.wav')
 
 
         def loud(self):
-            self.snd_warn = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sounds/snd_warn.wav')
-            self.snd_notify = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sounds/snd_notify.wav')
+            self.snd_warn = utils2to3.abspathmaker(__file__, 'sounds', 'snd_warn.wav')
+            self.snd_notify = utils2to3.abspathmaker(__file__, 'sounds', 'snd_notify.wav')
 
 
         def warn(self):

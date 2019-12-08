@@ -1,44 +1,48 @@
 # coding= utf-8
+from __future__ import absolute_import
+#from builtins import map, filter
+
 import datetime
 import time
+import random
+import math
 
+#import tkinter as tk
 import Tkinter as tk
 import ttk
 import ttkHyperlinkLabel
 import myNotebook as notebook
 from config import config
-import edrconfig
 
-import lrucache
-import edentities
-import edrserver
-import audiofeedback
-import edrlog
-import ingamemsg
-import edrtogglingpanel
-import edrsystems
-import edrresourcefinder
+from edrconfig import EDRConfig
+from lrucache import LRUCache
+from edentities import EDPlanetaryLocation, EDFineOrBounty, EDLocation
+from edrserver import EDRServer, CommsJammedError
+from audiofeedback import AudioFeedback
+from edrlog import EDRLog
+from ingamemsg import InGameMsg
+from edrtogglingpanel import EDRTogglingPanel
+from edrsystems import EDRSystems
+from edrresourcefinder import EDRResourceFinder
 from edrbodiesofinterest import EDRBodiesOfInterest
-import edrcmdrs
+from edrcmdrs import EDRCmdrs
 from edropponents import EDROpponents
-import randomtips
-import helpcontent
-import edtime
-import edrlegalrecords
-import edrxzibit
+from randomtips import RandomTips
+from helpcontent import HelpContent
+from edtime import EDTime
+from edrlegalrecords import EDRLegalRecords
+from edrxzibit import EDRXzibit
 
 from edri18n import _, _c, _edr, set_language
-import random
-import math
-import clippy
+from clippy import copy
 
-EDRLOG = edrlog.EDRLog()
+EDRLOG = EDRLog()
 
 class EDRClient(object):
-    AUDIO_FEEDBACK = audiofeedback.AudioFeedback()
+    AUDIO_FEEDBACK = AudioFeedback()
 
     def __init__(self):
-        edr_config = edrconfig.EDRConfig()
+        edr_config = EDRConfig()
         set_language(config.get("language"))
 
         self.edr_version = edr_config.edr_version()
@@ -56,13 +60,13 @@ class EDRClient(object):
 
         self.searching = False
 
-        self.blips_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
-        self.cognitive_blips_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
-        self.traffic_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.traffic_max_age())
-        self.scans_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.scans_max_age())
-        self.cognitive_scans_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
-        self.alerts_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.alerts_max_age())
-        self.fights_cache = lrucache.LRUCache(edr_config.lru_max_size(), edr_config.fights_max_age())
+        self.blips_cache = LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
+        self.cognitive_blips_cache = LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
+        self.traffic_cache = LRUCache(edr_config.lru_max_size(), edr_config.traffic_max_age())
+        self.scans_cache = LRUCache(edr_config.lru_max_size(), edr_config.scans_max_age())
+        self.cognitive_scans_cache = LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
+        self.alerts_cache = LRUCache(edr_config.lru_max_size(), edr_config.alerts_max_age())
+        self.fights_cache = LRUCache(edr_config.lru_max_size(), edr_config.fights_max_age())
 
         self._email = tk.StringVar(value=config.get("EDREmail"))
         self._password = tk.StringVar(value=config.get("EDRPassword"))
@@ -70,18 +74,18 @@ class EDRClient(object):
         self._status = tk.StringVar(value=_(u"not authenticated."))
         
         visual = 1 if config.get("EDRVisualFeedback") == "True" else 0
-        self.IN_GAME_MSG = ingamemsg.InGameMsg() if visual else None
+        self.IN_GAME_MSG = InGameMsg() if visual else None
         self._visual_feedback = tk.IntVar(value=visual)
 
         visual_alt = 1 if config.get("EDRVisualAltFeedback") == "True" else 0
         self._visual_alt_feedback = tk.IntVar(value=visual_alt)
         
-        self.ui = edrtogglingpanel.EDRTogglingPanel(self._status, self._visual_alt_feedback)
+        self.ui = EDRTogglingPanel(self._status, self._visual_alt_feedback)
 
         audio = 1 if config.get("EDRAudioFeedback") == "True" else 0
         self._audio_feedback = tk.IntVar(value=audio)
 
-        self.server = edrserver.EDRServer()
+        self.server = EDRServer()
 
         anonymous_reports = _(u"Auto")
         self.server.anonymous_reports = None
@@ -98,21 +102,21 @@ class EDRClient(object):
                          "max_distance": None if config.get("EDREnemiesAlertsMaxDistance") == "None" else config.getint("EDREnemiesAlertsMaxDistance")}
         }
         
-        self.edrsystems = edrsystems.EDRSystems(self.server)
-        self.edrresourcefinder = edrresourcefinder.EDRResourceFinder(self.edrsystems)
-        self.edrcmdrs = edrcmdrs.EDRCmdrs(self.server)
+        self.edrsystems = EDRSystems(self.server)
+        self.edrresourcefinder = EDRResourceFinder(self.edrsystems)
+        self.edrcmdrs = EDRCmdrs(self.server)
         self.edropponents = {
             EDROpponents.OUTLAWS: EDROpponents(self.server, EDROpponents.OUTLAWS, self._realtime_callback),
             EDROpponents.ENEMIES: EDROpponents(self.server, EDROpponents.ENEMIES, self._realtime_callback),
         }
-        self.edrlegal = edrlegalrecords.EDRLegalRecords(self.server)
+        self.edrlegal = EDRLegalRecords(self.server)
 
         self.mandatory_update = False
         self.autoupdate_pending = False
         self.crimes_reporting = True
         self.motd = []
-        self.tips = randomtips.RandomTips()
-        self.help_content = helpcontent.HelpContent()
+        self.tips = RandomTips()
+        self.help_content = HelpContent()
         self._throttle_until_timestamp = None
         self.ui.notify(_(u"Troubleshooting"), [_(u"If the overlay doesn't show up, try one of the following:"), _(u" - In Elite: go to graphics options, and select Borderless or Windowed."), _(" - With Elite and EDR launched, check that EDMCOverlay.exe is running in the task manager"), _(" - Reach out to LeKeno on discord (LeKeno#8484) or the Elite forums (LeKeno)")])
 
@@ -240,7 +244,7 @@ class EDRClient(object):
             return False
         
         if not self.IN_GAME_MSG:
-             self.IN_GAME_MSG = ingamemsg.InGameMsg() 
+             self.IN_GAME_MSG = InGameMsg() 
         return True
 
     @visual_feedback.setter
@@ -479,7 +483,7 @@ class EDRClient(object):
 
     def navigation(self, latitude, longitude):
         position = {"latitude": float(latitude), "longitude": float(longitude)}
-        loc = edentities.EDPlanetaryLocation(position)
+        loc = EDPlanetaryLocation(position)
         if loc.valid():
             self.player.planetary_destination = loc
             self.__notify(_(u'Assisted Navigation'), [_(u"Destination set to {} | {}").format(latitude, longitude), _(u"Guidance will be shown when approaching a stellar body")], clear_before = True)
@@ -532,7 +536,7 @@ class EDRClient(object):
                 # Translators: this is the heading for the sitrep of a given system {}; shown via the overlay
                 header = _(u"SITREP for {}") if self.player.in_open() else _(u"SITREP for {} (Open)")
                 self.__sitrep(header.format(star_system), details)
-        except edrserver.CommsJammedError:
+        except CommsJammedError:
             self.__commsjammed()
         
 
@@ -565,7 +569,7 @@ class EDRClient(object):
             if details:
                 header = _(u"SITREPS") if self.player.in_open() else _(u"SITREPS (Open)")
                 self.__sitrep(header, details)
-        except edrserver.CommsJammedError:
+        except CommsJammedError:
             self.__commsjammed()
 
 
@@ -579,14 +583,14 @@ class EDRClient(object):
 
             EDRLOG.log(u"Failed to retrieve/create cmdr {}".format(cmdr_name), "ERROR")
             return None
-        except edrserver.CommsJammedError:
+        except CommsJammedError:
             self.__commsjammed()
             return None
 
     def cmdr(self, cmdr_name, autocreate=True, check_inara_server=False):
         try:
             return self.edrcmdrs.cmdr(cmdr_name, autocreate, check_inara_server)
-        except edrserver.CommsJammedError:
+        except CommsJammedError:
             self.__commsjammed()
             return None
 
@@ -607,7 +611,7 @@ class EDRClient(object):
             self.__notify(_(u"Basic Power Assessment"), [_(u"Yo dawg, the info I got from FDev might be stale."), _(u"Try again later after a bunch of random actions."), _(u"Or try this: relog, look at your modules, try again.")], clear_before=True)
             return
         
-        build_master = edrxzibit.EDRXzibit(vehicle)
+        build_master = EDRXzibit(vehicle)
         assessment = build_master.assess_power_priorities()
         if not assessment:
             self.__notify(_(u"Basic Power Assessment"), [_(u"Yo dawg, sorry but I can't help with dat.")], clear_before=True)
@@ -752,7 +756,7 @@ class EDRClient(object):
                 elif not self.player.power:
                     details = _(u"Pledge to a power to access enemy alerts")
                 elif self.player.time_pledged < self.enemy_alerts_pledge_threshold:
-                    details = _(u"Remain loyal for at least {} days to access enemy alerts").format(int(self.enemy_alerts_pledge_threshold / 24*60*60))
+                    details = _(u"Remain loyal for at least {} days to access enemy alerts").format(int(self.enemy_alerts_pledge_threshold // 24*60*60))
                 else:
                     details = _(u"Enabling Enemy alerts") if self.edropponents[kind].establish_comms_link() else _(u"Couldn't enable Enemy alerts")
             else:            
@@ -763,7 +767,7 @@ class EDRClient(object):
                 if self.realtime_params[kind]["min_bounty"]:
                     details += _(u" >={min_bounty}cr").format(min_bounty=self.realtime_params[kind]["min_bounty"])
                 self.notify_with_details(_(u"EDR Alerts"), [details])
-        except edrserver.CommsJammedError:
+        except CommsJammedError:
             self.__commsjammed()
         
     def disable_outlaws_alerts(self, silent=False):
@@ -793,7 +797,7 @@ class EDRClient(object):
         if min_bounty:
             try:
                 new_value = int(min_bounty)
-                self.notify_with_details(_(u"EDR Alerts"), [_(u"minimum bounty set to {min_bounty} cr for {kind}").format(min_bounty=edentities.EDFineOrBounty(new_value).pretty_print(), kind=_(kind))])
+                self.notify_with_details(_(u"EDR Alerts"), [_(u"minimum bounty set to {min_bounty} cr for {kind}").format(min_bounty=EDFineOrBounty(new_value).pretty_print(), kind=_(kind))])
             except ValueError:
                 self.notify_with_details(_(u"EDR Alerts"), [_(u"invalid value for minimum bounty")])
                 new_value = None
@@ -870,8 +874,8 @@ class EDRClient(object):
         if not self._worthy_alert(kind, event):
             EDRLOG.log(u"Skipped realtime {} event because it wasn't worth alerting about: {}.".format(kind, event), "DEBUG")
         else:
-            location = edentities.EDLocation(event["starSystem"], event["place"])
-            clippy.copy(event["starSystem"])
+            location = EDLocation(event["starSystem"], event["place"])
+            copy(event["starSystem"])
             distance = None
             try:
                 distance = self.edrsystems.distance(self.player.star_system, location.star_system)
@@ -889,7 +893,7 @@ class EDRClient(object):
                 oneliner += _(u" [{distance:.3g} ly]").format(distance=distance) if distance < 50.0 else _(u" [{distance} ly]").format(distance=int(distance))
             if event.get("wanted", None):
                 if event["bounty"] > 0:
-                    oneliner += _(u" wanted for {bounty} cr").format(bounty=edentities.EDFineOrBounty(event["bounty"]).pretty_print())
+                    oneliner += _(u" wanted for {bounty} cr").format(bounty=EDFineOrBounty(event["bounty"]).pretty_print())
                 else:
                     oneliner += _(u" wanted somewhere")
             
@@ -913,7 +917,7 @@ class EDRClient(object):
             else:
                 EDRLOG.log(u"Who {} : no info".format(cmdr_name), "INFO")
                 self.__intel(cmdr_name, [_("No info about {cmdr}").format(cmdr=cmdr_name)], clear_before=True)
-        except edrserver.CommsJammedError:
+        except CommsJammedError:
             self.__commsjammed()    
 
     def distance(self, from_system, to_system):
@@ -930,8 +934,8 @@ class EDRClient(object):
             taxi_jump_range = 50
             jumping_time = self.edrsystems.jumping_time(from_system, to_system, taxi_jump_range)
             transfer_time = self.edrsystems.transfer_time(from_system, to_system)
-            details.append(_(u"Taxi time ({}LY): {}").format(taxi_jump_range, edtime.EDTime.pretty_print_timespan(jumping_time)))
-            details.append(_(u"Transfer time: {}").format(edtime.EDTime.pretty_print_timespan(transfer_time)))
+            details.append(_(u"Taxi time ({}LY): {}").format(taxi_jump_range, EDTime.pretty_print_timespan(jumping_time)))
+            details.append(_(u"Transfer time: {}").format(EDTime.pretty_print_timespan(transfer_time)))
             self.status = _(u"distance: {dist}ly").format(dist=pretty_dist)
         else:
             self.status = _(u"distance failed")
@@ -996,7 +1000,7 @@ class EDRClient(object):
         if self.novel_enough_scan(cmdr_id, scan, cognitive = True):
             profile = self.cmdr(cmdr_name, check_inara_server=True)
             legal = self.edrlegal.summarize_recents(profile.cid)
-            bounty = edentities.EDFineOrBounty(scan["bounty"]) if scan["bounty"] else None
+            bounty = EDFineOrBounty(scan["bounty"]) if scan["bounty"] else None
             if profile and (self.player.name != cmdr_name):
                 if profile.is_dangerous(self.player.powerplay):
                     # Translators: this is shown via EDMC's EDR status line upon contact with a known outlaw
@@ -1006,7 +1010,7 @@ class EDRClient(object):
                     if scan["enemy"]:
                         status += _(u"PP Enemy (weapons free). ")
                     if scan["bounty"]:
-                        status += _(u"Wanted for {} cr").format(edentities.EDFineOrBounty(scan["bounty"]).pretty_print())
+                        status += _(u"Wanted for {} cr").format(EDFineOrBounty(scan["bounty"]).pretty_print())
                     elif scan["wanted"]:
                         status += _(u"Wanted somewhere. A Kill-Warrant-Scan will reveal their highest bounty.")
                     if status:
@@ -1018,7 +1022,7 @@ class EDRClient(object):
                     self.status = _(u"Intel for cmdr {}.").format(cmdr_name)
                     details = [profile.short_profile(self.player.powerplay)]
                     if bounty:
-                        details.append(_(u"Wanted for {} cr").format(edentities.EDFineOrBounty(scan["bounty"]).pretty_print()))
+                        details.append(_(u"Wanted for {} cr").format(EDFineOrBounty(scan["bounty"]).pretty_print()))
                     elif scan["wanted"]:
                         details.append(_(u"Wanted somewhere but it could be minor offenses."))
                     if legal:
@@ -1077,7 +1081,7 @@ class EDRClient(object):
                 self.traffic_cache.set(sigthed_cmdr, traffic)
 
             return success
-        except edrserver.CommsJammedError:
+        except CommsJammedError:
             self.__commsjammed()
             return False
 
@@ -1192,7 +1196,7 @@ class EDRClient(object):
         return False
 
     def __throttling_duration(self):
-        now_epoch = edtime.EDTime.py_epoch_now()
+        now_epoch = EDTime.py_epoch_now()
         if now_epoch > self._throttle_until_timestamp:
             return 0
         return self._throttle_until_timestamp - now_epoch
@@ -1205,7 +1209,7 @@ class EDRClient(object):
         
         throttling = self.__throttling_duration()
         if throttling:
-            self.status = _(u"Message not sent. Try again in {duration}.").format(duration=edtime.EDTime.pretty_print_timespan(throttling))
+            self.status = _(u"Message not sent. Try again in {duration}.").format(duration=EDTime.pretty_print_timespan(throttling))
             self.__notify(_(u"EDR central"), [self.status], clear_before = True)
             return False
 
@@ -1225,7 +1229,7 @@ class EDRClient(object):
                 fuel_info = "Fuel: {:.1f}/{:.0f}".format(info["ship"]["fuelLevel"], info["ship"]["fuelCapacity"]) if info["ship"].get("fuelLevel") else ""
                 hull_info = "Hull: {:.0f}%".format(info["ship"]["hullHealth"]["value"]) if info["ship"].get("hullHealth") else ""
                 info = u"{} ({}) in {}, {} - {} {}\nInfo provided by EDR.".format(info["cmdr"], info["ship"]["type"], info["starSystem"], info["place"], fuel_info, hull_info)
-                clippy.copy(info)
+                copy(info)
                 attachment.append(info)
                 self.ui.notify(fuel_service["name"], attachment)
                 details.append(_(u"Check ED Market Connector for instructions about other options"))
@@ -1235,7 +1239,7 @@ class EDRClient(object):
             else:
                 self.status = _(u"Message sent to EDR central")
             self.__notify(_(u"EDR central"), details, clear_before = True)
-            self._throttle_until_timestamp = edtime.EDTime.py_epoch_now() + 60*5 #TODO parameterize
+            self._throttle_until_timestamp = EDTime.py_epoch_now() + 60*5 #TODO parameterize
             return True
         return False
 
@@ -1333,7 +1337,7 @@ class EDRClient(object):
                 self.status = _(u"no info about {}").format(cmdr_name)
                 header = _(u"Intel for {}") if self.player.in_open() else _(u"Intel for {} (Open)")
                 self.__intel(header.format(cmdr_name), [_(u"Not recently sighted or not an outlaw.")], clear_before=True)
-        except edrserver.CommsJammedError:
+        except CommsJammedError:
             self.__commsjammed()
 
     def where_ship(self, name_or_type):
@@ -1343,13 +1347,13 @@ class EDRClient(object):
             random.shuffle(results)
             in_clipboard = False
             for hit in results:
-                transit = _(u" @ {}").format(edtime.EDTime.t_plus_py(hit[3])) if hit[3] else u""
+                transit = _(u" @ {}").format(EDTime.t_plus_py(hit[3])) if hit[3] else u""
                 if hit[0]:
                     hits.append(_(u"'{}' ({}): {}{}").format(hit[0], hit[1], hit[2], transit))
                 else:
                     hits.append(_(u"{}: {}{}").format(hit[1], hit[2], transit))
                 if not in_clipboard and hit[2]:
-                    clippy.copy(hit[2])
+                    copy(hit[2])
                     in_clipboard = True
             self.__notify(_(u"Ship locator"), hits, clear_before = True)
         elif results == False:
@@ -1361,14 +1365,14 @@ class EDRClient(object):
     def outlaws(self):
         try:
             return self._opponents(EDROpponents.OUTLAWS)
-        except edrserver.CommsJammedError:
+        except CommsJammedError:
             self.__commsjammed()
             return False
 
     def enemies(self):
         try:
             return self._opponents(EDROpponents.ENEMIES)
-        except edrserver.CommsJammedError:
+        except CommsJammedError:
             self.__commsjammed()
             return False
 
@@ -1381,7 +1385,7 @@ class EDRClient(object):
         if not opponents_report:
             EDRLOG.log(u"No recently sighted {}".format(kind), "INFO")
             header = _(u"Recently Sighted {kind}") if self.player.in_open() else _(u"Recently Sighted {kind} (Open)")
-            self.__sitrep(header.format(kind=_(kind)), [_(u"No {kind} sighted in the last {timespan}").format(kind=_(kind).lower(), timespan=edtime.EDTime.pretty_print_timespan(self.edropponents[kind].timespan))])
+            self.__sitrep(header.format(kind=_(kind)), [_(u"No {kind} sighted in the last {timespan}").format(kind=_(kind).lower(), timespan=EDTime.pretty_print_timespan(self.edropponents[kind].timespan))])
             return False
         
         self.status = _(u"recently sighted {kind}").format(kind=_(kind))
@@ -1398,7 +1402,7 @@ class EDRClient(object):
             EDRLOG.log(u"Show help for {} with header: {} and details: {}".format(section, content["header"], content["details"][0]), "DEBUG")
             self.IN_GAME_MSG.help(content["header"], content["details"])
         EDRLOG.log(u"[Alt] Show help for {} with header: {} and details: {}".format(section, content["header"], content["details"][0]), "DEBUG")
-        self.ui.help(content["header"], content["details"])
+        self.ui.help(_(content["header"]), _(content["details"]))
         return True
 
     def clear(self):
@@ -1483,7 +1487,7 @@ class EDRClient(object):
             return
 
         try:
-            self.edrsystems.search_interstellar_factors(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad, override_sc_distance = override_sc_distance)
+            self.edrsystems.search_interstellar_factors(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"I.Factors: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Interstellar Factors: searching...")], clear_before = True)
@@ -1504,7 +1508,7 @@ class EDRClient(object):
             return
 
         try:
-            self.edrsystems.search_raw_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad, override_sc_distance = override_sc_distance)
+            self.edrsystems.search_raw_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"Raw mat. trader: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Raw material trader: searching...")], clear_before = True)
@@ -1525,7 +1529,7 @@ class EDRClient(object):
             return
 
         try:
-            self.edrsystems.search_encoded_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad, override_sc_distance = override_sc_distance)
+            self.edrsystems.search_encoded_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"Encoded data trader: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Encoded data trader: searching...")], clear_before = True)
@@ -1547,7 +1551,7 @@ class EDRClient(object):
             return
         
         try:
-            self.edrsystems.search_manufactured_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad, override_sc_distance = override_sc_distance)
+            self.edrsystems.search_manufactured_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"Manufactured mat. trader: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Manufactured material trader: searching...")], clear_before = True)
@@ -1590,7 +1594,7 @@ class EDRClient(object):
             return
 
         try:
-            self.edrsystems.search_human_tech_broker(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad, override_sc_distance = override_sc_distance)
+            self.edrsystems.search_human_tech_broker(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"Human tech broker: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Human tech broker: searching...")], clear_before = True)
@@ -1611,7 +1615,7 @@ class EDRClient(object):
             return
 
         try:
-            self.edrsystems.search_guardian_tech_broker(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad, override_sc_distance = override_sc_distance)
+            self.edrsystems.search_guardian_tech_broker(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"Guardian tech broker: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Guardian tech broker: searching...")], clear_before = True)
@@ -1631,7 +1635,7 @@ class EDRClient(object):
             details.append(_(u"{station} ({type}), {sc_dist}").format(station=result['station']['name'], type=result['station']['type'], sc_dist=pretty_sc_dist))
             details.append(_(u"as of {date} {ci}").format(date=result['station']['updateTime']['information'],ci=result.get('comment', '')))
             self.status = u"{item}: {system}, {dist} - {station} ({type}), {sc_dist}".format(item=soi_checker.name, system=result['name'], dist=pretty_dist, station=result['station']['name'], type=result['station']['type'], sc_dist=pretty_sc_dist)
-            clippy.copy(result["name"])
+            copy(result["name"])
         else:
             self.status = _(u"{}: nothing within [{}LY, {}LS] of {}".format(soi_checker.name, int(radius), int(sc), reference))
             checked = _("checked {} systems").format(soi_checker.systems_counter) 
@@ -1684,14 +1688,14 @@ class EDRClient(object):
             distance = result['distance']
             pretty_dist = _(u"{dist:.3g}").format(dist=distance) if distance < 50.0 else _(u"{dist}").format(dist=int(distance))
             details.append(_(u"{} ({}LY, {})").format(result['name'], pretty_dist, '+' * grade))
-            edt = edtime.EDTime()
+            edt = EDTime()
             if 'updateTime' in result:
                 edt.from_js_epoch(result['updateTime'] * 1000)
                 details.append(_(u"as of {}").format(edt.as_date()))
             if checker.hint():
                 details.append(checker.hint())
             self.status = u"{}: {} ({}LY)".format(checker.name, result['name'], pretty_dist)
-            clippy.copy(result["name"])
+            copy(result["name"])
         else:
             self.status = _(u"{}: nothing within [{}LY] of {}".format(checker.name, int(radius), reference))
             checked = _("checked {} systems").format(checker.systems_counter) 

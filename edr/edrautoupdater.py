@@ -1,16 +1,19 @@
+from __future__ import absolute_import
+
 import requests
 import zipfile
 import os
 import json
 import datetime
-import edrlog
+from edrlog import EDRLog
+import utils2to3
 
-EDRLOG = edrlog.EDRLog()
+EDRLOG = EDRLog()
 
 class EDRAutoUpdater(object):
     REPO = "lekeno/edr"
-    LATEST = os.path.join(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'updates'), 'latest.zip')
-    BACKUP = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'backup')
+    LATEST = utils2to3.abspathmaker(__file__, 'updates', 'latest.zip')
+    BACKUP = utils2to3.abspathmaker(__file__, 'backup')
     EDR_PATH = os.path.abspath(os.path.dirname(__file__))
 
     def __init__(self):

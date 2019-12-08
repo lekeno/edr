@@ -1,19 +1,25 @@
+from __future__ import print_function
+from __future__ import absolute_import
+
 import sys
-import edrconfig
+from edrconfig import EDRConfig
 
 class EDRLog(object):
 
     LEVEL_MAPPING = {"DEBUG": 10,  "INFO": 20, "WARNING": 30, "ERROR": 40}
 
     def __init__(self):
-        config = edrconfig.EDRConfig()
+        config = EDRConfig()
         self.importance_threshold = self.LEVEL_MAPPING.get(config.logging_level(), 0)
 
     def log(self, msg, level):
         if not self.is_important_enough(level):
             return
 
-        print "[EDR]" + msg.encode(sys.getdefaultencoding(), 'replace')
+        if sys.version_info.major == 2:
+            print("[EDR]" + msg.encode(sys.getdefaultencoding(), 'replace'))
+        else:
+            print("[EDR]" + msg)
 
 
     def is_important_enough(self, level):

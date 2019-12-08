@@ -4,7 +4,9 @@
 import os
 import json
 import random
+
 import edri18n
+import utils2to3
 
 def _(message): return message
 
@@ -169,8 +171,7 @@ class RandomTips(object):
     def __init__(self, tips_file=None):
         global DEFAULT_TIPS
         if tips_file:
-            self.tips = json.loads(open(os.path.join(
-                os.path.abspath(os.path.dirname(__file__)), tips_file)).read())
+            self.tips = json.loads(open(utils2to3.abspathmaker(__file__, tips_file)).read())
         else:
             self.tips = DEFAULT_TIPS
 

@@ -1,12 +1,16 @@
+from __future__ import absolute_import
+
 import os
+import sys
 import sqlite3
 import math
 
+import utils2to3
 from edvehicles import EDVehicleFactory
-import edtime
-import edrlog
+from edtime import EDTime
+from edrlog import EDRLog
 
-EDRLOG = edrlog.EDRLog()
+EDRLOG = EDRLog()
 
 class EDRFleet(object):
 
@@ -46,7 +50,7 @@ class EDRFleet(object):
 
 
     def __init__(self):
-        path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'db/fleet')
+        path = utils2to3.abspathmaker(__file__, 'db', 'fleet')
         try:
             self.db = sqlite3.connect(path)
             cursor = self.db.cursor()
@@ -58,7 +62,7 @@ class EDRFleet(object):
                         destination_system TEXT, source_market_id INTEGER, destination_market_id INTEGER)''')
             self.db.commit()
         except:
-            EDRLOG(u"Couldn't open/create the fleet database", "ERROR");
+            EDRLOG.log(u"Couldn't open/create the fleet database", "ERROR")
             self.db = None
     
     def update(self, event):
@@ -211,7 +215,7 @@ class EDRFleet(object):
         src_system = transfer_event.get("System", None)
         src_market_id = transfer_event.get("MarketID", None)
         distance = transfer_event.get("Distance", None)
-        eta = edtime.EDTime.py_epoch_now() + int(math.ceil(distance * 9.75 + 300)) #TODO refactor, 1 more copy of this in edrsystems
+        eta = EDTime.py_epoch_now() + int(math.ceil(distance * 9.75 + 300)) #TODO refactor, 1 more copy of this in edrsystems
         self.db.execute('DELETE from transits WHERE ship_id=?', (ship_id, ))
         self.db.execute('''INSERT INTO transits(ship_id, eta, source_system, source_market_id, destination_system, destination_market_id)
                             VALUES (?,?,?,?,?,?)''', (ship_id, eta, src_system, src_market_id, dst_system, dst_market_id))
@@ -220,13 +224,13 @@ class EDRFleet(object):
         self.__update()
 
     def __update(self):
-        now = edtime.EDTime.py_epoch_now()
+        now = EDTime.py_epoch_now()
         transits = self.db.execute('SELECT id, ship_id, destination_system, destination_market_id FROM transits WHERE eta<=?', (now,))
         for transit in transits:
             self.db.execute('UPDATE ships SET star_system=?, ship_market_id=?, eta=0 WHERE id=?', (transit[2], transit[3], transit[1],))
             self.db.execute('DELETE from transits WHERE id=?', (transit[0],))
         
-        now = edtime.EDTime.py_epoch_now()
+        now = EDTime.py_epoch_now()
         transits = self.db.execute('SELECT id, ship_id, destination_system, destination_market_id, eta FROM transits WHERE eta>?', (now,))
         for transit in transits:
             self.db.execute('UPDATE ships SET star_system=?, ship_market_id=?, eta=? WHERE id=?', (transit[2], transit[3], transit[4], transit[1],))

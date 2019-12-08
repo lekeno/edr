@@ -1,23 +1,24 @@
 # coding= utf-8
+from __future__ import absolute_import
+
 import datetime
 import time
 import os
 import pickle
 
-import lrucache
-import edrconfig
-import edrserver
-import edrlog
-import edtime
+from lrucache import LRUCache
+from edrconfig import EDRConfig
+from edrlog import EDRLog
+from edtime import EDTime
 from collections import deque
 from edentities import EDFineOrBounty
 from edri18n import _, _c
+import utils2to3
 
-EDRLOG = edrlog.EDRLog()
+EDRLOG = EDRLog()
 
 class EDRLegalRecords(object):
-    EDR_LEGAL_RECORDS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/legal_records.v2.p')
+    EDR_LEGAL_RECORDS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'legal_records.v2.p')
     
     def __init__(self, server):
         self.server = server
@@ -25,12 +26,12 @@ class EDRLegalRecords(object):
         self.timespan = None
         self.records_last_updated = None
         self.records_check_interval = None
-        config = edrconfig.EDRConfig()
+        config = EDRConfig()
         try:
             with open(self.EDR_LEGAL_RECORDS_CACHE, 'rb') as handle:
                 self.records = pickle.load(handle)
         except:
-            self.records = lrucache.LRUCache(config.lru_max_size(), config.legal_records_max_age())
+            self.records = LRUCache(config.lru_max_size(), config.legal_records_max_age())
         
         self.timespan = config.legal_records_recent_threshold()
         self.reports_check_interval = config.legal_records_check_interval()
@@ -56,9 +57,9 @@ class EDRLegalRecords(object):
             bounties["max"] = max(record["bounties"]["max"], bounties["max"])
             if (record["bounties"]["last"]["timestamp"] >= bounties["last"]["timestamp"]):
                 bounties["last"] = record["bounties"]["last"]
-        timespan = edtime.EDTime.pretty_print_timespan(self.timespan, short=True, verbose=True)
+        timespan = EDTime.pretty_print_timespan(self.timespan, short=True, verbose=True)
         if bounties["max"] or bounties["last"]["value"]:
-            tminus = edtime.EDTime.t_minus(bounties["last"]["timestamp"], short=True)
+            tminus = EDTime.t_minus(bounties["last"]["timestamp"], short=True)
             max_bounty = EDFineOrBounty(bounties["max"]).pretty_print()
             last_bounty = EDFineOrBounty(bounties["last"]["value"]).pretty_print()
             # Translators: this is a summary of a cmdr's recent legal history for the 'last {}' days, number of clean and wanted scans, max and last bounties

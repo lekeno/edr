@@ -1,15 +1,16 @@
 # coding= utf-8
+from __future__ import absolute_import
+
 import pickle
 import os
+
 from edri18n import _
+import utils2to3
 
 class EDRInventory(object):
-    EDR_INVENTORY_ENCODED_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/encoded_mats.v1.p')
-    EDR_INVENTORY_RAW_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/raw_mats.v1.p')
-    EDR_INVENTORY_MANUFACTURED_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/manufactured_mats.v1.p')    
+    EDR_INVENTORY_ENCODED_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'encoded_mats.v1.p')
+    EDR_INVENTORY_RAW_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'raw_mats.v1.p')
+    EDR_INVENTORY_MANUFACTURED_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'manufactured_mats.v1.p')    
 
     MATERIALS_LUT = {
         "zinc": {"localized": _(u"Zinc"), "raw": "Zinc", "category": "raw", "grade": 2},

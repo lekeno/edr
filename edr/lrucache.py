@@ -1,9 +1,11 @@
+from __future__ import absolute_import
+
 import collections
 import datetime
 
-import edrlog
+from edrlog import EDRLog
 
-EDRLOG = edrlog.EDRLog()
+EDRLOG = EDRLog()
 
 class LRUCache(object):
     def __init__(self, max_size, max_age_seconds):

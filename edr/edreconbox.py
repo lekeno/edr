@@ -1,4 +1,6 @@
-import edtime
+from __future__ import absolute_import
+
+from edtime import EDTime
 import random
 
 class EDReconBox(object):
@@ -19,7 +21,7 @@ class EDReconBox(object):
         value = "1" if is_high else "0"
         if (self.sequence == "" and value == "1") or (self.sequence != "" and self.sequence[-1] != value):
             self.sequence += value
-            self.last_change = edtime.EDTime.py_epoch_now()
+            self.last_change = EDTime.py_epoch_now()
          
         length = len(self.sequence)
         if length >= self.required_length:
@@ -49,7 +51,7 @@ class EDReconBox(object):
     def _is_sequence_stale(self):
         if self.last_change is None:
             return False
-        now = edtime.EDTime.py_epoch_now()
+        now = EDTime.py_epoch_now()
         return (now - self.last_change) > self.cut_after
 
     def _clear_sequence(self):

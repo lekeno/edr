@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
+from __future__ import absolute_import, division
 
 import datetime
 import time
@@ -15,6 +16,7 @@ import edrlog
 import edtime
 from edentities import EDFineOrBounty
 from edri18n import _, _c
+import utils2to3
 
 EDRLOG = edrlog.EDRLog()
 
@@ -23,13 +25,13 @@ class EDROpponents(object):
     ENEMIES = "Enemies"
 
     EDR_OPPONENTS_SIGHTINGS_CACHES = {
-        "Outlaws": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/outlaws_sigthings.v2.p'),
-        "Enemies": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/enemies_sigthings.v2.p')
+        "Outlaws": utils2to3.abspathmaker(__file__, 'cache', 'outlaws_sigthings.v2.p'),
+        "Enemies": utils2to3.abspathmaker(__file__, 'cache', 'enemies_sigthings.v2.p')
     }
 
     EDR_OPPONENTS_RECENTS_CACHES = {
-        "Outlaws": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/outlaws_recents.v2.p'),
-        "Enemies": os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache/enemies_recents.v2.p')
+        "Outlaws": utils2to3.abspathmaker(__file__, 'cache', 'outlaws_recents.v2.p'),
+        "Enemies": utils2to3.abspathmaker(__file__, 'cache', 'enemies_recents.v2.p')
     }
 
     def __init__(self, server, opponent_kind, client_callback):
@@ -115,7 +117,7 @@ class EDROpponents(object):
         js_epoch_now = 1000 * time.mktime(now.timetuple())
         processed = []
         for sighting in self.recents:
-            if (js_epoch_now - sighting["timestamp"]) / 1000 > self.timespan:
+            if (js_epoch_now - sighting["timestamp"]) // 1000 > self.timespan:
                 continue
             if sighting["cmdr"] not in processed:
                 summary.append(self.__readable_opponent_sighting(sighting, one_liner=True))

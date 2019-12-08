@@ -1,49 +1,50 @@
+from __future__ import absolute_import, division
+
 import os
 import pickle
-from edtime import EDTime
-import edrconfig
-import lrucache
-import edrlog
-from edentities import EDPlayerOne
 
-EDRLOG = edrlog.EDRLog()
+from edtime import EDTime
+from edrconfig import EDRConfig
+from lrucache import LRUCache
+from edrlog import EDRLog
+from edentities import EDPlayerOne
+import utils2to3
+
+EDRLOG = EDRLog()
 
 class EDRCmdrs(object):
     #TODO these should be player and/or squadron specific
-    EDR_CMDRS_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/cmdrs.v7.p')
-    EDR_INARA_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/inara.v7.p')
-    EDR_SQDRDEX_CACHE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'cache/sqdrdex.v2.p')
+    EDR_CMDRS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'cmdrs.v7.p')
+    EDR_INARA_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'inara.v7.p')
+    EDR_SQDRDEX_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'sqdrdex.v2.p')
 
     def __init__(self, edrserver):
         self.server = edrserver
         self._player = EDPlayerOne()
         self.heartbeat_timestamp = None
  
-        edr_config = edrconfig.EDRConfig()
+        edr_config = EDRConfig()
         self._edr_heartbeat = edr_config.edr_heartbeat()
  
         try:
             with open(self.EDR_CMDRS_CACHE, 'rb') as handle:
                 self.cmdrs_cache = pickle.load(handle)
         except:
-            self.cmdrs_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+            self.cmdrs_cache = LRUCache(edr_config.lru_max_size(),
                                                  edr_config.cmdrs_max_age())
 
         try:
             with open(self.EDR_INARA_CACHE, 'rb') as handle:
                 self.inara_cache = pickle.load(handle)
         except:
-            self.inara_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+            self.inara_cache = LRUCache(edr_config.lru_max_size(),
                                                  edr_config.inara_max_age())
         
         try:
             with open(self.EDR_SQDRDEX_CACHE, 'rb') as handle:
                 self.sqdrdex_cache = pickle.load(handle)
         except:
-            self.sqdrdex_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+            self.sqdrdex_cache = LRUCache(edr_config.lru_max_size(),
                                                  edr_config.sqdrdex_max_age())
 
     @property
@@ -59,7 +60,7 @@ class EDRCmdrs(object):
             self.__update_squadron_info(force_update=True)
 
     def player_pledged_to(self, power, time_pledged=0):
-        edr_config = edrconfig.EDRConfig()
+        edr_config = EDRConfig()
         delta = time_pledged - self._player.time_pledged if self._player.time_pledged else time_pledged
         if power == self._player.power and delta <= edr_config.noteworthy_pledge_threshold():
             EDRLOG.log(u"Skipping pledged_to (not noteworthy): current vs. proposed {} vs. {}; {} vs {}".format(self._player.power, power, self._player.time_pledged, time_pledged), "DEBUG")

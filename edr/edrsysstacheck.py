@@ -25,7 +25,6 @@ class EDRSystemStationCheck(object):
 
         if not station.get('distanceToArrival', None):
             return False
-        
         return station['distanceToArrival'] < self.max_sc_distance
 
     def is_service_availability_ambiguous(self, station):
