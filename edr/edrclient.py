@@ -1361,6 +1361,32 @@ class EDRClient(object):
         else:
             self.__notify(_(u"Ship locator"), [_(u"Couldn't find anything")], clear_before = True)
 
+    def contract(self, target_cmdr, reward):
+        if self.is_anonymous():
+            EDRLOG.log(u"Skipping contract since the user is anonymous.", "INFO")
+            self.advertise_full_account(_(u"Sorry, this feature only works with an EDR account."), passive=False)
+            return False
+
+        if target_cmdr is None:
+            contracts = self.player.contracts()
+            self.__notify(_(u"Kill Rewards"),[_(u"Reward of {} void opals for a kill on Cmdr {}").format(c["cmdr_name"],c["reward"]) for c in contracts], clear_before = True)
+            return True
+        
+        if reward is None:
+            contract = self.player.contract(target_cmdr)
+            if not contract:
+                self.__notify(_(u"Kill Rewards"),[_(u"You haven't set any reward for a kill on Cmdr {}").format(target_cmdr), _(u"Send '!contract {} 10' in chat to set a reward of 10 void opals").format(target_cmdr)], clear_before = True)
+                return True
+            self.__notify(_(u"Kill Rewards"),[_(u"Reward of {} void opals for a kill on Cmdr {}").format(target_cmdr,contract["reward"]), _(u"Send '!contract {} 0' in chat to remove the kill reward").format(target_cmdr)], clear_before = True)
+            return True
+
+        outcome = self.player.place_contract(cmdr_name, reward)
+        if outcome["success"]:
+            self.__notify(_(u"Kill Rewards"),[_(u"Successfully set a reward of {} void opals for a kill on {}").format(target_cmdr,reward), _(u"Send '!contract {} 0' in chat to remove the kill reward").format(target_cmdr)], clear_before = True)
+        else:
+            self.__notify(_(u"Kill Rewards"),[_(u"Failed to set a kill reward on {}").format(target_cmdr), _(u"Reason: {}").format(outcome["comment"])], clear_before = True)
+        return outcome["success"]
+
 
     def outlaws(self):
         try:
