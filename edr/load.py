@@ -619,7 +619,7 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
         "victim": victim.name,
         "victimShip": victim.vehicle_type(),
         "reportedBy": victim.name,
-        "byPledge": victim.powerplay.canonicalize() if victim.powerplay else u"",
+        "victimPower": victim.powerplay.canonicalize() if victim.powerplay else u"",
         "mode": victim.game_mode,
         "group": victim.private_group
     }
@@ -653,21 +653,20 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim, timestamp):
              "ship" : criminal_cmdr.vehicle_type(),
              "wanted": criminal_cmdr.wanted,
              "bounty": criminal_cmdr.bounty,
-             "fine": criminal_cmdr.fine
+             "fine": criminal_cmdr.fine,
+             "power": criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else u"",
             }],
         "offence": offence.capitalize(),
         "victim": victim.name,
         "victimShip": victim.vehicle_type(),
         "reportedBy": criminal_cmdr.name,
-        "byPledge": criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else u"",
         "victimWanted": victim.wanted,
         "victimBounty": victim.bounty,
         "victimEnemy": victim.enemy,
+        "victimPower": victim.powerplay.canonicalize() if victim.powerplay else u"",
         "mode": criminal_cmdr.game_mode,
         "group": criminal_cmdr.private_group
     }
-
-    report["criminals"][0]["power"] = criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else u""
 
     EDRLOG.log(u"Perpetrated crime: {}".format(report), "DEBUG")
 
