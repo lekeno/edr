@@ -543,7 +543,23 @@ class EDRServer(object):
         else:
             return None
 
-    def contract(self, cmdr_id):
+    def contracts(self):
+        if self.is_anonymous():
+            return None
+        contracts_path = "/v1/contracts/{}".format(self.uid())
+        EDRLOG.log(u"Contracts request", "DEBUG")
+        params = { "auth" : self.auth_token()}
+        endpoint = "{server}{con}.json".format(server=self.EDR_SERVER, con=contracts_path)
+        EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
+        resp = self.__get(endpoint, "EDR", params)
+        EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+
+        if self.__check_response(resp, "EDR", "Contracts"):
+            return json.loads(resp.content)
+        else:
+            return None
+    
+    def contract_for(self, cmdr_id):
         if self.is_anonymous():
             return None
         contracts_path = "/v1/contracts/{}/".format(self.uid())
@@ -554,28 +570,32 @@ class EDRServer(object):
         resp = self.__get(endpoint, "EDR", params)
         EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
 
-        if self.__check_response(resp, "EDR", "Contracts"):
+        if self.__check_response(resp, "EDR", "Contract_for"):
             return json.loads(resp.content)
         else:
             return None
 
-    def reward(self, cmdr_id, reward_entry):
+    def place_contract(self, cmdr_id, contract_entry):
+        if self.is_anonymous() or contract_entry is None:
+            return False
+        contract_path = "/v1/contracts/{}/".format(self.uid())
+        
+        return self.__update_contract(contract_path, cmdr_id, contract_entry)    
+    
+    def remove_contract(self, cmdr_id):
         if self.is_anonymous():
             return False
-        contract_path = "/v1/cmdrsdex/{}/".format(self.uid())
-        if rewward_entry is None:
-            return self.__remove_contract(contract_path, cmdr_id)
-        
-        return self.__update_contract(contract_path, cmdr_id, reward_entry)    
+        contract_path = "/v1/contracts/{}/".format(self.uid())
+        return self.__remove_contract(contract_path, cmdr_id)
         
     def __update_contract(self, contract_path, cmdr_id, contract_entry):
         params = { "auth" : self.auth_token()}
-        EDRLOG.log(u"Contract entry for cmdr {cid} with json:{json}".format(cid=cmdr_id, json=reward_entry), "INFO")
+        EDRLOG.log(u"Contract entry for cmdr {cid} with json:{json}".format(cid=cmdr_id, json=contract_entry), "INFO")
         endpoint = "{server}{contract}{cid}/.json".format(server=self.EDR_SERVER, contract=contract_path, cid=cmdr_id)
-        EDRLOG.log(u"Endpoint: {} with {}".format(endpoint, reward_entry), "DEBUG")
-        resp = self.__put(endpoint, "EDR", json=reward_entry, params=params)
+        EDRLOG.log(u"Endpoint: {} with {}".format(endpoint, contract_entry), "DEBUG")
+        resp = self.__put(endpoint, "EDR", json=contract_entry, params=params)
         EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
-        return self.__check_response(resp, "EDR")
+        return self.__check_response(resp, "EDR", "Update_contract")
 
     def __remove_contract(self, contract_path, cmdr_id):
         params = { "auth" : self.auth_token()}
@@ -584,8 +604,7 @@ class EDRServer(object):
         EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = self.__delete(endpoint, "EDR", params=params)
         EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
-        return self.__check_response(resp, "EDR")
-    
+        return self.__check_response(resp, "EDR", "Remove_contract")
 
     def preflight_realtime(self, kind):
         api_name = u"realtime_{}".format(kind.lower())

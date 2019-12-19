@@ -668,7 +668,6 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim, timestamp):
     }
 
     report["criminals"][0]["power"] = criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else u""
-
     EDRLOG.log(u"Perpetrated crime: {}".format(report), "DEBUG")
 
     if not EDR_CLIENT.crime(criminal_cmdr.star_system, report):
@@ -833,7 +832,7 @@ def report_crime(cmdr, entry):
         edr_submit_crime_self(cmdr, "Murder", victim, entry["timestamp"])
         player_one.destroy(victim)
     elif entry["event"] == "CrimeVictim" and "Offender" in entry and player_one.name and (entry["Offender"].lower() != player_one.name.lower()):
-        irrelevant_pattern = re.compile("^(\$([A-Za-z0-9]+_)+[A-Za-z0-9]+;)$")
+        irrelevant_pattern = re.compile(r"^(\$([A-Za-z0-9]+_)+[A-Za-z0-9]+;)$")
         if not irrelevant_pattern.match(entry["Offender"]) and player_one.is_instanced_with(entry["Offender"]):
             offender = player_one.instanced(entry["Offender"])
             if "Bounty" in entry:
@@ -844,7 +843,7 @@ def report_crime(cmdr, entry):
         else:
             EDRLOG.log(u"Ignoring 'CrimeVictim' event: offender={}; instanced_with={}".format(entry["Offender"], player_one.is_instanced_with(entry["Offender"])), "DEBUG")
     elif entry["event"] == "CommitCrime" and "Victim" in entry and player_one.name and (entry["Victim"].lower() != player_one.name.lower()):
-        irrelevant_pattern = re.compile("^(\$([A-Za-z0-9]+_)+[A-Za-z0-9]+;)$")
+        irrelevant_pattern = re.compile(r"^(\$([A-Za-z0-9]+_)+[A-Za-z0-9]+;)$")
         if not irrelevant_pattern.match(entry["Victim"]) and player_one.is_instanced_with(entry["Victim"]):
             victim = player_one.instanced(entry["Victim"])
             if "Bounty" in entry:
@@ -1309,18 +1308,27 @@ def handle_bang_commands(cmdr, command, command_parts):
             EDR_CLIENT.eval_build(eval_type)
         else:
             EDR_CLIENT.notify_with_details(_(u"Loadout information is stale"), [_(u"Congrats, you've found a bug in Elite!"), _(u"The modules info isn't updated right away :("), _(u"Try again after moving around or relog and check your modules.")])
+    elif command == "!contracts" and len(command_parts) == 1:
+        EDRLOG.log(u"Contracts command", "INFO")
+        EDR_CLIENT.contracts()
     elif command == "!contract":
-        target_cmdr = None
+        target_cmdr = cmdr.target
         reward = None
+        unit = u"VO$"
+        print command_parts
         if len(command_parts) >= 2:
-            m = re.match(r"((.*) )?([1-9][0-9]*)", join(command_parts[1:]))
-            if not m:
-                EDRLOG.log(u"Aborting contract command (no/invalid params).", "DEBUG")
-                return
-            target_cmdr = m.group(1) if m.group(1) == 2 else cmdr.target
-            reward = m.grouo(2) if m.group(2) else None
-        EDRLOG.log(u"Contract command on {} with reward of {}".format(target_cmdr, reward), "INFO")
-        EDR_CLIENT.contract(target_cmdr, reward)
+            parts = " ".join(command_parts[1:]).split(" $$$ ", 1)
+            target_cmdr = parts[0]
+            if len(parts)>=2:
+                (reward, unit) = parts[1].split(" ", 1)
+                reward = int(reward)
+            print target_cmdr
+            print reward
+        EDRLOG.log(u"Contract command on {} with reward of {} {}".format(target_cmdr, reward, unit), "INFO")
+        if reward is None:
+            EDR_CLIENT.contract(target_cmdr)
+        else:
+            EDR_CLIENT.contract_on(target_cmdr, reward, unit)
     elif command == "!help":
         EDRLOG.log(u"Help command", "INFO")
         EDR_CLIENT.help("" if len(command_parts) == 1 else command_parts[1])
