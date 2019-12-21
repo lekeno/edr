@@ -620,6 +620,7 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
         "victimShip": victim.vehicle_type(),
         "reportedBy": victim.name,
         "victimPower": victim.powerplay.canonicalize() if victim.powerplay else u"",
+        "byPledge": witness.powerplay.canonicalize() if witness.powerplay else "",
         "mode": victim.game_mode,
         "group": victim.private_group
     }
@@ -664,6 +665,7 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim, timestamp):
         "victimBounty": victim.bounty,
         "victimEnemy": victim.enemy,
         "victimPower": victim.powerplay.canonicalize() if victim.powerplay else u"",
+        "byPledge": witness.powerplay.canonicalize() if witness.powerplay else "",
         "mode": criminal_cmdr.game_mode,
         "group": criminal_cmdr.private_group
     }
