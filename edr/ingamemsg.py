@@ -1,6 +1,7 @@
 # coding= utf-8
 import os
 import sys
+import math
 
 import igmconfig
 import edrlog
@@ -24,6 +25,7 @@ import lrucache
 
 class InGameMsg(object):   
     MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice", "help", "navigation"]
+    LEGAL_KINDS = ["intel", "warning"] 
 
     def __init__(self):
         self._overlay = edmcoverlay.Overlay()
@@ -32,6 +34,8 @@ class InGameMsg(object):
         self.must_clear = False
         for kind in self.MESSAGE_KINDS:
             self.message_config(kind)
+        for kind in self.LEGAL_KINDS:
+            self.legal_config(kind)
         self.msg_ids = lrucache.LRUCache(1000, 60*15)
 
     def general_config(self):
@@ -85,20 +89,77 @@ class InGameMsg(object):
             "fill": conf.fill(kind, "panel")
         }
 
+    def legal_config(self, kind):
+        conf = igmconfig.IGMConfig() 
+        kind = u"{}-legal".format(kind)
+        self.cfg[kind] = {
+            "clean": {
+                "x": conf.x(kind, "clean"),
+                "y": conf.y(kind, "clean"),
+                "h": conf.h(kind, "clean_bar"),
+                "w": conf.w(kind, "clean_bar"),
+                "s": conf.s(kind, "clean_bar"),
+                "ttl": conf.ttl(kind, "clean"),
+                "rgb": conf.rgb_list(kind, "clean"),
+            },
+            "wanted": {
+                "x": conf.x(kind, "wanted"),
+                "y": conf.y(kind, "wanted"),
+                "h": conf.h(kind, "wanted_bar"),
+                "w": conf.w(kind, "wanted_bar"),
+                "s": conf.s(kind, "wanted_bar"),
+                "ttl": conf.ttl(kind, "wanted"),
+                "rgb": conf.rgb_list(kind, "wanted"),
+            },
+            "bounties": {
+                "x": conf.x(kind, "bounties"),
+                "y": conf.y(kind, "bounties"),
+                "h": conf.h(kind, "bounties_bar"),
+                "w": conf.w(kind, "bounties_bar"),
+                "s": conf.s(kind, "bounties_bar"),
+                "ttl": conf.ttl(kind, "bounties"),
+                "rgb": conf.rgb_list(kind, "bounties"),
+            },
+        }
+        if not conf.panel(kind):
+            return
+        self.cfg[kind]["panel"] = {
+            "x": conf.x(kind, "panel"),
+            "y": conf.y(kind, "panel"),
+            "x2": conf.x2(kind, "panel"),
+            "y2": conf.y2(kind, "panel"),
+            "ttl": conf.ttl(kind, "panel"),
+            "rgb": conf.rgb(kind, "panel"),
+            "fill": conf.fill(kind, "panel")
+        }
 
-    def intel(self, header, details):
+
+    def intel(self, header, details, legal=None):
         self.__clear_if_needed()
         if "panel" in self.cfg["intel"]:
             self.__shape("intel", self.cfg["intel"]["panel"])
+        kind_legal = u"{}-legal".format("intel")
+        if "panel" in self.cfg[kind_legal]:
+            self.__shape(kind_legal, self.cfg[kind_legal]["panel"])
         self.__msg_header("intel", header)
         self.__msg_body("intel", details)
+        if not legal:
+            legal = { "clean": [0]*12, "wanted": [0]*12, "bounties": [0]*12 }
+        self.__legal_vizualization(legal, "intel")
+        
 
-    def warning(self, header, details):
+    def warning(self, header, details, legal=None):
         self.__clear_if_needed()
         if "panel" in self.cfg["warning"]:
             self.__shape("warning", self.cfg["warning"]["panel"])
+        kind_legal = u"{}-legal".format("warning")
+        if "panel" in self.cfg[kind_legal]:
+            self.__shape(kind_legal, self.cfg[kind_legal]["panel"])
         self.__msg_header("warning", header)
         self.__msg_body("warning", details)
+        if not legal:
+            legal = { "clean": [0]*12, "wanted": [0]*12, "bounties": [0]*12 }
+        self.__legal_vizualization(legal, "warning")
 
     def notify(self, header, details):
         self.__clear_if_needed()
@@ -135,6 +196,70 @@ class InGameMsg(object):
         details.append(_(u"Lon: {:.4f}".format(destination.longitude)))
         self.__msg_header("navigation", header)
         self.__msg_body("navigation", details)
+
+    def __legal_vizualization(self, legal, kind):
+        cleans = legal["clean"]
+        wanteds = legal["wanted"]
+        bounties = legal["bounties"]
+        cfg = self.cfg[u"{}-legal".format(kind)]
+        maxBounty = max(bounties)
+        maxCW = max(cleans + wanteds)
+        ystep = {"clean": maxCW / float(cfg["clean"]["h"]), "wanted": maxCW / float(cfg["wanted"]["h"]), "bounties": maxBounty / float(cfg["bounties"]["h"])} 
+        x = {"clean": 0, "wanted": 0, "bounties": 0}
+        y = 0
+        h = 0
+
+        bar = {
+            "x": 0,
+            "y": 0,
+            "x2": 0,
+            "y2": 0,
+            "rgb": "#000000",
+            "fill": "#000000",
+            "ttl": 0,
+        }
+
+        for clean, wanted, bounty in zip(cleans, wanteds, bounties):
+            print x
+            dx = cfg["clean"]["x"]
+            dy = cfg["clean"]["y"]
+            h = max(clean/ystep["clean"],1) if clean else 1
+            y = cfg["clean"]["h"] - h
+            bar["x"] = int(x["clean"]+dx)
+            bar["y"] =int(dy-h)
+            bar["x2"] = int(cfg["clean"]["w"])
+            bar["y2"] = dy - bar["y"]
+            bar["rgb"] = bar["fill"] = self.__cleancolor(clean, kind)
+            bar["ttl"] = cfg["clean"]["ttl"]
+            self.__shape(u"{}-clean-bar".format(kind), bar)
+
+            dx = cfg["wanted"]["x"]
+            dy = cfg["wanted"]["y"]
+            h = max(wanted/ystep["wanted"], 1) if wanted else 1
+            y = 0
+            bar["x"] = int(x["wanted"]+dx)
+            bar["y"] = int(y+dy)
+            bar["x2"] = int(cfg["wanted"]["w"])
+            bar["y2"] = int(h)
+            bar["rgb"] = bar["fill"] = self.__wantedcolor(wanted, kind)
+            bar["ttl"] = cfg["wanted"]["ttl"]
+            self.__shape(u"{}-wanted-bar".format(kind), bar)
+
+            dx = cfg["bounties"]["x"]
+            dy = cfg["bounties"]["y"]
+            h = max(bounty/ystep["bounties"],1) if bounty else 1
+            y = cfg["bounties"]["h"] - h
+            bar["x"] = int(x["bounties"]+dx)
+            bar["y"] = int(dy-h)
+            bar["x2"] = int(cfg["bounties"]["w"])
+            bar["y2"] = dy - bar["y"]
+            bar["rgb"] = bar["fill"] = self.__bountycolor(bounty, kind)
+            bar["ttl"] = cfg["bounties"]["ttl"]
+            self.__shape("{}-bounty-bar".format(kind), bar)
+
+            x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}
+
+
 
     def clear(self):
         for msg_id in self.msg_ids.keys():
@@ -263,7 +388,9 @@ class InGameMsg(object):
 
     def __shape(self, kind, panel):
         try:
-            shape_id = "EDR-shape-{}-{}-{}-{}-{}".format(kind, panel["x"], panel["y"], panel["x2"], panel["y2"])
+            shape_id = "EDR-{}-{}-{}-{}-{}-shape".format(kind, panel["x"], panel["y"], panel["x2"], panel["y2"])
+            print shape_id
+            print panel
             self._overlay.send_shape(shape_id, "rect", panel["rgb"], panel["fill"], panel["x"], panel["y"], panel["x2"], panel["y2"], ttl=panel["ttl"])
             self.msg_ids.set(shape_id, panel["ttl"])
         except:
@@ -274,14 +401,50 @@ class InGameMsg(object):
         try:
             self._overlay.send_message(msg_id, "", "", 0, 0, 0, 0)
             self.msg_ids.evict(msg_id)
-            self.__reset_caches()
+            self.__reset_caches() # TODO maybe that's too much
         except:
             EDRLOG.log(u"In-Game Message failed to clear {}.".format(msg_id), "ERROR")
             pass
     
     def __reset_caches(self):
         for kind in self.MESSAGE_KINDS:
-            self.cfg[kind]["b"]["cache"].reset()    
+            self.cfg[kind]["b"]["cache"].reset()
+    
+    def __bountycolor(self, bounty, kind):
+        kind = u"{}-legal".format(kind)
+        cfg = self.cfg[kind]["bounties"]
+        if bounty > 0:
+            try:
+                order_of_magnitude = int(math.log10(max(bounty,1)/1000.0))
+                index = max(1, min(order_of_magnitude+1, len(cfg["rgb"])-1 ))
+                return cfg["rgb"][index]
+            except:
+                return cfg["rgb"][1]
+        return cfg["rgb"][0]
+
+    def __cleancolor(self, clean, kind):
+        kind = u"{}-legal".format(kind)
+        cfg = self.cfg[kind]["clean"]
+        if clean > 0:
+            try:
+                order_of_magnitude = int(math.log10(max(clean,1)))
+                index = max(1, min(order_of_magnitude+1, len(cfg["rgb"])-1 ))
+                return cfg["rgb"][index]
+            except:
+                return cfg["rgb"][1]
+        return cfg["rgb"][0]
+    
+    def __wantedcolor(self, wanted, kind):
+        kind = u"{}-legal".format(kind)
+        cfg = self.cfg[kind]["wanted"]
+        if wanted > 0:
+            try:
+                order_of_magnitude = int(math.log10(max(wanted,1)))
+                index = max(1, min(order_of_magnitude+1, len(cfg["rgb"])-1 ))
+                return cfg["rgb"][index]
+            except:
+                return cfg["rgb"][1]
+        return cfg["rgb"][0]
 
     def shutdown(self):
         # TODO self._overlay.shutdown() or something

@@ -6,7 +6,7 @@ from edrlog import EDRLog
 import utils2to3
 
 class IGMConfig(object):
-    def __init__(self, config_file='config/igm_config.v2.ini', user_config_file='config/user_igm_config.v2.ini'):
+    def __init__(self, config_file='config/igm_config.v3.ini', user_config_file='config/user_igm_config.v3.ini'):
         self.config = ConfigParser()
         self.fallback_config = ConfigParser()
         self.fallback_config.read(utils2to3.abspathmaker(__file__, config_file))
@@ -45,11 +45,24 @@ class IGMConfig(object):
     def y2(self, kind, part):
         return self._getint(kind, '{}_y2'.format(part))
 
+    def h(self, kind, part):
+        return self._getint(kind, '{}_h'.format(part))
+
+    def w(self, kind, part):
+        return self._getint(kind, '{}_w'.format(part))
+
+    def s(self, kind, part):
+        return self._getint(kind, '{}_s'.format(part))
+
     def ttl(self, kind, part):
         return self._getint(kind, '{}_ttl'.format(part))
 
     def rgb(self, kind, part):
         return "#{}".format(self._get(kind, '{}_rgb'.format(part)))
+
+    def rgb_list(self, kind, part):
+        rgbs = self._get(kind, '{}_rgb'.format(part))
+        return [ "#{}".format(rgb) for rgb in rgbs.split(",") ]
 
     def fill(self, kind, part):
         return "#{}".format(self._get(kind, '{}_fill'.format(part)))

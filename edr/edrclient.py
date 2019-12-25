@@ -909,14 +909,14 @@ class EDRClient(object):
             if profile:
                 self.status = _(u"got info about {}").format(cmdr_name)
                 EDRLOG.log(u"Who {} : {}".format(cmdr_name, profile.short_profile(self.player.powerplay)), "INFO")
-                legal = self.edrlegal.summarize_recents(profile.cid)
+                legal = self.edrlegal.summarize(profile.cid)
+                details = [profile.short_profile(self.player.powerplay)]
                 if legal:
-                    self.__intel(cmdr_name, [profile.short_profile(self.player.powerplay), legal], clear_before=True)
-                else:
-                    self.__intel(cmdr_name, [profile.short_profile(self.player.powerplay)], clear_before=True)
+                    details.append(legal["overview"])
+                self.__intel(_(u"Intel about {}").format(cmdr_name), details, clear_before=True, legal=legal)
             else:
                 EDRLOG.log(u"Who {} : no info".format(cmdr_name), "INFO")
-                self.__intel(cmdr_name, [_("No info about {cmdr}").format(cmdr=cmdr_name)], clear_before=True)
+                self.__intel(_(u"Intel about {}").format(cmdr_name), [_("No info").format(cmdr=cmdr_name)], clear_before=True)
         except CommsJammedError:
             self.__commsjammed()    
 
@@ -956,10 +956,14 @@ class EDRClient(object):
             return its_actually_fine
 
         profile = self.cmdr(cmdr_name, check_inara_server=True)
+        legal = self.edrlegal.summarize(profile.cid)
         if profile and (self.player.name != cmdr_name) and profile.is_dangerous(self.player.powerplay):
             self.status = _(u"{} is bad news.").format(cmdr_name)
             if self.novel_enough_blip(cmdr_id, blip, cognitive = True):
-                self.__warning(_(u"Warning!"), [profile.short_profile(self.player.powerplay)], clear_before=True)
+                details = [profile.short_profile(self.player.powerplay)]
+                if legal:
+                    details.append(legal["overview"])
+                self.__warning(_(u"[Caution!] Intel about {}").format(cmdr_name), details, clear_before=True, legal=legal)
                 self.cognitive_blips_cache.set(cmdr_id, blip)
                 if self.player.in_open() and self.is_anonymous() and profile.is_dangerous(self.player.powerplay):
                     self.advertise_full_account(_("You could have helped other EDR users by reporting this outlaw."))
@@ -999,7 +1003,7 @@ class EDRClient(object):
 
         if self.novel_enough_scan(cmdr_id, scan, cognitive = True):
             profile = self.cmdr(cmdr_name, check_inara_server=True)
-            legal = self.edrlegal.summarize_recents(profile.cid)
+            legal = self.edrlegal.summarize(profile.cid)
             bounty = EDFineOrBounty(scan["bounty"]) if scan["bounty"] else None
             if profile and (self.player.name != cmdr_name):
                 if profile.is_dangerous(self.player.powerplay):
@@ -1016,8 +1020,8 @@ class EDRClient(object):
                     if status:
                         details.append(status)
                     if legal:
-                        details.append(legal)
-                    self.__warning(_(u"Warning!"), details, clear_before=True)
+                        details.append(legal["overview"])
+                    self.__warning(_(u"[Caution!] Intel about {}").format(cmdr_name), details, clear_before=True, legal=legal)
                 elif self.intel_even_if_clean or (scan["wanted"] and bounty.is_significant()):
                     self.status = _(u"Intel for cmdr {}.").format(cmdr_name)
                     details = [profile.short_profile(self.player.powerplay)]
@@ -1026,8 +1030,8 @@ class EDRClient(object):
                     elif scan["wanted"]:
                         details.append(_(u"Wanted somewhere but it could be minor offenses."))
                     if legal:
-                        details.append(legal)
-                    self.__intel(_(u"Intel"), details, clear_before=True)
+                        details.append(legal["overview"])
+                    self.__intel(_(u"Intel about {}").format(cmdr_name), details, clear_before=True, legal=legal)
                 if not self.player.in_solo() and (self.is_anonymous() and (profile.is_dangerous(self.player.powerplay) or (scan["wanted"] and bounty.is_significant()))):
                     # Translators: this is shown to users who don't yet have an EDR account
                     self.advertise_full_account(_(u"You could have helped other EDR users by reporting this outlaw."))
@@ -1330,12 +1334,12 @@ class EDRClient(object):
             
             if report:
                 self.status = _(u"got info about {}").format(cmdr_name)
-                header = _(u"Intel for {}") if self.player.in_open() else _(u"Intel for {} (Open)")
+                header = _(u"Intel about {}") if self.player.in_open() else _(u"Intel about {} (Open)")
                 self.__intel(header.format(cmdr_name), report["readable"], clear_before=True)
             else:
                 EDRLOG.log(u"Where {} : no info".format(cmdr_name), "INFO")
                 self.status = _(u"no info about {}").format(cmdr_name)
-                header = _(u"Intel for {}") if self.player.in_open() else _(u"Intel for {} (Open)")
+                header = _(u"Intel about {}") if self.player.in_open() else _(u"Intel about {} (Open)")
                 self.__intel(header.format(cmdr_name), [_(u"Not recently sighted or not an outlaw.")], clear_before=True)
         except CommsJammedError:
             self.__commsjammed()
@@ -1421,25 +1425,25 @@ class EDRClient(object):
         EDRLOG.log(u"[Alt] sitrep with header: {}; details: {}".format(header, details[0]), "DEBUG")
         self.ui.sitrep(header, details)
 
-    def __intel(self, who, details, clear_before=False):
+    def __intel(self, header, details, clear_before=False, legal=None):
         if self.audio_feedback:
             self.AUDIO_FEEDBACK.notify()
         if self.visual_feedback:
-            EDRLOG.log(u"Intel for {}; details: {}".format(who, details[0]), "DEBUG")
+            EDRLOG.log(u"Intel; details: {}".format(details[0]), "DEBUG")
             if clear_before:
                 self.IN_GAME_MSG.clear_intel()
-            self.IN_GAME_MSG.intel(_(u"Intel"), details)
-        EDRLOG.log(u"[Alt] Intel for {}; details: {}".format(who, details[0]), "DEBUG")
-        self.ui.intel(_(u"Intel"), details)
+            self.IN_GAME_MSG.intel(header, details, legal)
+        EDRLOG.log(u"[Alt] Intel; details: {}".format(details[0]), "DEBUG")
+        self.ui.intel(header, details)
 
-    def __warning(self, header, details, clear_before=False):
+    def __warning(self, header, details, clear_before=False, legal=None):
         if self.audio_feedback:
             self.AUDIO_FEEDBACK.warn()
         if self.visual_feedback:
             EDRLOG.log(u"Warning; details: {}".format(details[0]), "DEBUG")
             if clear_before:
                 self.IN_GAME_MSG.clear_warning()
-            self.IN_GAME_MSG.warning(header, details)
+            self.IN_GAME_MSG.warning(header, details, legal)
         EDRLOG.log(u"[Alt] Warning; details: {}".format(details[0]), "DEBUG")
         self.ui.warning(header, details)
     
