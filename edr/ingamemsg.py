@@ -101,6 +101,7 @@ class InGameMsg(object):
                 "s": conf.s(kind, "clean_bar"),
                 "ttl": conf.ttl(kind, "clean"),
                 "rgb": conf.rgb_list(kind, "clean"),
+                "fill": conf.fill_list(kind, "clean"),
             },
             "wanted": {
                 "x": conf.x(kind, "wanted"),
@@ -110,6 +111,7 @@ class InGameMsg(object):
                 "s": conf.s(kind, "wanted_bar"),
                 "ttl": conf.ttl(kind, "wanted"),
                 "rgb": conf.rgb_list(kind, "wanted"),
+                "fill": conf.fill_list(kind, "wanted"),
             },
             "bounties": {
                 "x": conf.x(kind, "bounties"),
@@ -119,6 +121,7 @@ class InGameMsg(object):
                 "s": conf.s(kind, "bounties_bar"),
                 "ttl": conf.ttl(kind, "bounties"),
                 "rgb": conf.rgb_list(kind, "bounties"),
+                "fill": conf.fill_list(kind, "bounties"),
             },
         }
         if not conf.panel(kind):
@@ -208,6 +211,7 @@ class InGameMsg(object):
         x = {"clean": 0, "wanted": 0, "bounties": 0}
         y = 0
         h = 0
+        m = 0
 
         bar = {
             "x": 0,
@@ -220,7 +224,6 @@ class InGameMsg(object):
         }
 
         for clean, wanted, bounty in zip(cleans, wanteds, bounties):
-            print x
             dx = cfg["clean"]["x"]
             dy = cfg["clean"]["y"]
             h = max(clean/ystep["clean"],1) if clean else 1
@@ -229,7 +232,8 @@ class InGameMsg(object):
             bar["y"] =int(dy-h)
             bar["x2"] = int(cfg["clean"]["w"])
             bar["y2"] = dy - bar["y"]
-            bar["rgb"] = bar["fill"] = self.__cleancolor(clean, kind)
+            bar["rgb"] = cfg["clean"]["rgb"][m] or self.__cleancolor(clean, kind) 
+            bar["fill"] = self.__cleancolor(clean, kind)
             bar["ttl"] = cfg["clean"]["ttl"]
             self.__shape(u"{}-clean-bar".format(kind), bar)
 
@@ -241,7 +245,8 @@ class InGameMsg(object):
             bar["y"] = int(y+dy)
             bar["x2"] = int(cfg["wanted"]["w"])
             bar["y2"] = int(h)
-            bar["rgb"] = bar["fill"] = self.__wantedcolor(wanted, kind)
+            bar["rgb"] = cfg["wanted"]["rgb"][m] or self.__wantedcolor(wanted, kind) 
+            bar["fill"] = self.__wantedcolor(wanted, kind)
             bar["ttl"] = cfg["wanted"]["ttl"]
             self.__shape(u"{}-wanted-bar".format(kind), bar)
 
@@ -253,11 +258,13 @@ class InGameMsg(object):
             bar["y"] = int(dy-h)
             bar["x2"] = int(cfg["bounties"]["w"])
             bar["y2"] = dy - bar["y"]
-            bar["rgb"] = bar["fill"] = self.__bountycolor(bounty, kind)
+            bar["rgb"] = cfg["bounties"]["rgb"][m] or self.__bountycolor(bounty, kind) 
+            bar["fill"] = self.__bountycolor(bounty, kind)
             bar["ttl"] = cfg["bounties"]["ttl"]
             self.__shape("{}-bounty-bar".format(kind), bar)
 
             x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}
+            m += 1
 
 
 
@@ -415,12 +422,12 @@ class InGameMsg(object):
         cfg = self.cfg[kind]["bounties"]
         if bounty > 0:
             try:
-                order_of_magnitude = int(math.log10(max(bounty,1)/1000.0))
-                index = max(1, min(order_of_magnitude+1, len(cfg["rgb"])-1 ))
-                return cfg["rgb"][index]
+                order_of_magnitude = int(math.log10(max(bounty,1)/100.0))
+                index = max(1, min(order_of_magnitude+1, len(cfg["fill"])-1 ))
+                return cfg["fill"][index]
             except:
-                return cfg["rgb"][1]
-        return cfg["rgb"][0]
+                return cfg["fill"][1]
+        return cfg["fill"][0]
 
     def __cleancolor(self, clean, kind):
         kind = u"{}-legal".format(kind)
@@ -428,11 +435,11 @@ class InGameMsg(object):
         if clean > 0:
             try:
                 order_of_magnitude = int(math.log10(max(clean,1)))
-                index = max(1, min(order_of_magnitude+1, len(cfg["rgb"])-1 ))
-                return cfg["rgb"][index]
+                index = max(1, min(order_of_magnitude+1, len(cfg["fill"])-1 ))
+                return cfg["fill"][index]
             except:
-                return cfg["rgb"][1]
-        return cfg["rgb"][0]
+                return cfg["fill"][1]
+        return cfg["fill"][0]
     
     def __wantedcolor(self, wanted, kind):
         kind = u"{}-legal".format(kind)
@@ -440,11 +447,11 @@ class InGameMsg(object):
         if wanted > 0:
             try:
                 order_of_magnitude = int(math.log10(max(wanted,1)))
-                index = max(1, min(order_of_magnitude+1, len(cfg["rgb"])-1 ))
-                return cfg["rgb"][index]
+                index = max(1, min(order_of_magnitude+1, len(cfg["fill"])-1 ))
+                return cfg["fill"][index]
             except:
-                return cfg["rgb"][1]
-        return cfg["rgb"][0]
+                return cfg["fill"][1]
+        return cfg["fill"][0]
 
     def shutdown(self):
         # TODO self._overlay.shutdown() or something

@@ -64,6 +64,10 @@ class IGMConfig(object):
         rgbs = self._get(kind, '{}_rgb'.format(part))
         return [ "#{}".format(rgb) for rgb in rgbs.split(",") ]
 
+    def fill_list(self, kind, part):
+        fills = self._get(kind, '{}_fill'.format(part))
+        return [ "#{}".format(fill) for fill in fills.split(",") ]
+
     def fill(self, kind, part):
         return "#{}".format(self._get(kind, '{}_fill'.format(part)))
 

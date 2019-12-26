@@ -56,13 +56,13 @@ class EDRLegalRecords(object):
             max_bounty = EDFineOrBounty(recent_stats["maxBounty"]).pretty_print()
             maxB = _(u", max={} cr").format(max_bounty)
 
-        if "last" in recent_stats and recent_stats["last"].get("value", None):
+        if "last" in recent_stats and recent_stats["last"].get("value", None) and (recent_stats["last"].get("starSystem", "") not in ["", "unknown", "Unknown"]):
             tminus = EDTime.t_minus(recent_stats["last"]["timestamp"], short=True)
             last_bounty = EDFineOrBounty(recent_stats["last"]["value"]).pretty_print()
-            lastB = _(u", {} cr in {} {}").format(last_bounty, recent_stats["last"]["starSystem"], tminus)
+            lastB = _(u", last: {} cr in {} {}").format(last_bounty, recent_stats["last"]["starSystem"], tminus)
         
         # Translators: this is an overview of a cmdr's recent legal history for the 'last {}' days, number of clean and wanted scans, and optionally max and last bounties
-        overview = _(u"[Last {}] clean:{} / wanted:{}{}{}").format(timespan, recent_stats["clean"], recent_stats["wanted"], maxB, lastB)
+        overview = _(u"[Past {}] clean:{} / wanted:{}{}{}").format(timespan, recent_stats["clean"], recent_stats["wanted"], maxB, lastB)
         return {"overview": overview, "clean": clean, "wanted": wanted, "bounties": bounties}
 
     def __are_records_stale_for_cmdr(self, cmdr_id):
@@ -88,8 +88,8 @@ class EDRLegalRecords(object):
         last = self.__emptyMonthlyBag()
         clean = []
         wanted = []
-        bounties = []
-        recent_stats = {"clean": 0, "wanted": 0, "maxBounty": 0} ## TODO last stuff too
+        bounties = []       
+        recent_stats = {"clean": 0, "wanted": 0, "maxBounty": 0, "last": {"value": 0, "timestamp": None, "starSystem": None}}
         now_date = datetime.datetime.now()
         currentYear = now_date.year
         currentMonth = now_date.month
@@ -116,6 +116,8 @@ class EDRLegalRecords(object):
                 recent_stats["wanted"] += legal_stats[m]["wanted"]
                 if legal_stats[m]["max"]:
                     recent_stats["maxBounty"] = max(recent_stats["maxBounty"], legal_stats[m]["max"].get("value", 0))
+                if legal_stats[m]["last"] and legal_stats[m]["last"].get("value", 0) >= recent_stats["last"]["value"]:
+                    recent_stats["last"] = legal_stats[m]["last"]
 
             clean.append(legal_stats[m]["clean"])
             wanted.append(legal_stats[m]["wanted"])
