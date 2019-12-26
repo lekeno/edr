@@ -1051,7 +1051,8 @@ def handle_scan_events(player, entry):
 
     target = player.instanced(target_name, entry["Ship"], piloted)
     target.sqid = entry.get("SquadronID", None)
-    target.pledged_to(entry.get("Power", None))
+    nodotpower = entry["Power"].replace(".", "") if "Power" in entry else None
+    target.pledged_to(nodotpower)
  
     edr_submit_contact(target, entry["timestamp"], "Ship targeted", player)
     if entry["ScanStage"] >= 2:
