@@ -93,6 +93,7 @@ class InGameMsg(object):
         conf = igmconfig.IGMConfig() 
         kind = u"{}-legal".format(kind)
         self.cfg[kind] = {
+            "enabled": conf._getboolean(kind, "enabled"),
             "clean": {
                 "x": conf.x(kind, "clean"),
                 "y": conf.y(kind, "clean"),
@@ -141,11 +142,14 @@ class InGameMsg(object):
         self.__clear_if_needed()
         if "panel" in self.cfg["intel"]:
             self.__shape("intel", self.cfg["intel"]["panel"])
-        kind_legal = u"{}-legal".format("intel")
-        if "panel" in self.cfg[kind_legal]:
+        kind_legal = u"intel-legal"
+        if "panel" in self.cfg[kind_legal] and self.cfg[kind_legal].get("enabled", False):
             self.__shape(kind_legal, self.cfg[kind_legal]["panel"])
         self.__msg_header("intel", header)
         self.__msg_body("intel", details)
+        
+        if not self.cfg["intel-legal"].get("enabled", None):
+            return
         if not legal:
             legal = { "clean": [0]*12, "wanted": [0]*12, "bounties": [0]*12 }
         self.__legal_vizualization(legal, "intel")
@@ -155,11 +159,13 @@ class InGameMsg(object):
         self.__clear_if_needed()
         if "panel" in self.cfg["warning"]:
             self.__shape("warning", self.cfg["warning"]["panel"])
-        kind_legal = u"{}-legal".format("warning")
-        if "panel" in self.cfg[kind_legal]:
+        kind_legal = u"warning-legal"
+        if "panel" in self.cfg[kind_legal] and self.cfg[kind_legal].get("enabled", False):
             self.__shape(kind_legal, self.cfg[kind_legal]["panel"])
         self.__msg_header("warning", header)
         self.__msg_body("warning", details)
+        if not self.cfg["warning-legal"].get("enabled", None):
+            return
         if not legal:
             legal = { "clean": [0]*12, "wanted": [0]*12, "bounties": [0]*12 }
         self.__legal_vizualization(legal, "warning")

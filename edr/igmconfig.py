@@ -6,17 +6,23 @@ from edrlog import EDRLog
 import utils2to3
 
 class IGMConfig(object):
-    def __init__(self, config_file='config/igm_config.v3.ini', user_config_file='config/user_igm_config.v3.ini'):
+    def __init__(self, config_file='config/igm_config.v3.ini', user_config_file=['config/user_igm_config.v3.ini', 'config/user_igm_config.v2.ini']):
         self.config = ConfigParser()
         self.fallback_config = ConfigParser()
         self.fallback_config.read(utils2to3.abspathmaker(__file__, config_file))
-        user_cfg_path = utils2to3.abspathmaker(__file__, user_config_file)
+        user_cfg_path = utils2to3.abspathmaker(__file__, user_config_file[0])
         if os.path.exists(user_cfg_path):
-            EDRLog().log(u"Using user defined layout at {}.".format(user_config_file), "INFO")
+            EDRLog().log(u"Using user defined layout at {}.".format(user_config_file[0]), "INFO")
             self.config.read(user_cfg_path)
         else:
-            EDRLog().log(u"No user defined layout at {}, using {} instead.".format(user_config_file, config_file), "INFO")
-            self.config = self.fallback_config
+            EDRLog().log(u"No user defined layout at {}, using {} instead.".format(user_config_file[0], user_config_file[1]), "INFO")
+            user_cfg_path = utils2to3.abspathmaker(__file__, user_config_file[1])
+            if os.path.exists(user_cfg_path):
+                EDRLog().log(u"Using user defined layout at {}.".format(user_config_file[1]), "INFO")
+                self.config.read(user_cfg_path)
+            else:
+                EDRLog().log(u"No user defined layout at {} or {}, using {} instead.".format(user_config_file[0], user_config_file[1], config_file), "INFO")
+                self.config = self.fallback_config
 
     def large_height(self):
         return self._getfloat('general', 'large_height')
