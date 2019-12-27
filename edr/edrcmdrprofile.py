@@ -423,20 +423,20 @@ class EDRCmdrProfile(object):
             if memo:
                 cdex_parts.append(memo)
 
-        result = u"{}".format(self.name)
+        result = u""
         if edr_parts:
-            result += u" ✪EDR {}".format(", ".join(edr_parts))
+            result += u"✪EDR {} ".format(", ".join(edr_parts))
 
         if inara_parts:
-            result += u" ✪INR {}".format(", ".join(inara_parts))
+            result += u"✪INR {} ".format(", ".join(inara_parts))
 
         if sqdex_parts:
-            result += u" ✪SQN {}".format(", ".join(sqdex_parts))
+            result += u"✪SQN {} ".format(", ".join(sqdex_parts))
     
         if cdex_parts:
-            result += u" ✪CMD {}".format(", ".join(cdex_parts))
+            result += u"✪CMD {} ".format(", ".join(cdex_parts))
 
         if powerplay_parts:
-            result += u" ✪PP {}".format(", ".join(powerplay_parts))
+            result += u"✪PP {} ".format(", ".join(powerplay_parts))
 
         return result

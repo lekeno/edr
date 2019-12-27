@@ -362,6 +362,21 @@ class EDRServer(object):
         records_over_timespan = int(max(1, round(timespan_seconds / 86400.0 * legal_records_perday)))
         return self.__get_recent(endpoint, timespan_seconds, limitToLast=records_over_timespan)
 
+    def legal_stats(self, cmdr_id):
+        if not self.__preflight("legal_stats", cmdr_id):
+            EDRLOG.log(u"Preflight failed for legal_stats call.", "DEBUG")
+            raise CommsJammedError("legal_stats")
+        EDRLOG.log(u"Fetching legal stats for cmdr {cid}".format(cid=cmdr_id), "INFO")
+        endpoint = "{server}/v1/stats/legal/{cmdr_id}/.json".format(server=self.EDR_SERVER,cmdr_id=cmdr_id)
+        params = {"auth": self.auth_token()}
+        resp = self.__get(endpoint, "EDR", params)
+        EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+
+        if self.__check_response(resp, "EDR", "Legal_Stats"):
+            return json.loads(resp.content)
+        else:
+            return None
+
     def crime(self, system_id, info):
         info["uid"] = self.uid()
         EDRLOG.log(u"Crime report for system {sid} with json:{json}".format(sid=system_id, json=info), "INFO")
