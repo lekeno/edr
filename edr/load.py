@@ -199,7 +199,7 @@ def handle_movement_events(ed_player, entry):
         if entry["SystemSecurity"]:
             ed_player.location_security(entry["SystemSecurity"])
             if ed_player.in_bad_neighborhood():
-                EDR_CLIENT.IN_GAME_MSG.warning(_(u"Anarchy system"), [_(u"Crimes will not be reported.")])
+                EDR_CLIENT.IN_GAME_MSG.notify(_(u"Anarchy system"), [_(u"Crimes will not be reported.")])
         ed_player.location.population = entry.get('Population', 0)
         ed_player.location.allegiance = entry.get('SystemAllegiance', 0)
         outcome["reason"] = "Jump events"
@@ -619,7 +619,8 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
         "victim": victim.name,
         "victimShip": victim.vehicle_type(),
         "reportedBy": victim.name,
-        "byPledge": victim.powerplay.canonicalize() if victim.powerplay else u"",
+        "victimPower": victim.powerplay.canonicalize() if victim.powerplay else u"",
+        "byPledge": victim.powerplay.canonicalize() if victim.powerplay else "",
         "mode": victim.game_mode,
         "group": victim.private_group
     }
@@ -653,21 +654,21 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim, timestamp):
              "ship" : criminal_cmdr.vehicle_type(),
              "wanted": criminal_cmdr.wanted,
              "bounty": criminal_cmdr.bounty,
-             "fine": criminal_cmdr.fine
+             "fine": criminal_cmdr.fine,
+             "power": criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else u"",
             }],
         "offence": offence.capitalize(),
         "victim": victim.name,
         "victimShip": victim.vehicle_type(),
         "reportedBy": criminal_cmdr.name,
-        "byPledge": criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else u"",
         "victimWanted": victim.wanted,
         "victimBounty": victim.bounty,
         "victimEnemy": victim.enemy,
+        "victimPower": victim.powerplay.canonicalize() if victim.powerplay else u"",
+        "byPledge": victim.powerplay.canonicalize() if victim.powerplay else "",
         "mode": criminal_cmdr.game_mode,
         "group": criminal_cmdr.private_group
     }
-
-    report["criminals"][0]["power"] = criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else u""
 
     EDRLOG.log(u"Perpetrated crime: {}".format(report), "DEBUG")
 
@@ -738,10 +739,12 @@ def edr_submit_scan(scan, timestamp, source, witness):
     if not witness.in_open():
         EDRLOG.log(u"Scan not submitted due to unconfirmed Open mode", "INFO")
         EDR_CLIENT.status = _(u"Scan reporting disabled in solo/private modes.")
+        EDR_CLIENT.who(scan["cmdr"], autocreate=True)
         return
 
     if witness.has_partial_status():
         EDRLOG.log(u"Scan not submitted due to partial status", "INFO")
+        EDR_CLIENT.who(scan["cmdr"], autocreate=True)
         return
 
     if not EDR_CLIENT.scanned(scan["cmdr"], report):
@@ -833,7 +836,7 @@ def report_crime(cmdr, entry):
         edr_submit_crime_self(cmdr, "Murder", victim, entry["timestamp"])
         player_one.destroy(victim)
     elif entry["event"] == "CrimeVictim" and "Offender" in entry and player_one.name and (entry["Offender"].lower() != player_one.name.lower()):
-        irrelevant_pattern = re.compile("^(\$([A-Za-z0-9]+_)+[A-Za-z0-9]+;)$")
+        irrelevant_pattern = re.compile(r"^(\$([A-Za-z0-9]+_)+[A-Za-z0-9]+;)$")
         if not irrelevant_pattern.match(entry["Offender"]) and player_one.is_instanced_with(entry["Offender"]):
             offender = player_one.instanced(entry["Offender"])
             if "Bounty" in entry:
@@ -844,7 +847,7 @@ def report_crime(cmdr, entry):
         else:
             EDRLOG.log(u"Ignoring 'CrimeVictim' event: offender={}; instanced_with={}".format(entry["Offender"], player_one.is_instanced_with(entry["Offender"])), "DEBUG")
     elif entry["event"] == "CommitCrime" and "Victim" in entry and player_one.name and (entry["Victim"].lower() != player_one.name.lower()):
-        irrelevant_pattern = re.compile("^(\$([A-Za-z0-9]+_)+[A-Za-z0-9]+;)$")
+        irrelevant_pattern = re.compile(r"^(\$([A-Za-z0-9]+_)+[A-Za-z0-9]+;)$")
         if not irrelevant_pattern.match(entry["Victim"]) and player_one.is_instanced_with(entry["Victim"]):
             victim = player_one.instanced(entry["Victim"])
             if "Bounty" in entry:
@@ -1048,7 +1051,8 @@ def handle_scan_events(player, entry):
 
     target = player.instanced(target_name, entry["Ship"], piloted)
     target.sqid = entry.get("SquadronID", None)
-    target.pledged_to(entry.get("Power", None))
+    nodotpower = entry["Power"].replace(".", "") if "Power" in entry else None
+    target.pledged_to(nodotpower)
  
     edr_submit_contact(target, entry["timestamp"], "Ship targeted", player)
     if entry["ScanStage"] >= 2:

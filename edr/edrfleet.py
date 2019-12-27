@@ -145,8 +145,6 @@ class EDRFleet(object):
         elif buy_event.get("SellShipID", None):
             self.__sold(buy_event["SellShipID"])
 
-    # TODO fix the no info on your fleet when there is some
-
     def new(self, new_event, star_system):
         if self.db is None:
             return
