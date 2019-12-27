@@ -33,7 +33,7 @@ class EDRLegalRecords(object):
             self.records = LRUCache(config.lru_max_size(), config.legal_records_max_age())
         
         self.timespan = config.legal_records_recent_threshold()
-        self.records_check_interval = config.legal_records_check_interval()
+        self.reports_check_interval = config.legal_records_check_interval()
     
     def persist(self):
         with open(self.EDR_LEGAL_RECORDS_CACHE, 'wb') as handle:
