@@ -357,6 +357,7 @@ class EDRClient(object):
 
         # Translators: this is shown in the preferences panel
         ttkHyperlinkLabel.HyperlinkLabel(frame, text=_(u"EDR website"), background=notebook.Label().cget('background'), url="https://edrecon.com", underline=True).grid(padx=10, sticky=tk.W)       
+        ttkHyperlinkLabel.HyperlinkLabel(frame, text=_(u"EDR on Discord (chat & more)"), background=notebook.Label().cget('background'), url="https://edrecon.com/discord", underline=True).grid(padx=10, sticky=tk.W)       
 
         # Translators: this is shown in the preferences panel
         notebook.Label(frame, text=_(u'Credentials')).grid(padx=10, sticky=tk.W)

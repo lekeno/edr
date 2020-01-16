@@ -40,6 +40,9 @@ class EDRLegalRecords(object):
             pickle.dump(self.records, handle, protocol=pickle.HIGHEST_PROTOCOL)
     
     def summarize(self, cmdr_id):
+        if not cmdr_id:
+            EDRLOG.log(u"No cmdr_id, no records for {}".format(cmdr_id), "INFO")
+            return None
         self.__update_records_if_stale(cmdr_id)
         records = self.records.get(cmdr_id)["records"] if self.records.has_key(cmdr_id) else None
         if not records:
