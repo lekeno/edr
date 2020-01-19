@@ -196,10 +196,6 @@ def handle_movement_events(ed_player, entry):
         ed_player.wanted = entry.get("Wanted", False)
         ed_player.mothership.fuel_level = entry.get("FuelLevel", ed_player.mothership.fuel_level)
         EDR_CLIENT.noteworthy_about_system(entry)
-        if entry["SystemSecurity"]:
-            ed_player.location_security(entry["SystemSecurity"])
-            if ed_player.in_bad_neighborhood():
-                EDR_CLIENT.IN_GAME_MSG.notify(_(u"Anarchy system"), [_(u"Crimes will not be reported.")])
         ed_player.location.population = entry.get('Population', 0)
         ed_player.location.allegiance = entry.get('SystemAllegiance', 0)
         outcome["reason"] = "Jump events"
