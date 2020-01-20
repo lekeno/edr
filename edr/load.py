@@ -831,9 +831,13 @@ def report_crime(cmdr, entry):
         victim.killed()
         edr_submit_crime_self(cmdr, "Murder", victim, entry["timestamp"])
         player_one.destroy(victim)
-    elif entry["event"] == "CrimeVictim" and "Offender" in entry and player_one.name and (entry["Offender"].lower() != player_one.name.lower()):
+    elif entry["event"] == "CrimeVictim" and "Offender" in entry and player_one.name:
         irrelevant_pattern = re.compile(r"^(\$([A-Za-z0-9]+_)+[A-Za-z0-9]+;)$")
-        if not irrelevant_pattern.match(entry["Offender"]) and player_one.is_instanced_with(entry["Offender"]):
+        wingmate = player_one.is_wingmate(entry["Offender"]) 
+        oneself = entry["Offender"].lower() == player_one.name.lower()
+        crewmate = player_one.is_crewmate(entry["Offender"])
+        instanced = player_one.is_instanced_with(entry["Offender"])
+        if not irrelevant_pattern.match(entry["Offender"]) and instanced and not oneself and not wingmate and not crewmate:
             offender = player_one.instanced(entry["Offender"])
             if "Bounty" in entry:
                 offender.bounty += entry["Bounty"]

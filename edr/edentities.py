@@ -938,6 +938,11 @@ class EDPlayerOne(EDPlayer):
     def is_wingmate(self, cmdr_name):
         return cmdr_name in self.wing.wingmates
 
+    def is_crewmate(self, cmdr_name):
+        if not self.crew:
+            return False
+        return cmdr_name in self.crew.all_members()
+
     def is_enemy_with(self, power):
         if self.is_independent() or not power:
             return False
