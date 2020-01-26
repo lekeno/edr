@@ -118,7 +118,7 @@ class EDRClient(object):
         self.tips = RandomTips()
         self.help_content = HelpContent()
         self._throttle_until_timestamp = None
-        self.ui.notify(_(u"Troubleshooting"), [_(u"If the overlay doesn't show up, try one of the following:"), _(u" - In Elite: go to graphics options, and select Borderless or Windowed."), _(" - With Elite and EDR launched, check that EDMCOverlay.exe is running in the task manager"), _(" - Join https://edrecon.com/discord for technical support")])
+        self.ui.notify(_(u"Troubleshooting"), [_(u"If the overlay doesn't show up, try one of the following:"), _(u" - In Elite: go to graphics options, and select Borderless or Windowed."), _(" - With Elite and EDR launched, check that EDMCOverlay.exe is running in the task manager"), _(u"If the overlay hurts your FPS, try turning VSYNC off in Elite's graphics options."), u"----", _("Join https://edrecon.com/discord for further technical support.")])
 
     def loud_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "loud")

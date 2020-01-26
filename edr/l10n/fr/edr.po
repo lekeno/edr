@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2020-01-26 10:11+0900\n"
-"PO-Revision-Date: 2020-01-26 10:14+0900\n"
+"POT-Creation-Date: 2020-01-26 10:35+0900\n"
+"PO-Revision-Date: 2020-01-26 10:36+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -100,9 +100,18 @@ msgstr ""
 "gestionnaire de tâches"
 
 #: edrclient.py:121
-msgid " - Join https://edrecon.com/discord for technical support"
+msgid ""
+"If the overlay hurts your FPS, try turning VSYNC off in Elite's graphics "
+"options."
 msgstr ""
-" - Rejoignez https://edrecon.com/discord pour recevoir de l'aide technique"
+"Si les performances graphiques diminuent, essayez de désactiver VSYNC dans "
+"les options graphiques d'Elite."
+
+#: edrclient.py:121
+msgid "Join https://edrecon.com/discord for further technical support."
+msgstr ""
+"Rejoignez https://edrecon.com/discord pour recevoir de l'aide technique "
+"supplémentaire."
 
 #. Translators: this is shown on EDMC's status bar when a user enables loud audio cues
 #: edrclient.py:127
