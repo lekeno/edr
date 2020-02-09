@@ -257,8 +257,14 @@ def handle_change_events(ed_player, entry):
         place = entry.get("StationName", "Unknown")
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         ed_player.to_normal_space()
+        EDR_CLIENT.docking_guidance(entry)
         if entry["event"] == "Docked":
             ed_player.wanted = entry.get("Wanted", False)
+            ed_player.mothership.update_cargo()
+            if ed_player.mothership.could_use_limpets():
+                limpets = ed_player.mothership.cargo.how_many("drones")
+                capacity = ed_player.mothership.cargo_capacity
+                EDR_CLIENT.notify_with_details(_(U"Restock reminder"), [_(u"Don't forget to restock on limpets before heading out mining."), _(u"Limpets: {}/{}").format(limpets, capacity)])
         outcome["reason"] = "Docking events"
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
     return outcome
@@ -437,6 +443,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     if entry["event"] in ["ModuleInfo"]:
         handle_modules_events(ed_player, entry)
+
+    if entry["event"] in ["Cargo"]:
+        ed_player.piloted_vehicle.update_cargo()
     
     if entry["event"].startswith("Powerplay"):
         EDRLOG.log(u"Powerplay event: {}".format(entry), "INFO")

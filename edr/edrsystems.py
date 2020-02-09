@@ -164,6 +164,12 @@ class EDRSystems(object):
             return False
         return self.edsm_stations_cache.is_stale(star_system.lower())
         
+    def station(self, star_system, station_name):
+        stations = self.stations_in_system(star_system)
+        for station in stations:
+            if station["name"] == station_name:
+                return station
+        return None
 
     def stations_in_system(self, star_system):
         if not star_system:

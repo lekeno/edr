@@ -498,6 +498,13 @@ class EDRClient(object):
             self.player.planetary_destination = None
             self.__notify(_(u'Assisted Navigation'), [_(u"Invalid destination")], clear_before = True)
 
+    def docking_guidance(self, entry):
+        if entry["event"] == "DockingGranted":
+            station = self.edrsystems.station(self.player.star_system, entry["StationName"])
+            self.IN_GAME_MSG.docking(station, entry["LandingPad"])
+        else:
+            self.IN_GAME_MSG.clear_docking()
+
     def show_navigation(self):
         current = self.player.piloted_vehicle.attitude
         destination = self.player.planetary_destination

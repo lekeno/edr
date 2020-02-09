@@ -24,7 +24,7 @@ except ImportError:
 import lrucache
 
 class InGameMsg(object):   
-    MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice", "help", "navigation"]
+    MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice", "help", "navigation", "docking"]
     LEGAL_KINDS = ["intel", "warning"] 
 
     def __init__(self):
@@ -36,6 +36,7 @@ class InGameMsg(object):
             self.message_config(kind)
         for kind in self.LEGAL_KINDS:
             self.legal_config(kind)
+        self.docking_config()
         self.msg_ids = lrucache.LRUCache(1000, 60*15)
 
     def general_config(self):
@@ -50,7 +51,6 @@ class InGameMsg(object):
                 "w": conf.normal_width()
             }
         }
-
 
     def message_config(self, kind):
         conf = igmconfig.IGMConfig() 
@@ -137,6 +137,35 @@ class InGameMsg(object):
             "fill": conf.fill(kind, "panel")
         }
 
+    def docking_config(self):
+        conf = igmconfig.IGMConfig()
+        kind = "docking-station" 
+        self.cfg[kind] = {
+            "enabled": conf._getboolean(kind, "enabled"),
+            "schema": {
+                "x": conf.x(kind, "schema"),
+                "y": conf.y(kind, "schema"),
+                "h": conf.h(kind, "schema"),
+                "w": conf.w(kind, "schema"),
+                "ttl": conf.ttl(kind, "schema"),
+                "rgb": conf.rgb_list(kind, "schema"),
+                # TODO green, red, rack, pads? list
+                "fill": conf.fill_list(kind, "schema"),
+                # TODO large, small, medium, highglights? fill list
+            }
+        }
+        if not conf.panel(kind):
+            return
+        self.cfg[kind]["panel"] = {
+            "x": conf.x(kind, "panel"),
+            "y": conf.y(kind, "panel"),
+            "x2": conf.x2(kind, "panel"),
+            "y2": conf.y2(kind, "panel"),
+            "ttl": conf.ttl(kind, "panel"),
+            "rgb": conf.rgb(kind, "panel"),
+            "fill": conf.fill(kind, "panel")
+        }
+
 
     def intel(self, header, details, legal=None):
         self.__clear_if_needed()
@@ -206,6 +235,106 @@ class InGameMsg(object):
         self.__msg_header("navigation", header)
         self.__msg_body("navigation", details)
 
+    def docking(self, station, pad):
+        self.clear_docking()
+        if not station:
+            return
+        economy = u"{}/{}".format(station["economy"], station["secondEconomy"]) if station["secondEconomy"] else station["economy"]
+        header = u"{} ({})".format(station["name"], economy)
+        details = []
+        a = u"◌" if station.get("type","N/A").lower() in ["outpost"] else u"●" # ■□●◌
+        b = u"●" if "haveShipyard" in station else u"◌"
+        c = u"●" if "haveOutfitting" in station else u"◌"
+        details.append(u"LG. Pad:{}   Outfit:{}   Shipyard:{}".format(a,b,c))
+        a = u"●" if "Refuel" in station["otherServices"] else u"◌"
+        b = u"●" if "Repair" in station["otherServices"] else u"◌"
+        c = u"●" if "Restock" in station["otherServices"] else u"◌"
+        details.append(u"Refuel:{}   Repair:{}   Restock:{}".format(a,b,c))
+        a = u"●" if "haveMarket" in station else u"◌"
+        b = u"●" if "Black Market" in station["otherServices"] else u"◌"
+        c = u"◌"
+        m = u"MAT" 
+        if "Material Trader" in station["otherServices"]:
+            c = u"●"
+            if station['economy']:
+                if station['economy'].lower() in ['extraction', 'refinery']:
+                    m = u"RAW"
+                elif station['economy'].lower() == 'industrial':
+                    m = u"MAN"
+                elif station['economy'].lower() in ['high tech', 'military']:
+                    m = "ENC"
+        details.append(u"Market:{}   B.Market:{}   {} Trad:{}".format(a,b,m,c))
+        a = u"●" if "Interstellar Factors Contact" in station["otherServices"] else u"◌"
+        b = u"●" if "Technology Broker" in station["otherServices"] else u"◌"
+        details.append(u"I.Factor:{}   T.Broker:{}".format(a,b))
+        details.append(u"as of {date}".format(date=station['updateTime']['information']))
+        self.__msg_header("docking", header)
+        self.__msg_body("docking", details)
+        # if station["type"] and station["type"].lower() in ["asteroid base", 'bernal starport', "coriolis starport", "ocellus starport", "orbis starport"]:
+        #    self.__station_schematic(pad)
+        #else:
+        #    print "dummy" # TODO N/A graphic, simplified icon ?
+
+    
+    def __station_schematic(self, landing_pad):
+        cfg = self.cfg[u"docking-station"]
+        x = cfg["schema"]["x"]
+        y = cfg["schema"]["y"]
+        w = cfg["schema"]["w"]
+        h = cfg["schema"]["h"]
+
+        '''
+        bar = {
+            "x": 0,
+            "y": 0,
+            "x2": 0,
+            "y2": 0,
+            "rgb": "#000000",
+            "fill": "#000000",
+            "ttl": 0,
+        }
+        '''
+
+        xscale = h # TODO
+        yscale = w # TODO
+
+        green_light = {
+            "x": x,
+            "y": int(y + (0.4 * yscale)),
+            "x2": int(x + (0.05 * xscale)),
+            "y2": int(y + (0.6 * yscale)),
+            "rgb": "#00FF00",
+            "fill": "#00FF00",
+            "ttl": cfg["schema"]["ttl"],
+        }
+        self.__shape(u"station-greenlight", green_light)
+
+        red_light = {
+            "x": int(x+w - (0.05 * xscale)),
+            "y": int(y + (0.4 * yscale)),
+            "x2": int(x+w),
+            "y2": int(y + (0.6 * yscale)),
+            "rgb": "#FF0000",
+            "fill": "#FF0000",
+            "ttl": cfg["schema"]["ttl"],
+        }
+        self.__shape(u"station-redlight", red_light)
+
+        toaster = {
+            "x": int(x + (0.05 * xscale)),
+            "y": int(y + (0.4 * yscale)),
+            "x2": int(x+w - (0.05 * xscale)),
+            "y2": int(y + (0.6 * yscale)),
+            "rgb": "#222222",
+            "ttl": cfg["schema"]["ttl"],
+        }
+        self.__shape(u"station-redlight", toaster)
+
+        # dodecaedron
+
+        # higlight of landing pad with size
+
+
     def __legal_vizualization(self, legal, kind):
         cleans = legal["clean"]
         wanteds = legal["wanted"]
@@ -272,8 +401,6 @@ class InGameMsg(object):
             x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}
             m += 1
 
-
-
     def clear(self):
         for msg_id in self.msg_ids.keys():
             self.__clear(msg_id)
@@ -294,6 +421,9 @@ class InGameMsg(object):
 
     def clear_navigation(self):
         self.__clear_kind("navigation")
+
+    def clear_docking(self):
+        self.__clear_kind("docking")
 
     def __clear_kind(self, kind):
         tag = "EDR-{}".format(kind)
