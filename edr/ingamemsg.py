@@ -239,6 +239,10 @@ class InGameMsg(object):
         self.clear_docking()
         if not station:
             return
+        if "panel" in self.cfg["docking"]:
+            self.__shape("docking", self.cfg["docking"]["panel"])
+        if "panel" in self.cfg["docking-station"] and self.cfg["docking-station"].get("enabled", False):
+            self.__shape("docking-station", self.cfg["docking-station"]["panel"])
         economy = u"{}/{}".format(station["economy"], station["secondEconomy"]) if station["secondEconomy"] else station["economy"]
         header = u"{} ({})".format(station["name"], economy)
         details = []
@@ -253,7 +257,7 @@ class InGameMsg(object):
         a = u"●" if "haveMarket" in station else u"◌"
         b = u"●" if "Black Market" in station["otherServices"] else u"◌"
         c = u"◌"
-        m = u"MAT" 
+        m = u"M." 
         if "Material Trader" in station["otherServices"]:
             c = u"●"
             if station['economy']:
@@ -270,10 +274,10 @@ class InGameMsg(object):
         details.append(u"as of {date}".format(date=station['updateTime']['information']))
         self.__msg_header("docking", header)
         self.__msg_body("docking", details)
-        # if station["type"] and station["type"].lower() in ["asteroid base", 'bernal starport', "coriolis starport", "ocellus starport", "orbis starport"]:
-        #    self.__station_schematic(pad)
-        #else:
-        #    print "dummy" # TODO N/A graphic, simplified icon ?
+        if station["type"] and station["type"].lower() in ["asteroid base", 'bernal starport', "coriolis starport", "ocellus starport", "orbis starport"]:
+            self.__station_schematic(pad)
+        else:
+            print "dummy" # TODO N/A graphic, simplified icon ?
 
     
     def __station_schematic(self, landing_pad):
@@ -297,40 +301,205 @@ class InGameMsg(object):
 
         xscale = h # TODO
         yscale = w # TODO
-
-        green_light = {
-            "x": x,
-            "y": int(y + (0.4 * yscale)),
-            "x2": int(x + (0.05 * xscale)),
-            "y2": int(y + (0.6 * yscale)),
-            "rgb": "#00FF00",
-            "fill": "#00FF00",
-            "ttl": cfg["schema"]["ttl"],
-        }
-        self.__shape(u"station-greenlight", green_light)
-
+        cx = int(round(x + w/2.0))
+        cy = int(round(y + h/2.0))
+        
         red_light = {
-            "x": int(x+w - (0.05 * xscale)),
-            "y": int(y + (0.4 * yscale)),
-            "x2": int(x+w),
-            "y2": int(y + (0.6 * yscale)),
+            "x": int(x),
+            "y": int(cy - (0.12962962962962962962962962962963 * yscale)),
+            "x2": max(1, int(0.03125 * xscale)),
+            "y2": max(1,int(2.0*0.12962962962962962962962962962963 * yscale)),
             "rgb": "#FF0000",
             "fill": "#FF0000",
             "ttl": cfg["schema"]["ttl"],
         }
+        print(red_light)
         self.__shape(u"station-redlight", red_light)
 
-        toaster = {
-            "x": int(x + (0.05 * xscale)),
-            "y": int(y + (0.4 * yscale)),
-            "x2": int(x+w - (0.05 * xscale)),
-            "y2": int(y + (0.6 * yscale)),
-            "rgb": "#222222",
+        green_light = {
+            "x": int(x+w-(0.03125 * xscale)),
+            "y": int(cy - (0.12962962962962962962962962962963 * yscale)),
+            "x2": max(1,int(0.03125 * xscale)),
+            "y2": max(1, int(2.0*0.12962962962962962962962962962963 * yscale)),
+            "rgb": "#00FF00",
+            "fill": "#00FF00",
             "ttl": cfg["schema"]["ttl"],
         }
-        self.__shape(u"station-redlight", toaster)
+        print(green_light)
+        self.__shape(u"station-greenlight", green_light)
 
+        '''
+        toaster = {
+            "x": int(x),
+            "y": int(cy - (0.14814814814814814814814814814815 * yscale)),
+            "x2": max(1,int(w)),
+            "y2": max(1,int(0.14814814814814814814814814814815 * yscale)),
+            "rgb": "#DDDDDD",
+            "fill": "",
+            "ttl": cfg["schema"]["ttl"],
+        }
+        print(toaster)
+        self.__shape(u"station-redlight", toaster)
+        '''
         # dodecaedron
+        alpha = math.radians(15)
+        sin15 = math.sin(alpha)
+        cos15 = math.cos(alpha)
+        sin45 = math.sqrt(2) / 2
+        sin60 = math.sqrt(3) / 2
+        dodecagon = [
+            (cos15, sin15),
+            (cos15, -sin15),
+            (sin45, -sin45),
+            (sin15, -cos15),
+            (-sin15, -cos15),
+            (-sin45, -sin45),
+            (-cos15, -sin15),
+            (-cos15, sin15),
+            (-sin45, sin45),
+            (-sin15, cos15),
+            (sin15, cos15),
+            (sin45, sin45),
+            (cos15, sin15),
+        ]
+
+        # TODO colors, need more. 6?
+        radials = {
+            "outer": [],
+            "inner": []
+        }
+        scales = [1.0, 0.7, 0.25]
+        i = 0
+        for s in scales:
+            rx = 1.0*s*w/2.0
+            ry = 1.0*s*h/2.0
+            points = []
+            for (dx, dy) in dodecagon:
+                x = int(round(cx + dx*rx))
+                y = int(round(cy + dy*ry))
+                points.append({"x": x, "y": y})
+            if s == scales[0]:
+                radials["outer"] = points
+            elif s == scales[-1]:
+                radials["inner"] = points
+            wireframe = {
+                "id": "station-wireframe-{}".format(s),
+                "color": cfg["schema"]["rgb"][2+i],
+                "shape": "vect",
+                "ttl": cfg["schema"]["ttl"],
+                "vector": points
+            }
+            self._overlay.send_raw(wireframe)
+            i = i+1
+
+        i = 0
+        for s in [scales[0]-(scales[0]-scales[1])/2.0, scales[1]-(scales[1]-scales[2])*2.0/3.0]:
+            points = []
+            rx = 1.0*s*w/2.0
+            ry = 1.0*s*h/2.0
+            for (dx, dy) in dodecagon[0:4]:
+                x = int(round(cx + dx*rx))
+                y = int(round(cy + dy*ry))
+                points.append({"x": x, "y": y})
+            wireframe = {
+                "id": "station-wireframe-1-{}".format(s),
+                "color": cfg["schema"]["rgb"][2+i],
+                "shape": "vect",
+                "ttl": cfg["schema"]["ttl"],
+                "vector": points
+            }
+            self._overlay.send_raw(wireframe)
+            
+            points = []
+            for (dx, dy) in dodecagon[4:8]:
+                x = int(round(cx + dx*rx))
+                y = int(round(cy + dy*ry))
+                points.append({"x": x, "y": y})
+            wireframe = {
+                "id": "station-wireframe-2-{}".format(s),
+                "color": cfg["schema"]["rgb"][2+i],
+                "shape": "vect",
+                "ttl": cfg["schema"]["ttl"],
+                "vector": points
+            }
+            self._overlay.send_raw(wireframe)
+
+            points = []
+            for (dx, dy) in dodecagon[8:12]:
+                x = int(round(cx + dx*rx))
+                y = int(round(cy + dy*ry))
+                points.append({"x": x, "y": y})
+            wireframe = {
+                "id": "station-wireframe-3-{}".format(s),
+                "color": cfg["schema"]["rgb"][2+i],
+                "shape": "vect",
+                "ttl": cfg["schema"]["ttl"],
+                "vector": points
+            }
+            self._overlay.send_raw(wireframe)
+            i = i+1
+
+        s = scales[1]-(scales[1]-scales[2])/3.0
+        rx = 1.0*s*w/2.0
+        ry = 1.0*s*h/2.0
+        points = []
+        for (dx, dy) in dodecagon[2:4]:
+            x = int(round(cx + dx*rx))
+            y = int(round(cy + dy*ry))
+            points.append({"x": x, "y": y})
+        wireframe = {
+            "id": "station-wireframe-1-{}".format(s),
+            "color": cfg["schema"]["rgb"][3],
+            "shape": "vect",
+            "ttl": cfg["schema"]["ttl"],
+            "vector": points
+        }
+        self._overlay.send_raw(wireframe)
+        
+        points = []
+        for (dx, dy) in dodecagon[6:8]:
+            x = int(round(cx + dx*rx))
+            y = int(round(cy + dy*ry))
+            points.append({"x": x, "y": y})
+        wireframe = {
+            "id": "station-wireframe-2-{}".format(s),
+            "color": cfg["schema"]["rgb"][3],
+            "shape": "vect",
+            "ttl": cfg["schema"]["ttl"],
+            "vector": points
+        }
+        self._overlay.send_raw(wireframe)
+
+        points = []
+        for (dx, dy) in dodecagon[10:12]:
+            x = int(round(cx + dx*rx))
+            y = int(round(cy + dy*ry))
+            points.append({"x": x, "y": y})
+        wireframe = {
+            "id": "station-wireframe-3-{}".format(s),
+            "color": cfg["schema"]["rgb"][3],
+            "shape": "vect",
+            "ttl": cfg["schema"]["ttl"],
+            "vector": points
+        }
+        self._overlay.send_raw(wireframe)
+        
+        for o,i in zip(radials["outer"], radials["inner"]):
+            wireframe = {
+                "id": "station-radial-{}-{}-{}-{}".format(o["x"], o["y"], i["x"], i["y"]),
+                "color": cfg["schema"]["rgb"][2],
+                "shape": "vect",
+                "ttl": cfg["schema"]["ttl"],
+                "vector": [o,i]
+            }
+            self._overlay.send_raw(wireframe)
+        sectors = [
+            ( 0, +1), (-0.5, sin60), (-sin60, +0.5),
+            (-1,  0), (-sin60, -0.5), (-0.5, -sin60),
+            ( 0, -1), (+0.5, -sin60), (sin60, -0.5),
+            (+1,  0), (sin60, +0.5), (+0.5, sin60),
+        ]
+
 
         # higlight of landing pad with size
 
@@ -532,6 +701,7 @@ class InGameMsg(object):
     def __shape(self, kind, panel):
         try:
             shape_id = "EDR-{}-{}-{}-{}-{}-shape".format(kind, panel["x"], panel["y"], panel["x2"], panel["y2"])
+            print(shape_id)
             self._overlay.send_shape(shape_id, "rect", panel["rgb"], panel["fill"], panel["x"], panel["y"], panel["x2"], panel["y2"], ttl=panel["ttl"])
             self.msg_ids.set(shape_id, panel["ttl"])
         except:
