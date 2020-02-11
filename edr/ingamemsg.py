@@ -2,6 +2,7 @@
 import os
 import sys
 import math
+import json
 
 import igmconfig
 import edrlog
@@ -314,7 +315,7 @@ class InGameMsg(object):
             "ttl": cfg["schema"]["ttl"],
         }
         print(red_light)
-        self.__shape(u"station-redlight", red_light)
+        self.__shape(u"docking-station-redlight", red_light)
 
         green_light = {
             "x": int(x+w-(0.03125 * xscale)),
@@ -326,7 +327,7 @@ class InGameMsg(object):
             "ttl": cfg["schema"]["ttl"],
         }
         print(green_light)
-        self.__shape(u"station-greenlight", green_light)
+        self.__shape(u"docking-station-greenlight", green_light)
 
         '''
         toaster = {
@@ -339,14 +340,15 @@ class InGameMsg(object):
             "ttl": cfg["schema"]["ttl"],
         }
         print(toaster)
-        self.__shape(u"station-redlight", toaster)
+        self.__shape(u"docking-station-redlight", toaster)
         '''
         # dodecaedron
+        w = w-4
+        h = h-2
         alpha = math.radians(15)
         sin15 = math.sin(alpha)
         cos15 = math.cos(alpha)
         sin45 = math.sqrt(2) / 2
-        sin60 = math.sqrt(3) / 2
         dodecagon = [
             (cos15, sin15),
             (cos15, -sin15),
@@ -368,9 +370,10 @@ class InGameMsg(object):
             "outer": [],
             "inner": []
         }
-        scales = [1.0, 0.7, 0.25]
+        scales = [1.0, 0.85, 0.7, 0.55, 0.4, 0.25 ]
+        major_scales = [scales[0], scales[2], scales[5]]
         i = 0
-        for s in scales:
+        for s in major_scales:
             rx = 1.0*s*w/2.0
             ry = 1.0*s*h/2.0
             points = []
@@ -378,22 +381,21 @@ class InGameMsg(object):
                 x = int(round(cx + dx*rx))
                 y = int(round(cy + dy*ry))
                 points.append({"x": x, "y": y})
-            if s == scales[0]:
+            if s == major_scales[0]:
                 radials["outer"] = points
-            elif s == scales[-1]:
+            elif s == major_scales[-1]:
                 radials["inner"] = points
             wireframe = {
-                "id": "station-wireframe-{}".format(s),
                 "color": cfg["schema"]["rgb"][2+i],
-                "shape": "vect",
                 "ttl": cfg["schema"]["ttl"],
                 "vector": points
             }
-            self._overlay.send_raw(wireframe)
+            # TODO find out if it would be better to do kind and id separately
+            self.__vect(u"docking-station-wireframe-{}".format(s), wireframe)
             i = i+1
 
         i = 0
-        for s in [scales[0]-(scales[0]-scales[1])/2.0, scales[1]-(scales[1]-scales[2])*2.0/3.0]:
+        for s in [scales[1], scales[4]]:
             points = []
             rx = 1.0*s*w/2.0
             ry = 1.0*s*h/2.0
@@ -402,13 +404,11 @@ class InGameMsg(object):
                 y = int(round(cy + dy*ry))
                 points.append({"x": x, "y": y})
             wireframe = {
-                "id": "station-wireframe-1-{}".format(s),
                 "color": cfg["schema"]["rgb"][2+i],
-                "shape": "vect",
                 "ttl": cfg["schema"]["ttl"],
                 "vector": points
             }
-            self._overlay.send_raw(wireframe)
+            self.__vect(u"docking-station-wireframe-1-{}".format(s), wireframe)
             
             points = []
             for (dx, dy) in dodecagon[4:8]:
@@ -416,13 +416,11 @@ class InGameMsg(object):
                 y = int(round(cy + dy*ry))
                 points.append({"x": x, "y": y})
             wireframe = {
-                "id": "station-wireframe-2-{}".format(s),
                 "color": cfg["schema"]["rgb"][2+i],
-                "shape": "vect",
                 "ttl": cfg["schema"]["ttl"],
                 "vector": points
             }
-            self._overlay.send_raw(wireframe)
+            self.__vect(u"docking-station-wireframe-2-{}".format(s), wireframe)
 
             points = []
             for (dx, dy) in dodecagon[8:12]:
@@ -430,16 +428,14 @@ class InGameMsg(object):
                 y = int(round(cy + dy*ry))
                 points.append({"x": x, "y": y})
             wireframe = {
-                "id": "station-wireframe-3-{}".format(s),
                 "color": cfg["schema"]["rgb"][2+i],
-                "shape": "vect",
                 "ttl": cfg["schema"]["ttl"],
                 "vector": points
             }
-            self._overlay.send_raw(wireframe)
+            self.__vect(u"docking-station-wireframe-3-{}".format(s), wireframe)
             i = i+1
 
-        s = scales[1]-(scales[1]-scales[2])/3.0
+        s = scales[3]
         rx = 1.0*s*w/2.0
         ry = 1.0*s*h/2.0
         points = []
@@ -448,13 +444,11 @@ class InGameMsg(object):
             y = int(round(cy + dy*ry))
             points.append({"x": x, "y": y})
         wireframe = {
-            "id": "station-wireframe-1-{}".format(s),
             "color": cfg["schema"]["rgb"][3],
-            "shape": "vect",
             "ttl": cfg["schema"]["ttl"],
             "vector": points
         }
-        self._overlay.send_raw(wireframe)
+        self.__vect(u"docking-station-wireframe-1-{}".format(s), wireframe)
         
         points = []
         for (dx, dy) in dodecagon[6:8]:
@@ -462,13 +456,11 @@ class InGameMsg(object):
             y = int(round(cy + dy*ry))
             points.append({"x": x, "y": y})
         wireframe = {
-            "id": "station-wireframe-2-{}".format(s),
             "color": cfg["schema"]["rgb"][3],
-            "shape": "vect",
             "ttl": cfg["schema"]["ttl"],
             "vector": points
         }
-        self._overlay.send_raw(wireframe)
+        self.__vect(u"docking-station-wireframe-2-{}".format(s), wireframe)
 
         points = []
         for (dx, dy) in dodecagon[10:12]:
@@ -476,32 +468,95 @@ class InGameMsg(object):
             y = int(round(cy + dy*ry))
             points.append({"x": x, "y": y})
         wireframe = {
-            "id": "station-wireframe-3-{}".format(s),
             "color": cfg["schema"]["rgb"][3],
-            "shape": "vect",
             "ttl": cfg["schema"]["ttl"],
             "vector": points
         }
-        self._overlay.send_raw(wireframe)
+        self.__vect(u"docking-station-wireframe-3-{}".format(s), wireframe)
         
         for o,i in zip(radials["outer"], radials["inner"]):
             wireframe = {
-                "id": "station-radial-{}-{}-{}-{}".format(o["x"], o["y"], i["x"], i["y"]),
-                "color": cfg["schema"]["rgb"][2],
-                "shape": "vect",
+                "color": cfg["schema"]["rgb"][5],
                 "ttl": cfg["schema"]["ttl"],
                 "vector": [o,i]
             }
-            self._overlay.send_raw(wireframe)
-        sectors = [
-            ( 0, +1), (-0.5, sin60), (-sin60, +0.5),
-            (-1,  0), (-sin60, -0.5), (-0.5, -sin60),
-            ( 0, -1), (+0.5, -sin60), (sin60, -0.5),
-            (+1,  0), (sin60, +0.5), (+0.5, sin60),
-        ]
+            self.__vect(u"docking-station-radial-{}-{}-{}-{}".format(o["x"], o["y"], i["x"], i["y"]), wireframe)
+        
+        pad_lut = {
+            35: [0,1,0,1,1],
+            36: [0,1,1,2,0],
+            37: [0,1,2,4,1],
+            38: [0,1,4,5,1],
+            31: [1,2,0,1,0],
+            32: [1,2,1,2,2],
+            33: [1,2,2,4,1],
+            34: [1,2,4,5,0],
+            26: [2,3,0,1,1],
+            27: [2,3,1,2,0],
+            28: [2,3,2,3,0],
+            29: [2,3,3,4,0],
+            30: [2,3,4,5,1],
+            24: [3,4,0,2,2],
+            25: [3,4,2,5,2],
+            20: [4,5,0,1,1],
+            21: [4,5,1,2,0],
+            22: [4,5,2,4,1],
+            23: [4,5,4,5,1],
+            16: [5,6,0,1,0],
+            17: [5,6,1,2,2],
+            18: [5,6,2,4,1],
+            19: [5,6,4,5,0],
+            11: [6,7,0,1,1],
+            12: [6,7,1,2,0],
+            13: [6,7,2,3,0],
+            14: [6,7,3,4,0],
+            15: [6,7,4,5,1],
+             9: [7,8,0,2,2],
+            10: [7,8,2,5,2],
+             5: [8,9,0,1,1],
+             6: [8,9,1,2,0],
+             7: [8,9,2,4,1],
+             8: [8,9,4,5,1],
+             1: [9,10,0,1,0],
+             2: [9,10,1,2,2],
+             3: [9,10,2,4,1],
+             4: [9,10,4,5,0],
+            41: [10,11,0,1,1],
+            42: [10,11,1,2,0],
+            43: [10,11,2,3,0],
+            44: [10,11,3,4,0],
+            45: [10,11,4,5,1],
+            39: [11,12,0,2,2],
+            40: [11,12,2,5,2],
+        }
 
-
-        # higlight of landing pad with size
+        pad_loc = pad_lut[landing_pad]
+        points = []
+        pad_scales = [scales[pad_loc[2]], scales[pad_loc[3]]]
+        pad_scales[0] = pad_scales[0]-(pad_scales[0]-pad_scales[1])*.1
+        pad_scales[1] = pad_scales[1]+(pad_scales[0]-pad_scales[1])*.1
+        for s in pad_scales:
+            rx = 1.0*s*w/2.0
+            ry = 1.0*s*h/2.0
+            (dx, dy) = dodecagon[pad_loc[0]]
+            x = int(round(cx + dx*rx))
+            y = int(round(cy + dy*ry))
+            points.append({"x": x, "y": y})
+            (dx, dy) = dodecagon[pad_loc[1]]
+            x = int(round(cx + dx*rx))
+            y = int(round(cy + dy*ry))
+            points.append({"x": x, "y": y})
+        points.append(points[0])
+        points.append(points[2])
+        points.append(points[3])
+        points.append(points[1])
+        points.append(points[0])
+        pad_highlight = {
+            "color": cfg["schema"]["rgb"][6+pad_loc[4]],
+            "ttl": cfg["schema"]["ttl"],
+            "vector": points
+        }
+        self.__vect(u"docking-station-pad-{}".format(landing_pad), pad_highlight)
 
 
     def __legal_vizualization(self, legal, kind):
@@ -708,9 +763,23 @@ class InGameMsg(object):
             EDRLOG.log(u"In-Game Shape failed.", "ERROR")
             pass
 
+    def __vect(self, kind, vector):
+        try:
+            vect_id = "EDR-{}-{}-vect".format(kind, hash(json.dumps(vector)))
+            print(vect_id)
+            raw = vector
+            raw["id"] = vect_id
+            raw["shape"] = "vect"
+            self._overlay.send_raw(raw)
+            self.msg_ids.set(vect_id, vector["ttl"])
+        except:
+            EDRLOG.log(u"In-Game Vect failed.", "ERROR")
+            pass
+
     def __clear(self, msg_id):
         try:
-            self._overlay.send_message(msg_id, "", "", 0, 0, 0, 0)
+            self._overlay.send_raw({"id": msg_id, "ttl": 0})
+            # TODO remove self._overlay.send_message(msg_id, "", "", 0, 0, 0, 0)
             self.msg_ids.evict(msg_id)
             self.__reset_caches() # TODO maybe that's too much
         except:
