@@ -249,11 +249,7 @@ class EDVehicle(object):
     def update_cargo(self):
         reader = edcargoreader.EDCargoReader()
         cargo = reader.process()
-        if not cargo or not cargo.get("Inventory", None):
-            EDRLOG.log(u"No info on cargo!", "DEBUG")
-            return False
         self.cargo.update(cargo)
-        return True
 
     def reset(self):
         now = EDTime.py_epoch_now()

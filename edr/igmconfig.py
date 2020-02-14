@@ -6,7 +6,7 @@ from edrlog import EDRLog
 import utils2to3
 
 class IGMConfig(object):
-    def __init__(self, config_file='config/igm_config.v3.ini', user_config_file=['config/user_igm_config.v3.ini', 'config/user_igm_config.v2.ini']):
+    def __init__(self, config_file='config/igm_config.v4.ini', user_config_file=['config/user_igm_config.v4.ini', 'config/user_igm_config.v3.ini']):
         self.config = ConfigParser()
         self.fallback_config = ConfigParser()
         self.fallback_config.read(utils2to3.abspathmaker(__file__, config_file))
