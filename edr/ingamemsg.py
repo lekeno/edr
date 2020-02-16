@@ -256,7 +256,7 @@ class InGameMsg(object):
         a = u"●" if station.get("haveMarket", False) else u"◌"
         b = u"●" if "Black Market" in station.get("otherServices", []) else u"◌"
         c = u"◌"
-        m = u"M." 
+        m = _(u"material trader|M.") 
         if "Material Trader" in station.get("otherServices", []):
             c = u"●"
             if station['economy']:
@@ -268,8 +268,16 @@ class InGameMsg(object):
                     m = _(u"ENC")
         details.append(_(u"Market:{}   B.Market:{}   {} Trad:{}").format(a,b,m,c))
         a = u"●" if "Interstellar Factors Contact" in station.get("otherServices", []) else u"◌"
-        b = u"●" if "Technology Broker" in station.get("otherServices", []) else u"◌"
-        details.append(_(u"I.Factor:{}   T.Broker:{}").format(a,b)) # TODO human vs. guardian
+        t = _(u"tech broker|T.")
+        b =  u"◌" 
+        if "Technology Broker" in station.get("otherServices", []):
+            b = u"●"
+            if station.get("economy", "").lower() == 'high tech':
+                t = _(u"guardian tech|GT.")
+            else station.get("economy", "").lower() == 'industrial':
+                t = _(u"human tech|HT.")
+
+        details.append(_(u"I.Factor:{}   {} Broker:{}").format(a,t,b))
         details.append(_(u"as of {date}").format(date=station['updateTime']['information']))
         self.__msg_header("docking", header)
         self.__msg_body("docking", details)
