@@ -248,11 +248,11 @@ class InGameMsg(object):
         a = u"◌" if station.get("type","N/A").lower() in ["outpost"] else u"●"
         b = u"●" if station.get("haveOutfitting", False) in station else u"◌"
         c = u"●" if station.get("haveShipyard", False) in station else u"◌"
-        details.append(u"LG. Pad:{}   Outfit:{}   Shipyard:{}".format(a,b,c))
+        details.append(_(u"LG. Pad:{}   Outfit:{}   Shipyard:{}").format(a,b,c))
         a = u"●" if "Refuel" in station.get("otherServices", []) else u"◌"
         b = u"●" if "Repair" in station.get("otherServices", []) else u"◌"
         c = u"●" if "Restock" in station.get("otherServices", []) else u"◌"
-        details.append(u"Refuel:{}   Repair:{}   Restock:{}".format(a,b,c))
+        details.append(_(u"Refuel:{}   Repair:{}   Restock:{}").format(a,b,c))
         a = u"●" if station.get("haveMarket", False) else u"◌"
         b = u"●" if "Black Market" in station.get("otherServices", []) else u"◌"
         c = u"◌"
@@ -261,26 +261,27 @@ class InGameMsg(object):
             c = u"●"
             if station['economy']:
                 if station['economy'].lower() in ['extraction', 'refinery']:
-                    m = u"RAW"
+                    m = _(u"RAW")
                 elif station['economy'].lower() == 'industrial':
-                    m = u"MAN"
+                    m = _(u"MAN")
                 elif station['economy'].lower() in ['high tech', 'military']:
-                    m = "ENC"
-        details.append(u"Market:{}   B.Market:{}   {} Trad:{}".format(a,b,m,c))
+                    m = _(u"ENC")
+        details.append(_(u"Market:{}   B.Market:{}   {} Trad:{}").format(a,b,m,c))
         a = u"●" if "Interstellar Factors Contact" in station.get("otherServices", []) else u"◌"
         b = u"●" if "Technology Broker" in station.get("otherServices", []) else u"◌"
-        details.append(u"I.Factor:{}   T.Broker:{}".format(a,b))
-        details.append(u"as of {date}".format(date=station['updateTime']['information']))
+        details.append(_(u"I.Factor:{}   T.Broker:{}").format(a,b)) # TODO human vs. guardian
+        details.append(_(u"as of {date}").format(date=station['updateTime']['information']))
         self.__msg_header("docking", header)
         self.__msg_body("docking", details)
 
         if not self.cfg["docking-station"]["enabled"]:
-            return
+            return {"header": header, "body": details}
         
         if station.get("type","N/A").lower() in ["asteroid base", 'bernal starport', "coriolis starport", "ocellus starport", "orbis starport", "bernal", "bernal statioport"]:
             self.__station_schematic(pad)
         else:
             self.__nyi_pad_schematic(station.get("type","N/A"))
+        return {"header": header, "body": details}
 
     def __nyi_pad_schematic(self, station_type):
         cfg = self.cfg[u"docking-station"]

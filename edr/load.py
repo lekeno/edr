@@ -195,6 +195,7 @@ def handle_movement_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         ed_player.wanted = entry.get("Wanted", False)
         ed_player.mothership.fuel_level = entry.get("FuelLevel", ed_player.mothership.fuel_level)
+        EDR_CLIENT.docking_guidance(entry)
         EDR_CLIENT.noteworthy_about_system(entry)
         ed_player.location.population = entry.get('Population', 0)
         ed_player.location.allegiance = entry.get('SystemAllegiance', 0)
@@ -206,6 +207,7 @@ def handle_movement_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         outcome["reason"] = "Jump events"
         ed_player.to_super_space()
+        EDR_CLIENT.docking_guidance(entry)
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
     elif entry["event"] == "StartJump" and entry["JumpType"] == "Hyperspace":
         place = "Hyperspace"
@@ -213,6 +215,7 @@ def handle_movement_events(ed_player, entry):
         outcome["reason"] = "Hyperspace"
         ed_player.to_hyper_space()
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
+        EDR_CLIENT.docking_guidance(entry)
         EDR_CLIENT.check_system(entry["StarSystem"], may_create=True)
     elif entry["event"] in ["ApproachSettlement"]:
         place = entry["Name"]

@@ -501,7 +501,8 @@ class EDRClient(object):
     def docking_guidance(self, entry):
         if entry["event"] == "DockingGranted":
             station = self.edrsystems.station(self.player.star_system, entry["StationName"])
-            self.IN_GAME_MSG.docking(station, entry["LandingPad"])
+            summary = self.IN_GAME_MSG.docking(station, entry["LandingPad"])
+            self.ui.notify(summary["header"], summary["body"])
         else:
             self.IN_GAME_MSG.clear_docking()
 

@@ -816,4 +816,3 @@ class EDRSystems(object):
             return self.distance(system_name, 'Colonia') <= 500
         except ValueError:
             return False
-
