@@ -800,7 +800,7 @@ class InGameMsg(object):
 
     def __clear(self, msg_id):
         try:
-            self._overlay.send_raw({"id": msg_id, "ttl": 0})
+            self._overlay.send_message(msg_id, "", "", 0, 0, 0, 0)
             self.msg_ids.evict(msg_id)
             self.__reset_caches()
         except:
