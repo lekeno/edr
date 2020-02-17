@@ -261,11 +261,26 @@ class InGameMsg(object):
             c = u"●"
             if station['economy']:
                 if station['economy'].lower() in ['extraction', 'refinery']:
-                    m = _(u"RAW")
+                    if station.get("secondEconomy", "").lower() == "industrial":
+                        m = _(u"R/M")
+                    elif station.get("secondEconomy", "").lower() in ["high tech", "military"]:
+                        m = _(u"R/E")
+                    else:
+                        m = _(u"RAW")
                 elif station['economy'].lower() == 'industrial':
-                    m = _(u"MAN")
+                    if station.get("secondEconomy", "").lower() in ["extraction", "refinery"]:
+                        m = _(u"M/R")
+                    elif station.get("secondEconomy", "").lower() in ["high tech", "military"]:
+                        m = _(u"M/E")
+                    else:
+                        m = _(u"MAN")
                 elif station['economy'].lower() in ['high tech', 'military']:
-                    m = _(u"ENC")
+                    if station.get("secondEconomy", "").lower() in ["extraction", "refinery"]:
+                        m = _(u"E/R")
+                    elif station.get("secondEconomy", "").lower() == "industrial":
+                        m = _(u"E/M")
+                    else:
+                        m = _(u"ENC")
         details.append(_(u"Market:{}   B.Market:{}   {} Trad:{}").format(a,b,m,c))
         a = u"●" if "Interstellar Factors Contact" in station.get("otherServices", []) else u"◌"
         t = _(u"tech broker|T.")
@@ -273,9 +288,15 @@ class InGameMsg(object):
         if "Technology Broker" in station.get("otherServices", []):
             b = u"●"
             if station.get("economy", "").lower() == 'high tech':
-                t = _(u"guardian tech|GT.")
-            else station.get("economy", "").lower() == 'industrial':
-                t = _(u"human tech|HT.")
+                if station.get("secondEconomy", "").lower() == "industrial":
+                    t = _(u"ambiguous tech|T.")
+                else:
+                    t = _(u"guardian tech|GT.")
+            elif station.get("economy", "").lower() == 'industrial':
+                if station.get("secondEconomy", "").lower() == "high tech":
+                    t = _(u"ambiguous tech|T.") 
+                else:
+                    t = _(u"human tech|HT.") 
 
         details.append(_(u"I.Factor:{}   {} Broker:{}").format(a,t,b))
         details.append(_(u"as of {date}").format(date=station['updateTime']['information']))

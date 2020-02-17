@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2020-02-13 23:10-0800\n"
-"PO-Revision-Date: 2020-02-13 23:19-0800\n"
+"POT-Creation-Date: 2020-02-18 07:55+0900\n"
+"PO-Revision-Date: 2020-02-18 07:56+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -671,11 +671,11 @@ msgstr "crime rapporté!"
 msgid "Anarchy system (fights not reported)."
 msgstr "Anarchie (combats non rapportés)"
 
-#: edrclient.py:1163 helpcontent.py:119 load.py:392 load.py:396 load.py:398
+#: edrclient.py:1163 helpcontent.py:119 load.py:395 load.py:399 load.py:401
 msgid "EDR Central"
 msgstr "EDR Central"
 
-#: edrclient.py:1163 load.py:396
+#: edrclient.py:1163 load.py:399
 msgid "Fight reporting enabled"
 msgstr "Rapport de combat activé"
 
@@ -683,7 +683,7 @@ msgstr "Rapport de combat activé"
 msgid "Reason: presence of outlaws"
 msgstr "Raison: présence d'hors-la-loi"
 
-#: edrclient.py:1163 load.py:396
+#: edrclient.py:1163 load.py:399
 msgid ""
 "Turn it off: flash your lights twice, or leave this area, or escape danger "
 "and retract hardpoints."
@@ -3471,27 +3471,73 @@ msgstr "LG. Pad:{}   Equipmt:{}   Chantier:{}"
 msgid "Refuel:{}   Repair:{}   Restock:{}"
 msgstr "Fuel:{}   Réparer:{}   Ravitailler:{}"
 
-#: ingamemsg.py:264
+#: ingamemsg.py:259
+msgid "material trader|M."
+msgstr "M."
+
+#: ingamemsg.py:265
+msgid "R/M"
+msgstr "B/M"
+
+#: ingamemsg.py:267
+msgid "R/E"
+msgstr "B/E"
+
+#: ingamemsg.py:269
 msgid "RAW"
 msgstr "BRU"
 
-#: ingamemsg.py:266
+#: ingamemsg.py:272
+msgid "M/R"
+msgstr "M/B"
+
+#: ingamemsg.py:274
+msgid "M/E"
+msgstr "M/E"
+
+#: ingamemsg.py:276
 msgid "MAN"
 msgstr "FAB"
 
-#: ingamemsg.py:268
+#: ingamemsg.py:279
+msgid "E/R"
+msgstr "E/B"
+
+#: ingamemsg.py:281
+msgid "E/M"
+msgstr "E/M"
+
+#: ingamemsg.py:283
 msgid "ENC"
 msgstr "ENC"
 
-#: ingamemsg.py:269
+#: ingamemsg.py:284
 msgid "Market:{}   B.Market:{}   {} Trad:{}"
 msgstr "Marché:{}   Marché N.:{}   {} Commerce:{}"
 
-#: ingamemsg.py:272
-msgid "I.Factor:{}   T.Broker:{}"
-msgstr "I.Factor:{}   Courtier T.:{}"
+#: ingamemsg.py:286
+msgid "tech broker|T."
+msgstr "T."
 
-#: ingamemsg.py:273
+#: ingamemsg.py:292 ingamemsg.py:297
+msgid "ambiguous tech|T."
+msgstr "T."
+
+#: ingamemsg.py:294
+#, fuzzy
+#| msgid "human tech|HT."
+msgid "guardian tech|GT."
+msgstr "HT."
+
+#: ingamemsg.py:299
+msgid "human tech|HT."
+msgstr "HT."
+
+#: ingamemsg.py:301
+msgid "I.Factor:{}   {} Broker:{}"
+msgstr "I.Factor:{}   Courtier {}:{}"
+
+#: ingamemsg.py:302
 #, python-brace-format
 msgid "as of {date}"
 msgstr "date des infos: {date}"
@@ -3532,118 +3578,118 @@ msgstr "quitté un équipage."
 msgid "crew disbanded."
 msgstr "équipage dissous."
 
-#: load.py:267
+#: load.py:270
 msgid "Restock reminder"
 msgstr "Mémo de ravitaillement"
 
-#: load.py:267
+#: load.py:270
 msgid "Don't forget to restock on limpets before heading out mining."
 msgstr "N'oubliez pas de ravitailler vos drones avant d'aller miner"
 
-#: load.py:267
+#: load.py:270
 msgid "Limpets: {}/{}"
 msgstr "Drones: {}/{}"
 
-#: load.py:314
+#: load.py:317
 msgid "initialized."
 msgstr "initialisé."
 
-#: load.py:392 load.py:398
+#: load.py:395 load.py:401
 msgid "Fight reporting disabled"
 msgstr "Rapport de combat désactivé"
 
-#: load.py:392
+#: load.py:395
 msgid "Looks like you are safe, and disengaged."
 msgstr "Il semble que vous soyez en sécurité et désengagé."
 
-#: load.py:398
+#: load.py:401
 msgid "Flash your lights twice to re-enable."
 msgstr "Flashez vos phares deux fois afin de réactiver."
 
-#: load.py:507
+#: load.py:510
 msgid "System info acquired"
 msgstr "Infos du système acquises"
 
-#: load.py:507
+#: load.py:510
 msgid "Noteworthy material densities will be shown when approaching a planet."
 msgstr ""
 "Un sommaire des matériaux présents en forte densité s'affichera lors d'une "
 "approche planétaire."
 
-#: load.py:588
+#: load.py:591
 msgid "blip failed."
 msgstr "échec d'un blip."
 
-#: load.py:591
+#: load.py:594
 msgid "blip succeeded!"
 msgstr "blip rapporté!"
 
-#: load.py:604 load.py:648
+#: load.py:607 load.py:651
 msgid "Crime reporting disabled in solo/private modes."
 msgstr "Rapport de crime désactivé en mode Solo/Privé."
 
-#: load.py:634 load.py:681
+#: load.py:637 load.py:684
 msgid "failed to report crime."
 msgstr "crime non rapporté (échec)."
 
-#: load.py:687
+#: load.py:690
 msgid "Fight reporting disabled in solo/private modes."
 msgstr "Rapport de combat désactivé en mode Solo/Privé."
 
-#: load.py:726
+#: load.py:729
 msgid "failed to report contact."
 msgstr "contact non rapporté (échec)."
 
-#: load.py:746
+#: load.py:749
 msgid "Scan reporting disabled in solo/private modes."
 msgstr "Rapport de scan désactivé en mode Solo/Privé."
 
-#: load.py:756
+#: load.py:759
 msgid "failed to report scan."
 msgstr "scan non rapporté (échec)."
 
-#: load.py:786
+#: load.py:789
 msgid "Traffic reporting disabled in solo/private modes."
 msgstr "Rapport de traffic désactivé en mode Solo/Privé."
 
-#: load.py:794
+#: load.py:797
 msgid "failed to report traffic."
 msgstr "trafic non rapporté (échec)."
 
-#: load.py:800
+#: load.py:803
 msgid "Multicrew reporting disabled in private mode."
 msgstr "Pas de rapport multicrew en mode privé."
 
-#: load.py:804
+#: load.py:807
 msgid "failed to report multicrew session."
 msgstr "crime équipage non rapporté (échec)."
 
-#: load.py:1285
+#: load.py:1288
 msgid "Call rejected: you seem to have enough fuel."
 msgstr "Appel rejeté: il semble que vous ayez assez de carburant."
 
-#: load.py:1285 load.py:1289
+#: load.py:1288 load.py:1292
 msgid "Contact Cmdr LeKeno if this is inaccurate"
 msgstr "Contactez Cmdr LeKeno si ceci est incorrect"
 
-#: load.py:1289
+#: load.py:1292
 msgid "Call rejected: you seem to have enough hull left."
 msgstr ""
 "Appel rejeté: il semble que votre coque n'est pas dans un état critique."
 
-#: load.py:1324
+#: load.py:1327
 msgid "Loadout information is stale"
 msgstr "Les informations ne sont pas à jour"
 
-#: load.py:1324
+#: load.py:1327
 msgid "Congrats, you've found a bug in Elite!"
 msgstr "Félicitations! Vous avez trouvé un bug dans Elite!"
 
-#: load.py:1324
+#: load.py:1327
 msgid "The modules info isn't updated right away :("
 msgstr "Les informations de vos modules ne sont pas mises à jour de suite :("
 
-#: load.py:1324
+#: load.py:1327
 msgid "Try again after moving around or relog and check your modules."
 msgstr ""
 "Essayez plus tard après avoir bougé ou reloguez et regardez vos modules."
@@ -4743,6 +4789,9 @@ msgid ""
 "[Defense] Like the song says you've got to know when to walk away and know "
 "when to run."
 msgstr "[Défense] Sachez quand il vaut mieux prendre la poudre d'escampette."
+
+#~ msgid "GT?"
+#~ msgstr "GT?"
 
 #~ msgid ""
 #~ " - Reach out to LeKeno on discord (LeKeno#8484) or the Elite forums "
