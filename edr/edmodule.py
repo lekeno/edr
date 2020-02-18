@@ -57,6 +57,9 @@ class EDModule(object):
     def is_shield(self):
         return self.cname.startswith('int_shieldgenerator')
 
+    def is_prospector_drone_controller(self):
+        return self.cname.startswith('int_dronecontrol_prospector')
+
     def __repr__(self):
         return str(self.__dict__)
 
