@@ -2,6 +2,7 @@
 import os
 import sys
 import math
+import json
 
 import igmconfig
 import edrlog
@@ -24,7 +25,7 @@ except ImportError:
 import lrucache
 
 class InGameMsg(object):   
-    MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice", "help", "navigation"]
+    MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice", "help", "navigation", "docking"]
     LEGAL_KINDS = ["intel", "warning"] 
 
     def __init__(self):
@@ -36,6 +37,7 @@ class InGameMsg(object):
             self.message_config(kind)
         for kind in self.LEGAL_KINDS:
             self.legal_config(kind)
+        self.docking_config()
         self.msg_ids = lrucache.LRUCache(1000, 60*15)
 
     def general_config(self):
@@ -50,7 +52,6 @@ class InGameMsg(object):
                 "w": conf.normal_width()
             }
         }
-
 
     def message_config(self, kind):
         conf = igmconfig.IGMConfig() 
@@ -137,6 +138,33 @@ class InGameMsg(object):
             "fill": conf.fill(kind, "panel")
         }
 
+    def docking_config(self):
+        conf = igmconfig.IGMConfig()
+        kind = "docking-station" 
+        self.cfg[kind] = {
+            "enabled": conf._getboolean(kind, "enabled"),
+            "schema": {
+                "x": conf.x(kind, "schema"),
+                "y": conf.y(kind, "schema"),
+                "h": conf.h(kind, "schema"),
+                "w": conf.w(kind, "schema"),
+                "ttl": conf.ttl(kind, "schema"),
+                "rgb": conf.rgb_list(kind, "schema"),
+                "fill": conf.fill_list(kind, "schema"),
+            }
+        }
+        if not conf.panel(kind):
+            return
+        self.cfg[kind]["panel"] = {
+            "x": conf.x(kind, "panel"),
+            "y": conf.y(kind, "panel"),
+            "x2": conf.x2(kind, "panel"),
+            "y2": conf.y2(kind, "panel"),
+            "ttl": conf.ttl(kind, "panel"),
+            "rgb": conf.rgb(kind, "panel"),
+            "fill": conf.fill(kind, "panel")
+        }
+
 
     def intel(self, header, details, legal=None):
         self.__clear_if_needed()
@@ -206,6 +234,376 @@ class InGameMsg(object):
         self.__msg_header("navigation", header)
         self.__msg_body("navigation", details)
 
+    def docking(self, station, pad):
+        self.clear_docking()
+        if not station:
+            return
+        if "panel" in self.cfg["docking"]:
+            self.__shape("docking", self.cfg["docking"]["panel"])
+        if "panel" in self.cfg["docking-station"] and self.cfg["docking-station"].get("enabled", False):
+            self.__shape("docking-station", self.cfg["docking-station"]["panel"])
+        economy = u"{}/{}".format(station["economy"], station["secondEconomy"]) if station["secondEconomy"] else station["economy"]
+        header = u"{} ({})".format(station["name"], economy)
+        details = []
+        a = u"◌" if station.get("type","N/A").lower() in ["outpost"] else u"●"
+        b = u"●" if station.get("haveOutfitting", False) in station else u"◌"
+        c = u"●" if station.get("haveShipyard", False) in station else u"◌"
+        details.append(_(u"LG. Pad:{}   Outfit:{}   Shipyard:{}").format(a,b,c))
+        a = u"●" if "Refuel" in station.get("otherServices", []) else u"◌"
+        b = u"●" if "Repair" in station.get("otherServices", []) else u"◌"
+        c = u"●" if "Restock" in station.get("otherServices", []) else u"◌"
+        details.append(_(u"Refuel:{}   Repair:{}   Restock:{}").format(a,b,c))
+        a = u"●" if station.get("haveMarket", False) else u"◌"
+        b = u"●" if "Black Market" in station.get("otherServices", []) else u"◌"
+        c = u"◌"
+        m = _(u"material trader|M.") 
+        if "Material Trader" in station.get("otherServices", []):
+            c = u"●"
+            if station['economy']:
+                if station['economy'].lower() in ['extraction', 'refinery']:
+                    if station.get("secondEconomy", "").lower() == "industrial":
+                        m = _(u"R/M")
+                    elif station.get("secondEconomy", "").lower() in ["high tech", "military"]:
+                        m = _(u"R/E")
+                    else:
+                        m = _(u"RAW")
+                elif station['economy'].lower() == 'industrial':
+                    if station.get("secondEconomy", "").lower() in ["extraction", "refinery"]:
+                        m = _(u"M/R")
+                    elif station.get("secondEconomy", "").lower() in ["high tech", "military"]:
+                        m = _(u"M/E")
+                    else:
+                        m = _(u"MAN")
+                elif station['economy'].lower() in ['high tech', 'military']:
+                    if station.get("secondEconomy", "").lower() in ["extraction", "refinery"]:
+                        m = _(u"E/R")
+                    elif station.get("secondEconomy", "").lower() == "industrial":
+                        m = _(u"E/M")
+                    else:
+                        m = _(u"ENC")
+        details.append(_(u"Market:{}   B.Market:{}   {} Trad:{}").format(a,b,m,c))
+        a = u"●" if "Interstellar Factors Contact" in station.get("otherServices", []) else u"◌"
+        t = _(u"tech broker|T.")
+        b =  u"◌" 
+        if "Technology Broker" in station.get("otherServices", []):
+            b = u"●"
+            if station.get("economy", "").lower() == 'high tech':
+                if station.get("secondEconomy", "").lower() == "industrial":
+                    t = _(u"ambiguous tech|T.")
+                else:
+                    t = _(u"guardian tech|GT.")
+            elif station.get("economy", "").lower() == 'industrial':
+                if station.get("secondEconomy", "").lower() == "high tech":
+                    t = _(u"ambiguous tech|T.") 
+                else:
+                    t = _(u"human tech|HT.") 
+
+        details.append(_(u"I.Factor:{}   {} Broker:{}").format(a,t,b))
+        details.append(_(u"as of {date}").format(date=station['updateTime']['information']))
+        self.__msg_header("docking", header)
+        self.__msg_body("docking", details)
+
+        if not self.cfg["docking-station"]["enabled"]:
+            return {"header": header, "body": details}
+        
+        if station.get("type","N/A").lower() in ["asteroid base", 'bernal starport', "coriolis starport", "ocellus starport", "orbis starport", "bernal", "bernal statioport"]:
+            self.__station_schematic(pad)
+        else:
+            self.__nyi_pad_schematic(station.get("type","N/A"))
+        return {"header": header, "body": details}
+
+    def __nyi_pad_schematic(self, station_type):
+        cfg = self.cfg[u"docking-station"]
+        x = cfg["schema"]["x"]
+        y = cfg["schema"]["y"]
+        w = cfg["schema"]["w"]
+        h = cfg["schema"]["h"]
+
+        cx = int(round(x + w/2.0))
+        cy = int(round(y + h/2.0))
+        arx = {
+            'left':[{'x':-0.253846153846154, 'y':0.258620689655172}, {'x':-0.130769230769231, 'y':0.258620689655172}, {'x':-0.0384615384615385, 'y':0.0402298850574713}, {'x':-0.1, 'y':-0.0977011494252874}, {'x':-0.253846153846154, 'y':0.258620689655172}, ],
+            'top':[{'x':0, 'y':-0.0402298850574713}, {'x':-0.0615384615384615, 'y':-0.201149425287356}, {'x':0, 'y':-0.339080459770115}, {'x':0.0615384615384615, 'y':-0.201149425287356}, {'x':0, 'y':-0.0402298850574713}, ],
+            'right':[{'x':0.130769230769231, 'y':0.258620689655172}, {'x':0.253846153846154, 'y':0.258620689655172}, {'x':0.1, 'y':-0.0977011494252874}, {'x':0.0384615384615385, 'y':0.0402298850574713}, {'x':0.130769230769231, 'y':0.258620689655172}, ]
+        }
+
+        colors = {
+            "outpost": "#D9D9D9",
+            "planetary outpost": "#B2773F",
+            "planetary port": "#A0A0A0", 
+            "mega ship": "#D3983C", 
+            "fleet carrier": "#7893A8",
+            "soon tm": "#7A7A7A"
+        }
+        color = colors.get(station_type.lower(), "#D9D9D9")
+        
+        for element in arx:
+            scaled = [{"x":int(cx+(coord["x"]*w)), "y":int(cy+(coord["y"]*h))} for coord in arx[element]]
+            vect = {
+                "id": u"arx-{}".format(element),
+                "color": color,
+                "ttl": cfg["schema"]["ttl"],
+                "vector": scaled
+            }
+            self.__vect(u"docking", vect)
+            
+    
+    def __station_schematic(self, landing_pad):
+        cfg = self.cfg[u"docking-station"]
+        x = cfg["schema"]["x"]
+        y = cfg["schema"]["y"]
+        w = cfg["schema"]["w"]
+        h = cfg["schema"]["h"]
+
+        cx = int(round(x + w/2.0))
+        cy = int(round(y + h/2.0))
+        
+        red_light = {
+            "x": int(x),
+            "y": int(cy - (0.12962962962962962962962962962963 * h)),
+            "x2": max(1, int(0.03125 * w)),
+            "y2": max(1,int(2.0*0.12962962962962962962962962962963 * h)),
+            "rgb": cfg["schema"]["rgb"][0],
+            "fill": cfg["schema"]["fill"][0],
+            "ttl": cfg["schema"]["ttl"],
+        }
+        self.__shape(u"docking", red_light)
+
+        green_light = {
+            "x": int(x+w-(0.03125 * w)),
+            "y": int(cy - (0.12962962962962962962962962962963 * h)),
+            "x2": max(1,int(0.03125 * w)),
+            "y2": max(1, int(2.0*0.12962962962962962962962962962963 * h)),
+            "rgb": cfg["schema"]["rgb"][1],
+            "fill": cfg["schema"]["fill"][1],
+            "ttl": cfg["schema"]["ttl"],
+        }
+        self.__shape(u"docking", green_light)
+
+        # dodecaedron
+        w = w-4
+        h = h-2
+        alpha = math.radians(15)
+        sin15 = math.sin(alpha)
+        cos15 = math.cos(alpha)
+        sin45 = math.sqrt(2) / 2
+        dodecagon = [
+            (cos15, sin15),
+            (cos15, -sin15),
+            (sin45, -sin45),
+            (sin15, -cos15),
+            (-sin15, -cos15),
+            (-sin45, -sin45),
+            (-cos15, -sin15),
+            (-cos15, sin15),
+            (-sin45, sin45),
+            (-sin15, cos15),
+            (sin15, cos15),
+            (sin45, sin45),
+            (cos15, sin15),
+        ]
+
+        radials = {
+            "outer": [],
+            "inner": []
+        }
+        scales = [1.0, 0.85, 0.7, 0.55, 0.4, 0.25 ]
+        major_scales = [scales[0], scales[2], scales[5]]
+        i = 0
+        for s in major_scales:
+            rx = 1.0*s*w/2.0
+            ry = 1.0*s*h/2.0
+            points = []
+            for (dx, dy) in dodecagon:
+                x = int(round(cx + dx*rx))
+                y = int(round(cy + dy*ry))
+                points.append({"x": x, "y": y})
+            if s == major_scales[0]:
+                radials["outer"] = points
+            elif s == major_scales[-1]:
+                radials["inner"] = points
+            wireframe = {
+                "id": u"station-wireframe-{}".format(s),
+                "color": cfg["schema"]["rgb"][2+i],
+                "ttl": cfg["schema"]["ttl"],
+                "vector": points
+            }
+            self.__vect(u"docking", wireframe)
+            i = i+1
+
+        i = 0
+        for s in [scales[1], scales[4]]:
+            points = []
+            rx = 1.0*s*w/2.0
+            ry = 1.0*s*h/2.0
+            for (dx, dy) in dodecagon[0:4]:
+                x = int(round(cx + dx*rx))
+                y = int(round(cy + dy*ry))
+                points.append({"x": x, "y": y})
+            wireframe = {
+                "id": u"station-wireframe-1-{}".format(s),
+                "color": cfg["schema"]["rgb"][2+i],
+                "ttl": cfg["schema"]["ttl"],
+                "vector": points
+            }
+            self.__vect(u"docking", wireframe)
+            
+            points = []
+            for (dx, dy) in dodecagon[4:8]:
+                x = int(round(cx + dx*rx))
+                y = int(round(cy + dy*ry))
+                points.append({"x": x, "y": y})
+            wireframe = {
+                "id": u"station-wireframe-2-{}".format(s),
+                "color": cfg["schema"]["rgb"][2+i],
+                "ttl": cfg["schema"]["ttl"],
+                "vector": points
+            }
+            self.__vect(u"docking", wireframe)
+
+            points = []
+            for (dx, dy) in dodecagon[8:12]:
+                x = int(round(cx + dx*rx))
+                y = int(round(cy + dy*ry))
+                points.append({"x": x, "y": y})
+            wireframe = {
+                "id": u"station-wireframe-3-{}".format(s),
+                "color": cfg["schema"]["rgb"][2+i],
+                "ttl": cfg["schema"]["ttl"],
+                "vector": points
+            }
+            self.__vect(u"docking", wireframe)
+            i = i+1
+
+        s = scales[3]
+        rx = 1.0*s*w/2.0
+        ry = 1.0*s*h/2.0
+        points = []
+        for (dx, dy) in dodecagon[2:4]:
+            x = int(round(cx + dx*rx))
+            y = int(round(cy + dy*ry))
+            points.append({"x": x, "y": y})
+        wireframe = {
+            "id": u"station-wireframe-1-{}".format(s),
+            "color": cfg["schema"]["rgb"][3],
+            "ttl": cfg["schema"]["ttl"],
+            "vector": points
+        }
+        self.__vect(u"docking", wireframe)
+        
+        points = []
+        for (dx, dy) in dodecagon[6:8]:
+            x = int(round(cx + dx*rx))
+            y = int(round(cy + dy*ry))
+            points.append({"x": x, "y": y})
+        wireframe = {
+            "id": u"station-wireframe-2-{}".format(s),
+            "color": cfg["schema"]["rgb"][3],
+            "ttl": cfg["schema"]["ttl"],
+            "vector": points
+        }
+        self.__vect(u"docking", wireframe)
+
+        points = []
+        for (dx, dy) in dodecagon[10:12]:
+            x = int(round(cx + dx*rx))
+            y = int(round(cy + dy*ry))
+            points.append({"x": x, "y": y})
+        wireframe = {
+            "id": u"station-wireframe-3-{}".format(s),
+            "color": cfg["schema"]["rgb"][3],
+            "ttl": cfg["schema"]["ttl"],
+            "vector": points
+        }
+        self.__vect(u"docking", wireframe)
+        
+        for o,i in zip(radials["outer"], radials["inner"]):
+            wireframe = {
+                "id": u"station-radial-{}-{}-{}-{}".format(o["x"], o["y"], i["x"], i["y"]),
+                "color": cfg["schema"]["rgb"][5],
+                "ttl": cfg["schema"]["ttl"],
+                "vector": [o,i]
+            }
+            self.__vect(u"docking", wireframe)
+        
+        pad_lut = {
+            35: [0,1,0,1,1],
+            36: [0,1,1,2,0],
+            37: [0,1,2,4,1],
+            38: [0,1,4,5,1],
+            31: [1,2,0,1,0],
+            32: [1,2,1,2,2],
+            33: [1,2,2,4,1],
+            34: [1,2,4,5,0],
+            26: [2,3,0,1,1],
+            27: [2,3,1,2,0],
+            28: [2,3,2,3,0],
+            29: [2,3,3,4,0],
+            30: [2,3,4,5,1],
+            24: [3,4,0,2,2],
+            25: [3,4,2,5,2],
+            20: [4,5,0,1,1],
+            21: [4,5,1,2,0],
+            22: [4,5,2,4,1],
+            23: [4,5,4,5,1],
+            16: [5,6,0,1,0],
+            17: [5,6,1,2,2],
+            18: [5,6,2,4,1],
+            19: [5,6,4,5,0],
+            11: [6,7,0,1,1],
+            12: [6,7,1,2,0],
+            13: [6,7,2,3,0],
+            14: [6,7,3,4,0],
+            15: [6,7,4,5,1],
+             9: [7,8,0,2,2],
+            10: [7,8,2,5,2],
+             5: [8,9,0,1,1],
+             6: [8,9,1,2,0],
+             7: [8,9,2,4,1],
+             8: [8,9,4,5,1],
+             1: [9,10,0,1,0],
+             2: [9,10,1,2,2],
+             3: [9,10,2,4,1],
+             4: [9,10,4,5,0],
+            41: [10,11,0,1,1],
+            42: [10,11,1,2,0],
+            43: [10,11,2,3,0],
+            44: [10,11,3,4,0],
+            45: [10,11,4,5,1],
+            39: [11,12,0,2,2],
+            40: [11,12,2,5,2],
+        }
+
+        pad_loc = pad_lut[landing_pad]
+        points = []
+        pad_scales = [scales[pad_loc[2]], scales[pad_loc[3]]]
+        pad_scales[0] = pad_scales[0]-(pad_scales[0]-pad_scales[1])*.1
+        pad_scales[1] = pad_scales[1]+(pad_scales[0]-pad_scales[1])*.1
+        for s in pad_scales:
+            rx = 1.0*s*w/2.0
+            ry = 1.0*s*h/2.0
+            (dx, dy) = dodecagon[pad_loc[0]]
+            x = int(round(cx + dx*rx))
+            y = int(round(cy + dy*ry))
+            points.append({"x": x, "y": y})
+            (dx, dy) = dodecagon[pad_loc[1]]
+            x = int(round(cx + dx*rx))
+            y = int(round(cy + dy*ry))
+            points.append({"x": x, "y": y})
+        points.append(points[0])
+        points.append(points[2])
+        points.append(points[3])
+        points.append(points[1])
+        points.append(points[0])
+        pad_highlight = {
+            "id": u"station-pad-{}".format(landing_pad),
+            "color": cfg["schema"]["rgb"][6+pad_loc[4]],
+            "ttl": cfg["schema"]["ttl"],
+            "vector": points
+        }
+        self.__vect(u"docking", pad_highlight)
+
+
     def __legal_vizualization(self, legal, kind):
         cleans = legal["clean"]
         wanteds = legal["wanted"]
@@ -272,8 +670,6 @@ class InGameMsg(object):
             x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}
             m += 1
 
-
-
     def clear(self):
         for msg_id in self.msg_ids.keys():
             self.__clear(msg_id)
@@ -294,6 +690,9 @@ class InGameMsg(object):
 
     def clear_navigation(self):
         self.__clear_kind("navigation")
+
+    def clear_docking(self):
+        self.__clear_kind("docking")
 
     def __clear_kind(self, kind):
         tag = "EDR-{}".format(kind)
@@ -408,11 +807,23 @@ class InGameMsg(object):
             EDRLOG.log(u"In-Game Shape failed.", "ERROR")
             pass
 
+    def __vect(self, kind, vector):
+        try:
+            vect_id = "EDR-{}-{}-{}-vect".format(kind, vector["id"], hash(json.dumps(vector)))
+            raw = vector
+            raw["id"] = vect_id
+            raw["shape"] = "vect"
+            self._overlay.send_raw(raw)
+            self.msg_ids.set(vect_id, vector["ttl"])
+        except:
+            EDRLOG.log(u"In-Game Vect failed.", "ERROR")
+            pass
+
     def __clear(self, msg_id):
         try:
             self._overlay.send_message(msg_id, "", "", 0, 0, 0, 0)
             self.msg_ids.evict(msg_id)
-            self.__reset_caches() # TODO maybe that's too much
+            self.__reset_caches()
         except:
             EDRLOG.log(u"In-Game Message failed to clear {}.".format(msg_id), "ERROR")
             pass

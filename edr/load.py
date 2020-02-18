@@ -195,6 +195,7 @@ def handle_movement_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         ed_player.wanted = entry.get("Wanted", False)
         ed_player.mothership.fuel_level = entry.get("FuelLevel", ed_player.mothership.fuel_level)
+        EDR_CLIENT.docking_guidance(entry)
         EDR_CLIENT.noteworthy_about_system(entry)
         ed_player.location.population = entry.get('Population', 0)
         ed_player.location.allegiance = entry.get('SystemAllegiance', 0)
@@ -206,6 +207,7 @@ def handle_movement_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         outcome["reason"] = "Jump events"
         ed_player.to_super_space()
+        EDR_CLIENT.docking_guidance(entry)
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
     elif entry["event"] == "StartJump" and entry["JumpType"] == "Hyperspace":
         place = "Hyperspace"
@@ -213,6 +215,7 @@ def handle_movement_events(ed_player, entry):
         outcome["reason"] = "Hyperspace"
         ed_player.to_hyper_space()
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
+        EDR_CLIENT.docking_guidance(entry)
         EDR_CLIENT.check_system(entry["StarSystem"], may_create=True)
     elif entry["event"] in ["ApproachSettlement"]:
         place = entry["Name"]
@@ -257,8 +260,14 @@ def handle_change_events(ed_player, entry):
         place = entry.get("StationName", "Unknown")
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         ed_player.to_normal_space()
+        EDR_CLIENT.docking_guidance(entry)
         if entry["event"] == "Docked":
             ed_player.wanted = entry.get("Wanted", False)
+            ed_player.mothership.update_cargo()
+            if ed_player.mothership.could_use_limpets():
+                limpets = ed_player.mothership.cargo.how_many("drones")
+                capacity = ed_player.mothership.cargo_capacity
+                EDR_CLIENT.notify_with_details(_(U"Restock reminder"), [_(u"Don't forget to restock on limpets before heading out mining."), _(u"Limpets: {}/{}").format(limpets, capacity)])
         outcome["reason"] = "Docking events"
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
     return outcome
@@ -437,6 +446,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     if entry["event"] in ["ModuleInfo"]:
         handle_modules_events(ed_player, entry)
+
+    if entry["event"] in ["Cargo"]:
+        ed_player.piloted_vehicle.update_cargo()
     
     if entry["event"].startswith("Powerplay"):
         EDRLOG.log(u"Powerplay event: {}".format(entry), "INFO")

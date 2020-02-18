@@ -5,7 +5,9 @@ from edtime import EDTime
 import edrconfig
 import edmodule
 import edmodulesinforeader
+import edcargoreader
 import edrlog
+import edcargo
 import utils2to3
 EDRLOG = edrlog.EDRLog()
 
@@ -74,6 +76,8 @@ class EDVehicle(object):
         self.slots = {}
         self.modules = None
         self.power_capacity = None
+        self.cargo_capacity = 0
+        self.cargo = edcargo.EDCargo()
         
     @property
     def hull_health(self):
@@ -188,6 +192,8 @@ class EDVehicle(object):
                 self.power_capacity = ed_module.power_generation
             health = module['Health'] * 100.0 if 'Health' in module else None 
             self.subsystem_health(module.get('Item', None), health)
+        self.cargo_capacity = event.get("CargoCapacity", 0)
+        self.cargo.update(event)
 
     def update_modules(self):
         reader = edmodulesinforeader.EDModulesInfoReader()
@@ -239,6 +245,11 @@ class EDVehicle(object):
         
     def update_attitude(self, attitude):
         self.attitude.update(attitude)
+
+    def update_cargo(self):
+        reader = edcargoreader.EDCargoReader()
+        cargo = reader.process()
+        self.cargo.update(cargo)
 
     def reset(self):
         now = EDTime.py_epoch_now()
@@ -411,6 +422,20 @@ class EDVehicle(object):
             self.hull_health = 100.0
             for subsystem in self.subsystems:
                 self.subsystem_health(subsystem, 100.0)
+
+    def could_use_limpets(self):
+        if self.cargo_capacity <= 0:
+            return False
+        
+        mining_rig = False
+        for slot_name in self.slots:
+            if self.slots[slot_name].is_prospector_drone_controller():
+                mining_rig = True
+                break
+        if not mining_rig:
+            return False
+
+        return  self.cargo.how_many("drones") < self.cargo_capacity
 
     def __eq__(self, other):
         if not isinstance(other, EDVehicle):
