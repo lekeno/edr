@@ -196,10 +196,6 @@ def handle_movement_events(ed_player, entry):
         ed_player.wanted = entry.get("Wanted", False)
         ed_player.mothership.fuel_level = entry.get("FuelLevel", ed_player.mothership.fuel_level)
         EDR_CLIENT.noteworthy_about_system(entry)
-        if entry["SystemSecurity"]:
-            ed_player.location_security(entry["SystemSecurity"])
-            if ed_player.in_bad_neighborhood():
-                EDR_CLIENT.IN_GAME_MSG.notify(_(u"Anarchy system"), [_(u"Crimes will not be reported.")])
         ed_player.location.population = entry.get('Population', 0)
         ed_player.location.allegiance = entry.get('SystemAllegiance', 0)
         outcome["reason"] = "Jump events"
@@ -835,9 +831,13 @@ def report_crime(cmdr, entry):
         victim.killed()
         edr_submit_crime_self(cmdr, "Murder", victim, entry["timestamp"])
         player_one.destroy(victim)
-    elif entry["event"] == "CrimeVictim" and "Offender" in entry and player_one.name and (entry["Offender"].lower() != player_one.name.lower()):
+    elif entry["event"] == "CrimeVictim" and "Offender" in entry and player_one.name:
         irrelevant_pattern = re.compile(r"^(\$([A-Za-z0-9]+_)+[A-Za-z0-9]+;)$")
-        if not irrelevant_pattern.match(entry["Offender"]) and player_one.is_instanced_with(entry["Offender"]):
+        wingmate = player_one.is_wingmate(entry["Offender"]) 
+        oneself = entry["Offender"].lower() == player_one.name.lower()
+        crewmate = player_one.is_crewmate(entry["Offender"])
+        instanced = player_one.is_instanced_with(entry["Offender"])
+        if not irrelevant_pattern.match(entry["Offender"]) and instanced and not oneself and not wingmate and not crewmate:
             offender = player_one.instanced(entry["Offender"])
             if "Bounty" in entry:
                 offender.bounty += entry["Bounty"]

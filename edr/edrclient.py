@@ -118,7 +118,7 @@ class EDRClient(object):
         self.tips = RandomTips()
         self.help_content = HelpContent()
         self._throttle_until_timestamp = None
-        self.ui.notify(_(u"Troubleshooting"), [_(u"If the overlay doesn't show up, try one of the following:"), _(u" - In Elite: go to graphics options, and select Borderless or Windowed."), _(" - With Elite and EDR launched, check that EDMCOverlay.exe is running in the task manager"), _(" - Reach out to LeKeno on discord (LeKeno#8484) or the Elite forums (LeKeno)")])
+        self.ui.notify(_(u"Troubleshooting"), [_(u"If the overlay doesn't show up, try one of the following:"), _(u" - In Elite: go to graphics options, and select Borderless or Windowed."), _(" - With Elite and EDR launched, check that EDMCOverlay.exe is running in the task manager"), _(u"If the overlay hurts your FPS, try turning VSYNC off in Elite's graphics options."), u"----", _("Join https://edrecon.com/discord for further technical support.")])
 
     def loud_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "loud")
@@ -357,7 +357,7 @@ class EDRClient(object):
 
         # Translators: this is shown in the preferences panel
         ttkHyperlinkLabel.HyperlinkLabel(frame, text=_(u"EDR website"), background=notebook.Label().cget('background'), url="https://edrecon.com", underline=True).grid(padx=10, sticky=tk.W)       
-        ttkHyperlinkLabel.HyperlinkLabel(frame, text=_(u"EDR on Discord (chat & more)"), background=notebook.Label().cget('background'), url="https://edrecon.com/discord", underline=True).grid(padx=10, sticky=tk.W)       
+        ttkHyperlinkLabel.HyperlinkLabel(frame, text=_(u"EDR community"), background=notebook.Label().cget('background'), url="https://edrecon.com/discord", underline=True).grid(padx=10, sticky=tk.W)       
 
         # Translators: this is shown in the preferences panel
         notebook.Label(frame, text=_(u'Credentials')).grid(padx=10, sticky=tk.W)
@@ -432,6 +432,8 @@ class EDRClient(object):
         self.login()
 
     def noteworthy_about_system(self, fsdjump_event):
+        if fsdjump_event["SystemSecurity"]:
+            self.player.location_security(fsdjump_event["SystemSecurity"])
         self.edrsystems.system_id(fsdjump_event['StarSystem'], may_create=True, coords=fsdjump_event.get("StarPos", None))
         facts = self.edrresourcefinder.assess_jump(fsdjump_event, self.player.inventory)
         header = _('Rare materials in {} (USS-HGE/EE, Mission Rewards)'.format(fsdjump_event['StarSystem']))
@@ -440,7 +442,11 @@ class EDRClient(object):
             header = _('Noteworthy stellar bodies in {}').format(fsdjump_event['StarSystem'])
         
         if not facts:
-            return False
+            if self.player.in_bad_neighborhood():
+                header = _(u"Anarchy system")
+                facts = [_(u"Crimes will not be reported.")]
+            else:
+                return False
         self.__notify(header, facts, clear_before = True)
         return True
 
@@ -757,7 +763,7 @@ class EDRClient(object):
                 elif not self.player.power:
                     details = _(u"Pledge to a power to access enemy alerts")
                 elif self.player.time_pledged < self.enemy_alerts_pledge_threshold:
-                    details = _(u"Remain loyal for at least {} days to access enemy alerts").format(int(self.enemy_alerts_pledge_threshold // 24*60*60))
+                    details = _(u"Remain loyal for at least {} days to access enemy alerts").format(int(self.enemy_alerts_pledge_threshold // (24*60*60)))
                 else:
                     details = _(u"Enabling Enemy alerts") if self.edropponents[kind].establish_comms_link() else _(u"Couldn't enable Enemy alerts")
             else:            
@@ -1460,7 +1466,7 @@ class EDRClient(object):
         self.ui.notify(header, details)
 
     def __commsjammed(self):
-        self.__notify(_(u"Comms Link Error"), [_(u"EDR Central can't be reached at the moment"), _(u"Try again later or contact Cmdr LeKeno if it keeps failing")])
+        self.__notify(_(u"Comms Link Error"), [_(u"EDR Central can't be reached at the moment"), _(u"Try again later. Join https://edrecon.com/discord or contact Cmdr LeKeno if it keeps failing")])
 
     def notify_with_details(self, notice, details):
         self.__notify(notice, details)
