@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 import requests
 import zipfile
+import errno
 import os
 import json
 import datetime
@@ -12,14 +13,24 @@ EDRLOG = EDRLog()
 
 class EDRAutoUpdater(object):
     REPO = "lekeno/edr"
+    UPDATES = utils2to3.abspathmaker(__file__, 'updates')
     LATEST = utils2to3.abspathmaker(__file__, 'updates', 'latest.zip')
     BACKUP = utils2to3.abspathmaker(__file__, 'backup')
     EDR_PATH = os.path.abspath(os.path.dirname(__file__))
 
     def __init__(self):
+        self.updates = EDRAutoUpdater.UPDATES
         self.output = EDRAutoUpdater.LATEST
+        
 
     def download_latest(self):
+        if not os.path.exists(self.updates):
+            try:
+                os.makedirs(self.updates)
+            except OSError as e:
+                if e.errno != errno.EEXIST:
+                    return False
+
         download_url = self.__latest_release_url()
         if not download_url:
             return False
@@ -62,7 +73,7 @@ class EDRAutoUpdater(object):
                 ziph.write(fp, os.path.relpath(fp, EDRAutoUpdater.EDR_PATH))
 
     def extract_latest(self):
-        with zipfile.ZipFile(EDRAutoUpdater.LATEST, "r") as latest:
+        with zipfile.ZipFile(self.output, "r") as latest:
             latest.extractall(EDRAutoUpdater.EDR_PATH)
 
     def __latest_release_url(self):

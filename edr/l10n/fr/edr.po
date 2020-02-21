@@ -3516,7 +3516,7 @@ msgid "Market:{}   B.Market:{}   {} Trad:{}"
 msgstr "Marché:{}   Marché N.:{}   {} Commerce:{}"
 
 #: ingamemsg.py:286
-msgid "tech broker|T."
+msgid "tech brokerT."
 msgstr "T."
 
 #: ingamemsg.py:292 ingamemsg.py:297

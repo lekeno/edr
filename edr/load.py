@@ -40,18 +40,20 @@ def plugin_stop():
     EDRLOG.log(u"Stopping the plugin...", "INFO")
     EDR_CLIENT.shutdown(everything=True)
     if EDR_CLIENT.autoupdate_pending:
-        EDRLOG.log(u"Please wait: auto updating EDR", "INFO")
-        auto_updater = edrautoupdater.EDRAutoUpdater()
-        downloaded = auto_updater.download_latest()
-        if downloaded:
-            EDRLOG.log(u"Download successful, creating a backup.", "INFO")
-            auto_updater.make_backup()
-            EDRLOG.log(u"Cleaning old backups.", "INFO")
-            auto_updater.clean_old_backups()
-            EDRLOG.log(u"Extracting latest version.", "INFO")
-            auto_updater.extract_latest()
+        plugin_update()
     EDRLOG.log(u"Plugin stopped", "INFO")
 
+def plugin_update():
+    EDRLOG.log(u"Please wait: auto updating EDR", "INFO")
+    auto_updater = edrautoupdater.EDRAutoUpdater()
+    downloaded = auto_updater.download_latest()
+    if downloaded:
+        EDRLOG.log(u"Download successful, creating a backup.", "INFO")
+        auto_updater.make_backup()
+        EDRLOG.log(u"Cleaning old backups.", "INFO")
+        auto_updater.clean_old_backups()
+        EDRLOG.log(u"Extracting latest version.", "INFO")
+        auto_updater.extract_latest()
 
 def plugin_app(parent):
     return EDR_CLIENT.app_ui(parent)
