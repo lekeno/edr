@@ -246,8 +246,8 @@ class InGameMsg(object):
         header = u"{} ({})".format(station["name"], economy)
         details = []
         a = u"◌" if station.get("type","N/A").lower() in ["outpost"] else u"●"
-        b = u"●" if station.get("haveOutfitting", False) in station else u"◌"
-        c = u"●" if station.get("haveShipyard", False) in station else u"◌"
+        b = u"●" if station.get("haveOutfitting", False) else u"◌"
+        c = u"●" if station.get("haveShipyard", False) else u"◌"
         details.append(_(u"LG. Pad:{}   Outfit:{}   Shipyard:{}").format(a,b,c))
         a = u"●" if "Refuel" in station.get("otherServices", []) else u"◌"
         b = u"●" if "Repair" in station.get("otherServices", []) else u"◌"
@@ -283,7 +283,7 @@ class InGameMsg(object):
                         m = _(u"ENC")
         details.append(_(u"Market:{}   B.Market:{}   {} Trad:{}").format(a,b,m,c))
         a = u"●" if "Interstellar Factors Contact" in station.get("otherServices", []) else u"◌"
-        t = _(u"tech broker|T.")
+        t = _(u"tech brokerT.")
         b =  u"◌" 
         if "Technology Broker" in station.get("otherServices", []):
             b = u"●"
