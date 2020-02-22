@@ -711,9 +711,13 @@ class EDRSystems(object):
         key = u"{}@{}".format(star_system.lower(), radius)
         systems = self.edsm_systems_within_radius_cache.get(key)
         cached = self.edsm_systems_within_radius_cache.has_key(key)
-        if cached or systems:
-            EDRLOG.log(u"Systems within {} of system {} are in the cache.".format(radius, star_system), "DEBUG")
-            return sorted(systems, key = lambda i: i['distance'])
+        if cached:
+            if not systems:
+                EDRLOG.log(u"Systems within {} of system {} are not available for a while.".format(radius, star_system), "DEBUG")
+                return None
+            else:
+                EDRLOG.log(u"Systems within {} of system {} are in the cache.".format(radius, star_system), "DEBUG")
+                return sorted(systems, key = lambda i: i['distance'])
 
         systems = self.edsm_server.systems_within_radius(star_system, radius)
         if systems:
