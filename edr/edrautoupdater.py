@@ -57,6 +57,12 @@ class EDRAutoUpdater(object):
             os.unlink(f)
 
     def make_backup(self):
+        if not os.path.exists(EDRAutoUpdater.BACKUP):
+            try:
+                os.makedirs(EDRAutoUpdater.BACKUP)
+            except OSError as e:
+                if e.errno != errno.EEXIST:
+                    return False
         name = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '.zip'
         backup_file = os.path.join(EDRAutoUpdater.BACKUP, name)
         zipf = zipfile.ZipFile(backup_file, 'w', zipfile.ZIP_DEFLATED)

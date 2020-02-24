@@ -7,7 +7,7 @@ import json
 import igmconfig
 import edrlog
 import textwrap
-from edri18n import _
+from edri18n import _, _c
 import utils2to3
 
 EDRLOG = edrlog.EDRLog()
@@ -260,7 +260,7 @@ class InGameMsg(object):
         a = u"●" if station.get("haveMarket", False) else u"◌"
         b = u"●" if "Black Market" in station_other_services else u"◌"
         c = u"◌"
-        m = _(u"material trader|M.") 
+        m = _c(u"material trader|M.") 
         if "Material Trader" in station_other_services:
             c = u"●"
             if station_economy in ['extraction', 'refinery']:
@@ -286,20 +286,20 @@ class InGameMsg(object):
                     m = _(u"E/M")
         details.append(_(u"Market:{}   B.Market:{}   {} Trad:{}").format(a,b,m,c))
         a = u"●" if "Interstellar Factors Contact" in station_other_services else u"◌"
-        t = _(u"tech brokerT.")
+        t = _c(u"tech broker|T.")
         b =  u"◌" 
         if "Technology Broker" in station_other_services:
             b = u"●"
             if station_economy == 'high tech':
                 if not station["secondEconomy"]:
-                    t = _(u"guardian tech|GT.")
+                    t = _c(u"guardian tech|GT.")
                 elif station_second_economy == "industrial":
-                    t = _(u"ambiguous tech|T.")
+                    t = _c(u"ambiguous tech|T.")
             elif station_economy == 'industrial':
                 if not station["secondEconomy"]:
-                    t = _(u"human tech|HT.") 
+                    t = _c(u"human tech|HT.") 
                 elif station_second_economy == "high tech":
-                    t = _(u"ambiguous tech|T.") 
+                    t = _c(u"ambiguous tech|T.") 
 
         details.append(_(u"I.Factor:{}   {} Broker:{}").format(a,t,b))
         details.append(_(u"as of {date}").format(date=station['updateTime']['information']))

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2020-02-18 07:55+0900\n"
-"PO-Revision-Date: 2020-02-18 07:56+0900\n"
+"POT-Creation-Date: 2020-02-23 14:35+0900\n"
+"PO-Revision-Date: 2020-02-23 14:35+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -671,11 +671,11 @@ msgstr "crime rapporté!"
 msgid "Anarchy system (fights not reported)."
 msgstr "Anarchie (combats non rapportés)"
 
-#: edrclient.py:1163 helpcontent.py:119 load.py:395 load.py:399 load.py:401
+#: edrclient.py:1163 helpcontent.py:119 load.py:397 load.py:401 load.py:403
 msgid "EDR Central"
 msgstr "EDR Central"
 
-#: edrclient.py:1163 load.py:399
+#: edrclient.py:1163 load.py:401
 msgid "Fight reporting enabled"
 msgstr "Rapport de combat activé"
 
@@ -683,7 +683,7 @@ msgstr "Rapport de combat activé"
 msgid "Reason: presence of outlaws"
 msgstr "Raison: présence d'hors-la-loi"
 
-#: edrclient.py:1163 load.py:399
+#: edrclient.py:1163 load.py:401
 msgid ""
 "Turn it off: flash your lights twice, or leave this area, or escape danger "
 "and retract hardpoints."
@@ -3463,233 +3463,231 @@ msgstr "Lat: {:.4f}"
 msgid "Lon: {:.4f}"
 msgstr "Lon: {:.4f}"
 
-#: ingamemsg.py:251
+#: ingamemsg.py:255
 msgid "LG. Pad:{}   Outfit:{}   Shipyard:{}"
 msgstr "LG. Pad:{}   Equipmt:{}   Chantier:{}"
 
-#: ingamemsg.py:255
+#: ingamemsg.py:259
 msgid "Refuel:{}   Repair:{}   Restock:{}"
 msgstr "Fuel:{}   Réparer:{}   Ravitailler:{}"
 
-#: ingamemsg.py:259
+#: ingamemsg.py:263
 msgid "material trader|M."
 msgstr "M."
 
-#: ingamemsg.py:265
-msgid "R/M"
-msgstr "B/M"
-
-#: ingamemsg.py:267
-msgid "R/E"
-msgstr "B/E"
-
-#: ingamemsg.py:269
+#: ingamemsg.py:268
 msgid "RAW"
 msgstr "BRU"
 
+#: ingamemsg.py:270
+msgid "R/M"
+msgstr "B/M"
+
 #: ingamemsg.py:272
-msgid "M/R"
-msgstr "M/B"
+msgid "R/E"
+msgstr "B/E"
 
-#: ingamemsg.py:274
-msgid "M/E"
-msgstr "M/E"
-
-#: ingamemsg.py:276
+#: ingamemsg.py:275
 msgid "MAN"
 msgstr "FAB"
 
+#: ingamemsg.py:277
+msgid "M/R"
+msgstr "M/B"
+
 #: ingamemsg.py:279
-msgid "E/R"
-msgstr "E/B"
+msgid "M/E"
+msgstr "M/E"
 
-#: ingamemsg.py:281
-msgid "E/M"
-msgstr "E/M"
-
-#: ingamemsg.py:283
+#: ingamemsg.py:282
 msgid "ENC"
 msgstr "ENC"
 
 #: ingamemsg.py:284
+msgid "E/R"
+msgstr "E/B"
+
+#: ingamemsg.py:286
+msgid "E/M"
+msgstr "E/M"
+
+#: ingamemsg.py:287
 msgid "Market:{}   B.Market:{}   {} Trad:{}"
 msgstr "Marché:{}   Marché N.:{}   {} Commerce:{}"
 
-#: ingamemsg.py:286
-msgid "tech brokerT."
+#: ingamemsg.py:289
+msgid "tech broker|T."
 msgstr "T."
 
-#: ingamemsg.py:292 ingamemsg.py:297
+#: ingamemsg.py:295
+msgid "guardian tech|GT."
+msgstr "GT."
+
+#: ingamemsg.py:297 ingamemsg.py:302
 msgid "ambiguous tech|T."
 msgstr "T."
 
-#: ingamemsg.py:294
-#, fuzzy
-#| msgid "human tech|HT."
-msgid "guardian tech|GT."
-msgstr "HT."
-
-#: ingamemsg.py:299
+#: ingamemsg.py:300
 msgid "human tech|HT."
 msgstr "HT."
 
-#: ingamemsg.py:301
+#: ingamemsg.py:304
 msgid "I.Factor:{}   {} Broker:{}"
 msgstr "I.Factor:{}   Courtier {}:{}"
 
-#: ingamemsg.py:302
+#: ingamemsg.py:305
 #, python-brace-format
 msgid "as of {date}"
 msgstr "date des infos: {date}"
 
-#: load.py:90
+#: load.py:92
 msgid "added to wing: "
 msgstr "a rejoint l'esquadrille: "
 
-#: load.py:95
+#: load.py:97
 msgid "joined wing."
 msgstr "en formation."
 
-#: load.py:99
+#: load.py:101
 msgid "left wing."
 msgstr "hors formation."
 
-#: load.py:103
+#: load.py:105
 msgid "wing invite from: "
 msgstr "invitation escadrille de: "
 
-#: load.py:113
+#: load.py:115
 msgid "added to crew: "
 msgstr "a rejoint l'équipage: "
 
-#: load.py:123
+#: load.py:125
 msgid "{} left the crew."
 msgstr "{} a quitté l'équipage."
 
-#: load.py:141
+#: load.py:143
 msgid "joined a crew."
 msgstr "rejoint un équipage."
 
-#: load.py:161
+#: load.py:163
 msgid "left crew."
 msgstr "quitté un équipage."
 
-#: load.py:181
+#: load.py:183
 msgid "crew disbanded."
 msgstr "équipage dissous."
 
-#: load.py:270
+#: load.py:272
 msgid "Restock reminder"
 msgstr "Mémo de ravitaillement"
 
-#: load.py:270
+#: load.py:272
 msgid "Don't forget to restock on limpets before heading out mining."
 msgstr "N'oubliez pas de ravitailler vos drones avant d'aller miner"
 
-#: load.py:270
+#: load.py:272
 msgid "Limpets: {}/{}"
 msgstr "Drones: {}/{}"
 
-#: load.py:317
+#: load.py:319
 msgid "initialized."
 msgstr "initialisé."
 
-#: load.py:395 load.py:401
+#: load.py:397 load.py:403
 msgid "Fight reporting disabled"
 msgstr "Rapport de combat désactivé"
 
-#: load.py:395
+#: load.py:397
 msgid "Looks like you are safe, and disengaged."
 msgstr "Il semble que vous soyez en sécurité et désengagé."
 
-#: load.py:401
+#: load.py:403
 msgid "Flash your lights twice to re-enable."
 msgstr "Flashez vos phares deux fois afin de réactiver."
 
-#: load.py:510
+#: load.py:512
 msgid "System info acquired"
 msgstr "Infos du système acquises"
 
-#: load.py:510
+#: load.py:512
 msgid "Noteworthy material densities will be shown when approaching a planet."
 msgstr ""
 "Un sommaire des matériaux présents en forte densité s'affichera lors d'une "
 "approche planétaire."
 
-#: load.py:591
+#: load.py:593
 msgid "blip failed."
 msgstr "échec d'un blip."
 
-#: load.py:594
+#: load.py:596
 msgid "blip succeeded!"
 msgstr "blip rapporté!"
 
-#: load.py:607 load.py:651
+#: load.py:609 load.py:653
 msgid "Crime reporting disabled in solo/private modes."
 msgstr "Rapport de crime désactivé en mode Solo/Privé."
 
-#: load.py:637 load.py:684
+#: load.py:639 load.py:686
 msgid "failed to report crime."
 msgstr "crime non rapporté (échec)."
 
-#: load.py:690
+#: load.py:692
 msgid "Fight reporting disabled in solo/private modes."
 msgstr "Rapport de combat désactivé en mode Solo/Privé."
 
-#: load.py:729
+#: load.py:731
 msgid "failed to report contact."
 msgstr "contact non rapporté (échec)."
 
-#: load.py:749
+#: load.py:751
 msgid "Scan reporting disabled in solo/private modes."
 msgstr "Rapport de scan désactivé en mode Solo/Privé."
 
-#: load.py:759
+#: load.py:761
 msgid "failed to report scan."
 msgstr "scan non rapporté (échec)."
 
-#: load.py:789
+#: load.py:791
 msgid "Traffic reporting disabled in solo/private modes."
 msgstr "Rapport de traffic désactivé en mode Solo/Privé."
 
-#: load.py:797
+#: load.py:799
 msgid "failed to report traffic."
 msgstr "trafic non rapporté (échec)."
 
-#: load.py:803
+#: load.py:805
 msgid "Multicrew reporting disabled in private mode."
 msgstr "Pas de rapport multicrew en mode privé."
 
-#: load.py:807
+#: load.py:809
 msgid "failed to report multicrew session."
 msgstr "crime équipage non rapporté (échec)."
 
-#: load.py:1288
+#: load.py:1290
 msgid "Call rejected: you seem to have enough fuel."
 msgstr "Appel rejeté: il semble que vous ayez assez de carburant."
 
-#: load.py:1288 load.py:1292
+#: load.py:1290 load.py:1294
 msgid "Contact Cmdr LeKeno if this is inaccurate"
 msgstr "Contactez Cmdr LeKeno si ceci est incorrect"
 
-#: load.py:1292
+#: load.py:1294
 msgid "Call rejected: you seem to have enough hull left."
 msgstr ""
 "Appel rejeté: il semble que votre coque n'est pas dans un état critique."
 
-#: load.py:1327
+#: load.py:1329
 msgid "Loadout information is stale"
 msgstr "Les informations ne sont pas à jour"
 
-#: load.py:1327
+#: load.py:1329
 msgid "Congrats, you've found a bug in Elite!"
 msgstr "Félicitations! Vous avez trouvé un bug dans Elite!"
 
-#: load.py:1327
+#: load.py:1329
 msgid "The modules info isn't updated right away :("
 msgstr "Les informations de vos modules ne sont pas mises à jour de suite :("
 
-#: load.py:1327
+#: load.py:1329
 msgid "Try again after moving around or relog and check your modules."
 msgstr ""
 "Essayez plus tard après avoir bougé ou reloguez et regardez vos modules."
