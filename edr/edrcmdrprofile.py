@@ -397,7 +397,7 @@ class EDRCmdrProfile(object):
         if not (self.powerplay is None or self.powerplay == ""):
             inara_parts.append(self.powerplay)
             if powerplay and powerplay.is_enemy(self.powerplay):
-                powerplay_parts.append(_(u"powerplay|enemy"))
+                powerplay_parts.append(_c(u"powerplay|enemy"))
         
         sqdex_parts = []
         iff = self.sqdrdex_profile.iff if self.sqdrdex_profile else None

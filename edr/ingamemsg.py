@@ -7,7 +7,7 @@ import json
 import igmconfig
 import edrlog
 import textwrap
-from edri18n import _
+from edri18n import _, _c
 import utils2to3
 
 EDRLOG = edrlog.EDRLog()
@@ -244,59 +244,62 @@ class InGameMsg(object):
             self.__shape("docking-station", self.cfg["docking-station"]["panel"])
         economy = u"{}/{}".format(station["economy"], station["secondEconomy"]) if station["secondEconomy"] else station["economy"]
         header = u"{} ({})".format(station["name"], economy)
+        station_type = (station.get("type","N/A") or "N/A").lower()
+        station_other_services = (station.get("otherServices", []) or []) 
+        station_economy = (station.get('economy', "") or "").lower()
+        station_second_economy = (station.get('secondEconomy', "") or "").lower()
         details = []
-        a = u"◌" if station.get("type","N/A").lower() in ["outpost"] else u"●"
-        b = u"●" if station.get("haveOutfitting", False) in station else u"◌"
-        c = u"●" if station.get("haveShipyard", False) in station else u"◌"
+        a = u"◌" if station_type in ["outpost"] else u"●"
+        b = u"●" if station.get("haveOutfitting", False) else u"◌"
+        c = u"●" if station.get("haveShipyard", False) else u"◌"
         details.append(_(u"LG. Pad:{}   Outfit:{}   Shipyard:{}").format(a,b,c))
-        a = u"●" if "Refuel" in station.get("otherServices", []) else u"◌"
-        b = u"●" if "Repair" in station.get("otherServices", []) else u"◌"
-        c = u"●" if "Restock" in station.get("otherServices", []) else u"◌"
+        a = u"●" if "Refuel" in station_other_services else u"◌"
+        b = u"●" if "Repair" in station_other_services else u"◌"
+        c = u"●" if "Restock" in station_other_services else u"◌"
         details.append(_(u"Refuel:{}   Repair:{}   Restock:{}").format(a,b,c))
         a = u"●" if station.get("haveMarket", False) else u"◌"
-        b = u"●" if "Black Market" in station.get("otherServices", []) else u"◌"
+        b = u"●" if "Black Market" in station_other_services else u"◌"
         c = u"◌"
-        m = _(u"material trader|M.") 
-        if "Material Trader" in station.get("otherServices", []):
+        m = _c(u"material trader|M.") 
+        if "Material Trader" in station_other_services:
             c = u"●"
-            if station['economy']:
-                if station['economy'].lower() in ['extraction', 'refinery']:
-                    if station.get("secondEconomy", "").lower() == "industrial":
-                        m = _(u"R/M")
-                    elif station.get("secondEconomy", "").lower() in ["high tech", "military"]:
-                        m = _(u"R/E")
-                    else:
-                        m = _(u"RAW")
-                elif station['economy'].lower() == 'industrial':
-                    if station.get("secondEconomy", "").lower() in ["extraction", "refinery"]:
-                        m = _(u"M/R")
-                    elif station.get("secondEconomy", "").lower() in ["high tech", "military"]:
-                        m = _(u"M/E")
-                    else:
-                        m = _(u"MAN")
-                elif station['economy'].lower() in ['high tech', 'military']:
-                    if station.get("secondEconomy", "").lower() in ["extraction", "refinery"]:
-                        m = _(u"E/R")
-                    elif station.get("secondEconomy", "").lower() == "industrial":
-                        m = _(u"E/M")
-                    else:
-                        m = _(u"ENC")
+            if station_economy in ['extraction', 'refinery']:
+                if not station["secondEconomy"]:
+                    m = _(u"RAW")
+                elif station_second_economy == "industrial":
+                    m = _(u"R/M")
+                elif station_second_economy in ["high tech", "military"]:
+                    m = _(u"R/E")
+            elif station_economy == 'industrial':
+                if not station["secondEconomy"]:
+                    m = _(u"MAN")
+                elif station_second_economy in ["extraction", "refinery"]:
+                    m = _(u"M/R")
+                elif station_second_economy in ["high tech", "military"]:
+                    m = _(u"M/E")
+            elif station_economy in ['high tech', 'military']:
+                if not station["secondEconomy"]:
+                    m = _(u"ENC")
+                elif station_second_economy in ["extraction", "refinery"]:
+                    m = _(u"E/R")
+                elif station_second_economy == "industrial":
+                    m = _(u"E/M")
         details.append(_(u"Market:{}   B.Market:{}   {} Trad:{}").format(a,b,m,c))
-        a = u"●" if "Interstellar Factors Contact" in station.get("otherServices", []) else u"◌"
-        t = _(u"tech broker|T.")
+        a = u"●" if "Interstellar Factors Contact" in station_other_services else u"◌"
+        t = _c(u"tech broker|T.")
         b =  u"◌" 
-        if "Technology Broker" in station.get("otherServices", []):
+        if "Technology Broker" in station_other_services:
             b = u"●"
-            if station.get("economy", "").lower() == 'high tech':
-                if station.get("secondEconomy", "").lower() == "industrial":
-                    t = _(u"ambiguous tech|T.")
-                else:
-                    t = _(u"guardian tech|GT.")
-            elif station.get("economy", "").lower() == 'industrial':
-                if station.get("secondEconomy", "").lower() == "high tech":
-                    t = _(u"ambiguous tech|T.") 
-                else:
-                    t = _(u"human tech|HT.") 
+            if station_economy == 'high tech':
+                if not station["secondEconomy"]:
+                    t = _c(u"guardian tech|GT.")
+                elif station_second_economy == "industrial":
+                    t = _c(u"ambiguous tech|T.")
+            elif station_economy == 'industrial':
+                if not station["secondEconomy"]:
+                    t = _c(u"human tech|HT.") 
+                elif station_second_economy == "high tech":
+                    t = _c(u"ambiguous tech|T.") 
 
         details.append(_(u"I.Factor:{}   {} Broker:{}").format(a,t,b))
         details.append(_(u"as of {date}").format(date=station['updateTime']['information']))
@@ -306,7 +309,7 @@ class InGameMsg(object):
         if not self.cfg["docking-station"]["enabled"]:
             return {"header": header, "body": details}
         
-        if station.get("type","N/A").lower() in ["asteroid base", 'bernal starport', "coriolis starport", "ocellus starport", "orbis starport", "bernal", "bernal statioport"]:
+        if station_type in ["asteroid base", 'bernal starport', "coriolis starport", "ocellus starport", "orbis starport", "bernal", "bernal statioport"]:
             self.__station_schematic(pad)
         else:
             self.__nyi_pad_schematic(station.get("type","N/A"))
