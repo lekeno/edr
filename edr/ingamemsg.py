@@ -9,6 +9,7 @@ import edrlog
 import textwrap
 from edri18n import _, _c
 import utils2to3
+from edrlandables import EDRLandables
 
 EDRLOG = edrlog.EDRLog()
 
@@ -234,7 +235,7 @@ class InGameMsg(object):
         self.__msg_header("navigation", header)
         self.__msg_body("navigation", details)
 
-    def docking(self, station, pad):
+    def docking(self, system, station, pad):
         self.clear_docking()
         if not station:
             return
@@ -312,44 +313,50 @@ class InGameMsg(object):
         if station_type in ["asteroid base", 'bernal starport', "coriolis starport", "ocellus starport", "orbis starport", "bernal", "bernal statioport"]:
             self.__station_schematic(pad)
         else:
-            self.__nyi_pad_schematic(station.get("type","N/A"))
+            self.__landable_schematic(system, station, pad)
         return {"header": header, "body": details}
 
-    def __nyi_pad_schematic(self, station_type):
+    def __landable_schematic(self, system, station, pad):
+        station_type = (station.get("type","N/A") or "N/A").lower()
+        station_name = (station.get("name","N/A") or "N/A").lower()
+        map_data = EDRLandables.map_for(system, station_name, station_type)
+        if not map_data:
+            return
+
         cfg = self.cfg[u"docking-station"]
         x = cfg["schema"]["x"]
         y = cfg["schema"]["y"]
         w = cfg["schema"]["w"]
         h = cfg["schema"]["h"]
-
-        cx = int(round(x + w/2.0))
-        cy = int(round(y + h/2.0))
-        arx = {
-            'left':[{'x':-0.253846153846154, 'y':0.258620689655172}, {'x':-0.130769230769231, 'y':0.258620689655172}, {'x':-0.0384615384615385, 'y':0.0402298850574713}, {'x':-0.1, 'y':-0.0977011494252874}, {'x':-0.253846153846154, 'y':0.258620689655172}, ],
-            'top':[{'x':0, 'y':-0.0402298850574713}, {'x':-0.0615384615384615, 'y':-0.201149425287356}, {'x':0, 'y':-0.339080459770115}, {'x':0.0615384615384615, 'y':-0.201149425287356}, {'x':0, 'y':-0.0402298850574713}, ],
-            'right':[{'x':0.130769230769231, 'y':0.258620689655172}, {'x':0.253846153846154, 'y':0.258620689655172}, {'x':0.1, 'y':-0.0977011494252874}, {'x':0.0384615384615385, 'y':0.0402298850574713}, {'x':0.130769230769231, 'y':0.258620689655172}, ]
-        }
-
-        colors = {
-            "outpost": "#D9D9D9",
-            "planetary outpost": "#B2773F",
-            "planetary port": "#A0A0A0", 
-            "mega ship": "#D3983C", 
-            "fleet carrier": "#7893A8",
-            "soon tm": "#7A7A7A"
-        }
-        color = colors.get(station_type.lower(), "#D9D9D9")
-        
-        for element in arx:
-            scaled = [{"x":int(cx+(coord["x"]*w)), "y":int(cy+(coord["y"]*h))} for coord in arx[element]]
+        hw = w/2.0
+        hh = h/2.0
+        cx = int(round(x + hw))
+        cy = int(round(y + hh))
+        the_pad = str(pad)
+        contour = map_data.get("contour", {})
+        for element in contour:
+            points = contour[element]["points"]
+            scaled = [{"x":int(cx+(coords["x"]*hw)), "y":int(cy-(coords["y"]*hh))} for coords in points]
             vect = {
-                "id": u"arx-{}".format(element),
-                "color": color,
+                "id": u"landable-{}".format(element),
+                "color": contour[element]["active"] if element == the_pad else contour[element]["color"],
                 "ttl": cfg["schema"]["ttl"],
                 "vector": scaled
             }
             self.__vect(u"docking", vect)
-            
+        
+        pads_guidance = map_data.get("pads-guidance", {})
+        if the_pad in pads_guidance:
+            guidance = pads_guidance.get(the_pad, {})
+            points = guidance["points"]
+            scaled = [{"x":int(cx+(coords["x"]*hw)), "y":int(cy-(coords["y"]*hh))} for coords in points]
+            vect = {
+                "id": u"guidance-{}".format(pad),
+                "color": guidance["color"],
+                "ttl": cfg["schema"]["ttl"],
+                "vector": scaled
+            }
+            self.__vect(u"docking", vect)
     
     def __station_schematic(self, landing_pad):
         cfg = self.cfg[u"docking-station"]
