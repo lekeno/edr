@@ -8,7 +8,7 @@ import ttkHyperlinkLabel
 class ToggledFrame(tk.Frame):
 
     def __init__(self, parent, label, status, show, *args, **options):
-        conf = IGMConfig(config_file='config/igm_alt_config.v3.ini', user_config_file='config/user_igm_alt_config.v3.ini')
+        conf = IGMConfig(config_file='config/igm_alt_config.v3.ini', user_config_file=['config/user_igm_alt_config.v3.ini', 'config/user_igm_alt_config.v2.ini'])
         tk.Frame.__init__(self, parent, *args, **options)
         fg = conf.rgb("status", "body")
         bg = conf.rgb("status", "fill")
@@ -39,7 +39,7 @@ class ToggledFrame(tk.Frame):
 
 class EDRTogglingPanel(ToggledFrame):
     def __init__(self, status, show, parent=0):
-        conf = IGMConfig(config_file='config/igm_alt_config.v3.ini', user_config_file='config/user_igm_alt_config.v3.ini')
+        conf = IGMConfig(config_file='config/igm_alt_config.v3.ini', user_config_file=['config/user_igm_alt_config.v3.ini', 'config/user_igm_alt_config.v2.ini'])
         ToggledFrame.__init__(self, parent, label="EDR:", status=status, show=show)
         self.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
         self.output = tk.Text(self.sub_frame, width=conf.len("general", "body"), height=conf.body_rows("general"),
