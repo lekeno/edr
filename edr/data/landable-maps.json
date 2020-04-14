@@ -892,10 +892,17 @@
                     }
                 }
             },
+<<<<<<< Updated upstream
             "fleetcarrier": {
                 "contour":{
                     "carrier":{
                         "color":"#EC4050",
+=======
+            "fleet carrier": {
+                "contour":{
+                    "carrier":{
+                        "color":"#676767",
+>>>>>>> Stashed changes
                         "points":[
                             {
                             "x":-0.96551724137931,
@@ -1020,7 +1027,11 @@
                         ]
                     },
                     "1":{
+<<<<<<< Updated upstream
                         "color":"#EC4050",
+=======
+                        "color":"#E2E2E2",
+>>>>>>> Stashed changes
                         "active":"#FF3321",
                         "points":[
                             {
@@ -1046,7 +1057,11 @@
                         ]
                     },
                     "2":{
+<<<<<<< Updated upstream
                         "color":"#EC4050",
+=======
+                        "color":"#E2E2E2",
+>>>>>>> Stashed changes
                         "active":"#FF3321",
                         "points":[
                             {
@@ -1072,7 +1087,11 @@
                         ]
                     },
                     "3":{
+<<<<<<< Updated upstream
                         "color":"#EC4050",
+=======
+                        "color":"#E2E2E2",
+>>>>>>> Stashed changes
                         "active":"#FF3321",
                         "points":[
                             {
@@ -1098,7 +1117,11 @@
                         ]
                     },
                     "4":{
+<<<<<<< Updated upstream
                         "color":"#EC4050",
+=======
+                        "color":"#E2E2E2",
+>>>>>>> Stashed changes
                         "active":"#FF3321",
                         "points":[
                             {
@@ -1124,7 +1147,11 @@
                         ]
                     },
                     "5":{
+<<<<<<< Updated upstream
                         "color":"#EC4050",
+=======
+                        "color":"#E2E2E2",
+>>>>>>> Stashed changes
                         "active":"#FF3321",
                         "points":[
                             {
@@ -1150,7 +1177,11 @@
                         ]
                     },
                     "6":{
+<<<<<<< Updated upstream
                         "color":"#EC4050",
+=======
+                        "color":"#E2E2E2",
+>>>>>>> Stashed changes
                         "active":"#FF3321",
                         "points":[
                             {
@@ -1176,7 +1207,11 @@
                         ]
                     },
                     "7":{
+<<<<<<< Updated upstream
                         "color":"#EC4050",
+=======
+                        "color":"#E2E2E2",
+>>>>>>> Stashed changes
                         "active":"#FF3321",
                         "points":[
                             {
@@ -1202,7 +1237,11 @@
                         ]
                     },
                     "8":{
+<<<<<<< Updated upstream
                         "color":"#EC4050",
+=======
+                        "color":"#E2E2E2",
+>>>>>>> Stashed changes
                         "active":"#FF3321",
                         "points":[
                             {
@@ -1228,7 +1267,11 @@
                         ]
                     },
                     "9":{
+<<<<<<< Updated upstream
                         "color":"#EC4050",
+=======
+                        "color":"#E2E2E2",
+>>>>>>> Stashed changes
                         "active":"#F6AB02",
                         "points":[
                             {
@@ -1254,7 +1297,11 @@
                         ]
                     },
                     "10":{
+<<<<<<< Updated upstream
                         "color":"#EC4050",
+=======
+                        "color":"#E2E2E2",
+>>>>>>> Stashed changes
                         "active":"#F6AB02",
                         "points":[
                             {
@@ -1280,7 +1327,11 @@
                         ]
                     },
                     "11":{
+<<<<<<< Updated upstream
                         "color":"#EC4050",
+=======
+                        "color":"#E2E2E2",
+>>>>>>> Stashed changes
                         "active":"#F6AB02",
                         "points":[
                             {
@@ -1306,7 +1357,11 @@
                         ]
                     },
                     "12":{
+<<<<<<< Updated upstream
                         "color":"#EC4050",
+=======
+                        "color":"#E2E2E2",
+>>>>>>> Stashed changes
                         "active":"#F6AB02",
                         "points":[
                             {
@@ -1332,7 +1387,11 @@
                         ]
                     },
                     "16":{
+<<<<<<< Updated upstream
                         "color":"#EC4050",
+=======
+                        "color":"#E2E2E2",
+>>>>>>> Stashed changes
                         "active":"#0094FF",
                         "points":[
                             {
@@ -1358,7 +1417,11 @@
                         ]
                     },
                     "13":{
+<<<<<<< Updated upstream
                         "color":"#EC4050",
+=======
+                        "color":"#E2E2E2",
+>>>>>>> Stashed changes
                         "active":"#0094FF",
                         "points":[
                             {
@@ -1384,7 +1447,11 @@
                         ]
                     },
                     "14":{
+<<<<<<< Updated upstream
                         "color":"#EC4050",
+=======
+                        "color":"#E2E2E2",
+>>>>>>> Stashed changes
                         "active":"#0094FF",
                         "points":[
                             {
@@ -1410,7 +1477,11 @@
                         ]
                     },
                     "15":{
+<<<<<<< Updated upstream
                         "color":"#EC4050",
+=======
+                        "color":"#E2E2E2",
+>>>>>>> Stashed changes
                         "active":"#0094FF",
                         "points":[
                             {
