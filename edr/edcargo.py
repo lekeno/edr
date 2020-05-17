@@ -12,5 +12,5 @@ class EDCargo(object):
             self.inventory[name] = item.get("Count", 0)
 
     def how_many(self, item_name):
-        item = self.inventory.get(item_name, {"Count": 0})
-        return item["Count"]
+        item_count = self.inventory.get(item_name, 0)
+        return item_count
