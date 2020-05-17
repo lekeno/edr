@@ -270,6 +270,8 @@ def handle_change_events(ed_player, entry):
                 limpets = ed_player.mothership.cargo.how_many("drones")
                 capacity = ed_player.mothership.cargo_capacity
                 EDR_CLIENT.notify_with_details(_(U"Restock reminder"), [_(u"Don't forget to restock on limpets before heading out mining."), _(u"Limpets: {}/{}").format(limpets, capacity)])
+        elif entry["event"] == "Undocked" and ed_player.mothership.is_mining_rig():
+            ed_player.reset_mining_stats()
         outcome["reason"] = "Docking events"
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
     return outcome
@@ -418,7 +420,15 @@ def dashboard_entry(cmdr, is_beta, entry):
     ed_player.piloted_vehicle.update_attitude(attitude)
     if ed_player.planetary_destination:
         EDR_CLIENT.show_navigation()
-        
+
+def handle_mining_events(ed_player, entry):
+    if entry["event"] not in ["MiningRefined", "ProspectedAsteroid"]:
+        return
+    if entry["event"] == "ProspectedAsteroid":
+        ed_player.prospected(entry)
+    elif entry["event"] == "MiningRefined":
+        ed_player.refined(entry)
+    EDR_CLIENT.mining_guidance()
             
 def journal_entry(cmdr, is_beta, system, station, entry, state):
     """
@@ -475,6 +485,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         
     if entry["event"] in ["WingAdd", "WingJoin", "WingLeave"]:
         handle_wing_events(ed_player, entry)
+
+    if entry["event"] in ["MiningRefined", "ProspectedAsteroid"]:
+        handle_mining_events(ed_player, entry)
 
     status_outcome = {"updated": False, "reason": "Unspecified"}
 

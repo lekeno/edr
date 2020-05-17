@@ -500,9 +500,10 @@ class EDRClient(object):
 
     def docking_guidance(self, entry):
         if entry["event"] == "DockingGranted":
-            station = self.edrsystems.station(self.player.star_system, entry["StationName"])
-            summary = self.IN_GAME_MSG.docking(self.player.star_system, station, entry["LandingPad"])
-            self.ui.notify(summary["header"], summary["body"])
+            station = self.edrsystems.station(self.player.star_system, entry["StationName"], entry["StationType"])
+            summary = self.IN_GAME_MSG.docking(self.player.star_system, station, entry["LandingPad"]) # TODO only if visual feedback allowed but then summary is missing...
+            if summary:
+                self.ui.notify(summary["header"], summary["body"])
         else:
             self.IN_GAME_MSG.clear_docking()
 
@@ -553,7 +554,12 @@ class EDRClient(object):
                 self.__sitrep(header.format(star_system), details)
         except CommsJammedError:
             self.__commsjammed()
+
+    def mining_guidance(self):
+        if self.visual_feedback:
+            self.IN_GAME_MSG.mining_guidance(self.player.mining_stats)
         
+        self.status = _(u"[Yield: {:.2f}%]   [LTD: {} ({:.0f}/hour)]".format(self.player.mining_stats.last["proportion"], self.player.mining_stats.refined_nb, self.player.mining_stats.ltd_per_hour()))
 
     def notams(self):
         summary = self.edrsystems.systems_with_active_notams()
