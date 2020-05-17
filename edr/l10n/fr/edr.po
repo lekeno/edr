@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2020-05-17 15:27+0900\n"
-"PO-Revision-Date: 2020-05-17 15:32+0900\n"
+"POT-Creation-Date: 2020-05-17 16:13+0900\n"
+"PO-Revision-Date: 2020-05-17 16:14+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -3449,11 +3449,11 @@ msgstr ""
 
 #: helpcontent.py:255
 msgid ""
-" - check the instructions in config/igm_config.v2.ini to customize the "
+" - check the instructions in config/igm_config.v5.ini to customize the "
 "layout and timeouts."
 msgstr ""
 " - pour personnaliser la mise en page, veuillez regarder les instructions "
-"dans le fichier config/igm_config.v2.ini ."
+"dans le fichier config/igm_config.v5.ini ."
 
 #: ingamemsg.py:282
 msgid "Dis: {}km"
@@ -3632,90 +3632,90 @@ msgstr "Il semble que vous soyez en sécurité et désengagé."
 msgid "Flash your lights twice to re-enable."
 msgstr "Flashez vos phares deux fois afin de réactiver."
 
-#: load.py:525
+#: load.py:526
 msgid "System info acquired"
 msgstr "Infos du système acquises"
 
-#: load.py:525
+#: load.py:526
 msgid "Noteworthy material densities will be shown when approaching a planet."
 msgstr ""
 "Un sommaire des matériaux présents en forte densité s'affichera lors d'une "
 "approche planétaire."
 
-#: load.py:606
+#: load.py:607
 msgid "blip failed."
 msgstr "échec d'un blip."
 
-#: load.py:609
+#: load.py:610
 msgid "blip succeeded!"
 msgstr "blip rapporté!"
 
-#: load.py:622 load.py:666
+#: load.py:623 load.py:667
 msgid "Crime reporting disabled in solo/private modes."
 msgstr "Rapport de crime désactivé en mode Solo/Privé."
 
-#: load.py:652 load.py:699
+#: load.py:653 load.py:700
 msgid "failed to report crime."
 msgstr "crime non rapporté (échec)."
 
-#: load.py:705
+#: load.py:706
 msgid "Fight reporting disabled in solo/private modes."
 msgstr "Rapport de combat désactivé en mode Solo/Privé."
 
-#: load.py:744
+#: load.py:745
 msgid "failed to report contact."
 msgstr "contact non rapporté (échec)."
 
-#: load.py:764
+#: load.py:765
 msgid "Scan reporting disabled in solo/private modes."
 msgstr "Rapport de scan désactivé en mode Solo/Privé."
 
-#: load.py:774
+#: load.py:775
 msgid "failed to report scan."
 msgstr "scan non rapporté (échec)."
 
-#: load.py:804
+#: load.py:805
 msgid "Traffic reporting disabled in solo/private modes."
 msgstr "Rapport de traffic désactivé en mode Solo/Privé."
 
-#: load.py:812
+#: load.py:813
 msgid "failed to report traffic."
 msgstr "trafic non rapporté (échec)."
 
-#: load.py:818
+#: load.py:819
 msgid "Multicrew reporting disabled in private mode."
 msgstr "Pas de rapport multicrew en mode privé."
 
-#: load.py:822
+#: load.py:823
 msgid "failed to report multicrew session."
 msgstr "crime équipage non rapporté (échec)."
 
-#: load.py:1303
+#: load.py:1306
 msgid "Call rejected: you seem to have enough fuel."
 msgstr "Appel rejeté: il semble que vous ayez assez de carburant."
 
-#: load.py:1303 load.py:1307
+#: load.py:1306 load.py:1310
 msgid "Contact Cmdr LeKeno if this is inaccurate"
 msgstr "Contactez Cmdr LeKeno si ceci est incorrect"
 
-#: load.py:1307
+#: load.py:1310
 msgid "Call rejected: you seem to have enough hull left."
 msgstr ""
 "Appel rejeté: il semble que votre coque n'est pas dans un état critique."
 
-#: load.py:1342
+#: load.py:1345
 msgid "Loadout information is stale"
 msgstr "Les informations ne sont pas à jour"
 
-#: load.py:1342
+#: load.py:1345
 msgid "Congrats, you've found a bug in Elite!"
 msgstr "Félicitations! Vous avez trouvé un bug dans Elite!"
 
-#: load.py:1342
+#: load.py:1345
 msgid "The modules info isn't updated right away :("
 msgstr "Les informations de vos modules ne sont pas mises à jour de suite :("
 
-#: load.py:1342
+#: load.py:1345
 msgid "Try again after moving around or relog and check your modules."
 msgstr ""
 "Essayez plus tard après avoir bougé ou reloguez et regardez vos modules."
