@@ -368,8 +368,7 @@ def handle_powerplay_events(ed_player, entry):
 def dashboard_entry(cmdr, is_beta, entry):
     ed_player = EDR_CLIENT.player
     
-    if not prerequisites(EDR_CLIENT, False):
-        #is_beta
+    if not prerequisites(EDR_CLIENT, is_beta):
         return
 
     if not 'Flags' in entry:
