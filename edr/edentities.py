@@ -15,6 +15,7 @@ from edreconbox import EDReconBox
 from edrinventory import EDRInventory
 from edri18n import _, _c
 import edrfleet
+import edrminingstats
 EDRLOG = EDRLog()
 
 class EDRCrew(object):
@@ -726,6 +727,7 @@ class EDPlayerOne(EDPlayer):
         self.recon_box = EDReconBox()
         self.inventory = EDRInventory()
         self.fleet = edrfleet.EDRFleet()
+        self.mining_stats = edrminingstats.EDRMiningStats()
 
     def __repr__(self):
         return str(self.__dict__)
@@ -813,6 +815,7 @@ class EDPlayerOne(EDPlayer):
         self.instance.reset()
         self.to_normal_space()
         self._touch()
+        self.reset_mining_stats()
 
     def killed(self):
         super(EDPlayerOne, self).killed()
@@ -1060,3 +1063,13 @@ class EDPlayerOne(EDPlayer):
 
     def update_fleet(self, stored_ships_entry):
         self.fleet.update(stored_ships_entry)
+
+    def prospected(self, entry):
+        self.mining_stats.prospected(entry)
+
+    def refined(self, entry):
+        self.mining_stats.refined(entry)
+
+    def reset_mining_stats(self):
+        self.mining_stats.reset()
+        print "Mining stats reset"
