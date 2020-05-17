@@ -1002,7 +1002,9 @@ def handle_fixing_events(ed_player, entry):
     elif entry["event"] == "RepairAll":
         ed_player.mothership.repair()
     elif entry["event"] == "Repair":
-        ed_player.mothership.repair(entry["Item"])
+        items = entry["Items"] if "Items" in entry else [entry["Item"]]
+        for item in items:
+            ed_player.mothership.repair(item)
     elif entry["event"] == "RepairDrone":
         if entry.get("HullRepaired", None):
             ed_player.mothership.hull_health = entry["HullRepaired"]
