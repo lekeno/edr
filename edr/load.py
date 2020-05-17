@@ -192,7 +192,7 @@ def handle_movement_events(ed_player, entry):
         outcome["reason"] = "Supercruise exit"
         ed_player.to_normal_space()
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
-    elif entry["event"] in ["FSDJump"]:
+    elif entry["event"] in ["FSDJump", "CarrierJump"]:
         place = "Supercruise"
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         ed_player.wanted = entry.get("Wanted", False)
@@ -201,7 +201,7 @@ def handle_movement_events(ed_player, entry):
         EDR_CLIENT.noteworthy_about_system(entry)
         ed_player.location.population = entry.get('Population', 0)
         ed_player.location.allegiance = entry.get('SystemAllegiance', 0)
-        outcome["reason"] = "Jump events"
+        outcome["reason"] = entry["event"]
         ed_player.to_super_space()
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
     elif entry["event"] in ["SupercruiseEntry"]:
