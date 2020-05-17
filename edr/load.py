@@ -443,7 +443,8 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     ed_player = EDR_CLIENT.player
     ed_player.friends = state["Friends"]
         
-    if not prerequisites(EDR_CLIENT, is_beta):
+    if not prerequisites(EDR_CLIENT, False):
+        #is_beta
         return
 
     if entry["event"] in ["Shutdown", "ShutDown", "Music", "Resurrect", "Fileheader", "LoadGame", "Loadout"]:
