@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2020-05-17 16:13+0900\n"
-"PO-Revision-Date: 2020-05-17 16:14+0900\n"
+"POT-Creation-Date: 2020-05-17 16:21+0900\n"
+"PO-Revision-Date: 2020-05-17 16:23+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -4815,6 +4815,15 @@ msgid ""
 "[Defense] Like the song says you've got to know when to walk away and know "
 "when to run."
 msgstr "[Défense] Sachez quand il vaut mieux prendre la poudre d'escampette."
+
+#: randomtips.py:164
+#, python-format
+msgid ""
+"[Mining] Limit your cargo (e.g. LTD) to be within 10% of the demand of a "
+"market in order to get the highest price."
+msgstr ""
+"[Minage] Maintenez votre cargo (e.g. LTD) en dessous de 10% de la demande "
+"d'un marché afin de bénéficier du meilleur prix."
 
 #~ msgid "GT?"
 #~ msgstr "GT?"

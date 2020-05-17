@@ -160,7 +160,8 @@ DEFAULT_TIPS = {
         _(u"[Bounty hunting] Don't steal kills. Instead, ask to join a wing: everyone will get the same bounty and way faster."),
         _(u"[Community] Most players are just nice folks. Chat with people, make friends. It might come handy."),
         _(u"[Defense] Fit Point Defenses to your ship to destroy missiles and mines"),
-        _(u"[Defense] Like the song says you've got to know when to walk away and know when to run.")
+        _(u"[Defense] Like the song says you've got to know when to walk away and know when to run."),
+        _(u"[Mining] Limit your cargo (e.g. LTD) to be within 10% of the demand of a market in order to get the highest price.")
     ]
 }
 
