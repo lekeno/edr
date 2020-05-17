@@ -164,7 +164,25 @@ class EDRSystems(object):
             return False
         return self.edsm_stations_cache.is_stale(star_system.lower())
         
-    def station(self, star_system, station_name):
+    def station(self, star_system, station_name, station_type):
+        if station_type == "FleetCarrier":
+            return {
+                "id":None,
+                "marketId":None,
+                "type":"fleet carrier",
+                "name":station_name,
+                "distanceToArrival":None,
+                "allegiance":"Independent",
+                "government":None,
+                "economy":None,
+                "secondEconomy":None,
+                "haveMarket":None,
+                "haveShipyard":None,
+                "haveOutfitting":None,
+                "otherServices":[],
+                "updateTime":{"information":"2020-04-12 12:25:17","market":"2020-04-12 12:40:14","shipyard":"2020-04-12 12:40:11","outfitting":"2020-04-12 12:40:11"}
+            }
+
         stations = self.stations_in_system(star_system)
         for station in stations:
             if station["name"] == station_name:

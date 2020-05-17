@@ -1,4 +1,5 @@
 # coding= utf-8
+from __future__ import division
 import os
 import sys
 import math
@@ -25,8 +26,9 @@ except ImportError:
 
 import lrucache
 
+# TODO change color of LTD efficiency stats to match the graph tone?
 class InGameMsg(object):   
-    MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice", "help", "navigation", "docking"]
+    MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice", "help", "navigation", "docking", "mining"]
     LEGAL_KINDS = ["intel", "warning"] 
 
     def __init__(self):
@@ -39,6 +41,7 @@ class InGameMsg(object):
         for kind in self.LEGAL_KINDS:
             self.legal_config(kind)
         self.docking_config()
+        self.mining_config()
         self.msg_ids = lrucache.LRUCache(1000, 60*15)
 
     def general_config(self):
@@ -166,6 +169,53 @@ class InGameMsg(object):
             "fill": conf.fill(kind, "panel")
         }
 
+    def mining_config(self):
+        conf = igmconfig.IGMConfig()
+        kind = "mining-graphs" 
+        self.cfg[kind] = {
+            "enabled": conf._getboolean(kind, "enabled"),
+            "yield": {
+                "x": conf.x(kind, "yield"),
+                "y": conf.y(kind, "yield"),
+                "h": conf.h(kind, "yield_bar"),
+                "w": conf.w(kind, "yield_bar"),
+                "s": conf.s(kind, "yield_bar"),
+                "ttl": conf.ttl(kind, "yield"),
+                "rgb": conf.rgb_list(kind, "yield"),
+                "fill": conf.fill_list(kind, "yield"),
+            },
+            "efficiency": {
+                "x": conf.x(kind, "efficiency"),
+                "y": conf.y(kind, "efficiency"),
+                "h": conf.h(kind, "efficiency_bar"),
+                "w": conf.w(kind, "efficiency_bar"),
+                "s": conf.s(kind, "efficiency_bar"),
+                "ttl": conf.ttl(kind, "efficiency"),
+                "rgb": conf.rgb_list(kind, "efficiency"),
+                "fill": conf.fill_list(kind, "efficiency"),
+            },
+            "distribution": {
+                "x": conf.x(kind, "distribution"),
+                "y": conf.y(kind, "distribution"),
+                "h": conf.h(kind, "distribution_bar"),
+                "w": conf.w(kind, "distribution_bar"),
+                "s": conf.s(kind, "distribution_bar"),
+                "ttl": conf.ttl(kind, "distribution"),
+                "rgb": conf.rgb_list(kind, "distribution"),
+                "fill": conf.fill_list(kind, "distribution"),
+            },
+        }
+        if not conf.panel(kind):
+            return
+        self.cfg[kind]["panel"] = {
+            "x": conf.x(kind, "panel"),
+            "y": conf.y(kind, "panel"),
+            "x2": conf.x2(kind, "panel"),
+            "y2": conf.y2(kind, "panel"),
+            "ttl": conf.ttl(kind, "panel"),
+            "rgb": conf.rgb(kind, "panel"),
+            "fill": conf.fill(kind, "panel")
+        }
 
     def intel(self, header, details, legal=None):
         self.__clear_if_needed()
@@ -680,6 +730,131 @@ class InGameMsg(object):
             x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}
             m += 1
 
+    def mining_guidance(self, mining_stats):
+        self.clear_mining_guidance()
+        if "panel" in self.cfg["mining"]:
+            self.__shape("mining", self.cfg["mining"]["panel"])
+        if "panel" in self.cfg["mining-graphs"] and self.cfg["mining-graphs"].get("enabled", False):
+            self.__shape("mining-graphs", self.cfg["mining-graphs"]["panel"])
+        
+        header = _(u"LTD Mining Stats")
+        details = []
+        has_ltd = mining_stats.last["proportion"] > 0
+        details.append(_(u"LTD %: {:>6.2f}  [{}/{}; {}]".format(mining_stats.last["proportion"], 1 if has_ltd else 0, mining_stats.last["materials"], mining_stats.last["raw"])))
+        details.append(_(u"MAX %: {:>6.2f}".format(mining_stats.max)))
+        details.append(_(u"AVG %: {:>6.2f}".format(mining_stats.ltd_yield_average())))
+        details.append(_(u"LTD/H: {:>6.0f} [TGT: {:.0f}]".format(mining_stats.ltd_per_hour(), mining_stats.max_efficiency)))
+        details.append(_(u"LTD #: {:>6}".format(mining_stats.refined_nb)))
+        self.__msg_header("mining", header)
+        self.__msg_body("mining", details)
+
+        if not self.cfg["mining-graphs"].get("enabled", None):
+            return
+        self.__mining_vizualization(mining_stats)
+    
+    def __mining_vizualization(self, mining_stats):
+        cfg = self.cfg[u"mining-graphs"]
+        max_yield = max(50, mining_stats.max)
+        max_distribution = max(mining_stats.distribution["bins"][1:])
+        max_efficiency = mining_stats.max_efficiency
+        ystep = {"yield": max_yield / float(cfg["yield"]["h"]), "efficiency": max_efficiency / float(cfg["efficiency"]["h"])} 
+        x = {"yield": 0}
+        y = 0
+        h = 0
+
+        bar = {
+            "x": 0,
+            "y": 0,
+            "x2": 0,
+            "y2": 0,
+            "rgb": "#000000",
+            "fill": "#000000",
+            "ttl": 0,
+        }
+
+        for p in mining_stats.prospectements:
+            dx = cfg["yield"]["x"]
+            dy = cfg["yield"]["y"]
+            proportion = p[1]
+            if proportion > 0:
+                h = max(proportion/ystep["yield"],1)
+                bar["x"] = int(x["yield"]+dx)
+                bar["y"] =int(dy-h)
+                bar["x2"] = int(cfg["yield"]["w"])
+                bar["y2"] = dy - bar["y"]
+                index = int(proportion/100.0 * (len(cfg["yield"]["rgb"])-1.0))
+                bar["rgb"] = cfg["yield"]["rgb"][index]
+                index = int(proportion/100.0 * (len(cfg["yield"]["fill"])-1.0))
+                bar["fill"] = cfg["yield"]["fill"][index]
+                bar["ttl"] = cfg["yield"]["ttl"]
+                self.__shape(u"mining-graphs-yield-bar", bar)
+            x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}
+        
+        avg = mining_stats.ltd_yield_average()
+        h = max(avg/ystep["yield"],1)
+        bar["x"] = dx
+        bar["y"] =int(dy-h)
+        bar["x2"] = x["yield"]
+        bar["y2"] = 1
+        index = int(avg/100.0 * (len(cfg["yield"]["rgb"])-1.0))
+        bar["rgb"] = cfg["yield"]["rgb"][index]
+        index = int(avg/100.0 * (len(cfg["yield"]["fill"])-1.0))
+        bar["fill"] = cfg["yield"]["fill"][index]
+        bar["ttl"] = cfg["yield"]["ttl"]
+        self.__shape(u"mining-graphs-yield-avg-bar", bar)
+
+
+        y = {"distribution": cfg["distribution"]["w"]+cfg["distribution"]["s"]}
+        i = 1
+        for c in mining_stats.distribution["bins"][1:]:
+            dx = cfg["distribution"]["x"]
+            dy = cfg["distribution"]["y"]
+            p = c / max_distribution
+            h = max(p * cfg["distribution"]["h"],1) if c else 0
+            x = h
+            bar["x"] = int(dx)
+            bar["y"] = int(dy-y["distribution"])
+            bar["x2"] = int(x)
+            bar["y2"] = int(cfg["distribution"]["w"])
+            index = int(i/len(mining_stats.distribution["bins"]) * (len(cfg["distribution"]["rgb"])-1.0))
+            bar["rgb"] = cfg["distribution"]["rgb"][index]
+            bar["fill"] = cfg["distribution"]["fill"][index]
+            bar["ttl"] = cfg["distribution"]["ttl"]
+            self.__shape(u"mining-graphs-distribution-bar", bar)
+            i = i+1
+            y = {category: y[category] + cfg[category]["w"] + cfg[category]["s"] for category in y}
+
+        dx = cfg["distribution"]["x"]
+        dy = cfg["distribution"]["y"]
+        h = (mining_stats.distribution["last_index"] * (cfg["distribution"]["w"] + cfg["distribution"]["s"]))
+        bar["x"] = int(dx-3)
+        bar["y"] = int(dy-h)
+        bar["x2"] = 1
+        bar["y2"] = int(cfg["distribution"]["w"])
+        index = int(mining_stats.distribution["last_index"]/len(mining_stats.distribution["bins"]) * (len(cfg["distribution"]["rgb"])-1.0))
+        bar["rgb"] = cfg["distribution"]["rgb"][index]
+        bar["fill"] = cfg["distribution"]["fill"][index]
+        bar["ttl"] = cfg["distribution"]["ttl"]
+        self.__shape(u"mining-graphs-distribution-last-mark", bar)
+
+
+        x = {"efficiency": 0}
+        for e in mining_stats.efficiency:
+            dx = cfg["efficiency"]["x"]
+            dy = cfg["efficiency"]["y"]
+            efficiency = e[1]
+            h = max(efficiency/ystep["efficiency"],1) if efficiency else 0
+            bar["x"] = int(x["efficiency"]+dx)
+            bar["y"] = int(dy-h)
+            bar["x2"] = int(cfg["efficiency"]["w"])
+            bar["y2"] = 1
+            index = int(efficiency/mining_stats.max_efficiency * (len(cfg["efficiency"]["rgb"])-1.0))
+            bar["rgb"] = cfg["efficiency"]["rgb"][index]
+            bar["fill"] = cfg["efficiency"]["fill"][index]
+            bar["ttl"] = cfg["efficiency"]["ttl"]
+            self.__shape(u"mining-graphs-efficiency-bar", bar)
+            x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}
+
     def clear(self):
         for msg_id in self.msg_ids.keys():
             self.__clear(msg_id)
@@ -703,6 +878,9 @@ class InGameMsg(object):
 
     def clear_docking(self):
         self.__clear_kind("docking")
+    
+    def clear_mining_guidance(self):
+        self.__clear_kind("mining")
 
     def __clear_kind(self, kind):
         tag = "EDR-{}".format(kind)
@@ -720,7 +898,7 @@ class InGameMsg(object):
             return []
         chunked_lines = []
         rows = self.cfg[kind]["b"]["rows"]
-        rows_per_line = max(1, rows / len(lines))
+        rows_per_line = int(max(1, rows / len(lines)))
         bonus_rows = rows % len(lines)
         for line in lines:
             max_rows = rows_per_line

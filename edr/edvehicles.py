@@ -427,15 +427,16 @@ class EDVehicle(object):
         if self.cargo_capacity <= 0:
             return False
         
-        mining_rig = False
-        for slot_name in self.slots:
-            if self.slots[slot_name].is_prospector_drone_controller():
-                mining_rig = True
-                break
-        if not mining_rig:
+        if not self.is_mining_rig():
             return False
 
         return  self.cargo.how_many("drones") < self.cargo_capacity
+
+    def is_mining_rig(self):
+        for slot_name in self.slots:
+            if self.slots[slot_name].is_prospector_drone_controller():
+                return True
+        return False
 
     def __eq__(self, other):
         if not isinstance(other, EDVehicle):
