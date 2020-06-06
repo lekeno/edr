@@ -59,7 +59,6 @@ class EDRMiningStats(object):
         self.prospected_raw_history.append(entry)
         now = EDTime.py_epoch_now()
         self.current = now
-        previous = self.last
         self.prospected_nb += 1
         self.__update_efficiency()
         
@@ -104,16 +103,18 @@ class EDRMiningStats(object):
     def __prrobably_previously_prospected(self, entry):
         b = entry.copy()
         b["timestamp"] = ""
+        b["Remaining"] = ""
         matching_entry = None
         for previous in self.prospected_raw_history:
             a = previous.copy()
             a["timestamp"] = ""
+            a["Remaining"] = ""
             if a == b:
                 matching_entry = previous
                 break 
             
         if matching_entry:
-            max_age = 60*5
+            max_age = 60*2
             a_time = EDTime().from_journal_timestamp(matching_entry["timestamp"])
             b_time = EDTime().from_journal_timestamp(entry["timestamp"])
             return (b_time.as_py_epoch() - a_time.as_py_epoch()) <= max_age
