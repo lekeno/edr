@@ -141,7 +141,7 @@ class EDRResourceFinder(object):
         "high density composites": "from_dav_hope", "mechanical components": "from_dav_hope",
         "conductive ceramics": "from_surface_site", "chemical distillery": "from_surface_site",
         "electrochemical arrays": "from_surface_site", "focus crystals": "from_surface_site", "heat exchangers": "from_surface_site", "shielding sensors": "from_surface_site", "phase alloys": "from_surface_site",
-        "polonium": 'recommend_prospecting_planet', "technetium": 'recommend_planet_or_depletable', "yttrium": 'recommend_planet_or_depletable', "cadmium": 'recommend_planet_or_depletable', "mercury": 'recommend_planet_or_depletable', "selenium": 'recommend_planet_or_depletable', "tin": 'recommend_planet_or_depletable',
+        "polonium": 'recommend_prospecting_planet', "technetium": 'recommend_planet_or_depletable', "yttrium": 'recommend_planet_or_depletable', "cadmium": 'recommend_planet_or_depletable', "mercury": 'recommend_planet_or_depletable', "selenium": 'recommend_prospecting_planet_for_selenium', "tin": 'recommend_planet_or_depletable',
         "arsenic": 'recommend_planet_or_depletable', "molybdenum": 'recommend_planet_or_depletable',
         "niobium": 'recommend_planet_or_depletable', "chromium": 'recommend_planet_or_depletable',
         "vanadium": 'recommend_planet_or_depletable', "zinc": 'recommend_planet_or_depletable',
@@ -501,11 +501,6 @@ class EDRResourceFinder(object):
                             {'name': 'Clota', 'planet': '1', 'concentration': 0.019, 'gravity': 1.51, 'distanceToArrival': 12, 'type': 'rocks'},
                             {'name': 'HIP 22286', 'planet': '2', 'concentration': 0.019, 'gravity': 1.49, 'distanceToArrival': 16, 'type': 'rocks'}
             ],
-            'selenium':   [ {'name': 'LHS 417', 'planet': '9 E A', 'concentration': 0.049, 'gravity': 0.03, 'distanceToArrival': 3776, 'type': 'rocks'},
-                            {'name': 'Jeng', 'planet': 'A 1 D A', 'concentration':	0.049, 'gravity': 0.03, 'distanceToArrival': 828, 'type': 'rocks'},
-                            {'name': 'Kandanda', 'planet': '3 D A', 'concentration': 0.048, 'gravity': 0.03, 'distanceToArrival': 2548, 'type': 'rocks'},
-                            # TODO CPD-51 3323 planet 1 D A Crystalline fragments for selenium
-            ],
             'tin':        [ {'name': '102 Iota Tauri', 'planet': 'B 2 A', 'concentration': 0.03, 'gravity': 0.19, 'distanceToArrival': 3776, 'type': 'rocks'},
                             {'name': 'Nu Tauri', 'planet': '1', 'concentration':	0.029, 'gravity': 2.29, 'distanceToArrival': 828, 'type': 'rocks'},
                             {'name': 'Col 285 Sector SU-E c12-23', 'planet': '1', 'concentration': 0.031, 'gravity': 1.5, 'distanceToArrival': 2548, 'type': 'rocks'},
@@ -578,6 +573,33 @@ class EDRResourceFinder(object):
                 _(u"Break some rocks. Higher chances of Very Rare and Rare resources in metallic meteorite, metallic outcrop and mesosiderite.")
             ]
 
+    def recommend_prospecting_planet_for_selenium(self, resource, reference_system, callback):
+        if resource != "selenium":
+            return False
+        candidates = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'sel.json')).read())
+        if not candidates:
+            return False
+
+        best_distance = None
+        best = None
+        good_enough_distance = 40
+        for planet in candidates:
+            distance = self.edr_systems.distance_with_coords(reference_system, planet['coords'])
+            if best_distance is None or distance < best_distance:
+                best_distance = distance
+                best = planet
+                if best_distance <= good_enough_distance:
+                    break
+        
+        pretty_dist = _(u"{distance:.3g}").format(distance=best_distance) if best_distance < 50.0 else _(u"{distance}").format(distance=int(best_distance))
+        copy(best["name"])
+        return [
+            _(u'{} ({}LY), Planet {} ({}LS, {}G), Selenium @ geological sites').format(best['name'], pretty_dist, best['planet'], best['distanceToArrival'], round(best['gravity'],2)),
+            _(u"Bring: detailed surface scanner, SRV, synth materials for SRV fuel and ammo."),
+            _(u"Surface scan the planet to find geological sites."),
+            _(u"Land, deploy SRV to break crystalline fragments, scoop selenium.")
+        ]
+    
     def recommend_raw_depletable(self, resource, reference_system, callback):
         depletables = EDRRawDepletables()
         candidates = depletables.hotspots(resource)

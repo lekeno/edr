@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2020-05-17 16:21+0900\n"
-"PO-Revision-Date: 2020-05-17 16:23+0900\n"
+"POT-Creation-Date: 2020-06-06 11:13+0900\n"
+"PO-Revision-Date: 2020-06-06 11:14+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -374,7 +374,7 @@ msgstr ""
 msgid "  ✓: {}"
 msgstr ""
 
-#: edrclient.py:648 edrresourcefinder.py:664
+#: edrclient.py:648 edrresourcefinder.py:686
 msgid "{}{}"
 msgstr ""
 
@@ -540,8 +540,8 @@ msgstr "Aucune info"
 #: edrresourcefinder.py:243 edrresourcefinder.py:258 edrresourcefinder.py:267
 #: edrresourcefinder.py:278 edrresourcefinder.py:286 edrresourcefinder.py:310
 #: edrresourcefinder.py:333 edrresourcefinder.py:344 edrresourcefinder.py:390
-#: edrresourcefinder.py:565 edrresourcefinder.py:595 edrresourcefinder.py:661
-#: edrresourcefinder.py:733
+#: edrresourcefinder.py:560 edrresourcefinder.py:594 edrresourcefinder.py:617
+#: edrresourcefinder.py:683 edrresourcefinder.py:755
 #, python-brace-format
 msgid "{distance:.3g}"
 msgstr "{distance:.3g}"
@@ -550,8 +550,8 @@ msgstr "{distance:.3g}"
 #: edrresourcefinder.py:243 edrresourcefinder.py:258 edrresourcefinder.py:267
 #: edrresourcefinder.py:278 edrresourcefinder.py:286 edrresourcefinder.py:310
 #: edrresourcefinder.py:333 edrresourcefinder.py:344 edrresourcefinder.py:390
-#: edrresourcefinder.py:565 edrresourcefinder.py:595 edrresourcefinder.py:661
-#: edrresourcefinder.py:733
+#: edrresourcefinder.py:560 edrresourcefinder.py:594 edrresourcefinder.py:617
+#: edrresourcefinder.py:683 edrresourcefinder.py:755
 #, python-brace-format
 msgid "{distance}"
 msgstr "{distance}"
@@ -1818,7 +1818,7 @@ msgstr "HIP 16613 ({}AL), Planète 1 A (1.4k SL), -11.0093 | -95.6755"
 
 #: edrresourcefinder.py:229 edrresourcefinder.py:237 edrresourcefinder.py:247
 #: edrresourcefinder.py:282 edrresourcefinder.py:290 edrresourcefinder.py:337
-#: edrresourcefinder.py:373 edrresourcefinder.py:577
+#: edrresourcefinder.py:373 edrresourcefinder.py:572
 msgid "Bring: advanced scanner, SRV."
 msgstr "Requis: scanner avancé, SRV."
 
@@ -1959,32 +1959,32 @@ msgstr ""
 "Plus efficace: faites un échange de matériaux à un marchand de matières "
 "premières. Envoyez !raw pour trouver le plus proche marchand."
 
-#: edrresourcefinder.py:569
+#: edrresourcefinder.py:564
 msgid "{} ({}LY), Planet {} ({}LS, {}G), {} @ biological sites"
 msgstr "{} ({}AL), Planète {} ({}SL, {}G), {} @ biological sites"
 
-#: edrresourcefinder.py:570
+#: edrresourcefinder.py:565 edrresourcefinder.py:598
 msgid ""
 "Bring: detailed surface scanner, SRV, synth materials for SRV fuel and ammo."
 msgstr ""
 "Requis: scanneur de surface avancé, SRV, matériaux de synthèse pour "
 "carburant SRV and munitions."
 
-#: edrresourcefinder.py:571
+#: edrresourcefinder.py:566
 msgid "Surface scan the planet to find biological sites."
 msgstr "Scannez la surface pour trouver des sites biologiques."
 
-#: edrresourcefinder.py:572
+#: edrresourcefinder.py:567
 msgid "Land, deploy SRV to break crystalline shards, scoop grade 4 materials."
 msgstr ""
 "Atterrissez, déployez votre SRV pour casser des cristaux, récoltez des "
 "matériaux de grade 4."
 
-#: edrresourcefinder.py:576 edrresourcefinder.py:598
+#: edrresourcefinder.py:571 edrresourcefinder.py:620
 msgid "{} ({}LY), Planet {} ({}LS, {}G), {} @ {}%"
 msgstr "{} ({}AL), Planète {} ({}SL, {}G), {} @ {}%"
 
-#: edrresourcefinder.py:578
+#: edrresourcefinder.py:573
 msgid ""
 "Break some rocks. Higher chances of Very Rare and Rare resources in metallic "
 "meteorite, metallic outcrop and mesosiderite."
@@ -1992,31 +1992,45 @@ msgstr ""
 "Cassez des rochers. Probabilité accrue pour matériaux très rare et rare "
 "avec: des météorites métalliques, affleurements métalliques et mesosidérites."
 
+#: edrresourcefinder.py:597
+msgid "{} ({}LY), Planet {} ({}LS, {}G), Selenium @ geological sites"
+msgstr "{} ({}AL), Planète {} ({}SL, {}G), Sélénium @ biological sites"
+
 #: edrresourcefinder.py:599
+msgid "Surface scan the planet to find geological sites."
+msgstr "Scannez la surface pour trouver des sites géologiques."
+
+#: edrresourcefinder.py:600
+msgid "Land, deploy SRV to break crystalline fragments, scoop selenium."
+msgstr ""
+"Atterrissez, déployez votre SRV pour casser des fragments de cristaux, "
+"récoltez le sélénium."
+
+#: edrresourcefinder.py:621
 msgid "Bring: SRV, synth materials for SRV fuel and ammo."
 msgstr "Requis: SRV, matériaux de synthèse pour carburant SRV and munitions."
 
-#: edrresourcefinder.py:600
+#: edrresourcefinder.py:622
 msgid "Get within 500LS of the planet to find the tourist spot."
 msgstr ""
 "Approchez vous de la planète (500 SL) pour trouver le point touristique."
 
-#: edrresourcefinder.py:601
+#: edrresourcefinder.py:623
 msgid "Land, deploy SRV to break the crystals, and scoop high grade materials."
 msgstr ""
 "Atterrissez, déployez votre SRV pour casser des cristaux, récoltez des "
 "matériaux rares."
 
-#: edrresourcefinder.py:665
+#: edrresourcefinder.py:687
 msgid "by Cmdr {}"
 msgstr "par Cmdt {}"
 
-#: edrresourcefinder.py:667
+#: edrresourcefinder.py:689
 #, python-brace-format
 msgid "{sys} ({sdist}LY), {body} ({bdist}LS): {grade} {by}"
 msgstr "{sys} ({sdist}AL), {body} ({bdist}SL): {grade} {by}"
 
-#: edrresourcefinder.py:668
+#: edrresourcefinder.py:690
 msgid ""
 "Bring: detailed surface scanner, prospector & collector limpets, mining "
 "lasers."
@@ -2024,24 +2038,24 @@ msgstr ""
 "Equipement: scanneur de surface détaillé, drones de prospection et "
 "collection, lasers de minage."
 
-#: edrresourcefinder.py:669
+#: edrresourcefinder.py:691
 msgid "Scan the ring to find overlapping {} hotspots."
 msgstr "Scannez les anneaux afin de trouver les zones superposées avec {}."
 
-#: edrresourcefinder.py:670
+#: edrresourcefinder.py:692
 msgid ""
 "Drop in there, prospect asteroids, mine the ones with {}, collect, repeat."
 msgstr ""
 "Désengagez le super-cruise, sondez les astéroïdes, minez ceux avec {}, "
 "récupérez les matériaux, répétez."
 
-#: edrresourcefinder.py:676
+#: edrresourcefinder.py:698
 msgid "Bring: 2 recon controllers, limpets, silent running ship."
 msgstr ""
 "Requis: 2 contrôleurs de drone de reconnaissance, drones, un vaisseau équipé "
 "pour mode furtif."
 
-#: edrresourcefinder.py:676
+#: edrresourcefinder.py:698
 msgid ""
 "Scan the installation, then the Comms array. Hack it. Run silent before the "
 "hacking begins / ends, avoid scans. Repeat."
@@ -2050,13 +2064,13 @@ msgstr ""
 "furtif avant que le piratage commence et se termine, évitez les scans de "
 "police. Répétez."
 
-#: edrresourcefinder.py:677
+#: edrresourcefinder.py:699
 msgid "Bring: 2-3 recon controllers, limpets, silent running ship."
 msgstr ""
 "Requis: 2-3 contrôleurs de drone de reconnaissance, drones, un vaisseau "
 "équipé pour mode furtif."
 
-#: edrresourcefinder.py:677
+#: edrresourcefinder.py:699
 msgid ""
 "Scan the stranded mega-ship 'Blazin’ Dynamo', then the Comms and Data "
 "arrays. Hack them. Run silent before the hacking begins / ends, avoid scans. "
@@ -2066,7 +2080,7 @@ msgstr ""
 "Données. Piratez le. Passez en mode furtif avant que le piratage commence et "
 "se termine, évitez les scans de police. Répétez."
 
-#: edrresourcefinder.py:681
+#: edrresourcefinder.py:703
 msgid ""
 "Alt: scans of data points at L3M / M3M / M4M settlements. Installation, mega-"
 "ships. Mission rewards."
@@ -2074,7 +2088,7 @@ msgstr ""
 "Alt: scans de data points aux L3M / M3M / M4M settlements. Installation, "
 "méga-vaisseaux. Récompenses de mission."
 
-#: edrresourcefinder.py:682
+#: edrresourcefinder.py:704
 msgid ""
 "Alt: scans of data points at settlements, authority/military ships, data "
 "beacons in 'Encoded Emissions', satellites. Installations, mega-ships. "
@@ -2084,7 +2098,7 @@ msgstr ""
 "terminaux de données dans les sources d'émissions encodées. Installation, "
 "méga-vaisseaux. Récompenses de mission."
 
-#: edrresourcefinder.py:683
+#: edrresourcefinder.py:705
 msgid ""
 "Alt: scans of data points at M4M / L3M / M2M settlements. Installations, "
 "mega-ships."
@@ -2092,7 +2106,7 @@ msgstr ""
 "Alt: scans de data points aux M4M / L3M / M2M settlements. Installations, "
 "méga-vaisseaux."
 
-#: edrresourcefinder.py:684
+#: edrresourcefinder.py:706
 msgid ""
 "Alt: scans of data points at M5M / L2M / M2M settlements, data beacons in "
 "'Encoded Emissions', satellites. Installations, mega-ships."
@@ -2101,7 +2115,7 @@ msgstr ""
 "données dans les sources d'émissions encodées, satellites. Installations, "
 "méga-vaisseaux."
 
-#: edrresourcefinder.py:685
+#: edrresourcefinder.py:707
 msgid ""
 "Alt: scans of data points at M4L / M1L / M3L settlements, haulage ships. "
 "Installation, mega-ships."
@@ -2109,23 +2123,23 @@ msgstr ""
 "Alt: scans de data points aux M4M / M1L / M3L settlements, vaisseaux cargo. "
 "Installations, méga-vaisseaux."
 
-#: edrresourcefinder.py:739
+#: edrresourcefinder.py:761
 msgid "{} ({}LY), {} ({}LS, {}G), {} @ {}%"
 msgstr "{} ({}AL), {} ({}SL, {}G), {} @ {}%"
 
-#: edrresourcefinder.py:746
+#: edrresourcefinder.py:768
 msgid "{} ({}LY), {} ({}LS), {} @ {}%"
 msgstr "{} ({}AL), {} ({}SL), {} @ {}%"
 
-#: edrresourcefinder.py:755
+#: edrresourcefinder.py:777
 msgid "Captured by scanning high energy wakes."
 msgstr "Scannez des vagues d'énergie haute."
 
-#: edrresourcefinder.py:756
+#: edrresourcefinder.py:778
 msgid "Higher chances in high population (high traffic) systems"
 msgstr "Probabilité accrue dans les systèmes avec une large population"
 
-#: edrresourcefinder.py:801
+#: edrresourcefinder.py:823
 #, python-brace-format
 msgid "{raw} {chance} @ {actual:.1f}% (median={typical:.1f}%; max={max:.1f}%)"
 msgstr "{raw}{chance} @ {actual:.1f}% (médiane={typical:.1f}%; max={max:.1f}%)"
@@ -2310,38 +2324,38 @@ msgstr ""
 
 #. Translators: this is for the sitreps feature; it's the title of a section to show systems with sighted outlaws
 #. Translators: this is for the sitrep feature; it's a section to show wanted cmdrs who have been sighted in the system of interest
-#: edrsystems.py:474 edrsystems.py:652
+#: edrsystems.py:482 edrsystems.py:660
 msgid "sitreps section|✪ Outlaws"
 msgstr "✪ Bandits"
 
 #. Translators: this is for the sitreps feature; it's the title of a section to show systems with sighted enemies (powerplay)
 #. Translators: this is for the sitrep feature; it's a section to show enemy cmdrs who have been sighted in the system of interest
-#: edrsystems.py:483 edrsystems.py:661
+#: edrsystems.py:491 edrsystems.py:669
 msgid "sitreps section|✪ Enemies"
 msgstr "✪ Ennemis"
 
 #. Translators: this is for the sitreps feature; it's the title of a section to show systems with reported crimes
-#: edrsystems.py:491
+#: edrsystems.py:499
 msgid "sitreps section|✪ Crimes"
 msgstr "✪ Crimes"
 
 #. Translators: this is for the sitreps feature; it's the title of a section to show systems with traffic
-#: edrsystems.py:499
+#: edrsystems.py:507
 msgid "sitreps section|✪ Traffic"
 msgstr "✪ Traffic"
 
 #. Translators: this is for the sitrep feature; it's a section to show sighted cmdrs in the system of interest
-#: edrsystems.py:606
+#: edrsystems.py:614
 msgid "sitrep section|✪ Sighted"
 msgstr "✪ Repérés"
 
 #. Translators: this is for the sitrep feature; it's a section to show cmdrs who have been reported as interdicting another cmdr in the system of interest
-#: edrsystems.py:640
+#: edrsystems.py:648
 msgid "sitrep section|✪ Interdictors"
 msgstr "✪ Interdicteurs"
 
 #. Translators: this is for the sitrep feature; it's a section to show cmdrs who have been reported as responsible for destroying the ship of another cmdr in the system of interest; use a judgement-neutral term
-#: edrsystems.py:643
+#: edrsystems.py:651
 msgid "sitreps section|✪ Destroyers"
 msgstr "✪ Destructeurs"
 
@@ -3632,90 +3646,90 @@ msgstr "Il semble que vous soyez en sécurité et désengagé."
 msgid "Flash your lights twice to re-enable."
 msgstr "Flashez vos phares deux fois afin de réactiver."
 
-#: load.py:526
+#: load.py:525
 msgid "System info acquired"
 msgstr "Infos du système acquises"
 
-#: load.py:526
+#: load.py:525
 msgid "Noteworthy material densities will be shown when approaching a planet."
 msgstr ""
 "Un sommaire des matériaux présents en forte densité s'affichera lors d'une "
 "approche planétaire."
 
-#: load.py:607
+#: load.py:606
 msgid "blip failed."
 msgstr "échec d'un blip."
 
-#: load.py:610
+#: load.py:609
 msgid "blip succeeded!"
 msgstr "blip rapporté!"
 
-#: load.py:623 load.py:667
+#: load.py:622 load.py:666
 msgid "Crime reporting disabled in solo/private modes."
 msgstr "Rapport de crime désactivé en mode Solo/Privé."
 
-#: load.py:653 load.py:700
+#: load.py:652 load.py:699
 msgid "failed to report crime."
 msgstr "crime non rapporté (échec)."
 
-#: load.py:706
+#: load.py:705
 msgid "Fight reporting disabled in solo/private modes."
 msgstr "Rapport de combat désactivé en mode Solo/Privé."
 
-#: load.py:745
+#: load.py:744
 msgid "failed to report contact."
 msgstr "contact non rapporté (échec)."
 
-#: load.py:765
+#: load.py:764
 msgid "Scan reporting disabled in solo/private modes."
 msgstr "Rapport de scan désactivé en mode Solo/Privé."
 
-#: load.py:775
+#: load.py:774
 msgid "failed to report scan."
 msgstr "scan non rapporté (échec)."
 
-#: load.py:805
+#: load.py:804
 msgid "Traffic reporting disabled in solo/private modes."
 msgstr "Rapport de traffic désactivé en mode Solo/Privé."
 
-#: load.py:813
+#: load.py:812
 msgid "failed to report traffic."
 msgstr "trafic non rapporté (échec)."
 
-#: load.py:819
+#: load.py:818
 msgid "Multicrew reporting disabled in private mode."
 msgstr "Pas de rapport multicrew en mode privé."
 
-#: load.py:823
+#: load.py:822
 msgid "failed to report multicrew session."
 msgstr "crime équipage non rapporté (échec)."
 
-#: load.py:1306
+#: load.py:1305
 msgid "Call rejected: you seem to have enough fuel."
 msgstr "Appel rejeté: il semble que vous ayez assez de carburant."
 
-#: load.py:1306 load.py:1310
+#: load.py:1305 load.py:1309
 msgid "Contact Cmdr LeKeno if this is inaccurate"
 msgstr "Contactez Cmdr LeKeno si ceci est incorrect"
 
-#: load.py:1310
+#: load.py:1309
 msgid "Call rejected: you seem to have enough hull left."
 msgstr ""
 "Appel rejeté: il semble que votre coque n'est pas dans un état critique."
 
-#: load.py:1345
+#: load.py:1344
 msgid "Loadout information is stale"
 msgstr "Les informations ne sont pas à jour"
 
-#: load.py:1345
+#: load.py:1344
 msgid "Congrats, you've found a bug in Elite!"
 msgstr "Félicitations! Vous avez trouvé un bug dans Elite!"
 
-#: load.py:1345
+#: load.py:1344
 msgid "The modules info isn't updated right away :("
 msgstr "Les informations de vos modules ne sont pas mises à jour de suite :("
 
-#: load.py:1345
+#: load.py:1344
 msgid "Try again after moving around or relog and check your modules."
 msgstr ""
 "Essayez plus tard après avoir bougé ou reloguez et regardez vos modules."

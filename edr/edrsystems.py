@@ -254,6 +254,14 @@ class EDRSystems(object):
             return sqrt((dest_coords["x"] - source_coords["x"])**2 + (dest_coords["y"] - source_coords["y"])**2 + (dest_coords["z"] - source_coords["z"])**2)
         raise ValueError('Unknown system')
 
+    def distance_with_coords(self, source_system, dest_coords):
+        source = self.system(source_system)
+        
+        if source:
+            source_coords = source[0]["coords"]
+            return sqrt((dest_coords["x"] - source_coords["x"])**2 + (dest_coords["y"] - source_coords["y"])**2 + (dest_coords["z"] - source_coords["z"])**2)
+        raise ValueError('Unknown system')
+
     def system(self, name):
         if not name:
             return None
