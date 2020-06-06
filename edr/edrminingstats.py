@@ -25,6 +25,7 @@ class EDRMiningStats(object):
         now = EDTime.py_epoch_now()
         self.start = now
         self.current = now
+        self.prospected_raw_history = deque(maxlen=8) # 8 max prospector drones
         self.last = {"timestamp": now, "proportion": None, "raw": None, "materials": None}
 
     def reset(self):
@@ -51,10 +52,17 @@ class EDRMiningStats(object):
             return False
         if entry.get("Remaining", 0) <= 0:
             return False
+
+        if self.__prrobably_previously_prospected(entry):
+            return False
+        
+        self.prospected_raw_history.append(entry)
         now = EDTime.py_epoch_now()
         self.current = now
+        previous = self.last
         self.prospected_nb += 1
         self.__update_efficiency()
+        
         lut_content = {
             "n/a": "-",
             "$AsteroidMaterialContent_Low;": "L",
@@ -93,6 +101,24 @@ class EDRMiningStats(object):
             self.distribution["bins"][0] += 1
             self.prospectements.append((now, 0.0))
 
+    def __prrobably_previously_prospected(self, entry):
+        b = entry.copy()
+        b["timestamp"] = ""
+        matching_entry = None
+        for previous in self.prospected_raw_history:
+            a = previous.copy()
+            a["timestamp"] = ""
+            if a == b:
+                matching_entry = previous
+                break 
+            
+        if matching_entry:
+            max_age = 60*5
+            a_time = EDTime().from_journal_timestamp(matching_entry["timestamp"])
+            b_time = EDTime().from_journal_timestamp(entry["timestamp"])
+            return (b_time.as_py_epoch() - a_time.as_py_epoch()) <= max_age
+        return False
+    
     def refined(self, entry):
         if entry.get("event", None) != "MiningRefined":
             return
