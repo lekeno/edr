@@ -461,6 +461,10 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     if entry["event"] in ["Cargo"]:
         ed_player.piloted_vehicle.update_cargo()
+
+    if entry["event"] in ["EjectCargo", "CollectCargo"]:
+        handle_cargo_events(ed_player, entry)
+
     
     if entry["event"].startswith("Powerplay"):
         EDRLOG.log(u"Powerplay event: {}".format(entry), "INFO")
@@ -1558,3 +1562,9 @@ def handle_modules_events(ed_player, entry):
     if entry["event"] == "ModuleInfo":
         EDRLOG.log(u"ModuleInfo event", "DEBUG")
         ed_player.mothership.outfit_probably_changed(entry["timestamp"])
+
+def handle_cargo_events(ed_player, entry):
+    if entry["event"] == "EjectCargo":
+        ed_player.piloted_vehicle.cargo.eject(entry)
+    elif entry["event"] == "CollectCargo":
+        ed_player.piloted_vehicle.cargo.collect(entry)
