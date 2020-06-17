@@ -783,6 +783,31 @@ class EDPlayerOne(EDPlayer):
             result[u"crew"] = [ {u"cmdr": crew_member} for crew_member in self.crew.all_members()] 
             
         return result
+
+    # TODO noteworthy_changes for wingmates
+
+    def wingmate_json(self):
+        result = {
+            u"cmdr": self.name,
+            u"timestamp": self.timestamp * 1000,
+            #u"wanted": self.wanted,
+            #u"bounty": self.bounty,
+            u"starSystem": self.star_system,
+            u"place": self.place,
+            #u"wingof": len(self.wing.wingmates),
+            u"wingmates": self.wing.cmdr_ids(),
+            #u"byPledge": self.powerplay.canonicalize() if self.powerplay else u'',
+            u"ship": self.piloted_vehicle.json(),
+            u"target": self.target.json(),
+        }
+        if with_target:
+            result[u"target"] = self.target.json() if self.target else {}
+
+        result[u"crew"] = []
+        if self.crew:
+            result[u"crew"] = [ {u"cmdr": crew_member} for crew_member in self.crew.all_members()] 
+            
+        return result
    
     def force_new_name(self, new_name):
         self._name = new_name

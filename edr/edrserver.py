@@ -389,6 +389,12 @@ class EDRServer(object):
         endpoint = "/v1/fights/{system_id}/".format(system_id=system_id)
         return self.__post_json(endpoint, info, "EDR")
 
+    def wingmate(self, info):
+        info["uid"] = self.uid()
+        EDRLOG.log(u"Wingmate report with json:{}".format(info), "INFO")
+        endpoint = "/v1/wingmates/{uid}/".format(system_id=info["uid"])
+        return self.__post_json(endpoint, info, "EDR")
+
     def call_central(self, service, system_id, info):
         info["uid"] = self.uid()
         EDRLOG.log(u"Central call from system {sid} with json:{json}".format(sid=system_id, json=info), "INFO")
