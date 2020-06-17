@@ -114,7 +114,7 @@ class EDRMiningStats(object):
                 break 
             
         if matching_entry:
-            max_age = 60*2
+            max_age = 60*5
             a_time = EDTime().from_journal_timestamp(matching_entry["timestamp"])
             b_time = EDTime().from_journal_timestamp(entry["timestamp"])
             return (b_time.as_py_epoch() - a_time.as_py_epoch()) <= max_age
