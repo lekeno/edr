@@ -1,6 +1,8 @@
 # coding= utf-8
 from __future__ import absolute_import
 
+# TODO void opals: Smethells 1, planet 1. Double VO. Or Smei Ti, planet ABC 4.?
+
 import math
 import json
 import os
@@ -626,45 +628,61 @@ class EDRResourceFinder(object):
     def recommend_prospecting_ring(self, resource, reference_system, callback):
         rings_lut = {
             'painite': [
-                { 'system': 'HR 6844', 'ring': 'A 3 ring A', 'distanceToRing': 1196, 'tuple': 2, 'by': 'GramNam'},
-                { 'system': 'HIP 76772', 'ring': '2 ring A', 'distanceToRing': 1696, 'tuple': 2, 'by': 'Boc Soma'},
-                { 'system': 'HIP 73269', 'ring': 'A 1 ring A', 'distanceToRing': 2156, 'tuple': 2, 'by': 'Flemming'},
-                { 'system': 'HIP 80266', 'ring': '6 ring A', 'distanceToRing': 2978, 'tuple': 2, 'by': 'Kaostic'},
-                { 'system': 'HIP 19054', 'ring': '1 ring A', 'distanceToRing': 1713, 'tuple': 2, 'by': 'Ace Rimmer'},
-                { 'system': 'Eol Prou QX-T d3-415', 'ring': '4 ring A', 'distanceToRing': 3127, 'tuple': 1, 'by': 'Derek Poulter'},
-                { 'system': 'Eol Prou PH-K c9-497', 'ring': 'A3 ring A', 'distanceToRing': 2043, 'tuple': 1, 'by': 'Derek Poulter'},
-                { 'system': 'Eol Prou RS-T d3-660', 'ring': 'ABC3 ring A', 'distanceToRing': 5948, 'tuple': 2, 'by': 'Fuchsov'},
-                { 'system': 'Eol Prou PC-K c9-104', 'ring': '3 ring A', 'distanceToRing': 3027, 'tuple': 2, 'by': 'Fuchsov'},
-                { 'system': 'Eol Prou HQ-N c7-13', 'ring': '4 ring A', 'distanceToRing': 390, 'tuple': 2, 'by': 'Kit Carter'},
-                { 'system': 'Randgnid', 'ring': '4 ring A', 'distanceToRing': 468, 'tuple': 2, 'by': 'Schmictic'},
-                { 'system': 'Hyades Sector DB-X d1-112', 'ring': '2 ring A', 'distanceToRing': 2396, 'tuple': 2, 'by': None},
-                { 'system': 'Omicron Capricorni B', 'ring': 'B1 ring A', 'distanceToRing': 11524, 'tuple': 2, 'by': None},
-                { 'system': 'HIP 21991', 'ring': '1 ring A', 'distanceToRing': 1184, 'tuple': 2, 'by': None},
-                { 'system': 'HIP 59425', 'ring': '2 ring A', 'distanceToRing': 1787, 'tuple': 2, 'by': None},
-                { 'system': 'HIP 66481', 'ring': '8 ring A', 'distanceToRing': 1350, 'tuple': 2, 'by': None},
-                { 'system': 'HIP 25368', 'ring': '1 ring A', 'distanceToRing': 53, 'tuple': 2, 'by': None},
-                { 'system': 'Xi-2 Lupi', 'ring': 'A2 ring A', 'distanceToRing': 1426, 'tuple': 2, 'by': None},
-                { 'system': 'HIP 37222', 'ring': '3 ring A', 'distanceToRing': 2019, 'tuple': 2, 'by': None}
+                { 'system': 'GCRV 1568', 'ring': 'A B 1 ring A', 'distanceToRing': 1244, 'tuple': 2, 'by': '???'},
+                { 'system': 'Hyades Sector DB-X d1-112', 'ring': 'A 3 ring A', 'distanceToRing': 2376, 'tuple': 2, 'by': 'xomm'},
+                #{ 'system': 'HR 6844', 'ring': 'A 3 ring A', 'distanceToRing': 1196, 'tuple': 2, 'by': 'GramNam'},
+                #{ 'system': 'HIP 76772', 'ring': '2 ring A', 'distanceToRing': 1696, 'tuple': 2, 'by': 'Boc Soma'},
+                #{ 'system': 'HIP 73269', 'ring': 'A 1 ring A', 'distanceToRing': 2156, 'tuple': 2, 'by': 'Flemming'},
+                #{ 'system': 'HIP 80266', 'ring': '6 ring A', 'distanceToRing': 2978, 'tuple': 2, 'by': 'Kaostic'},
+                #{ 'system': 'HIP 19054', 'ring': '1 ring A', 'distanceToRing': 1713, 'tuple': 2, 'by': 'Ace Rimmer'},
+                #{ 'system': 'Eol Prou QX-T d3-415', 'ring': '4 ring A', 'distanceToRing': 3127, 'tuple': 1, 'by': 'Derek Poulter'},
+                #{ 'system': 'Eol Prou PH-K c9-497', 'ring': 'A3 ring A', 'distanceToRing': 2043, 'tuple': 1, 'by': 'Derek Poulter'},
+                #{ 'system': 'Eol Prou RS-T d3-660', 'ring': 'ABC3 ring A', 'distanceToRing': 5948, 'tuple': 2, 'by': 'Fuchsov'},
+                #{ 'system': 'Eol Prou PC-K c9-104', 'ring': '3 ring A', 'distanceToRing': 3027, 'tuple': 2, 'by': 'Fuchsov'},
+                #{ 'system': 'Eol Prou HQ-N c7-13', 'ring': '4 ring A', 'distanceToRing': 390, 'tuple': 2, 'by': 'Kit Carter'},
+                #{ 'system': 'Randgnid', 'ring': '4 ring A', 'distanceToRing': 468, 'tuple': 2, 'by': 'Schmictic'},
+                #{ 'system': 'Hyades Sector DB-X d1-112', 'ring': '2 ring A', 'distanceToRing': 2396, 'tuple': 2, 'by': None},
+                #{ 'system': 'Omicron Capricorni B', 'ring': 'B1 ring A', 'distanceToRing': 11524, 'tuple': 2, 'by': None},
+                #{ 'system': 'HIP 21991', 'ring': '1 ring A', 'distanceToRing': 1184, 'tuple': 2, 'by': None},
+                #{ 'system': 'HIP 59425', 'ring': '2 ring A', 'distanceToRing': 1787, 'tuple': 2, 'by': None},
+                #{ 'system': 'HIP 66481', 'ring': '8 ring A', 'distanceToRing': 1350, 'tuple': 2, 'by': None},
+                #{ 'system': 'HIP 25368', 'ring': '1 ring A', 'distanceToRing': 53, 'tuple': 2, 'by': None},
+                #{ 'system': 'Xi-2 Lupi', 'ring': 'A2 ring A', 'distanceToRing': 1426, 'tuple': 2, 'by': None},
+                #{ 'system': 'HIP 37222', 'ring': '3 ring A', 'distanceToRing': 2019, 'tuple': 2, 'by': None}
             ],
             'low temperature diamonds': [
-                {'system':'Borann', 'ring':'A2 ring B', 'distanceToRing': 902, 'tuple': 3, 'by': 'haltingpoint'},
-                {'system':'Tjupali', 'ring':'8 ring A', 'distanceToRing': 1448, 'tuple': 2, 'by': None},
-                {'system':'HIP 7799', 'ring':'BCD7 ring A', 'distanceToRing': 101999, 'tuple': 2, 'by': None},
-                {'system':'HIP 39383', 'ring':'BC7 ring B', 'distanceToRing': 384698, 'tuple': 2, 'by': None},
-                {'system':'Arietis Sector FG-X b1-5', 'ring':'8 ring B', 'distanceToRing': 943, 'tuple': 2, 'by': None},
-                {'system':'Col 285 Sector SU-F c11-19', 'ring':'ABC1 ring A', 'distanceToRing': 3143, 'tuple': 2, 'by': 'ElectricNacho'},
-                {'system':'Hyades Sector SD-T c3-4', 'ring':'4 ring B', 'distanceToRing': 736, 'tuple': 2, 'by': None},
-                {'system':'Bokomu', 'ring':'2 ring B', 'distanceToRing': 1664, 'tuple': 2, 'by': None},
-                {'system':'Pleiades Sector VZ-O b6-3', 'ring':'9 ring A', 'distanceToRing': 1414, 'tuple': 2, 'by': None},
-                {'system':'Lagoon Sector BW-M b7-2', 'ring':'A5 ring A', 'distanceToRing': 1948, 'tuple': 3, 'by': 'thicky_kemp'},
-                {'system':'Eol Prou HG-M c8-9', 'ring':'BC3 ring A', 'distanceToRing': 29911, 'tuple': 3, 'by': None},
-                {'system':'Coeus', 'ring':'A2 ring B', 'distanceToRing': 1590, 'tuple': 2, 'by': None},
+                { 'system': 'Col 285 Sector CC-K A38-2', 'ring':'1 ring B', 'distanceToRing': 393, 'tuple': 3, 'by': 'Kirre'},
+                # {'system':'Borann', 'ring':'A2 ring B', 'distanceToRing': 902, 'tuple': 3, 'by': 'haltingpoint'},
+                #{'system':'Tjupali', 'ring':'8 ring A', 'distanceToRing': 1448, 'tuple': 2, 'by': None},
+                #{'system':'HIP 7799', 'ring':'BCD7 ring A', 'distanceToRing': 101999, 'tuple': 2, 'by': None},
+                #{'system':'HIP 39383', 'ring':'BC7 ring B', 'distanceToRing': 384698, 'tuple': 2, 'by': None},
+                #{'system':'Arietis Sector FG-X b1-5', 'ring':'8 ring B', 'distanceToRing': 943, 'tuple': 2, 'by': None},
+                #{'system':'Col 285 Sector SU-F c11-19', 'ring':'ABC1 ring A', 'distanceToRing': 3143, 'tuple': 2, 'by': 'ElectricNacho'},
+                #{'system':'Hyades Sector SD-T c3-4', 'ring':'4 ring B', 'distanceToRing': 736, 'tuple': 2, 'by': None},
+                #{'system':'Bokomu', 'ring':'2 ring B', 'distanceToRing': 1664, 'tuple': 2, 'by': None},
+                #{'system':'Pleiades Sector VZ-O b6-3', 'ring':'9 ring A', 'distanceToRing': 1414, 'tuple': 2, 'by': None},
+                #{'system':'Lagoon Sector BW-M b7-2', 'ring':'A5 ring A', 'distanceToRing': 1948, 'tuple': 3, 'by': 'thicky_kemp'},
+                #{'system':'Eol Prou HG-M c8-9', 'ring':'BC3 ring A', 'distanceToRing': 29911, 'tuple': 3, 'by': None},
+                #{'system':'Coeus', 'ring':'A2 ring B', 'distanceToRing': 1590, 'tuple': 2, 'by': None},
             ],
             'bromellite': [
-                { 'system': 'Irusan', 'ring': '3 ring B', 'distanceToRing': 1715, 'tuple': 3, 'by': 'SpanningTheBlack & BeornK'},
-                { 'system': 'Ngorowai', 'ring': ' A 15 ring A', 'distanceToRing': 2315, 'tuple': 2, 'by': 'Merganser'},
-                { 'system': 'Lyncis Sector AV-Y c8', 'ring': '3 ring A', 'distanceToRing': 21713, 'tuple': 2, 'by': 'AnubisNor'},
-                { 'system': 'Pleiades Sector VZ-O b6-3', 'ring': '8 ring B', 'distanceToRing': 1078, 'tuple': 2, 'by': 'Norrwin'}, 
+                #{ 'system': 'Irusan', 'ring': '3 ring B', 'distanceToRing': 1715, 'tuple': 3, 'by': 'SpanningTheBlack & BeornK'},
+                #{ 'system': 'Ngorowai', 'ring': ' A 15 ring A', 'distanceToRing': 2315, 'tuple': 2, 'by': 'Merganser'},
+                #{ 'system': 'Lyncis Sector AV-Y c8', 'ring': '3 ring A', 'distanceToRing': 21713, 'tuple': 2, 'by': 'AnubisNor'},
+                #{ 'system': 'Pleiades Sector VZ-O b6-3', 'ring': '8 ring B', 'distanceToRing': 1078, 'tuple': 2, 'by': 'Norrwin'}, 
+            ],
+            'tritium': [
+                { 'system': 'Wolf 406', 'ring': '2', 'distanceToRing': 1126, 'tuple': 1, 'by': None},
+                { 'system': 'Swoilz ZF-L d9-74', 'ring': '8', 'distanceToRing': 3880, 'tuple': 2, 'by': None},
+                { 'system': 'Swoilz WM-U b36-3', 'ring': '3', 'distanceToRing': 1274, 'tuple': 2, 'by': None},
+                { 'system': 'Swoilz WC-T b37-3', 'ring': '11', 'distanceToRing': 2001, 'tuple': 2, 'by': None},
+                { 'system': 'Pyramoe UZ-N d7-11', 'ring': '11', 'distanceToRing': 5657, 'tuple': 2, 'by': None},
+                { 'system': 'Praea Euq SG-Y d10', 'ring': 'AB 1', 'distanceToRing': 9224, 'tuple': 3, 'by': None},
+                { 'system': 'HDS 2154', 'ring': 'B 10', 'distanceToRing': 105979, 'tuple': 1, 'by': None},
+                { 'system': 'Eol Prou QR-Z b15-10', 'ring': '3', 'distanceToRing': 1026, 'tuple': 2, 'by': None},
+                { 'system': 'Enga', 'ring': '2', 'distanceToRing': 563, 'tuple': 1, 'by': None},
+                { 'system': 'Col 285 Sector RC-C b13-2', 'ring': 'A 5', 'distanceToRing': 1697, 'tuple': 2, 'by': None},
+                { 'system': 'Col 285 Sector KQ-F b11-2', 'ring': '5', 'distanceToRing': 985, 'tuple': 2, 'by': None},
             ]
         }
 
