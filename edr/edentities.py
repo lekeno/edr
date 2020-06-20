@@ -15,6 +15,7 @@ from edreconbox import EDReconBox
 from edrinventory import EDRInventory
 from edri18n import _, _c
 import edrfleet
+import edrfleetcarrier
 import edrminingstats
 EDRLOG = EDRLog()
 
@@ -727,6 +728,7 @@ class EDPlayerOne(EDPlayer):
         self.recon_box = EDReconBox()
         self.inventory = EDRInventory()
         self.fleet = edrfleet.EDRFleet()
+        self.fleet_carrier = edrfleetcarrier.EDRFleetCarrier()
         self.mining_stats = edrminingstats.EDRMiningStats()
 
     def __repr__(self):
