@@ -728,6 +728,7 @@ class EDPlayerOne(EDPlayer):
         self.inventory = EDRInventory()
         self.fleet = edrfleet.EDRFleet()
         self.mining_stats = edrminingstats.EDRMiningStats()
+        self.situ = None
 
     def __repr__(self):
         return str(self.__dict__)
@@ -749,6 +750,7 @@ class EDPlayerOne(EDPlayer):
             new_target.targeted = True
             new_target._touch()
         self._touch()
+        self.situ = "instanced"
 
     def lowish_fuel(self):
         if self.mothership.fuel_level is None or self.mothership.fuel_capacity is None:
@@ -790,23 +792,14 @@ class EDPlayerOne(EDPlayer):
         result = {
             u"cmdr": self.name,
             u"timestamp": self.timestamp * 1000,
-            #u"wanted": self.wanted,
-            #u"bounty": self.bounty,
             u"starSystem": self.star_system,
             u"place": self.place,
-            #u"wingof": len(self.wing.wingmates),
-            u"wingmates": self.wing.cmdr_ids(),
-            #u"byPledge": self.powerplay.canonicalize() if self.powerplay else u'',
+            u"wingmates": self.wing.wingmates(),
             u"ship": self.piloted_vehicle.json(),
-            u"target": self.target.json(),
+            u"target": self.target.json() if self.target else {},
+            u"situ": self.situation
         }
-        if with_target:
-            result[u"target"] = self.target.json() if self.target else {}
 
-        result[u"crew"] = []
-        if self.crew:
-            result[u"crew"] = [ {u"cmdr": crew_member} for crew_member in self.crew.all_members()] 
-            
         return result
    
     def force_new_name(self, new_name):
@@ -841,6 +834,7 @@ class EDPlayerOne(EDPlayer):
         self.to_normal_space()
         self._touch()
         self.reset_mining_stats()
+        self.situ = "starting"
 
     def killed(self):
         super(EDPlayerOne, self).killed()
@@ -854,6 +848,7 @@ class EDPlayerOne(EDPlayer):
         self.target = None
         self.instance.reset()
         self.recon_box.reset()
+        self.situ = "killed"
         self._touch()
 
     def resurrect(self, rebought=True):
@@ -867,6 +862,7 @@ class EDPlayerOne(EDPlayer):
         self.to_normal_space()
         self.instance.reset()
         self._touch()
+        self.situ = "instanced"
         if rebought:
             self.mothership.reset()
             if self.slf:
@@ -889,15 +885,18 @@ class EDPlayerOne(EDPlayer):
 
     def leave_wing(self):
         self.wing.leave()
+        self.situ = "instanced"
         self._touch()
 
     def join_wing(self, others):
         self.wing.join(others)
         self.crew = None
+        self.situ = "instanced"
         self._touch()
 
     def add_to_wing(self, other):
         self.wing.add(other)
+        self.situ = "instanced"
         self._touch()
 
     def in_a_wing(self):
@@ -980,6 +979,7 @@ class EDPlayerOne(EDPlayer):
         if self.in_normal_space():
             return
         super(EDPlayerOne, self).to_normal_space()
+        self.situ = "instanced"
         self.instance.reset()
 
     def to_super_space(self):
@@ -987,6 +987,7 @@ class EDPlayerOne(EDPlayer):
             return
         super(EDPlayerOne, self).to_super_space()
         self.instance.reset()
+        self.situ = "instanced"
         self.recon_box.reset()
 
     def to_hyper_space(self):
@@ -995,6 +996,7 @@ class EDPlayerOne(EDPlayer):
         super(EDPlayerOne, self).to_hyper_space()
         self.instance.reset()
         self.recon_box.reset()
+        self.situ = "tunnel"
 
     def wing_and_crew(self):
         wing_and_crew = self.wing.wingmates.copy()
@@ -1012,7 +1014,7 @@ class EDPlayerOne(EDPlayer):
         
         if not self.instance.anyone_beside(self.wing_and_crew()):
             return False
-
+        self.situ = "fighting"
         return True
 
     def leave_vehicle(self):
@@ -1035,6 +1037,7 @@ class EDPlayerOne(EDPlayer):
         self.instance.player_out(cmdr.name)
         if self.target and self.target.name == cmdr.name:
             self.target = None
+        self.situ = "pvpkill"
 
     def interdiction(self, interdicted, success):
         self._touch()
@@ -1042,8 +1045,10 @@ class EDPlayerOne(EDPlayer):
         if success:
             interdicted.location = self.location
             self.instance.player_in(interdicted)
+            self.situ = "pulled player"
         else:
             self.recon_box.reset()
+            self.situ = "empty instance"
 
     def interdicted(self, interdictor, success):
         self._touch()
@@ -1051,15 +1056,18 @@ class EDPlayerOne(EDPlayer):
             self.to_normal_space()
             interdictor.location = self.location
             self.instance.player_in(interdictor)
+            self.situ = "interdicted"
         else:
             self.instance.player_out(interdictor.cmdr_name)
             self.recon_box.reset()
+            self.situ = "evaded"
 
     def is_instanced_with(self, cmdr_name):
         return self.instance.player(cmdr_name) != None
 
     def instanced(self, cmdr_name, ship_internal_name=None, piloted=True):
         self._touch()
+        self.situ = "instanced"
         cmdr = self.instance.player(cmdr_name)
         if not cmdr:
             cmdr = EDPlayer(cmdr_name)
@@ -1076,6 +1084,7 @@ class EDPlayerOne(EDPlayer):
 
     def attacked(self, target):
         self._touch()
+        self.situ = "under attack"
         if target == u"Mothership":
             self.mothership.attacked()
         elif target == u"Fighter":
@@ -1097,4 +1106,4 @@ class EDPlayerOne(EDPlayer):
 
     def reset_mining_stats(self):
         self.mining_stats.reset()
-        print "Mining stats reset"
+    
