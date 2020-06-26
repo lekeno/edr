@@ -4,6 +4,7 @@ from __future__ import absolute_import
 
 import gettext
 import os
+import sys
 
 import utils2to3
 
@@ -22,11 +23,18 @@ def set_language(lang):
         translate = gettext.translation('edr', L10N_DIR, fallback=True, codeset="utf-8")
 
 def ugettext(message):
-    return translate.ugettext(message)
+    if sys.version_info.major == 2:
+        return translate.ugettext(message)
+    else:
+        return translate.gettext(message)
 
 def pgettext(contextual_message):
     global translate
-    result = translate.ugettext(contextual_message)
+    result = None
+    if sys.version_info.major == 2:
+        result = translate.ugettext(contextual_message)
+    else:
+        result = translate.gettext(contextual_message)
     if CONTEXT_SEPARATOR in result:
         # Translation not found
         result = contextual_message.split(u"|")[1]
