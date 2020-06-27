@@ -7,9 +7,14 @@ import time
 import random
 import math
 
-#import tkinter as tk
-import Tkinter as tk
-import ttk
+try:
+    # for Python2
+    import Tkinter as tk
+    import ttk
+except ImportError:
+    # for Python3
+    import tkinter as tk
+    from tkinter import ttk
 import ttkHyperlinkLabel
 import myNotebook as notebook
 from config import config
@@ -80,7 +85,7 @@ class EDRClient(object):
         visual_alt = 1 if config.get("EDRVisualAltFeedback") == "True" else 0
         self._visual_alt_feedback = tk.IntVar(value=visual_alt)
         
-        self.ui = EDRTogglingPanel(self._status, self._visual_alt_feedback)
+        self.ui = None # EDRTogglingPanel(self._status, self._visual_alt_feedback)
 
         audio = 1 if config.get("EDRAudioFeedback") == "True" else 0
         self._audio_feedback = tk.IntVar(value=audio)
@@ -118,7 +123,6 @@ class EDRClient(object):
         self.tips = RandomTips()
         self.help_content = HelpContent()
         self._throttle_until_timestamp = None
-        self.ui.notify(_(u"Troubleshooting"), [_(u"If the overlay doesn't show up, try one of the following:"), _(u" - In Elite: go to graphics options, and select Borderless or Windowed."), _(" - With Elite and EDR launched, check that EDMCOverlay.exe is running in the task manager"), _(u"If the overlay hurts your FPS, try turning VSYNC off in Elite's graphics options."), u"----", _("Join https://edrecon.com/discord for further technical support.")])
 
     def loud_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "loud")
@@ -200,8 +204,8 @@ class EDRClient(object):
             self.__status_update_pending()
 
     def is_obsolete(self, advertised_version):
-        client_parts = map(int, self.edr_version.split('.'))
-        advertised_parts = map(int, advertised_version.split('.'))
+        client_parts = list(map(int, self.edr_version.split('.')))
+        advertised_parts = list(map(int, advertised_version.split('.')))
         return client_parts < advertised_parts
 
     @property
@@ -231,12 +235,14 @@ class EDRClient(object):
     @status.setter
     def status(self, new_status):
         self._status.set(new_status)
-        self.ui.nolink()
+        if self.ui:
+            self.ui.nolink()
 
     def linkable_status(self, link, new_status = None):
         #TODO verify if this needs to be truncated
         self._status.set(new_status if new_status else link)
-        self.ui.link(link)
+        if self.ui:
+            self.ui.link(link)
 
     @property
     def visual_feedback(self):
@@ -348,6 +354,9 @@ class EDRClient(object):
         self.server.logout()
 
     def app_ui(self, parent):
+        if self.ui is None:
+            self.ui = EDRTogglingPanel(self._status, self._visual_alt_feedback, parent=parent)
+            self.ui.notify(_(u"Troubleshooting"), [_(u"If the overlay doesn't show up, try one of the following:"), _(u" - In Elite: go to graphics options, and select Borderless or Windowed."), _(" - With Elite and EDR launched, check that EDMCOverlay.exe is running in the task manager"), _(u"If the overlay hurts your FPS, try turning VSYNC off in Elite's graphics options."), u"----", _("Join https://edrecon.com/discord for further technical support.")])
         self.check_version()
         return self.ui
 
@@ -539,6 +548,11 @@ class EDRClient(object):
                 EDRLOG.log(u"NOTAMs for {}: {}".format(star_system, notams), "DEBUG")
                 details += notams
             
+            deaths_traffic = self.edrsystems.summarize_deaths_traffic(star_system)
+            if deaths_traffic:
+                EDRLOG.log(u"D/T for {}: {}".format(star_system, deaths_traffic), "DEBUG")
+                details.append(deaths_traffic)
+
             if self.edrsystems.has_sitrep(star_system):
                 if star_system == self.player.star_system and self.player.in_bad_neighborhood():
                     EDRLOG.log(u"Sitrep system is known to be an anarchy. Crimes aren't reported.", "INFO")

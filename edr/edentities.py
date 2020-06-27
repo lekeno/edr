@@ -1072,4 +1072,3 @@ class EDPlayerOne(EDPlayer):
 
     def reset_mining_stats(self):
         self.mining_stats.reset()
-        print "Mining stats reset"
