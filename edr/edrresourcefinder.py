@@ -630,6 +630,8 @@ class EDRResourceFinder(object):
             'painite': [
                 { 'system': 'GCRV 1568', 'ring': 'A B 1 ring A', 'distanceToRing': 1244, 'tuple': 2, 'by': '???'},
                 { 'system': 'Hyades Sector DB-X d1-112', 'ring': 'A 3 ring A', 'distanceToRing': 2376, 'tuple': 2, 'by': 'xomm'},
+                { 'system': 'HR 8461', 'ring': '6 ring A', 'distanceToRing': 3038, 'tuple': 2, 'by': 'polish_dan'},
+                
                 #{ 'system': 'HR 6844', 'ring': 'A 3 ring A', 'distanceToRing': 1196, 'tuple': 2, 'by': 'GramNam'},
                 #{ 'system': 'HIP 76772', 'ring': '2 ring A', 'distanceToRing': 1696, 'tuple': 2, 'by': 'Boc Soma'},
                 #{ 'system': 'HIP 73269', 'ring': 'A 1 ring A', 'distanceToRing': 2156, 'tuple': 2, 'by': 'Flemming'},
@@ -651,7 +653,9 @@ class EDRResourceFinder(object):
                 #{ 'system': 'HIP 37222', 'ring': '3 ring A', 'distanceToRing': 2019, 'tuple': 2, 'by': None}
             ],
             'low temperature diamonds': [
-                { 'system': 'Col 285 Sector CC-K A38-2', 'ring':'1 ring B', 'distanceToRing': 393, 'tuple': 3, 'by': 'Kirre'},
+                { 'system': 'Col 285 Sector CC-K A38-2', 'ring':'1', 'distanceToRing': 393, 'tuple': 3, 'by': 'Kirre'},
+                { 'system': 'Swoilz PK-R B20-0', 'ring':'1', 'distanceToRing': 1341, 'tuple': 4, 'by': 'ThatEnglishGent'},
+                
                 # {'system':'Borann', 'ring':'A2 ring B', 'distanceToRing': 902, 'tuple': 3, 'by': 'haltingpoint'},
                 #{'system':'Tjupali', 'ring':'8 ring A', 'distanceToRing': 1448, 'tuple': 2, 'by': None},
                 #{'system':'HIP 7799', 'ring':'BCD7 ring A', 'distanceToRing': 101999, 'tuple': 2, 'by': None},
@@ -666,6 +670,8 @@ class EDRResourceFinder(object):
                 #{'system':'Coeus', 'ring':'A2 ring B', 'distanceToRing': 1590, 'tuple': 2, 'by': None},
             ],
             'bromellite': [
+                { 'system': 'Col 285 Sector VH-K B9-2', 'ring': '5', 'distanceToRing': 1286, 'tuple': 3, 'by': 'DemiserofD'},
+                # 
                 #{ 'system': 'Irusan', 'ring': '3 ring B', 'distanceToRing': 1715, 'tuple': 3, 'by': 'SpanningTheBlack & BeornK'},
                 #{ 'system': 'Ngorowai', 'ring': ' A 15 ring A', 'distanceToRing': 2315, 'tuple': 2, 'by': 'Merganser'},
                 #{ 'system': 'Lyncis Sector AV-Y c8', 'ring': '3 ring A', 'distanceToRing': 21713, 'tuple': 2, 'by': 'AnubisNor'},
@@ -683,6 +689,9 @@ class EDRResourceFinder(object):
                 { 'system': 'Enga', 'ring': '2', 'distanceToRing': 563, 'tuple': 1, 'by': None},
                 { 'system': 'Col 285 Sector RC-C b13-2', 'ring': 'A 5', 'distanceToRing': 1697, 'tuple': 2, 'by': None},
                 { 'system': 'Col 285 Sector KQ-F b11-2', 'ring': '5', 'distanceToRing': 985, 'tuple': 2, 'by': None},
+                { 'system': 'Col 285 Sector KQ-F b11-2', 'ring': '5', 'distanceToRing': 985, 'tuple': 2, 'by': None},
+                { 'system': 'Col 285 Sector VS-H b11-0', 'ring': '2', 'distanceToRing': 1715, 'tuple': 3, 'by': None},
+                { 'system': 'HIP 13476', 'ring': '13 A', 'distanceToRing': 4721, 'tuple': 2, 'by': None},
             ]
         }
 
