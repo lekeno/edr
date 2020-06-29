@@ -1272,13 +1272,37 @@ class EDRClient(object):
             self.status = _(u"Skipped announcement of FC jump schedule (enable from EDMC settings, EDR tab).")
             return True
 
-        jump_info["owner"] = self.player.name
+        # TODO add to the rules 
+        # jump_info["owner"] = self.player.name
         if self.server.fc_jump_scheduled(jump_info):
             if self.fc_jump_psa == _(u"Public"):
                 self.status = _(u"Reported FC jump schedule for public announcement.")
             else:
                 self.status = _(u"Reported FC jump schedule for private announcement (registered FC only, inquiry @ edrecon.com/discord).")
             return True
+        return False
+    
+    def fc_jump_cancelled(self, event):
+        self.player.fleet_carrier.jump_cancelled(event)
+        
+        if self.is_anonymous():
+            EDRLOG.log(u"Skipping fleet carrier jump report since the user is anonymous.", "INFO")
+            return True
+
+        if self.fc_jump_psa == _(u"Never"):
+            EDRLOG.log(u"FC Jump reporting is off.", "INFO")
+            self.status = _(u"Skipped announcement of FC jump schedule (enable from EDMC settings, EDR tab).")
+            return True
+
+        # TODO add to the rules 
+        # jump_info["owner"] = self.player.name
+        # TODO delete jump info
+        # if self.server.fc_jump_scheduled(jump_info):
+        #    if self.fc_jump_psa == _(u"Public"):
+        #        self.status = _(u"Reported FC jump schedule for public announcement.")
+        #    else:
+        #        self.status = _(u"Reported FC jump schedule for private announcement (registered FC only, inquiry @ edrecon.com/discord).")
+        #    return True
         return False
 
     def __throttling_duration(self):

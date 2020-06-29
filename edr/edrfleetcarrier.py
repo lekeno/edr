@@ -15,6 +15,7 @@ class EDRFleetCarrier(object):
         self.decommission_time = None
 
     def __reset(self):
+        print("FC reset")
         self.id = None
         self.callsign = None
         self.name = None
@@ -31,16 +32,20 @@ class EDRFleetCarrier(object):
         self._position["system"] = buy_event.get("Location", None)
 
     def update_from_stats(self, fc_stats_event):
+        print("update from stats")
         if self.id and self.id != fc_stats_event.get("CarrierID", None):
+            print("FC reset bought")
             self.__reset()
         self.id = fc_stats_event.get("CarrierID", None)
         self.callsign = fc_stats_event.get("Callsign", None)
         self.name = fc_stats_event.get("Name", None)
         self.access = fc_stats_event.get("DockingAccess", "none")
         self.allow_notorious = fc_stats_event.get("AllowNotorious", False)
+        print("updated from stats")
 
     def jump_requested(self, jump_request_event):
-        if self.id and self.id != jump_request_event.get("CarrierId", None):
+        if self.id and self.id != jump_request_event.get("CarrierID", None):
+            print("FC reset jump request")
             self.__reset()
         self.id = jump_request_event.get("CarrierID", None)
         self.__update_position()
@@ -53,6 +58,13 @@ class EDRFleetCarrier(object):
             "destination": jump_request_event.get("SystemName", None)
         }
 
+    def jump_cancelled(self, jump_cancel_event):
+        if self.id and self.id != jump_cancel_event.get("CarrierID", None):
+            print("FC reset jump cancelled")
+            self.__reset()
+        self.id = jump_cancel_event.get("CarrierID", None)
+        self.__update_position()
+
     @property
     def position(self):
         self.__update_position()
@@ -61,6 +73,7 @@ class EDRFleetCarrier(object):
     def __update_position(self):
         now = edtime.EDTime.py_epoch_now()
         if self.decommission_time and now > self.decommission_time:
+            print("FC reset decommission")
             self.__reset()
             return
 
@@ -74,7 +87,7 @@ class EDRFleetCarrier(object):
         self.departure = {"time": None, "destination": None}
 
     def update_docking_permissions(self, event):
-        if self.id and self.id != event.get("CarrierId", None):
+        if self.id and self.id != event.get("CarrierID", None):
             self.__reset()
         self.id = event.get("CarrierID", None)
         self.access = event.get("DockingAccess", "none")
@@ -87,12 +100,12 @@ class EDRFleetCarrier(object):
         self.departure = {"time": None, "destination": None}
 
     def cancel_decommission(self, event):
-        if self.id and self.id != event.get("CarrierId", None):
+        if self.id and self.id != event.get("CarrierID", None):
             self.__reset()
         self.id = event.get("CarrierID", None)
 
     def decommission_requested(self, event):
-        if self.id and self.id != event.get("CarrierId", None):
+        if self.id and self.id != event.get("CarrierID", None):
             self.__reset()
         self.id = event.get("CarrierID", None)
         self.decommission_time = event.get("ScrapTime", None)
