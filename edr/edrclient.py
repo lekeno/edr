@@ -408,7 +408,7 @@ class EDRClient(object):
         popupMenu["menu"].configure(background="white", foreground="black")
 
         notebook.Label(frame, text=_("Announce my Fleet Carrier's jump schedule")).grid(padx=10, row = 17, sticky=tk.W)
-        choices = { _(u'Never'),_(u'Public'),_(u'Private')} # TODO temporary
+        choices = { _(u'Never'),_(u'Public'),_(u'Private')}
         popupMenu = notebook.OptionMenu(frame, self._fc_jump_psa, self.fc_jump_psa, *choices)
         popupMenu.grid(padx=10, row=17, column=1, sticky=tk.EW)
         popupMenu["menu"].configure(background="white", foreground="black")
@@ -1272,8 +1272,7 @@ class EDRClient(object):
             self.status = _(u"Skipped announcement of FC jump schedule (enable from EDMC settings, EDR tab).")
             return True
 
-        # TODO add to the rules 
-        # jump_info["owner"] = self.player.name
+        jump_info["owner"] = self.player.name
         if self.server.fc_jump_scheduled(jump_info):
             if self.fc_jump_psa == _(u"Public"):
                 self.status = _(u"Reported FC jump schedule for public announcement.")
@@ -1294,15 +1293,9 @@ class EDRClient(object):
             self.status = _(u"Skipped announcement of FC jump schedule (enable from EDMC settings, EDR tab).")
             return True
 
-        # TODO add to the rules 
-        # jump_info["owner"] = self.player.name
-        # TODO delete jump info
-        # if self.server.fc_jump_scheduled(jump_info):
-        #    if self.fc_jump_psa == _(u"Public"):
-        #        self.status = _(u"Reported FC jump schedule for public announcement.")
-        #    else:
-        #        self.status = _(u"Reported FC jump schedule for private announcement (registered FC only, inquiry @ edrecon.com/discord).")
-        #    return True
+        if self.server.fc_jump_cancelled():
+            self.status = _(u"Cancelled FC jump schedule.")
+            return True
         return False
 
     def __throttling_duration(self):

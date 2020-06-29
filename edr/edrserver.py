@@ -404,6 +404,14 @@ class EDRServer(object):
         endpoint = "{server}/v1/fcjumps/{uid}/".format(server=self.EDR_SERVER, uid=self.uid())
         return self.__put(endpoint, "EDR", flight_plan)
 
+    def fc_jump_cancelled(self):
+        if self.fc_jump_psa is None:
+            return False
+        params = { "auth" : self.auth_token()}
+        EDRLOG.log(u"Cancelling Fleet Carrier jump", "INFO")
+        endpoint = "{server}/v1/fcjumps/{uid}/.json".format(server=self.EDR_SERVER, uid=self.uid())
+        return self.__delete(endpoint, "EDR", params=params)
+
     def crew_report(self, crew_id, report):
         EDRLOG.log(u"Multicrew session report: {}".format(report), "INFO")
         endpoint = "/v1/crew_reports/{}/".format(crew_id)
