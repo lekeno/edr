@@ -402,7 +402,7 @@ class EDRServer(object):
         flight_plan["psa"] = self.fc_jump_psa
         EDRLOG.log(u"Fleet Carrier jump with json:{json}".format(json=flight_plan), "INFO")
         endpoint = "/v1/fcjumps/{uid}/".format(uid=self.uid())
-        return self.__put_json(endpoint, flight_plan, "EDR")
+        return self.__put(endpoint, flight_plan, "EDR")
 
     def crew_report(self, crew_id, report):
         EDRLOG.log(u"Multicrew session report: {}".format(report), "INFO")

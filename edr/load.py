@@ -189,6 +189,8 @@ def handle_carrier_events(ed_player, entry):
         ed_player.fleet_carrier.update_from_stats(entry)
     elif entry["event"] == "CarrierJumpRequest":
         EDR_CLIENT.fc_jump_requested(entry)
+    elif entry["event"] == "CarrierJumpCancelled":
+        EDR_CLIENT.fc_jump_requested(entry) # TODO handle cancellation
     elif entry["event"] == "CarrierDecomission":
         ed_player.fleet_carrier.decommission_requested(entry)
     elif entry["event"] == "CarrierCancelDecommission":
@@ -508,7 +510,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["MiningRefined", "ProspectedAsteroid"]:
         handle_mining_events(ed_player, entry)
 
-    if entry["event"] in ["CarrierJump", "CarrierBuy", "CarrierStats", "CarrierJumpRequest", "CarrierDecommission", "CarrierCancelDecommission", "CarrierDockingPermission"]:
+    if entry["event"] in ["CarrierJump", "CarrierBuy", "CarrierStats", "CarrierJumpRequest", "CarrierDecommission", "CarrierCancelDecommission", "CarrierDockingPermission", "CarrierJumpCancelled"]:
         handle_carrier_events(ed_player, entry)
 
     status_outcome = {"updated": False, "reason": "Unspecified"}
