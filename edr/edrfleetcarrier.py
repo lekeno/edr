@@ -44,16 +44,18 @@ class EDRFleetCarrier(object):
             self.__reset()
         self.id = jump_request_event.get("CarrierID", None)
         self.__update_position()
-        request_time = edtime.EDTime.from_journal_timestamp(jump_request_event["timestamp"])
-        jump_time = request_time.as_epoch_py() + 60*15
+        request_time = edtime.EDTime()
+        request_time.from_journal_timestamp(jump_request_event["timestamp"])
+        jump_time = request_time.as_py_epoch() + 60*15
        
         self.departure = {
             "time": jump_time,
-            "destination": jump_request_event.get("SystemName", None)}
+            "destination": jump_request_event.get("SystemName", None)
+        }
 
     @property
     def position(self):
-        self.__update_position(self)
+        self.__update_position()
         return self._position["system"]
 
     def __update_position(self):
@@ -62,7 +64,7 @@ class EDRFleetCarrier(object):
             self.__reset()
             return
 
-        if self.departure["destination"] is None:
+        if self.is_parked():
             return
         
         if now < self.departure["time"]:
@@ -95,16 +97,24 @@ class EDRFleetCarrier(object):
         self.id = event.get("CarrierID", None)
         self.decommission_time = event.get("ScrapTime", None)
 
+    def is_parked(self):
+        return self.departure["destination"] is None or self.departure["time"] is None
+
     def json_jump_schedule(self):
+        self.__update_position()
+        if self.id is None:
+            return None
+
+        if self.is_parked():
+            return None
+
         return {
             "id": self.id,
             "callsign": self.callsign,
             "name": self.name,
             "from": self.position,
             "to": self.departure["destination"],
-            "at": self.departure["time"]
+            "at": self.departure["time"],
             "access": self.access,
             "allow_notorious": self.allow_notorious
         }
-
-    # TODO persistence

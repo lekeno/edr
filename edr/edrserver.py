@@ -34,6 +34,7 @@ class EDRServer(object):
         self.version = edrconfig.EDRConfig().edr_version()
         self._throttle_until_timestamp = None
         self.anonymous_reports = None
+        self.fc_jump_psa = None
         self.backoff = {"EDR": backoff.Backoff(u"EDR"), "Inara": backoff.Backoff(u"Inara") }
         self.INARA_API_KEY = config.inara_api_key()
 
@@ -395,6 +396,14 @@ class EDRServer(object):
         endpoint = "/v1/central/{service}/{system_id}/".format(service=service, system_id=system_id)
         return self.__post_json(endpoint, info, "EDR")
 
+    def fc_jump_scheduled(self, flight_plan):
+        if self.fc_jump_psa is None:
+            return False
+        flight_plan["uid"] = self.uid()
+        flight_plan["psa"] = self.fc_jump_psa
+        EDRLOG.log(u"Fleet Carrier jump with json:{json}".format(json=flight_plan), "INFO")
+        endpoint = "/v1/fcjumps/{uid}/".format(uid=self.uid())
+        return self.__post_json(endpoint, flight_plan, "EDR")
 
     def crew_report(self, crew_id, report):
         EDRLOG.log(u"Multicrew session report: {}".format(report), "INFO")

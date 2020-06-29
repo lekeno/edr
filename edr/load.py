@@ -62,7 +62,6 @@ def plugin_app(parent):
 def plugin_prefs(parent, cmdr, is_beta):
     return EDR_CLIENT.prefs_ui(parent)
 
-
 def prefs_changed(cmdr, is_beta):
     EDR_CLIENT.prefs_changed()
 
@@ -189,7 +188,7 @@ def handle_carrier_events(ed_player, entry):
     elif entry["event"] == "CarrierSTats":
         ed_player.fleet_carrier.update_from_stats(entry)
     elif entry["event"] == "CarrierJumpRequest":
-        ed_player.fleet_carrier.jump_requested(entry)
+        EDR_CLIENT.fc_jump_requested(entry)
     elif entry["event"] == "CarrierDecomission":
         ed_player.fleet_carrier.decommission_requested(entry)
     elif entry["event"] == "CarrierCancelDecommission":
