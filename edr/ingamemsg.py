@@ -26,7 +26,6 @@ except ImportError:
 
 import lrucache
 
-# TODO change color of LTD efficiency stats to match the graph tone?
 class InGameMsg(object):   
     MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice", "help", "navigation", "docking", "mining"]
     LEGAL_KINDS = ["intel", "warning"] 
