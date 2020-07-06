@@ -7,9 +7,14 @@ import time
 import random
 import math
 
-#import tkinter as tk
-import Tkinter as tk
-import ttk
+try:
+    # for Python2
+    import Tkinter as tk
+    import ttk
+except ImportError:
+    # for Python3
+    import tkinter as tk
+    from tkinter import ttk
 import ttkHyperlinkLabel
 import myNotebook as notebook
 from config import config
@@ -80,7 +85,7 @@ class EDRClient(object):
         visual_alt = 1 if config.get("EDRVisualAltFeedback") == "True" else 0
         self._visual_alt_feedback = tk.IntVar(value=visual_alt)
         
-        self.ui = EDRTogglingPanel(self._status, self._visual_alt_feedback)
+        self.ui = None # EDRTogglingPanel(self._status, self._visual_alt_feedback)
 
         audio = 1 if config.get("EDRAudioFeedback") == "True" else 0
         self._audio_feedback = tk.IntVar(value=audio)
@@ -93,6 +98,13 @@ class EDRClient(object):
             anonymous_reports = config.get("EDRRedactMyInfo")
             self.server.anonymous_reports = anonymous_reports == _(u"Always")
         self._anonymous_reports = tk.StringVar(value=anonymous_reports)
+
+        fc_jump_psa = _(u"Never")
+        self.server.fc_jump_psa = None
+        if config.get("EDRFCJumpPSA") in [_(u"Public"), _(U"Private")]:
+            fc_jump_psa = config.get("EDRFCJumpPSA")
+            self.server.fc_jump_psa = fc_jump_psa == _(u"Public")
+        self._fc_jump_psa = tk.StringVar(value=fc_jump_psa)
 
         
         self.realtime_params = {
@@ -118,7 +130,6 @@ class EDRClient(object):
         self.tips = RandomTips()
         self.help_content = HelpContent()
         self._throttle_until_timestamp = None
-        self.ui.notify(_(u"Troubleshooting"), [_(u"If the overlay doesn't show up, try one of the following:"), _(u" - In Elite: go to graphics options, and select Borderless or Windowed."), _(" - With Elite and EDR launched, check that EDMCOverlay.exe is running in the task manager"), _(u"If the overlay hurts your FPS, try turning VSYNC off in Elite's graphics options."), u"----", _("Join https://edrecon.com/discord for further technical support.")])
 
     def loud_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "loud")
@@ -140,6 +151,7 @@ class EDRClient(object):
         c_audio_feedback = config.get("EDRAudioFeedback")
         c_audio_volume = config.get("EDRAudioFeedbackVolume")
         c_redact_my_info = config.get("EDRRedactMyInfo")
+        c_fc_jump_announcements = config.get("EDRFCJumpPSA")
 
         if c_email is None:
             self._email.set("")
@@ -176,6 +188,11 @@ class EDRClient(object):
         elif c_redact_my_info in [_(u"Always"), _(u"Never")]:
             self.anonymous_reports = c_redact_my_info
 
+        if c_fc_jump_announcements is None:
+            self.fc_jump_psa = _(u"Never")
+        elif c_fc_jump_announcements in [_(u"Public"), _(u"Private")]:
+            self.fc_jump_psa = c_fc_jump_announcements
+
 
     def check_version(self):
         version_range = self.server.server_version()
@@ -200,8 +217,8 @@ class EDRClient(object):
             self.__status_update_pending()
 
     def is_obsolete(self, advertised_version):
-        client_parts = map(int, self.edr_version.split('.'))
-        advertised_parts = map(int, advertised_version.split('.'))
+        client_parts = list(map(int, self.edr_version.split('.')))
+        advertised_parts = list(map(int, advertised_version.split('.')))
         return client_parts < advertised_parts
 
     @property
@@ -231,12 +248,14 @@ class EDRClient(object):
     @status.setter
     def status(self, new_status):
         self._status.set(new_status)
-        self.ui.nolink()
+        if self.ui:
+            self.ui.nolink()
 
     def linkable_status(self, link, new_status = None):
         #TODO verify if this needs to be truncated
         self._status.set(new_status if new_status else link)
-        self.ui.link(link)
+        if self.ui:
+            self.ui.link(link)
 
     @property
     def visual_feedback(self):
@@ -279,6 +298,18 @@ class EDRClient(object):
             self.server.anonymous_reports = None
         elif new_value in [_(u"Always"), _(u"Never")]:
             self.server.anonymous_reports = (new_value == _(u"Always")) 
+
+    @property
+    def fc_jump_psa(self):
+        return self._fc_jump_psa.get()
+
+    @fc_jump_psa.setter
+    def fc_jump_psa(self, new_value):
+        self._fc_jump_psa.set(new_value)
+        if new_value is None or new_value == _(u"Never"):
+            self.server.fc_jump_psa = None
+        elif new_value in [_(u"Public"), _(u"Private")]:
+            self.server.fc_jump_psa = (new_value == _(u"Public")) 
 
 
     def player_name(self, name):
@@ -348,6 +379,9 @@ class EDRClient(object):
         self.server.logout()
 
     def app_ui(self, parent):
+        if self.ui is None:
+            self.ui = EDRTogglingPanel(self._status, self._visual_alt_feedback, parent=parent)
+            self.ui.notify(_(u"Troubleshooting"), [_(u"If the overlay doesn't show up, try one of the following:"), _(u" - In Elite: go to graphics options, and select Borderless or Windowed."), _(" - With Elite and EDR launched, check that EDMCOverlay.exe is running in the task manager"), _(u"If the overlay hurts your FPS, try turning VSYNC off in Elite's graphics options."), u"----", _("Join https://edrecon.com/discord for further technical support.")])
         self.check_version()
         return self.ui
 
@@ -374,12 +408,18 @@ class EDRClient(object):
         notebook.Entry(frame, textvariable=self._password,
                        show=u'*').grid(padx=10, row=12, column=1, sticky=tk.EW)
 
-        notebook.Label(frame, text=_(u'Sitrep Broadcasts')).grid(padx=10, row=14, sticky=tk.W)
+        notebook.Label(frame, text=_(u'Broadcasts')).grid(padx=10, row=14, sticky=tk.W)
         ttk.Separator(frame, orient=tk.HORIZONTAL).grid(columnspan=2, padx=10, pady=2, sticky=tk.EW)
-        notebook.Label(frame, text=_("Redact my info")).grid(padx=10, row = 16, sticky=tk.W)
+        notebook.Label(frame, text=_("Redact my info in Sitreps")).grid(padx=10, row = 16, sticky=tk.W)
         choices = { _(u'Auto'),_(u'Always'),_(u'Never')}
         popupMenu = notebook.OptionMenu(frame, self._anonymous_reports, self.anonymous_reports, *choices)
         popupMenu.grid(padx=10, row=16, column=1, sticky=tk.EW)
+        popupMenu["menu"].configure(background="white", foreground="black")
+
+        notebook.Label(frame, text=_(u"Announce my Fleet Carrier's jump schedule (α)")).grid(padx=10, row = 17, sticky=tk.W)
+        choices = { _(u'Never'),_(u'Public'),_(u'Private')}
+        popupMenu = notebook.OptionMenu(frame, self._fc_jump_psa, self.fc_jump_psa, *choices)
+        popupMenu.grid(padx=10, row=17, column=1, sticky=tk.EW)
         popupMenu["menu"].configure(background="white", foreground="black")
 
         if self.server.is_authenticated():
@@ -391,14 +431,14 @@ class EDRClient(object):
             self.status = _(u"not authenticated.")
 
         # Translators: this is shown in the preferences panel as a heading for feedback options (e.g. overlay, audio cues)
-        notebook.Label(frame, text=_(u"EDR Feedback:")).grid(padx=10, row=17, sticky=tk.W)
+        notebook.Label(frame, text=_(u"EDR Feedback:")).grid(padx=10, row=18, sticky=tk.W)
         ttk.Separator(frame, orient=tk.HORIZONTAL).grid(columnspan=2, padx=10, pady=2, sticky=tk.EW)
         
         notebook.Checkbutton(frame, text=_(u"Overlay"),
-                             variable=self._visual_feedback).grid(padx=10, row=19,
+                             variable=self._visual_feedback).grid(padx=10, row=20,
                                                                   sticky=tk.W)
         notebook.Checkbutton(frame, text=_(u"Sound"),
-                             variable=self._audio_feedback).grid(padx=10, row=20, sticky=tk.W)
+                             variable=self._audio_feedback).grid(padx=10, row=21, sticky=tk.W)
 
 
         return frame
@@ -426,6 +466,7 @@ class EDRClient(object):
         config.set("EDRVisualFeedback", "True" if self.visual_feedback else "False")
         config.set("EDRAudioFeedback", "True" if self.audio_feedback else "False")
         config.set("EDRRedactMyInfo", self.anonymous_reports)
+        config.set("EDRFCJumpPSA", self.fc_jump_psa)
         EDRLOG.log(u"Audio cues: {}, {}".format(config.get("EDRAudioFeedback"),
                                                 config.get("EDRAudioFeedbackVolume")), "DEBUG")
         EDRLOG.log(u"Anonymous reports: {}".format(config.get("EDRRedactMyInfo")), "DEBUG")
@@ -1217,6 +1258,49 @@ class EDRClient(object):
         
         if self.server.crew_report(crew_id, report):
             self.status = _(u"multicrew session reported (cmdr {name}).").format(name=report["crew"])
+            return True
+        return False
+
+    def fc_jump_requested(self, event):
+        self.player.fleet_carrier.jump_requested(event)
+        jump_info = self.player.fleet_carrier.json_jump_schedule()
+        if not jump_info:
+            return
+
+        if self.is_anonymous():
+            EDRLOG.log(u"Skipping fleet carrier jump report since the user is anonymous.", "INFO")
+            return True
+
+        if self.fc_jump_psa == _(u"Never"):
+            EDRLOG.log(u"FC Jump reporting is off.", "INFO")
+            self.status = _(u"Skipped announcement of FC jump schedule (enable from EDMC settings, EDR tab).")
+            return True
+
+        jump_info["owner"] = self.player.name
+        if self.server.fc_jump_scheduled(jump_info):
+            if self.fc_jump_psa == _(u"Public"):
+                self.status = _(u"Reported FC jump schedule for public announcement.")
+            else:
+                self.status = _(u"Reported FC jump schedule for private announcement (registered FC only, inquiry @ edrecon.com/discord).")
+            return True
+        return False
+    
+    def fc_jump_cancelled(self, event):
+        self.player.fleet_carrier.jump_cancelled(event)
+        
+        if self.is_anonymous():
+            EDRLOG.log(u"Skipping fleet carrier jump report since the user is anonymous.", "INFO")
+            return True
+
+        if self.fc_jump_psa == _(u"Never"):
+            EDRLOG.log(u"FC Jump reporting is off.", "INFO")
+            self.status = _(u"Skipped announcement of FC jump schedule (enable from EDMC settings, EDR tab).")
+            return True
+
+        status = self.player.fleet_carrier.json_status()
+        status["owner"] = self.player.name
+        if self.server.fc_jump_cancelled(status):
+            self.status = _(u"Cancelled FC jump schedule.")
             return True
         return False
 

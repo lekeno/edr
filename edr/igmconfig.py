@@ -1,14 +1,20 @@
 from __future__ import absolute_import
 
 import os
-from ConfigParser import ConfigParser
+try:
+    # for Python2
+    import ConfigParser as cp
+except ImportError:
+    # for Python3
+    import configparser as cp
+
 from edrlog import EDRLog
 import utils2to3
 
 class IGMConfig(object):
     def __init__(self, config_file='config/igm_config.v5.ini', user_config_file=['config/user_igm_config.v5.ini', 'config/user_igm_config.v4.ini']):
-        self.config = ConfigParser()
-        self.fallback_config = ConfigParser()
+        self.config = cp.ConfigParser()
+        self.fallback_config = cp.ConfigParser()
         self.fallback_config.read(utils2to3.abspathmaker(__file__, config_file))
         user_cfg_path = utils2to3.abspathmaker(__file__, user_config_file[0])
         if os.path.exists(user_cfg_path):

@@ -1,7 +1,14 @@
 from __future__ import absolute_import
 
-import Tkinter as tk
-import ttk
+try:
+    # for Python2
+    import Tkinter as tk
+    import ttk
+except ImportError:
+    # for Python3
+    import tkinter as tk
+    from tkinter import ttk
+
 from igmconfig import IGMConfig
 import ttkHyperlinkLabel
 
@@ -15,37 +22,50 @@ class ToggledFrame(tk.Frame):
         self.tk_setPalette(background=bg, foreground=fg, activeBackground=conf.rgb("status", "active_bg"), activeForeground=conf.rgb("status", "active_fg"))
 
         self.show = show
-        self.title_frame = tk.Frame(self)
-        self.title_frame.pack(fill="x", expand=1)
-
-        ttk.Separator(self.title_frame, orient=tk.HORIZONTAL).pack(fill="x", expand=1)
-        tk.Label(self.title_frame, text=label, foreground=conf.rgb("status", "label")).pack(side="left", fill="x", expand=0, anchor="w")
-        self.status_ui = ttkHyperlinkLabel.HyperlinkLabel(self.title_frame, textvariable=status, foreground=fg, background=bg)
-        self.status_ui.pack(side="left", fill="x", expand=0, anchor="w")
         
-        self.toggle_button = tk.Checkbutton(self.title_frame, width=2, text='+', command=self.toggle,
-                                            variable=self.show, foreground=conf.rgb("status", "check"))
-        self.toggle_button.pack(side="right", expand=1, anchor="e")
-
+        self.grid(sticky="nsew")
+        self.status_frame = tk.Frame(self)
+        self.status_frame.grid(row=0, column=0, sticky="ew")
+        self.grid_columnconfigure(0, weight=1)
+        
         self.sub_frame = tk.Frame(self, relief="flat", borderwidth=0)
+        self.sub_frame.grid(row=1, column=0, sticky="nsew")
+        
+        separator = ttk.Separator(self.status_frame, orient=tk.HORIZONTAL)
+        separator.grid(row=0, columnspan=3, sticky="ew")
+        self.status_frame.grid_rowconfigure(0, weight=1)
+
+        label = tk.Label(self.status_frame, text=label, foreground=conf.rgb("status", "label"))
+        label.grid(sticky="w", row=1, column=0)
+        self.status_ui = ttkHyperlinkLabel.HyperlinkLabel(self.status_frame, textvariable=status, foreground=fg, background=bg)
+        self.status_ui.grid(sticky="w", row=1, column=1)
+        
+        self.toggle_button = tk.Checkbutton(self.status_frame, width=2, text='+', command=self.toggle,
+                                            variable=self.show, foreground=conf.rgb("status", "check"))
+        self.toggle_button.grid(sticky="e", row=1, column=2)
+        self.status_frame.grid_columnconfigure(2, weight=1)
+
 
     def toggle(self):
         if bool(self.show.get()):
-            self.sub_frame.pack(fill="x", expand=1)
+            self.sub_frame.grid(row=1, column=0, sticky="nsew")
+            self.sub_frame.grid_columnconfigure(0, weight=1)
+            self.grid_rowconfigure(1,weight=1)
             self.toggle_button.configure(text='-')
         else:
-            self.sub_frame.forget()
+            self.sub_frame.grid_forget()
+            self.grid_rowconfigure(0,weight=1)
             self.toggle_button.configure(text='+')
 
 class EDRTogglingPanel(ToggledFrame):
     def __init__(self, status, show, parent=0):
         conf = IGMConfig(config_file='config/igm_alt_config.v3.ini', user_config_file=['config/user_igm_alt_config.v3.ini', 'config/user_igm_alt_config.v2.ini'])
         ToggledFrame.__init__(self, parent, label="EDR:", status=status, show=show)
-        self.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
+        self.grid(sticky="nswe")
         self.output = tk.Text(self.sub_frame, width=conf.len("general", "body"), height=conf.body_rows("general"),
                                                 background=conf.rgb("general", "fill"), foreground=conf.rgb("general", "body"),
                                                 wrap=tk.WORD, padx=4, borderwidth=0)
-        self.output.pack(fill="x", expand=1)
+        self.output.grid(row=0, column=0, sticky="nswe")
 
         self.__configure_tags(conf)
         self.toggle()

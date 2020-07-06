@@ -33,10 +33,13 @@ class EDRSystems(object):
     EDSM_STATIONS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_stations.v1.p')
     EDSM_SYSTEMS_WITHIN_RADIUS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_systems_radius.v2.p')
     EDSM_FACTIONS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_factions.v1.p')
+    EDSM_TRAFFIC_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_traffic.v1.p')
+    EDSM_DEATHS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_deaths.v1.p')
     EDR_NOTAMS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'notams.v2.p')
     EDR_SITREPS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'sitreps.v3.p')
     EDR_TRAFFIC_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'traffic.v2.p')
     EDR_CRIMES_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'crimes.v2.p')
+    
 
     def __init__(self, server):
         self.reasonable_sc_distance = 1500
@@ -120,6 +123,20 @@ class EDRSystems(object):
             self.edsm_systems_within_radius_cache = lrucache.LRUCache(edr_config.edsm_within_radius_max_size(),
                                                   edr_config.edsm_systems_max_age())
 
+        try:
+            with open(self.EDSM_TRAFFIC_CACHE, 'rb') as handle:
+                self.edsm_traffic_cache = pickle.load(handle)
+        except:
+            self.edsm_traffic_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.edsm_traffic_max_age())
+
+        try:
+            with open(self.EDSM_DEATHS_CACHE, 'rb') as handle:
+                self.edsm_deaths_cache = pickle.load(handle)
+        except:
+            self.edsm_deaths_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.edsm_deaths_max_age())
+
          
 
         self.reports_check_interval = edr_config.reports_check_interval()
@@ -165,24 +182,6 @@ class EDRSystems(object):
         return self.edsm_stations_cache.is_stale(star_system.lower())
         
     def station(self, star_system, station_name, station_type):
-        if station_type == "FleetCarrier":
-            return {
-                "id":None,
-                "marketId":None,
-                "type":"fleet carrier",
-                "name":station_name,
-                "distanceToArrival":None,
-                "allegiance":"Independent",
-                "government":None,
-                "economy":None,
-                "secondEconomy":None,
-                "haveMarket":None,
-                "haveShipyard":None,
-                "haveOutfitting":None,
-                "otherServices":[],
-                "updateTime":{"information":"2020-04-12 12:25:17","market":"2020-04-12 12:40:14","shipyard":"2020-04-12 12:40:11","outfitting":"2020-04-12 12:40:11"}
-            }
-
         stations = self.stations_in_system(star_system)
         for station in stations:
             if station["name"] == station_name:
@@ -242,6 +241,12 @@ class EDRSystems(object):
         with open(self.EDSM_FACTIONS_CACHE, 'wb') as handle:
             pickle.dump(self.edsm_factions_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+        with open(self.EDSM_TRAFFIC_CACHE, 'wb') as handle:
+            pickle.dump(self.edsm_traffic_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        with open(self.EDSM_DEATHS_CACHE, 'wb') as handle:
+            pickle.dump(self.edsm_deaths_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
     def distance(self, source_system, destination_system):
         if source_system == destination_system:
             return 0
@@ -251,6 +256,14 @@ class EDRSystems(object):
         if source and destination:
             source_coords = source[0]["coords"]
             dest_coords = destination[0]["coords"] 
+            return sqrt((dest_coords["x"] - source_coords["x"])**2 + (dest_coords["y"] - source_coords["y"])**2 + (dest_coords["z"] - source_coords["z"])**2)
+        raise ValueError('Unknown system')
+
+    def distance_with_coords(self, source_system, dest_coords):
+        source = self.system(source_system)
+        
+        if source:
+            source_coords = source[0]["coords"]
             return sqrt((dest_coords["x"] - source_coords["x"])**2 + (dest_coords["y"] - source_coords["y"])**2 + (dest_coords["z"] - source_coords["z"])**2)
         raise ValueError('Unknown system')
 
@@ -572,6 +585,59 @@ class EDRSystems(object):
             else:
                 recent_traffic = self.traffic_cache.get(sid)
         return recent_traffic
+
+    def summarize_deaths_traffic(self, star_system):
+        if not star_system:
+            return None
+
+        traffic = self.edsm_traffic_cache.get(star_system.lower())
+        if traffic is None:
+            traffic = self.edsm_server.traffic(star_system)
+        self.edsm_traffic_cache.set(star_system.lower(), traffic)
+
+        deaths = self.edsm_deaths_cache.get(star_system.lower())
+        if deaths is None:
+            deaths = self.edsm_server.deaths(star_system)
+        self.edsm_deaths_cache.set(star_system.lower(), traffic)
+
+        if not deaths and not traffic:
+            return None
+        
+        zero = {"total": 0, "week": 0, "day": 0}
+        deaths = {s: self.__pretty_print_number(v) for s, v in deaths.get("deaths", zero).items()}
+        traffic = {s: self.__pretty_print_number(v) for s, v in traffic.get("traffic", {}).items()}
+        
+        if traffic == {}:
+            return None
+
+        return "Deaths / Traffic: [Day {}/{}]   [Week {}/{}]  [All {}/{}]".format(deaths.get("day", 0), traffic.get("day"), deaths.get("week", 0), traffic.get("week"), deaths.get("total"), traffic.get("total"))
+
+    @staticmethod
+    def __pretty_print_number(number):
+        #TODO move out and dedup bounty's code.
+        readable = u""
+        if number >= 10000000000:
+            # Translators: this is a short representation for a bounty >= 10 000 000 000 credits (b stands for billion)  
+            readable = _(u"{} b").format(number // 1000000000)
+        elif number >= 1000000000:
+            # Translators: this is a short representation for a bounty >= 1 000 000 000 credits (b stands for billion)
+            readable = _(u"{:.1f} b").format(number / 1000000000.0)
+        elif number >= 10000000:
+            # Translators: this is a short representation for a bounty >= 10 000 000 credits (m stands for million)
+            readable = _(u"{} m").format(number // 1000000)
+        elif number > 1000000:
+            # Translators: this is a short representation for a bounty >= 1 000 000 credits (m stands for million)
+            readable = _(u"{:.1f} m").format(number / 1000000.0)
+        elif number >= 10000:
+            # Translators: this is a short representation for a bounty >= 10 000 credits (k stands for kilo, i.e. thousand)
+            readable = _(u"{} k").format(number // 1000)
+        elif number >= 1000:
+            # Translators: this is a short representation for a bounty >= 1000 credits (k stands for kilo, i.e. thousand)
+            readable = _(u"{:.1f} k").format(number / 1000.0)
+        else:
+            # Translators: this is a short representation for a bounty < 1000 credits (i.e. shows the whole bounty, unabbreviated)
+            readable = _(u"{}").format(number)
+        return readable 
 
     def summarize_recent_activity(self, star_system, powerplay=None):
         #TODO refactor/simplify this mess ;)
