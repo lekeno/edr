@@ -614,7 +614,7 @@ class EDRSystems(object):
 
     @staticmethod
     def __pretty_print_number(number):
-        #TODO move out and deup bounty's code.
+        #TODO move out and dedup bounty's code.
         readable = u""
         if number >= 10000000000:
             # Translators: this is a short representation for a bounty >= 10 000 000 000 credits (b stands for billion)  

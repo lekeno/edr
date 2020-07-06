@@ -62,7 +62,6 @@ def plugin_app(parent):
 def plugin_prefs(parent, cmdr, is_beta):
     return EDR_CLIENT.prefs_ui(parent)
 
-
 def prefs_changed(cmdr, is_beta):
     EDR_CLIENT.prefs_changed()
 
@@ -182,6 +181,24 @@ def handle_multicrew_events(ed_player, entry):
         ed_player.disband_crew()
         EDR_CLIENT.status = _(u"crew disbanded.")
         EDRLOG.log(u"Crew disbanded.", "INFO")
+
+def handle_carrier_events(ed_player, entry):
+    if entry["event"] == "CarrierBuy":
+        ed_player.fleet_carrier.bought(entry)
+    elif entry["event"] == "CarrierStats":
+        ed_player.fleet_carrier.update_from_stats(entry)
+    elif entry["event"] == "CarrierJumpRequest":
+        EDR_CLIENT.fc_jump_requested(entry)
+    elif entry["event"] == "CarrierJumpCancelled":
+        EDR_CLIENT.fc_jump_cancelled(entry)
+    elif entry["event"] == "CarrierDecomission":
+        ed_player.fleet_carrier.decommission_requested(entry)
+    elif entry["event"] == "CarrierCancelDecommission":
+        ed_player.fleet_carrier.cancel_decommission(entry)
+    elif entry["event"] == "CarrierDockingPermission":
+        ed_player.fleet_carrier.update_docking_permissions(entry)
+    elif entry["event"] == "CarrierJump":
+        ed_player.fleet_carrier.update_from_jump_if_relevant(entry)
 
 def handle_movement_events(ed_player, entry):
     outcome = {"updated": False, "reason": None}
@@ -493,6 +510,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["MiningRefined", "ProspectedAsteroid"]:
         handle_mining_events(ed_player, entry)
 
+    if entry["event"] in ["CarrierJump", "CarrierBuy", "CarrierStats", "CarrierJumpRequest", "CarrierJumpCancelled", "CarrierDecommission", "CarrierCancelDecommission", "CarrierDockingPermission"]:
+        handle_carrier_events(ed_player, entry)
+
     status_outcome = {"updated": False, "reason": "Unspecified"}
 
     vehicle = None
@@ -512,7 +532,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
             status_outcome["reason"] = outcome["reason"]
 
     if entry["event"] in ["SupercruiseExit", "FSDJump", "SupercruiseEntry", "StartJump",
-                          "ApproachSettlement", "ApproachBody", "LeaveBody"]:
+                          "ApproachSettlement", "ApproachBody", "LeaveBody", "CarrierJump"]:
         outcome = handle_movement_events(ed_player, entry)
         if outcome["updated"]:
             status_outcome["updated"] = True

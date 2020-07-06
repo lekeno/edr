@@ -4,7 +4,6 @@ from collections import deque
 from edtime import EDTime
 
 # TODO consider doing more than just LTD? configurable? automatic?
-# TODO keep ~0% LTD in distribution and show it?
 class EDRMiningStats(object):
     def __init__(self):
         self.name = "lowtemperaturediamond"
