@@ -407,7 +407,7 @@ class EDRClient(object):
         popupMenu.grid(padx=10, row=16, column=1, sticky=tk.EW)
         popupMenu["menu"].configure(background="white", foreground="black")
 
-        notebook.Label(frame, text=_("Announce my Fleet Carrier's jump schedule")).grid(padx=10, row = 17, sticky=tk.W)
+        notebook.Label(frame, text=_("Announce my Fleet Carrier's jump schedule (α)")).grid(padx=10, row = 17, sticky=tk.W)
         choices = { _(u'Never'),_(u'Public'),_(u'Private')}
         popupMenu = notebook.OptionMenu(frame, self._fc_jump_psa, self.fc_jump_psa, *choices)
         popupMenu.grid(padx=10, row=17, column=1, sticky=tk.EW)
