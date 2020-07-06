@@ -571,11 +571,6 @@ class EDRClient(object):
                 EDRLOG.log(u"NOTAMs for {}: {}".format(star_system, notams), "DEBUG")
                 details += notams
             
-            deaths_traffic = self.edrsystems.summarize_deaths_traffic(star_system)
-            if deaths_traffic:
-                EDRLOG.log(u"D/T for {}: {}".format(star_system, deaths_traffic), "DEBUG")
-                details.append(deaths_traffic)
-
             if self.edrsystems.has_sitrep(star_system):
                 if star_system == self.player.star_system and self.player.in_bad_neighborhood():
                     EDRLOG.log(u"Sitrep system is known to be an anarchy. Crimes aren't reported.", "INFO")
@@ -1293,7 +1288,9 @@ class EDRClient(object):
             self.status = _(u"Skipped announcement of FC jump schedule (enable from EDMC settings, EDR tab).")
             return True
 
-        if self.server.fc_jump_cancelled():
+        status = self.player.fleet_carrier.json_status()
+        status["owner"] = self.player.name
+        if self.server.fc_jump_cancelled(status):
             self.status = _(u"Cancelled FC jump schedule.")
             return True
         return False

@@ -63,6 +63,7 @@ class EDRFleetCarrier(object):
             print("FC reset jump cancelled")
             self.__reset()
         self.id = jump_cancel_event.get("CarrierID", None)
+        self.departure = {"time": None, "destination": None}
         self.__update_position()
 
     @property
@@ -73,7 +74,6 @@ class EDRFleetCarrier(object):
     def __update_position(self):
         now = edtime.EDTime.py_epoch_now()
         if self.decommission_time and now > self.decommission_time:
-            print("FC reset decommission")
             self.__reset()
             return
 
@@ -121,13 +121,20 @@ class EDRFleetCarrier(object):
         if self.is_parked():
             return None
 
+        return self.json_status()
+
+    def json_status(self):
+        self.__update_position()
+        if self.id is None:
+            return None
+
         return {
             "id": self.id,
             "callsign": self.callsign,
             "name": self.name,
             "from": self.position,
             "to": self.departure["destination"],
-            "at": self.departure["time"],
+            "at": self.departure["time"] * 1000 if self.departure["time"] else None,
             "access": self.access,
             "allow_notorious": self.allow_notorious
         }
