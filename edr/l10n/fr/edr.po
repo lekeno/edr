@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2020-07-06 10:36+0900\n"
-"PO-Revision-Date: 2020-07-06 10:45+0900\n"
+"POT-Creation-Date: 2020-07-06 10:59+0900\n"
+"PO-Revision-Date: 2020-07-06 10:59+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -207,7 +207,7 @@ msgid "Redact my info in Sitreps"
 msgstr "Supprimer mes infos dans les rapports de situation"
 
 #: edrclient.py:410
-msgid "Announce my Fleet Carrier's jump schedule"
+msgid "Announce my Fleet Carrier's jump schedule (α)"
 msgstr "Annoncer l'itinéraire de mon porte-vaisseaux (α)"
 
 #. Translators: this is shown in the preferences panel as a heading for feedback options (e.g. overlay, audio cues)
@@ -768,7 +768,7 @@ msgstr ""
 
 #: edrclient.py:1294
 msgid "Cancelled FC jump schedule."
-msgstr "Annulation de l'itinéraire du porte-vaisseaux"
+msgstr "Annulation de l'itinéraire du porte-vaisseaux."
 
 #: edrclient.py:1307 edrclient.py:1349 edrclient.py:1373 edrclient.py:1386
 #: edrclient.py:1399
