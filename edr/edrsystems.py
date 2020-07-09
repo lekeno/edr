@@ -312,7 +312,7 @@ class EDRSystems(object):
             return None
 
         for body in bodies:
-            if body.get("name", None).lower() == body_name.lower():
+            if body.get("name", "").lower() == body_name.lower():
                 return body
         return None
 
@@ -424,7 +424,7 @@ class EDRSystems(object):
     def __active_notams_for_sid(self, system_id):
         active_notams = []
         entry = self.notams_cache.get(system_id)
-        all_notams = entry.get("NOTAMs", None)
+        all_notams = entry.get("NOTAMs", {})
         js_epoch_now = edtime.EDTime.js_epoch_now()
         for notam in all_notams:
             active = True
@@ -650,7 +650,7 @@ class EDRSystems(object):
             if recent_traffic is not None: # Should always be true... simplify. TODO
                 summary_traffic = collections.OrderedDict()
                 for traffic in recent_traffic:
-                    previous_timestamp = summary_traffic.get(traffic["cmdr"], None)
+                    previous_timestamp = summary_traffic.get(traffic["cmdr"], 0)
                     if traffic["timestamp"] < previous_timestamp:
                         continue
                     karma = traffic.get("karma", 0)
