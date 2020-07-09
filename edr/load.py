@@ -1,6 +1,7 @@
 """
 Plugin for "EDR"
 """
+import sys
 import re
 import plug
 from edrclient import EDRClient
@@ -428,8 +429,12 @@ def dashboard_entry(cmdr, is_beta, entry):
         ed_player.piloted_vehicle.fuel_level = main + reservoir
 
     attitude_keys = { "Latitude", "Longitude", "Heading", "Altitude"}
-    if entry.viewkeys() < attitude_keys:
-        return
+    if sys.version_info.major == 2:
+        if entry.viewkeys() < attitude_keys:
+            return
+    else:
+        if entry.keys() < attitude_keys:
+            return
     
     attitude = { key.lower():value for key,value in entry.items() if key in attitude_keys }
     if "altitude" in attitude:

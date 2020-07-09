@@ -156,19 +156,19 @@ class EDRSystems(object):
             return None
 
         if cached and system:
-            sid = system.keys()[0]
+            sid = list(system)[0]
             if may_create and coords and not "coords" in system[sid]:
                 EDRLOG.log(u"System {} is in the cache with id={} but missing coords".format(star_system, sid), "DEBUG")
                 system = self.server.system(star_system, may_create, coords)
                 if system:
                     self.systems_cache.set(star_system.lower(), system)
-                sid = system.keys()[0]
+                sid = list(system)[0]
             return sid
 
         system = self.server.system(star_system, may_create, coords)
         if system:
             self.systems_cache.set(star_system.lower(), system)
-            sid = system.keys()[0]
+            sid = list(system)[0]
             EDRLOG.log(u"Cached {}'s info with id={}".format(star_system, sid), "DEBUG")
             return sid
 
@@ -443,7 +443,7 @@ class EDRSystems(object):
     def systems_with_active_notams(self):
         summary = []
         self.__update_if_stale()
-        systems_ids = self.notams_cache.keys()
+        systems_ids = list(self.notams_cache)
         for sid in systems_ids:
             entry = self.notams_cache.get(sid)
             if not entry:

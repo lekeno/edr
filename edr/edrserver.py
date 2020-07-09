@@ -214,12 +214,13 @@ class EDRServer(object):
                     EDRLOG.log(u"Failed to create new star system.", "ERROR")
                     return None
                 the_system = json.loads(resp.content)
-                EDRLOG.log(u"Created system {} in EDR with id={}.".format(star_system, the_system.values()[0]), "DEBUG")
+                EDRLOG.log(u"Created system {} in EDR.".format(star_system), "DEBUG")
             else:
                 return None
         else:
+            print(resp.content)
             the_system = json.loads(resp.content)
-            sid = the_system.keys()[0]
+            sid = list(the_system)[0]
             EDRLOG.log(u"System {} is in EDR with id={}.".format(star_system, sid), "DEBUG")
             if may_create and coords and "coords" not in the_system[sid]:
                 EDRLOG.log(u"Adding coords to system in EDR.", "DEBUG")
@@ -262,7 +263,11 @@ class EDRServer(object):
             raise CommsJammedError("cmdr")
         cmdr_profile = edrcmdrprofile.EDRCmdrProfile()
 
-        params = { "orderBy": '"cname"', "equalTo": json.dumps(cmdr.lower().encode('utf-8')), "limitToFirst": 1, "auth": self.auth_token()}
+        params = {}
+        if sys.version_info.major == 2:
+            params = { "orderBy": '"cname"', "equalTo": json.dumps(cmdr.lower().encode('utf-8')), "limitToFirst": 1, "auth": self.auth_token()}
+        else:
+            params = { "orderBy": '"cname"', "equalTo": json.dumps(cmdr.lower()), "limitToFirst": 1, "auth": self.auth_token()}
         resp = self.__get("{}/v1/cmdrs.json".format(self.EDR_SERVER), "EDR", params)
 
         if not self.__check_response(resp, "EDR", "Cmdrs"):
@@ -280,15 +285,15 @@ class EDRServer(object):
                     return None
                 json_cmdr = json.loads(resp.content)
                 EDRLOG.log(u"New cmdr:{}".format(json_cmdr), "DEBUG")
-                cmdr_profile.cid = json_cmdr.values()[0]
+                cmdr_profile.cid = list(json_cmdr.values())[0]
                 cmdr_profile.name = cmdr
             else:
                 return None
         else:
             json_cmdr = json.loads(resp.content)
             EDRLOG.log(u"Existing cmdr:{}".format(json_cmdr), "DEBUG")
-            cmdr_profile.cid = json_cmdr.keys()[0]
-            cmdr_profile.from_dict(json_cmdr.values()[0])
+            cmdr_profile.cid = list(json_cmdr)[0]
+            cmdr_profile.from_dict(list(json_cmdr.values())[0])
 
         return cmdr_profile
 
@@ -306,7 +311,7 @@ class EDRServer(object):
             "X-EDR-UID": self.uid()
         }
         requester = urllib.quote(self.player_name.encode('utf-8')) if self.player_name else u"-"
-        endpoint = "https://us-central1-blistering-inferno-4028.cloudfunctions.net/edr/v1/inara/{}/{}".format(urllib.quote(cmdr.lower().encode('utf-8')), urllib.quote(requester))
+        endpoint = "https://us-central1-blistering-inferno-4028.cloudfunctions.net/edr/v1/inara/{}/{}".format(urllib.quote(cmdr.lower().encode('utf-8')), urllib.quote(requester)) # TODO is that working fine in python 3?
         resp = self.__get(endpoint, "EDR", headers=headers)
 
         if not self.__check_response(resp, "Inara", "Inara"):
@@ -407,7 +412,6 @@ class EDRServer(object):
     def fc_jump_cancelled(self, status):
         if self.fc_jump_psa is None:
             return False
-        params = { "auth" : self.auth_token()}
         EDRLOG.log(u"Cancelling Fleet Carrier jump", "INFO")
         status["psa"] = self.fc_jump_psa
         endpoint = "/v1/fcjumps/{uid}/".format(server=self.EDR_SERVER, uid=self.uid())
@@ -510,7 +514,7 @@ class EDRServer(object):
         
         sighting = json.loads(resp.content)
         if sighting:
-            sid = sighting.keys()[0]
+            sid = list(sighting)[0]
             return sighting[sid]
         return None
 

@@ -19,7 +19,7 @@ class EDTime(comparable.ComparableMixin):
 
     @staticmethod
     def t_minus(js_epoch_then, short=False):
-        return EDTime.t_minus_py(int(js_epoch_then / 1000))
+        return EDTime.t_minus_py(int(js_epoch_then // 1000))
 
     @staticmethod
     def t_minus_py(py_epoch_then, short=False):
@@ -44,13 +44,13 @@ class EDTime(comparable.ComparableMixin):
         if timespan < 0:
             return u"0"
         remaining = timespan
-        days = remaining / 86400
+        days = remaining // 86400
         remaining -= days * 86400
 
-        hours = (remaining / 3600) % 24
+        hours = (remaining // 3600) % 24
         remaining -= hours * 3600
 
-        minutes = (remaining / 60) % 60
+        minutes = (remaining // 60) % 60
         remaining -= minutes * 60
 
         seconds = (remaining % 60)
@@ -94,7 +94,7 @@ class EDTime(comparable.ComparableMixin):
         self._datetime = datetimestamp
 
     def from_js_epoch(self, js_epoch):
-        self._datetime = datetime.datetime.fromtimestamp(js_epoch / 1000)
+        self._datetime = datetime.datetime.fromtimestamp(js_epoch // 1000)
 
     def from_journal_timestamp(self, journal_timestamp):
         self._datetime = datetime.datetime.strptime(journal_timestamp, '%Y-%m-%dT%H:%M:%SZ')
