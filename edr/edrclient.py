@@ -470,6 +470,7 @@ class EDRClient(object):
         EDRLOG.log(u"Audio cues: {}, {}".format(config.get("EDRAudioFeedback"),
                                                 config.get("EDRAudioFeedbackVolume")), "DEBUG")
         EDRLOG.log(u"Anonymous reports: {}".format(config.get("EDRRedactMyInfo")), "DEBUG")
+        self.ui.refresh_theme()
         self.login()
 
     def noteworthy_about_system(self, fsdjump_event):
