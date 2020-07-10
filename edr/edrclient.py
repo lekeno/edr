@@ -541,9 +541,12 @@ class EDRClient(object):
             self.__notify(_(u'Assisted Navigation'), [_(u"Invalid destination")], clear_before = True)
 
     def docking_guidance(self, entry):
+        if not self.visual_feedback:
+            # TODO only works if visual feedback is allowed due to how the docking feature is tied to IN_GAME_MSG which can be None if visual feedback is turned off
+            return
         if entry["event"] == "DockingGranted":
             station = self.edrsystems.station(self.player.star_system, entry["StationName"], entry["StationType"])
-            summary = self.IN_GAME_MSG.docking(self.player.star_system, station, entry["LandingPad"]) # TODO only if visual feedback allowed but then summary is missing...
+            summary = self.IN_GAME_MSG.docking(self.player.star_system, station, entry["LandingPad"])
             if summary:
                 self.ui.notify(summary["header"], summary["body"])
         else:

@@ -99,6 +99,13 @@ class EDRFleetCarrier(object):
         self._position = {"system": event.get("StarSystem", None), "body": event.get("Body", None)}
         self.departure = {"time": None, "destination": None}
 
+    def update_star_system_if_relevant(self, star_system, market_id, station_name):
+        if market_id is None and station_name is None:
+            return False
+        if (self.id == market_id) or (self.callsign == station_name):
+            self._position["system"] = star_system
+            return True            
+
     def cancel_decommission(self, event):
         if self.id and self.id != event.get("CarrierID", None):
             self.__reset()
