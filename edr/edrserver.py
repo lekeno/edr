@@ -283,7 +283,7 @@ class EDRServer(object):
             EDRLOG.log(u"{error}, {content}".format(error=resp.status_code, content=resp.text), "DEBUG")
             return None
 
-        if resp.content == 'null':
+        if resp.content == 'null' or resp.content == b'null':
             if autocreate and not self.is_anonymous():
                 params = { "auth" : self.auth_token() }
                 endpoint = "{}/v1/cmdrs.json".format(self.EDR_SERVER)
@@ -298,6 +298,7 @@ class EDRServer(object):
             else:
                 return None
         else:
+            print(resp.content) # TODO remove
             json_cmdr = json.loads(resp.content)
             EDRLOG.log(u"Existing cmdr:{}".format(json_cmdr), "DEBUG")
             cmdr_profile.cid = list(json_cmdr)[0]
