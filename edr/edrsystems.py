@@ -443,7 +443,7 @@ class EDRSystems(object):
     def systems_with_active_notams(self):
         summary = []
         self.__update_if_stale()
-        systems_ids = list(self.notams_cache)
+        systems_ids = list(self.notams_cache.keys()).copy()
         for sid in systems_ids:
             entry = self.notams_cache.get(sid)
             if not entry:
@@ -463,7 +463,7 @@ class EDRSystems(object):
         systems_with_recent_outlaws = {}
         systems_with_recent_enemies = {}
         self.__update_if_stale()
-        systems_ids = self.sitreps_cache.keys()
+        systems_ids = (list(self.sitreps_cache.keys())).copy()
         for sid in systems_ids:
             sitrep = self.sitreps_cache.get(sid)
             star_system = sitrep.get("name", None) if sitrep else None
@@ -682,8 +682,8 @@ class EDRSystems(object):
                     if lead_name not in summary_crimes or crime["timestamp"] > summary_crimes[lead_name][0]: 
                         summary_crimes[lead_name] = [crime["timestamp"], crime["offence"]]
                         for criminal in crime["criminals"]:
-                            previous_timestamp = wanted_cmdrs[criminal["name"]][0] if criminal["name"] in wanted_cmdrs else None
-                            previous_timestamp = max(previous_timestamp, enemies[criminal["name"]][0]) if criminal["name"] in enemies else None
+                            previous_timestamp = wanted_cmdrs[criminal["name"]][0] if criminal["name"] in wanted_cmdrs else 0
+                            previous_timestamp = max(previous_timestamp, enemies[criminal["name"]][0]) if criminal["name"] in enemies else 0
                             if previous_timestamp > crime["timestamp"]:
                                 continue
                             karma = criminal.get("karma", 0)

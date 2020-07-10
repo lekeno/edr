@@ -855,7 +855,8 @@ class InGameMsg(object):
             x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}
 
     def clear(self):
-        for msg_id in self.msg_ids.keys():
+        msg_ids = list(self.msg_ids.keys())
+        for msg_id in msg_ids:
             self.__clear(msg_id)
         self.msg_ids.reset()
         self.must_clear = False
@@ -883,7 +884,8 @@ class InGameMsg(object):
 
     def __clear_kind(self, kind):
         tag = "EDR-{}".format(kind)
-        for msg_id in self.msg_ids.keys():
+        msg_ids = list(self.msg_ids.keys())
+        for msg_id in msg_ids:
             if msg_id.startswith(tag):
                 self.__clear(msg_id)
                 self.msg_ids.evict(msg_id)
@@ -981,8 +983,8 @@ class InGameMsg(object):
             msg_id = "EDR-{}-{}".format(kind, row)
             self._overlay.send_message(msg_id, text, color, int(col), int(row), ttl=ttl, size=size)
             self.msg_ids.set(msg_id, ttl)
-        except:
-            EDRLOG.log(u"In-Game Message failed.", "ERROR")
+        except Exception as e:
+            EDRLOG.log(u"In-Game Message failed with {}.".format(e), "ERROR")
             pass
 
     def __shape(self, kind, panel):
@@ -990,8 +992,8 @@ class InGameMsg(object):
             shape_id = "EDR-{}-{}-{}-{}-{}-shape".format(kind, panel["x"], panel["y"], panel["x2"], panel["y2"])
             self._overlay.send_shape(shape_id, "rect", panel["rgb"], panel["fill"], panel["x"], panel["y"], panel["x2"], panel["y2"], ttl=panel["ttl"])
             self.msg_ids.set(shape_id, panel["ttl"])
-        except:
-            EDRLOG.log(u"In-Game Shape failed.", "ERROR")
+        except Exception as e:
+            EDRLOG.log(u"In-Game Shape failed with {}.".format(e), "ERROR")
             pass
 
     def __vect(self, kind, vector):
@@ -1002,8 +1004,8 @@ class InGameMsg(object):
             raw["shape"] = "vect"
             self._overlay.send_raw(raw)
             self.msg_ids.set(vect_id, vector["ttl"])
-        except:
-            EDRLOG.log(u"In-Game Vect failed.", "ERROR")
+        except Exception as e:
+            EDRLOG.log(u"In-Game Vect failed with {}.".format(e), "ERROR")
             pass
 
     def __clear(self, msg_id):
@@ -1011,8 +1013,8 @@ class InGameMsg(object):
             self._overlay.send_message(msg_id, "", "", 0, 0, 0, 0)
             self.msg_ids.evict(msg_id)
             self.__reset_caches()
-        except:
-            EDRLOG.log(u"In-Game Message failed to clear {}.".format(msg_id), "ERROR")
+        except Exception as e:
+            EDRLOG.log(u"In-Game Message failed to clear {} with {}.".format(msg_id, e), "ERROR")
             pass
     
     def __reset_caches(self):

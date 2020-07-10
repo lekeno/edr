@@ -1,4 +1,9 @@
 # encoding: utf-8
+import sys
+try:
+    import urllib.parse as urlparse
+except ImportError:
+    from urlparse import urlparse # python 2.7.11
 import urllib
 import json
 import calendar
@@ -310,8 +315,8 @@ class EDRServer(object):
             "Authorization": "ApiKey {}".format(self.INARA_API_KEY),
             "X-EDR-UID": self.uid()
         }
-        requester = urllib.quote(self.player_name.encode('utf-8')) if self.player_name else u"-"
-        endpoint = "https://us-central1-blistering-inferno-4028.cloudfunctions.net/edr/v1/inara/{}/{}".format(urllib.quote(cmdr.lower().encode('utf-8')), urllib.quote(requester)) # TODO is that working fine in python 3?
+        requester = urlparse.quote(self.player_name.encode('utf-8')) if self.player_name else u"-"
+        endpoint = "https://us-central1-blistering-inferno-4028.cloudfunctions.net/edr/v1/inara/{}/{}".format(urlparse.quote(cmdr.lower().encode('utf-8')), urlparse.quote(requester))
         resp = self.__get(endpoint, "EDR", headers=headers)
 
         if not self.__check_response(resp, "Inara", "Inara"):
