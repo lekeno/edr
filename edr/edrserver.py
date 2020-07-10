@@ -200,7 +200,7 @@ class EDRServer(object):
             return None
 
         the_system = None
-        if resp.content == 'null':
+        if resp.content == 'null' or resp.content == b'null':
             EDRLOG.log(u"System {} is not recorded in EDR.".format(star_system), "DEBUG")
             if may_create:
                 EDRLOG.log(u"Creating system in EDR.", "DEBUG")
@@ -223,9 +223,12 @@ class EDRServer(object):
             else:
                 return None
         else:
-            print(resp.content)
+            print(resp.content) # TODO remove
             the_system = json.loads(resp.content)
-            sid = list(the_system)[0]
+            sid = list(the_system)[0] if the_system else None
+            if sid is None:
+                EDRLOG.log(u"System {} has no id={}.".format(star_system, sid), "DEBUG")
+                return None
             EDRLOG.log(u"System {} is in EDR with id={}.".format(star_system, sid), "DEBUG")
             if may_create and coords and "coords" not in the_system[sid]:
                 EDRLOG.log(u"Adding coords to system in EDR.", "DEBUG")
