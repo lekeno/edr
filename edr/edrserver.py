@@ -1,9 +1,9 @@
 # encoding: utf-8
 import sys
 try:
-    import urllib.parse as urlparse
+    from urllib.parse import quote
 except ImportError:
-    from urlparse import urlparse # python 2.7.11
+    from urllib import quote # python 2.7.11
 import urllib
 import json
 import calendar
@@ -319,8 +319,8 @@ class EDRServer(object):
             "Authorization": "ApiKey {}".format(self.INARA_API_KEY),
             "X-EDR-UID": self.uid()
         }
-        requester = urlparse.quote(self.player_name.encode('utf-8')) if self.player_name else u"-"
-        endpoint = "https://us-central1-blistering-inferno-4028.cloudfunctions.net/edr/v1/inara/{}/{}".format(urlparse.quote(cmdr.lower().encode('utf-8')), urlparse.quote(requester))
+        requester = quote(self.player_name.encode('utf-8')) if self.player_name else u"-"
+        endpoint = "https://us-central1-blistering-inferno-4028.cloudfunctions.net/edr/v1/inara/{}/{}".format(quote(cmdr.lower().encode('utf-8')), quote(requester))
         resp = self.__get(endpoint, "EDR", headers=headers)
 
         if not self.__check_response(resp, "Inara", "Inara"):

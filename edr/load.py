@@ -295,20 +295,16 @@ def handle_change_events(ed_player, entry):
     return outcome
 
 def handle_fc_position_related_events(ed_player, entry):
-    # #TODO update FC position from Location, Docked, Undocked, DockingDenied, DockingGranted, DockingRequested, DockingCancelled
     if entry["event"] in ["Location", "Docked", "Undocked", "DockingCancelled", "DockingDenied", "DockingGranted", "DockingRequested", "DockingTimeout"]:
         station_type = entry.get("StationType", None)
         if station_type and station_type != "FleetCarrier":
-            print("not a fc")
             return
         station_name = entry.get("StationName", None)
         market_id = entry.get("MarketID", 0)
         star_system = entry.get("StarSystem", ed_player.star_system)
         if not star_system:
-            print("no star_system")
             return
-        outcome = ed_player.fleet_carrier.update_star_system_if_relevant(star_system, market_id, station_name)
-        print("FC position updated to {}? {}".format(star_system, outcome))
+        ed_player.fleet_carrier.update_star_system_if_relevant(star_system, market_id, station_name)
 
 def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
     if entry["event"] == "Music":
