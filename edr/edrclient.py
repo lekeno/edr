@@ -1474,6 +1474,53 @@ class EDRClient(object):
         else:
             self.__notify(_(u"Ship locator"), [_(u"Couldn't find anything")], clear_before = True)
 
+    def contracts(self):
+        if self.is_anonymous():
+            EDRLOG.log(u"Skipping contracts since the user is anonymous.", "INFO")
+            self.advertise_full_account(_(u"Sorry, this feature only works with an EDR account."), passive=False)
+            return False
+
+        contracts = self.edrcmdrs.contracts()
+        if contracts:
+            self.__notify(_(u"Kill Rewards"),[_(u"{} {} on Cmdr {}").format(contracts[c]["reward"], contracts[c]["unit"], contracts[c]["cname"]) for c in contracts], clear_before = True)
+        else:
+            instructions = random.choice([_(u"Send '!contract example $$$ 10 VO$' in chat to set a reward of 10 void opals on Cmdr 'example'"), _(u"Send '!contract example $$$ 10 P$' in chat to set a reward of 10 painite on Cmdr 'example'")])
+            self.__notify(_(u"Kill Rewards"),[_(u"You haven't set any contract yet"), instructions], clear_before = True)
+        return True
+
+    def contract(self, cmdr_name):
+        if self.is_anonymous():
+            EDRLOG.log(u"Skipping contract since the user is anonymous.", "INFO")
+            self.advertise_full_account(_(u"Sorry, this feature only works with an EDR account."), passive=False)
+            return False
+
+        c = self.edrcmdrs.contract_for(cmdr_name)
+        self.__notify(_(u"Kill Rewards"),[_(u"Reward of {} {} for a kill on Cmdr {}").format(c["reward"], c["unit"], cmdr_name)], clear_before = True)
+        return True
+
+    def contract_on(self, cmdr_name, reward, unit):
+        if self.is_anonymous():
+            EDRLOG.log(u"Skipping contract since the user is anonymous.", "INFO")
+            self.advertise_full_account(_(u"Sorry, this feature only works with an EDR account."), passive=False)
+            return False
+        
+        if reward > 0:
+            reward = min(reward, 750)
+            success = self.edrcmdrs.place_contract(cmdr_name, reward, unit)
+            if success:
+                self.__notify(_(u"Kill Rewards"),[_(u"Reward of {} {} for a kill on Cmdr {}").format(reward, unit, cmdr_name), _(u"Send '!contract {} $$$ 0' in chat to remove the kill reward").format(cmdr_name)], clear_before = True)
+                return True
+            self.__notify(_(u"Kill Rewards"),[_(u"Failed to place a reward for a kill on Cmdr {}").format(cmdr_name), _(u"You may have too many active contracts."), _(u"Send '!contracts' to see all your contracts.").format(cmdr_name)], clear_before = True)
+            return False
+        
+        success = self.edrcmdrs.remove_contract(cmdr_name)
+        instructions = random.choice([_(u"Send '!contract {} $$$ 10 VO$' in chat to set a reward of 10 void opals"), _(u"Send '!contract {} $$$ 10 P$' in chat to set a reward of 10 painite")])
+        if success:
+            self.__notify(_(u"Kill Rewards"),[_(u"Removed reward for a kill on Cmdr {}").format(cmdr_name), intrusctions.format(cmdr_name)], clear_before = True)
+            return True
+        
+        self.__notify(_(u"Kill Rewards"),[_(u"Failed to remove reward for a kill on Cmdr {} (not even set?)").format(cmdr_name), instructions.format(cmdr_name)], clear_before = True)
+        return False
 
     def outlaws(self):
         try:
@@ -1490,10 +1537,15 @@ class EDRClient(object):
             return False
 
     def _opponents(self, kind):
-        if kind is EDROpponents.ENEMIES and not self.player.power:
-            EDRLOG.log(u"Not pledged to any power, can't have enemies.", "INFO")
-            self.__notify(_(u"Recently Sighted {kind}").format(kind=_(kind)), [_(u"You need to be pledged to a power.")], clear_before = True)
-            return False
+        if kind is EDROpponents.ENEMIES:
+            if self.is_anonymous():
+                EDRLOG.log(u"Skipping enemies since the user is anonymous.", "INFO")
+                self.advertise_full_account(_(u"Sorry, this feature only works with an EDR account."), passive=False)
+                return False
+            elif not self.player.power:
+                EDRLOG.log(u"Not pledged to any power, can't have enemies.", "INFO")
+                self.__notify(_(u"Recently Sighted {kind}").format(kind=_(kind)), [_(u"You need to be pledged to a power.")], clear_before = True)
+                return False
         opponents_report = self.edropponents[kind].recent_sightings()
         if not opponents_report:
             EDRLOG.log(u"No recently sighted {}".format(kind), "INFO")

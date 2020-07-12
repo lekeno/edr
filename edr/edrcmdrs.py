@@ -243,6 +243,42 @@ class EDRCmdrs(object):
         else:
             return self.__tag_cmdr(cmdr_name, tag)
 
+    def contracts(self):
+        return self.server.contracts()
+
+    def contract_for(self, cmdr_name):
+        if not cmdr_name:
+            return False
+        
+        profile = self.cmdr(cmdr_name)
+        if not profile:
+            return False
+        
+        return self.server.contract_for(profile.cid)
+    
+    def place_contract(self, cmdr_name, reward, unit):
+        if not cmdr_name:
+            return False
+        
+        if reward <= 0:
+            return self.remove_contract(cmdr_name)
+
+        profile = self.cmdr(cmdr_name)
+        if not profile:
+            return False
+        
+        return self.server.place_contract(profile.cid, {"cname": cmdr_name.lower(), "reward": reward, "unit": unit})
+
+    def remove_contract(self, cmdr_name):
+        if not cmdr_name:
+            return False
+        
+        profile = self.cmdr(cmdr_name)
+        if not profile:
+            return False
+        
+        return self.server.remove_contract(profile.cid)
+
     def __tag_cmdr(self, cmdr_name, tag):
         EDRLOG.log(u"Tagging {} with {}".format(cmdr_name, tag), "DEBUG")
         profile = self.__edr_cmdr(cmdr_name, False)

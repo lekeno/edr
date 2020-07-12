@@ -1384,6 +1384,27 @@ def handle_bang_commands(cmdr, command, command_parts):
             EDR_CLIENT.eval_build(eval_type)
         else:
             EDR_CLIENT.notify_with_details(_(u"Loadout information is stale"), [_(u"Congrats, you've found a bug in Elite!"), _(u"The modules info isn't updated right away :("), _(u"Try again after moving around or relog and check your modules.")])
+    elif command == "!contracts" and len(command_parts) == 1:
+        EDRLOG.log(u"Contracts command", "INFO")
+        EDR_CLIENT.contracts()
+    elif command == "!contract":
+        target_cmdr = cmdr.target
+        reward = None
+        unit = u"VO$"
+        print command_parts
+        if len(command_parts) >= 2:
+            parts = " ".join(command_parts[1:]).split(" $$$ ", 1)
+            target_cmdr = parts[0]
+            if len(parts)>=2:
+                (reward, unit) = parts[1].split(" ", 1)
+                reward = int(reward)
+            print target_cmdr
+            print reward
+        EDRLOG.log(u"Contract command on {} with reward of {} {}".format(target_cmdr, reward, unit), "INFO")
+        if reward is None:
+            EDR_CLIENT.contract(target_cmdr)
+        else:
+            EDR_CLIENT.contract_on(target_cmdr, reward, unit)
     elif command == "!help":
         EDRLOG.log(u"Help command", "INFO")
         EDR_CLIENT.help("" if len(command_parts) == 1 else command_parts[1])
