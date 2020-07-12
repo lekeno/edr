@@ -33,10 +33,13 @@ class EDRSystems(object):
     EDSM_STATIONS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_stations.v1.p')
     EDSM_SYSTEMS_WITHIN_RADIUS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_systems_radius.v2.p')
     EDSM_FACTIONS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_factions.v1.p')
+    EDSM_TRAFFIC_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_traffic.v1.p')
+    EDSM_DEATHS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_deaths.v1.p')
     EDR_NOTAMS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'notams.v2.p')
     EDR_SITREPS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'sitreps.v3.p')
     EDR_TRAFFIC_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'traffic.v2.p')
     EDR_CRIMES_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'crimes.v2.p')
+    
 
     def __init__(self, server):
         self.reasonable_sc_distance = 1500
@@ -120,6 +123,20 @@ class EDRSystems(object):
             self.edsm_systems_within_radius_cache = lrucache.LRUCache(edr_config.edsm_within_radius_max_size(),
                                                   edr_config.edsm_systems_max_age())
 
+        try:
+            with open(self.EDSM_TRAFFIC_CACHE, 'rb') as handle:
+                self.edsm_traffic_cache = pickle.load(handle)
+        except:
+            self.edsm_traffic_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.edsm_traffic_max_age())
+
+        try:
+            with open(self.EDSM_DEATHS_CACHE, 'rb') as handle:
+                self.edsm_deaths_cache = pickle.load(handle)
+        except:
+            self.edsm_deaths_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.edsm_deaths_max_age())
+
          
 
         self.reports_check_interval = edr_config.reports_check_interval()
@@ -139,19 +156,19 @@ class EDRSystems(object):
             return None
 
         if cached and system:
-            sid = system.keys()[0]
+            sid = list(system)[0]
             if may_create and coords and not "coords" in system[sid]:
                 EDRLOG.log(u"System {} is in the cache with id={} but missing coords".format(star_system, sid), "DEBUG")
                 system = self.server.system(star_system, may_create, coords)
                 if system:
                     self.systems_cache.set(star_system.lower(), system)
-                sid = system.keys()[0]
+                sid = list(system)[0]
             return sid
 
         system = self.server.system(star_system, may_create, coords)
         if system:
             self.systems_cache.set(star_system.lower(), system)
-            sid = system.keys()[0]
+            sid = list(system)[0]
             EDRLOG.log(u"Cached {}'s info with id={}".format(star_system, sid), "DEBUG")
             return sid
 
@@ -164,6 +181,12 @@ class EDRSystems(object):
             return False
         return self.edsm_stations_cache.is_stale(star_system.lower())
         
+    def station(self, star_system, station_name, station_type):
+        stations = self.stations_in_system(star_system)
+        for station in stations:
+            if station["name"] == station_name:
+                return station
+        return None
 
     def stations_in_system(self, star_system):
         if not star_system:
@@ -218,6 +241,12 @@ class EDRSystems(object):
         with open(self.EDSM_FACTIONS_CACHE, 'wb') as handle:
             pickle.dump(self.edsm_factions_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+        with open(self.EDSM_TRAFFIC_CACHE, 'wb') as handle:
+            pickle.dump(self.edsm_traffic_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        with open(self.EDSM_DEATHS_CACHE, 'wb') as handle:
+            pickle.dump(self.edsm_deaths_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
     def distance(self, source_system, destination_system):
         if source_system == destination_system:
             return 0
@@ -227,6 +256,14 @@ class EDRSystems(object):
         if source and destination:
             source_coords = source[0]["coords"]
             dest_coords = destination[0]["coords"] 
+            return sqrt((dest_coords["x"] - source_coords["x"])**2 + (dest_coords["y"] - source_coords["y"])**2 + (dest_coords["z"] - source_coords["z"])**2)
+        raise ValueError('Unknown system')
+
+    def distance_with_coords(self, source_system, dest_coords):
+        source = self.system(source_system)
+        
+        if source:
+            source_coords = source[0]["coords"]
             return sqrt((dest_coords["x"] - source_coords["x"])**2 + (dest_coords["y"] - source_coords["y"])**2 + (dest_coords["z"] - source_coords["z"])**2)
         raise ValueError('Unknown system')
 
@@ -275,7 +312,7 @@ class EDRSystems(object):
             return None
 
         for body in bodies:
-            if body.get("name", None).lower() == body_name.lower():
+            if body.get("name", "").lower() == body_name.lower():
                 return body
         return None
 
@@ -387,7 +424,7 @@ class EDRSystems(object):
     def __active_notams_for_sid(self, system_id):
         active_notams = []
         entry = self.notams_cache.get(system_id)
-        all_notams = entry.get("NOTAMs", None)
+        all_notams = entry.get("NOTAMs", {})
         js_epoch_now = edtime.EDTime.js_epoch_now()
         for notam in all_notams:
             active = True
@@ -406,7 +443,7 @@ class EDRSystems(object):
     def systems_with_active_notams(self):
         summary = []
         self.__update_if_stale()
-        systems_ids = self.notams_cache.keys()
+        systems_ids = list(self.notams_cache.keys()).copy()
         for sid in systems_ids:
             entry = self.notams_cache.get(sid)
             if not entry:
@@ -426,7 +463,7 @@ class EDRSystems(object):
         systems_with_recent_outlaws = {}
         systems_with_recent_enemies = {}
         self.__update_if_stale()
-        systems_ids = self.sitreps_cache.keys()
+        systems_ids = (list(self.sitreps_cache.keys())).copy()
         for sid in systems_ids:
             sitrep = self.sitreps_cache.get(sid)
             star_system = sitrep.get("name", None) if sitrep else None
@@ -549,6 +586,59 @@ class EDRSystems(object):
                 recent_traffic = self.traffic_cache.get(sid)
         return recent_traffic
 
+    def summarize_deaths_traffic(self, star_system):
+        if not star_system:
+            return None
+
+        traffic = self.edsm_traffic_cache.get(star_system.lower())
+        if traffic is None:
+            traffic = self.edsm_server.traffic(star_system)
+        self.edsm_traffic_cache.set(star_system.lower(), traffic)
+
+        deaths = self.edsm_deaths_cache.get(star_system.lower())
+        if deaths is None:
+            deaths = self.edsm_server.deaths(star_system)
+        self.edsm_deaths_cache.set(star_system.lower(), traffic)
+
+        if not deaths and not traffic:
+            return None
+        
+        zero = {"total": 0, "week": 0, "day": 0}
+        deaths = {s: self.__pretty_print_number(v) for s, v in deaths.get("deaths", zero).items()}
+        traffic = {s: self.__pretty_print_number(v) for s, v in traffic.get("traffic", {}).items()}
+        
+        if traffic == {}:
+            return None
+
+        return "Deaths / Traffic: [Day {}/{}]   [Week {}/{}]  [All {}/{}]".format(deaths.get("day", 0), traffic.get("day"), deaths.get("week", 0), traffic.get("week"), deaths.get("total"), traffic.get("total"))
+
+    @staticmethod
+    def __pretty_print_number(number):
+        #TODO move out and dedup bounty's code.
+        readable = u""
+        if number >= 10000000000:
+            # Translators: this is a short representation for a bounty >= 10 000 000 000 credits (b stands for billion)  
+            readable = _(u"{} b").format(number // 1000000000)
+        elif number >= 1000000000:
+            # Translators: this is a short representation for a bounty >= 1 000 000 000 credits (b stands for billion)
+            readable = _(u"{:.1f} b").format(number / 1000000000.0)
+        elif number >= 10000000:
+            # Translators: this is a short representation for a bounty >= 10 000 000 credits (m stands for million)
+            readable = _(u"{} m").format(number // 1000000)
+        elif number > 1000000:
+            # Translators: this is a short representation for a bounty >= 1 000 000 credits (m stands for million)
+            readable = _(u"{:.1f} m").format(number / 1000000.0)
+        elif number >= 10000:
+            # Translators: this is a short representation for a bounty >= 10 000 credits (k stands for kilo, i.e. thousand)
+            readable = _(u"{} k").format(number // 1000)
+        elif number >= 1000:
+            # Translators: this is a short representation for a bounty >= 1000 credits (k stands for kilo, i.e. thousand)
+            readable = _(u"{:.1f} k").format(number / 1000.0)
+        else:
+            # Translators: this is a short representation for a bounty < 1000 credits (i.e. shows the whole bounty, unabbreviated)
+            readable = _(u"{}").format(number)
+        return readable 
+
     def summarize_recent_activity(self, star_system, powerplay=None):
         #TODO refactor/simplify this mess ;)
         summary = {}
@@ -560,7 +650,7 @@ class EDRSystems(object):
             if recent_traffic is not None: # Should always be true... simplify. TODO
                 summary_traffic = collections.OrderedDict()
                 for traffic in recent_traffic:
-                    previous_timestamp = summary_traffic.get(traffic["cmdr"], None)
+                    previous_timestamp = summary_traffic.get(traffic["cmdr"], 0)
                     if traffic["timestamp"] < previous_timestamp:
                         continue
                     karma = traffic.get("karma", 0)
@@ -592,8 +682,8 @@ class EDRSystems(object):
                     if lead_name not in summary_crimes or crime["timestamp"] > summary_crimes[lead_name][0]: 
                         summary_crimes[lead_name] = [crime["timestamp"], crime["offence"]]
                         for criminal in crime["criminals"]:
-                            previous_timestamp = wanted_cmdrs[criminal["name"]][0] if criminal["name"] in wanted_cmdrs else None
-                            previous_timestamp = max(previous_timestamp, enemies[criminal["name"]][0]) if criminal["name"] in enemies else None
+                            previous_timestamp = wanted_cmdrs[criminal["name"]][0] if criminal["name"] in wanted_cmdrs else 0
+                            previous_timestamp = max(previous_timestamp, enemies[criminal["name"]][0]) if criminal["name"] in enemies else 0
                             if previous_timestamp > crime["timestamp"]:
                                 continue
                             karma = criminal.get("karma", 0)
@@ -705,9 +795,13 @@ class EDRSystems(object):
         key = u"{}@{}".format(star_system.lower(), radius)
         systems = self.edsm_systems_within_radius_cache.get(key)
         cached = self.edsm_systems_within_radius_cache.has_key(key)
-        if cached or systems:
-            EDRLOG.log(u"Systems within {} of system {} are in the cache.".format(radius, star_system), "DEBUG")
-            return sorted(systems, key = lambda i: i['distance'])
+        if cached:
+            if not systems:
+                EDRLOG.log(u"Systems within {} of system {} are not available for a while.".format(radius, star_system), "DEBUG")
+                return None
+            else:
+                EDRLOG.log(u"Systems within {} of system {} are in the cache.".format(radius, star_system), "DEBUG")
+                return sorted(systems, key = lambda i: i['distance'])
 
         systems = self.edsm_server.systems_within_radius(star_system, radius)
         if systems:
@@ -810,4 +904,3 @@ class EDRSystems(object):
             return self.distance(system_name, 'Colonia') <= 500
         except ValueError:
             return False
-

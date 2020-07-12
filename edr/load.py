@@ -1,6 +1,7 @@
 """
 Plugin for "EDR"
 """
+import sys
 import re
 import plug
 from edrclient import EDRClient
@@ -40,18 +41,20 @@ def plugin_stop():
     EDRLOG.log(u"Stopping the plugin...", "INFO")
     EDR_CLIENT.shutdown(everything=True)
     if EDR_CLIENT.autoupdate_pending:
-        EDRLOG.log(u"Please wait: auto updating EDR", "INFO")
-        auto_updater = edrautoupdater.EDRAutoUpdater()
-        downloaded = auto_updater.download_latest()
-        if downloaded:
-            EDRLOG.log(u"Download successful, creating a backup.", "INFO")
-            auto_updater.make_backup()
-            EDRLOG.log(u"Cleaning old backups.", "INFO")
-            auto_updater.clean_old_backups()
-            EDRLOG.log(u"Extracting latest version.", "INFO")
-            auto_updater.extract_latest()
+        plugin_update()
     EDRLOG.log(u"Plugin stopped", "INFO")
 
+def plugin_update():
+    EDRLOG.log(u"Please wait: auto updating EDR", "INFO")
+    auto_updater = edrautoupdater.EDRAutoUpdater()
+    downloaded = auto_updater.download_latest()
+    if downloaded:
+        EDRLOG.log(u"Download successful, creating a backup.", "INFO")
+        auto_updater.make_backup()
+        EDRLOG.log(u"Cleaning old backups.", "INFO")
+        auto_updater.clean_old_backups()
+        EDRLOG.log(u"Extracting latest version.", "INFO")
+        auto_updater.extract_latest()
 
 def plugin_app(parent):
     return EDR_CLIENT.app_ui(parent)
@@ -59,7 +62,6 @@ def plugin_app(parent):
 
 def plugin_prefs(parent, cmdr, is_beta):
     return EDR_CLIENT.prefs_ui(parent)
-
 
 def prefs_changed(cmdr, is_beta):
     EDR_CLIENT.prefs_changed()
@@ -181,6 +183,24 @@ def handle_multicrew_events(ed_player, entry):
         EDR_CLIENT.status = _(u"crew disbanded.")
         EDRLOG.log(u"Crew disbanded.", "INFO")
 
+def handle_carrier_events(ed_player, entry):
+    if entry["event"] == "CarrierBuy":
+        ed_player.fleet_carrier.bought(entry)
+    elif entry["event"] == "CarrierStats":
+        ed_player.fleet_carrier.update_from_stats(entry)
+    elif entry["event"] == "CarrierJumpRequest":
+        EDR_CLIENT.fc_jump_requested(entry)
+    elif entry["event"] == "CarrierJumpCancelled":
+        EDR_CLIENT.fc_jump_cancelled(entry)
+    elif entry["event"] == "CarrierDecomission":
+        ed_player.fleet_carrier.decommission_requested(entry)
+    elif entry["event"] == "CarrierCancelDecommission":
+        ed_player.fleet_carrier.cancel_decommission(entry)
+    elif entry["event"] == "CarrierDockingPermission":
+        ed_player.fleet_carrier.update_docking_permissions(entry)
+    elif entry["event"] == "CarrierJump":
+        ed_player.fleet_carrier.update_from_jump_if_relevant(entry)
+
 def handle_movement_events(ed_player, entry):
     outcome = {"updated": False, "reason": None}
 
@@ -190,19 +210,16 @@ def handle_movement_events(ed_player, entry):
         outcome["reason"] = "Supercruise exit"
         ed_player.to_normal_space()
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
-    elif entry["event"] in ["FSDJump"]:
+    elif entry["event"] in ["FSDJump", "CarrierJump"]:
         place = "Supercruise"
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         ed_player.wanted = entry.get("Wanted", False)
         ed_player.mothership.fuel_level = entry.get("FuelLevel", ed_player.mothership.fuel_level)
+        EDR_CLIENT.docking_guidance(entry)
         EDR_CLIENT.noteworthy_about_system(entry)
-        if entry["SystemSecurity"]:
-            ed_player.location_security(entry["SystemSecurity"])
-            if ed_player.in_bad_neighborhood():
-                EDR_CLIENT.IN_GAME_MSG.warning(_(u"Anarchy system"), [_(u"Crimes will not be reported.")])
         ed_player.location.population = entry.get('Population', 0)
         ed_player.location.allegiance = entry.get('SystemAllegiance', 0)
-        outcome["reason"] = "Jump events"
+        outcome["reason"] = entry["event"]
         ed_player.to_super_space()
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
     elif entry["event"] in ["SupercruiseEntry"]:
@@ -210,6 +227,7 @@ def handle_movement_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         outcome["reason"] = "Jump events"
         ed_player.to_super_space()
+        EDR_CLIENT.docking_guidance(entry)
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
     elif entry["event"] == "StartJump" and entry["JumpType"] == "Hyperspace":
         place = "Hyperspace"
@@ -217,6 +235,7 @@ def handle_movement_events(ed_player, entry):
         outcome["reason"] = "Hyperspace"
         ed_player.to_hyper_space()
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
+        EDR_CLIENT.docking_guidance(entry)
         EDR_CLIENT.check_system(entry["StarSystem"], may_create=True)
     elif entry["event"] in ["ApproachSettlement"]:
         place = entry["Name"]
@@ -261,11 +280,31 @@ def handle_change_events(ed_player, entry):
         place = entry.get("StationName", "Unknown")
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         ed_player.to_normal_space()
+        EDR_CLIENT.docking_guidance(entry)
         if entry["event"] == "Docked":
             ed_player.wanted = entry.get("Wanted", False)
+            ed_player.mothership.update_cargo()
+            if ed_player.mothership.could_use_limpets():
+                limpets = ed_player.mothership.cargo.how_many("drones")
+                capacity = ed_player.mothership.cargo_capacity
+                EDR_CLIENT.notify_with_details(_(U"Restock reminder"), [_(u"Don't forget to restock on limpets before heading out mining."), _(u"Limpets: {}/{}").format(limpets, capacity)])
+        elif entry["event"] == "Undocked" and ed_player.mothership.is_mining_rig():
+            ed_player.reset_mining_stats()
         outcome["reason"] = "Docking events"
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
     return outcome
+
+def handle_fc_position_related_events(ed_player, entry):
+    if entry["event"] in ["Location", "Docked", "Undocked", "DockingCancelled", "DockingDenied", "DockingGranted", "DockingRequested", "DockingTimeout"]:
+        station_type = entry.get("StationType", None)
+        if station_type and station_type != "FleetCarrier":
+            return
+        station_name = entry.get("StationName", None)
+        market_id = entry.get("MarketID", 0)
+        star_system = entry.get("StarSystem", ed_player.star_system)
+        if not star_system:
+            return
+        ed_player.fleet_carrier.update_star_system_if_relevant(star_system, market_id, station_name)
 
 def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
     if entry["event"] == "Music":
@@ -402,8 +441,12 @@ def dashboard_entry(cmdr, is_beta, entry):
         ed_player.piloted_vehicle.fuel_level = main + reservoir
 
     attitude_keys = { "Latitude", "Longitude", "Heading", "Altitude"}
-    if entry.viewkeys() < attitude_keys:
-        return
+    if sys.version_info.major == 2:
+        if entry.viewkeys() < attitude_keys:
+            return
+    else:
+        if entry.keys() < attitude_keys:
+            return
     
     attitude = { key.lower():value for key,value in entry.items() if key in attitude_keys }
     if "altitude" in attitude:
@@ -411,7 +454,15 @@ def dashboard_entry(cmdr, is_beta, entry):
     ed_player.piloted_vehicle.update_attitude(attitude)
     if ed_player.planetary_destination:
         EDR_CLIENT.show_navigation()
-        
+
+def handle_mining_events(ed_player, entry):
+    if entry["event"] not in ["MiningRefined", "ProspectedAsteroid"]:
+        return
+    if entry["event"] == "ProspectedAsteroid":
+        ed_player.prospected(entry)
+    elif entry["event"] == "MiningRefined":
+        ed_player.refined(entry)
+    EDR_CLIENT.mining_guidance()
             
 def journal_entry(cmdr, is_beta, system, station, entry, state):
     """
@@ -441,6 +492,13 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     if entry["event"] in ["ModuleInfo"]:
         handle_modules_events(ed_player, entry)
+
+    if entry["event"] in ["Cargo"]:
+        ed_player.piloted_vehicle.update_cargo()
+
+    if entry["event"] in ["EjectCargo", "CollectCargo"]:
+        handle_cargo_events(ed_player, entry)
+
     
     if entry["event"].startswith("Powerplay"):
         EDRLOG.log(u"Powerplay event: {}".format(entry), "INFO")
@@ -466,6 +524,12 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["WingAdd", "WingJoin", "WingLeave"]:
         handle_wing_events(ed_player, entry)
 
+    if entry["event"] in ["MiningRefined", "ProspectedAsteroid"]:
+        handle_mining_events(ed_player, entry)
+
+    if entry["event"] in ["CarrierJump", "CarrierBuy", "CarrierStats", "CarrierJumpRequest", "CarrierJumpCancelled", "CarrierDecommission", "CarrierCancelDecommission", "CarrierDockingPermission"]:
+        handle_carrier_events(ed_player, entry)
+
     status_outcome = {"updated": False, "reason": "Unspecified"}
 
     vehicle = None
@@ -480,12 +544,13 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["Location", "Undocked", "Docked", "DockingCancelled", "DockingDenied",
                           "DockingGranted", "DockingRequested", "DockingTimeout"]:
         outcome = handle_change_events(ed_player, entry)
+        handle_fc_position_related_events(ed_player, entry)
         if outcome["updated"]:
             status_outcome["updated"] = True
             status_outcome["reason"] = outcome["reason"]
 
     if entry["event"] in ["SupercruiseExit", "FSDJump", "SupercruiseEntry", "StartJump",
-                          "ApproachSettlement", "ApproachBody", "LeaveBody"]:
+                          "ApproachSettlement", "ApproachBody", "LeaveBody", "CarrierJump"]:
         outcome = handle_movement_events(ed_player, entry)
         if outcome["updated"]:
             status_outcome["updated"] = True
@@ -619,7 +684,8 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
         "victim": victim.name,
         "victimShip": victim.vehicle_type(),
         "reportedBy": victim.name,
-        "byPledge": victim.powerplay.canonicalize() if victim.powerplay else u"",
+        "victimPower": victim.powerplay.canonicalize() if victim.powerplay else u"",
+        "byPledge": victim.powerplay.canonicalize() if victim.powerplay else "",
         "mode": victim.game_mode,
         "group": victim.private_group
     }
@@ -653,21 +719,22 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim, timestamp):
              "ship" : criminal_cmdr.vehicle_type(),
              "wanted": criminal_cmdr.wanted,
              "bounty": criminal_cmdr.bounty,
-             "fine": criminal_cmdr.fine
+             "fine": criminal_cmdr.fine,
+             "power": criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else u"",
             }],
         "offence": offence.capitalize(),
         "victim": victim.name,
         "victimShip": victim.vehicle_type(),
         "reportedBy": criminal_cmdr.name,
-        "byPledge": criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else u"",
         "victimWanted": victim.wanted,
         "victimBounty": victim.bounty,
         "victimEnemy": victim.enemy,
+        "victimPower": victim.powerplay.canonicalize() if victim.powerplay else u"",
+        "byPledge": victim.powerplay.canonicalize() if victim.powerplay else "",
         "mode": criminal_cmdr.game_mode,
         "group": criminal_cmdr.private_group
     }
 
-    report["criminals"][0]["power"] = criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else u""
     EDRLOG.log(u"Perpetrated crime: {}".format(report), "DEBUG")
 
     if not EDR_CLIENT.crime(criminal_cmdr.star_system, report):
@@ -737,10 +804,12 @@ def edr_submit_scan(scan, timestamp, source, witness):
     if not witness.in_open():
         EDRLOG.log(u"Scan not submitted due to unconfirmed Open mode", "INFO")
         EDR_CLIENT.status = _(u"Scan reporting disabled in solo/private modes.")
+        EDR_CLIENT.who(scan["cmdr"], autocreate=True)
         return
 
     if witness.has_partial_status():
         EDRLOG.log(u"Scan not submitted due to partial status", "INFO")
+        EDR_CLIENT.who(scan["cmdr"], autocreate=True)
         return
 
     if not EDR_CLIENT.scanned(scan["cmdr"], report):
@@ -831,9 +900,13 @@ def report_crime(cmdr, entry):
         victim.killed()
         edr_submit_crime_self(cmdr, "Murder", victim, entry["timestamp"])
         player_one.destroy(victim)
-    elif entry["event"] == "CrimeVictim" and "Offender" in entry and player_one.name and (entry["Offender"].lower() != player_one.name.lower()):
+    elif entry["event"] == "CrimeVictim" and "Offender" in entry and player_one.name:
         irrelevant_pattern = re.compile(r"^(\$([A-Za-z0-9]+_)+[A-Za-z0-9]+;)$")
-        if not irrelevant_pattern.match(entry["Offender"]) and player_one.is_instanced_with(entry["Offender"]):
+        wingmate = player_one.is_wingmate(entry["Offender"]) 
+        oneself = entry["Offender"].lower() == player_one.name.lower()
+        crewmate = player_one.is_crewmate(entry["Offender"])
+        instanced = player_one.is_instanced_with(entry["Offender"])
+        if not irrelevant_pattern.match(entry["Offender"]) and instanced and not oneself and not wingmate and not crewmate:
             offender = player_one.instanced(entry["Offender"])
             if "Bounty" in entry:
                 offender.bounty += entry["Bounty"]
@@ -971,7 +1044,9 @@ def handle_fixing_events(ed_player, entry):
     elif entry["event"] == "RepairAll":
         ed_player.mothership.repair()
     elif entry["event"] == "Repair":
-        ed_player.mothership.repair(entry["Item"])
+        items = entry["Items"] if "Items" in entry else [entry["Item"]]
+        for item in items:
+            ed_player.mothership.repair(item)
     elif entry["event"] == "RepairDrone":
         if entry.get("HullRepaired", None):
             ed_player.mothership.hull_health = entry["HullRepaired"]
@@ -1047,7 +1122,8 @@ def handle_scan_events(player, entry):
 
     target = player.instanced(target_name, entry["Ship"], piloted)
     target.sqid = entry.get("SquadronID", None)
-    target.pledged_to(entry.get("Power", None))
+    nodotpower = entry["Power"].replace(".", "") if "Power" in entry else None
+    target.pledged_to(nodotpower)
  
     edr_submit_contact(target, entry["timestamp"], "Ship targeted", player)
     if entry["ScanStage"] >= 2:
@@ -1545,3 +1621,9 @@ def handle_modules_events(ed_player, entry):
     if entry["event"] == "ModuleInfo":
         EDRLOG.log(u"ModuleInfo event", "DEBUG")
         ed_player.mothership.outfit_probably_changed(entry["timestamp"])
+
+def handle_cargo_events(ed_player, entry):
+    if entry["event"] == "EjectCargo":
+        ed_player.piloted_vehicle.cargo.eject(entry)
+    elif entry["event"] == "CollectCargo":
+        ed_player.piloted_vehicle.cargo.collect(entry)

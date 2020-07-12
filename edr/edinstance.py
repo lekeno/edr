@@ -104,7 +104,7 @@ class EDInstance(object):
 
     def debug_repr(self):
         result = []
-        result.append(u"T:{} ; last_check:{} ; touched: {}".format(EDTime.t_minus(self.timestamp*1000), EDTime.t_minus(self.last_check_timestamp*1000) if self.last_check_timestamp else "", self._touched))
+        result.append(u"{} ; last_check:{} ; touched: {}".format(EDTime.t_minus(self.timestamp*1000), EDTime.t_minus(self.last_check_timestamp*1000) if self.last_check_timestamp else "", self._touched))
         for cmdr_name in self.players:
             timestamp, player = self.players[cmdr_name.lower()].values()
             now = EDTime.py_epoch_now()

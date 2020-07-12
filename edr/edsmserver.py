@@ -84,3 +84,25 @@ class EDSMServer(object):
             return None
 
         return json.loads(resp.content)
+
+    def deaths(self, system_name):
+        params = {"systemName": system_name}
+        endpoint = "{}/api-system-v1/deaths".format(self.EDSM_SERVER)
+        resp = EDSMServer.SESSION.get(endpoint, params=params)
+
+        if resp.status_code != requests.codes.ok:
+            EDRLOG.log(u"Failed to retrieve deaths info for {} from EDSM: {}.".format(system_name, resp.status_code), "ERROR")
+            return None
+        
+        return json.loads(resp.content)
+
+    def traffic(self, system_name):
+        params = {"systemName": system_name}
+        endpoint = "{}/api-system-v1/traffic".format(self.EDSM_SERVER)
+        resp = EDSMServer.SESSION.get(endpoint, params=params)
+
+        if resp.status_code != requests.codes.ok:
+            EDRLOG.log(u"Failed to retrieve traffic info for {} from EDSM: {}.".format(system_name, resp.status_code), "ERROR")
+            return None
+        
+        return json.loads(resp.content)

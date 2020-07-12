@@ -1,12 +1,15 @@
 from __future__ import absolute_import
 
-#from queue import Queue
+
 import requests
 import json
 import threading
 import socket
 import sys
-from Queue import Queue
+try:
+    from Queue import Queue
+except ImportError:
+    from queue import Queue
 
 from sseclient import SSEClient
 from edtime import EDTime
@@ -148,8 +151,7 @@ class EDRSEEReader():
                         continue
                     if data["path"] == '/':
                         # initial update
-                        keys = data["data"].keys()
-                        keys.sort()
+                        keys = sorted(data["data"])
                         for k in keys:
                             self.callback(self.kind, data["data"][k])
                     else:

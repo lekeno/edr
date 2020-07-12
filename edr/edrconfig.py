@@ -1,13 +1,19 @@
 from __future__ import absolute_import
 
 import os
-import ConfigParser
+try:
+    # for Python2
+    import ConfigParser as cp
+except ImportError:
+    # for Python3
+    import configparser as cp
+
 
 import utils2to3
 
 class EDRConfig(object):
     def __init__(self, config_file='config/config.ini'):
-        self.config = ConfigParser.ConfigParser()
+        self.config = cp.ConfigParser()
         self.config.read(utils2to3.abspathmaker(__file__, config_file))
 
     def edr_version(self):
@@ -120,6 +126,12 @@ class EDRConfig(object):
 
     def edsm_factions_max_age(self):
         return int(self.config.get('lrucaches', 'edsm_factions_max_age'))
+
+    def edsm_traffic_max_age(self):
+        return int(self.config.get('lrucaches', 'edsm_traffic_max_age'))
+
+    def edsm_deaths_max_age(self):
+        return int(self.config.get('lrucaches', 'edsm_deaths_max_age'))
 
     def lru_max_size(self):
         return int(self.config.get('lrucaches', 'lru_max_size'))

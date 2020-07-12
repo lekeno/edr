@@ -4,6 +4,9 @@ from __future__ import absolute_import
 import sys
 from edrconfig import EDRConfig
 
+if sys.version_info.major == 3:
+    sys.stdout.reconfigure(encoding="utf-8")
+
 class EDRLog(object):
 
     LEVEL_MAPPING = {"DEBUG": 10,  "INFO": 20, "WARNING": 30, "ERROR": 40}
@@ -19,7 +22,7 @@ class EDRLog(object):
         if sys.version_info.major == 2:
             print("[EDR]" + msg.encode(sys.getdefaultencoding(), 'replace'))
         else:
-            print("[EDR]" + msg)
+            print(u"[EDR]" + msg)
 
 
     def is_important_enough(self, level):

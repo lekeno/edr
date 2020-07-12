@@ -5,6 +5,7 @@ from __future__ import division
 import os
 import json
 import math
+import pickle
 
 from edtime import EDTime
 from edvehicles import EDVehicleFactory 
@@ -15,6 +16,9 @@ from edreconbox import EDReconBox
 from edrinventory import EDRInventory
 from edri18n import _, _c
 import edrfleet
+import edrfleetcarrier
+import edrminingstats
+import utils2to3
 EDRLOG = EDRLog()
 
 class EDRCrew(object):
@@ -709,6 +713,8 @@ class EDWing(object):
         return changes
 
 class EDPlayerOne(EDPlayer):
+    EDR_FLEET_CARRIER_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'fleet_carrier.v1.p')
+
     def __init__(self, name=None):
         super(EDPlayerOne, self).__init__(name)
         self.powerplay = None
@@ -726,12 +732,20 @@ class EDPlayerOne(EDPlayer):
         self.recon_box = EDReconBox()
         self.inventory = EDRInventory()
         self.fleet = edrfleet.EDRFleet()
+        try:
+            with open(self.EDR_FLEET_CARRIER_CACHE, 'rb') as handle:
+                self.fleet_carrier = pickle.load(handle)
+        except:
+            self.fleet_carrier = edrfleetcarrier.EDRFleetCarrier()
+        self.mining_stats = edrminingstats.EDRMiningStats()
 
     def __repr__(self):
         return str(self.__dict__)
 
     def persist(self):
         self.inventory.persist()
+        with open(self.EDR_FLEET_CARRIER_CACHE, 'wb') as handle:
+            pickle.dump(self.fleet_carrier, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     @property
     def target(self):
@@ -813,6 +827,7 @@ class EDPlayerOne(EDPlayer):
         self.instance.reset()
         self.to_normal_space()
         self._touch()
+        self.reset_mining_stats()
 
     def killed(self):
         super(EDPlayerOne, self).killed()
@@ -938,6 +953,11 @@ class EDPlayerOne(EDPlayer):
     def is_wingmate(self, cmdr_name):
         return cmdr_name in self.wing.wingmates
 
+    def is_crewmate(self, cmdr_name):
+        if not self.crew:
+            return False
+        return cmdr_name in self.crew.all_members()
+
     def is_enemy_with(self, power):
         if self.is_independent() or not power:
             return False
@@ -1055,3 +1075,12 @@ class EDPlayerOne(EDPlayer):
 
     def update_fleet(self, stored_ships_entry):
         self.fleet.update(stored_ships_entry)
+
+    def prospected(self, entry):
+        self.mining_stats.prospected(entry)
+
+    def refined(self, entry):
+        self.mining_stats.refined(entry)
+
+    def reset_mining_stats(self):
+        self.mining_stats.reset()

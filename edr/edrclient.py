@@ -7,9 +7,14 @@ import time
 import random
 import math
 
-#import tkinter as tk
-import Tkinter as tk
-import ttk
+try:
+    # for Python2
+    import Tkinter as tk
+    import ttk
+except ImportError:
+    # for Python3
+    import tkinter as tk
+    from tkinter import ttk
 import ttkHyperlinkLabel
 import myNotebook as notebook
 from config import config
@@ -80,7 +85,7 @@ class EDRClient(object):
         visual_alt = 1 if config.get("EDRVisualAltFeedback") == "True" else 0
         self._visual_alt_feedback = tk.IntVar(value=visual_alt)
         
-        self.ui = EDRTogglingPanel(self._status, self._visual_alt_feedback)
+        self.ui = None # EDRTogglingPanel(self._status, self._visual_alt_feedback)
 
         audio = 1 if config.get("EDRAudioFeedback") == "True" else 0
         self._audio_feedback = tk.IntVar(value=audio)
@@ -93,6 +98,13 @@ class EDRClient(object):
             anonymous_reports = config.get("EDRRedactMyInfo")
             self.server.anonymous_reports = anonymous_reports == _(u"Always")
         self._anonymous_reports = tk.StringVar(value=anonymous_reports)
+
+        fc_jump_psa = _(u"Never")
+        self.server.fc_jump_psa = None
+        if config.get("EDRFCJumpPSA") in [_(u"Public"), _(U"Private")]:
+            fc_jump_psa = config.get("EDRFCJumpPSA")
+            self.server.fc_jump_psa = fc_jump_psa == _(u"Public")
+        self._fc_jump_psa = tk.StringVar(value=fc_jump_psa)
 
         
         self.realtime_params = {
@@ -118,7 +130,6 @@ class EDRClient(object):
         self.tips = RandomTips()
         self.help_content = HelpContent()
         self._throttle_until_timestamp = None
-        self.ui.notify(_(u"Troubleshooting"), [_(u"If the overlay doesn't show up, try one of the following:"), _(u" - In Elite: go to graphics options, and select Borderless or Windowed."), _(" - With Elite and EDR launched, check that EDMCOverlay.exe is running in the task manager"), _(" - Reach out to LeKeno on discord (LeKeno#8484) or the Elite forums (LeKeno)")])
 
     def loud_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "loud")
@@ -140,6 +151,7 @@ class EDRClient(object):
         c_audio_feedback = config.get("EDRAudioFeedback")
         c_audio_volume = config.get("EDRAudioFeedbackVolume")
         c_redact_my_info = config.get("EDRRedactMyInfo")
+        c_fc_jump_announcements = config.get("EDRFCJumpPSA")
 
         if c_email is None:
             self._email.set("")
@@ -176,6 +188,11 @@ class EDRClient(object):
         elif c_redact_my_info in [_(u"Always"), _(u"Never")]:
             self.anonymous_reports = c_redact_my_info
 
+        if c_fc_jump_announcements is None:
+            self.fc_jump_psa = _(u"Never")
+        elif c_fc_jump_announcements in [_(u"Public"), _(u"Private")]:
+            self.fc_jump_psa = c_fc_jump_announcements
+
 
     def check_version(self):
         version_range = self.server.server_version()
@@ -200,8 +217,8 @@ class EDRClient(object):
             self.__status_update_pending()
 
     def is_obsolete(self, advertised_version):
-        client_parts = map(int, self.edr_version.split('.'))
-        advertised_parts = map(int, advertised_version.split('.'))
+        client_parts = list(map(int, self.edr_version.split('.')))
+        advertised_parts = list(map(int, advertised_version.split('.')))
         return client_parts < advertised_parts
 
     @property
@@ -231,12 +248,14 @@ class EDRClient(object):
     @status.setter
     def status(self, new_status):
         self._status.set(new_status)
-        self.ui.nolink()
+        if self.ui:
+            self.ui.nolink()
 
     def linkable_status(self, link, new_status = None):
         #TODO verify if this needs to be truncated
         self._status.set(new_status if new_status else link)
-        self.ui.link(link)
+        if self.ui:
+            self.ui.link(link)
 
     @property
     def visual_feedback(self):
@@ -279,6 +298,18 @@ class EDRClient(object):
             self.server.anonymous_reports = None
         elif new_value in [_(u"Always"), _(u"Never")]:
             self.server.anonymous_reports = (new_value == _(u"Always")) 
+
+    @property
+    def fc_jump_psa(self):
+        return self._fc_jump_psa.get()
+
+    @fc_jump_psa.setter
+    def fc_jump_psa(self, new_value):
+        self._fc_jump_psa.set(new_value)
+        if new_value is None or new_value == _(u"Never"):
+            self.server.fc_jump_psa = None
+        elif new_value in [_(u"Public"), _(u"Private")]:
+            self.server.fc_jump_psa = (new_value == _(u"Public")) 
 
 
     def player_name(self, name):
@@ -348,6 +379,9 @@ class EDRClient(object):
         self.server.logout()
 
     def app_ui(self, parent):
+        if self.ui is None:
+            self.ui = EDRTogglingPanel(self._status, self._visual_alt_feedback, parent=parent)
+            self.ui.notify(_(u"Troubleshooting"), [_(u"If the overlay doesn't show up, try one of the following:"), _(u" - In Elite: go to graphics options, and select Borderless or Windowed."), _(" - With Elite and EDR launched, check that EDMCOverlay.exe is running in the task manager"), _(u"If the overlay hurts your FPS, try turning VSYNC off in Elite's graphics options."), u"----", _("Join https://edrecon.com/discord for further technical support.")])
         self.check_version()
         return self.ui
 
@@ -357,6 +391,7 @@ class EDRClient(object):
 
         # Translators: this is shown in the preferences panel
         ttkHyperlinkLabel.HyperlinkLabel(frame, text=_(u"EDR website"), background=notebook.Label().cget('background'), url="https://edrecon.com", underline=True).grid(padx=10, sticky=tk.W)       
+        ttkHyperlinkLabel.HyperlinkLabel(frame, text=_(u"EDR community"), background=notebook.Label().cget('background'), url="https://edrecon.com/discord", underline=True).grid(padx=10, sticky=tk.W)       
 
         # Translators: this is shown in the preferences panel
         notebook.Label(frame, text=_(u'Credentials')).grid(padx=10, sticky=tk.W)
@@ -373,12 +408,18 @@ class EDRClient(object):
         notebook.Entry(frame, textvariable=self._password,
                        show=u'*').grid(padx=10, row=12, column=1, sticky=tk.EW)
 
-        notebook.Label(frame, text=_(u'Sitrep Broadcasts')).grid(padx=10, row=14, sticky=tk.W)
+        notebook.Label(frame, text=_(u'Broadcasts')).grid(padx=10, row=14, sticky=tk.W)
         ttk.Separator(frame, orient=tk.HORIZONTAL).grid(columnspan=2, padx=10, pady=2, sticky=tk.EW)
-        notebook.Label(frame, text=_("Redact my info")).grid(padx=10, row = 16, sticky=tk.W)
+        notebook.Label(frame, text=_("Redact my info in Sitreps")).grid(padx=10, row = 16, sticky=tk.W)
         choices = { _(u'Auto'),_(u'Always'),_(u'Never')}
         popupMenu = notebook.OptionMenu(frame, self._anonymous_reports, self.anonymous_reports, *choices)
         popupMenu.grid(padx=10, row=16, column=1, sticky=tk.EW)
+        popupMenu["menu"].configure(background="white", foreground="black")
+
+        notebook.Label(frame, text=_(u"Announce my Fleet Carrier's jump schedule (α)")).grid(padx=10, row = 17, sticky=tk.W)
+        choices = { _(u'Never'),_(u'Public'),_(u'Private')}
+        popupMenu = notebook.OptionMenu(frame, self._fc_jump_psa, self.fc_jump_psa, *choices)
+        popupMenu.grid(padx=10, row=17, column=1, sticky=tk.EW)
         popupMenu["menu"].configure(background="white", foreground="black")
 
         if self.server.is_authenticated():
@@ -390,14 +431,14 @@ class EDRClient(object):
             self.status = _(u"not authenticated.")
 
         # Translators: this is shown in the preferences panel as a heading for feedback options (e.g. overlay, audio cues)
-        notebook.Label(frame, text=_(u"EDR Feedback:")).grid(padx=10, row=17, sticky=tk.W)
+        notebook.Label(frame, text=_(u"EDR Feedback:")).grid(padx=10, row=18, sticky=tk.W)
         ttk.Separator(frame, orient=tk.HORIZONTAL).grid(columnspan=2, padx=10, pady=2, sticky=tk.EW)
         
         notebook.Checkbutton(frame, text=_(u"Overlay"),
-                             variable=self._visual_feedback).grid(padx=10, row=19,
+                             variable=self._visual_feedback).grid(padx=10, row=20,
                                                                   sticky=tk.W)
         notebook.Checkbutton(frame, text=_(u"Sound"),
-                             variable=self._audio_feedback).grid(padx=10, row=20, sticky=tk.W)
+                             variable=self._audio_feedback).grid(padx=10, row=21, sticky=tk.W)
 
 
         return frame
@@ -425,12 +466,16 @@ class EDRClient(object):
         config.set("EDRVisualFeedback", "True" if self.visual_feedback else "False")
         config.set("EDRAudioFeedback", "True" if self.audio_feedback else "False")
         config.set("EDRRedactMyInfo", self.anonymous_reports)
+        config.set("EDRFCJumpPSA", self.fc_jump_psa)
         EDRLOG.log(u"Audio cues: {}, {}".format(config.get("EDRAudioFeedback"),
                                                 config.get("EDRAudioFeedbackVolume")), "DEBUG")
         EDRLOG.log(u"Anonymous reports: {}".format(config.get("EDRRedactMyInfo")), "DEBUG")
+        self.ui.refresh_theme()
         self.login()
 
     def noteworthy_about_system(self, fsdjump_event):
+        if fsdjump_event["SystemSecurity"]:
+            self.player.location_security(fsdjump_event["SystemSecurity"])
         self.edrsystems.system_id(fsdjump_event['StarSystem'], may_create=True, coords=fsdjump_event.get("StarPos", None))
         facts = self.edrresourcefinder.assess_jump(fsdjump_event, self.player.inventory)
         header = _('Rare materials in {} (USS-HGE/EE, Mission Rewards)'.format(fsdjump_event['StarSystem']))
@@ -439,7 +484,11 @@ class EDRClient(object):
             header = _('Noteworthy stellar bodies in {}').format(fsdjump_event['StarSystem'])
         
         if not facts:
-            return False
+            if self.player.in_bad_neighborhood():
+                header = _(u"Anarchy system")
+                facts = [_(u"Crimes will not be reported.")]
+            else:
+                return False
         self.__notify(header, facts, clear_before = True)
         return True
 
@@ -491,6 +540,18 @@ class EDRClient(object):
             self.player.planetary_destination = None
             self.__notify(_(u'Assisted Navigation'), [_(u"Invalid destination")], clear_before = True)
 
+    def docking_guidance(self, entry):
+        if not self.visual_feedback:
+            # TODO only works if visual feedback is allowed due to how the docking feature is tied to IN_GAME_MSG which can be None if visual feedback is turned off
+            return
+        if entry["event"] == "DockingGranted":
+            station = self.edrsystems.station(self.player.star_system, entry["StationName"], entry["StationType"])
+            summary = self.IN_GAME_MSG.docking(self.player.star_system, station, entry["LandingPad"])
+            if summary:
+                self.ui.notify(summary["header"], summary["body"])
+        else:
+            self.IN_GAME_MSG.clear_docking()
+
     def show_navigation(self):
         current = self.player.piloted_vehicle.attitude
         destination = self.player.planetary_destination
@@ -538,7 +599,12 @@ class EDRClient(object):
                 self.__sitrep(header.format(star_system), details)
         except CommsJammedError:
             self.__commsjammed()
+
+    def mining_guidance(self):
+        if self.visual_feedback:
+            self.IN_GAME_MSG.mining_guidance(self.player.mining_stats)
         
+        self.status = _(u"[Yield: {:.2f}%]   [LTD: {} ({:.0f}/hour)]".format(self.player.mining_stats.last["proportion"], self.player.mining_stats.refined_nb, self.player.mining_stats.ltd_per_hour()))
 
     def notams(self):
         summary = self.edrsystems.systems_with_active_notams()
@@ -756,7 +822,7 @@ class EDRClient(object):
                 elif not self.player.power:
                     details = _(u"Pledge to a power to access enemy alerts")
                 elif self.player.time_pledged < self.enemy_alerts_pledge_threshold:
-                    details = _(u"Remain loyal for at least {} days to access enemy alerts").format(int(self.enemy_alerts_pledge_threshold // 24*60*60))
+                    details = _(u"Remain loyal for at least {} days to access enemy alerts").format(int(self.enemy_alerts_pledge_threshold // (24*60*60)))
                 else:
                     details = _(u"Enabling Enemy alerts") if self.edropponents[kind].establish_comms_link() else _(u"Couldn't enable Enemy alerts")
             else:            
@@ -909,14 +975,14 @@ class EDRClient(object):
             if profile:
                 self.status = _(u"got info about {}").format(cmdr_name)
                 EDRLOG.log(u"Who {} : {}".format(cmdr_name, profile.short_profile(self.player.powerplay)), "INFO")
-                legal = self.edrlegal.summarize_recents(profile.cid)
+                legal = self.edrlegal.summarize(profile.cid)
+                details = [profile.short_profile(self.player.powerplay)]
                 if legal:
-                    self.__intel(cmdr_name, [profile.short_profile(self.player.powerplay), legal], clear_before=True)
-                else:
-                    self.__intel(cmdr_name, [profile.short_profile(self.player.powerplay)], clear_before=True)
+                    details.append(legal["overview"])
+                self.__intel(_(u"Intel about {}").format(cmdr_name), details, clear_before=True, legal=legal)
             else:
                 EDRLOG.log(u"Who {} : no info".format(cmdr_name), "INFO")
-                self.__intel(cmdr_name, [_("No info about {cmdr}").format(cmdr=cmdr_name)], clear_before=True)
+                self.__intel(_(u"Intel about {}").format(cmdr_name), [_("No info").format(cmdr=cmdr_name)], clear_before=True)
         except CommsJammedError:
             self.__commsjammed()    
 
@@ -956,10 +1022,14 @@ class EDRClient(object):
             return its_actually_fine
 
         profile = self.cmdr(cmdr_name, check_inara_server=True)
+        legal = self.edrlegal.summarize(profile.cid)
         if profile and (self.player.name != cmdr_name) and profile.is_dangerous(self.player.powerplay):
             self.status = _(u"{} is bad news.").format(cmdr_name)
             if self.novel_enough_blip(cmdr_id, blip, cognitive = True):
-                self.__warning(_(u"Warning!"), [profile.short_profile(self.player.powerplay)], clear_before=True)
+                details = [profile.short_profile(self.player.powerplay)]
+                if legal:
+                    details.append(legal["overview"])
+                self.__warning(_(u"[Caution!] Intel about {}").format(cmdr_name), details, clear_before=True, legal=legal)
                 self.cognitive_blips_cache.set(cmdr_id, blip)
                 if self.player.in_open() and self.is_anonymous() and profile.is_dangerous(self.player.powerplay):
                     self.advertise_full_account(_("You could have helped other EDR users by reporting this outlaw."))
@@ -999,7 +1069,7 @@ class EDRClient(object):
 
         if self.novel_enough_scan(cmdr_id, scan, cognitive = True):
             profile = self.cmdr(cmdr_name, check_inara_server=True)
-            legal = self.edrlegal.summarize_recents(profile.cid)
+            legal = self.edrlegal.summarize(profile.cid)
             bounty = EDFineOrBounty(scan["bounty"]) if scan["bounty"] else None
             if profile and (self.player.name != cmdr_name):
                 if profile.is_dangerous(self.player.powerplay):
@@ -1016,8 +1086,8 @@ class EDRClient(object):
                     if status:
                         details.append(status)
                     if legal:
-                        details.append(legal)
-                    self.__warning(_(u"Warning!"), details, clear_before=True)
+                        details.append(legal["overview"])
+                    self.__warning(_(u"[Caution!] Intel about {}").format(cmdr_name), details, clear_before=True, legal=legal)
                 elif self.intel_even_if_clean or (scan["wanted"] and bounty.is_significant()):
                     self.status = _(u"Intel for cmdr {}.").format(cmdr_name)
                     details = [profile.short_profile(self.player.powerplay)]
@@ -1026,8 +1096,8 @@ class EDRClient(object):
                     elif scan["wanted"]:
                         details.append(_(u"Wanted somewhere but it could be minor offenses."))
                     if legal:
-                        details.append(legal)
-                    self.__intel(_(u"Intel"), details, clear_before=True)
+                        details.append(legal["overview"])
+                    self.__intel(_(u"Intel about {}").format(cmdr_name), details, clear_before=True, legal=legal)
                 if not self.player.in_solo() and (self.is_anonymous() and (profile.is_dangerous(self.player.powerplay) or (scan["wanted"] and bounty.is_significant()))):
                     # Translators: this is shown to users who don't yet have an EDR account
                     self.advertise_full_account(_(u"You could have helped other EDR users by reporting this outlaw."))
@@ -1195,6 +1265,49 @@ class EDRClient(object):
             return True
         return False
 
+    def fc_jump_requested(self, event):
+        self.player.fleet_carrier.jump_requested(event)
+        jump_info = self.player.fleet_carrier.json_jump_schedule()
+        if not jump_info:
+            return
+
+        if self.is_anonymous():
+            EDRLOG.log(u"Skipping fleet carrier jump report since the user is anonymous.", "INFO")
+            return True
+
+        if self.fc_jump_psa == _(u"Never"):
+            EDRLOG.log(u"FC Jump reporting is off.", "INFO")
+            self.status = _(u"Skipped announcement of FC jump schedule (enable from EDMC settings, EDR tab).")
+            return True
+
+        jump_info["owner"] = self.player.name
+        if self.server.fc_jump_scheduled(jump_info):
+            if self.fc_jump_psa == _(u"Public"):
+                self.status = _(u"Reported FC jump schedule for public announcement.")
+            else:
+                self.status = _(u"Reported FC jump schedule for private announcement (registered FC only, inquiry @ edrecon.com/discord).")
+            return True
+        return False
+    
+    def fc_jump_cancelled(self, event):
+        self.player.fleet_carrier.jump_cancelled(event)
+        
+        if self.is_anonymous():
+            EDRLOG.log(u"Skipping fleet carrier jump report since the user is anonymous.", "INFO")
+            return True
+
+        if self.fc_jump_psa == _(u"Never"):
+            EDRLOG.log(u"FC Jump reporting is off.", "INFO")
+            self.status = _(u"Skipped announcement of FC jump schedule (enable from EDMC settings, EDR tab).")
+            return True
+
+        status = self.player.fleet_carrier.json_status()
+        status["owner"] = self.player.name
+        if self.server.fc_jump_cancelled(status):
+            self.status = _(u"Cancelled FC jump schedule.")
+            return True
+        return False
+
     def __throttling_duration(self):
         now_epoch = EDTime.py_epoch_now()
         if now_epoch > self._throttle_until_timestamp:
@@ -1330,12 +1443,12 @@ class EDRClient(object):
             
             if report:
                 self.status = _(u"got info about {}").format(cmdr_name)
-                header = _(u"Intel for {}") if self.player.in_open() else _(u"Intel for {} (Open)")
+                header = _(u"Intel about {}") if self.player.in_open() else _(u"Intel about {} (Open)")
                 self.__intel(header.format(cmdr_name), report["readable"], clear_before=True)
             else:
                 EDRLOG.log(u"Where {} : no info".format(cmdr_name), "INFO")
                 self.status = _(u"no info about {}").format(cmdr_name)
-                header = _(u"Intel for {}") if self.player.in_open() else _(u"Intel for {} (Open)")
+                header = _(u"Intel about {}") if self.player.in_open() else _(u"Intel about {} (Open)")
                 self.__intel(header.format(cmdr_name), [_(u"Not recently sighted or not an outlaw.")], clear_before=True)
         except CommsJammedError:
             self.__commsjammed()
@@ -1473,25 +1586,25 @@ class EDRClient(object):
         EDRLOG.log(u"[Alt] sitrep with header: {}; details: {}".format(header, details[0]), "DEBUG")
         self.ui.sitrep(header, details)
 
-    def __intel(self, who, details, clear_before=False):
+    def __intel(self, header, details, clear_before=False, legal=None):
         if self.audio_feedback:
             self.AUDIO_FEEDBACK.notify()
         if self.visual_feedback:
-            EDRLOG.log(u"Intel for {}; details: {}".format(who, details[0]), "DEBUG")
+            EDRLOG.log(u"Intel; details: {}".format(details[0]), "DEBUG")
             if clear_before:
                 self.IN_GAME_MSG.clear_intel()
-            self.IN_GAME_MSG.intel(_(u"Intel"), details)
-        EDRLOG.log(u"[Alt] Intel for {}; details: {}".format(who, details[0]), "DEBUG")
-        self.ui.intel(_(u"Intel"), details)
+            self.IN_GAME_MSG.intel(header, details, legal)
+        EDRLOG.log(u"[Alt] Intel; details: {}".format(details[0]), "DEBUG")
+        self.ui.intel(header, details)
 
-    def __warning(self, header, details, clear_before=False):
+    def __warning(self, header, details, clear_before=False, legal=None):
         if self.audio_feedback:
             self.AUDIO_FEEDBACK.warn()
         if self.visual_feedback:
             EDRLOG.log(u"Warning; details: {}".format(details[0]), "DEBUG")
             if clear_before:
                 self.IN_GAME_MSG.clear_warning()
-            self.IN_GAME_MSG.warning(header, details)
+            self.IN_GAME_MSG.warning(header, details, legal)
         EDRLOG.log(u"[Alt] Warning; details: {}".format(details[0]), "DEBUG")
         self.ui.warning(header, details)
     
@@ -1507,7 +1620,7 @@ class EDRClient(object):
         self.ui.notify(header, details)
 
     def __commsjammed(self):
-        self.__notify(_(u"Comms Link Error"), [_(u"EDR Central can't be reached at the moment"), _(u"Try again later or contact Cmdr LeKeno if it keeps failing")])
+        self.__notify(_(u"Comms Link Error"), [_(u"EDR Central can't be reached at the moment"), _(u"Try again later. Join https://edrecon.com/discord or contact Cmdr LeKeno if it keeps failing")])
 
     def notify_with_details(self, notice, details):
         self.__notify(notice, details)

@@ -1,4 +1,9 @@
 # encoding: utf-8
+import sys
+try:
+    from urllib.parse import quote
+except ImportError:
+    from urllib import quote # python 2.7.11
 import urllib
 import json
 import calendar
@@ -34,6 +39,7 @@ class EDRServer(object):
         self.version = edrconfig.EDRConfig().edr_version()
         self._throttle_until_timestamp = None
         self.anonymous_reports = None
+        self.fc_jump_psa = None
         self.backoff = {"EDR": backoff.Backoff(u"EDR"), "Inara": backoff.Backoff(u"Inara") }
         self.INARA_API_KEY = config.inara_api_key()
 
@@ -194,7 +200,7 @@ class EDRServer(object):
             return None
 
         the_system = None
-        if resp.content == 'null':
+        if resp.content == 'null' or resp.content == b'null':
             EDRLOG.log(u"System {} is not recorded in EDR.".format(star_system), "DEBUG")
             if may_create:
                 EDRLOG.log(u"Creating system in EDR.", "DEBUG")
@@ -213,12 +219,16 @@ class EDRServer(object):
                     EDRLOG.log(u"Failed to create new star system.", "ERROR")
                     return None
                 the_system = json.loads(resp.content)
-                EDRLOG.log(u"Created system {} in EDR with id={}.".format(star_system, the_system.values()[0]), "DEBUG")
+                EDRLOG.log(u"Created system {} in EDR.".format(star_system), "DEBUG")
             else:
                 return None
         else:
+            print(resp.content) # TODO remove
             the_system = json.loads(resp.content)
-            sid = the_system.keys()[0]
+            sid = list(the_system)[0] if the_system else None
+            if sid is None:
+                EDRLOG.log(u"System {} has no id={}.".format(star_system, sid), "DEBUG")
+                return None
             EDRLOG.log(u"System {} is in EDR with id={}.".format(star_system, sid), "DEBUG")
             if may_create and coords and "coords" not in the_system[sid]:
                 EDRLOG.log(u"Adding coords to system in EDR.", "DEBUG")
@@ -261,7 +271,11 @@ class EDRServer(object):
             raise CommsJammedError("cmdr")
         cmdr_profile = edrcmdrprofile.EDRCmdrProfile()
 
-        params = { "orderBy": '"cname"', "equalTo": json.dumps(cmdr.lower().encode('utf-8')), "limitToFirst": 1, "auth": self.auth_token()}
+        params = {}
+        if sys.version_info.major == 2:
+            params = { "orderBy": '"cname"', "equalTo": json.dumps(cmdr.lower().encode('utf-8')), "limitToFirst": 1, "auth": self.auth_token()}
+        else:
+            params = { "orderBy": '"cname"', "equalTo": json.dumps(cmdr.lower()), "limitToFirst": 1, "auth": self.auth_token()}
         resp = self.__get("{}/v1/cmdrs.json".format(self.EDR_SERVER), "EDR", params)
 
         if not self.__check_response(resp, "EDR", "Cmdrs"):
@@ -269,7 +283,7 @@ class EDRServer(object):
             EDRLOG.log(u"{error}, {content}".format(error=resp.status_code, content=resp.text), "DEBUG")
             return None
 
-        if resp.content == 'null':
+        if resp.content == 'null' or resp.content == b'null':
             if autocreate and not self.is_anonymous():
                 params = { "auth" : self.auth_token() }
                 endpoint = "{}/v1/cmdrs.json".format(self.EDR_SERVER)
@@ -279,15 +293,16 @@ class EDRServer(object):
                     return None
                 json_cmdr = json.loads(resp.content)
                 EDRLOG.log(u"New cmdr:{}".format(json_cmdr), "DEBUG")
-                cmdr_profile.cid = json_cmdr.values()[0]
+                cmdr_profile.cid = list(json_cmdr.values())[0]
                 cmdr_profile.name = cmdr
             else:
                 return None
         else:
+            print(resp.content) # TODO remove
             json_cmdr = json.loads(resp.content)
             EDRLOG.log(u"Existing cmdr:{}".format(json_cmdr), "DEBUG")
-            cmdr_profile.cid = json_cmdr.keys()[0]
-            cmdr_profile.from_dict(json_cmdr.values()[0])
+            cmdr_profile.cid = list(json_cmdr)[0]
+            cmdr_profile.from_dict(list(json_cmdr.values())[0])
 
         return cmdr_profile
 
@@ -304,8 +319,8 @@ class EDRServer(object):
             "Authorization": "ApiKey {}".format(self.INARA_API_KEY),
             "X-EDR-UID": self.uid()
         }
-        requester = urllib.quote(self.player_name.encode('utf-8')) if self.player_name else u"-"
-        endpoint = "https://us-central1-blistering-inferno-4028.cloudfunctions.net/edr/v1/inara/{}/{}".format(urllib.quote(cmdr.lower().encode('utf-8')), urllib.quote(requester))
+        requester = quote(self.player_name.encode('utf-8')) if self.player_name else u"-"
+        endpoint = "https://us-central1-blistering-inferno-4028.cloudfunctions.net/edr/v1/inara/{}/{}".format(quote(cmdr.lower().encode('utf-8')), quote(requester))
         resp = self.__get(endpoint, "EDR", headers=headers)
 
         if not self.__check_response(resp, "Inara", "Inara"):
@@ -362,6 +377,21 @@ class EDRServer(object):
         records_over_timespan = int(max(1, round(timespan_seconds / 86400.0 * legal_records_perday)))
         return self.__get_recent(endpoint, timespan_seconds, limitToLast=records_over_timespan)
 
+    def legal_stats(self, cmdr_id):
+        if not self.__preflight("legal_stats", cmdr_id):
+            EDRLOG.log(u"Preflight failed for legal_stats call.", "DEBUG")
+            raise CommsJammedError("legal_stats")
+        EDRLOG.log(u"Fetching legal stats for cmdr {cid}".format(cid=cmdr_id), "INFO")
+        endpoint = "{server}/v1/stats/legal/{cmdr_id}/.json".format(server=self.EDR_SERVER,cmdr_id=cmdr_id)
+        params = {"auth": self.auth_token()}
+        resp = self.__get(endpoint, "EDR", params)
+        EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+
+        if self.__check_response(resp, "EDR", "Legal_Stats"):
+            return json.loads(resp.content)
+        else:
+            return None
+
     def crime(self, system_id, info):
         info["uid"] = self.uid()
         EDRLOG.log(u"Crime report for system {sid} with json:{json}".format(sid=system_id, json=info), "INFO")
@@ -380,6 +410,21 @@ class EDRServer(object):
         endpoint = "/v1/central/{service}/{system_id}/".format(service=service, system_id=system_id)
         return self.__post_json(endpoint, info, "EDR")
 
+    def fc_jump_scheduled(self, flight_plan):
+        if self.fc_jump_psa is None:
+            return False
+        flight_plan["psa"] = self.fc_jump_psa
+        EDRLOG.log(u"Fleet Carrier jump with json:{json}".format(json=flight_plan), "INFO")
+        endpoint = "/v1/fcjumps/{uid}/".format(server=self.EDR_SERVER, uid=self.uid())
+        return self.__post_json(endpoint, flight_plan, "EDR")
+
+    def fc_jump_cancelled(self, status):
+        if self.fc_jump_psa is None:
+            return False
+        EDRLOG.log(u"Cancelling Fleet Carrier jump", "INFO")
+        status["psa"] = self.fc_jump_psa
+        endpoint = "/v1/fcjumps/{uid}/".format(server=self.EDR_SERVER, uid=self.uid())
+        return self.__post_json(endpoint, status, "EDR")
 
     def crew_report(self, crew_id, report):
         EDRLOG.log(u"Multicrew session report: {}".format(report), "INFO")
@@ -478,7 +523,7 @@ class EDRServer(object):
         
         sighting = json.loads(resp.content)
         if sighting:
-            sid = sighting.keys()[0]
+            sid = list(sighting)[0]
             return sighting[sid]
         return None
 
