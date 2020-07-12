@@ -177,5 +177,5 @@ class RandomTips(object):
             self.tips = DEFAULT_TIPS
 
     def tip(self):
-        category = random.choice(self.tips.keys())
+        category = random.choice(list(self.tips))
         return edri18n._(random.choice(self.tips[category]))

@@ -156,19 +156,19 @@ class EDRSystems(object):
             return None
 
         if cached and system:
-            sid = system.keys()[0]
+            sid = list(system)[0]
             if may_create and coords and not "coords" in system[sid]:
                 EDRLOG.log(u"System {} is in the cache with id={} but missing coords".format(star_system, sid), "DEBUG")
                 system = self.server.system(star_system, may_create, coords)
                 if system:
                     self.systems_cache.set(star_system.lower(), system)
-                sid = system.keys()[0]
+                sid = list(system)[0]
             return sid
 
         system = self.server.system(star_system, may_create, coords)
         if system:
             self.systems_cache.set(star_system.lower(), system)
-            sid = system.keys()[0]
+            sid = list(system)[0]
             EDRLOG.log(u"Cached {}'s info with id={}".format(star_system, sid), "DEBUG")
             return sid
 
@@ -312,7 +312,7 @@ class EDRSystems(object):
             return None
 
         for body in bodies:
-            if body.get("name", None).lower() == body_name.lower():
+            if body.get("name", "").lower() == body_name.lower():
                 return body
         return None
 
@@ -424,7 +424,7 @@ class EDRSystems(object):
     def __active_notams_for_sid(self, system_id):
         active_notams = []
         entry = self.notams_cache.get(system_id)
-        all_notams = entry.get("NOTAMs", None)
+        all_notams = entry.get("NOTAMs", {})
         js_epoch_now = edtime.EDTime.js_epoch_now()
         for notam in all_notams:
             active = True
@@ -443,7 +443,7 @@ class EDRSystems(object):
     def systems_with_active_notams(self):
         summary = []
         self.__update_if_stale()
-        systems_ids = self.notams_cache.keys()
+        systems_ids = list(self.notams_cache.keys()).copy()
         for sid in systems_ids:
             entry = self.notams_cache.get(sid)
             if not entry:
@@ -463,7 +463,7 @@ class EDRSystems(object):
         systems_with_recent_outlaws = {}
         systems_with_recent_enemies = {}
         self.__update_if_stale()
-        systems_ids = self.sitreps_cache.keys()
+        systems_ids = (list(self.sitreps_cache.keys())).copy()
         for sid in systems_ids:
             sitrep = self.sitreps_cache.get(sid)
             star_system = sitrep.get("name", None) if sitrep else None
@@ -650,7 +650,7 @@ class EDRSystems(object):
             if recent_traffic is not None: # Should always be true... simplify. TODO
                 summary_traffic = collections.OrderedDict()
                 for traffic in recent_traffic:
-                    previous_timestamp = summary_traffic.get(traffic["cmdr"], None)
+                    previous_timestamp = summary_traffic.get(traffic["cmdr"], 0)
                     if traffic["timestamp"] < previous_timestamp:
                         continue
                     karma = traffic.get("karma", 0)
@@ -682,8 +682,8 @@ class EDRSystems(object):
                     if lead_name not in summary_crimes or crime["timestamp"] > summary_crimes[lead_name][0]: 
                         summary_crimes[lead_name] = [crime["timestamp"], crime["offence"]]
                         for criminal in crime["criminals"]:
-                            previous_timestamp = wanted_cmdrs[criminal["name"]][0] if criminal["name"] in wanted_cmdrs else None
-                            previous_timestamp = max(previous_timestamp, enemies[criminal["name"]][0]) if criminal["name"] in enemies else None
+                            previous_timestamp = wanted_cmdrs[criminal["name"]][0] if criminal["name"] in wanted_cmdrs else 0
+                            previous_timestamp = max(previous_timestamp, enemies[criminal["name"]][0]) if criminal["name"] in enemies else 0
                             if previous_timestamp > crime["timestamp"]:
                                 continue
                             karma = criminal.get("karma", 0)

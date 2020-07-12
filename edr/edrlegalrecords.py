@@ -107,7 +107,7 @@ class EDRLegalRecords(object):
                 continue
 
             wayTooOld = int(legal_stats[m]["year"]) < currentYear-1
-            tooOld = (int(legal_stats[m]["year"]) == currentYear-1) and m <= currentMonth
+            tooOld = (int(legal_stats[m]["year"]) == currentYear-1) and int(m) <= currentMonth
             if (wayTooOld or tooOld):
                 clean.append(0)
                 wanted.append(0)

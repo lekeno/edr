@@ -151,8 +151,7 @@ class EDRSEEReader():
                         continue
                     if data["path"] == '/':
                         # initial update
-                        keys = data["data"].keys()
-                        keys.sort()
+                        keys = sorted(data["data"])
                         for k in keys:
                             self.callback(self.kind, data["data"][k])
                     else:
