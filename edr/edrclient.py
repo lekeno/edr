@@ -1231,7 +1231,7 @@ class EDRClient(object):
             return
         instance_changes = self.player.instance.noteworthy_changes_json()
         if instance_changes:
-            instance_changes["players"] = filter(lambda x: self.__novel_enough_combat_contact(x), instance_changes["players"])
+            instance_changes["players"] = list(filter(lambda x: self.__novel_enough_combat_contact(x), instance_changes["players"]))
             fight["instance"] = instance_changes
         fight["codeword"] = self.player.recon_box.keycode
         if self.server.fight(sid, fight):
