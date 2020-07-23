@@ -70,7 +70,7 @@ class EDInstance(object):
             except:
                 pass
             the_player = self.players[cmdr_name]["player"]
-            if the_player.bounty >= bounty_threshold:
+            if the_player.bounty and the_player.bounty >= bounty_threshold:
                 return True if not profile else not(profile.is_friend() or profile.is_ally())
 
     def players_nb(self):
@@ -83,7 +83,7 @@ class EDInstance(object):
         players = []
         for cmdr_name in self.players:
             timestamp, player = self.players[cmdr_name.lower()].values()
-            if timestamp >= self.last_check_timestamp:
+            if timestamp is None or self.last_check_timestamp is None or timestamp >= self.last_check_timestamp:
                 players.append(player.json())
         self.last_check_timestamp = now
         self._touched = False

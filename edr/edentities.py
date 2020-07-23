@@ -703,9 +703,9 @@ class EDWing(object):
                 if instance.player(wingmate) is None:
                     continue
                 timestamp, _ = instance.blip(wingmate).values()
-                if timestamp >= self.last_check_timestamp:
+                if self.last_check_timestamp is None or timestamp >= self.last_check_timestamp:
                     changes.append({u"cmdr": wingmate, u"instanced": True})
-        elif self.timestamp >= self.last_check_timestamp:
+        elif self.last_check_timestamp is None or self.timestamp is None or self.timestamp >= self.last_check_timestamp:
             changes = [ {u"cmdr": wingmate, u"instanced": instance.player(wingmate) != None} for wingmate in self.wingmates]
         self._touched = False
         now = EDTime.py_epoch_now()
