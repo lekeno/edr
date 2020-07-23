@@ -604,7 +604,7 @@ class EDRClient(object):
         if self.visual_feedback:
             self.IN_GAME_MSG.mining_guidance(self.player.mining_stats)
         
-        self.status = _(u"[Yield: {:.2f}%]   [LTD: {} ({:.0f}/hour)]".format(self.player.mining_stats.last["proportion"], self.player.mining_stats.refined_nb, self.player.mining_stats.ltd_per_hour()))
+        self.status = _(u"[Yield: {:.2f}%]   [LTD: {} ({:.0f}/hour)]".format(self.player.mining_stats.last["proportion"], self.player.mining_stats.refined_nb, self.player.mining_stats.mineral_per_hour()))
 
     def notams(self):
         summary = self.edrsystems.systems_with_active_notams()
