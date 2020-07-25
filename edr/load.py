@@ -1390,17 +1390,12 @@ def handle_bang_commands(cmdr, command, command_parts):
     elif command == "!contract":
         target_cmdr = cmdr.target
         reward = None
-        unit = u"VO$"
-        print command_parts
         if len(command_parts) >= 2:
             parts = " ".join(command_parts[1:]).split(" $$$ ", 1)
             target_cmdr = parts[0]
             if len(parts)>=2:
-                (reward, unit) = parts[1].split(" ", 1)
-                reward = int(reward)
-            print target_cmdr
-            print reward
-        EDRLOG.log(u"Contract command on {} with reward of {} {}".format(target_cmdr, reward, unit), "INFO")
+                reward = int(part[1])
+        EDRLOG.log(u"Contract command on {} with reward of {}".format(target_cmdr, reward), "INFO")
         if reward is None:
             EDR_CLIENT.contract(target_cmdr)
         else:

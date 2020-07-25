@@ -3,7 +3,6 @@ from __future__ import absolute_import
 from collections import deque
 from edtime import EDTime
 
-# TODO consider doing more than just LTD? configurable? automatic?
 class EDRMiningStats(object):
     def __init__(self):
         self.of_interest = { "names": ["lowtemperaturediamond", "painite", "voidopal"], "types": ["$lowtemperaturediamond_name;", "$painite_name;", "$opal_name"]}
@@ -51,7 +50,7 @@ class EDRMiningStats(object):
         if entry.get("Remaining", 0) <= 0:
             return False
 
-        if self.__prrobably_previously_prospected(entry):
+        if self.__probably_previously_prospected(entry):
             return False
         
         self.prospected_raw_history.append(entry)
@@ -92,13 +91,13 @@ class EDRMiningStats(object):
                 self.prospectements.append((now, proportion))
                 self.last["proportion"] = proportion
                 was_a_dud = False
-                break # TODO: assumption, an asteroid can't have multiple mineral of interest (at least for now, can't have both LTD and Painite)
+                break # TODO: assumption, an asteroid can't have multiple mineral of interest (at least for now, can't have both LTD and Painite or VO)
         if was_a_dud:
             self.distribution["last_index"] = 0
             self.distribution["bins"][0] += 1
             self.prospectements.append((now, 0.0))
 
-    def __prrobably_previously_prospected(self, entry):
+    def __probably_previously_prospected(self, entry):
         b = entry.copy()
         b["timestamp"] = ""
         b["Remaining"] = ""

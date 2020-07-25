@@ -604,7 +604,7 @@ class EDRClient(object):
         if self.visual_feedback:
             self.IN_GAME_MSG.mining_guidance(self.player.mining_stats)
         
-        self.status = _(u"[Yield: {:.2f}%]   [LTD: {} ({:.0f}/hour)]".format(self.player.mining_stats.last["proportion"], self.player.mining_stats.refined_nb, self.player.mining_stats.mineral_per_hour()))
+        self.status = _(u"[Yield: {:.2f}%]   [Items: {} ({:.0f}/hour)]".format(self.player.mining_stats.last["proportion"], self.player.mining_stats.refined_nb, self.player.mining_stats.mineral_per_hour()))
 
     def notams(self):
         summary = self.edrsystems.systems_with_active_notams()
@@ -1482,9 +1482,9 @@ class EDRClient(object):
 
         contracts = self.edrcmdrs.contracts()
         if contracts:
-            self.__notify(_(u"Kill Rewards"),[_(u"{} {} on Cmdr {}").format(contracts[c]["reward"], contracts[c]["unit"], contracts[c]["cname"]) for c in contracts], clear_before = True)
+            self.__notify(_(u"Kill Rewards"),[_(u"{} on Cmdr {}").format(contracts[c]["reward"], contracts[c]["cname"]) for c in contracts], clear_before = True)
         else:
-            instructions = random.choice([_(u"Send '!contract example $$$ 10 VO$' in chat to set a reward of 10 void opals on Cmdr 'example'"), _(u"Send '!contract example $$$ 10 P$' in chat to set a reward of 10 painite on Cmdr 'example'")])
+            instructions = _(u"Send '!contract example $$$ 10' in chat to set a reward of 10 million credits on Cmdr 'example'")
             self.__notify(_(u"Kill Rewards"),[_(u"You haven't set any contract yet"), instructions], clear_before = True)
         return True
 
@@ -1495,31 +1495,31 @@ class EDRClient(object):
             return False
 
         c = self.edrcmdrs.contract_for(cmdr_name)
-        self.__notify(_(u"Kill Rewards"),[_(u"Reward of {} {} for a kill on Cmdr {}").format(c["reward"], c["unit"], cmdr_name)], clear_before = True)
+        self.__notify(_(u"Kill Rewards"),[_(u"Reward of {} for a kill on Cmdr {}").format(c["reward"], cmdr_name)], clear_before = True)
         return True
 
-    def contract_on(self, cmdr_name, reward, unit):
+    def contract_on(self, cmdr_name, reward):
         if self.is_anonymous():
             EDRLOG.log(u"Skipping contract since the user is anonymous.", "INFO")
             self.advertise_full_account(_(u"Sorry, this feature only works with an EDR account."), passive=False)
             return False
         
         if reward > 0:
-            reward = min(reward, 750)
-            success = self.edrcmdrs.place_contract(cmdr_name, reward, unit)
+            reward = min(reward, 1000)
+            success = self.edrcmdrs.place_contract(cmdr_name, reward)
             if success:
-                self.__notify(_(u"Kill Rewards"),[_(u"Reward of {} {} for a kill on Cmdr {}").format(reward, unit, cmdr_name), _(u"Send '!contract {} $$$ 0' in chat to remove the kill reward").format(cmdr_name)], clear_before = True)
+                self.__notify(_(u"Kill Rewards"),[_(u"Reward of {} for a kill on Cmdr {}").format(reward, cmdr_name), _(u"Send '!contract {} $$$ 0' in chat to remove the kill reward").format(cmdr_name)], clear_before = True)
                 return True
             self.__notify(_(u"Kill Rewards"),[_(u"Failed to place a reward for a kill on Cmdr {}").format(cmdr_name), _(u"You may have too many active contracts."), _(u"Send '!contracts' to see all your contracts.").format(cmdr_name)], clear_before = True)
             return False
         
         success = self.edrcmdrs.remove_contract(cmdr_name)
-        instructions = random.choice([_(u"Send '!contract {} $$$ 10 VO$' in chat to set a reward of 10 void opals"), _(u"Send '!contract {} $$$ 10 P$' in chat to set a reward of 10 painite")])
+        instructions = _(u"Send '!contract {cmdr} $$$ 10' in chat to set a reward of 10 million credits on Cmdr '{cmdr}'")
         if success:
-            self.__notify(_(u"Kill Rewards"),[_(u"Removed reward for a kill on Cmdr {}").format(cmdr_name), intrusctions.format(cmdr_name)], clear_before = True)
+            self.__notify(_(u"Kill Rewards"),[_(u"Removed reward for a kill on Cmdr {}").format(cmdr_name), intrusctions.format(cmdr=cmdr_name)], clear_before = True)
             return True
         
-        self.__notify(_(u"Kill Rewards"),[_(u"Failed to remove reward for a kill on Cmdr {} (not even set?)").format(cmdr_name), instructions.format(cmdr_name)], clear_before = True)
+        self.__notify(_(u"Kill Rewards"),[_(u"Failed to remove reward for a kill on Cmdr {} (not even set?)").format(cmdr_name), instructions.format(cmdr=cmdr_name)], clear_before = True)
         return False
 
     def outlaws(self):

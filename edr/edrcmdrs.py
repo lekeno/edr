@@ -256,7 +256,7 @@ class EDRCmdrs(object):
         
         return self.server.contract_for(profile.cid)
     
-    def place_contract(self, cmdr_name, reward, unit):
+    def place_contract(self, cmdr_name, reward):
         if not cmdr_name:
             return False
         
@@ -267,7 +267,7 @@ class EDRCmdrs(object):
         if not profile:
             return False
         
-        return self.server.place_contract(profile.cid, {"cname": cmdr_name.lower(), "reward": reward, "unit": unit})
+        return self.server.place_contract(profile.cid, {"cname": cmdr_name.lower(), "reward": reward})
 
     def remove_contract(self, cmdr_name):
         if not cmdr_name:

@@ -223,7 +223,6 @@ class EDRServer(object):
             else:
                 return None
         else:
-            print(resp.content) # TODO remove
             the_system = json.loads(resp.content)
             sid = list(the_system)[0] if the_system else None
             if sid is None:
@@ -298,7 +297,6 @@ class EDRServer(object):
             else:
                 return None
         else:
-            print(resp.content) # TODO remove
             json_cmdr = json.loads(resp.content)
             EDRLOG.log(u"Existing cmdr:{}".format(json_cmdr), "DEBUG")
             cmdr_profile.cid = list(json_cmdr)[0]
