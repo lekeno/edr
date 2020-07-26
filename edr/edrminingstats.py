@@ -3,11 +3,9 @@ from __future__ import absolute_import
 from collections import deque
 from edtime import EDTime
 
-# TODO consider doing more than just LTD? configurable? automatic?
 class EDRMiningStats(object):
     def __init__(self):
-        self.name = "lowtemperaturediamond"
-        self.type = "$lowtemperaturediamond_name;"
+        self.of_interest = { "names": ["lowtemperaturediamond", "painite", "voidopal"], "types": ["$lowtemperaturediamond_name;", "$painite_name;", "$opal_name;"]}
         self.max = 0
         self.previous_max = 0
         self.min = 100.0
@@ -52,7 +50,7 @@ class EDRMiningStats(object):
         if entry.get("Remaining", 0) <= 0:
             return False
 
-        if self.__prrobably_previously_prospected(entry):
+        if self.__probably_previously_prospected(entry):
             return False
         
         self.prospected_raw_history.append(entry)
@@ -78,9 +76,9 @@ class EDRMiningStats(object):
             "materials": len(materials)
         }
         
-        had_no_ltd = True
+        was_a_dud = True
         for material in materials:
-            if material.get("Name", "").lower() == self.name:
+            if material.get("Name", "").lower() in self.of_interest["names"]:
                 proportion = material.get("Proportion", 0.0)
                 self.sum += proportion / 100.0
                 self.previous_max = self.max
@@ -92,14 +90,14 @@ class EDRMiningStats(object):
                 self.distribution["bins"][index] += 1
                 self.prospectements.append((now, proportion))
                 self.last["proportion"] = proportion
-                had_no_ltd = False
-                break
-        if had_no_ltd:
+                was_a_dud = False
+                break # TODO: assumption, an asteroid can't have multiple mineral of interest (at least for now, can't have both LTD and Painite or VO)
+        if was_a_dud:
             self.distribution["last_index"] = 0
             self.distribution["bins"][0] += 1
             self.prospectements.append((now, 0.0))
 
-    def __prrobably_previously_prospected(self, entry):
+    def __probably_previously_prospected(self, entry):
         b = entry.copy()
         b["timestamp"] = ""
         b["Remaining"] = ""
@@ -124,13 +122,13 @@ class EDRMiningStats(object):
             return
         now = EDTime.py_epoch_now()
         self.current = now
-        if entry.get("Type", "").lower() != self.type:
+        if entry.get("Type", "").lower() not in self.of_interest["types"]:
             return
         self.refined_nb += 1
         self.refinements.append((now, 1))
         self.__update_efficiency()
 
-    def ltd_per_hour(self):
+    def mineral_per_hour(self):
         now = EDTime.py_epoch_now()
         self.current = now
         elapsed_time = self.current - self.start
@@ -138,12 +136,12 @@ class EDRMiningStats(object):
             return self.refined_nb / (elapsed_time / 3600.0)
         return 0
     
-    def ltd_yield_average(self):
+    def mineral_yield_average(self):
         return (self.sum / self.prospected_nb)*100.0 if self.prospected_nb else 0.0
 
     def __update_efficiency(self):
         now = EDTime.py_epoch_now()
-        efficiency = self.ltd_per_hour()
+        efficiency = self.mineral_per_hour()
         self.efficiency.append((now, efficiency))
         self.max_efficiency = max(self.max_efficiency, efficiency)
 

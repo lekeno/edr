@@ -736,14 +736,14 @@ class InGameMsg(object):
         if "panel" in self.cfg["mining-graphs"] and self.cfg["mining-graphs"].get("enabled", False):
             self.__shape("mining-graphs", self.cfg["mining-graphs"]["panel"])
         
-        header = _(u"LTD Mining Stats")
+        header = _(u"Mining Stats")
         details = []
-        has_ltd = mining_stats.last["proportion"] > 0
-        details.append(_(u"LTD %: {:>6.2f}  [{}/{}; {}]".format(mining_stats.last["proportion"], 1 if has_ltd else 0, mining_stats.last["materials"], mining_stats.last["raw"])))
+        has_stuff = mining_stats.last["proportion"] > 0
+        details.append(_(u"ITM %: {:>6.2f}  [{}/{}; {}]".format(mining_stats.last["proportion"], 1 if has_stuff else 0, mining_stats.last["materials"], mining_stats.last["raw"])))
         details.append(_(u"MAX %: {:>6.2f}".format(mining_stats.max)))
-        details.append(_(u"AVG %: {:>6.2f}".format(mining_stats.ltd_yield_average())))
-        details.append(_(u"LTD/H: {:>6.0f} [TGT: {:.0f}]".format(mining_stats.ltd_per_hour(), mining_stats.max_efficiency)))
-        details.append(_(u"LTD #: {:>6}".format(mining_stats.refined_nb)))
+        details.append(_(u"AVG %: {:>6.2f}".format(mining_stats.mineral_yield_average())))
+        details.append(_(u"ITM/H: {:>6.0f} [TGT: {:.0f}]".format(mining_stats.mineral_per_hour(), mining_stats.max_efficiency)))
+        details.append(_(u"ITM #: {:>6}".format(mining_stats.refined_nb)))
         self.__msg_header("mining", header)
         self.__msg_body("mining", details)
 
@@ -789,7 +789,7 @@ class InGameMsg(object):
                 self.__shape(u"mining-graphs-yield-bar", bar)
             x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}
         
-        avg = mining_stats.ltd_yield_average()
+        avg = mining_stats.mineral_yield_average()
         h = max(avg/ystep["yield"],1)
         bar["x"] = dx
         bar["y"] =int(dy-h)
