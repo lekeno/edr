@@ -5,7 +5,7 @@ from edtime import EDTime
 
 class EDRMiningStats(object):
     def __init__(self):
-        self.of_interest = { "names": ["lowtemperaturediamond", "painite", "voidopal"], "types": ["$lowtemperaturediamond_name;", "$painite_name;", "$opal_name"]}
+        self.of_interest = { "names": ["lowtemperaturediamond", "painite", "voidopal"], "types": ["$lowtemperaturediamond_name;", "$painite_name;", "$opal_name;"]}
         self.max = 0
         self.previous_max = 0
         self.min = 100.0
