@@ -4,7 +4,10 @@
             {
                 "latitude": 84,
                 "longitude": 61,
-                "radius": 100,
+                "radius": 0.100,
+                "type": "loop",
+                "laps": 3,
+                "category": "ship",
                 "max_altitude": 0.200,
                 "waypoints": [
                     {
