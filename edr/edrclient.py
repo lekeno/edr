@@ -1210,10 +1210,10 @@ class EDRClient(object):
         if not self.player.recon_box.forced:
             outlaws_presence = self.player.instance.presence_of_outlaws(self.edrcmdrs, ignorables=self.player.wing_and_crew())
             if outlaws_presence:
-                self.player.recon_box.activate()
+                self.player.recon_box.distress_mode()
                 self.__notify(_(u"EDR Central"), [_(u"Fight reporting enabled"), _(u"Reason: presence of outlaws"), _(u"Turn it off: flash your lights twice, or leave this area, or escape danger and retract hardpoints.")], clear_before=True)
         
-        if not self.player.recon_box.active:
+        if not self.player.recon_box.distress:
             if not self.player.recon_box.advertised:
                 self.__notify(_(u"Need assistance?"), [_(u"Flash your lights twice to report a PvP fight to enforcers."), _(u"Send '!crimes off' to make EDR go silent.")], clear_before=True)
                 self.player.recon_box.advertised = True

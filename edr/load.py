@@ -424,15 +424,19 @@ def dashboard_entry(cmdr, is_beta, entry):
     
     safe = not unsafe
     retracted = not deployed
-    if ed_player.recon_box.active and (safe and retracted):
+    if ed_player.recon_box.distress and (safe and retracted):
         ed_player.recon_box.reset()
         EDR_CLIENT.notify_with_details(_(u"EDR Central"), [_(u"Fight reporting disabled"), _(u"Looks like you are safe, and disengaged.")])
     
-    if ed_player.in_normal_space() and ed_player.recon_box.process_signal(entry['Flags'] & plug.FlagsLightsOn):
-        if ed_player.recon_box.active:
+    signal = ed_player.recon_box.process_signal(entry['Flags'])
+
+    if ed_player.in_normal_space() and signal:
+        if ed_player.recon_box.distress:
             EDR_CLIENT.notify_with_details(_(u"EDR Central"), [_(u"Fight reporting enabled"), _(u"Turn it off: flash your lights twice, or leave this area, or escape danger and retract hardpoints.")])
+        elif ed_player.recon_box.tracking:
+            EDR_CLIENT.notify_with_details(_(u"EDR Central"), [_(u"Waypoint tracking enabled"), _(u"Record a waypoint: deploy your cargo hatch."), _(u"Turn it off / Save waypoints: toggle night vision twice, or leave this area.")])
         else:
-            EDR_CLIENT.notify_with_details(_(u"EDR Central"), [_(u"Fight reporting disabled"), _(u"Flash your lights twice to re-enable.")])
+            EDR_CLIENT.notify_with_details(_(u"EDR Central"), [_(u"Fight reporting disabled"), _(u"Flash your lights twice to enable fight reporting."), _(u"Toggle night visiontwice to enable waypoint tracking.")]) # TODO add instructions for other signals
 
     fuel = entry.get('Fuel', None)
     if fuel:
@@ -452,6 +456,7 @@ def dashboard_entry(cmdr, is_beta, entry):
     if "altitude" in attitude:
         attitude["altitude"] /= 1000.0
     ed_player.piloted_vehicle.update_attitude(attitude)
+    ed_player.recon_box.process_waypoint(attitude) # TODO if processed, then show message.
     if ed_player.planetary_destination:
         EDR_CLIENT.show_navigation()
 

@@ -2,45 +2,79 @@ from __future__ import absolute_import
 
 from edtime import EDTime
 import random
+import plug
+import json
+import utils2to3
 
 class EDReconBox(object):
+
+    RECOGNIZED_SEQUENCES = { "LnlnLnln": "distress", "LNlNLNlN": "distress", "lNlnlNln": "tracking", "LNLnLNLn": "tracking" }
+
     def __init__(self):
         self.sequence = ""
         self.last_change = None
         self.cut_after = 5
-        self.active = False
+        self.distress = False
         self.required_length = 4
+        self.max_length = 10
         self.advertised = False
         self.forced = False
         self.keycode = EDReconBox.gen_keycode()
+        self.waypoints = []
+        self.tracking = True # TODO
+        self.should_record_wp = False
+        self.previous = {"cargoscoop": False, "value": ""}
 
-    def process_signal(self, is_high):
+    def process_signal(self, flags):
+        if flags & plug.FlagsSupercruise:
+            self._clear_sequence()
+            return False
+
+        if self.tracking:
+            cargoscoop_deployed = flags & plug.FlagsCargoScoopDeployed
+            self.should_record_wp = cargoscoop_deployed and not self.previous["cargoscoop"]
+            self.previous["cargoscoop"] = cargoscoop_deployed 
+
         if self._is_sequence_stale():
             self._clear_sequence()
 
-        value = "1" if is_high else "0"
-        if (self.sequence == "" and value == "1") or (self.sequence != "" and self.sequence[-1] != value):
+        if len(self.sequence) >= self.max_length:
+            self._clear_sequence()
+
+        lights_on = flags & plug.FlagsLightsOn
+        nightvision_on = flags & plug.FlagsNightVision
+
+        value = "L" if lights_on else "l"
+        value += "N" if nightvision_on else "n" 
+        if (self.sequence == "" and (lights_on or nightvision_on)) or (self.sequence != "" and self.previous["value"] != value):
             self.sequence += value
             self.last_change = EDTime.py_epoch_now()
+            self.previous["value"] = value
          
-        length = len(self.sequence)
-        if length >= self.required_length:
-            self.active = not self.active
+        if self.sequence in self.RECOGNIZED_SEQUENCES:
+            if self.RECOGNIZED_SEQUENCES[self.sequence] == "distress":
+                self.distress = not self.distress
+            elif self.RECOGNIZED_SEQUENCES[self.sequence] == "tracking":
+                self.tracking = not self.tracking
+                if not self.tracking or not self.distress: # TODO temp
+                    self._save_waypoints()
             self._clear_sequence()
             return True
         return False
 
-    def activate(self):
-        self.active = True
+    def distress_mode(self):
+        self.distress = True
         self.forced = True
     
     def reset(self):
         self.sequence = ""
         self.last_change = None
-        self.active = False
+        self.distress = False
         self.advertised = False
         self.forced = False
         self.keycode = EDReconBox.gen_keycode()
+        self.waypoints = []
+        self.should_record_wp = False
 
     @staticmethod
     def gen_keycode():
@@ -57,4 +91,18 @@ class EDReconBox(object):
     def _clear_sequence(self):
         self.last_change = None
         self.sequence = ""
+
+    def process_waypoint(self, waypoint):
+        if self.tracking and self.should_record_wp:
+            self._record_wp(waypoint)
+
+    def _record_wp(self, waypoint):
+        self.waypoints.append(waypoint)
+        self.should_record_wp = False
+
+    def _save_waypoints(self):
+        EDR_WAYPOINTS_PATH = utils2to3.abspathmaker(__file__, 'private', 'waypoints.json')  # TODO data? public? perso? folder
+        with open(EDR_WAYPOINTS_PATH, 'w') as outfile:
+            json.dump(self.waypoints, outfile)
+        print(self.waypoints) # TODO temp
 
