@@ -1015,5 +1015,276 @@
                 "longitude": 135
             }
         ]
+    },
+    "colonia": {
+        "2 a": [
+            {
+                "title": "Canyon race",
+                "latitude": 84,
+                "longitude": 61
+            }
+        ],
+        "5 e a": [
+            {
+                "title": "Canyon race (by Zen Archer)",
+                "latitude": -56.69,
+                "longitude": 76.31
+            }
+        ]
+    },
+    "okinura": {
+        "8 c": [
+            {
+                "title": "Canyon race (by DJ Kreeze)",
+                "latitude": -57,
+                "longitude": 110
+            }
+        ]
+    },
+    "hip 18187": {
+        "3 c": [
+            {
+                "title": "Canyon race (by Edgar Starwalker)",
+                "latitude": -3.14,
+                "longitude": 117
+            }
+        ],
+        "3 b": [
+            {
+                "title": "Canyon race (by Khoros Thar)",
+                "latitude": 5.59379,
+                "longitude": 136.3284
+            }
+        ]
+    },
+    "delkar": {
+        "5 a": [
+            {
+                "title": "Canyon race (by coragem_BR)",
+                "latitude": 11.5341,
+                "longitude": -1.9817
+            }
+        ]
+    },
+    "hip 105408": {
+        "2 a": [
+            {
+                "title": "Canyon race (by Orange Spark)",
+                "latitude": -69.1146,
+                "longitude": 99.9283
+            }
+        ]
+    },
+    "turbo": {
+        "a 1": [
+            {
+                "title": "Canyon race (by AbsolutePK)",
+                "latitude": -22.2031,
+                "longitude": -148.7325
+            },
+            {
+                "title": "Canyon race (by AbsolutePK)",
+                "latitude": -23.41,
+                "longitude": -149.61
+            },
+            {
+                "title": "Canyon race (by AbsolutePK)",
+                "latitude": -68.7903,
+                "longitude": -162.2212
+            },
+            {
+                "title": "Canyon race (by AbsolutePK)",
+                "latitude": -76.4745,
+                "longitude": -160.95
+            },
+            {
+                "title": "Canyon race (by Rewision X)",
+                "latitude": -18.6846,
+                "longitude": -161.1962
+            },
+            {
+                "title": "Canyon race (by Rewision X)",
+                "latitude": -11.8413,
+                "longitude": -109.4628
+            },
+            {
+                "title": "Canyon race (by Rewision X)",
+                "latitude": -1.2847,
+                "longitude": -103.0484
+            },
+            {
+                "title": "Canyon race (by Rewision X)",
+                "latitude": -0.4769,
+                "longitude": -104.0648
+            },
+            {
+                "title": "Canyon race (by AbsolutePK)",
+                "latitude": -31.9923,
+                "longitude": -140.6839
+            }
+        ],
+        "a 8 c a": [
+            {
+                "title": "Canyon race (by Rewision X)",
+                "latitude": -47.2608,
+                "longitude": -0.8826
+            },
+            {
+                "title": "Canyon race (by Rewision X)",
+                "latitude": -43.8811,
+                "longitude": -3.066
+            },
+            {
+                "title": "Canyon race (by Rewision X)",
+                "latitude": -49.6031,
+                "longitude": -9.4923
+            },
+            {
+                "title": "Canyon race (by Rewision X)",
+                "latitude": -49.9509,
+                "longitude": -9.7037
+            },
+            {
+                "title": "Canyon race (by FatHaggard)",
+                "latitude": 11.2,
+                "longitude": -99.2
+            }
+        ],
+        "a 8 c": [
+            {
+                "title": "Canyon race (by Rewision X)",
+                "latitude": 15.2865,
+                "longitude": 135.0755
+            }
+        ],
+        "a 2": [
+            {
+                "title": "Canyon race (by Rewision X)",
+                "latitude": 14.3149,
+                "longitude": 105.9572
+            }
+        ],
+        "a 3": [
+            {
+                "title": "Canyon race (by Rewision X)",
+                "latitude": 18.6761,
+                "longitude": 173.0087
+            }
+        ]
+    },
+    "branglal": {
+        "1 c": [
+            {
+                "title": "Canyon race (by AbsolutePK)",
+                "latitude": -33.2257,
+                "longitude": -79.9555
+            },
+            {
+                "title": "Canyon race (by AbsolutePK)",
+                "latitude": -31.5699,
+                "longitude": -82.9968
+            }
+        ]
+    },
+    "nevermore": {
+        "a 1": [
+            {
+                "title": "Canyon race (by Kurt Ambrose)",
+                "latitude": -1.1755,
+                "longitude": 20.2699
+            }
+        ]
+    },
+    "dk leonis": {
+        "a 2": [
+            {
+                "title": "Canyon race (by Kurt Ambrose)",
+                "latitude": 32.5,
+                "longitude": 96.13
+            }
+        ]
+    },
+    "zhu ji": {
+        "1 e": [
+            {
+                "title": "Canyon race (by Orange Sheets)",
+                "latitude": 37.7,
+                "longitude": 85.3
+            }
+        ]
+    },
+    "eravate": {
+        "2": [
+            {
+                "title": "Canyon race (by B3athunter)",
+                "latitude": -0.8762,
+                "longitude": -120
+            }
+        ]
+    },
+    "epsilon indi": {
+        "edmond's rock": [
+            {
+                "title": "Canyon race (by Terrorsidic)",
+                "latitude": -65.614,
+                "longitude": -87.7411
+            },
+            {
+                "title": "Canyon race (by Terrorsidic)",
+                "latitude": -66.3963,
+                "longitude": -82.5296
+            },
+            {
+                "title": "Canyon race (by Terrorsidic)",
+                "latitude": -67.56,
+                "longitude": -85.11
+            },
+            {
+                "title": "Canyon race (by Terrorsidic)",
+                "latitude": -38.79,
+                "longitude": -81.18
+            }
+        ],
+        "mitterand hollow": [
+            {
+                "title": "Canyon race (by Terrorsidic)",
+                "latitude": 7.5,
+                "longitude": -82.32
+            },
+            {
+                "title": "Canyon race (by Terrorsidic)",
+                "latitude": 11.45,
+                "longitude": -78.39
+            },
+            {
+                "title": "Canyon race (by Terrorsidic)",
+                "latitude": 39.51,
+                "longitude": -76.63
+            },
+            {
+                "title": "Canyon race (by Terrorsidic)",
+                "latitude": 66.96,
+                "longitude": -42.13
+            },
+            {
+                "title": "Canyon race (by Terrorsidic)",
+                "latitude": 68.96,
+                "longitude": -42.14
+            },
+            {
+                "title": "Canyon race (by Terrorsidic)",
+                "latitude": 68.57,
+                "longitude": -6.89
+            }
+        ]
+    },
+    "kushen": {
+        "1": [
+            {
+                "title": "Canyon race (by Terrorsidic)",
+                "latitude": -23.59,
+                "longitude": 17.81
+            }
+        ]
     }
 }
