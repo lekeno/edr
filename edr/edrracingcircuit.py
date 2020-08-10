@@ -25,7 +25,25 @@ class EDRRacingCircuit(object):
     def current_waypoint(self):
         if self._is_finished():
             return None
+        waypoint = self.waypoints[self._current_wp]
+        if "radius" not in waypoint:
+           waypoint["radius"] = self.radius
+        if "max_altitude" not in waypoint:
+           waypoint["max_altitude"] = self.max_altitude
         return self.waypoints[self._current_wp]
+
+    # TODO decide if distance calculation should be done here instead of the client, would need planet's radius
+    def wp_cleared(self, distance, altitude):
+        wp = self.current_waypoint()
+        if not wp:
+            return False
+        return distance <= wp["radius"] and altitude <= wp["max_altitude"]
+
+    def disqualified(self, attitude):
+        wp = self.current_waypoint()
+        if not wp:
+            return altitude > self.max_altitude
+        return altitude > wp["max_altitude"]
 
     def advance(self):
         now = EDTime.py_epoch_now()
