@@ -4,7 +4,9 @@
             {
                 "latitude": 84,
                 "longitude": 61,
-                "radius": 0.100,
+                "altitude": 0.094,
+                "planet_radius": 1010,
+                "wp_radius": 0.100,
                 "type": "loop",
                 "laps": 3,
                 "category": "ship",

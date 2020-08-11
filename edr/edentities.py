@@ -247,7 +247,7 @@ class EDPlanetaryLocation(object):
             return False
         return True
 
-    def distance(self, loc, planet_radius):
+    def distance_flat(self, loc, planet_radius):
         dlat = math.radians(loc.latitude - self.latitude)
         dlon = math.radians(loc.longitude - self.longitude)
         lat1 = math.radians(self.latitude)
@@ -255,6 +255,12 @@ class EDPlanetaryLocation(object):
         a = math.sin(dlat/2.0) * math.sin(dlat/2.0) + math.sin(dlon/2.0) * math.sin(dlon/2.0) * math.cos(lat1) * math.cos(lat2)
         c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0-a))
         return int(round(planet_radius * c, 0))
+
+    def distance(self, loc, planet_radius):
+        d = self.distance_flat(loc, planet_radius)
+        dh = abs(self.altitude - loc.altitude)
+
+        return int(math.sqrt(d**2 + dh**2))
 
     def bearing(self, loc):
         current_latitude = math.radians(loc.latitude)
