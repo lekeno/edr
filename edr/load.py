@@ -458,7 +458,10 @@ def dashboard_entry(cmdr, is_beta, entry):
     ed_player.piloted_vehicle.update_attitude(attitude)
     ed_player.recon_box.process_waypoint(attitude) # TODO if processed, then show message.
     if ed_player.planetary_destination:
-        EDR_CLIENT.show_navigation()
+        # if racing_location: # TODO ask boi of interest, or augment planetary_destination to include a type?
+            # TODO show_racing() which takes care of displaying and processing the piloted_vehicle's position?
+        # elif:
+        EDR_CLIENT.show_navigation()  
 
 def handle_mining_events(ed_player, entry):
     if entry["event"] not in ["MiningRefined", "ProspectedAsteroid"]:

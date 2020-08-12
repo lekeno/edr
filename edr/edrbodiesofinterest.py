@@ -34,7 +34,7 @@ class EDRBodiesOfInterest(object):
         closest = {"distance": None, "poi": None} 
         for poi in pois:
             destination = EDPlanetaryLocation(poi)
-            candidate = destination.distance(attitude, planet_radius)
+            candidate = destination.distance_flat(attitude, planet_radius)
             if closest["distance"] is None or candidate < closest["distance"]:
                 closest["distance"] = candidate
                 closest["poi"] = poi
