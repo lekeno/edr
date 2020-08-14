@@ -1,8 +1,9 @@
 from edtime import EDTime
 from edentities import EDPlanetaryLocation
+from edri18n import _, _c
 
 class EDRRacingCircuit(object):
-    def __init__(self, properties):
+    def __init__(self, properties, player):
         self.waypoints = properties.get("waypoints", [])
         self.type = properties.get("type", None)
         self.category = properties.get("category", None)
@@ -14,6 +15,7 @@ class EDRRacingCircuit(object):
         self.lap_times = []
         self.best = {"lap": None, "race": None}
         self.planet_radius = properties.get("planet_radius", 6371)
+        self.player = player
     
     def restart(self):
         self.start_time = None
@@ -24,10 +26,11 @@ class EDRRacingCircuit(object):
         self.restart()
         self.best = {"lap": None, "race": None}
 
-    def process_position(self, position):
+    def update(self):
+        # TODO check piloted_vehicle type if it matches
         if self._is_finished():
             return False
-        if self.wp_cleared(position):
+        if self.wp_cleared(self.player.piloted_vehicle.attitude):
             return self.advance()
         return True
 
@@ -54,6 +57,9 @@ class EDRRacingCircuit(object):
         if not wp:
             return altitude > self.max_altitude
         return altitude > wp["max_altitude"]
+
+    def in_progress(self):
+        return self.start_time and not self._is_finished()
 
     def advance(self):
         now = EDTime.py_epoch_now()
@@ -87,6 +93,27 @@ class EDRRacingCircuit(object):
                 return False
             self._current_wp = 0
         return True
+
+    def summarize(self):
+        details = []
+        if not self.current_waypoint():
+            return details
+
+        if not self._is_in_progress():
+            details.append(_(u"Proceed to first waypoint to start the race"))
+        else:
+            details.append(_(u"Go go go!"))
+
+        destination = EDPlanetaryLocation(self.current_waypoint())
+        current = self.player.piloted_vehicle.attitude
+        bearing = destination.bearing(current)
+        distance = destination.distance(current, self.planet_radius)
+        pitch = destination.pitch(current, distance) if distance and distance >= 1.0 else "---"
+        details.append(_(u">>> {} <<< [{}]  ({}km)").format(bearing, distance, pitch))
+        details.append(_(u"Best: {} | lap: {}").format(self.best["race"], self.best["lap"]))
+        for lap in self.lap_times:
+            details.append(_(u"Lap {}: {}").format(lap, self.lap_times[lap]))
+        return details
 
     def _is_finished(self):
         if self.type == "loop":

@@ -253,6 +253,7 @@ def handle_movement_events(ed_player, entry):
     elif entry["event"] in ["LeaveBody"]:
         place = "Supercruise"
         ed_player.planetary_destination = None
+        ed_player.activity = None
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
         outcome["reason"] = "Leave event"
@@ -458,10 +459,15 @@ def dashboard_entry(cmdr, is_beta, entry):
     ed_player.piloted_vehicle.update_attitude(attitude)
     ed_player.recon_box.process_waypoint(attitude) # TODO if processed, then show message.
     if ed_player.planetary_destination:
-        # if racing_location: # TODO ask boi of interest, or augment planetary_destination to include a type?
-            # TODO show_racing() which takes care of displaying and processing the piloted_vehicle's position?
-        # elif:
-        EDR_CLIENT.show_navigation()  
+        activity = EDR_CLIENT.nearby_activity()
+        if activity:
+            ed_player.activity = activity
+            ed_player.planetary_destination = None
+        else:
+            EDR_CLIENT.show_navigation()
+    if ed_player.activity:
+        EDR_CLIENT.show_activity()
+
 
 def handle_mining_events(ed_player, entry):
     if entry["event"] not in ["MiningRefined", "ProspectedAsteroid"]:

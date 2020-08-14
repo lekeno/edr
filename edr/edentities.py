@@ -508,6 +508,7 @@ class EDPlayer(object):
         self._touch()
         self.location.space_dimension = EDSpaceDimension.HYPER_SPACE
         self.planetary_destination = None # leaving the system, so no point in keep a planetary destination
+        self.activity = None
         self.mothership.safe()
         self.targeted = False
         if self.slf:
@@ -735,6 +736,7 @@ class EDPlayerOne(EDPlayer):
         self._target = None
         self.instance = EDInstance()
         self.planetary_destination = None
+        self.activity = None
         self.recon_box = EDReconBox()
         self.inventory = EDRInventory()
         self.fleet = edrfleet.EDRFleet()

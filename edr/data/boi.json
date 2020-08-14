@@ -1021,7 +1021,81 @@
             {
                 "title": "Canyon race",
                 "latitude": 84,
-                "longitude": 61
+                "longitude": 61,
+                "type": "racing",
+                "circuit": {
+                    "latitude": 84,
+                    "longitude": 61,
+                    "altitude": 0.094,
+                    "planet_radius": 1010,
+                    "wp_radius": 0.100,
+                    "type": "loop",
+                    "laps": 3,
+                    "category": "ship",
+                    "max_altitude": 0.200,
+                    "waypoints": [
+                        {
+                            "latitude": 84.005051,
+                            "longitude": 61.237354,
+                            "heading": 116,
+                            "altitude": 0.094
+                        },
+                        {
+                            "latitude": 83.962654,
+                            "longitude": 61.886829,
+                            "heading": 133,
+                            "altitude": 0.107
+                        },
+                        {
+                            "latitude": 83.828735,
+                            "longitude": 62.171223,
+                            "heading": 171,
+                            "altitude": 0.068
+                        },
+                        {
+                            "latitude": 83.638451,
+                            "longitude": 61.852226,
+                            "heading": 230,
+                            "altitude": 0.188
+                        },
+                        {
+                            "latitude": 83.612854,
+                            "longitude": 61.174568,
+                            "heading": 277,
+                            "altitude": 0.134
+                        },
+                        {
+                            "latitude": 83.620987,
+                            "longitude": 60.706524,
+                            "heading": 272,
+                            "altitude": 0.099
+                        },
+                        {
+                            "latitude": 83.873947,
+                            "longitude": 59.312679,
+                            "heading": 340,
+                            "altitude": 0.043
+                        },
+                        {
+                            "latitude": 83.930145,
+                            "longitude": 59.46302,
+                            "heading": 35,
+                            "altitude": 0.058
+                        },
+                        {
+                            "latitude": 83.96759,
+                            "longitude": 59.706352,
+                            "heading": 34,
+                            "altitude": 0.066
+                        },
+                        {
+                            "latitude": 83.997528,
+                            "longitude": 60.813831,
+                            "heading": 100,
+                            "altitude": 0.149
+                        }
+                    ]  
+                }
             }
         ],
         "5 e a": [

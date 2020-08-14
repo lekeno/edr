@@ -40,6 +40,16 @@ class EDRBodiesOfInterest(object):
                 closest["poi"] = poi
         return closest["poi"]
 
+    @staticmethod
+    def activity_nearby(player, planet_radius, max_distance=10):
+        closest_poi = EDRBodiesOfInterest.closest_point_of_interest(player.star_system, player.place)
+        closest_destination = EDPlanetaryLocation(closest_poi)
+        if closest_destination.distance(attitude, planet_radius) > max_distance:
+            return None
+        if closest_poi.get("type", None) == "racing" and closest_poi.get("circuit", None):
+            return EDRRacingCircuit(closest_poi["circuit"], player)
+        return None
+            
 
     @staticmethod
     def __simplified_body_name(star_system, body_name):

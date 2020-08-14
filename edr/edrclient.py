@@ -530,6 +530,11 @@ class EDRClient(object):
         radius = body.get("radius", None) if body else None
         return EDRBodiesOfInterest.closest_point_of_interest(star_system, body_name, attitude, radius)
 
+    def nearby_activity(self, max_distance=10):
+        body = self.edrsystems.body(self.player.star_system, self.player.place)
+        radius = body.get("radius", None) if body else None
+        return EDRBodiesOfInterest.nearby_activity(self.player.star_system, self.player.place, self.player.piloted_vehicle.attitude, radius, max_distance)
+
     def navigation(self, latitude, longitude):
         position = {"latitude": float(latitude), "longitude": float(longitude)}
         loc = EDPlanetaryLocation(position)
@@ -557,10 +562,10 @@ class EDRClient(object):
         destination = self.player.planetary_destination
 
         if not destination or not current:
-            return
+            return None
         
         if not current.valid() or not destination.valid():
-            return
+            return None
 
         bearing = destination.bearing(current)
         
@@ -574,6 +579,17 @@ class EDRClient(object):
         if self.visual_feedback:
             self.IN_GAME_MSG.navigation(bearing, destination, distance, pitch)
         self.status = _(u"> {:03} < for Lat:{:.4f} Lon:{:.4f}".format(bearing, destination.latitude, destination.longitude))
+    
+    def show_activity(self):
+        if not self.player.activity:
+            return
+        
+        self.player.activity.update()
+        if self.visual_feedback:
+            pass
+            # TODO self.IN_GAME_MSG.navigation(bearing, destination, distance, pitch)
+        # TODO self.status = _(u"> {:03} < for Lat:{:.4f} Lon:{:.4f}".format(bearing, destination.latitude, destination.longitude))
+        print(self.player.activity.summarize())
 
     def check_system(self, star_system, may_create=False, coords=None):
         try:
