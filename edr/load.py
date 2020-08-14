@@ -1095,6 +1095,39 @@ def handle_legal_fees(player, entry):
             true_amount = entry["Amount"] * (1.0 - entry.get("BrokerPercentage", 0)/100.0)
             player.bounty = max(0, player.bounty - true_amount)
 
+def handle_npc_scan_events(player, entry):
+    if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0):
+        return False
+
+    prefix = None
+    piloted = False
+    if entry["PilotName"].startswith("$cmdr_decorate:#name="):
+        prefix = "$cmdr_decorate:#name="
+        piloted = True
+    elif entry["PilotName"].startswith("$RolePanel2_unmanned; $cmdr_decorate:#name="):
+        prefix = "$RolePanel2_unmanned; $cmdr_decorate:#name="
+    elif entry["PilotName"].startswith("$RolePanel2_crew; $cmdr_decorate:#name="):
+        prefix = "$RolePanel2_crew; $cmdr_decorate:#name="
+    else:
+        player.target = None #NPC
+    
+    if prefix:
+        return False
+
+    target_name = entry["PilotName"][len(prefix):-1]
+    if target_name == player.name:
+        # Happens when scanning one's unmanned ship, etc.
+        return False
+
+    if entry["ScanStage"] == 3:
+        wanted = entry["LegalStatus"] in ["Wanted", "WantedEnemy", "Warrant"]
+        enemy = entry["LegalStatus"] in ["Enemy", "WantedEnemy", "Hunter"]
+        bounty = entry.get("Bounty", 0)
+        if bounty:
+            details = []
+            details.append(_(u"{} credits").format(EDFineOrBounty(bounty).pretty_print()))
+            details.append(_(u"{}{}").format(_("[WANTED] ") if wanted else "", _("[ENEMY] " if enemy else "")))
+            EDR_CLIENT.notify_with_details(_(u"Bounty for {}").format(target_name), details)
 
 def handle_scan_events(player, entry):
     if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0):
@@ -1113,7 +1146,7 @@ def handle_scan_events(player, entry):
         player.target = None #NPC
     
     if not prefix:
-        return False
+        return handle_npc_scan_events(player, entry)
 
     target_name = entry["PilotName"][len(prefix):-1]
     if target_name == player.name:
