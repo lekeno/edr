@@ -1114,20 +1114,12 @@ def handle_npc_scan_events(player, entry):
     if prefix:
         return False
 
-    target_name = entry["PilotName"][len(prefix):-1]
-    if target_name == player.name:
-        # Happens when scanning one's unmanned ship, etc.
-        return False
-
+    target_name = entry["PilotName"]
+    
     if entry["ScanStage"] == 3:
-        wanted = entry["LegalStatus"] in ["Wanted", "WantedEnemy", "Warrant"]
-        enemy = entry["LegalStatus"] in ["Enemy", "WantedEnemy", "Hunter"]
-        bounty = entry.get("Bounty", 0)
-        if bounty:
-            details = []
-            details.append(_(u"{} credits").format(EDFineOrBounty(bounty).pretty_print()))
-            details.append(_(u"{}{}").format(_("[WANTED] ") if wanted else "", _("[ENEMY] " if enemy else "")))
-            EDR_CLIENT.notify_with_details(_(u"Bounty for {}").format(target_name), details)
+        return EDR_CLIENT.npc_scanned(target_name, entry)
+    return False
+
 
 def handle_scan_events(player, entry):
     if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0):

@@ -70,6 +70,7 @@ class EDRClient(object):
         self.traffic_cache = LRUCache(edr_config.lru_max_size(), edr_config.traffic_max_age())
         self.scans_cache = LRUCache(edr_config.lru_max_size(), edr_config.scans_max_age())
         self.cognitive_scans_cache = LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
+        self.cognitive_npc_scans_cache = LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
         self.alerts_cache = LRUCache(edr_config.lru_max_size(), edr_config.alerts_max_age())
         self.fights_cache = LRUCache(edr_config.lru_max_size(), edr_config.fights_max_age())
 
@@ -741,6 +742,10 @@ class EDRClient(object):
         novel_situation = self.__novel_enough_situation(scan, last_scan, cognitive)
         return novel_situation or (scan["wanted"] != last_scan["wanted"]) or (scan["bounty"] != last_scan["bounty"])
 
+    def novel_enough_npc_scan(self, npc_name, scan):
+        last_scan = self.cognitive_npc_scans_cache.get(npc_name)
+        return (scan["wanted"] != last_scan["wanted"]) or (scan["bounty"] != last_scan["bounty"])
+
     def novel_enough_traffic_report(self, sighted_cmdr, report):
         last_report = self.traffic_cache.get(sighted_cmdr)
         return self.__novel_enough_situation(report, last_report)
@@ -1055,6 +1060,22 @@ class EDRClient(object):
 
         return success
 
+    def npc_scanned(self, npc_name, scan):
+        if not scan.get("bounty", False):
+            return False
+
+        if not self.novel_enough_npc_scan(npc_name, scan):
+            return False
+
+        bounty = EDFineOrBounty(scan["bounty"])
+        self.status = _(u"Bounty on {}: {} cr.").format(npc_name, bounty.pretty_print())
+        details = []
+        details.append(_(u"{} credits").format(bounty.pretty_print()))
+        details.append(_(u"{}{}").format(_(u"[WANTED] ") if scan["wanted"] else "", _(u"[ENEMY]") if scan["enemy"] else ""))
+        self.__notify(_(u"Bounty on {}").format(npc_name), details, clear_before=True)
+        self.cognitive_npc_scans_cache.set(npc_name, scan)
+        return True
+    
     def scanned(self, cmdr_name, scan):
         if self.player.in_solo():
             EDRLOG.log(u"Skipping scanned since the user is in solo (unexpected).", "INFO")
