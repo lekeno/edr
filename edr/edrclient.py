@@ -1061,18 +1061,23 @@ class EDRClient(object):
         return success
 
     def npc_scanned(self, npc_name, scan):
-        if not scan.get("bounty", False):
+        if not scan.get("bounty", False) and not scan.get("wanted", False):
             return False
 
         if not self.novel_enough_npc_scan(npc_name, scan):
             return False
 
-        bounty = EDFineOrBounty(scan["bounty"])
-        self.status = _(u"Bounty on {}: {} cr.").format(npc_name, bounty.pretty_print())
+        header = _(u"Bounty on {}").format(npc_name)
         details = []
-        details.append(_(u"{} credits").format(bounty.pretty_print()))
-        details.append(_(u"{}{}").format(_(u"[WANTED] ") if scan["wanted"] else "", _(u"[ENEMY]") if scan["enemy"] else ""))
-        self.__notify(_(u"Bounty on {}").format(npc_name), details, clear_before=True)
+        if scan["bounty"]:
+            bounty = EDFineOrBounty(scan["bounty"])
+            self.status = _(u"Bounty on {}: {} cr.").format(npc_name, bounty.pretty_print())
+            details.append(_(u"{} credits").format(bounty.pretty_print()))
+        else:
+            self.status = _(u"{} is wanted somewhere.").format(npc_name, bounty.pretty_print())
+            details = []
+            details.append(_(u"Wanted somewhere. A Kill-Warrant-Scan will reveal their highest bounty."))
+        self.__notify(, details, clear_before=True)
         self.cognitive_npc_scans_cache.set(npc_name, scan)
         return True
     
