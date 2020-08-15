@@ -606,6 +606,14 @@ class EDRClient(object):
             self.IN_GAME_MSG.mining_guidance(self.player.mining_stats)
         
         self.status = _(u"[Yield: {:.2f}%]   [Items: {} ({:.0f}/hour)]".format(self.player.mining_stats.last["proportion"], self.player.mining_stats.refined_nb, self.player.mining_stats.mineral_per_hour()))
+    
+    def bounty_hunting_guidance(self):
+        if self.visual_feedback:
+            self.IN_GAME_MSG.bounty_hunting_guidance(self.player.bounty_hunting_stats)
+        
+        bounty = EDFineOrBounty(self.player.bounty_hunting_stats.last["bounty"])
+        credits_per_hour = EDFineOrBounty(int(self.player.bounty_hunting_stats.credits_per_hour()))
+        self.status = _(u"[Last: {}cr]   [Items: {} ({}/hour)]".format(bounty.pretty_print(), self.player.bounty_hunting_stats.awarded_nb, credits_per_hour.pretty_print()))
 
     def notams(self):
         summary = self.edrsystems.systems_with_active_notams()
@@ -744,6 +752,8 @@ class EDRClient(object):
 
     def novel_enough_npc_scan(self, npc_name, scan):
         last_scan = self.cognitive_npc_scans_cache.get(npc_name)
+        if not last_scan:
+            return False
         return (scan["wanted"] != last_scan["wanted"]) or (scan["bounty"] != last_scan["bounty"])
 
     def novel_enough_traffic_report(self, sighted_cmdr, report):

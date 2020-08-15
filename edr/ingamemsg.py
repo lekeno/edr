@@ -27,7 +27,7 @@ except ImportError:
 import lrucache
 
 class InGameMsg(object):   
-    MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice", "help", "navigation", "docking", "mining"]
+    MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice", "help", "navigation", "docking", "mining", "bounty-hunting"]
     LEGAL_KINDS = ["intel", "warning"] 
 
     def __init__(self):
@@ -41,6 +41,7 @@ class InGameMsg(object):
             self.legal_config(kind)
         self.docking_config()
         self.mining_config()
+        self.bounty_hunting_config()
         self.msg_ids = lrucache.LRUCache(1000, 60*15)
 
     def general_config(self):
@@ -171,6 +172,54 @@ class InGameMsg(object):
     def mining_config(self):
         conf = igmconfig.IGMConfig()
         kind = "mining-graphs" 
+        self.cfg[kind] = {
+            "enabled": conf._getboolean(kind, "enabled"),
+            "yield": {
+                "x": conf.x(kind, "yield"),
+                "y": conf.y(kind, "yield"),
+                "h": conf.h(kind, "yield_bar"),
+                "w": conf.w(kind, "yield_bar"),
+                "s": conf.s(kind, "yield_bar"),
+                "ttl": conf.ttl(kind, "yield"),
+                "rgb": conf.rgb_list(kind, "yield"),
+                "fill": conf.fill_list(kind, "yield"),
+            },
+            "efficiency": {
+                "x": conf.x(kind, "efficiency"),
+                "y": conf.y(kind, "efficiency"),
+                "h": conf.h(kind, "efficiency_bar"),
+                "w": conf.w(kind, "efficiency_bar"),
+                "s": conf.s(kind, "efficiency_bar"),
+                "ttl": conf.ttl(kind, "efficiency"),
+                "rgb": conf.rgb_list(kind, "efficiency"),
+                "fill": conf.fill_list(kind, "efficiency"),
+            },
+            "distribution": {
+                "x": conf.x(kind, "distribution"),
+                "y": conf.y(kind, "distribution"),
+                "h": conf.h(kind, "distribution_bar"),
+                "w": conf.w(kind, "distribution_bar"),
+                "s": conf.s(kind, "distribution_bar"),
+                "ttl": conf.ttl(kind, "distribution"),
+                "rgb": conf.rgb_list(kind, "distribution"),
+                "fill": conf.fill_list(kind, "distribution"),
+            },
+        }
+        if not conf.panel(kind):
+            return
+        self.cfg[kind]["panel"] = {
+            "x": conf.x(kind, "panel"),
+            "y": conf.y(kind, "panel"),
+            "x2": conf.x2(kind, "panel"),
+            "y2": conf.y2(kind, "panel"),
+            "ttl": conf.ttl(kind, "panel"),
+            "rgb": conf.rgb(kind, "panel"),
+            "fill": conf.fill(kind, "panel")
+        }
+
+    def bounty_hunting_config(self):
+        conf = igmconfig.IGMConfig()
+        kind = "bounty-hunting-graphs" 
         self.cfg[kind] = {
             "enabled": conf._getboolean(kind, "enabled"),
             "yield": {
@@ -854,6 +903,37 @@ class InGameMsg(object):
             self.__shape(u"mining-graphs-efficiency-bar", bar)
             x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}
 
+    def bounty_hunting_guidance(self, bounty_hunting_stats):
+        self.clear_bounty_hunting_guidance()
+        if "panel" in self.cfg["bounty-hunting"]:
+            self.__shape("bounty-hunting", self.cfg["bounty-hunting"]["panel"])
+        if "panel" in self.cfg["bounty-hunting-graphs"] and self.cfg["bounty-hunting-graphs"].get("enabled", False):
+            self.__shape("bounty-hunting-graphs", self.cfg["bounty-hunting-graphs"]["panel"])
+        
+        header = _(u"Bounty Hunting Stats")
+        details = []
+        last_bounty = EDFineOrBounty(bounty_hunting_stats.last["bounty"])
+        max_bounty = EDFineOrBounty(bounty_hunting_stats.max)
+        avg_bounty = EDFineOrBounty(bounty_hunting_stats.bounty_average())
+        cr_h = EDFineOrBounty(bounty_hunting_stats.credits_per_hour())
+        tgt = EDFineOrBounty(bounty_hunting_stats.max_efficiency)
+        total_awarded = EDFineOrBounty(bounty_hunting_stats.sum_awarded)
+        details.append(_(u"BOUNTY: {} cr".format(last_bounty.pretty_print())))
+        details.append(_(u"MAX B.: {} cr".format(max_bounty.pretty_print())))
+        details.append(_(u"AVG B.: {} cr".format(avg_bounty.pretty_print())))
+        details.append(_(u"CR / H: {} [TGT: {}]".format(cr_h.pretty_print(), tgt.pretty_print())))
+        details.append(_(u"TOTALS: {} cr [{} awards]".format(total_awarded.pretty_print(), bounty_hunting_stats.awarded_nb)))
+        self.__msg_header("bounty-hunting", header)
+        self.__msg_body("bounty-hunting", details)
+
+        if not self.cfg["bounty-hunting-graphs"].get("enabled", None):
+            return
+        self.__bounty_hunting_vizualization(bounty_hunting_stats)
+    
+    def __bounty_hunting_vizualization(self, bounty_hunting_stats):
+        # TODO
+        return
+
     def clear(self):
         msg_ids = list(self.msg_ids.keys())
         for msg_id in msg_ids:
@@ -881,6 +961,9 @@ class InGameMsg(object):
     
     def clear_mining_guidance(self):
         self.__clear_kind("mining")
+
+    def clear_mining_guidance(self):
+        self.__clear_kind("bounty-hunting")
 
     def __clear_kind(self, kind):
         tag = "EDR-{}".format(kind)

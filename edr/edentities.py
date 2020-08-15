@@ -18,6 +18,7 @@ from edri18n import _, _c
 import edrfleet
 import edrfleetcarrier
 import edrminingstats
+import edrbountyhuntingstats
 import utils2to3
 EDRLOG = EDRLog()
 
@@ -738,6 +739,7 @@ class EDPlayerOne(EDPlayer):
         except:
             self.fleet_carrier = edrfleetcarrier.EDRFleetCarrier()
         self.mining_stats = edrminingstats.EDRMiningStats()
+        self.bounty_hunting_stats = edrbountyhuntingstats.EDRBountyHuntingStats()
 
     def __repr__(self):
         return str(self.__dict__)
@@ -1082,5 +1084,12 @@ class EDPlayerOne(EDPlayer):
     def refined(self, entry):
         self.mining_stats.refined(entry)
 
-    def reset_mining_stats(self):
+    def bounty_scanned(self, entry):
+        self.bounty_hunting_stats.scanned(entry)
+
+    def bounty_awarded(self, entry):
+        self.bounty_hunting_stats.awarded(entry)
+
+    def reset_stats(self):
         self.mining_stats.reset()
+        self.bounty_hunting_stats.reset()
