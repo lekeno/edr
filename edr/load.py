@@ -1099,26 +1099,26 @@ def handle_npc_scan_events(player, entry):
     if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0):
         return False
 
-    prefix = None
-    piloted = False
-    if entry["PilotName"].startswith("$cmdr_decorate:#name="):
-        prefix = "$cmdr_decorate:#name="
-        piloted = True
-    elif entry["PilotName"].startswith("$RolePanel2_unmanned; $cmdr_decorate:#name="):
-        prefix = "$RolePanel2_unmanned; $cmdr_decorate:#name="
-    elif entry["PilotName"].startswith("$RolePanel2_crew; $cmdr_decorate:#name="):
-        prefix = "$RolePanel2_crew; $cmdr_decorate:#name="
-    else:
-        player.target = None #NPC
+    prefix = "$npc_name_decorate:#name="
+    if not entry["PilotName"].startswith(prefix):
+        return False
     
-    if prefix:
+    target_name = entry["PilotName"][len(prefix):-1]
+    
+    if entry["ScanStage"] < 3:
         return False
 
-    target_name = entry["PilotName"]
-    
-    if entry["ScanStage"] == 3:
-        return EDR_CLIENT.npc_scanned(target_name, entry)
-    return False
+    wanted = entry["LegalStatus"] in ["Wanted", "WantedEnemy", "Warrant"]
+    enemy = entry["LegalStatus"] in ["Enemy", "WantedEnemy", "Hunter"]
+    bounty = entry.get("Bounty", 0)
+    scan = {
+        "npc": target_name,
+        "wanted": wanted,
+        "enemy": enemy,
+        "bounty": bounty
+    }
+ 
+    return EDR_CLIENT.npc_scanned(target_name, scan)
 
 
 def handle_scan_events(player, entry):
