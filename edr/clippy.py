@@ -51,5 +51,8 @@ if os.name == 'nt' or platform.system() == 'Windows':
 elif os.name == 'mac' or platform.system() == 'Darwin':
     clipboard_get = __macGetClipboard
     clipboard_set = __macSetClipboard
+else:
+    clipboard_get = lambda: ""
+    clipboard_set = lambda _: None
 
 copy = clipboard_set
