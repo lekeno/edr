@@ -11,6 +11,7 @@ import textwrap
 from edri18n import _, _c
 import utils2to3
 from edrlandables import EDRLandables
+from edentities import EDFineOrBounty
 
 EDRLOG = edrlog.EDRLog()
 
@@ -222,15 +223,15 @@ class InGameMsg(object):
         kind = "bounty-hunting-graphs" 
         self.cfg[kind] = {
             "enabled": conf._getboolean(kind, "enabled"),
-            "yield": {
-                "x": conf.x(kind, "yield"),
-                "y": conf.y(kind, "yield"),
-                "h": conf.h(kind, "yield_bar"),
-                "w": conf.w(kind, "yield_bar"),
-                "s": conf.s(kind, "yield_bar"),
-                "ttl": conf.ttl(kind, "yield"),
-                "rgb": conf.rgb_list(kind, "yield"),
-                "fill": conf.fill_list(kind, "yield"),
+            "bounty": {
+                "x": conf.x(kind, "bounty"),
+                "y": conf.y(kind, "bounty"),
+                "h": conf.h(kind, "bounty_bar"),
+                "w": conf.w(kind, "bounty_bar"),
+                "s": conf.s(kind, "bounty_bar"),
+                "ttl": conf.ttl(kind, "bounty"),
+                "rgb": conf.rgb_list(kind, "bounty"),
+                "fill": conf.fill_list(kind, "bounty"),
             },
             "efficiency": {
                 "x": conf.x(kind, "efficiency"),
@@ -918,11 +919,11 @@ class InGameMsg(object):
         cr_h = EDFineOrBounty(bounty_hunting_stats.credits_per_hour())
         tgt = EDFineOrBounty(bounty_hunting_stats.max_efficiency)
         total_awarded = EDFineOrBounty(bounty_hunting_stats.sum_awarded)
-        details.append(_(u"BOUNTY: {} cr".format(last_bounty.pretty_print())))
+        details.append(_(u"BOUNTY: {} cr [{}]".format(last_bounty.pretty_print(), bounty_hunting_stats.last["name"])))
         details.append(_(u"MAX B.: {} cr".format(max_bounty.pretty_print())))
         details.append(_(u"AVG B.: {} cr".format(avg_bounty.pretty_print())))
         details.append(_(u"CR / H: {} [TGT: {}]".format(cr_h.pretty_print(), tgt.pretty_print())))
-        details.append(_(u"TOTALS: {} cr [{} awards]".format(total_awarded.pretty_print(), bounty_hunting_stats.awarded_nb)))
+        details.append(_(u"TOTALS: {} cr [{} rewards]".format(total_awarded.pretty_print(), bounty_hunting_stats.awarded_nb)))
         self.__msg_header("bounty-hunting", header)
         self.__msg_body("bounty-hunting", details)
 
@@ -931,8 +932,107 @@ class InGameMsg(object):
         self.__bounty_hunting_vizualization(bounty_hunting_stats)
     
     def __bounty_hunting_vizualization(self, bounty_hunting_stats):
-        # TODO
-        return
+        cfg = self.cfg[u"bounty-hunting-graphs"]
+        max_bounty = max(bounty_hunting_stats.max_normal_bounty, bounty_hunting_stats.max)
+        max_distribution = max(bounty_hunting_stats.distribution["bins"][1:])
+        max_efficiency = bounty_hunting_stats.max_efficiency
+        ystep = {"bounty": max_bounty / float(cfg["bounty"]["h"]), "efficiency": max_efficiency / float(cfg["efficiency"]["h"])} 
+        x = {"bounty": 0}
+        y = 0
+        h = 0
+
+        bar = {
+            "x": 0,
+            "y": 0,
+            "x2": 0,
+            "y2": 0,
+            "rgb": "#000000",
+            "fill": "#000000",
+            "ttl": 0,
+        }
+
+        for p in bounty_hunting_stats.scans:
+            dx = cfg["bounty"]["x"]
+            dy = cfg["bounty"]["y"]
+            scan = p[1]
+            if scan > 0:
+                h = max(scan/ystep["bounty"],1)
+                bar["x"] = int(x["bounty"]+dx)
+                bar["y"] =int(dy-h)
+                bar["x2"] = int(cfg["bounty"]["w"])
+                bar["y2"] = dy - bar["y"]
+                index = int(scan/max_bounty * (len(cfg["bounty"]["rgb"])-1.0))
+                bar["rgb"] = cfg["bounty"]["rgb"][index]
+                index = int(scan/max_bounty * (len(cfg["bounty"]["fill"])-1.0))
+                bar["fill"] = cfg["bounty"]["fill"][index]
+                bar["ttl"] = cfg["bounty"]["ttl"]
+                self.__shape(u"bounty-hunting-graphs-bounty-bar", bar)
+            x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}
+        
+        avg = bounty_hunting_stats.bounty_average()
+        h = max(avg/ystep["bounty"],1)
+        bar["x"] = dx
+        bar["y"] =int(dy-h)
+        bar["x2"] = x["bounty"]
+        bar["y2"] = 1
+        index = int(avg/max_bounty * (len(cfg["bounty"]["rgb"])-1.0))
+        bar["rgb"] = cfg["bounty"]["rgb"][index]
+        index = int(avg/max_bounty * (len(cfg["bounty"]["fill"])-1.0))
+        bar["fill"] = cfg["bounty"]["fill"][index]
+        bar["ttl"] = cfg["bounty"]["ttl"]
+        self.__shape(u"bounty-hunting-graphs-bounty-avg-bar", bar)
+
+
+        y = {"distribution": cfg["distribution"]["w"]+cfg["distribution"]["s"]}
+        i = 1
+        for c in bounty_hunting_stats.distribution["bins"][1:]:
+            dx = cfg["distribution"]["x"]
+            dy = cfg["distribution"]["y"]
+            p = c / max_distribution
+            h = max(p * cfg["distribution"]["h"],1) if c else 0
+            x = h
+            bar["x"] = int(dx)
+            bar["y"] = int(dy-y["distribution"])
+            bar["x2"] = int(x)
+            bar["y2"] = int(cfg["distribution"]["w"])
+            index = int(i/len(bounty_hunting_stats.distribution["bins"]) * (len(cfg["distribution"]["rgb"])-1.0))
+            bar["rgb"] = cfg["distribution"]["rgb"][index]
+            bar["fill"] = cfg["distribution"]["fill"][index]
+            bar["ttl"] = cfg["distribution"]["ttl"]
+            self.__shape(u"bounty-hunting-graphs-distribution-bar", bar)
+            i = i+1
+            y = {category: y[category] + cfg[category]["w"] + cfg[category]["s"] for category in y}
+
+        dx = cfg["distribution"]["x"]
+        dy = cfg["distribution"]["y"]
+        h = (bounty_hunting_stats.last["distribution_index"] * (cfg["distribution"]["w"] + cfg["distribution"]["s"]))
+        bar["x"] = int(dx-3)
+        bar["y"] = int(dy-h)
+        bar["x2"] = 1
+        bar["y2"] = int(cfg["distribution"]["w"])
+        index = int(bounty_hunting_stats.last["distribution_index"]/len(bounty_hunting_stats.distribution["bins"]) * (len(cfg["distribution"]["rgb"])-1.0))
+        bar["rgb"] = cfg["distribution"]["rgb"][index]
+        bar["fill"] = cfg["distribution"]["fill"][index]
+        bar["ttl"] = cfg["distribution"]["ttl"]
+        self.__shape(u"bounty-hunting-graphs-distribution-last-mark", bar)
+
+
+        x = {"efficiency": 0}
+        for e in bounty_hunting_stats.efficiency:
+            dx = cfg["efficiency"]["x"]
+            dy = cfg["efficiency"]["y"]
+            efficiency = e[1]
+            h = max(efficiency/ystep["efficiency"],1) if efficiency else 0
+            bar["x"] = int(x["efficiency"]+dx)
+            bar["y"] = int(dy-h)
+            bar["x2"] = int(cfg["efficiency"]["w"])
+            bar["y2"] = 1
+            index = int(efficiency/bounty_hunting_stats.max_efficiency * (len(cfg["efficiency"]["rgb"])-1.0))
+            bar["rgb"] = cfg["efficiency"]["rgb"][index]
+            bar["fill"] = cfg["efficiency"]["fill"][index]
+            bar["ttl"] = cfg["efficiency"]["ttl"]
+            self.__shape(u"bounty-hunting-graphs-efficiency-bar", bar)
+            x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}
 
     def clear(self):
         msg_ids = list(self.msg_ids.keys())
@@ -962,7 +1062,7 @@ class InGameMsg(object):
     def clear_mining_guidance(self):
         self.__clear_kind("mining")
 
-    def clear_mining_guidance(self):
+    def clear_bounty_hunting_guidance(self):
         self.__clear_kind("bounty-hunting")
 
     def __clear_kind(self, kind):

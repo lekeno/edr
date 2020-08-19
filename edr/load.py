@@ -469,9 +469,11 @@ def handle_bounty_hunting_events(ed_player, entry):
         return
     if entry["event"] == "Bounty":
         ed_player.bounty_awarded(entry)
-    elif entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] >= 3):
+        EDR_CLIENT.bounty_hunting_guidance()
+    elif entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] >= 3 and entry.get("Bounty", 0) > 0:
         ed_player.bounty_scanned(entry)
-    EDR_CLIENT.bounty_hunting_guidance()
+        EDR_CLIENT.bounty_hunting_guidance()
+    
             
 def journal_entry(cmdr, is_beta, system, station, entry, state):
     """
@@ -592,7 +594,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["ShipTargeted"]:
         if "ScanStage" in entry and entry["ScanStage"] > 0:
             handle_scan_events(ed_player, entry)
-            handle_bounty_hunting_event(ed_player, entry)
+            handle_bounty_hunting_events(ed_player, entry)
         elif ("ScanStage" in entry and entry["ScanStage"] == 0) or ("TargetLocked" in entry and not entry["TargetLocked"]):
             ed_player.target = None
     
@@ -1108,32 +1110,6 @@ def handle_legal_fees(player, entry):
             true_amount = entry["Amount"] * (1.0 - entry.get("BrokerPercentage", 0)/100.0)
             player.bounty = max(0, player.bounty - true_amount)
 
-def handle_npc_scan_events(player, entry):
-    if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0):
-        return False
-
-    prefix = "$npc_name_decorate:#name="
-    if not entry["PilotName"].startswith(prefix):
-        return False
-    
-    target_name = entry["PilotName"][len(prefix):-1]
-    
-    if entry["ScanStage"] < 3:
-        return False
-
-    wanted = entry["LegalStatus"] in ["Wanted", "WantedEnemy", "Warrant"]
-    enemy = entry["LegalStatus"] in ["Enemy", "WantedEnemy", "Hunter"]
-    bounty = entry.get("Bounty", 0)
-    scan = {
-        "npc": target_name,
-        "wanted": wanted,
-        "enemy": enemy,
-        "bounty": bounty
-    }
- 
-    return EDR_CLIENT.npc_scanned(target_name, scan)
-
-
 def handle_scan_events(player, entry):
     if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0):
         return False
@@ -1151,7 +1127,7 @@ def handle_scan_events(player, entry):
         player.target = None #NPC
     
     if not prefix:
-        return handle_npc_scan_events(player, entry)
+        return False
 
     target_name = entry["PilotName"][len(prefix):-1]
     if target_name == player.name:

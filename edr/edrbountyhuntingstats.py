@@ -16,11 +16,11 @@ class EDRBountyHuntingStats(object):
         self.distribution = {"last_index": 0, "bins": [0]*25}
         self.scanned_nb = 0
         self.awarded_nb = 0
-        self.awarded = deque(maxlen=20)
+        self.awarded_bounties = deque(maxlen=20)
         self.scans = deque(maxlen=20)
         self.efficiency = deque(maxlen=20)
         self.max_efficiency = 1000000
-        self.max_normal_bounty = 1000000 # probably fine with NPC but might be too low for players...
+        self.max_normal_bounty = 350000 # appears to be the highest bounty per faction for NPC
         now = EDTime.py_epoch_now()
         self.start = now
         self.current = now
@@ -39,7 +39,7 @@ class EDRBountyHuntingStats(object):
         self.distribution = {"last_index": 0, "bins": [0]*25}
         self.scanned_nb = 0
         self.awarded_nb = 0
-        self.awarded = deque(maxlen=20)
+        self.awarded_bounties = deque(maxlen=20)
         self.scans = deque(maxlen=20)
         self.efficiency = deque(maxlen=20)
         self.max_efficiency = 1000000
@@ -48,7 +48,7 @@ class EDRBountyHuntingStats(object):
         self.current = now
         edr_config = EDRConfig()
         self.scans_cache = LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
-        self.last = {"timestamp": now, "bounty": None}
+        self.last = {"timestamp": now, "bounty": None, "name": None, "distribution_index": 0}
 
     def scanned(self, entry):
         if entry.get("event", None) != "ShipTargeted":
@@ -60,21 +60,27 @@ class EDRBountyHuntingStats(object):
         if not raw_pilot_name:
             return False
 
+        bounty = entry.get("Bounty", 0)
+        now = EDTime.py_epoch_now()
+        index = min(int(round(bounty/self.max_normal_bounty * (len(self.distribution["bins"])-1), 0)), len(self.distribution["bins"])-1)
+        self.last = {
+            "timestamp": now,
+            "bounty": bounty,
+            "name": entry.get("PilotName_Localised", ""),
+            "distribution_index": index
+        }
+
         if self.__probably_previously_scanned(entry):
+            print("skipping previously scanned: {}".format(raw_pilot_name))
             return False
         
         self.scans_cache.set(raw_pilot_name, entry)
-        now = EDTime.py_epoch_now()
         self.current = now
+        if bounty <= 0:
+            return False
+            
         self.scanned_nb += 1
         self.__update_efficiency()
-        
-        bounty = entry.get("Bounty", 0)
-
-        self.last = {
-            "timestamp": now,
-            "bounty": 0
-        }
         
         self.sum_scanned += bounty
         self.previous_max = self.max
@@ -85,31 +91,41 @@ class EDRBountyHuntingStats(object):
         self.distribution["last_index"] = index
         self.distribution["bins"][index] += 1
         self.scans.append((now, bounty))
-        self.last["bounty"] = bounty
 
     def __probably_previously_scanned(self, entry):
+        print("checking novelty: {}".format(entry))
         raw_pilot_name = entry.get("PilotName", None)
         if not raw_pilot_name:
+            print("no pilot name")
             return False
         
+        print("Pilot name: {}".format(raw_pilot_name))
         last_scan = self.scans_cache.get(raw_pilot_name)
         if not last_scan:
+            print("no last scan")
             return False
-        return (entry["LegalStatus"] != last_scan["LegalStatus"]) or (entry["Bounty"] != last_scan["Bounty"])
+        print("last scan: {}".format(last_scan))
+        return (entry["LegalStatus"] == last_scan["LegalStatus"]) and (entry.get("Bounty", 0) == last_scan.get("Bounty",0))
     
     def awarded(self, entry):
         if entry.get("event", None) != "Bounty":
+            print("no bounty")
             return
         now = EDTime.py_epoch_now()
         self.current = now
         
         total_rewards = 0
-        rewards = entry.get("rewards", [])
+        rewards = entry.get("Rewards", [])
         for reward in rewards:
-            total_rewards += rewards[reward].get("Reward", 0)
+            print("reward")
+            print(reward)
+            print(reward.get("Reward", 0))
+            total_rewards += reward.get("Reward", 0)
+            
+        print(total_rewards)
         self.sum_awarded += total_rewards
         self.awarded_nb += 1
-        self.awarded.append((now, total_rewards))
+        self.awarded_bounties.append((now, total_rewards))
         self.__update_efficiency()
 
     def credits_per_hour(self):

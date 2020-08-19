@@ -198,6 +198,8 @@ class EDFineOrBounty(object):
 
     def pretty_print(self):
         readable = u""
+        if self.value is None:
+            return _(u"N/A")
         if self.value >= 10000000000:
             # Translators: this is a short representation for a bounty >= 10 000 000 000 credits (b stands for billion)  
             readable = _(u"{} b").format(self.value // 1000000000)
@@ -207,7 +209,7 @@ class EDFineOrBounty(object):
         elif self.value >= 10000000:
             # Translators: this is a short representation for a bounty >= 10 000 000 credits (m stands for million)
             readable = _(u"{} m").format(self.value // 1000000)
-        elif self.value > 1000000:
+        elif self.value >= 1000000:
             # Translators: this is a short representation for a bounty >= 1 000 000 credits (m stands for million)
             readable = _(u"{:.1f} m").format(self.value / 1000000.0)
         elif self.value >= 10000:
@@ -829,7 +831,7 @@ class EDPlayerOne(EDPlayer):
         self.instance.reset()
         self.to_normal_space()
         self._touch()
-        self.reset_mining_stats()
+        self.reset_stats()
 
     def killed(self):
         super(EDPlayerOne, self).killed()
