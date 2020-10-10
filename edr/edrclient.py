@@ -533,7 +533,7 @@ class EDRClient(object):
     def nearby_activity(self, max_distance=10):
         body = self.edrsystems.body(self.player.star_system, self.player.place)
         radius = body.get("radius", None) if body else None
-        return EDRBodiesOfInterest.nearby_activity(self.player.star_system, self.player.place, self.player.piloted_vehicle.attitude, radius, max_distance)
+        return EDRBodiesOfInterest.nearby_activity(self.player, radius, max_distance)
 
     def navigation(self, latitude, longitude):
         position = {"latitude": float(latitude), "longitude": float(longitude)}
@@ -585,11 +585,12 @@ class EDRClient(object):
             return
         
         self.player.activity.update()
+        summary = self.player.activity.summarize()
         if self.visual_feedback:
-            pass
-            # TODO self.IN_GAME_MSG.navigation(bearing, destination, distance, pitch)
-        # TODO self.status = _(u"> {:03} < for Lat:{:.4f} Lon:{:.4f}".format(bearing, destination.latitude, destination.longitude))
-        print(self.player.activity.summarize())
+            # TODO refined version for racing
+            self.IN_GAME_MSG.navigation(summary["bearing"], summary["destination"], summary["distance"], summary["pitch"])
+        self.status = _(u"{} Heading: {:03} Pitch: {} Dist: {}".format(summary["header"], summary["bearing"], summary["pitch"], summary["distance"]))
+        print(summary)
 
     def check_system(self, star_system, may_create=False, coords=None):
         try:

@@ -5,6 +5,7 @@ import json
 
 import utils2to3
 from edentities import EDPlanetaryLocation
+from edrracingcircuit import EDRRacingCircuit
 
 class EDRBodiesOfInterest(object):
     BOI = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'boi.json')).read())
@@ -35,16 +36,16 @@ class EDRBodiesOfInterest(object):
         for poi in pois:
             destination = EDPlanetaryLocation(poi)
             candidate = destination.distance_flat(attitude, planet_radius)
-            if closest["distance"] is None or candidate < closest["distance"]:
+            if candidate is not None and (closest["distance"] is None or candidate < closest["distance"]):
                 closest["distance"] = candidate
                 closest["poi"] = poi
         return closest["poi"]
 
     @staticmethod
-    def activity_nearby(player, planet_radius, max_distance=10):
-        closest_poi = EDRBodiesOfInterest.closest_point_of_interest(player.star_system, player.place)
+    def nearby_activity(player, planet_radius, max_distance=10):
+        closest_poi = EDRBodiesOfInterest.closest_point_of_interest(player.star_system, player.place, player.piloted_vehicle.attitude, planet_radius)
         closest_destination = EDPlanetaryLocation(closest_poi)
-        if closest_destination.distance(attitude, planet_radius) > max_distance:
+        if closest_destination.distance(player.piloted_vehicle.attitude, planet_radius) > max_distance:
             return None
         if closest_poi.get("type", None) == "racing" and closest_poi.get("circuit", None):
             return EDRRacingCircuit(closest_poi["circuit"], player)

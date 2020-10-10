@@ -1028,7 +1028,7 @@
                     "longitude": 61,
                     "altitude": 0.094,
                     "planet_radius": 1010,
-                    "wp_radius": 0.100,
+                    "wp_radius": 3.000,
                     "type": "loop",
                     "laps": 3,
                     "category": "ship",

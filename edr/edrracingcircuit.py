@@ -50,7 +50,8 @@ class EDRRacingCircuit(object):
             return False
         ploc = EDPlanetaryLocation(wp)
         distance = ploc.distance(position, self.planet_radius)
-        return distance <= wp["radius"] and position["altitude"] <= wp["max_altitude"]
+        print("{} <= {} and {} <= {}".format(distance, wp["radius"], position.altitude, wp["max_altitude"]))
+        return distance <= wp["radius"] and position.altitude <= wp["max_altitude"]
 
     def disqualified(self, attitude):
         wp = self.current_waypoint()
@@ -99,21 +100,25 @@ class EDRRacingCircuit(object):
         if not self.current_waypoint():
             return details
 
-        if not self._is_in_progress():
-            details.append(_(u"Proceed to first waypoint to start the race"))
-        else:
-            details.append(_(u"Go go go!"))
-
         destination = EDPlanetaryLocation(self.current_waypoint())
         current = self.player.piloted_vehicle.attitude
         bearing = destination.bearing(current)
         distance = destination.distance(current, self.planet_radius)
-        pitch = destination.pitch(current, distance) if distance and distance >= 1.0 else "---"
-        details.append(_(u">>> {} <<< [{}]  ({}km)").format(bearing, distance, pitch))
+        pitch = destination.pitch(current, distance) if distance and distance >= 1.0 else None
         details.append(_(u"Best: {} | lap: {}").format(self.best["race"], self.best["lap"]))
-        for lap in self.lap_times:
-            details.append(_(u"Lap {}: {}").format(lap, self.lap_times[lap]))
-        return details
+        for lap, lap_time in enumerate(self.lap_times[-3:]):
+            details.append(_(u"Lap {}: {}").format(lap, lap_time))
+        
+        header = ""
+        if self._is_finished():
+            header = _(u"Finished!") # TODO _(u"Finished! Go to WP to restart")
+        elif not self.in_progress():
+            header = _(u"Go to WP to start").format(self._current_wp, len(self.waypoints))
+        else:
+            header = _(u"Lap {}/{} - WP#{}/{}").format(len(self.lap_times), self.laps, self._current_wp, len(self.waypoints))
+        
+        # TODO: show max altitude, laps seem to end before crossing back the last wp, crash on race finished because there are no bearing, destination, etc.
+        return {"header": header, "details": details, "bearing": bearing, "destination": destination, "distance": distance, "pitch": pitch}
 
     def _is_finished(self):
         if self.type == "loop":

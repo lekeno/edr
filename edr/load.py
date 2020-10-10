@@ -247,9 +247,10 @@ def handle_movement_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
         outcome["reason"] = "Approach event"
-        if EDR_CLIENT.noteworthy_about_body(entry["StarSystem"], entry["Body"]) and ed_player.planetary_destination is None:
+        if EDR_CLIENT.noteworthy_about_body(entry["StarSystem"], entry["Body"]) and ed_player.planetary_destination is None and ed_player.piloted_vehicle.attitude.valid():
             poi = EDR_CLIENT.closest_poi_on_body(entry["StarSystem"], entry["Body"], ed_player.piloted_vehicle.attitude)
-            ed_player.planetary_destination = edentities.EDPlanetaryLocation(poi)
+            if poi:
+                ed_player.planetary_destination = edentities.EDPlanetaryLocation(poi)
     elif entry["event"] in ["LeaveBody"]:
         place = "Supercruise"
         ed_player.planetary_destination = None

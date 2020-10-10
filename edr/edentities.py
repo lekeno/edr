@@ -248,6 +248,8 @@ class EDPlanetaryLocation(object):
         return True
 
     def distance_flat(self, loc, planet_radius):
+        if not self.valid() or loc is None:
+            return None
         dlat = math.radians(loc.latitude - self.latitude)
         dlon = math.radians(loc.longitude - self.longitude)
         lat1 = math.radians(self.latitude)
@@ -257,6 +259,8 @@ class EDPlanetaryLocation(object):
         return int(round(planet_radius * c, 0))
 
     def distance(self, loc, planet_radius):
+        if not self.valid() or loc is None:
+            return None
         d = self.distance_flat(loc, planet_radius)
         dh = abs(self.altitude - loc.altitude)
 
