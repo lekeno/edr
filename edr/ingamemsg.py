@@ -15,10 +15,10 @@ from edentities import EDFineOrBounty
 
 EDRLOG = edrlog.EDRLog()
 
-_overlay_dir = utils2to3.pathmaker(__file__, u'EDMCOverlay')
-
-if _overlay_dir not in sys.path:
-    sys.path.append(_overlay_dir)
+if sys.platform == "win32":
+    _overlay_dir = utils2to3.pathmaker(__file__, u'EDMCOverlay')
+    if _overlay_dir not in sys.path:
+        sys.path.append(_overlay_dir)
 
 try:
     import edmcoverlay

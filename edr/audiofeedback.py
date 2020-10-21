@@ -55,3 +55,18 @@ elif platform == 'win32':
 
         def notify(self):
             winsound.PlaySound(self.snd_notify, winsound.SND_ASYNC)
+
+
+else:
+    class AudioFeedback(object):
+        def soft(self):
+            pass
+
+        def loud(self):
+            pass
+
+        def warn(self):
+            pass
+
+        def notify(self):
+            pass
