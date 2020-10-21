@@ -56,17 +56,25 @@ elif platform == 'win32':
         def notify(self):
             winsound.PlaySound(self.snd_notify, winsound.SND_ASYNC)
 
+elif platform == 'linux':
+    from playsound import playsound
 
-else:
     class AudioFeedback(object):
+
+        def __init__(self):
+            self.snd_warn = utils2to3.abspathmaker(__file__, 'sounds', 'snd_warn.wav')
+            self.snd_notify = utils2to3.abspathmaker(__file__, 'sounds', 'snd_notify.wav')
+
         def soft(self):
-            pass
+            self.snd_warn = utils2to3.abspathmaker(__file__, 'sounds', 'snd_warn_soft.wav')
+            self.snd_notify = utils2to3.abspathmaker(__file__, 'sounds', 'snd_notify_soft.wav')
 
         def loud(self):
-            pass
+            self.snd_warn = utils2to3.abspathmaker(__file__, 'sounds', 'snd_warn.wav')
+            self.snd_notify = utils2to3.abspathmaker(__file__, 'sounds', 'snd_notify.wav')
 
         def warn(self):
-            pass
+            playsound(self.snd_warn)
 
         def notify(self):
-            pass
+            playsound(self.snd_notify)
