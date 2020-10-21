@@ -60,7 +60,7 @@ class EDRServiceFinder(threading.Thread):
             shuffle(systems)
             candidates = self.__search(systems, candidates)
 
-        if not (candidates and candidates.get('prime', None) and self.edr_systems.in_colonia(self.star_system):
+        if not (candidates and candidates.get('prime', None)) and self.edr_systems.in_colonia(self.star_system):
             EDRLOG.log(u"Couldn't find any candidate so far. Trying with key Colonia star systems", "DEBUG")
             key_colonia_star_systems = [ "Alberta", "Amatsuboshi", "Asura", "Aurora Astrum", "Benzaiten", "Centralis", "Coeus", "Colonia", "Deriso", "Desy", "Diggidiggi", "Dubbuennel", "Edge Fraternity Landing", "Einheriar", "Eol Procul Centauri", "Helgoland", "Kajuku", "Kinesi", "Kojeara", "Kopernik", "Los", "Luchtaine", "Magellan", "Mriya", "Pennsylvania", "Poe", "Randgnid", "Ratraii", "Saraswati", "Solitude", "Tir", "White Sun" ]
             for star_system in key_colonia_star_systems:
