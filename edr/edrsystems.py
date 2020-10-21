@@ -905,7 +905,7 @@ class EDRSystems(object):
 
     def in_bubble(self, system_name):
         try:
-            return self.distance(system_name, 'Sol') <= 500
+            return self.distance(system_name, 'Sol') <= 1800
         except ValueError:
             return False
     
