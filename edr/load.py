@@ -289,7 +289,7 @@ def handle_change_events(ed_player, entry):
                 capacity = ed_player.mothership.cargo_capacity
                 EDR_CLIENT.notify_with_details(_(U"Restock reminder"), [_(u"Don't forget to restock on limpets before heading out mining."), _(u"Limpets: {}/{}").format(limpets, capacity)])
         elif entry["event"] == "Undocked" and ed_player.mothership.is_mining_rig():
-            ed_player.reset_mining_stats()
+            ed_player.reset_stats()
         outcome["reason"] = "Docking events"
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
     return outcome
@@ -463,6 +463,17 @@ def handle_mining_events(ed_player, entry):
     elif entry["event"] == "MiningRefined":
         ed_player.refined(entry)
     EDR_CLIENT.mining_guidance()
+
+def handle_bounty_hunting_events(ed_player, entry):
+    if entry["event"] not in ["Bounty", "ShipTargeted"]:
+        return
+    if entry["event"] == "Bounty":
+        ed_player.bounty_awarded(entry)
+        EDR_CLIENT.bounty_hunting_guidance()
+    elif entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] >= 3 and entry.get("Bounty", 0) > 0:
+        ed_player.bounty_scanned(entry)
+        EDR_CLIENT.bounty_hunting_guidance()
+    
             
 def journal_entry(cmdr, is_beta, system, station, entry, state):
     """
@@ -526,6 +537,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     if entry["event"] in ["MiningRefined", "ProspectedAsteroid"]:
         handle_mining_events(ed_player, entry)
+    
+    if entry["event"] == "Bounty":
+        handle_bounty_hunting_events(ed_player, entry)
 
     if entry["event"] in ["CarrierJump", "CarrierBuy", "CarrierStats", "CarrierJumpRequest", "CarrierJumpCancelled", "CarrierDecommission", "CarrierCancelDecommission", "CarrierDockingPermission"]:
         handle_carrier_events(ed_player, entry)
@@ -580,6 +594,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["ShipTargeted"]:
         if "ScanStage" in entry and entry["ScanStage"] > 0:
             handle_scan_events(ed_player, entry)
+            handle_bounty_hunting_events(ed_player, entry)
         elif ("ScanStage" in entry and entry["ScanStage"] == 0) or ("TargetLocked" in entry and not entry["TargetLocked"]):
             ed_player.target = None
     
@@ -1095,32 +1110,6 @@ def handle_legal_fees(player, entry):
             true_amount = entry["Amount"] * (1.0 - entry.get("BrokerPercentage", 0)/100.0)
             player.bounty = max(0, player.bounty - true_amount)
 
-def handle_npc_scan_events(player, entry):
-    if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0):
-        return False
-
-    prefix = "$npc_name_decorate:#name="
-    if not entry["PilotName"].startswith(prefix):
-        return False
-    
-    target_name = entry["PilotName"][len(prefix):-1]
-    
-    if entry["ScanStage"] < 3:
-        return False
-
-    wanted = entry["LegalStatus"] in ["Wanted", "WantedEnemy", "Warrant"]
-    enemy = entry["LegalStatus"] in ["Enemy", "WantedEnemy", "Hunter"]
-    bounty = entry.get("Bounty", 0)
-    scan = {
-        "npc": target_name,
-        "wanted": wanted,
-        "enemy": enemy,
-        "bounty": bounty
-    }
- 
-    return EDR_CLIENT.npc_scanned(target_name, scan)
-
-
 def handle_scan_events(player, entry):
     if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0):
         return False
@@ -1138,7 +1127,7 @@ def handle_scan_events(player, entry):
         player.target = None #NPC
     
     if not prefix:
-        return handle_npc_scan_events(player, entry)
+        return False
 
     target_name = entry["PilotName"][len(prefix):-1]
     if target_name == player.name:
