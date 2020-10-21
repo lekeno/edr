@@ -56,7 +56,6 @@ elif platform == 'win32':
         def notify(self):
             winsound.PlaySound(self.snd_notify, winsound.SND_ASYNC)
 
-
 elif platform == 'linux':
     from playsound import playsound
 

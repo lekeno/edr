@@ -53,6 +53,5 @@ elif os.name == 'mac' or platform.system() == 'Darwin':
     clipboard_set = __macSetClipboard
 elif os.name == 'linux' or platform.system() == 'Linux':
     clipboard_get = __macGetClipboard
-    clipboard_set = __macSetClipboard
-    
+    clipboard_set = __macSetClipboard    
 copy = clipboard_set
