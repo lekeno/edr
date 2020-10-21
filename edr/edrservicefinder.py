@@ -12,6 +12,7 @@ class EDRServiceFinder(threading.Thread):
         self.checker = checker
         self.radius = 50
         self.sc_distance = 1500
+        self.trials = 0
         self.max_trials = 25
         self.edr_systems = edr_systems
         self.callback = callback
@@ -32,6 +33,7 @@ class EDRServiceFinder(threading.Thread):
         self.permits = permits
 
     def run(self):
+        self.trials = 0
         results = self.nearby()
         if self.callback:
             self.callback(self.star_system, self.radius, self.sc_distance, self.checker, results)
@@ -39,33 +41,13 @@ class EDRServiceFinder(threading.Thread):
     def nearby(self):
         servicePrime = None
         serviceAlt = None
+
+        candidates = {'prime': servicePrime, 'alt': serviceAlt}
         
         system = self.edr_systems.system(self.star_system)
-        if not system:
-            return None
-
-        system = system[0]
-        system['distance'] = 0
-        possibility = self.checker.check_system(system)
-        accessible = not system.get('requirePermit', False) or (system.get('requirePermit', False) and system['name'] in self.permits)
-        EDRLOG.log(u"System {}: possibility {}, accessible {}".format(system['name'], possibility, accessible), "DEBUG")
-        if possibility and accessible:
-            candidate = self.__service_in_system(system)
-            if candidate:
-                ambiguous = self.checker.is_service_availability_ambiguous(candidate)
-                check_sc_distance = candidate['distanceToArrival'] <= self.sc_distance
-                check_landing_pads = self.__has_large_lading_pads(candidate['type']) if self.large_pad_required else True
-                EDRLOG.log(u"System {} is a candidate: ambiguous {}, sc_distance {}, landing_pads {}".format(system['name'], ambiguous, check_sc_distance, check_landing_pads), "DEBUG")
-                if check_sc_distance and check_landing_pads and not ambiguous:
-                    EDRLOG.log(u"System {} is a prime candidate. Stopping here.".format(system['name']), "DEBUG")
-                    servicePrime = system
-                    servicePrime['station'] = candidate
-                    return servicePrime
-                else:
-                    serviceAlt = system
-                    serviceAlt['station'] = candidate
-                    if ambiguous:
-                        serviceAlt['comment'] = _(u"[Confidence: LOW]")
+        candidates = self.__check_system(system, candidates)
+        if candidates["prime"]:
+            return candidates["prime"]
 
         systems = self.edr_systems.systems_within_radius(self.star_system, self.radius)
         if not systems:
@@ -73,63 +55,77 @@ class EDRServiceFinder(threading.Thread):
 
         candidates = {'prime': servicePrime, 'alt': serviceAlt}
         candidates = self.__search(systems, candidates)
-        if candidates and candidates.get('prime', None):
-            serviceAlt = candidates['alt']
-            servicePrime = candidates['prime']
-        else:
-            EDRLOG.log(u"Couldn't find any candidate so far. Trying again after a shuffle", "DEBUG")
+        if not (candidates and candidates.get('prime', None)):
+            EDRLOG.log(u"Couldn't find any prime candidate so far. Trying again after a shuffle", "DEBUG")
             shuffle(systems)
             candidates = self.__search(systems, candidates)
-            if candidates:
-                serviceAlt = candidates['alt']
-                servicePrime = candidates['prime']
+
+        if not (candidates and candidates.get('prime', None) and self.edr_systems.in_colonia(self.star_system):
+            EDRLOG.log(u"Couldn't find any candidate so far. Trying with key Colonia star systems", "DEBUG")
+            key_colonia_star_systems = [ "Alberta", "Amatsuboshi", "Asura", "Aurora Astrum", "Benzaiten", "Centralis", "Coeus", "Colonia", "Deriso", "Desy", "Diggidiggi", "Dubbuennel", "Edge Fraternity Landing", "Einheriar", "Eol Procul Centauri", "Helgoland", "Kajuku", "Kinesi", "Kojeara", "Kopernik", "Los", "Luchtaine", "Magellan", "Mriya", "Pennsylvania", "Poe", "Randgnid", "Ratraii", "Saraswati", "Solitude", "Tir", "White Sun" ]
+            for star_system in key_colonia_star_systems:
+                system = self.edr_systems.system(self.star_system)
+                candidates = self.__check_system(system, candidates)
+                if candidates and candidates.get('prime', None):
+                    break
+
+        if candidates:
+            serviceAlt = candidates.get('alt', None)
+            servicePrime = candidates.get('prime', None)
 
         return servicePrime if servicePrime else serviceAlt
+
+    def __check_system(self, star_system, candidates):
+        if not system:
+            return candidates
+
+        possibility = self.checker.check_system(system)
+        accessible = not system.get('requirePermit', False) or (system.get('requirePermit', False) and system['name'] in self.permits)
+        EDRLOG.log(u"System {}: possibility {}, accessible {}".format(system['name'], possibility, accessible), "DEBUG")
+        if not possibility or not accessible:
+            return candidates
+
+        if self.edr_systems.are_stations_stale(system['name']):
+            self.trials += 1
+        
+        candidate = self.__service_in_system(system)
+        if candidate:
+            check_sc_distance = candidate['distanceToArrival'] <= self.sc_distance
+            check_landing_pads = self.__has_large_lading_pads(candidate['type']) if self.large_pad_required else True
+            ambiguous = self.checker.is_service_availability_ambiguous(candidate)
+            EDRLOG.log(u"System {} is a candidate: ambiguous {}, sc_distance {}, landing_pads {}".format(system['name'], ambiguous, check_sc_distance, check_landing_pads), "DEBUG")
+            if check_sc_distance and check_landing_pads and not ambiguous:
+                trialed = system
+                trialed['station'] = candidate
+                closest = self.edr_systems.closest_destination(trialed, candidates['prime'])
+                EDRLOG.log(u"Prime Trial {}, closest {}".format(system['name'], closest['name']), "DEBUG")
+                candidates['prime'] = closest
+            else:
+                if ambiguous:
+                    candidate['comment'] = _(u"[Confidence: LOW]")
+                trialed = system
+                trialed['station'] = candidate
+                closest = self.edr_systems.closest_destination(trialed, candidates['alt'])
+                EDRLOG.log(u"Trial {}, closest {}".format(system['name'], closest['name']), "DEBUG")
+                candidates['alt'] = closest 
+
 
     def __search(self, systems, candidates):
         trials = 0
         if not systems:
             return None
         for system in systems:
-            possibility = self.checker.check_system(system)
-            accessible = not system.get('requirePermit', False) or (system.get('requirePermit', False) and system['name'] in self.permits)
-            EDRLOG.log(u"System {}: possibility {}, accessible {}".format(system['name'], possibility, accessible), "DEBUG")
-            if not possibility or not accessible:
-                continue
-
-            if self.edr_systems.are_stations_stale(system['name']):
-                trials = trials + 1
-                if trials > self.max_trials:
-                    EDRLOG.log(u"Tried too many. Aborting here.", "DEBUG")
-                    break
-            
-            candidate = self.__service_in_system(system)
-            if candidate:
-                check_sc_distance = candidate['distanceToArrival'] <= self.sc_distance
-                check_landing_pads = self.__has_large_lading_pads(candidate['type']) if self.large_pad_required else True
-                ambiguous = self.checker.is_service_availability_ambiguous(candidate)
-                EDRLOG.log(u"System {} is a candidate: ambiguous {}, sc_distance {}, landing_pads {}".format(system['name'], ambiguous, check_sc_distance, check_landing_pads), "DEBUG")
-                if check_sc_distance and check_landing_pads and not ambiguous:
-                    trialed = system
-                    trialed['station'] = candidate
-                    closest = self.edr_systems.closest_destination(trialed, candidates['prime'])
-                    EDRLOG.log(u"Prime Trial {}, closest {}".format(system['name'], closest['name']), "DEBUG")
-                    candidates['prime'] = closest
-                else:
-                    if ambiguous:
-                        candidate['comment'] = _(u"[Confidence: LOW]")
-                    trialed = system
-                    trialed['station'] = candidate
-                    closest = self.edr_systems.closest_destination(trialed, candidates['alt'])
-                    EDRLOG.log(u"Trial {}, closest {}".format(system['name'], closest['name']), "DEBUG")
-                    candidates['alt'] = closest                    
+            candidates = self.__check_system(system, candidates)                  
 
             if candidates['prime']:
                 EDRLOG.log(u"Prime found, breaking here.", "DEBUG")
                 break
+                
+            if self.trials > self.max_trials:
+                EDRLOG.log(u"Tried too many. Aborting here.", "DEBUG")
+                break
 
-        return candidates
-        
+        return candidates        
 
     def closest_station_with_service(self, stations):
         overall = None
