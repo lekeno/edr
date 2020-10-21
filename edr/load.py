@@ -1095,6 +1095,31 @@ def handle_legal_fees(player, entry):
             true_amount = entry["Amount"] * (1.0 - entry.get("BrokerPercentage", 0)/100.0)
             player.bounty = max(0, player.bounty - true_amount)
 
+def handle_npc_scan_events(player, entry):
+    if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0):
+        return False
+
+    prefix = "$npc_name_decorate:#name="
+    if not entry["PilotName"].startswith(prefix):
+        return False
+    
+    target_name = entry["PilotName"][len(prefix):-1]
+    
+    if entry["ScanStage"] < 3:
+        return False
+
+    wanted = entry["LegalStatus"] in ["Wanted", "WantedEnemy", "Warrant"]
+    enemy = entry["LegalStatus"] in ["Enemy", "WantedEnemy", "Hunter"]
+    bounty = entry.get("Bounty", 0)
+    scan = {
+        "npc": target_name,
+        "wanted": wanted,
+        "enemy": enemy,
+        "bounty": bounty
+    }
+ 
+    return EDR_CLIENT.npc_scanned(target_name, scan)
+
 
 def handle_scan_events(player, entry):
     if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0):
@@ -1113,7 +1138,7 @@ def handle_scan_events(player, entry):
         player.target = None #NPC
     
     if not prefix:
-        return False
+        return handle_npc_scan_events(player, entry)
 
     target_name = entry["PilotName"][len(prefix):-1]
     if target_name == player.name:
