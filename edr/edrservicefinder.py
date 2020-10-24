@@ -45,7 +45,7 @@ class EDRServiceFinder(threading.Thread):
         candidates = {'prime': servicePrime, 'alt': serviceAlt}
         
         system = self.edr_systems.system(self.star_system)
-        candidates = self.__check_system(system, candidates)
+        candidates = self.__check_system(system[0] if isinstance(system, list) else system, candidates)
         if candidates["prime"]:
             return candidates["prime"]
 
@@ -64,8 +64,8 @@ class EDRServiceFinder(threading.Thread):
             EDRLOG.log(u"Couldn't find any candidate so far. Trying with key Colonia star systems", "DEBUG")
             key_colonia_star_systems = [ "Alberta", "Amatsuboshi", "Asura", "Aurora Astrum", "Benzaiten", "Centralis", "Coeus", "Colonia", "Deriso", "Desy", "Diggidiggi", "Dubbuennel", "Edge Fraternity Landing", "Einheriar", "Eol Procul Centauri", "Helgoland", "Kajuku", "Kinesi", "Kojeara", "Kopernik", "Los", "Luchtaine", "Magellan", "Mriya", "Pennsylvania", "Poe", "Randgnid", "Ratraii", "Saraswati", "Solitude", "Tir", "White Sun" ]
             for star_system in key_colonia_star_systems:
-                system = self.edr_systems.system(self.star_system)
-                candidates = self.__check_system(system, candidates)
+                system = self.edr_systems.system(star_system)
+                candidates = self.__check_system(system[0] if isinstance(system, list) else system, candidates)
                 if candidates and candidates.get('prime', None):
                     break
 
@@ -75,10 +75,11 @@ class EDRServiceFinder(threading.Thread):
 
         return servicePrime if servicePrime else serviceAlt
 
-    def __check_system(self, star_system, candidates):
+    def __check_system(self, system, candidates):
         if not system:
             return candidates
 
+        EDRLOG.log(u"System {}".format(system), "DEBUG")
         possibility = self.checker.check_system(system)
         accessible = not system.get('requirePermit', False) or (system.get('requirePermit', False) and system['name'] in self.permits)
         EDRLOG.log(u"System {}: possibility {}, accessible {}".format(system['name'], possibility, accessible), "DEBUG")
@@ -107,17 +108,18 @@ class EDRServiceFinder(threading.Thread):
                 trialed['station'] = candidate
                 closest = self.edr_systems.closest_destination(trialed, candidates['alt'])
                 EDRLOG.log(u"Trial {}, closest {}".format(system['name'], closest['name']), "DEBUG")
-                candidates['alt'] = closest 
+                candidates['alt'] = closest
+        return candidates
 
 
     def __search(self, systems, candidates):
-        trials = 0
+        self.trials = 0
         if not systems:
             return None
         for system in systems:
             candidates = self.__check_system(system, candidates)                  
 
-            if candidates['prime']:
+            if candidates and candidates.get('prime', None):
                 EDRLOG.log(u"Prime found, breaking here.", "DEBUG")
                 break
                 
