@@ -765,7 +765,7 @@ def report_fight(player):
     report = player.json(with_target=True)
     EDR_CLIENT.fight(report)
 
-def edr_submit_contact(contact, timestamp, source, witness):
+def edr_submit_contact(contact, timestamp, source, witness, system_wide=False):
     """
     Report a contact with a cmdr
     :param contact:
@@ -800,7 +800,7 @@ def edr_submit_contact(contact, timestamp, source, witness):
     if not EDR_CLIENT.blip(contact.name, report):
         EDR_CLIENT.status = _(u"failed to report contact.")
         
-    edr_submit_traffic(contact, timestamp, source, witness)
+    edr_submit_traffic(contact, timestamp, source, witness, system_wide)
 
 def edr_submit_scan(scan, timestamp, source, witness):
     edt = EDTime()
@@ -830,7 +830,7 @@ def edr_submit_scan(scan, timestamp, source, witness):
     if not EDR_CLIENT.scanned(scan["cmdr"], report):
         EDR_CLIENT.status = _(u"failed to report scan.")
         
-def edr_submit_traffic(contact, timestamp, source, witness):
+def edr_submit_traffic(contact, timestamp, source, witness, system_wide=False):
     """
     Report a contact with a cmdr
     :param cmdr:
@@ -856,8 +856,8 @@ def edr_submit_traffic(contact, timestamp, source, witness):
         "group": witness.private_group
     }
 
-    if not witness.in_open():
-        EDRLOG.log(u"Skipping submit traffic due to unconfirmed Open mode", "INFO")
+    if not witness.in_open() and not system_wide:
+        EDRLOG.log(u"Skipping submit traffic due to unconfirmed Open mode, and event not being system wide.", "INFO")
         EDR_CLIENT.status = _(u"Traffic reporting disabled in solo/private modes.")
         return
 
@@ -865,7 +865,7 @@ def edr_submit_traffic(contact, timestamp, source, witness):
         EDRLOG.log(u"Skipping traffic update due to partial status", "INFO")
         return
 
-    if not EDR_CLIENT.traffic(witness.star_system, report):
+    if not EDR_CLIENT.traffic(witness.star_system, report, system_wide):
         EDR_CLIENT.status = _(u"failed to report traffic.")
         EDR_CLIENT.evict_system(witness.star_system)
 
@@ -985,7 +985,7 @@ def report_comms(player, entry):
             contact.place = "Unknown"
             # TODO add blip to systemwideinstance ?
             edr_submit_contact(contact, entry["timestamp"],
-                                "Received text (starsystem channel)", player)
+                                "Received text (starsystem channel)", player, system_wide = True)
     elif entry["event"] == "SendText" and not entry["To"] in ["local", "wing", "starsystem", "squadron", "squadleaders"]:
         to_cmdr = entry["To"]
         if entry["To"].startswith("$cmdr_decorate:#name="):

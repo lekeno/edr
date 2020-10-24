@@ -1131,8 +1131,8 @@ class EDRClient(object):
 
         return success
 
-    def traffic(self, star_system, traffic):
-        if self.player.in_solo():
+    def traffic(self, star_system, traffic, system_wide=False):
+        if self.player.in_solo() and not system_wide:
             EDRLOG.log(u"Skipping traffic since the user is in solo (unexpected).", "INFO")
             return False
 
