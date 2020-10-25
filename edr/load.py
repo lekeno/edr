@@ -1003,10 +1003,9 @@ def report_comms(player, entry):
                 EDRLOG.log(u"Sent text to {}. Player not created from game start => can't infer location".format(to_cmdr),
                         "INFO")
 
-    # Not The Perfect URL regexp but that should be good enough
-    m = re.match(r".*(https?://[0-9a-z.\-]*\.[0-9a-z\-]*) ?.*", entry["Message"], flags=re.IGNORECASE)
-    if m and m.group(1):
-        EDR_CLIENT.linkable_status(m.group(1))
+    m = re.findall(r"(http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-f][0-9a-f]))+)", entry["Message"], flags=re.IGNORECASE)
+    if m:
+        EDR_CLIENT.linkable_status(m[0])
 
 def handle_damage_events(ed_player, entry):
     if not entry["event"] in ["HullDamage", "UnderAttack", "SRVDestroyed", "FighterDestroyed", "HeatDamage", "ShieldState", "CockpitBreached", "SelfDestruct"]:
