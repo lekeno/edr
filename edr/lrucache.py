@@ -15,13 +15,14 @@ class LRUCache(object):
         self.last_updated = None
     
     def is_stale(self, key):
-        return self.is_older_than(key, self.max_age)
+        return self.is_older_than(key, self.max_age.total_seconds())
 
     def is_older_than(self, key, age):
         if not self.has_key(key):
             return True
         entry = self.cache[key]
-        return (datetime.datetime.now() - entry["datetime"]) > age
+        age_delta = datetime.timedelta(seconds=age)
+        return (datetime.datetime.now() - entry["datetime"]) > age_delta
 
     def values(self):
         return self.cache.values()
