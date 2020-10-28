@@ -418,9 +418,12 @@ class EDRClient(object):
 
         notebook.Label(frame, text=_(u"Announce my Fleet Carrier's jump schedule (α)")).grid(padx=10, row = 17, sticky=tk.W)
         choices = { _(u'Never'),_(u'Public'),_(u'Private')}
-        popupMenu = notebook.OptionMenu(frame, self._fc_jump_psa, self.fc_jump_psa, *choices)
+        popupMenu = notebook.OptionMenu(frame, self._fc_jump_psa, self.fc_jump_psa, *choices, command=self.__toggle_private_fc_link)
         popupMenu.grid(padx=10, row=17, column=1, sticky=tk.EW)
         popupMenu["menu"].configure(background="white", foreground="black")
+        self._private_fc_link = ttkHyperlinkLabel.HyperlinkLabel(frame, text=_(u"Configure your private channel"), background=notebook.Label().cget('background'), url="https://forms.gle/7pntJRpDgRBcbcfp8", underline=True)
+        if self.fc_jump_psa == _(u'Private'):
+            self._private_fc_link.grid(padx=10, row=18, column=1, sticky=tk.EW)
 
         if self.server.is_authenticated():
             if self.is_anonymous():
@@ -431,17 +434,23 @@ class EDRClient(object):
             self.status = _(u"not authenticated.")
 
         # Translators: this is shown in the preferences panel as a heading for feedback options (e.g. overlay, audio cues)
-        notebook.Label(frame, text=_(u"EDR Feedback:")).grid(padx=10, row=18, sticky=tk.W)
+        notebook.Label(frame, text=_(u"EDR Feedback:")).grid(padx=10, row=19, sticky=tk.W)
         ttk.Separator(frame, orient=tk.HORIZONTAL).grid(columnspan=2, padx=10, pady=2, sticky=tk.EW)
         
         notebook.Checkbutton(frame, text=_(u"Overlay"),
-                             variable=self._visual_feedback).grid(padx=10, row=20,
+                             variable=self._visual_feedback).grid(padx=10, row=21,
                                                                   sticky=tk.W)
         notebook.Checkbutton(frame, text=_(u"Sound"),
-                             variable=self._audio_feedback).grid(padx=10, row=21, sticky=tk.W)
+                             variable=self._audio_feedback).grid(padx=10, row=22, sticky=tk.W)
 
 
         return frame
+
+    def __toggle_private_fc_link(self, choice):
+        if choice == _(u'Private'):
+            self._private_fc_link.grid()
+        else:
+            self._private_fc_link.grid_remove()
 
     def __status_update_pending(self):
         # Translators: this is shown in EDMC's status
