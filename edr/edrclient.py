@@ -623,6 +623,33 @@ class EDRClient(object):
         credits_per_hour = EDFineOrBounty(int(self.player.bounty_hunting_stats.credits_per_hour()))
         self.status = _(u"[Last: {} cr [{}]]   [Totals: {} cr/hour ({} awarded)]".format(bounty.pretty_print(), self.player.bounty_hunting_stats.last["name"], self.player.bounty_hunting_stats.awarded_nb, credits_per_hour.pretty_print()))
 
+    def target_guidance(self, target_event):
+        if not self.player.target or not self.player.target.vehicle:
+            return
+        
+        tgt = self.player.target.vehicle
+        subsys_details = None
+        if "Subsystem" in target_event:
+            subsys_details = tgt.subsystem_details(target_event["Subsystem"])
+            EDRLOG.log(subsys_details, "DEBUG")
+
+        details = []
+        details.append(u"S/H %: {:.2f}/{:.2f}".format(tgt.shield_health, tgt.hull_health))
+        EDRLOG.log(target_event, "DEBUG")
+        if subsys_details:
+            details.append(u"{} %: {}".format(subsys_details["shortname"], subsys_details["stats"][-1]["value"]))
+            if len(subsys_details["stats"]) > 1:
+                delta_value = subsys_details["stats"][-2]["value"] - subsys_details["stats"][-1]["value"]
+                delta_time = subsys_details["stats"][-2]["timestamp"] - subsys_details["stats"][-1]["timestamp"]
+                if abs(delta_value) >= 0.01 and delta_time:
+                    delta_per_s = (delta_value / delta_time) * 1000 * 60
+                    details.append(u"Delta: {:.2f} pp / {:.2f} pp per min".format(delta_value, delta_per_s))
+            self.status = _(u"Target S/H %: {:.2f}/{:.2f} - {} %: {:.2f}".format(tgt.shield_health, tgt.hull_health, subsys_details["shortname"], subsys_details["stats"][-1]["value"]))
+        else:
+            self.status = _(u"Target S/H %: {:.2f}/{:.2f}".format(tgt.shield_health, tgt.hull_health))
+        
+        self.__notify("Target stats", details, clear_before=True)            
+
     def notams(self):
         summary = self.edrsystems.systems_with_active_notams()
         if summary:

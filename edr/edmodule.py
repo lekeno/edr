@@ -41,10 +41,16 @@ class EDModule(object):
         return not (self.priority is None or self.power_draw is None or self.cname is None)
 
     def generic_name(self):
-        match = re.search('([a-zA-Z_]*)_size[0-9]_class[0-9](_[a-zA-Z_].*)?', self.cname)
+        match = re.search('([a-zA-Z_]*)_size[0-9]_class[0-9](_[a-zA-Z_]*)?', self.cname)
         if match:
             return match.group(1)
         return self.cname
+
+    def size_and_class(self):
+        match = re.search('[a-zA-Z_]*_size([0-9])_class([0-9])_[a-zA-Z_]*', self.cname)
+        if match:
+            return match.groups()
+        return None
 
     def readable_name(self):
         lut = { 

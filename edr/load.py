@@ -1171,6 +1171,10 @@ def handle_scan_events(player, entry):
         edr_submit_scan(scan, entry["timestamp"], "Ship targeted [{}]".format(entry["LegalStatus"]), player)
 
     player.targeting(target)
+    # TODO display hit point stats
+    if entry["ScanStage"] >= 3 and "Subsystem" in entry and "SubsystemHealth" in entry:
+        EDR_CLIENT.target_guidance(entry)
+
     return True
 
 def handle_material_events(cmdr, entry, state):
