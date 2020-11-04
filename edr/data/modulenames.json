@@ -1,5 +1,6 @@
 {
 "modularcargobaydoor": { "name":"cargo hatch", "shortname": "Hatch"},
+"modularcargobaydoorfdl": { "name":"cargo hatch", "shortname": "Hatch (*)"},
 "sidewinder_armour_grade1": { "name":"lightweight alloy (1I)", "shortname": "Lightweight (1I)"},
 "sidewinder_armour_grade2": { "name":"reinforced alloy (1I)", "shortname": "Reinforced (1I)"},
 "sidewinder_armour_grade3": { "name":"military grade composite (1I)", "shortname": "Military (1I)"},

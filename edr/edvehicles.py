@@ -55,9 +55,9 @@ class EDVehicle(object):
         self.hot = False
         now = EDTime.py_epoch_now()
         now_ms = EDTime.ms_epoch_now()
-        self._hull_health = deque(maxlen=100)
+        self._hull_health = deque(maxlen=1200)
         self._hull_health.append({"timestamp": now_ms, "value": 100.0})
-        self._shield_health = deque(maxlen=100)
+        self._shield_health = deque(maxlen=1200)
         self._shield_health.append({"timestamp": now_ms, "value": 100.0})
         self.shield_up = True
         self.subsystems = {}
@@ -87,6 +87,9 @@ class EDVehicle(object):
     def hull_health(self):
         return self._hull_health[-1]["value"]
 
+    def hull_health_stats(self):
+        return self._hull_health
+
     @hull_health.setter
     def hull_health(self, new_value):
         now = EDTime.ms_epoch_now()
@@ -105,6 +108,9 @@ class EDVehicle(object):
     @property
     def shield_health(self):
         return self._shield_health[-1]["value"]
+
+    def shield_health_stats(self):
+        return self._shield_health
     
     @shield_health.setter
     def shield_health(self, new_value):
@@ -315,7 +321,7 @@ class EDVehicle(object):
         now = EDTime.ms_epoch_now()
         self.timestamp = now
         if canonical not in self.subsystems:
-            self.subsystems[canonical] = deque(maxlen=100)
+            self.subsystems[canonical] = deque(maxlen=1200)
         self.subsystems[canonical].append({u"timestamp": now, u"value": health})
 
     def subsystem_details(self, subsystem):
@@ -334,7 +340,7 @@ class EDVehicle(object):
         now = EDTime.ms_epoch_now()
         self.timestamp = now
         self.outfit_probably_changed()
-        self.subsystems[canonical] = deque(maxlen=100)
+        self.subsystems[canonical] = deque(maxlen=1200)
         self.subsystems[canonical].append({u"timestamp": now, u"value": None})
     
     def remove_subsystem(self, subsystem):

@@ -414,6 +414,11 @@ def dashboard_entry(cmdr, is_beta, entry):
 
     if (entry['Flags'] & plug.FlagsInSRV):
         ed_player.in_srv()
+
+    if (entry['Flags'] & plug.FlagsFsdJump):
+        ed_player.in_blue_tunnel()
+    else:
+        ed_player.in_blue_tunnel(False)
     
     ed_player.piloted_vehicle.low_fuel = bool(entry['Flags'] & plug.FlagsLowFuel)
     ed_player.docked(bool(entry['Flags'] & plug.FlagsDocked))
@@ -1124,6 +1129,7 @@ def handle_scan_events(player, entry):
         prefix = "$RolePanel2_crew; $cmdr_decorate:#name="
     else:
         player.target = None #NPC
+        EDR_CLIENT.target_guidance(None)
     
     if not prefix:
         return False
@@ -1131,6 +1137,7 @@ def handle_scan_events(player, entry):
     target_name = entry["PilotName"][len(prefix):-1]
     if target_name == player.name:
         # Happens when scanning one's unmanned ship, etc.
+        EDR_CLIENT.target_guidance(None)
         return False
 
     target = player.instanced(target_name, entry["Ship"], piloted)
@@ -1171,9 +1178,7 @@ def handle_scan_events(player, entry):
         edr_submit_scan(scan, entry["timestamp"], "Ship targeted [{}]".format(entry["LegalStatus"]), player)
 
     player.targeting(target)
-    # TODO display hit point stats
-    if entry["ScanStage"] >= 3 and "Subsystem" in entry and "SubsystemHealth" in entry:
-        EDR_CLIENT.target_guidance(entry)
+    EDR_CLIENT.target_guidance(entry)
 
     return True
 
