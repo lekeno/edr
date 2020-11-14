@@ -1115,9 +1115,13 @@ def handle_legal_fees(player, entry):
             player.bounty = max(0, player.bounty - true_amount)
 
 def handle_scan_events(player, entry):
-    if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0):
+    if not (entry["event"] == "ShipTargeted"):
         return False
 
+    if not (entry["TargetLocked"]) or entry["ScanStage"] <= 0:
+        EDR_CLIENT.target_guidance(None)
+        return False
+    
     prefix = None
     piloted = False
     if entry["PilotName"].startswith("$cmdr_decorate:#name="):

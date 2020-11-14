@@ -12,6 +12,7 @@ from edri18n import _, _c
 import utils2to3
 from edrlandables import EDRLandables
 from edentities import EDFineOrBounty
+from edtime import EDTime
 
 EDRLOG = edrlog.EDRLog()
 
@@ -278,7 +279,7 @@ class InGameMsg(object):
                 "h": conf.h(kind, "shield"),
                 "w": conf.w(kind, "shield"),
                 "ttl": conf.ttl(kind, "shield"),
-                "rgb": conf.rgb(kind, "shield")
+                "rgb": conf.rgb_list(kind, "shield")
             },
             "hull": {
                 "x": conf.x(kind, "hull"),
@@ -901,7 +902,7 @@ class InGameMsg(object):
         for c in mining_stats.distribution["bins"][1:]:
             dx = cfg["distribution"]["x"]
             dy = cfg["distribution"]["y"]
-            p = c / max_distribution
+            p = c / max_distribution if max_distribution > 0 else 1 
             h = max(p * cfg["distribution"]["h"],1) if c else 0
             x = h
             bar["x"] = int(dx)
@@ -949,6 +950,7 @@ class InGameMsg(object):
 
     def bounty_hunting_guidance(self, bounty_hunting_stats):
         self.clear_bounty_hunting_guidance()
+        self.clear_docking()
         if "panel" in self.cfg["bounty-hunting"]:
             self.__shape("bounty-hunting", self.cfg["bounty-hunting"]["panel"])
         if "panel" in self.cfg["bounty-hunting-graphs"] and self.cfg["bounty-hunting-graphs"].get("enabled", False):
@@ -969,7 +971,7 @@ class InGameMsg(object):
         details.append(_(u"TOTALS: {} cr [{} rewards]".format(total_awarded.pretty_print(), bounty_hunting_stats.awarded_nb)))
         self.__msg_header("bounty-hunting", header)
         self.__msg_body("bounty-hunting", details)
-
+        
         if not self.cfg["bounty-hunting-graphs"].get("enabled", None):
             return
         self.__bounty_hunting_vizualization(bounty_hunting_stats)
@@ -1031,7 +1033,7 @@ class InGameMsg(object):
         for c in bounty_hunting_stats.distribution["bins"][1:]:
             dx = cfg["distribution"]["x"]
             dy = cfg["distribution"]["y"]
-            p = c / max_distribution
+            p = c / max_distribution if max_distribution > 0 else 1
             h = max(p * cfg["distribution"]["h"],1) if c else 0
             x = h
             bar["x"] = int(dx)
@@ -1078,6 +1080,10 @@ class InGameMsg(object):
             x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}
 
     def target_guidance(self, target, subsys_details=None):
+        #TODO scans bounty are not displayed anymore
+        #TODO use several points / time range to do the deltas
+        #TODO make that configurable
+        #TODO try to separate the SLF from the mother ship
         self.clear_target_guidance()
         if not target or not target.vehicle:
             return
@@ -1089,10 +1095,47 @@ class InGameMsg(object):
         
         header = _(u"HP: {cmdr} ({ship})").format(cmdr=target.name, ship=tgt_vehicle.type)
         details = []
-        details.append(_(u"SHLD: {:.2f} %".format(tgt_vehicle.shield_health)))
-        details.append(_(u"HULL: {:.2f} %".format(tgt_vehicle.hull_health)))
+        
+        shield_stats = tgt_vehicle.shield_health_stats()
+        shield_label = u"{:.4g}".format(tgt_vehicle.shield_health) if tgt_vehicle.shield_health else u"-"
+        delta_shield = ""
+        if len(shield_stats) >= 2:
+            delta_value = shield_stats[-1]["value"] - shield_stats[-2]["value"]
+            delta_time = shield_stats[-1]["timestamp"] - shield_stats[-2]["timestamp"]
+            if delta_value > 0 and delta_time:
+                tt100 = (100.0-shield_stats[-1]["value"]) / (delta_value/delta_time) / 1000
+                delta_shield = _(u"{} to {}").format(EDTime.pretty_print_timespan(int(tt100), short=True, verbose=False), "100%" if tgt_vehicle.shield_up else "UP") if int(tt100) > 0 else ""
+            elif delta_value < 0 and delta_time:
+                tt0 = (shield_stats[-1]["value"]) / (-delta_value/delta_time) / 1000
+                delta_shield = _(u"{} to 0%").format(EDTime.pretty_print_timespan(int(tt0), short=True, verbose=False)) if int(tt0) > 0 else ""
+        details.append(_(u"SHLD: {}{} % {}".format("●" if tgt_vehicle.shield_up and shield_stats[-1]["value"]>0 else "◌", shield_label, delta_shield)))
+
+        hull_stats = tgt_vehicle.hull_health_stats()
+        hull_label = u"{:.4g}".format(tgt_vehicle.hull_health) if tgt_vehicle.hull_health else u"-"
+        delta_hull = ""
+        if len(hull_stats) >= 2:
+            delta_value = hull_stats[-1]["value"] - hull_stats[-2]["value"]
+            delta_time = hull_stats[-1]["timestamp"] - hull_stats[-2]["timestamp"]
+            if delta_value > 0 and delta_time:
+                tt100 = (100.0-hull_stats[-1]["value"]) / (delta_value/delta_time) / 1000
+                delta_hull = _(u"{} to 100%").format(EDTime.pretty_print_timespan(int(tt100), short=True, verbose=False)) if int(tt100) > 0 else ""
+            elif delta_value < 0 and delta_time:
+                tt0 = (hull_stats[-1]["value"]) / (-delta_value/delta_time) / 1000
+                delta_hull = _(u"{} to 0%").format(EDTime.pretty_print_timespan(int(tt0), short=True, verbose=False)) if int(tt0) > 0 else ""
+        details.append(_(u"HULL: {} % {}".format(hull_label, delta_hull)))
+
         if subsys_details:
-            details.append(_(u"{subsys}: {hp:.2f} %".format(subsys=subsys_details["shortname"], hp=subsys_details["stats"][-1]["value"])))
+            delta_subsys = ""
+            if len(subsys_details["stats"]) >= 2 and (subsys_details["stats"][-1]["value"] != None and subsys_details["stats"][-2]["value"] != None):
+                delta_value = subsys_details["stats"][-1]["value"] - subsys_details["stats"][-2]["value"]
+                delta_time = subsys_details["stats"][-1]["timestamp"] - subsys_details["stats"][-2]["timestamp"]
+                if delta_value > 0 and delta_time:
+                    tt100 = (100.0-subsys_details["stats"][-1]["value"]) / (delta_value/delta_time) / 1000
+                    delta_subsys = _(u"{} to 100%").format(EDTime.pretty_print_timespan(int(tt100), short=True, verbose=False)) if int(tt100) > 0 else ""
+                elif delta_value < 0 and delta_time:
+                    tt0 = (subsys_details["stats"][-1]["value"]) / (-delta_value/delta_time) / 1000
+                    delta_subsys = _(u"{} to 0%").format(EDTime.pretty_print_timespan(int(tt0), short=True, verbose=False)) if int(tt0) > 0 else ""
+            details.append(_(u"{subsys}: {hp:.4g} % {delta}".format(subsys=subsys_details["shortname"], hp=subsys_details["stats"][-1]["value"], delta=delta_subsys)))
         self.__msg_header("target-guidance", header)
         self.__msg_body("target-guidance", details)
 
@@ -1100,18 +1143,13 @@ class InGameMsg(object):
             EDRLOG.log("plop", "DEBUG")
             return
         subsys_stats = subsys_details["stats"] if subsys_details else None
-        self.__target_guidance_vizualization(tgt_vehicle.shield_health_stats(), tgt_vehicle.hull_health_stats(), subsys_stats)
+        self.__target_guidance_vizualization(tgt_vehicle.shield_up, shield_stats, hull_stats, subsys_stats)
     
-    def __target_guidance_vizualization(self, shield_stats, hull_stats, subsys_stats):
-        # TODO move to the side near the existing targeting info from the game
+    def __target_guidance_vizualization(self, shield_up, shield_stats, hull_stats, subsys_stats):
         # TODO move combat bounty h stats away from landing guidance
-        # TODO force the full xspan
-        # TODO add delta stats
+        # TODO krait drive name missing, 2 flavors
         # TODO summarize outfit (e.g. mining, ...)
-        # TODO clear on losing/changing target
         # TODO configurable span?
-        # TODO prune points that don't bring anything useful
-        EDRLOG.log("plop2", "DEBUG")
         cfg = self.cfg[u"target-guidance-graphs"]
         xspan = 1000*60*15.0
         x = cfg["shield"]["x"]
@@ -1123,10 +1161,12 @@ class InGameMsg(object):
         cx = x
         cy = y+h
         scaled = []
+        EDRLOG.log("shield", "DEBUG")
         last = max(shield_stats[-1]["timestamp"], hull_stats[-1]["timestamp"])
         if subsys_stats:
             last = max(last, subsys_stats[-1]["timestamp"])
         EDRLOG.log("xspan:{}, last: {}, x:{}, y:{}, w: {}, h:{}, cx:{},cy:{}".format(xspan, last,x,y,w,h,cx,cy), "DEBUG")
+        shield_down = not shield_up or (shield_stats[-1]["value"] <= 0 if shield_stats[-1] else False)
         for t_v in shield_stats:
             EDRLOG.log(t_v, "DEBUG")
             t = t_v["timestamp"]
@@ -1136,11 +1176,17 @@ class InGameMsg(object):
             x = 1.0 - (last-t) / xspan
             y = t_v["value"]/100.0
             s = {"x":int(cx+x*w), "y":int(cy-(y*h))}
-            EDRLOG.log("x{}, y{} >>> s{}".format(x,y,s), "DEBUG")
-            scaled.append(s)
+            if scaled and scaled[-1]["x"] == s["x"]:
+                adjusted = scaled[-1]
+                adjusted["y"] = min(scaled[-1]["y"], s["y"]) #int((scaled[-1]["y"] + s["y"]) / 2.0)
+                EDRLOG.log("quantization s{} & ps{} >>> s{}".format(s, scaled[-1], adjusted), "DEBUG")
+                scaled[-1] = adjusted
+            else:
+                EDRLOG.log("x{}, y{} >>> s{}".format(x,y,s), "DEBUG")
+                scaled.append(s)
         vect = {
             "id": u"shield-sparkline",
-            "color": cfg["shield"]["rgb"],
+            "color": cfg["shield"]["rgb"][1] if shield_down else cfg["shield"]["rgb"][0],
             "ttl": cfg["shield"]["ttl"],
             "vector": scaled
         }
@@ -1153,7 +1199,7 @@ class InGameMsg(object):
         cx = x
         cy = y+h
         scaled = []
-        EDRLOG.log("hull", "DEBUG")
+        EDRLOG.log("hull {}".format(hull_stats), "DEBUG")
         for t_v in hull_stats:
             EDRLOG.log(t_v, "DEBUG")
             t = t_v["timestamp"]
@@ -1163,8 +1209,14 @@ class InGameMsg(object):
             x = 1.0 - (last-t) / xspan
             y = t_v["value"]/100.0
             s = {"x":int(cx+x*w), "y":int(cy-(y*h))}
-            EDRLOG.log("x{}, y{} >>> s{}".format(x,y,s), "DEBUG")
-            scaled.append(s)
+            if scaled and scaled[-1]["x"] == s["x"]:
+                adjusted = scaled[-1]
+                adjusted["y"] = min(scaled[-1]["y"] , s["y"]) #int((scaled[-1]["y"] + s["y"]) / 2.0)
+                EDRLOG.log("quantization s{} & ps{} >>> s{}".format(s, scaled[-1], adjusted), "DEBUG")
+                scaled[-1] = adjusted
+            else:
+                EDRLOG.log("x{}, y{} >>> s{}".format(x,y,s), "DEBUG")
+                scaled.append(s)
         vect = {
             "id": u"hull-sparkline",
             "color": cfg["hull"]["rgb"],
@@ -1182,6 +1234,7 @@ class InGameMsg(object):
         cx = x
         cy = y+h
         scaled = []
+        EDRLOG.log("subsys", "DEBUG")
         for t_v in subsys_stats:
             EDRLOG.log(t_v, "DEBUG")
             t = t_v["timestamp"]
@@ -1191,8 +1244,14 @@ class InGameMsg(object):
             x = 1.0 - (last-t) / xspan
             y = t_v["value"]/100.0
             s = {"x":int(cx+x*w), "y":int(cy-(y*h))}
-            EDRLOG.log("x{}, y{} >>> s{}".format(x,y,s), "DEBUG")
-            scaled.append(s)
+            if scaled and scaled[-1]["x"] == s["x"]:
+                adjusted = {"x": s["x"], "y": min(scaled[-1]["y"], s["y"])}
+                #adjusted["y"] = int((scaled[-1]["y"] + s["y"]) / 2.0)
+                EDRLOG.log("quantization s{} & ps{} >>> adj.{}".format(s, scaled[-1], adjusted), "DEBUG")
+                scaled[-1] = adjusted
+            else:
+                EDRLOG.log("x{}, y{} >>> s{}".format(x,y,s), "DEBUG")
+                scaled.append(s)
         vect = {
             "id": u"subsys-sparkline",
             "color": cfg["subsys"]["rgb"],

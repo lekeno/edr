@@ -627,33 +627,29 @@ class EDRClient(object):
         if not target_event or not self.player.target or not self.player.target.vehicle:
             self.IN_GAME_MSG.clear_target_guidance()
             return
-        
+        # TODO fighter modules are not recognized and they show up as corvette / cmdr name instead of slf/crew
         tgt = self.player.target.vehicle
+        meaningful = len(tgt.hull_health_stats()) >= 2 or len(tgt.hull_health_stats()) >= 2
         subsys_details = None
         if "Subsystem" in target_event:
+            meaningful = True # Class and Rank of submodule can be interesting info to show
             subsys_details = tgt.subsystem_details(target_event["Subsystem"])
             EDRLOG.log(subsys_details, "DEBUG")
 
+        if not meaningful:
+            EDRLOG.log("Target info is not that interesting, skipping", "DEBUG")
+            return False
+
+        shield_label = u"{:.4g}".format(tgt.shield_health) if tgt.shield_health else u"-"
+        hull_label = u"{:.4g}".format(tgt.hull_health) if tgt.hull_health else u"-"
+        
         if subsys_details:
-            self.status = _(u"Target S/H %: {:.2f}/{:.2f} - {} %: {:.2f}".format(tgt.shield_health, tgt.hull_health, subsys_details["shortname"], subsys_details["stats"][-1]["value"]))
+            self.status = _(u"S/H %: {}/{} - {} %: {:.4g}".format(shield_label, hull_label, subsys_details["shortname"], subsys_details["stats"][-1]["value"]))
         else:
-            self.status = _(u"Target S/H %: {:.2f}/{:.2f}".format(tgt.shield_health, tgt.hull_health))
+            self.status = _(u"S/H %: {}/{}".format(shield_label, hull_label))
         
         if self.visual_feedback:
             self.IN_GAME_MSG.target_guidance(self.player.target, subsys_details)
-
-        """ details = []
-        details.append(u"S/H %: {:.2f}/{:.2f}".format(tgt.shield_health, tgt.hull_health))
-        EDRLOG.log(target_event, "DEBUG")
-        if subsys_details:
-            details.append(u"{} %: {}".format(subsys_details["shortname"], subsys_details["stats"][-1]["value"]))
-            if len(subsys_details["stats"]) > 1:
-                delta_value = subsys_details["stats"][-2]["value"] - subsys_details["stats"][-1]["value"]
-                delta_time = subsys_details["stats"][-2]["timestamp"] - subsys_details["stats"][-1]["timestamp"]
-                if abs(delta_value) >= 0.01 and delta_time:
-                    delta_per_s = (delta_value / delta_time) * 1000 * 60
-                    details.append(u"Delta: {:.2f} pp / {:.2f} pp per min".format(delta_value, delta_per_s))
-        self.__notify("Target stats", details, clear_before=True)             """
 
     def notams(self):
         summary = self.edrsystems.systems_with_active_notams()
