@@ -789,7 +789,10 @@ class InGameMsg(object):
         header = _(u"Mining Stats")
         details = []
         has_stuff = mining_stats.last["proportion"] > 0
-        details.append(_(u"ITM %: {:>6.2f}  [{}/{}; {}]".format(mining_stats.last["proportion"], 1 if has_stuff else 0, mining_stats.last["materials"], mining_stats.last["raw"])))
+        if mining_stats.depleted:
+            details.append(_(u">>>>  DEPLETED  <<<<"))
+        else:
+            details.append(_(u"ITM %: {:>6.2f}  [{}/{}; {}]".format(mining_stats.last["proportion"], 1 if has_stuff else 0, mining_stats.last["materials"], mining_stats.last["raw"])))
         details.append(_(u"MAX %: {:>6.2f}".format(mining_stats.max)))
         details.append(_(u"AVG %: {:>6.2f}".format(mining_stats.mineral_yield_average())))
         details.append(_(u"ITM/H: {:>6.0f} [TGT: {:.0f}]".format(mining_stats.mineral_per_hour(), mining_stats.max_efficiency)))
