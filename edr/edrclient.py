@@ -627,6 +627,34 @@ class EDRClient(object):
         credits_per_hour = EDFineOrBounty(int(self.player.bounty_hunting_stats.credits_per_hour()))
         self.status = _(u"[Last: {} cr [{}]]   [Totals: {} cr/hour ({} awarded)]".format(bounty.pretty_print(), self.player.bounty_hunting_stats.last["name"], self.player.bounty_hunting_stats.awarded_nb, credits_per_hour.pretty_print()))
 
+    def target_guidance(self, target_event):
+        if not target_event or not self.player.target or not self.player.target.vehicle:
+            self.IN_GAME_MSG.clear_target_guidance()
+            return
+        # TODO fighter modules are not recognized and they show up as corvette / cmdr name instead of slf/crew
+        tgt = self.player.target.vehicle
+        meaningful = len(tgt.hull_health_stats()) >= 2 or len(tgt.hull_health_stats()) >= 2
+        subsys_details = None
+        if "Subsystem" in target_event:
+            meaningful = True # Class and Rank of submodule can be interesting info to show
+            subsys_details = tgt.subsystem_details(target_event["Subsystem"])
+            EDRLOG.log(subsys_details, "DEBUG")
+
+        if not meaningful:
+            EDRLOG.log("Target info is not that interesting, skipping", "DEBUG")
+            return False
+
+        shield_label = u"{:.4g}".format(tgt.shield_health) if tgt.shield_health else u"-"
+        hull_label = u"{:.4g}".format(tgt.hull_health) if tgt.hull_health else u"-"
+        
+        if subsys_details:
+            self.status = _(u"S/H %: {}/{} - {} %: {:.4g}".format(shield_label, hull_label, subsys_details["shortname"], subsys_details["stats"][-1]["value"]))
+        else:
+            self.status = _(u"S/H %: {}/{}".format(shield_label, hull_label))
+        
+        if self.visual_feedback:
+            self.IN_GAME_MSG.target_guidance(self.player.target, subsys_details)
+
     def notams(self):
         summary = self.edrsystems.systems_with_active_notams()
         if summary:

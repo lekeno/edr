@@ -129,7 +129,6 @@ class EDRBountyHuntingStats(object):
         self.__update_efficiency()
 
     def credits_per_hour(self):
-        # TODO
         now = EDTime.py_epoch_now()
         self.current = now
         elapsed_time = self.current - self.start

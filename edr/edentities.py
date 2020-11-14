@@ -339,6 +339,7 @@ class EDPlayer(object):
         self._fine = None
         self.targeted = False
         self.timestamp = now
+        self.blue_tunnel = False
 
     def __repr__(self):
         return str(self.__dict__)
@@ -483,6 +484,7 @@ class EDPlayer(object):
 
     def to_normal_space(self):
         self._touch()
+        self.blue_tunnel = False
         self.location.space_dimension = EDSpaceDimension.NORMAL_SPACE
         self.mothership.safe()
         self.targeted = False
@@ -493,6 +495,7 @@ class EDPlayer(object):
 
     def to_super_space(self):
         self._touch()
+        self.blue_tunnel = False
         self.location.space_dimension = EDSpaceDimension.SUPER_SPACE
         self.mothership.safe()
         self.targeted = False
@@ -503,6 +506,7 @@ class EDPlayer(object):
 
     def to_hyper_space(self):
         self._touch()
+        self.blue_tunnel = True
         self.location.space_dimension = EDSpaceDimension.HYPER_SPACE
         self.planetary_destination = None # leaving the system, so no point in keep a planetary destination
         self.mothership.safe()
@@ -511,6 +515,11 @@ class EDPlayer(object):
             self.slf.safe()
         if self.srv:
             self.srv.safe()
+    
+    def in_blue_tunnel(self, tunnel=True):
+        if tunnel != self.blue_tunnel:
+            EDRLOG.log(u"Blue Tunnel update: {old} vs. {new}".format(old=self.blue_tunnel, new=tunnel), u"DEBUG")
+        self.blue_tunnel = tunnel
 
     @property
     def bounty(self):

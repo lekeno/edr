@@ -414,6 +414,11 @@ def dashboard_entry(cmdr, is_beta, entry):
 
     if (entry['Flags'] & plug.FlagsInSRV):
         ed_player.in_srv()
+
+    if (entry['Flags'] & plug.FlagsFsdJump):
+        ed_player.in_blue_tunnel()
+    else:
+        ed_player.in_blue_tunnel(False)
     
     ed_player.piloted_vehicle.low_fuel = bool(entry['Flags'] & plug.FlagsLowFuel)
     ed_player.docked(bool(entry['Flags'] & plug.FlagsDocked))
@@ -1112,9 +1117,13 @@ def handle_legal_fees(player, entry):
             player.bounty = max(0, player.bounty - true_amount)
 
 def handle_scan_events(player, entry):
-    if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0):
+    if not (entry["event"] == "ShipTargeted"):
         return False
 
+    if not (entry["TargetLocked"]) or entry["ScanStage"] <= 0:
+        EDR_CLIENT.target_guidance(None)
+        return False
+    
     prefix = None
     piloted = False
     if entry["PilotName"].startswith("$cmdr_decorate:#name="):
@@ -1126,6 +1135,7 @@ def handle_scan_events(player, entry):
         prefix = "$RolePanel2_crew; $cmdr_decorate:#name="
     else:
         player.target = None #NPC
+        EDR_CLIENT.target_guidance(None)
     
     if not prefix:
         return False
@@ -1133,6 +1143,7 @@ def handle_scan_events(player, entry):
     target_name = entry["PilotName"][len(prefix):-1]
     if target_name == player.name:
         # Happens when scanning one's unmanned ship, etc.
+        EDR_CLIENT.target_guidance(None)
         return False
 
     target = player.instanced(target_name, entry["Ship"], piloted)
@@ -1173,6 +1184,8 @@ def handle_scan_events(player, entry):
         edr_submit_scan(scan, entry["timestamp"], "Ship targeted [{}]".format(entry["LegalStatus"]), player)
 
     player.targeting(target)
+    EDR_CLIENT.target_guidance(entry)
+
     return True
 
 def handle_material_events(cmdr, entry, state):
