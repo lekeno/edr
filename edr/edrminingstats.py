@@ -24,6 +24,7 @@ class EDRMiningStats(object):
         self.current = now
         self.prospected_raw_history = deque(maxlen=8) # 8 max prospector drones
         self.last = {"timestamp": now, "proportion": None, "raw": None, "materials": None}
+        self.depleted = False
 
     def reset(self):
         self.max = 0
@@ -43,13 +44,16 @@ class EDRMiningStats(object):
         self.start = now
         self.current = now
         self.last = {"timestamp": now, "proportion": None, "raw": None, "materials": None}
+        self.depleted = False
 
     def prospected(self, entry):
         if entry.get("event", None) != "ProspectedAsteroid":
             return False
         if entry.get("Remaining", 0) <= 0:
+            self.depleted = True
             return False
 
+        self.depleted = False
         if self.__probably_previously_prospected(entry):
             return False
         
