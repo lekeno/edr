@@ -470,10 +470,12 @@ def handle_bounty_hunting_events(ed_player, entry):
     if entry["event"] == "Bounty":
         ed_player.bounty_awarded(entry)
         EDR_CLIENT.bounty_hunting_guidance()
-    elif entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] >= 3 and entry.get("Bounty", 0) > 0:
-        ed_player.bounty_scanned(entry)
-        EDR_CLIENT.bounty_hunting_guidance()
-    
+    elif entry["event"] == "ShipTargeted":
+        if entry["TargetLocked"] and entry["ScanStage"] >= 3 and entry.get("Bounty", 0) > 0:
+            ed_player.bounty_scanned(entry)
+            EDR_CLIENT.bounty_hunting_guidance()
+        else:
+            EDR_CLIENT.bounty_hunting_guidance(turn_off=True) 
             
 def journal_entry(cmdr, is_beta, system, station, entry, state):
     """
