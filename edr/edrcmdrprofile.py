@@ -370,12 +370,18 @@ class EDRCmdrProfile(object):
 
     def short_profile(self, powerplay=None):
         edr_parts = []
-        mapped_index = int(10*(self._karma + self.max_karma()) / (2.0*self.max_karma()))
+        mapped_index = round(10*(self._karma + self.max_karma()) / (2.0*self.max_karma()))
         lut = [_(u"Outlaw++++"), _(u"Outlaw+++"), _(u"Outlaw++"), _(u"Outlaw+"), _(u"Outlaw"), _(u"Ambiguous"), _(u"Lawful"), _(u"Lawful+"), _(u"Lawful++"), _(u"Lawful+++"), _(u"Lawful++++")]
         karma = ""
         if self.dyn_karma:
             karma += u"≈ "
-        karma += lut[mapped_index]
+        if lut[mapped_index] == _(u"Ambiguous") and self._karma != 0:
+            if self._karma < 0:
+                karma +=  _(u"Ambiguous-")
+            elif self._karma > 0:
+                karma +=  _(u"Ambiguous+")
+        else:
+            karma += lut[mapped_index]
 
         edr_parts.append(karma)
         
