@@ -287,7 +287,7 @@ class InGameMsg(object):
                 "h": conf.h(kind, "hull"),
                 "w": conf.w(kind, "hull"),
                 "ttl": conf.ttl(kind, "hull"),
-                "rgb": conf.rgb(kind, "hull")
+                "rgb": conf.rgb_list(kind, "hull")
             },
             "subsys": {
                 "x": conf.x(kind, "subsys"),
@@ -295,7 +295,7 @@ class InGameMsg(object):
                 "h": conf.h(kind, "subsys"),
                 "w": conf.w(kind, "subsys"),
                 "ttl": conf.ttl(kind, "subsys"),
-                "rgb": conf.rgb(kind, "subsys")
+                "rgb": conf.rgb_list(kind, "subsys")
             },
         }
         if not conf.panel(kind):
@@ -1151,7 +1151,6 @@ class InGameMsg(object):
     def __target_guidance_vizualization(self, shield_up, shield_stats, hull_stats, subsys_stats):
         # TODO summarize outfit (e.g. mining, ...)
         # TODO non unique module are messy... remove time to X ?
-        # TODO hide too long time to x
         shield_history = shield_stats.history
         hull_history = hull_stats.history
         subsys_history = subsys_stats.history if subsys_stats else None
@@ -1196,6 +1195,16 @@ class InGameMsg(object):
         }
         self.__vect(u"target-guidance", vect)
 
+        x = 1.0 - shield_stats.trend_span_ms / xspan
+        vect = {
+            "id": u"shield-trend-span",
+            "color": cfg["shield"]["rgb"][2],
+            "ttl": cfg["shield"]["ttl"],
+            "vector": [{"x":int(cx+x*w), "y":int(cy+1)}, {"x":int(cx+x*w), "y":int(cy+2)}]
+        }
+        self.__vect(u"target-guidance", vect)
+            
+
         x = cfg["hull"]["x"]
         y = cfg["hull"]["y"]
         w = cfg["hull"]["w"]
@@ -1220,9 +1229,18 @@ class InGameMsg(object):
                 scaled.append(s)
         vect = {
             "id": u"hull-sparkline",
-            "color": cfg["hull"]["rgb"],
+            "color": cfg["hull"]["rgb"][0],
             "ttl": cfg["hull"]["ttl"],
             "vector": scaled
+        }
+        self.__vect(u"target-guidance", vect)
+        
+        x = 1.0 - hull_stats.trend_span_ms / xspan
+        vect = {
+            "id": u"hull-trend-span",
+            "color": cfg["hull"]["rgb"][1],
+            "ttl": cfg["hull"]["ttl"],
+            "vector": [{"x":int(cx+x*w), "y":int(cy+1)}, {"x":int(cx+x*w), "y":int(cy+2))}]
         }
         self.__vect(u"target-guidance", vect)
 
@@ -1251,9 +1269,18 @@ class InGameMsg(object):
                 scaled.append(s)
         vect = {
             "id": u"subsys-sparkline",
-            "color": cfg["subsys"]["rgb"],
+            "color": cfg["subsys"]["rgb"][0],
             "ttl": cfg["subsys"]["ttl"],
             "vector": scaled
+        }
+        self.__vect(u"target-guidance", vect)
+
+        x = 1.0 - subsys_stats.trend_span_ms / xspan
+        vect = {
+            "id": u"subsys-trend-span",
+            "color": cfg["subsys"]["rgb"][1],
+            "ttl": cfg["subsys"]["ttl"],
+            "vector": [{"x":int(cx+x*w), "y":int(cy+1)}, {"x":int(cx+x*w), "y":int(cy+2))}]
         }
         self.__vect(u"target-guidance", vect)
 
