@@ -11,7 +11,7 @@ from edtime import EDTime
 from edvehicles import EDVehicleFactory 
 from edinstance import EDInstance
 from edrlog import EDRLog
-from edrconfig import EDRConfig
+from edrconfig import EDRConfig #TODO replace config object with singleton
 from edreconbox import EDReconBox
 from edrinventory import EDRInventory
 from edri18n import _, _c
@@ -337,7 +337,7 @@ class EDPlayer(object):
         self.enemy = False
         self._bounty = None
         self._fine = None
-        self.targeted = False
+        self.targeted_vehicle = None
         self.timestamp = now
         self.blue_tunnel = False
 
@@ -365,7 +365,7 @@ class EDPlayer(object):
         self.wanted = False
         self._bounty = None
         self._fine = None
-        self.targeted = False
+        self.targeted_vehicle = None
         if self.mothership:
             self.mothership.destroy()
         if self.srv:
@@ -487,7 +487,7 @@ class EDPlayer(object):
         self.blue_tunnel = False
         self.location.space_dimension = EDSpaceDimension.NORMAL_SPACE
         self.mothership.safe()
-        self.targeted = False
+        self.targeted_vehicle = None
         if self.slf:
             self.slf.safe()
         if self.srv:
@@ -498,7 +498,7 @@ class EDPlayer(object):
         self.blue_tunnel = False
         self.location.space_dimension = EDSpaceDimension.SUPER_SPACE
         self.mothership.safe()
-        self.targeted = False
+        self.targeted_vehicle = None
         if self.slf:
             self.slf.safe()
         if self.srv:
@@ -510,11 +510,29 @@ class EDPlayer(object):
         self.location.space_dimension = EDSpaceDimension.HYPER_SPACE
         self.planetary_destination = None # leaving the system, so no point in keep a planetary destination
         self.mothership.safe()
-        self.targeted = False
+        self.targeted_vehicle = None
         if self.slf:
             self.slf.safe()
         if self.srv:
             self.srv.safe()
+
+    def targeted(self, mothership=True, slf=False, srv=False):
+        if mothership:
+            self.targeted_vehicle = self.mothership
+        elif slf:
+            self.targeted_vehicle = self.slf
+        elif srv:
+            self.targeted_vehicle = self.srv
+        else:
+            self.targeted_vehicle = None
+        self._touch()
+    
+    def untargeted(self):
+        self.targeted_vehicle = None
+        self._touch()
+
+    def is_targeted(self):
+        return self.targeted_vehicle is not None
     
     def in_blue_tunnel(self, tunnel=True):
         if tunnel != self.blue_tunnel:
@@ -760,19 +778,38 @@ class EDPlayerOne(EDPlayer):
         with open(self.EDR_FLEET_CARRIER_CACHE, 'wb') as handle:
             pickle.dump(self.fleet_carrier, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    @property
-    def target(self):
+    def target_pilot(self):
         return self._target
 
-    @target.setter
-    def target(self, new_target):
+    def target_vehicle(self):
+        if not self._target:
+            return None
+        return self._target.targeted_vehicle
+
+    def targeting(self, cmdr, ship_internal_name=None):
+        self.instance.player_in(cmdr)
         if self._target:
-            self._target.targeted = False
+            self._target.untargeted()
             self._target._touch()
-        self._target = new_target
-        if new_target:
-            new_target.targeted = True
-            new_target._touch()
+        self._target = cmdr
+        
+        mothership = True
+        if ship_internal_name:
+            vehicle = EDVehicleFactory.from_internal_name(ship_internal_name)
+            slf = EDVehicleFactory.is_ship_launched_fighter(vehicle)
+            srv = EDVehicleFactory.is_surface_vehicle(vehicle)
+            mothership = not(slf or srv)
+        
+        if cmdr:
+            cmdr.targeted(mothership, slf, srv)
+            cmdr._touch()
+        self._touch()
+
+    def untarget(self):
+        if self._target:
+            self._target.untargeted()
+            self._target._touch()
+        self._target = None
         self._touch()
 
     def lowish_fuel(self):
@@ -801,7 +838,7 @@ class EDPlayerOne(EDPlayer):
             u"group": self.private_group
         }
         if with_target:
-            result[u"target"] = self.target.json() if self.target else {}
+            result[u"target"] = self.target_pilot().json() if self._target else {}
 
         result[u"crew"] = []
         if self.crew:
@@ -829,10 +866,11 @@ class EDPlayerOne(EDPlayer):
         self.wing = EDWing()
         self.crew = None
         self.destroyed = False
-        self.target = None
+        self.untarget()
         self.wanted = False
         self.mothership = EDVehicleFactory.unknown_vehicle()
         self.piloted_vehicle = self.mothership
+        self.targeted_vehicle = None
         self.srv = None
         self.slf = None
         self.location = EDLocation()
@@ -851,7 +889,7 @@ class EDPlayerOne(EDPlayer):
         self.private_group = None
         self.wing = EDWing()
         self.crew = None
-        self.target = None
+        self.untarget()
         self.instance.reset()
         self.recon_box.reset()
         self._touch()
@@ -863,7 +901,7 @@ class EDPlayerOne(EDPlayer):
         self.previous_mode = None
         self.previous_wing = set()
         self.destroyed = False
-        self.target = None
+        self.untarget()
         self.to_normal_space()
         self.instance.reset()
         self._touch()
@@ -1024,17 +1062,12 @@ class EDPlayerOne(EDPlayer):
         self.recon_box.reset()
         self._touch()
 
-    def targeting(self, cmdr):
-        self.instance.player_in(cmdr)
-        self.target = cmdr
-        self._touch()
-
     def destroy(self, cmdr):
         self._touch()
         cmdr.killed()
         self.instance.player_out(cmdr.name)
-        if self.target and self.target.name == cmdr.name:
-            self.target = None
+        if self.target_pilot() and self.target_pilot().name == cmdr.name:
+            self.untarget()
 
     def interdiction(self, interdicted, success):
         self._touch()

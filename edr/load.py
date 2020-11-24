@@ -93,6 +93,7 @@ def handle_wing_events(ed_player, entry):
         EDRLOG.log(u"Addition to wing: {}".format(ed_player.wing), "INFO")
         EDR_CLIENT.who(wingmate, autocreate=True)
     elif entry["event"] in ["WingJoin"]:
+        # TODO some inconsistency when other members leave the wing, and others come in...
         ed_player.join_wing(entry["Others"])
         EDR_CLIENT.status = _(u"joined wing.")
         EDRLOG.log(u"Joined a wing: {}".format(ed_player.wing), "INFO")
@@ -603,7 +604,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
             handle_scan_events(ed_player, entry)
             handle_bounty_hunting_events(ed_player, entry)
         elif ("ScanStage" in entry and entry["ScanStage"] == 0) or ("TargetLocked" in entry and not entry["TargetLocked"]):
-            ed_player.target = None
+            ed_player.untarget()
     
     if entry["event"] in ["HullDamage", "UnderAttack", "SRVDestroyed", "FighterDestroyed", "HeatDamage", "ShieldState", "CockpitBreached", "SelfDestruct"]:
         handle_damage_events(ed_player, entry)
@@ -1126,6 +1127,10 @@ def handle_scan_events(player, entry):
     
     prefix = None
     piloted = False
+    mothership = True
+    slf = False
+    srv = False
+
     if entry["PilotName"].startswith("$cmdr_decorate:#name="):
         prefix = "$cmdr_decorate:#name="
         piloted = True
@@ -1134,7 +1139,7 @@ def handle_scan_events(player, entry):
     elif entry["PilotName"].startswith("$RolePanel2_crew; $cmdr_decorate:#name="):
         prefix = "$RolePanel2_crew; $cmdr_decorate:#name="
     else:
-        player.target = None #NPC
+        player.untarget() # NPC
         EDR_CLIENT.target_guidance(None)
     
     if not prefix:
@@ -1183,8 +1188,8 @@ def handle_scan_events(player, entry):
             scan["power"] = "independent"
         edr_submit_scan(scan, entry["timestamp"], "Ship targeted [{}]".format(entry["LegalStatus"]), player)
 
-    player.targeting(target)
-    EDR_CLIENT.target_guidance(entry)
+    player.targeting(target, entry["Ship"])
+    EDR_CLIENT.target_guidance(entry) # TODO target guidance pick up targeted vehicle!
 
     return True
 
@@ -1244,7 +1249,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         if len(command_parts) == 2:
             target_cmdr = command_parts[1]
         else:
-            target = EDR_CLIENT.player.target
+            target = EDR_CLIENT.player.target_pilot()
             target_cmdr = target.name if target else None
         if target_cmdr:
             EDRLOG.log(u"Explicit who command for {}".format(target_cmdr), "INFO")
@@ -1276,7 +1281,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         if len(command_parts) == 2:
             target_cmdr = command_parts[1]
         else:
-            target = EDR_CLIENT.player.target
+            target = EDR_CLIENT.player.target_pilot()
             target_cmdr = target.name if target else None
         if target_cmdr:
             EDRLOG.log(u"Explicit where command for {}".format(target_cmdr), "INFO")
@@ -1505,7 +1510,7 @@ def get_target_cmdr(command_parts, entry, player):
             prefix = "$cmdr_decorate:#name="
             target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
         else:
-            target = player.target
+            target = player.target_pilot()
             target_cmdr = target.name if target else None
     return target_cmdr
 
@@ -1558,7 +1563,7 @@ def handle_at_commands(entry):
             target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
             EDRLOG.log(u"Memo command for tagged cmdr {}".format(target_cmdr), "INFO")
         else:
-            target = EDR_CLIENT.player.target
+            target = EDR_CLIENT.player.target_pilot()
             target_cmdr = target.name if target else None
     elif command.startswith("@# ") and len(command)>2:
         target_cmdr = command[3:]

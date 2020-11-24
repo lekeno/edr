@@ -96,7 +96,7 @@ class EDInstance(object):
         result = {}
         for cmdr_name in self.players:
             timestamp, player = self.players[cmdr_name.lower()].values()
-            if cmdr_name.targeted:
+            if cmdr_name.is_targeted():
                 now = EDTime.py_epoch_now()
                 timestamp = now
             result[cmdr_name.lower()] = {"timestamp": int(timestamp*1000), "player": player.json()}
@@ -108,7 +108,7 @@ class EDInstance(object):
         for cmdr_name in self.players:
             timestamp, player = self.players[cmdr_name.lower()].values()
             now = EDTime.py_epoch_now()
-            if player.targeted:
+            if player.is_targeted():
                 timestamp = now
-            result.append(u"{} at {}: {} {}".format(cmdr_name, EDTime.t_minus(timestamp*1000), "[TGT]" if player.targeted else "", player.json()))
+            result.append(u"{} at {}: {} {}".format(cmdr_name, EDTime.t_minus(timestamp*1000), "[TGT]" if player.is_targeted() else "", player.json()))
         return result

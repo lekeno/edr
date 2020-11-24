@@ -5,6 +5,7 @@ from collections import deque
 
 from edtime import EDTime
 import edrconfig
+import edrhitppoints
 import edmodule
 import edmodulesinforeader
 import edcargoreader
@@ -55,10 +56,9 @@ class EDVehicle(object):
         self.hot = False
         now = EDTime.py_epoch_now()
         now_ms = EDTime.ms_epoch_now()
-        self._hull_health = deque(maxlen=1200)
-        # self._hull_health.append({"timestamp": now_ms, "value": 100.0})
-        self._shield_health = deque(maxlen=1200)
-        # self._shield_health.append({"timestamp": now_ms, "value": 100.0})
+        config = edrconfig.EDR_CONFIG
+        self._hull_health = edrhitppoints.EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
+        self._shield_health = edrhitppoints.EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
         self.shield_up = True
         self.subsystems = {}
         self.timestamp = now
@@ -68,7 +68,6 @@ class EDVehicle(object):
         self.heat_damaged = {u"value": False, u"timestamp": now}
         self._in_danger = {u"value": False, u"timestamp": now}
         self._low_fuel = {u"value": False, u"timestamp": now}
-        config = edrconfig.EDRConfig()
         self.fight_staleness_threshold = config.instance_fight_staleness_threshold()
         self.danger_staleness_threshold = config.instance_danger_staleness_threshold()
         self.seats = 1
@@ -85,23 +84,16 @@ class EDVehicle(object):
         
     @property
     def hull_health(self):
-        if len(self._hull_health) == 0:
+        if self._hull_health.empty():
             return None
-        return self._hull_health[-1]["value"]
+        return self._hull_health.last_value()
 
     def hull_health_stats(self):
         return self._hull_health
 
     @hull_health.setter
     def hull_health(self, new_value):
-        previous_value = self._hull_health[-1]["value"] if len(self._hull_health) >= 2 else None
-        if previous_value is not None and previous_value == new_value:
-            # remove redundant data point
-            EDRLOG.log("Removed redundant hull data point: latest={} vs new={}".format(previous_value, new_value), "DEBUG")
-            self._hull_health.pop()
-        now = EDTime.ms_epoch_now()
-        self.timestamp = now
-        self._hull_health.append({"timestamp": now, "value": new_value})
+        self._hull_health.update(new_value)
 
     @property
     def value(self):
@@ -114,23 +106,16 @@ class EDVehicle(object):
 
     @property
     def shield_health(self):
-        if len(self._shield_health) == 0:
+        if self._shield_health.empty():
             return None
-        return self._shield_health[-1]["value"]
+        return self._shield_health.last_value()
 
     def shield_health_stats(self):
         return self._shield_health
     
     @shield_health.setter
     def shield_health(self, new_value):
-        previous_value = self._shield_health[-1]["value"] if len(self._shield_health) >= 2 else None
-        if previous_value is not None and previous_value == new_value:
-            # remove redundant data point
-            EDRLOG.log("Removed redundant shield data point: latest={} vs new={}".format(previous_value, new_value), "DEBUG")
-            self._shield_health.pop()
-        now = EDTime.ms_epoch_now()
-        self.timestamp = now
-        self._shield_health.append({"timestamp": now, "value": new_value})
+        self._shield_health.update(new_value)
 
     @property
     def low_fuel(self):
@@ -152,8 +137,8 @@ class EDVehicle(object):
         result = {
             u"timestamp": int(self.timestamp * 1000),
             u"type": self.type,
-            u"hullHealth": self._hull_health[-1] if len(self._hull_health) else {"timestamp": int(self.timestamp * 1000), "value": "-1"},
-            u"shieldHealth": self._shield_health[-1] if len(self._shield_health) else {"timestamp": int(self.timestamp * 1000), "value": "-1"},
+            u"hullHealth": {"timestamp": int(self.timestamp * 1000), "value": 100} if self._hull_health.empty() else self._hull_health.last(),
+            u"shieldHealth": {"timestamp": int(self.timestamp * 1000), "value": 100} if self._shield_health.empty() else self._shield_health.last(),
             u"shieldUp": self.shield_up,
             u"keySubsystems": self.__key_subsystems()
         }
@@ -186,7 +171,7 @@ class EDVehicle(object):
             if match:
                 prefix = match.group(1)
                 canonical_name = key_prefixes_lut[prefix]
-                key_subsys[canonical_name] = self.subsystems[internal_name][-1]
+                key_subsys[canonical_name] = self.subsystems[internal_name].last()
         return key_subsys
 
     def __repr__(self):
@@ -335,13 +320,9 @@ class EDVehicle(object):
         now = EDTime.ms_epoch_now()
         self.timestamp = now
         if canonical not in self.subsystems:
-            self.subsystems[canonical] = deque(maxlen=1200)
-        previous_value = self.subsystems[canonical][-1]["value"] if len(self.subsystems[canonical]) >= 2 else None
-        if previous_value is not None and previous_value == health:
-            # remove redundant data point
-            EDRLOG.log("Removed redundant subsys data point: latest={} vs new={}".format(previous_value, health), "DEBUG")
-            self.subsystems[canonical].pop()
-        self.subsystems[canonical].append({u"timestamp": now, u"value": health})
+            config = edrconfig.EDR_CONFIG
+            self.subsystems[canonical] = edrhitppoints.EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
+        self.subsystems[canonical].update(health)
 
     def subsystem_details(self, subsystem):
         if subsystem is None:
@@ -359,8 +340,9 @@ class EDVehicle(object):
         now = EDTime.ms_epoch_now()
         self.timestamp = now
         self.outfit_probably_changed()
-        self.subsystems[canonical] = deque(maxlen=1200)
-        self.subsystems[canonical].append({u"timestamp": now, u"value": None})
+        config = edrconfig.EDR_CONFIG
+        self.subsystems[canonical] = edrhitppoints.EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
+        self.subsystems[canonical].update(None)
     
     def remove_subsystem(self, subsystem):
         if subsystem is None:
@@ -1013,15 +995,12 @@ class EDVehicleFactory(object):
     @staticmethod
     def module_tags(name):
         if name is None:
-            return []
-
-        if name in EDVehicleFactory.CANONICAL_MODULE_NAMES.values():
-            return name # Already canonical
+            return {}
 
         normalized = EDVehicleFactory.normalize_module_name(name)
         if normalized not in EDVehicleFactory.CANONICAL_MODULE_NAMES:
-            return []
-        return EDVehicleFactory.CANONICAL_MODULE_NAMES[normalized].get("tags", [])
+            return {}
+        return EDVehicleFactory.CANONICAL_MODULE_NAMES[normalized].get("tags", {})
 
     @staticmethod
     def from_edmc_state(state):
