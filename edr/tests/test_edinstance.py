@@ -13,42 +13,42 @@ class MockCmdr(object):
         }
 
 class TestEDInstance(TestCase):
-    def test_anyone_beside(self):
+    def test_any_player_beside(self):
         instance = EDInstance()
-        self.assertFalse(instance.anyone_beside(None))
+        self.assertFalse(instance.any_player_beside(None))
 
         instance.player_in(MockCmdr("LeKeno"))
-        self.assertTrue(instance.anyone_beside(None))
-        self.assertFalse(instance.anyone_beside(["LeKeno"]))
-        self.assertFalse(instance.anyone_beside(["lekeno"]))
+        self.assertTrue(instance.any_player_beside(None))
+        self.assertFalse(instance.any_player_beside(["LeKeno"]))
+        self.assertFalse(instance.any_player_beside(["lekeno"]))
 
         instance.player_in(MockCmdr("Arguendo"))
-        self.assertTrue(instance.anyone_beside(None))
-        self.assertTrue(instance.anyone_beside(["LeKeno"]))
-        self.assertTrue(instance.anyone_beside(["lekeno"]))
-        self.assertFalse(instance.anyone_beside(["lekeno", "arguendo"]))
+        self.assertTrue(instance.any_player_beside(None))
+        self.assertTrue(instance.any_player_beside(["LeKeno"]))
+        self.assertTrue(instance.any_player_beside(["lekeno"]))
+        self.assertFalse(instance.any_player_beside(["lekeno", "arguendo"]))
 
         instance.player_in(MockCmdr("Ozram"))
-        self.assertTrue(instance.anyone_beside(None))
-        self.assertTrue(instance.anyone_beside(["LeKeno"]))
-        self.assertTrue(instance.anyone_beside(["lekeno"]))
-        self.assertTrue(instance.anyone_beside(["lekeno", "arguendo"]))
-        self.assertFalse(instance.anyone_beside(["lekeno", "arguendo", "ozram"]))
+        self.assertTrue(instance.any_player_beside(None))
+        self.assertTrue(instance.any_player_beside(["LeKeno"]))
+        self.assertTrue(instance.any_player_beside(["lekeno"]))
+        self.assertTrue(instance.any_player_beside(["lekeno", "arguendo"]))
+        self.assertFalse(instance.any_player_beside(["lekeno", "arguendo", "ozram"]))
 
-    def test_empty(self):
+    def test_void_of_player(self):
         instance = EDInstance()
-        self.assertTrue(instance.is_empty())
+        self.assertTrue(instance.is_void_of_player())
 
         instance.player_in(MockCmdr("LeKeno"))
-        self.assertFalse(instance.is_empty())
+        self.assertFalse(instance.is_void_of_player())
 
         instance.reset()
-        self.assertTrue(instance.is_empty())
+        self.assertTrue(instance.is_void_of_player())
 
         instance.player_in(MockCmdr("LeKeno"))
-        self.assertFalse(instance.is_empty())
+        self.assertFalse(instance.is_void_of_player())
         instance.player_out("LeKeno")
-        self.assertTrue(instance.is_empty())
+        self.assertTrue(instance.is_void_of_player())
 
     def test_player_in_n_out(self):
         instance = EDInstance()
