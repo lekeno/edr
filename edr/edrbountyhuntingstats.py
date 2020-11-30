@@ -71,7 +71,6 @@ class EDRBountyHuntingStats(object):
         }
 
         if self.__probably_previously_scanned(entry):
-            print("skipping previously scanned: {}".format(raw_pilot_name))
             return False
         
         self.scans_cache.set(raw_pilot_name, entry)
@@ -93,23 +92,17 @@ class EDRBountyHuntingStats(object):
         self.scans.append((now, bounty))
 
     def __probably_previously_scanned(self, entry):
-        print("checking novelty: {}".format(entry))
         raw_pilot_name = entry.get("PilotName", None)
         if not raw_pilot_name:
-            print("no pilot name")
             return False
         
-        print("Pilot name: {}".format(raw_pilot_name))
         last_scan = self.scans_cache.get(raw_pilot_name)
         if not last_scan:
-            print("no last scan")
             return False
-        print("last scan: {}".format(last_scan))
         return (entry["LegalStatus"] == last_scan["LegalStatus"]) and (entry.get("Bounty", 0) == last_scan.get("Bounty",0))
     
     def awarded(self, entry):
         if entry.get("event", None) != "Bounty":
-            print("no bounty")
             return
         now = EDTime.py_epoch_now()
         self.current = now
@@ -117,12 +110,8 @@ class EDRBountyHuntingStats(object):
         total_rewards = 0
         rewards = entry.get("Rewards", [])
         for reward in rewards:
-            print("reward")
-            print(reward)
-            print(reward.get("Reward", 0))
             total_rewards += reward.get("Reward", 0)
             
-        print(total_rewards)
         self.sum_awarded += total_rewards
         self.awarded_nb += 1
         self.awarded_bounties.append((now, total_rewards))
