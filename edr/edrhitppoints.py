@@ -58,17 +58,13 @@ class EDRHitPPoints(object):
             delta_value = previous["value"] - i["value"]
             delta_time = previous["timestamp"] - i["timestamp"]
             span = self.history[-1]["timestamp"] - i["timestamp"]
-            print("{} - {} ==> v:{} t:{} s:{} <=? mxs:{}".format(previous, i, delta_value, delta_time, span, self.trend_span_ms))
             previous = i
             if delta_time == 0:
-                print("null time")
                 continue
             if span >= self.trend_span_ms:
-                print("span reached")
                 break
             sum_delta_value += delta_value
             sum_delta_time += delta_time
-            print("sum_delta_*: v:{}, t:{}".format(sum_delta_value, sum_delta_time))
         
         if sum_delta_time == 0:
             return 0
