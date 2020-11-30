@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2020-11-30 15:29+0900\n"
-"PO-Revision-Date: 2020-11-30 15:30+0900\n"
+"POT-Creation-Date: 2020-11-30 16:39+0900\n"
+"PO-Revision-Date: 2020-11-30 16:41+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -325,11 +325,11 @@ msgstr "[Dernier: {} cr [{}]]   [Total: {} cr/heure ({} reçu)]"
 
 #: edrclient.py:652
 msgid "S/H %: {}/{} - {} %: {:.4g}"
-msgstr ""
+msgstr "S/H %: {}/{} - {} %: {:.4g}"
 
 #: edrclient.py:654
 msgid "S/H %: {}/{}"
-msgstr ""
+msgstr "S/H %: {}/{}"
 
 #. Translators: this shows a ist of systems {} with active NOtice To Air Men via the overlay
 #: edrclient.py:664
@@ -768,28 +768,20 @@ msgid "multicrew session reported (cmdr {name})."
 msgstr "succès du rapport d'équipage (cmd {name})."
 
 #: edrclient.py:1330 edrclient.py:1351
-msgid ""
-"Skipped announcement of FC jump schedule (enable from EDMC settings, EDR "
-"tab)."
-msgstr ""
-"L'itinéraire du porte-vaisseaux n'as pas été annoncé (activez depuis les "
-"préférences EDMC, panneau EDR)"
+msgid "Skipped FC jump announcement."
+msgstr "Itinéraire du porte-vaisseaux ignoré."
 
 #: edrclient.py:1336
-msgid "Reported FC jump schedule for public announcement."
-msgstr "Annonce de l'itinéraire du porte-vaisseaux réussie."
+msgid "Sent PSA for FC jump schedule."
+msgstr "Itinéraire du porte-vaisseaux annoncé (public)."
 
 #: edrclient.py:1338
-msgid ""
-"Reported FC jump schedule for private announcement (registered FC only, "
-"inquiry @ edrecon.com/discord)."
-msgstr ""
-"Annonce privée de l'itinéraire du porte-vaisseaux envoyée (pour les portes-"
-"vaisseaux enregistrés; renseignements sur edrecon.com/discord)."
+msgid "Sent Private FC jump schedule."
+msgstr "Itinéraire du porte-vaisseaux annoncé (privé)."
 
 #: edrclient.py:1357
 msgid "Cancelled FC jump schedule."
-msgstr "Annulation de l'itinéraire du porte-vaisseaux."
+msgstr "Itinéraire du porte-vaisseaux annulé."
 
 #: edrclient.py:1370 edrclient.py:1412 edrclient.py:1436 edrclient.py:1449
 #: edrclient.py:1462 edrclient.py:1530 edrclient.py:1544 edrclient.py:1554
@@ -5028,6 +5020,20 @@ msgid ""
 msgstr ""
 "[Minage] Maintenez votre cargo (e.g. LTD) en dessous de 10% de la demande "
 "d'un marché afin de bénéficier du meilleur prix."
+
+#~ msgid ""
+#~ "Skipped announcement of FC jump schedule (enable from EDMC settings, EDR "
+#~ "tab)."
+#~ msgstr ""
+#~ "L'itinéraire du porte-vaisseaux n'as pas été annoncé (activez depuis les "
+#~ "préférences EDMC, panneau EDR)"
+
+#~ msgid ""
+#~ "Reported FC jump schedule for private announcement (registered FC only, "
+#~ "inquiry @ edrecon.com/discord)."
+#~ msgstr ""
+#~ "Annonce privée de l'itinéraire du porte-vaisseaux envoyée (pour les "
+#~ "portes-vaisseaux enregistrés; renseignements sur edrecon.com/discord)."
 
 #~ msgid "Redact my info"
 #~ msgstr "Expurger mes infos"
