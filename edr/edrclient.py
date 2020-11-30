@@ -627,18 +627,19 @@ class EDRClient(object):
         credits_per_hour = EDFineOrBounty(int(self.player.bounty_hunting_stats.credits_per_hour()))
         self.status = _(u"[Last: {} cr [{}]]   [Totals: {} cr/hour ({} awarded)]".format(bounty.pretty_print(), self.player.bounty_hunting_stats.last["name"], self.player.bounty_hunting_stats.awarded_nb, credits_per_hour.pretty_print()))
 
-    def target_guidance(self, target_event):
-        if not target_event or not self.player.target_pilot() or not self.player.target_pilot().vehicle:
+    def target_guidance(self, target_event, turn_off=False):
+        if turn_off or (not target_event or not self.player.target_pilot() or not self.player.target_pilot().vehicle):
             self.IN_GAME_MSG.clear_target_guidance()
             return
-        # TODO fighter modules are not recognized and they show up as corvette / cmdr name instead of slf/crew
+        
         tgt = self.player.target_vehicle() or self.player.target_pilot().vehicle
         meaningful = tgt.hull_health_stats().meaningful() or tgt.shield_health_stats().meaningful()
+        
         subsys_details = None
         if "Subsystem" in target_event:
             meaningful = True # Class and Rank of submodule can be interesting info to show
             subsys_details = tgt.subsystem_details(target_event["Subsystem"])
-            EDRLOG.log(subsys_details, "DEBUG")
+            EDRLOG.log("subsys details {}".format(subsys_details), "DEBUG")
 
         if not meaningful:
             EDRLOG.log("Target info is not that interesting, skipping", "DEBUG")
@@ -1257,7 +1258,7 @@ class EDRClient(object):
             return
 
         if not self.player.recon_box.forced:
-            outlaws_presence = self.player.instance.presence_of_outlaws(self.edrcmdrs, ignorables=self.player.wing_and_crew())
+            outlaws_presence = self.player.instance.presence_of_outlaw_players(self.edrcmdrs, ignorables=self.player.wing_and_crew())
             if outlaws_presence:
                 self.player.recon_box.activate()
                 self.__notify(_(u"EDR Central"), [_(u"Fight reporting enabled"), _(u"Reason: presence of outlaws"), _(u"Turn it off: flash your lights twice, or leave this area, or escape danger and retract hardpoints.")], clear_before=True)
