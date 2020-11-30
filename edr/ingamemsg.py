@@ -1092,20 +1092,20 @@ class InGameMsg(object):
         if "panel" in self.cfg["target-guidance-graphs"] and self.cfg["target-guidance-graphs"].get("enabled", False):
             self.__shape("target-guidance-graphs", self.cfg["target-guidance-graphs"]["panel"])
         
-        header = _(u"HP: {cmdr} ({ship})").format(cmdr=target.name, ship=tgt_vehicle.type)
+        header = _(u"{prefix}{cmdr} ({ship})").format(prefix=_(u"CMDR ") if target.is_human() else "", cmdr=target.name, ship=tgt_vehicle.type)
         details = []
         
         shield_stats = tgt_vehicle.shield_health_stats()
         shield_label = u"{:.4g}".format(tgt_vehicle.shield_health) if tgt_vehicle.shield_health else u"-"
         delta_shield = ""
-        signal = "●" if tgt_vehicle.shield_up and shield_stats.last_value() > 0 else "◌"
+        signal = "●" if tgt_vehicle.shield_up and shield_stats.last_value() else "◌"
         trend = shield_stats.trend()
         if int(trend) > 0:
-            signal = "▲" if tgt_vehicle.shield_up and shield_stats.last_value() > 0 else "△"
+            signal = "▴" if tgt_vehicle.shield_up and shield_stats.last_value() > 0 else "▵"
             if trend < 60*60:
                 delta_shield = _(u"[{} to {}]").format(EDTime.pretty_print_timespan(int(trend), short=True, verbose=False), "100%" if tgt_vehicle.shield_up else "  UP")
         elif int(trend) < 0:
-            signal = "▼"
+            signal = "▾"
             if trend > -60*60:
                 delta_shield = _(u"[{} to   0%]").format(EDTime.pretty_print_timespan(int(-trend), short=True, verbose=False))
         details.append(_(u"SHLD{}: {}% {}".format(signal, shield_label, delta_shield)))
@@ -1116,11 +1116,11 @@ class InGameMsg(object):
         signal = "●"
         trend = hull_stats.trend()
         if int(trend) > 0:
-            signal = "▲"
+            signal = "▴"
             if trend < 60*60:
                 delta_hull = _(u"[{} to 100%]").format(EDTime.pretty_print_timespan(int(trend), short=True, verbose=False))
         elif int(trend) < 0:
-            signal = "▼"
+            signal = "▾"
             if trend > -60*60:
                 delta_hull = _(u"[{} to   0%]").format(EDTime.pretty_print_timespan(int(-trend), short=True, verbose=False))
         details.append(_(u"HULL{}: {}% {}".format(signal, hull_label, delta_hull)))
@@ -1131,11 +1131,11 @@ class InGameMsg(object):
             if subsys_details["stats"].meaningful():
                 trend = subsys_details["stats"].trend()
                 if int(trend) > 0:
-                    signal = "▲"
+                    signal = "▴"
                     if trend < 60*60:
                         delta_subsys = _(u"[{} to 100%]").format(EDTime.pretty_print_timespan(int(trend), short=True, verbose=False))
                 elif int(trend) < 0:
-                    signal = "▼"
+                    signal = "▾"
                     if trend > -60*60:
                         delta_subsys = _(u"[{} to   0%]").format(EDTime.pretty_print_timespan(int(-trend), short=True, verbose=False))
             details.append(_(u"{subsys}{signal}: {hp:.4g}% {delta}".format(subsys=subsys_details["shortname"], signal=signal, hp=subsys_details["stats"].last_value(), delta=delta_subsys)))
@@ -1149,11 +1149,11 @@ class InGameMsg(object):
         self.__target_guidance_vizualization(tgt_vehicle.shield_up, shield_stats, hull_stats, subsys_stats)
     
     def __target_guidance_vizualization(self, shield_up, shield_stats, hull_stats, subsys_stats):
-        # TODO summarize outfit (e.g. mining, ...)
-        # TODO non unique module are messy... remove time to X ?
         shield_history = shield_stats.history
         hull_history = hull_stats.history
         subsys_history = subsys_stats.history if subsys_stats else None
+        if len(shield_history) == 0 or len(hull_history) == 0:
+            return
 
         cfg = self.cfg[u"target-guidance-graphs"]
         xspan = max(shield_stats.history_max_span_ms, hull_stats.history_max_span_ms)
@@ -1175,9 +1175,9 @@ class InGameMsg(object):
         EDRLOG.log("shield {}".format(shield_history), "DEBUG")
         for t_v in shield_history:
             t = t_v["timestamp"]
-            if (last - t) > xspan:
+            if (last - t) > xspan and len(scaled) >= 2:
                 continue
-            x = 1.0 - (last-t) / xspan
+            x = max(0.0, 1.0 - (last-t) / xspan)
             y = t_v["value"]/100.0
             s = {"x":int(cx+x*w), "y":int(cy-(y*h))}
             if scaled and scaled[-1]["x"] == s["x"]:
@@ -1200,7 +1200,7 @@ class InGameMsg(object):
             "id": u"shield-trend-span",
             "color": cfg["shield"]["rgb"][2],
             "ttl": cfg["shield"]["ttl"],
-            "vector": [{"x":int(cx+x*w), "y":int(cy+1)}, {"x":int(cx+x*w), "y":int(cy+2)}]
+            "vector": [{"x":int(cx+x*w), "y":int(cy-.5*h-1)}, {"x":int(cx+x*w), "y":int(cy-.5*h+1)}]
         }
         self.__vect(u"target-guidance", vect)
             
@@ -1215,9 +1215,9 @@ class InGameMsg(object):
         EDRLOG.log("hull {}".format(hull_history), "DEBUG")
         for t_v in hull_history:
             t = t_v["timestamp"]
-            if (last - t) > xspan:
+            if (last - t) > xspan and len(scaled) >= 2:
                 continue
-            x = 1.0 - (last-t) / xspan
+            x = max(0.0, 1.0 - (last-t) / xspan)
             y = t_v["value"]/100.0
             s = {"x":int(cx+x*w), "y":int(cy-(y*h))}
             if scaled and scaled[-1]["x"] == s["x"]:
@@ -1240,11 +1240,11 @@ class InGameMsg(object):
             "id": u"hull-trend-span",
             "color": cfg["hull"]["rgb"][1],
             "ttl": cfg["hull"]["ttl"],
-            "vector": [{"x":int(cx+x*w), "y":int(cy+1)}, {"x":int(cx+x*w), "y":int(cy+2))}]
+            "vector": [{"x":int(cx+x*w), "y":int(cy-.5*h-1)}, {"x":int(cx+x*w), "y":int(cy-.5*h+1)}]
         }
         self.__vect(u"target-guidance", vect)
 
-        if not subsys_history:
+        if not subsys_history or len(subsys_history) == 0:
             return
         x = cfg["subsys"]["x"]
         y = cfg["subsys"]["y"]
@@ -1256,9 +1256,9 @@ class InGameMsg(object):
         EDRLOG.log("subsys {}".format(subsys_history), "DEBUG")
         for t_v in subsys_history:
             t = t_v["timestamp"]
-            if (last - t) > xspan:
+            if (last - t) > xspan and len(scaled) >= 2:
                 continue
-            x = 1.0 - (last-t) / xspan
+            x = max(0.0, 1.0 - (last-t) / xspan)
             y = t_v["value"]/100.0
             s = {"x":int(cx+x*w), "y":int(cy-(y*h))}
             if scaled and scaled[-1]["x"] == s["x"]:
@@ -1280,7 +1280,7 @@ class InGameMsg(object):
             "id": u"subsys-trend-span",
             "color": cfg["subsys"]["rgb"][1],
             "ttl": cfg["subsys"]["ttl"],
-            "vector": [{"x":int(cx+x*w), "y":int(cy+1)}, {"x":int(cx+x*w), "y":int(cy+2))}]
+            "vector": [{"x":int(cx+x*w), "y":int(cy-.5*h-1)}, {"x":int(cx+x*w), "y":int(cy-.5*h+1)}]
         }
         self.__vect(u"target-guidance", vect)
 
