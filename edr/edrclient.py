@@ -252,8 +252,8 @@ class EDRClient(object):
             self.ui.nolink()
 
     def linkable_status(self, link, new_status = None):
-        #TODO verify if this needs to be truncated
-        self._status.set(new_status if new_status else link)
+        short_link = (link[:30] + u'…') if link and len(link) > 30 else link
+        self._status.set(new_status if new_status else short_link)
         if self.ui:
             self.ui.link(link)
 
@@ -1327,15 +1327,15 @@ class EDRClient(object):
 
         if self.fc_jump_psa == _(u"Never"):
             EDRLOG.log(u"FC Jump reporting is off.", "INFO")
-            self.status = _(u"Skipped announcement of FC jump schedule (enable from EDMC settings, EDR tab).")
+            self.status = _(u"Skipped FC jump announcement.")
             return True
 
         jump_info["owner"] = self.player.name
         if self.server.fc_jump_scheduled(jump_info):
             if self.fc_jump_psa == _(u"Public"):
-                self.status = _(u"Reported FC jump schedule for public announcement.")
+                self.status = _(u"Sent PSA for FC jump schedule.")
             else:
-                self.status = _(u"Reported FC jump schedule for private announcement (registered FC only, inquiry @ edrecon.com/discord).")
+                self.status = _(u"Sent Private FC jump schedule.")
             return True
         return False
     
@@ -1348,7 +1348,7 @@ class EDRClient(object):
 
         if self.fc_jump_psa == _(u"Never"):
             EDRLOG.log(u"FC Jump reporting is off.", "INFO")
-            self.status = _(u"Skipped announcement of FC jump schedule (enable from EDMC settings, EDR tab).")
+            self.status = _(u"Skipped FC jump announcement.")
             return True
 
         status = self.player.fleet_carrier.json_status()
