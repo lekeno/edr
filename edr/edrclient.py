@@ -616,11 +616,10 @@ class EDRClient(object):
         self.status = _(u"[Yield: {:.2f}%]   [Items: {} ({:.0f}/hour)]".format(self.player.mining_stats.last["proportion"], self.player.mining_stats.refined_nb, self.player.mining_stats.mineral_per_hour()))
     
     def bounty_hunting_guidance(self, turn_off=False):
-        if turn_off:
-            self.IN_GAME_MSG.clear_bounty_hunting_guidance()
-            return
-    
         if self.visual_feedback:
+            if turn_off:
+                self.IN_GAME_MSG.clear_bounty_hunting_guidance()
+                return
             self.IN_GAME_MSG.bounty_hunting_guidance(self.player.bounty_hunting_stats)
         
         bounty = EDFineOrBounty(self.player.bounty_hunting_stats.last["bounty"])
@@ -628,9 +627,10 @@ class EDRClient(object):
         self.status = _(u"[Last: {} cr [{}]]   [Totals: {} cr/hour ({} awarded)]".format(bounty.pretty_print(), self.player.bounty_hunting_stats.last["name"], self.player.bounty_hunting_stats.awarded_nb, credits_per_hour.pretty_print()))
 
     def target_guidance(self, target_event, turn_off=False):
-        if turn_off or (not target_event or not self.player.target_pilot() or not self.player.target_pilot().vehicle):
-            self.IN_GAME_MSG.clear_target_guidance()
-            return
+        if self.visual_feedback:
+            if turn_off or (not target_event or not self.player.target_pilot() or not self.player.target_pilot().vehicle):
+                self.IN_GAME_MSG.clear_target_guidance()
+                return
         
         tgt = self.player.target_vehicle() or self.player.target_pilot().vehicle
         meaningful = tgt.hull_health_stats().meaningful() or tgt.shield_health_stats().meaningful()
