@@ -824,7 +824,7 @@ class EDPlayerOne(EDPlayer):
             return None
         return self._target.targeted_vehicle
 
-    def targeting(self, pilot, rank=None, ship_internal_name=None):
+    def targeting(self, pilot, ship_internal_name=None):
         if pilot.is_human():
             self.instance.player_in(pilot)
         else:
