@@ -115,6 +115,10 @@ class EDVehicle(object):
     
     @shield_health.setter
     def shield_health(self, new_value):
+        if new_value == 0:
+            self.shield_up = False
+        elif not self.shield_up and new_value >= 90:
+            self.shield_up = True # highly speculative...
         self._shield_health.update(new_value)
 
     @property
