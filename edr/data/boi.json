@@ -488,8 +488,26 @@
             }
         ]
     },
-    "leucos": {
+    "hyades sector aq-y d81": {
+        "c 2": [
+            {
+            "title": "Barnacle Forest",
+            "latitude": 9.2939,
+            "longitude": -153.9096
+            }
+        ]
+    },
+    "pleiades sector pn-t b3-0": {
         "a 5": [
+            {
+            "title": "Barnacle Forest",
+            "latitude": -4.4946,
+            "longitude": 145.6557
+            }
+        ]
+    },
+    "leucos": {
+        "a 5 a": [
             {
             "title": "Crashed Anaconda",
             "latitude": -36.1280,
@@ -521,6 +539,20 @@
                 "title": "Crashed Thargoid Ship",
                 "latitude": -34.98,
                 "longitude": -141.41
+            },
+            {
+                "title": "Research Base LV 87",
+                "latitude": -51.1941,
+                "longitude": 14.2181
+            }
+        ]
+    },
+    "hd 76133": {
+        "1 c": [
+            {
+                "title": "Anaconda Graveyard",
+                "latitude": 23.488,
+                "longitude": 81.934
             }
         ]
     },
@@ -732,6 +764,15 @@
             }
         ]
     },
+    "almana": {
+        "1 a": [
+            {
+                "title": "Crashed Diamondback",
+                "latitude": 16.9,
+                "longitude": 116.83
+            }
+        ]
+    },
     "synuefe jb-g b58-6": {
         "6 h": [
             {
@@ -768,7 +809,7 @@
             }
         ]
     },
-    "Colonia": {
+    "colonia": {
         "5 e a": [
             {
                 "title": "Wrecked Type 9",
@@ -961,7 +1002,35 @@
                 "longitude": -63.7982
             }
         ]
-    }, 
+    },
+    "hip 32001": {
+        "3 a": [
+            {
+                "title": "Crashed Type-9 (Ariane's Pride)",
+                "latitude": 7.78,
+                "longitude": 142.94
+            }
+        ]
+
+    },
+    "hip 83003": {
+        "6 a": [
+            {
+                "title": "Crashed Anaconda (Trading Vessel MD-004)",
+                "latitude": -54.66,
+                "longitude": 147.12
+            }
+        ]
+    },
+    "hip 69200": {
+        "1 b": [
+            {
+                "title": "Prof. Carver's Crashed Sidewinder",
+                "latitude": -59.1811,
+                "longitude": -76.6915
+            }
+        ]
+    },
     "wregoe ji-b d13-130": {
         "1": [
             {
@@ -989,6 +1058,25 @@
             }
         ]
     },
+    "musca dark region pj-p b6-1": {
+        "3": [
+            {
+                "title": "Geological Survey 23B",
+                "latitude":  11.858,
+                "longitude": -38.009
+            },
+            {
+                "title": "Crashed Thargoid Ship",
+                "latitude":  19.514,
+                "longitude": -34.346
+            },
+            {
+                "title": "Wrecked SRV",
+                "latitude":  11.647,
+                "longitude": -38.097
+            }            
+        ]
+    },
     "12 trianguli": {
         "a 1": [
             {
@@ -1013,6 +1101,188 @@
                 "title": "Crashed Anaconda",
                 "latitude": 14,
                 "longitude": 135
+            }
+        ]
+    },
+    "lhs 2429": {
+        "1": [
+            {
+                "title": "Crashed Type-9",
+                "latitude": -14.17,
+                "longitude": 131.13
+            }
+        ]
+    },
+    "sol": {
+        "mercury": [
+            {
+                "title": "Crashed Anaconda (1)",
+                "latitude": 40.253,
+                "longitude": -164.231
+            },
+            {
+                "title": "Crashed Anaconda (2)",
+                "latitude": 71.362,
+                "longitude": 6.148
+            }
+        ],
+        "charon": [
+            {
+                "title": "Crashed Anaconda",
+                "latitude": -45.804,
+                "longitude": -80.751
+            }
+        ]
+    },
+    "atropos": {
+        "4": [
+            {
+                "title": "Crashed Type-9",
+                "latitude": 64.7,
+                "longitude": 133.85
+            }
+        ]
+    },
+    "ltt 1935": {
+        "6 a": [
+            {
+                "title": "Crashed Anaconda",
+                "latitude": 30.172,
+                "longitude": 56.075
+            }
+        ]
+    },
+    "arietis sector ze-a d75": {
+        "10 a": [
+            {
+                "title": "Crashed Thargoid Scout",
+                "latitude": 18.02,
+                "longitude": 131.939
+            }
+        ]
+
+    },
+    "col 173 sector lj-f c12-0": {
+        "a 4 c": [
+            {
+                "title": "The Brifrost (Crashed Anaconda)",
+                "latitude": 23.508,
+                "longitude": 154.878
+            }
+        ]
+    },
+    "etain": {
+        "4 c": [
+            {
+                "title": "The Prophet",
+                "latitude": 29.9527,
+                "longitude": -87.8558
+            }
+        ],
+        "4 a": [
+            {
+                "title": "The Sanctum",
+                "latitude": -19.950,
+                "longitude": 103.5927
+            }
+        ]
+    },
+    "shibboleth": {
+        "2 e": [
+            {
+                "title": "The Church of The Path",
+                "latitude": -11.1675,
+                "longitude": 148.9552
+            }
+        ]
+    },
+    "nervir": {
+        "a 2 a": [
+            {
+                "title": "Crowther's Rest",
+                "latitude": 50.5091,
+                "longitude": -17.1776 
+            }
+        ]
+    },
+    "col 285 sector zt-i b25-0": {
+        "2 a": [
+            {
+                "title": "Planet Dave Outpost",
+                "latitude": -19.7754,
+                "longitude": 36.4421
+            }
+        ]
+    },
+    "col 285 sector np-w a31-3": {
+        "6 a": [
+            {
+                "title": "Extraction site HS-98",
+                "latitude": 35.34,
+                "longitude": 137.66
+            }
+        ]
+    },
+    "pleiades sector hr-w d1-17": {
+        "1 a": [
+            {
+                "title": "Research Base KG-3362",
+                "latitude": 58.115,
+                "longitude": 19.543
+            }
+        ]
+    },
+    "pleiades sector jn-s b4-3": {
+        "2": [
+            {
+                "title": "Scrump Landing",
+                "latitude": -0.343,
+                "longitude": 12.922
+            }
+        ]
+    },
+    "hip 19792": {
+        "c 2": [
+            {
+                "title": "Betterton outpost",
+                "latitude": -24.70,
+                "longitude": 6.55
+            }
+        ]
+    },
+    "hip 16217": {
+        "ab 1 a": [
+            {
+                "title": "Penal Colony BV-2259",
+                "latitude": -55.001,
+                "longitude": 30.283
+            }
+        ]
+    },
+    "pleiades sector gw-w c1-15": {
+        "12 a": [
+            {
+                "title": "Dominic's Corner",
+                "latitude": 5.562,
+                "longitude": 116.736
+            }
+        ]
+    },
+    "hip 19284": {
+        "a 2 d": [
+            {
+                "title": "Site 94",
+                "latitude": -19.062,
+                "longitude": -99.445
+            }
+        ]
+    },
+    "wregoe hv-z b15-0": {
+        "c 1": [
+            {
+                "title": "Herpin Research Base",
+                "latitude": 2.768,
+                "longitude": 45.958
             }
         ]
     }
