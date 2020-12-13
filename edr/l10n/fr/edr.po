@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2020-11-30 16:39+0900\n"
-"PO-Revision-Date: 2020-11-30 16:41+0900\n"
+"POT-Creation-Date: 2020-12-13 09:23+0900\n"
+"PO-Revision-Date: 2020-12-13 09:23+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -319,7 +319,7 @@ msgstr "SITREP pour {} (Open)"
 msgid "[Yield: {:.2f}%]   [Items: {} ({:.0f}/hour)]"
 msgstr "[Prod: {:.2f}%]   [Items: {} ({:.0f}/heure)]"
 
-#: edrclient.py:628
+#: edrclient.py:627
 msgid "[Last: {} cr [{}]]   [Totals: {} cr/hour ({} awarded)]"
 msgstr "[Dernier: {} cr [{}]]   [Total: {} cr/heure ({} reçu)]"
 
@@ -3589,177 +3589,177 @@ msgstr ""
 " - pour personnaliser la mise en page, veuillez regarder les instructions "
 "dans le fichier config/igm_config.v7.ini ."
 
-#: ingamemsg.py:375
+#: ingamemsg.py:391
 msgid "Dis: {}km"
 msgstr "Dis: {}km"
 
-#: ingamemsg.py:376
+#: ingamemsg.py:392
 msgid "Lat: {:.4f}"
 msgstr "Lat: {:.4f}"
 
-#: ingamemsg.py:377
+#: ingamemsg.py:393
 msgid "Lon: {:.4f}"
 msgstr "Lon: {:.4f}"
 
-#: ingamemsg.py:399
+#: ingamemsg.py:418
 msgid "LG. Pad:{}   Outfit:{}   Shipyard:{}"
 msgstr "LG. Pad:{}   Equipmt:{}   Chantier:{}"
 
-#: ingamemsg.py:403
+#: ingamemsg.py:422
 msgid "Refuel:{}   Repair:{}   Restock:{}"
 msgstr "Fuel:{}   Réparer:{}   Ravitailler:{}"
 
-#: ingamemsg.py:407
+#: ingamemsg.py:426
 msgid "material trader|M."
 msgstr "M."
 
-#: ingamemsg.py:412
+#: ingamemsg.py:431
 msgid "RAW"
 msgstr "BRU"
 
-#: ingamemsg.py:414
+#: ingamemsg.py:433
 msgid "R/M"
 msgstr "B/M"
 
-#: ingamemsg.py:416
+#: ingamemsg.py:435
 msgid "R/E"
 msgstr "B/E"
 
-#: ingamemsg.py:419
+#: ingamemsg.py:438
 msgid "MAN"
 msgstr "FAB"
 
-#: ingamemsg.py:421
+#: ingamemsg.py:440
 msgid "M/R"
 msgstr "M/B"
 
-#: ingamemsg.py:423
+#: ingamemsg.py:442
 msgid "M/E"
 msgstr "M/E"
 
-#: ingamemsg.py:426
+#: ingamemsg.py:445
 msgid "ENC"
 msgstr "ENC"
 
-#: ingamemsg.py:428
+#: ingamemsg.py:447
 msgid "E/R"
 msgstr "E/B"
 
-#: ingamemsg.py:430
+#: ingamemsg.py:449
 msgid "E/M"
 msgstr "E/M"
 
-#: ingamemsg.py:431
+#: ingamemsg.py:450
 msgid "Market:{}   B.Market:{}   {} Trad:{}"
 msgstr "Marché:{}   Marché N.:{}   {} Commerce:{}"
 
-#: ingamemsg.py:433
+#: ingamemsg.py:452
 msgid "tech broker|T."
 msgstr "T."
 
-#: ingamemsg.py:439
+#: ingamemsg.py:458
 msgid "guardian tech|GT."
 msgstr "GT."
 
-#: ingamemsg.py:441 ingamemsg.py:446
+#: ingamemsg.py:460 ingamemsg.py:465
 msgid "ambiguous tech|T."
 msgstr "T."
 
-#: ingamemsg.py:444
+#: ingamemsg.py:463
 msgid "human tech|HT."
 msgstr "HT."
 
-#: ingamemsg.py:448
+#: ingamemsg.py:467
 msgid "I.Factor:{}   {} Broker:{}"
 msgstr "I.Factor:{}   Courtier {}:{}"
 
-#: ingamemsg.py:449
+#: ingamemsg.py:468
 #, python-brace-format
 msgid "as of {date}"
 msgstr "date des infos: {date}"
 
-#: ingamemsg.py:833
+#: ingamemsg.py:854
 msgid "Mining Stats"
 msgstr "Stats minage"
 
-#: ingamemsg.py:837
+#: ingamemsg.py:858
 msgid ">>>>  DEPLETED  <<<<"
 msgstr ""
 
-#: ingamemsg.py:839
+#: ingamemsg.py:860
 msgid "ITM %: {:>6.2f}  [{}/{}; {}]"
 msgstr "MNR %: {:>6.2f}  [{}/{}; {}]"
 
-#: ingamemsg.py:840
+#: ingamemsg.py:861
 msgid "MAX %: {:>6.2f}"
 msgstr "MAX %: {:>6.2f}"
 
-#: ingamemsg.py:841
+#: ingamemsg.py:862
 msgid "AVG %: {:>6.2f}"
 msgstr "MOY %: {:>6.2f}"
 
-#: ingamemsg.py:842
+#: ingamemsg.py:863
 msgid "ITM/H: {:>6.0f} [TGT: {:.0f}]"
 msgstr "MNR/H: {:>6.0f} [OBJ: {:.0f}]"
 
-#: ingamemsg.py:843
+#: ingamemsg.py:864
 msgid "ITM #: {:>6}"
 msgstr "MNT #: {:>6}"
 
-#: ingamemsg.py:962
+#: ingamemsg.py:986
 msgid "Bounty Hunting Stats"
 msgstr "Stats Chasses à la Prime"
 
-#: ingamemsg.py:970
+#: ingamemsg.py:994
 msgid "BOUNTY: {} cr [{}]"
 msgstr "PRIME: {} cr [{}]"
 
-#: ingamemsg.py:971
+#: ingamemsg.py:995
 msgid "MAX B.: {} cr"
 msgstr "MAX P.: {} cr"
 
-#: ingamemsg.py:972
+#: ingamemsg.py:996
 msgid "AVG B.: {} cr"
 msgstr "MOY P.: {} cr"
 
-#: ingamemsg.py:973
+#: ingamemsg.py:997
 msgid "CR / H: {} [TGT: {}]"
 msgstr "CR / H: {} [TGT: {}]"
 
-#: ingamemsg.py:974
+#: ingamemsg.py:998
 msgid "TOTALS: {} cr [{} rewards]"
 msgstr "TOTAL: {} cr [{} reçu]"
 
-#: ingamemsg.py:1095
+#: ingamemsg.py:1122
 #, python-brace-format
 msgid "{prefix}{cmdr} ({ship})"
 msgstr "{prefix}{cmdr} ({ship})"
 
-#: ingamemsg.py:1095
+#: ingamemsg.py:1122
 msgid "CMDR "
 msgstr "CMDT "
 
-#: ingamemsg.py:1106
-msgid "[{} to {}]"
-msgstr "[{} pour {}]"
+#: ingamemsg.py:1133
+msgid "[{} to 100%/UP]"
+msgstr "[{} pour 100%/UP]"
 
-#: ingamemsg.py:1110 ingamemsg.py:1125 ingamemsg.py:1140
+#: ingamemsg.py:1137 ingamemsg.py:1152 ingamemsg.py:1167
 msgid "[{} to   0%]"
 msgstr "[{} pour   0%]"
 
-#: ingamemsg.py:1111
+#: ingamemsg.py:1138
 msgid "SHLD{}: {}% {}"
 msgstr "SHLD{}: {}% {}"
 
-#: ingamemsg.py:1121 ingamemsg.py:1136
+#: ingamemsg.py:1148 ingamemsg.py:1163
 msgid "[{} to 100%]"
 msgstr "[{} pour 100%]"
 
-#: ingamemsg.py:1126
+#: ingamemsg.py:1153
 msgid "HULL{}: {}% {}"
 msgstr "HULL{}: {}% {}"
 
-#: ingamemsg.py:1141
+#: ingamemsg.py:1168
 #, python-brace-format
 msgid "{subsys}{signal}: {hp:.4g}% {delta}"
 msgstr "{subsys}{signal}: {hp:.4g}% {delta}"
@@ -5020,6 +5020,9 @@ msgid ""
 msgstr ""
 "[Minage] Maintenez votre cargo (e.g. LTD) en dessous de 10% de la demande "
 "d'un marché afin de bénéficier du meilleur prix."
+
+#~ msgid "[{} to {}]"
+#~ msgstr "[{} pour {}]"
 
 #~ msgid ""
 #~ "Skipped announcement of FC jump schedule (enable from EDMC settings, EDR "
