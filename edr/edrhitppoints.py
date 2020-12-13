@@ -47,13 +47,14 @@ class EDRHitPPoints(object):
         return self.last_value() != None and self.previous_value() != None
 
     def trend(self):
-        if len(self.history) < 2:
+        if len(self.history) <= 2:
             return 0
         sum_delta_value = 0
         sum_delta_time = 0
         previous = self.history[-1]
         delta_time = self.history[-1]["timestamp"]
         span = 0
+        checked = 0
         for i in reversed(self.history):
             delta_value = previous["value"] - i["value"]
             delta_time = previous["timestamp"] - i["timestamp"]
@@ -61,10 +62,11 @@ class EDRHitPPoints(object):
             previous = i
             if delta_time == 0:
                 continue
-            if span >= self.trend_span_ms:
+            if span >= self.trend_span_ms and checked >= 2:
                 break
             sum_delta_value += delta_value
             sum_delta_time += delta_time
+            checked += 1
         
         if sum_delta_time == 0:
             return 0
