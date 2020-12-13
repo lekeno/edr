@@ -242,6 +242,7 @@
 "drive_class3_b": { "name":"drive (3B*)", "shortname": "Drive (3‥)"},
 "drive_class3_c": { "name":"drive (3C*)", "shortname": "Drive (3∴)"},
 "drive_class3_d": { "name":"drive (3D*)", "shortname": "Drive (3⸬)"},
+"drive_class3_d_xl": { "name":"drive (3D*)", "shortname": "Drive (3⸬)"},
 "drive_class3_e": { "name":"drive (3E*)", "shortname": "Drive (3⁙)"},
 "drive_class4_a": { "name":"drive (4A*)", "shortname": "Drive (4·)"},
 "drive_class4_b": { "name":"drive (4B*)", "shortname": "Drive (4‥)"},
