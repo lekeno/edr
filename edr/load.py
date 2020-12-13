@@ -473,7 +473,7 @@ def handle_mining_events(ed_player, entry):
 def handle_bounty_hunting_events(ed_player, entry):
     if entry["event"] not in ["Bounty", "ShipTargeted"]:
         return
-    if entry["event"] == "Bounty":
+    if entry["event"] == "Bounty" and entry.get("Reward", 0) > 0:
         ed_player.bounty_awarded(entry)
         EDR_CLIENT.bounty_hunting_guidance()
     elif entry["event"] == "ShipTargeted":
@@ -1198,7 +1198,7 @@ def handle_scan_events(player, entry):
 
     if entry["ScanStage"] >= 2:
         if "ShieldHealth" in entry:
-            target.vehicle.shield_health = entry["ShieldHealth"]            
+            target.vehicle.shield_health = entry["ShieldHealth"]
         if "HullHealth" in entry:
             target.vehicle.hull_health = entry["HullHealth"]
 
@@ -1229,7 +1229,7 @@ def handle_scan_events(player, entry):
         if target.is_human():
             edr_submit_scan(scan, entry["timestamp"], "Ship targeted [{}]".format(entry["LegalStatus"]), player)
 
-    player.targeting(target, entry["Ship"])
+    player.targeting(target, ship_internal_name=entry["Ship"])
     EDR_CLIENT.target_guidance(entry)
 
     return True
