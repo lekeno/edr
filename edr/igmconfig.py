@@ -31,19 +31,19 @@ class IGMConfig(object):
                 self.config = self.fallback_config
 
     def large_height(self):
-        return self._getfloat('general', 'large_height')
+        return self._getfloat('general', 'large_height', 28)
 
     def normal_height(self):
-        return self._getfloat('general', 'normal_height')
+        return self._getfloat('general', 'normal_height', 18)
 
     def large_width(self):
-        return self._getfloat('general', 'large_width')
+        return self._getfloat('general', 'large_width', 14)
 
     def normal_width(self):
-        return self._getfloat('general', 'normal_width')
+        return self._getfloat('general', 'normal_width', 8)
 
     def panel(self, kind):
-        return self._getboolean(kind, 'panel')
+        return self._getboolean(kind, 'panel', False)
 
     def x(self, kind, part):
         return self._getint(kind, '{}_x'.format(part))
@@ -67,54 +67,66 @@ class IGMConfig(object):
         return self._getint(kind, '{}_s'.format(part))
 
     def ttl(self, kind, part):
-        return self._getint(kind, '{}_ttl'.format(part))
+        return self._getint(kind, '{}_ttl'.format(part), 5)
 
     def rgb(self, kind, part):
-        return "#{}".format(self._get(kind, '{}_rgb'.format(part)))
+        return "#{}".format(self._get(kind, '{}_rgb'.format(part)), "ffffff")
 
     def rgb_list(self, kind, part):
-        rgbs = self._get(kind, '{}_rgb'.format(part))
+        rgbs = self._get(kind, '{}_rgb'.format(part), "ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff")
         return [ "#{}".format(rgb) for rgb in rgbs.split(",") ]
 
     def fill_list(self, kind, part):
-        fills = self._get(kind, '{}_fill'.format(part))
+        fills = self._get(kind, '{}_fill'.format(part), "5B260801,5B260801,5B260801,5B260801,5B260801,5B260801,5B260801,5B260801,5B260801,5B260801,5B260801,5B260801,5B260801,5B260801")
         return [ "#{}".format(fill) for fill in fills.split(",") ]
 
     def fill(self, kind, part):
-        return "#{}".format(self._get(kind, '{}_fill'.format(part)))
+        return "#{}".format(self._get(kind, '{}_fill'.format(part), "5B260801"))
 
     def size(self, kind, part):
-        return self._get(kind, '{}_size'.format(part))
+        return self._get(kind, '{}_size'.format(part), "normal")
 
     def len(self, kind, part):
-        return self._getint(kind, '{}_len'.format(part))
+        return self._getint(kind, '{}_len'.format(part), 150)
 
     def align(self, kind, part):
-        return self._get(kind, '{}_align'.format(part))
+        return self._get(kind, '{}_align'.format(part), "left")
 
     def body_rows(self, kind):
-        return self._getint(kind, 'body_rows')
+        return self._getint(kind, 'body_rows', 5)
 
-    def _get(self, category, variable):
+    def _get(self, category, variable, default=""):
         try:
             return self.config.get(category, variable)
         except:
-            return self.fallback_config.get(category, variable)
+            if self.fallback_config.has_option(category, variable):
+                return self.fallback_config.get(category, variable)
+            else:
+                return default
     
-    def _getfloat(self, category, variable):
+    def _getfloat(self, category, variable, default=0.0):
         try:
             return self.config.getfloat(category, variable)
         except:
-            return self.fallback_config.getfloat(category, variable)
+            if self.fallback_config.has_option(category, variable):
+                return self.fallback_config.getfloat(category, variable)
+            else:
+                return default
 
-    def _getboolean(self, category, variable):
+    def _getboolean(self, category, variable, default=False):
         try:
             return self.config.getboolean(category, variable)
         except:
-            return self.fallback_config.getboolean(category, variable)
+            if self.fallback_config.has_option(category, variable):
+                return self.fallback_config.getboolean(category, variable)
+            else:
+                return default
 
-    def _getint(self, category, variable):
+    def _getint(self, category, variable, default=0):
         try:
             return self.config.getint(category, variable)
         except:
-            return self.fallback_config.getint(category, variable)
+            if self.fallback_config.has_option(category, variable):
+                return self.fallback_config.getint(category, variable)
+            else:
+                return default
