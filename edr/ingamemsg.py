@@ -63,6 +63,7 @@ class InGameMsg(object):
     def message_config(self, kind):
         conf = igmconfig.IGMConfig() 
         self.cfg[kind] = {
+            "enabled": conf._getboolean(kind, "enabled"),
             "h": {
                 "x": conf.x(kind, "header"),
                 "y": conf.y(kind, "header"),
@@ -147,7 +148,7 @@ class InGameMsg(object):
 
     def docking_config(self):
         conf = igmconfig.IGMConfig()
-        kind = "docking-station" 
+        kind = "docking-station"
         self.cfg[kind] = {
             "enabled": conf._getboolean(kind, "enabled"),
             "schema": {
@@ -311,6 +312,9 @@ class InGameMsg(object):
         }
 
     def intel(self, header, details, legal=None):
+        if not self.cfg["intel"].get("enabled", None):
+            return
+
         self.__clear_if_needed()
         if "panel" in self.cfg["intel"]:
             self.__shape("intel", self.cfg["intel"]["panel"])
@@ -328,6 +332,9 @@ class InGameMsg(object):
         
 
     def warning(self, header, details, legal=None):
+        if not self.cfg["warning"].get("enabled", None):
+            return
+
         self.__clear_if_needed()
         if "panel" in self.cfg["warning"]:
             self.__shape("warning", self.cfg["warning"]["panel"])
@@ -343,6 +350,9 @@ class InGameMsg(object):
         self.__legal_vizualization(legal, "warning")
 
     def notify(self, header, details):
+        if not self.cfg["notice"].get("enabled", None):
+            return
+
         self.__clear_if_needed()
         if "panel" in self.cfg["notice"]:
             self.__shape("notify", self.cfg["notify"]["panel"])
@@ -350,6 +360,8 @@ class InGameMsg(object):
         self.__msg_body("notice", details)
     
     def help(self, header, details):
+        if not self.cfg["help"].get("enabled", None):
+            return
         self.__clear_if_needed()
         if "panel" in self.cfg["help"]:
             self.__shape("help", self.cfg["help"]["panel"])
@@ -358,6 +370,8 @@ class InGameMsg(object):
         self.must_clear = True
 
     def sitrep(self, header, details):
+        if not self.cfg["sitrep"].get("enabled", None):
+            return
         self.__clear_if_needed()
         self.__clear_kind("sitrep")
         if "panel" in self.cfg["sitrep"]:
@@ -366,6 +380,8 @@ class InGameMsg(object):
         self.__msg_body("sitrep", details)
 
     def navigation(self, bearing, destination, distance=None, pitch=None):
+        if not self.cfg["navigation"].get("enabled", None):
+            return
         self.clear_navigation()
         if "panel" in self.cfg["navigation"]:
             self.__shape("navigation", self.cfg["navigation"]["panel"])
@@ -379,6 +395,9 @@ class InGameMsg(object):
         self.__msg_body("navigation", details)
 
     def docking(self, system, station, pad):
+        if not self.cfg["docking"].get("enabled", None):
+            return
+
         self.clear_docking()
         if not station:
             return
@@ -824,6 +843,8 @@ class InGameMsg(object):
             m += 1
 
     def mining_guidance(self, mining_stats):
+        if not self.cfg["mining"].get("enabled", None):
+            return
         self.clear_mining_guidance()
         if "panel" in self.cfg["mining"]:
             self.__shape("mining", self.cfg["mining"]["panel"])
@@ -952,6 +973,9 @@ class InGameMsg(object):
             x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}
 
     def bounty_hunting_guidance(self, bounty_hunting_stats):
+        if not self.cfg["bounty-hunting"].get("enabled", None):
+            return
+
         self.clear_bounty_hunting_guidance()
         self.clear_docking()
         if "panel" in self.cfg["bounty-hunting"]:
@@ -1083,6 +1107,9 @@ class InGameMsg(object):
             x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}
 
     def target_guidance(self, target, subsys_details=None):
+        if not self.cfg["target-guidance"].get("enabled", None):
+            return
+
         self.clear_target_guidance()
         if not target or not target.vehicle:
             return
@@ -1103,7 +1130,7 @@ class InGameMsg(object):
         if int(trend) > 0:
             signal = "▴" if tgt_vehicle.shield_up and shield_stats.last_value() > 0 else "▵"
             if trend < 60*60:
-                delta_shield = _(u"[{} to {}]").format(EDTime.pretty_print_timespan(int(trend), short=True, verbose=False), "100%" if tgt_vehicle.shield_up else "  UP")
+                delta_shield = _(u"[{} to 100%/UP]").format(EDTime.pretty_print_timespan(int(trend), short=True, verbose=False))
         elif int(trend) < 0:
             signal = "▾"
             if trend > -60*60:
@@ -1143,7 +1170,6 @@ class InGameMsg(object):
         self.__msg_body("target-guidance", details)
 
         if not self.cfg["target-guidance-graphs"].get("enabled", None):
-            EDRLOG.log("plop", "DEBUG")
             return
         subsys_stats = subsys_details["stats"] if subsys_details else None
         self.__target_guidance_vizualization(tgt_vehicle.shield_up, shield_stats, hull_stats, subsys_stats)
