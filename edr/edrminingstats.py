@@ -3,6 +3,8 @@ from __future__ import absolute_import
 from collections import deque
 from edtime import EDTime
 from edri18n import _
+import json
+import utils2to3
 
 class EDRMineralStats(object):
     def __init__(self, name, internal_name, symbol):
@@ -48,25 +50,7 @@ class EDRMineralStats(object):
 
 
 class EDRMiningStats(object):
-    MINERALS_LUT = { 
-        "platinum": {"name": "platinum", "type": "$platinum_name;", "symbol": _("Pt")},
-        "monazite": {"name": "monazite", "type": "$monazite_name;", "symbol": _("MNZT")},
-        "musgravite": {"name": "musgravite", "type": "$musgravite_name;", "symbol": _("MGRV")},
-        "low temperature diamond": { "name": "lowtemperaturediamond", "type": "$lowtemperaturediamond_name;", "symbol": _("LTD")},
-        "painite": { "name": "painite", "type": "$painite_name;", "symbol": _("PAIN")},
-        "void opal": { "name": "voidopal", "type": "$opal_name;", "symbol": _("V.O.")},
-    }
-
-    MINERAL_TYPES_LUT = { 
-        "$platinum_name;": "platinum",
-        "$monazite_name;": "monazite",
-        "$musgravite_name;": "musgravite",
-        "$lowtemperaturediamond_name;": "lowtemperaturediamond",
-        "$painite_name;": "painite",
-        "$opal_name;": "voidopal",
-    }
-    ## musgravite, monazite and maybe Grandidierite Alexandrite Benitoite
-    ## can have multiple of these... 
+    MINERALS_LUT = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'mining.json')).read())
 
     def __init__(self):
         self.lmh = {"-": 0, "L": 0, "M": 0, "H": 0}
@@ -82,9 +66,11 @@ class EDRMiningStats(object):
         self.refined_nb = 0
         self.prospected_raw_history = deque(maxlen=8) # 8 max prospector drones
         self.efficiency = deque(maxlen=20)
+        self.mineral_types_lut = {}
         for mineral in self.MINERALS_LUT:
             name = self.MINERALS_LUT[mineral]["name"]
             internal_name = self.MINERALS_LUT[mineral]["type"]
+            self.mineral_types_lut[internal_name] = name
             symbol = self.MINERALS_LUT[mineral]["symbol"]
             self.of_interest["names"].add(name)
             self.of_interest["types"].add(internal_name)
@@ -103,9 +89,11 @@ class EDRMiningStats(object):
         self.of_interest = { "names": set(), "types": set()}
         self.stats = {}
         self.prospected_raw_history = deque(maxlen=8) # 8 max prospector drones
+        self.mineral_types_lut = {}
         for mineral in self.MINERALS_LUT:
             name = self.MINERALS_LUT[mineral]["name"]
             internal_name = self.MINERALS_LUT[mineral]["type"]
+            self.mineral_types_lut[internal_name] = name
             symbol = self.MINERALS_LUT[mineral]["symbol"]
             self.of_interest["names"].add(name)
             self.of_interest["types"].add(internal_name)
@@ -187,7 +175,7 @@ class EDRMiningStats(object):
         self.__update_efficiency()
         cinternal_name = entry.get("Type", "").lower()
         if cinternal_name in self.of_interest["types"]:
-            cname = self.MINERAL_TYPES_LUT[cinternal_name]
+            cname = self.minerals_types_lut[cinternal_name]
             self.stats[cname].refined()
 
     def last_max():
