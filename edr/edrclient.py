@@ -522,11 +522,22 @@ class EDRClient(object):
             self.__notify(_(u'Noteworthy about {}').format(scan_event["BodyName"]), facts, clear_before = True)
 
     def noteworthy_about_signal(self, fss_event):
+        self.edrfssinsights.process(fss_event)
         facts = self.edrresourcefinder.assess_signal(fss_event, self.player.location, self.player.inventory)
-        if not facts:
+        if facts:
+            header = _(u'Signal Insights (potential outcomes)')
+            self.__notify(header, facts, clear_before = True)
+            return True
+
+    def noteworthy_signals_in_system(self):
+        # TODO reset if different system. Probably need to keep track of system address....
+        if not self.edrfssinsights.noteworthy:
             return False
-        header = _(u'Signal Insights (potential outcomes)')
-        self.__notify(header, facts, clear_before = True)
+        summary = self.edrfssinsights.summarize()
+        if not summary:
+            return False
+        header = _(u"Signals in {system}".format(system=self.player.star_system))
+        self.__notify(header, summary, clear_before = True)
         return True
 
     def process_scan(self, scan_event):

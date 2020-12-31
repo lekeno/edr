@@ -334,6 +334,9 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
         elif entry["MusicTrack"] in ["Supercruise", "Exploration", "NoTrack"] and ed_player.in_a_fight():
             ed_player.in_danger(False)
             return
+        elif entry ["MusicTrack"] == "SystemMap":
+            EDR_CLIENT.noteworthy_signals_in_system() # probably annoying
+            return
 
     if entry["event"] == "Shutdown":
         EDRLOG.log(u"Shutting down in-game features...", "INFO")
@@ -1304,6 +1307,9 @@ def handle_bang_commands(cmdr, command, command_parts):
     elif command == "!sitreps":
         EDRLOG.log(u"Sitreps command", "INFO")
         EDR_CLIENT.sitreps()
+    elif command == "!signals":
+        EDRLOG.log(u"Signals command", "INFO")
+        EDR_CLIENT.noteworthy_signals_in_system()
     elif command == "!notams":
         EDRLOG.log(u"Notams command", "INFO")
         EDR_CLIENT.notams()
