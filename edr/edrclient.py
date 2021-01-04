@@ -40,6 +40,7 @@ from edrxzibit import EDRXzibit
 
 from edri18n import _, _c, _edr, set_language
 from clippy import copy
+from edrfssinsights import EDRFSSInsights
 
 EDRLOG = EDRLog()
 
@@ -130,6 +131,7 @@ class EDRClient(object):
         self.tips = RandomTips()
         self.help_content = HelpContent()
         self._throttle_until_timestamp = None
+		self.edrfssinsights = EDRFSSInsights()
 
     def loud_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "loud")
@@ -522,7 +524,7 @@ class EDRClient(object):
             self.__notify(_(u'Noteworthy about {}').format(scan_event["BodyName"]), facts, clear_before = True)
 
     def noteworthy_about_signal(self, fss_event):
-        self.edrfssinsights.process(fss_event)
+        self.edrfssinsights.process(fss_event, self.player.star_system)
         facts = self.edrresourcefinder.assess_signal(fss_event, self.player.location, self.player.inventory)
         if facts:
             header = _(u'Signal Insights (potential outcomes)')
@@ -530,7 +532,8 @@ class EDRClient(object):
             return True
 
     def noteworthy_signals_in_system(self):
-        # TODO reset if different system. Probably need to keep track of system address....
+        self.edrfssinsights.update(self.player.star_system):
+        
         if not self.edrfssinsights.noteworthy:
             return False
         summary = self.edrfssinsights.summarize()
