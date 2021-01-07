@@ -1122,6 +1122,7 @@ class EDRClient(object):
     def scanned(self, cmdr_name, scan):
         if self.player.in_solo():
             EDRLOG.log(u"Skipping scanned since the user is in solo (unexpected).", "INFO")
+            EDR_CLIENT.status = _(u"failed to report scan.")
             return False
 
         cmdr_id = self.cmdr_id(cmdr_name)
@@ -1179,6 +1180,15 @@ class EDRClient(object):
             EDRLOG.log("Skipping reporting scan since the user is anonymous.", "INFO")
             self.scans_cache.set(cmdr_id, scan)
             return True
+
+        if not witness.in_open():
+            EDRLOG.log(u"Scan not submitted due to unconfirmed Open mode", "INFO")
+            EDR_CLIENT.status = _(u"Scan reporting disabled in solo/private modes.")
+            return False
+
+        if witness.has_partial_status():
+            EDRLOG.log(u"Scan not submitted due to partial status", "INFO")
+            return False
 
         success = self.server.scanned(cmdr_id, scan)
         if success:
