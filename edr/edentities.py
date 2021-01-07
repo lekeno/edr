@@ -285,6 +285,7 @@ class EDLocation(object):
         self.space_dimension = space_dimension
         self.population = None
         self.allegiance = None
+        self.star_system_address = None
 
     def __repr__(self):
         return str(self.__dict__)

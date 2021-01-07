@@ -35,7 +35,7 @@ class EDRFSSInsights(object):
         self.other_locations = set()
         self.resource_extraction_sites = {"available": False, "variants": {"$MULTIPLAYER_SCENARIO14_TITLE;": {"count": 0, "short_name": _c("Standard Res|Std")}, "$MULTIPLAYER_SCENARIO77_TITLE;": {"count": 0, "short_name": _c("Res Low|Low")}, "$MULTIPLAYER_SCENARIO78_TITLE;": {"count": 0, "short_name": _c("Res High|High")}, "$MULTIPLAYER_SCENARIO79_TITLE;": {"count": 0, "short_name": _c("Res Hazardous|Haz")}}, "short_name": _("RES") }
         self.combat_zones = {"available": False, "variants": {"$Warzone_PointRace_Low;":  {"count": 0, "short_name": _c("CZ Low intensity|Low")}, "$Warzone_PointRace_Medium;":  {"count": 0, "short_name": _c("CZ Medium intensity|Med")}, "$Warzone_PointRace_High;":  {"count": 0, "short_name": _c("CZ High intensity|High")}}, "short_name": _("CZ") }
-        self.uss = {"available": False, "variants": {"$USS_Type_Salvage;":  {"count": 0, "expiring": [], "short_name": _c("Degraded Emissions|Degraded")}, "$USS_Type_ValuableSalvage;":  {"count": 0, "expiring": [], "short_name": _c("Encoded Emissions|Encoded")}, "$USS_Type_VeryValuableSalvage;": {"count": 0, "expiring": [], "short_name": _c("High Grade Emissions|High Grade")}}, "misc": {"count": 0, "expiring": [], "short_name": _c("Misc.")}}, "short_name": _("USS") }
+        self.uss = {"available": False, "variants": {"$USS_Type_Salvage;":  {"count": 0, "expiring": [], "short_name": _c("Degraded Emissions|Degraded")}, "$USS_Type_ValuableSalvage;":  {"count": 0, "expiring": [], "short_name": _c("Encoded Emissions|Encoded")}, "$USS_Type_VeryValuableSalvage;": {"count": 0, "expiring": [], "short_name": _c("High Grade Emissions|High Grade")}, "misc": {"count": 0, "expiring": [], "short_name": _c("Misc.")}}, "short_name": _("USS") }
 
         # $USS_Type_DistressSignal;
         # $USS_Type_Convoy;
@@ -60,7 +60,7 @@ class EDRFSSInsights(object):
         self.other_locations = set()
         self.resource_extraction_sites = {"available": False, "variants": {"$MULTIPLAYER_SCENARIO14_TITLE;": {"count": 0, "short_name": _("Standard Res|Std")}, "$MULTIPLAYER_SCENARIO77_TITLE;": {"count": 0, "short_name": _("Res Low|Low")}, "$MULTIPLAYER_SCENARIO78_TITLE;": {"count": 0, "short_name": _("Res High|High")}, "$MULTIPLAYER_SCENARIO79_TITLE;": {"count": 0, "short_name": _("Res Hazardous|Haz")}}, "short_name": _("RES") }
         self.combat_zones = {"available": False, "variants": {"$Warzone_PointRace_Low;":  {"count": 0, "short_name": _("CZ Low intensity|Low")}, "$Warzone_PointRace_Medium;":  {"count": 0, "short_name": "CZ Medium intensity|Med"}, "$Warzone_PointRace_High;":  {"count": 0, "short_name": _("CZ High intensity|High")}}, "short_name": _("CZ") }
-        self.uss = {"available": False, "variants": {"$USS_Type_Salvage;":  {"count": 0, "expiring": [], "short_name": _c("Degraded Emissions|Degraded")}, "$USS_Type_ValuableSalvage;":  {"count": 0, "expiring": [], "short_name": _c("Encoded Emissions|Encoded")}, "$USS_Type_VeryValuableSalvage;": {"count": 0, "expiring": [], "short_name": _c("High Grade Emissions|High Grade")}}, "misc": {"count": 0, "expiring": [], "short_name": _c("Misc.")}}, "short_name": _("USS") }
+        self.uss = {"available": False, "variants": {"$USS_Type_Salvage;":  {"count": 0, "expiring": [], "short_name": _c("Degraded Emissions|Degraded")}, "$USS_Type_ValuableSalvage;":  {"count": 0, "expiring": [], "short_name": _c("Encoded Emissions|Encoded")}, "$USS_Type_VeryValuableSalvage;": {"count": 0, "expiring": [], "short_name": _c("High Grade Emissions|High Grade")}, "misc": {"count": 0, "expiring": [], "short_name": _c("Misc.")}}, "short_name": _("USS") }
         self.star_system = {"name": None, "address": None}
         self.noteworthy = False
 
@@ -111,8 +111,8 @@ class EDRFSSInsights(object):
             self.uss["variants"][uss_type]["count"] += 1
             self.uss["available"] = True
             if "TimeRemaining" in fss_event:
-                event_time = edtime.EDTime()
-                event_time.from_journal_timestamp(jump_request_event["timestamp"])
+                event_time = EDTime()
+                event_time.from_journal_timestamp(fss_event["timestamp"])
                 expires = event_time.as_py_epoch() + fss_event["TimeRemaining"]
                 self.uss["variants"][uss_type]["expiring"].append(expires)
             self.noteworthy = True
@@ -156,8 +156,8 @@ class EDRFSSInsights(object):
                 signal = self.uss["variants"][variant]
                 if signal["count"] <= 0:
                     continue
-                rank = self.__expiring_rank(self.uss["variants"][variant]["expiring"])
-                counts.append("{} {}({})".format(signal["count"], signal["short_name"]), rank)
+                rank = self.__expiring_rank(signal["expiring"])
+                counts.append("{} {}({})".format(signal["count"], signal["short_name"], rank))
             if counts:
                 summary.append("{}: {}".format(self.uss["short_name"], "; ".join(counts)))
         
@@ -204,9 +204,10 @@ class EDRFSSInsights(object):
     def __prune_expired_signals(self):
         now_epoch = EDTime.py_epoch_now()
         for uss_type in self.uss["variants"]:
-            signal = self.uss["variants"]["signal_name"]
+            signal = self.uss["variants"][uss_type]
             for expiring in signal["expiring"]:
                 if now_epoch >= expiring:
+                    print("Removing expired signal: {}".format(uss_type))
                     signal["expiring"].remove(expiring)
                     signal["count"] -= 1
 
