@@ -829,19 +829,7 @@ def edr_submit_scan(scan, timestamp, source, witness):
     report["mode"] = witness.game_mode
     report["group"] = witness.private_group
 
-    if not witness.in_open():
-        EDRLOG.log(u"Scan not submitted due to unconfirmed Open mode", "INFO")
-        EDR_CLIENT.status = _(u"Scan reporting disabled in solo/private modes.")
-        EDR_CLIENT.who(scan["cmdr"], autocreate=True)
-        return
-
-    if witness.has_partial_status():
-        EDRLOG.log(u"Scan not submitted due to partial status", "INFO")
-        EDR_CLIENT.who(scan["cmdr"], autocreate=True)
-        return
-
-    if not EDR_CLIENT.scanned(scan["cmdr"], report):
-        EDR_CLIENT.status = _(u"failed to report scan.")
+    EDR_CLIENT.scanned(scan["cmdr"], report):
         
 def edr_submit_traffic(contact, timestamp, source, witness, system_wide=False):
     """
