@@ -5,6 +5,7 @@ from binascii import crc32
 from numbers import Number
 
 from edri18n import _
+from edrconfig import EDRUserConfig 
 
 #import backoff # TODO
 
@@ -121,9 +122,10 @@ class EDRDiscordComms(object):
     def __init__(self, player_name):
         self. player_name = player_name
         self.afk = False
-        self.afk_wh = None
-        self.squadron_wh = None
-        self.system_wh = None
+        user_config = EDRUserConfig()
+        self.afk_wh = user_config.discord_afk_webhook()
+        self.broadcast_wh = user_config.discord_broadcast_webhook()
+        self.squadron_wh = user_config.discord_squadron_webhook()
 
     def process(self, entry):
         if entry["event"] == "ReceiveText":
@@ -148,7 +150,7 @@ class EDRDiscordComms(object):
             de.color = self.__cmdrname_to_discord_color(entry["From"])
             dm.add_embed(de)
             return self.afk_wh.send(dm)
-        # TODO other
+        # TODO other: report my target?
 
         return False
     
@@ -189,4 +191,48 @@ class EDRDiscordComms(object):
 
                 
     def __process_outgoing(self, entry):
+        if self.squadron_wh and entry["To"] in ["squadron", "squadron leaders"]: # TODO verify the squadron leader thing
+            dm = EDRDiscordMessage()
+            dm.content = _(u"Squadron message")
+            dm.timestamp = entry["timestamp"]
+            de = EDRDiscordEmbed()
+            de.title = _("Channel `{}`").format(entry["To"])
+            de.description = entry["Message"]
+            de.author = {
+                "name": self.player_name,
+                "url": "",
+                "icon_url": ""
+            }
+            de.color = self.__cmdrname_to_discord_color(self.player_name)
+            dm.add_embed(de)
+            return self.broadcast_wh.send(dm)
+        
+        command_parts = entry["Message"].split(" ", 1)
+        command = command_parts[0].lower()
+        if not command:
+            return False
+
+        if not command[0] == "!" or len(command_parts) < 2:
+            return False
+    
+        if command == "!discord":
+            if self.broadcast_wh:
+                dm = EDRDiscordMessage()
+                dm.content = _(u"Incoming broadcast")
+                dm.timestamp = entry["timestamp"]
+                de = EDRDiscordEmbed()
+                de.title = _("Channel `{}`").format(entry["To"])
+                de.description = " ".join(command_parts[1:])
+                de.author = {
+                    "name": self.player_name,
+                    "url": "",
+                    "icon_url": ""
+                }
+                de.color = self.__cmdrname_to_discord_color(self.player_name)
+                dm.add_embed(de)
+                return self.broadcast_wh.send(dm)
+        # TODO other
+
+        return False
+
         return True
