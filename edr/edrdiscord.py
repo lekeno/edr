@@ -6,6 +6,7 @@ from numbers import Number
 
 from edri18n import _
 from edrconfig import EDRUserConfig 
+from edrafkdetector import EDRAfkDetector
 
 #import backoff # TODO
 
@@ -118,16 +119,18 @@ class EDRDiscordWebhook(object):
 
         return response.status_code in [200, 204]
 
-class EDRDiscordComms(object):
+class EDRDiscordIntegration(object):
     def __init__(self, player_name):
         self. player_name = player_name
-        self.afk = False
+        self.afk_detector = EDRAfkDetector()
         user_config = EDRUserConfig()
         self.afk_wh = user_config.discord_afk_webhook()
         self.broadcast_wh = user_config.discord_broadcast_webhook()
         self.squadron_wh = user_config.discord_squadron_webhook()
 
     def process(self, entry):
+        self.afk_detector(entry)
+
         if entry["event"] == "ReceiveText":
             return self.__process_incoming(entry)
         elif entry["event"] == "SendText":
@@ -135,7 +138,7 @@ class EDRDiscordComms(object):
         return False
 
     def __process_incoming(self, entry):
-        if entry.get("Channel", None) in ["player", "friend"] and self.afk and self.afk_wh: # TODO verify the friend thing
+        if entry.get("Channel", None) in ["player", "friend"] and self.afk_detector.is_afk() and self.afk_wh: # TODO verify the friend thing
             dm = EDRDiscordMessage()
             dm.content = _(u"Direct message received while AFK")
             dm.timestamp = entry["timestamp"]
