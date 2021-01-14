@@ -24,6 +24,16 @@ class EDRUserConfig(object):
             return self.config.get('discord', 'afk_webhook')
         return None
 
+    def discord_squadron_leaders_webhook(self):
+        if self.config:
+            return self.config.get('discord', 'squadron_leaders_webhook')
+        return None
+
+    def discord_squadron_webhook(self):
+        if self.config:
+            return self.config.get('discord', 'squadron_webhook')
+        return None
+
     def discord_broadcast_webhook(self):
         if self.config:
             return self.config.get('discord', 'broadcast_webhook')

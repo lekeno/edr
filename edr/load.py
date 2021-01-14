@@ -16,7 +16,7 @@ from edri18n import _, _c
 from edrdiscord import EDRDiscordIntegration
 
 EDR_CLIENT = EDRClient()
-EDR_DISCORD_INTEGRATION = EDRDiscordIntegration()
+EDR_DISCORD_INTEGRATION = EDRDiscordIntegration(EDR_CLIENT.player)
 EDRLOG = EDRLog()
 LAST_KNOWN_SHIP_NAME = ""
 

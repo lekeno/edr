@@ -90,6 +90,8 @@ class EDRDiscordWebhook(object):
         #self.backoff = backoff.Backoff(u"Discord"),
 
     def send_text(self, text):
+        if not self.webhook_url:
+            return False
         #if self.backoff.throttled():
         #    return False
     
@@ -99,6 +101,8 @@ class EDRDiscordWebhook(object):
         return self.__check_response(resp)
 
     def send(self, discord_message):
+        if not self.webhook_url:
+            return False
         #if self.backoff.throttled():
         #    return False
     
@@ -120,16 +124,18 @@ class EDRDiscordWebhook(object):
         return response.status_code in [200, 204]
 
 class EDRDiscordIntegration(object):
-    def __init__(self, player_name):
-        self. player_name = player_name
+    # TODO pass the player itself since that would be handy to show system, location etc.
+    def __init__(self, player):
+        self.player = player
         self.afk_detector = EDRAfkDetector()
         user_config = EDRUserConfig()
-        self.afk_wh = user_config.discord_afk_webhook()
-        self.broadcast_wh = user_config.discord_broadcast_webhook()
-        self.squadron_wh = user_config.discord_squadron_webhook()
+        self.afk_wh = EDRDiscordWebhook(user_config.discord_afk_webhook())
+        self.broadcast_wh = EDRDiscordWebhook(user_config.discord_broadcast_webhook())
+        self.squadron_wh = EDRDiscordWebhook(user_config.discord_squadron_webhook())
+        self.squadron_leaders_wh = EDRDiscordWebhook(user_config.discord_squadron_leaders_webhook())
 
     def process(self, entry):
-        self.afk_detector(entry)
+        self.afk_detector.process(entry)
 
         if entry["event"] == "ReceiveText":
             return self.__process_incoming(entry)
@@ -143,7 +149,7 @@ class EDRDiscordIntegration(object):
             dm.content = _(u"Direct message received while AFK")
             dm.timestamp = entry["timestamp"]
             de = EDRDiscordEmbed()
-            de.title = _("To Cmdr `{}`").format(self.player_name)
+            de.title = _("To Cmdr `{}`").format(self.player.name)
             de.description = entry["Message"]
             de.author = {
                 "name": entry["From"],
@@ -194,7 +200,24 @@ class EDRDiscordIntegration(object):
 
                 
     def __process_outgoing(self, entry):
-        if self.squadron_wh and entry["To"] in ["squadron", "squadron leaders"]: # TODO verify the squadron leader thing
+        # TODO simplify
+        if self.squadron_leaders_wh and entry["To"] == "squadleaders":
+            dm = EDRDiscordMessage()
+            dm.content = _(u"Squadron Leaders message")
+            dm.timestamp = entry["timestamp"]
+            de = EDRDiscordEmbed()
+            de.title = _("Channel `{}`").format(entry["To"])
+            de.description = entry["Message"]
+            de.author = {
+                "name": self.player.name,
+                "url": "",
+                "icon_url": ""
+            }
+            de.color = self.__cmdrname_to_discord_color(self.player.name)
+            dm.add_embed(de)
+            return self.broadcast_wh.send(dm)
+
+        if self.squadron_wh and entry["To"] == "squadron":
             dm = EDRDiscordMessage()
             dm.content = _(u"Squadron message")
             dm.timestamp = entry["timestamp"]
@@ -202,11 +225,11 @@ class EDRDiscordIntegration(object):
             de.title = _("Channel `{}`").format(entry["To"])
             de.description = entry["Message"]
             de.author = {
-                "name": self.player_name,
+                "name": self.player.name,
                 "url": "",
                 "icon_url": ""
             }
-            de.color = self.__cmdrname_to_discord_color(self.player_name)
+            de.color = self.__cmdrname_to_discord_color(self.player.name)
             dm.add_embed(de)
             return self.broadcast_wh.send(dm)
         
@@ -227,11 +250,11 @@ class EDRDiscordIntegration(object):
                 de.title = _("Channel `{}`").format(entry["To"])
                 de.description = " ".join(command_parts[1:])
                 de.author = {
-                    "name": self.player_name,
+                    "name": self.player.name,
                     "url": "",
                     "icon_url": ""
                 }
-                de.color = self.__cmdrname_to_discord_color(self.player_name)
+                de.color = self.__cmdrname_to_discord_color(self.player.name)
                 dm.add_embed(de)
                 return self.broadcast_wh.send(dm)
         # TODO other

@@ -8,7 +8,7 @@ class EDRAfkDetector(object):
         self.last_active_event = None
 
     def process(self, event):
-        if event not in self.PASSIVE_EVENTS:
+        if event["event"] not in self.PASSIVE_EVENTS:
             self.last_active_event = event
 
     def is_afk(self):
