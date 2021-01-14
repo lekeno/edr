@@ -576,6 +576,7 @@ class EDRResourceFinder(object):
             ]
 
     def recommend_prospecting_planet_for_selenium(self, resource, reference_system, callback):
+        # TODO add nav to recommended sites
         if resource != "selenium":
             return False
         candidates = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'sel.json')).read())
