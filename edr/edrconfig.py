@@ -44,6 +44,21 @@ class EDRUserConfig(object):
             return self.config.get('discord', 'screenshot_webhook')
         return None
 
+    def screenshots_directory(self):
+        if self.config:
+            return self.config.get('screenshots', 'directory')
+        return None
+    
+    def screenshots_convert(self):
+        if self.config:
+            return self.config.get('screenshots', 'convert')
+        return None
+
+    def delete_converted(self):
+        if self.config:
+            return self.config.get('screenshots', 'delete_converted')
+        return False
+
 class EDRConfig(object):
     def __init__(self, config_file='config/config.ini'):
         self.config = cp.ConfigParser()
