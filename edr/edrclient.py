@@ -1861,8 +1861,7 @@ class EDRClient(object):
                 details.append(soi_checker.hint)
         self.__notify(_(u"{} near {}").format(soi_checker.name, reference), details, clear_before = True)
 
-    def search_resource(self, resource):
-        star_system = self.player.star_system
+    def search_resource(self, resource, star_system):
         if not star_system:
             return
         

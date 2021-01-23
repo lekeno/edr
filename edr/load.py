@@ -1329,11 +1329,15 @@ def handle_bang_commands(cmdr, command, command_parts):
             EDR_CLIENT.where(target_cmdr)
     elif command == "!search":
         resource = None
+        system = cmdr.star_system
         if len(command_parts) == 2:
-            resource = command_parts[1]
+            better_parts = command_parts[1].split(" @", 1)
+            if len(better_parts) == 2:
+                system = better_parts[1]
+            resource = better_parts[0]
         if resource:
             EDRLOG.log(u"Search command for {}".format(resource), "INFO")
-            EDR_CLIENT.search_resource(resource)
+            EDR_CLIENT.search_resource(resource, system)
     elif command in ["!distance", "!d"] and len(command_parts) >= 2:
         EDRLOG.log(u"Distance command", "INFO")
         systems = " ".join(command_parts[1:]).split(" > ", 1)
