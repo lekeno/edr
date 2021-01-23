@@ -39,6 +39,10 @@ class EDRUserConfig(object):
             return self.config.get('discord', 'broadcast_webhook')
         return None
 
+    def discord_screenshot_webhook(self):
+        if self.config:
+            return self.config.get('discord', 'screenshot_webhook')
+        return None
 
 class EDRConfig(object):
     def __init__(self, config_file='config/config.ini'):

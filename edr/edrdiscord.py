@@ -46,6 +46,10 @@ class EDRDiscordMessage(object):
     def add_embed(self, discord_embed):
         self.embeds.append(discord_embed)
 
+    def add_file(self, filename, name):
+        with open(filename, "rb") as f:
+            self.files.append({"file": f.read(), "filename":name)
+
 
 class EDRDiscordEmbed(object):
     def __init__(self):
@@ -106,8 +110,14 @@ class EDRDiscordWebhook(object):
         #if self.backoff.throttled():
         #    return False
     
+        resp = None
         payload_json = discord_message.json()
-        resp = EDRDiscordWebhook.SESSION.post(self.webhook_url, json=payload_json)
+        if discord_message.files:
+            files = discord_message.files
+            files["payload_json"] = (None, json.dumps(payload_json))
+            resp = EDRDiscordWebhook.SESSION.post(self.webhook_url, files=files)
+        else:
+            resp = EDRDiscordWebhook.SESSION.post(self.webhook_url, json=payload_json)
         return self.__check_response(resp)
 
     def __check_response(self, response):
@@ -133,6 +143,7 @@ class EDRDiscordIntegration(object):
         self.broadcast_wh = EDRDiscordWebhook(user_config.discord_broadcast_webhook())
         self.squadron_wh = EDRDiscordWebhook(user_config.discord_squadron_webhook())
         self.squadron_leaders_wh = EDRDiscordWebhook(user_config.discord_squadron_leaders_webhook())
+        self.screenshot_wh = EDRDiscordWebhook(user_config.discord_screenshot_webhook())
 
     def process(self, entry):
         self.afk_detector.process(entry)
@@ -141,6 +152,8 @@ class EDRDiscordIntegration(object):
             return self.__process_incoming(entry)
         elif entry["event"] == "SendText":
             return self.__process_outgoing(entry)
+        elif entry["event"] == "Screenshot" and self.screenshot_wh:
+            return self.__process_screenshot(entry)
         return False
 
     def __process_incoming(self, entry):
@@ -258,7 +271,50 @@ class EDRDiscordIntegration(object):
                 dm.add_embed(de)
                 return self.broadcast_wh.send(dm)
         # TODO other
-
         return False
 
-        return True
+    def __process_screenshot(self, entry):
+        """ { 
+                "timestamp":"2018-01-17T09:48:26Z", "event":"Screenshot",
+                "Filename":"_Screenshots/Screenshot_0024.bmp", "Width":1440, "Height":900,
+                "System":"Nuenets", "Body":"Nuenets C 2", "Latitude":-60.799900, "Longitude":-74.059799,
+                "Heading":39, "Altitude":27502.876953 
+            } 
+        """
+        filename = entry.get("Filename", None)
+        w = entry.get("Width", 0)
+        h = entry.get("Height", 0)
+        system = entry.get("System", "Unknown")
+        body = entry.get("Body", "")
+        lat = entry.get("Latitude", None)
+        lon = entry.get("Longitude", None)
+        heading = entry.get("Heading", None)
+        altitude = entry.get("Altitude", None)
+
+        if not filename or w == 0 or h == 0:
+            return False
+
+        dm = EDRDiscordMessage()
+        dm.content = _(u"Screenshot")
+        dm.timestamp = entry["timestamp"]
+        de = EDRDiscordEmbed()
+        de.title = _("Screenshot from `{}`").format("{}, {}".format(system, body) if body else system)
+        if not (latitude is None or longitude is None):
+            parts = [
+                _("Latitude:     {}").format(lat),
+                _("Longitude:    {}").format(lon)
+                 
+            ]
+            # "{: <12}{: >6}".format("latitude:", "{:.2f}".format(142.1))
+            if not(heading is None or altitude is None):
+                parts.append(_("Heading:      {}").fornat(heading))
+                parts.append(_("Altitude:     {}").fornat(altitude))
+            de.description = "```\n{}\n```".format("\n".join(parts))
+        de.author = {
+            "name": self.player.name,
+            "url": "",
+            "icon_url": ""
+        }
+        de.color = self.__cmdrname_to_discord_color(self.player.name)
+        dm.add_embed(de)
+        return self.screenshot_wh.send(dm)
