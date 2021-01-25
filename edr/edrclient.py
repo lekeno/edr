@@ -510,7 +510,8 @@ class EDRClient(object):
         materials_info = self.edrsystems.materials_on(star_system, body_name)
         facts = self.edrresourcefinder.assess_materials_density(materials_info, self.player.inventory)
         if facts:
-            self.__notify(_(u'Noteworthy material densities on {}').format(body_name), facts, clear_before = True)
+            qualifier = self.edrresourcefinder.profile or _("Noteworthy")
+            self.__notify(_(u'{} material densities on {}').format(qualifier, body_name), facts, clear_before = True)
 
     def noteworthy_about_scan(self, scan_event):
         if scan_event["event"] != "Scan" or scan_event["ScanType"] != "Detailed":
@@ -519,7 +520,8 @@ class EDRClient(object):
             return
         facts = self.edrresourcefinder.assess_materials_density(scan_event["Materials"], self.player.inventory)
         if facts:
-            self.__notify(_(u'Noteworthy about {}').format(scan_event["BodyName"]), facts, clear_before = True)
+            qualifier = self.edrresourcefinder.profile or _("Noteworthy")
+            self.__notify(_(u'{} material densities on {}').format(qualifier, scan_event["BodyName"]), facts, clear_before = True)
 
     def noteworthy_about_signal(self, fss_event):
         facts = self.edrresourcefinder.assess_signal(fss_event, self.player.location, self.player.inventory)
@@ -1860,6 +1862,14 @@ class EDRClient(object):
             if soi_checker.hint:
                 details.append(soi_checker.hint)
         self.__notify(_(u"{} near {}").format(soi_checker.name, reference), details, clear_before = True)
+
+    def configure_resourcefinder(self, raw_profile):
+        result = self.edrresourcefinder.configure(raw_profile)
+        if result:
+            self.__notify__(_(u"TODO profile used"), [_(u"TODO details, instructions")])
+        else:
+            self.__notify__(_(u"TODO incorrect profile"), [_(u"TODO details, instructions")])
+        return result
 
     def search_resource(self, resource):
         star_system = self.player.star_system
