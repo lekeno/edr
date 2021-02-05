@@ -1480,6 +1480,12 @@ def handle_bang_commands(cmdr, command, command_parts):
     elif command == "!clear":
         EDRLOG.log(u"Clear command", "INFO")
         EDR_CLIENT.clear()
+    elif command == "!materials":
+        profile = None
+        if len(command_parts) == 2:
+            profile = command_parts[1]
+        EDRLOG.log(u"Materials command with {}".format(profile), "INFO")
+        EDR_CLIENT.configure_resourcefinder(profile)
 
 def handle_query_commands(cmdr, command, command_parts):
     if command == "?outlaws":
