@@ -290,7 +290,7 @@ def handle_change_events(ed_player, entry):
             if ed_player.mothership.could_use_limpets():
                 limpets = ed_player.mothership.cargo.how_many("drones")
                 capacity = ed_player.mothership.cargo_capacity
-                EDR_CLIENT.notify_with_details(_(U"Restock reminder"), [_(u"Don't forget to restock on limpets before heading out mining."), _(u"Limpets: {}/{}").format(limpets, capacity)])
+                EDR_CLIENT.notify_with_details(_(U"Restock reminder"), [_(u"Don't forget to restock on limpets before heading out."), _(u"Limpets: {}/{}").format(limpets, capacity)])
         elif entry["event"] == "Undocked" and ed_player.mothership.is_mining_rig():
             ed_player.reset_stats()
         outcome["reason"] = "Docking events"
@@ -373,6 +373,11 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
     if entry["event"] in ["Loadout"]:
         if ed_player.mothership.id == entry.get("ShipID", None):
             ed_player.mothership.update_from_loadout(entry)
+            ed_player.mothership.update_cargo()
+            if ed_player.mothership.could_use_limpets():
+                limpets = ed_player.mothership.cargo.how_many("drones")
+                capacity = ed_player.mothership.cargo_capacity
+                EDR_CLIENT.notify_with_details(_(U"Restock reminder"), [_(u"Don't forget to restock on limpets before heading out."), _(u"Limpets: {}/{}").format(limpets, capacity)])
             global LAST_KNOWN_SHIP_NAME
             LAST_KNOWN_SHIP_NAME = ed_player.mothership.name
         else:
