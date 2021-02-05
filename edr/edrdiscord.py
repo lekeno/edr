@@ -48,7 +48,7 @@ class EDRDiscordMessage(object):
 
     def add_file(self, filename, name):
         with open(filename, "rb") as f:
-            self.files.append({"file": f.read(), "filename":name)
+            self.files.append({"file": f.read(), "filename":name})
 
 
 class EDRDiscordEmbed(object):

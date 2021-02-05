@@ -838,7 +838,7 @@ def edr_submit_scan(scan, timestamp, source, witness):
     report["mode"] = witness.game_mode
     report["group"] = witness.private_group
 
-    EDR_CLIENT.scanned(scan["cmdr"], report):
+    EDR_CLIENT.scanned(scan["cmdr"], report)
         
 def edr_submit_traffic(contact, timestamp, source, witness, system_wide=False):
     """

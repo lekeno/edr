@@ -131,7 +131,7 @@ class EDRClient(object):
         self.tips = RandomTips()
         self.help_content = HelpContent()
         self._throttle_until_timestamp = None
-		self.edrfssinsights = EDRFSSInsights()
+        self.edrfssinsights = EDRFSSInsights()
 
     def loud_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "loud")
@@ -534,7 +534,7 @@ class EDRClient(object):
             return True
 
     def noteworthy_signals_in_system(self):
-        self.edrfssinsights.update(self.player.star_system):
+        self.edrfssinsights.update(self.player.star_system)
         
         if not self.edrfssinsights.noteworthy:
             return False
