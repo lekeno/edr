@@ -336,6 +336,9 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
         elif entry["MusicTrack"] in ["Supercruise", "Exploration", "NoTrack"] and ed_player.in_a_fight():
             ed_player.in_danger(False)
             return
+        elif entry ["MusicTrack"] == "SystemMap":
+            EDR_CLIENT.noteworthy_signals_in_system() # probably annoying
+            return
 
     if entry["event"] == "Shutdown":
         EDRLOG.log(u"Shutting down in-game features...", "INFO")
@@ -835,19 +838,7 @@ def edr_submit_scan(scan, timestamp, source, witness):
     report["mode"] = witness.game_mode
     report["group"] = witness.private_group
 
-    if not witness.in_open():
-        EDRLOG.log(u"Scan not submitted due to unconfirmed Open mode", "INFO")
-        EDR_CLIENT.status = _(u"Scan reporting disabled in solo/private modes.")
-        EDR_CLIENT.who(scan["cmdr"], autocreate=True)
-        return
-
-    if witness.has_partial_status():
-        EDRLOG.log(u"Scan not submitted due to partial status", "INFO")
-        EDR_CLIENT.who(scan["cmdr"], autocreate=True)
-        return
-
-    if not EDR_CLIENT.scanned(scan["cmdr"], report):
-        EDR_CLIENT.status = _(u"failed to report scan.")
+    EDR_CLIENT.scanned(scan["cmdr"], report):
         
 def edr_submit_traffic(contact, timestamp, source, witness, system_wide=False):
     """
@@ -1313,6 +1304,9 @@ def handle_bang_commands(cmdr, command, command_parts):
     elif command == "!sitreps":
         EDRLOG.log(u"Sitreps command", "INFO")
         EDR_CLIENT.sitreps()
+    elif command == "!signals":
+        EDRLOG.log(u"Signals command", "INFO")
+        EDR_CLIENT.noteworthy_signals_in_system()
     elif command == "!notams":
         EDRLOG.log(u"Notams command", "INFO")
         EDR_CLIENT.notams()

@@ -71,11 +71,11 @@ class EDInstance(object):
             if ship_internal_name:
                 hopefully_unique_name = "{}{}{}".format(name, rank, EDVehicleFactory.canonicalize(ship_internal_name))
                 del self.npcs[hopefully_unique_name]
-                self.npc_names_to_npcs[pilot.name].remove(hopefully_unique_name)
+                self.npc_names_to_npcs[name].remove(hopefully_unique_name)
             else:
-                for hopefully_unique_name in self.npc_names_to_npcs[pilot.name]:
+                for hopefully_unique_name in self.npc_names_to_npcs[name]:
                     del self.npcs[hopefully_unique_name]
-                del self.npc_names_to_npcs[pilot.name]
+                del self.npc_names_to_npcs[name]
                 self.timestamp = now
                 self._touched = True
         except KeyError:
