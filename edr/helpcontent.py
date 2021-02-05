@@ -223,6 +223,7 @@ class HelpContent(object):
             "header": _(u"Find the best spots for specific resources"),
             "details": [
                 _(u" - '!search resource' where resource is either the full name of the resource or an abbreviation, e.g. !search cadmium"),
+                _(u" - '!search resource @system' to specify the system to search around, e.g. !search cadmium @deciat"),
                 _(u" - Abbreviations consist of the first three letters of a one-word resource, or the first letters of each words separated by a space:"),
                 _(u" - 'cad' for cadmium, 'a e c d' for abnormal compact emission data."),
                 _(u" - Very common and common resources are not supported, as it shouldn't be too hard to find them."),

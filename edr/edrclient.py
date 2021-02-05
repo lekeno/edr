@@ -1871,8 +1871,7 @@ class EDRClient(object):
             self.__notify__(_(u"TODO incorrect profile"), [_(u"TODO details, instructions")])
         return result
 
-    def search_resource(self, resource):
-        star_system = self.player.star_system
+    def search_resource(self, resource, star_system):
         if not star_system:
             return
         
