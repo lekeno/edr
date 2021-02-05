@@ -1,0 +1,38 @@
+{
+    "platinum": {
+        "name": "platinum", 
+        "type": "$platinum_name;", 
+        "symbol": "Pt",
+        "max_proportion": 0.5
+    },
+    "monazite": {
+        "name": "monazite",
+        "type": "$monazite_name;",
+        "symbol": "MNZT",
+        "max_proportion": 0.5
+    },
+    "musgravite": {
+        "name": "musgravite",
+        "type": "$musgravite_name;",
+        "symbol": "MGRV",
+        "max_proportion": 0.5
+    },
+    "low temperature diamond": {
+        "name": "lowtemperaturediamond",
+        "type": "$lowtemperaturediamond_name;",
+        "symbol": "LTD",
+        "max_proportion": 0.5
+    },
+    "painite": {
+        "name": "painite",
+        "type": "$painite_name;",
+        "symbol": "PAIN",
+        "max_proportion": 0.5
+    },
+    "void opal": {
+        "name": "voidopal",
+        "type": "$opal_name;",
+        "symbol": "V.O.",
+        "max_proportion": 0.5
+    }
+}
