@@ -451,11 +451,14 @@ class EDVehicle(object):
             for subsystem in self.subsystems:
                 self.subsystem_health(subsystem, 100.0)
 
-    def could_use_limpets(self):
+    def could_use_limpets(self, mining_only=False):
         if self.cargo_capacity <= 0:
             return False
         
-        if not self.is_mining_rig():
+        if mining_only:
+            if not self.is_mining_rig():
+                return False
+        elif not self.has_drone_controller():
             return False
 
         return  self.cargo.how_many("drones") < self.cargo_capacity
@@ -463,6 +466,13 @@ class EDVehicle(object):
     def is_mining_rig(self):
         for slot_name in self.slots:
             if self.slots[slot_name].is_prospector_drone_controller():
+                return True
+        return False
+
+
+    def has_drone_controller(self):
+        for slot_name in self.slots:
+            if self.slots[slot_name].is_drone_controller():
                 return True
         return False
     

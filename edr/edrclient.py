@@ -40,6 +40,7 @@ from edrxzibit import EDRXzibit
 
 from edri18n import _, _c, _edr, set_language
 from clippy import copy
+from edrfssinsights import EDRFSSInsights
 
 EDRLOG = EDRLog()
 
@@ -130,6 +131,7 @@ class EDRClient(object):
         self.tips = RandomTips()
         self.help_content = HelpContent()
         self._throttle_until_timestamp = None
+		self.edrfssinsights = EDRFSSInsights()
 
     def loud_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "loud")
@@ -510,7 +512,8 @@ class EDRClient(object):
         materials_info = self.edrsystems.materials_on(star_system, body_name)
         facts = self.edrresourcefinder.assess_materials_density(materials_info, self.player.inventory)
         if facts:
-            self.__notify(_(u'Noteworthy material densities on {}').format(body_name), facts, clear_before = True)
+            qualifier = self.edrresourcefinder.profile or _("Noteworthy")
+            self.__notify(_(u'{} material densities on {}').format(qualifier, body_name), facts, clear_before = True)
 
     def noteworthy_about_scan(self, scan_event):
         if scan_event["event"] != "Scan" or scan_event["ScanType"] != "Detailed":
@@ -519,14 +522,27 @@ class EDRClient(object):
             return
         facts = self.edrresourcefinder.assess_materials_density(scan_event["Materials"], self.player.inventory)
         if facts:
-            self.__notify(_(u'Noteworthy about {}').format(scan_event["BodyName"]), facts, clear_before = True)
+            qualifier = self.edrresourcefinder.profile or _("Noteworthy")
+            self.__notify(_(u'{} material densities on {}').format(qualifier, scan_event["BodyName"]), facts, clear_before = True)
 
     def noteworthy_about_signal(self, fss_event):
+        self.edrfssinsights.process(fss_event, self.player.star_system)
         facts = self.edrresourcefinder.assess_signal(fss_event, self.player.location, self.player.inventory)
-        if not facts:
+        if facts:
+            header = _(u'Signal Insights (potential outcomes)')
+            self.__notify(header, facts, clear_before = True)
+            return True
+
+    def noteworthy_signals_in_system(self):
+        self.edrfssinsights.update(self.player.star_system):
+        
+        if not self.edrfssinsights.noteworthy:
             return False
-        header = _(u'Signal Insights (potential outcomes)')
-        self.__notify(header, facts, clear_before = True)
+        summary = self.edrfssinsights.summarize()
+        if not summary:
+            return False
+        header = _(u"Signals in {system}".format(system=self.player.star_system))
+        self.__notify(header, summary, clear_before = True)
         return True
 
     def process_scan(self, scan_event):
@@ -1108,6 +1124,7 @@ class EDRClient(object):
     def scanned(self, cmdr_name, scan):
         if self.player.in_solo():
             EDRLOG.log(u"Skipping scanned since the user is in solo (unexpected).", "INFO")
+            EDR_CLIENT.status = _(u"failed to report scan.")
             return False
 
         cmdr_id = self.cmdr_id(cmdr_name)
@@ -1165,6 +1182,15 @@ class EDRClient(object):
             EDRLOG.log("Skipping reporting scan since the user is anonymous.", "INFO")
             self.scans_cache.set(cmdr_id, scan)
             return True
+
+        if not witness.in_open():
+            EDRLOG.log(u"Scan not submitted due to unconfirmed Open mode", "INFO")
+            EDR_CLIENT.status = _(u"Scan reporting disabled in solo/private modes.")
+            return False
+
+        if witness.has_partial_status():
+            EDRLOG.log(u"Scan not submitted due to partial status", "INFO")
+            return False
 
         success = self.server.scanned(cmdr_id, scan)
         if success:
@@ -1861,8 +1887,15 @@ class EDRClient(object):
                 details.append(soi_checker.hint)
         self.__notify(_(u"{} near {}").format(soi_checker.name, reference), details, clear_before = True)
 
-    def search_resource(self, resource):
-        star_system = self.player.star_system
+    def configure_resourcefinder(self, raw_profile):
+        result = self.edrresourcefinder.configure(raw_profile)
+        if result:
+            self.__notify__(_(u"TODO profile used"), [_(u"TODO details, instructions")])
+        else:
+            self.__notify__(_(u"TODO incorrect profile"), [_(u"TODO details, instructions")])
+        return result
+
+    def search_resource(self, resource, star_system):
         if not star_system:
             return
         
