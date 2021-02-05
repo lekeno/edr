@@ -948,7 +948,7 @@ class EDVehicleFactory(object):
     }
 
     CANONICAL_SHIP_NAMES = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'shipnames.json')).read())
-    CANONICAL_MODULE_NAMES = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'modulenames.json'), encoding="cp437", errors='ignore').read())
+    CANONICAL_MODULE_NAMES = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'modulenames.json'), encoding="utf-8", errors='ignore').read())
 
     @staticmethod
     def canonicalize(name):
