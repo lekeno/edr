@@ -1334,10 +1334,10 @@ def handle_bang_commands(cmdr, command, command_parts):
         resource = None
         system = cmdr.star_system
         if len(command_parts) == 2:
-            better_parts = command_parts[1].split(" @", 1)
+            better_parts = command_parts[1].split("@", 1)
             if len(better_parts) == 2:
-                system = better_parts[1]
-            resource = better_parts[0]
+                system = better_parts[1].lstrip()
+            resource = better_parts[0].rstrip()
         if resource:
             EDRLOG.log(u"Search command for {}".format(resource), "INFO")
             EDR_CLIENT.search_resource(resource, system)
