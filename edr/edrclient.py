@@ -1183,12 +1183,12 @@ class EDRClient(object):
             self.scans_cache.set(cmdr_id, scan)
             return True
 
-        if not witness.in_open():
+        if not self.player.in_open():
             EDRLOG.log(u"Scan not submitted due to unconfirmed Open mode", "INFO")
             EDR_CLIENT.status = _(u"Scan reporting disabled in solo/private modes.")
             return False
 
-        if witness.has_partial_status():
+        if self.player.has_partial_status():
             EDRLOG.log(u"Scan not submitted due to partial status", "INFO")
             return False
 
