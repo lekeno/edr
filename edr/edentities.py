@@ -341,6 +341,7 @@ class EDPilot(object):
         self.targeted_vehicle = None
         self.timestamp = now
         self.rank = rank
+        self.is_docked = False
 
     def __repr__(self):
         return str(self.__dict__)
@@ -377,6 +378,7 @@ class EDPilot(object):
         if self.slf:
             self.slf.destroy()    
         self.to_normal_space()
+        self.is_docked = False # probably OK (assuming a proper event after resurrection)
 
     def needs_large_landing_pad(self):
         return self.mothership is None or self.mothership.needs_large_landing_pad()
@@ -452,6 +454,7 @@ class EDPilot(object):
 
     def in_srv(self):
         self._touch()
+        self.is_docked = False
         if not self.mothership or not self.mothership.supports_srv():
             self.mothership = EDVehicleFactory.unknown_vehicle() 
         if not self.srv:
@@ -468,6 +471,7 @@ class EDPilot(object):
 
     def docked(self, is_docked = True):
         self._touch()
+        self.is_docked = is_docked
         if is_docked:
             self.mothership.safe()
             if self.slf:
@@ -503,6 +507,7 @@ class EDPilot(object):
         self.location.space_dimension = EDSpaceDimension.SUPER_SPACE
         self.mothership.safe()
         self.targeted_vehicle = None
+        self.is_docked = False
         if self.slf:
             self.slf.safe()
         if self.srv:
@@ -515,6 +520,7 @@ class EDPilot(object):
         self.planetary_destination = None # leaving the system, so no point in keep a planetary destination
         self.mothership.safe()
         self.targeted_vehicle = None
+        self.is_docked = False
         if self.slf:
             self.slf.safe()
         if self.srv:

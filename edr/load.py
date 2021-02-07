@@ -377,7 +377,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
         if ed_player.mothership.id == entry.get("ShipID", None):
             ed_player.mothership.update_from_loadout(entry)
             ed_player.mothership.update_cargo()
-            if ed_player.mothership.could_use_limpets():
+            if ed_player.mothership.could_use_limpets() and ed_player.is_docked:
                 limpets = ed_player.mothership.cargo.how_many("drones")
                 capacity = ed_player.mothership.cargo_capacity
                 EDR_CLIENT.notify_with_details(_(U"Restock reminder"), [_(u"Don't forget to restock on limpets before heading out."), _(u"Limpets: {}/{}").format(limpets, capacity)])
