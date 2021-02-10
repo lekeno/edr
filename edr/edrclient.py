@@ -1888,17 +1888,17 @@ class EDRClient(object):
         self.__notify(_(u"{} near {}").format(soi_checker.name, reference), details, clear_before = True)
 
     def configure_resourcefinder(self, raw_profile):
-        result = self.edrresourcefinder.configure(raw_profile)
-        # TODO default profile
-        # TODO list of profiles
-        # TODO user custom profiles
-        # TODO help
-        # TODO localization
+        adjusted_profile = None if raw_profile == "default" else raw_profile
+        result = self.edrresourcefinder.configure(adjusted_profile)
         if result:
-            self.__notify__(_(u"Using materials profile '{}'").format(raw_profile), [_(u"TODO details, instructions")])
+            self.__notify(_(u"Using materials profile '{}'").format(raw_profile), [_(u"Revert to default profile by sending: !materials default")])
         else:
-            self.__notify__(_(u"Unrecognized materials profile"), [_(u"TODO details, instructions")])
+            self.__notify(_(u"Unrecognized materials profile"), [_(u"To see a list of profiles, send: !materials")])
         return result
+
+    def show_material_profiles(self):
+        profiles = self.edrresourcefinder.profiles()
+        self.__notify(_(u"Available materials profiles"), [" ;; ".join(profiles)])
 
     def search_resource(self, resource, star_system):
         if not star_system:

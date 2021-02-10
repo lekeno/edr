@@ -172,6 +172,9 @@ class EDRResourceFinder(object):
             self.raw_profile = raw_profile
             return True
         return False
+    
+    def profiles(self):
+        return EDRResourceFinder.RAW_MATS_PROFILES.keys()
 
     def canonical_name(self, resource):
         if not resource:
