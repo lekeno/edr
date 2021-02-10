@@ -4,6 +4,7 @@ from edtime import EDTime
 
 class EDRFSSInsights(object):
     def __init__(self):
+        # TODO show unreg comms as its own category
         self.signals = {
             # "$MULTIPLAYER_SCENARIO42_TITLE;": {"count": 0, "short_name": _("Nav Beacon") }, # Not super interesting 
             "$MULTIPLAYER_SCENARIO64_TITLE;": {"count": 0, "short_name": _("USS") },
@@ -13,7 +14,6 @@ class EDRFSSInsights(object):
             "$Warzone_TG;": {"count": 0, "short_name": _("CZ [AX]") },
             "$FIXED_EVENT_CAPSHIP;": {"count": 0, "short_name": _("CAPITAL SHIP") },
             "$NumberStation:#index=1;": {"count": 0, "short_name": _("Unreg. Comms - Numbers Station (Ⅰ)") },
-            "$FIXED_EVENT_HIGHTHREATSCENARIO_T7;": {"count": 0, "short_name": _("Pirates [Th. 7]") },
             "$NumberStation:#index=1;": {"count": 0, "short_name": _("Unreg. Comms") },
             "$FIXED_EVENT_HIGHTHREATSCENARIO_T7;": {"count": 0, "short_name": _("Pirates [Th. 7]") },
             "$FIXED_EVENT_HIGHTHREATSCENARIO_T6;": {"count": 0, "short_name": _("Pirates [Th. 6]") },
@@ -36,6 +36,7 @@ class EDRFSSInsights(object):
         self.resource_extraction_sites = {"available": False, "variants": {"$MULTIPLAYER_SCENARIO14_TITLE;": {"count": 0, "short_name": _c("Standard Res|Std")}, "$MULTIPLAYER_SCENARIO77_TITLE;": {"count": 0, "short_name": _c("Res Low|Low")}, "$MULTIPLAYER_SCENARIO78_TITLE;": {"count": 0, "short_name": _c("Res High|High")}, "$MULTIPLAYER_SCENARIO79_TITLE;": {"count": 0, "short_name": _c("Res Hazardous|Haz")}}, "short_name": _("RES") }
         self.combat_zones = {"available": False, "variants": {"$Warzone_PointRace_Low;":  {"count": 0, "short_name": _c("CZ Low intensity|Low")}, "$Warzone_PointRace_Medium;":  {"count": 0, "short_name": _c("CZ Medium intensity|Med")}, "$Warzone_PointRace_High;":  {"count": 0, "short_name": _c("CZ High intensity|High")}}, "short_name": _("CZ") }
         self.uss = {"available": False, "variants": {"$USS_Type_Salvage;":  {"count": 0, "expiring": [], "short_name": _c("Degraded Emissions|Degraded")}, "$USS_Type_ValuableSalvage;":  {"count": 0, "expiring": [], "short_name": _c("Encoded Emissions|Encoded")}, "$USS_Type_VeryValuableSalvage;": {"count": 0, "expiring": [], "short_name": _c("High Grade Emissions|High Grade")}, "misc": {"count": 0, "expiring": [], "short_name": _c("Misc.")}}, "short_name": _("USS") }
+        self.pirates = {"available": False, "variants": {"$FIXED_EVENT_HIGHTHREATSCENARIO_T7;":  {"count": 0, "short_name": _c("Pirates Threat 7|Th7")}, "$FIXED_EVENT_HIGHTHREATSCENARIO_T6;":  {"count": 0, "short_name": _c("Pirates Threat 6|Th6")}, "$FIXED_EVENT_HIGHTHREATSCENARIO_T5;":  {"count": 0, "short_name": _c("Pirates Threat 5|Th5")}}, "short_name": _("Pirates") }
 
         # $USS_Type_DistressSignal;
         # $USS_Type_Convoy;
@@ -44,7 +45,6 @@ class EDRFSSInsights(object):
         # $USS_Type_NonHuman; USSThreat = 4
         # $USS_Type_TradingBeacon;
         # $USS_Type_WeaponsFire; USSThreat
-
 
         self.star_system = {"name": None, "address": None}
         self.noteworthy = False
@@ -61,6 +61,7 @@ class EDRFSSInsights(object):
         self.resource_extraction_sites = {"available": False, "variants": {"$MULTIPLAYER_SCENARIO14_TITLE;": {"count": 0, "short_name": _("Standard Res|Std")}, "$MULTIPLAYER_SCENARIO77_TITLE;": {"count": 0, "short_name": _("Res Low|Low")}, "$MULTIPLAYER_SCENARIO78_TITLE;": {"count": 0, "short_name": _("Res High|High")}, "$MULTIPLAYER_SCENARIO79_TITLE;": {"count": 0, "short_name": _("Res Hazardous|Haz")}}, "short_name": _("RES") }
         self.combat_zones = {"available": False, "variants": {"$Warzone_PointRace_Low;":  {"count": 0, "short_name": _("CZ Low intensity|Low")}, "$Warzone_PointRace_Medium;":  {"count": 0, "short_name": "CZ Medium intensity|Med"}, "$Warzone_PointRace_High;":  {"count": 0, "short_name": _("CZ High intensity|High")}}, "short_name": _("CZ") }
         self.uss = {"available": False, "variants": {"$USS_Type_Salvage;":  {"count": 0, "expiring": [], "short_name": _c("Degraded Emissions|Degraded")}, "$USS_Type_ValuableSalvage;":  {"count": 0, "expiring": [], "short_name": _c("Encoded Emissions|Encoded")}, "$USS_Type_VeryValuableSalvage;": {"count": 0, "expiring": [], "short_name": _c("High Grade Emissions|High Grade")}, "misc": {"count": 0, "expiring": [], "short_name": _c("Misc.")}}, "short_name": _("USS") }
+        self.pirates = {"available": False, "variants": {"$FIXED_EVENT_HIGHTHREATSCENARIO_T7;":  {"count": 0, "short_name": _c("Pirates Threat 7|Th7")}, "$FIXED_EVENT_HIGHTHREATSCENARIO_T6;":  {"count": 0, "short_name": _c("Pirates Threat 6|Th6")}, "$FIXED_EVENT_HIGHTHREATSCENARIO_T5;":  {"count": 0, "short_name": _c("Pirates Threat 5|Th5")}}, "short_name": _("Pirates") }
         self.star_system = {"name": None, "address": None}
         self.noteworthy = False
 
@@ -125,6 +126,10 @@ class EDRFSSInsights(object):
             self.resource_extraction_sites["available"] = True
             self.resource_extraction_sites["variants"][signal_name]["count"] += 1
             return True
+        elif signal_name in self.pirates["variants"]:
+            self.pirates["available"] = True
+            self.pirates["variants"][signal_name]["count"] += 1
+            return True
         return False
 
     def __process_locations_fss(self, fss_event):
@@ -149,7 +154,7 @@ class EDRFSSInsights(object):
             return summary
 
         self.__prune_expired_signals()
-
+        # TODO maybe loop over each instead of repeating basically the same code?
         if self.uss["available"]:
             counts = []
             for variant in self.uss["variants"]:
@@ -178,6 +183,15 @@ class EDRFSSInsights(object):
                     counts.append("{} {}".format(signal["count"], signal["short_name"]))
             if counts:
                 summary.append("{}: {}".format(self.combat_zones["short_name"], "; ".join(counts)))
+
+        if self.pirates["available"]:
+            counts = []
+            for variant in self.pirates["variants"]:
+                signal = self.pirates["variants"][variant]
+                if signal["count"] > 0:
+                    counts.append("{} {}".format(signal["count"], signal["short_name"]))
+            if counts:
+                summary.append("{}: {}".format(self.pirates["short_name"], "; ".join(counts)))
         
         signals_counts = []
         for signal in self.signals:
@@ -207,7 +221,6 @@ class EDRFSSInsights(object):
             signal = self.uss["variants"][uss_type]
             for expiring in signal["expiring"]:
                 if now_epoch >= expiring:
-                    print("Removing expired signal: {}".format(uss_type))
                     signal["expiring"].remove(expiring)
                     signal["count"] -= 1
 
@@ -224,4 +237,3 @@ class EDRFSSInsights(object):
 
     # TODO: dangerous fleet carriers
     # TODO: report FC sightings
-    # TODO: summarize fss insights (e.g. 3 HAZ Res, 3 Stations, 15 FC (3 Notorious))

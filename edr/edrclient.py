@@ -541,7 +541,7 @@ class EDRClient(object):
         summary = self.edrfssinsights.summarize()
         if not summary:
             return False
-        header = _(u"Signals in {system}".format(system=self.player.star_system))
+        header = _(u"Known signals in {system}".format(system=self.player.star_system))
         self.__notify(header, summary, clear_before = True)
         return True
 
@@ -1889,10 +1889,15 @@ class EDRClient(object):
 
     def configure_resourcefinder(self, raw_profile):
         result = self.edrresourcefinder.configure(raw_profile)
+        # TODO default profile
+        # TODO list of profiles
+        # TODO user custom profiles
+        # TODO help
+        # TODO localization
         if result:
-            self.__notify__(_(u"TODO profile used"), [_(u"TODO details, instructions")])
+            self.__notify__(_(u"Using materials profile '{}'").format(raw_profile), [_(u"TODO details, instructions")])
         else:
-            self.__notify__(_(u"TODO incorrect profile"), [_(u"TODO details, instructions")])
+            self.__notify__(_(u"Unrecognized materials profile"), [_(u"TODO details, instructions")])
         return result
 
     def search_resource(self, resource, star_system):
