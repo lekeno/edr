@@ -289,6 +289,15 @@ class EDLocation(object):
 
     def __repr__(self):
         return str(self.__dict__)
+
+    def from_other(self, other_location):
+        self.star_system = other_location.star_system
+        self.place = other_location.place
+        self.security = other_location.security
+        self.space_dimension = other_location.space_dimension
+        self.population = other_location.population
+        self.allegiance = other_location.allegiance
+        self.star_system_address = other_location.star_system_address
    
     def in_normal_space(self):
         return self.space_dimension == EDSpaceDimension.NORMAL_SPACE
@@ -1123,7 +1132,7 @@ class EDPlayerOne(EDPlayer):
         self._touch()
         self.to_normal_space()
         if success and interdicted:
-            interdicted.location = self.location
+            interdicted.location.from_other(self.location)
             if interdicted.is_human():
                 self.instance.player_in(interdicted)
             else:
@@ -1136,7 +1145,7 @@ class EDPlayerOne(EDPlayer):
         if success:
             self.to_normal_space()
             if interdictor:
-                interdictor.location = self.location
+                interdictor.location.from_other(self.location)
                 if interdictor.is_human():
                     self.instance.player_in(interdictor)
                 else:
@@ -1157,7 +1166,7 @@ class EDPlayerOne(EDPlayer):
         cmdr = self.instance.player(cmdr_name)
         if not cmdr:
             cmdr = EDPlayer(cmdr_name, rank)
-        cmdr.location = self.location
+        cmdr.location.from_other(self.location)
         if ship_internal_name:
             vehicle = EDVehicleFactory.from_internal_name(ship_internal_name)
             cmdr.update_vehicle_if_obsolete(vehicle, piloted)
@@ -1173,7 +1182,7 @@ class EDPlayerOne(EDPlayer):
         npc = self.instance.npc(name, rank, ship_internal_name)
         if not npc:
             npc = EDPilot(name, rank)
-        npc.location = self.location
+        npc.location.from_other(self.location)
         if ship_internal_name:
             vehicle = EDVehicleFactory.from_internal_name(ship_internal_name)
             npc.update_vehicle_if_obsolete(vehicle, piloted)

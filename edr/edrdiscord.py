@@ -1,14 +1,16 @@
 import json
 import requests
+import os
 from datetime import datetime
 from binascii import crc32
 from numbers import Number
+from itertools import dropwhile
 
+import utils2to3
 from edri18n import _
 from edrconfig import EDRUserConfig 
 from edrafkdetector import EDRAfkDetector
-
-#import backoff # TODO
+import backoff
 
 class EDRDiscordSimpleMessage(object):
     def __init__(self, message):
@@ -91,13 +93,13 @@ class EDRDiscordWebhook(object):
 
     def __init__(self, webhook_url):
         self.webhook_url = webhook_url
-        #self.backoff = backoff.Backoff(u"Discord"),
+        self.backoff = backoff.Backoff(u"Discord")
 
     def send_text(self, text):
         if not self.webhook_url:
             return False
-        #if self.backoff.throttled():
-        #    return False
+        if self.backoff.throttled():
+            return False
     
         message = DiscordSimpleMessage(text)
         payload_json = message.json()
@@ -107,8 +109,8 @@ class EDRDiscordWebhook(object):
     def send(self, discord_message):
         if not self.webhook_url:
             return False
-        #if self.backoff.throttled():
-        #    return False
+        if self.backoff.throttled():
+            return False
     
         resp = None
         payload_json = discord_message.json()
@@ -125,53 +127,104 @@ class EDRDiscordWebhook(object):
             return False
         
         if response.status_code in [200, 204, 404, 401, 403, 204]:
-            #self.backoff.reset()
+            self.backoff.reset()
             pass
         elif response.status_code in [429, 500]:
-            #self.backoff.throttle()
+            self.backoff.throttle()
             pass
 
         return response.status_code in [200, 204]
 
 class EDRDiscordIntegration(object):
-    # TODO pass the player itself since that would be handy to show system, location etc.
     def __init__(self, player):
         self.player = player
         self.afk_detector = EDRAfkDetector()
         user_config = EDRUserConfig()
-        self.afk_wh = EDRDiscordWebhook(user_config.discord_afk_webhook())
-        self.broadcast_wh = EDRDiscordWebhook(user_config.discord_broadcast_webhook())
-        self.squadron_wh = EDRDiscordWebhook(user_config.discord_squadron_webhook())
-        self.squadron_leaders_wh = EDRDiscordWebhook(user_config.discord_squadron_leaders_webhook())
+        
+        self.blocked_users = []
+        blocked_users_cfg_path = utils2to3.abspathmaker(__file__, 'config', 'user_blocklist.txt')
+        if os.path.exists(blocked_users_cfg_path):
+            with open(blocked_users_cfg_path,'r') as fh:
+                for curline in dropwhile(lambda s: s.startswith('; '), fh):
+                    self.blocked_users.append(curline.rstrip('\n'))
+
+        self.incoming = {
+            "afk": EDRDiscordWebhook(user_config.discord_webhook("afk")),
+            "squadron": EDRDiscordWebhook(user_config.discord_webhook("squadron")),
+            "squadronleaders": EDRDiscordWebhook(user_config.discord_webhook("squadronleaders")),
+            "starsystem": EDRDiscordWebhook(user_config.discord_webhook("starsystem")),
+            "local": EDRDiscordWebhook(user_config.discord_webhook("local")),
+            "wing": EDRDiscordWebhook(user_config.discord_webhook("wing")),
+            "crew": EDRDiscordWebhook(user_config.discord_webhook("crew")),
+            "player": EDRDiscordWebhook(user_config.discord_webhook("player"))
+        }
+        
+        self.outgoing = {
+            "broadcast": EDRDiscordWebhook(user_config.discord_webhook("broadcast", incoming=False)),
+            "squadron": EDRDiscordWebhook(user_config.discord_webhook("squadron", incoming=False)),
+            "squadronleaders": EDRDiscordWebhook(user_config.discord_webhook("squadronleaders", incoming=False)),
+            "wing": EDRDiscordWebhook(user_config.discord_webhook("wing", incoming=False)),
+            "crew": EDRDiscordWebhook(user_config.discord_webhook("crew", incoming=False))
+        }
 
     def process(self, entry):
         self.afk_detector.process(entry) # TODO move AFK state to player.
 
-        if entry["event"] == "ReceiveText":
+        if entry["event"] == "ReceiveText" and entry["channel"] != "npc":
             return self.__process_incoming(entry)
-        elif entry["event"] == "SendText":
+        elif entry["event"] == "SendText" and entry["channel"] != "npc":
             return self.__process_outgoing(entry)
         return False
 
     def __process_incoming(self, entry):
-        if entry.get("Channel", None) in ["player", "friend"] and self.afk_detector.is_afk() and self.afk_wh: # TODO verify the friend thing
-            dm = EDRDiscordMessage()
-            dm.content = _(u"Direct message received while AFK")
-            dm.timestamp = entry["timestamp"]
-            de = EDRDiscordEmbed()
+        from_cmdr = entry["From"]
+        if entry["From"].startswith("$cmdr_decorate:#name="):
+            from_cmdr = entry["From"][len("$cmdr_decorate:#name="):-1]
+             
+        if from_cmdr in self.blocked_users:
+            return False
+        
+        channel = entry.get("Channel", None)
+        dm = EDRDiscordMessage()
+        dm.content = ""
+        dm.timestamp = entry["timestamp"]
+        de = EDRDiscordEmbed()
+        de.title = ""
+        de.description = entry["Message"]
+        de.author = {
+            "name": from_cmdr,
+            "url": "",
+            "icon_url": ""
+        }
+        de.color = self.__cmdrname_to_discord_color(from_cmdr)
+        de.footer = {
+            "text": "Message sent via ED Recon on behalf of Cmdr {}".format(self.player.name),
+            "icon_url": "https://lekeno.github.io/favicon-16x16.png"
+        }
+        
+        if self.afk_detector.is_afk() and self.afk_wh and channel in ["player", "friend"]: # TODO verify the friend thing
+            dm.content = _(u"Direct message received while AFK @ `{}`".format(self.player.location.pretty_print()))
             de.title = _("To Cmdr `{}`").format(self.player.name)
-            de.description = entry["Message"]
-            de.author = {
-                "name": entry["From"],
-                "url": "",
-                "icon_url": ""
-            }
-            de.color = self.__cmdrname_to_discord_color(entry["From"])
             dm.add_embed(de)
-            return self.afk_wh.send(dm)
-        # TODO other: report my target?
+            return self.incoming["afk"].send(dm)
+        
+        if not (channel in self.incoming and self.incoming[channel]):
+            return False
 
-        return False
+        if channel == "local":
+            dm.content = _(u"Local message @ `{}`".format(self.player.location.pretty_print()))
+            de.title = _("To Local @ `{}`").format(self.player.location.pretty_print())
+        elif channel == "starsystem":
+            dm.content = _(u"System wide message @ `{}`".format(self.player.star_system))
+            de.title = _("To System @ `{}`").format(self.player.star_system)
+        elif channel == "squadron":
+            dm.content = _(u"Squadron message")
+            de.title = _("To Squadron")
+        elif channel == "squadronleaders":
+            dm.content = _(u"Squadron Leaders message")
+            de.title = _("To Squadron Leaders")
+        dm.add_embed(de)
+        return self.incoming[channel].send(dm)
     
     def __cmdrname_to_discord_color(self, name):
         saturation = [0.35, 0.5, 0.65]
@@ -210,54 +263,19 @@ class EDRDiscordIntegration(object):
 
                 
     def __process_outgoing(self, entry):
-        # TODO simplify
-        if self.squadron_leaders_wh and entry["To"] == "squadleaders":
-            dm = EDRDiscordMessage()
-            dm.content = _(u"Squadron Leaders message")
-            dm.timestamp = entry["timestamp"]
-            de = EDRDiscordEmbed()
-            de.title = _("Channel `{}`").format(entry["To"])
-            de.description = entry["Message"]
-            de.author = {
-                "name": self.player.name,
-                "url": "",
-                "icon_url": ""
-            }
-            de.color = self.__cmdrname_to_discord_color(self.player.name)
-            dm.add_embed(de)
-            return self.broadcast_wh.send(dm)
-
-        if self.squadron_wh and entry["To"] == "squadron":
-            dm = EDRDiscordMessage()
-            dm.content = _(u"Squadron message")
-            dm.timestamp = entry["timestamp"]
-            de = EDRDiscordEmbed()
-            de.title = _("Channel `{}`").format(entry["To"])
-            de.description = entry["Message"]
-            de.author = {
-                "name": self.player.name,
-                "url": "",
-                "icon_url": ""
-            }
-            de.color = self.__cmdrname_to_discord_color(self.player.name)
-            dm.add_embed(de)
-            return self.broadcast_wh.send(dm)
-        
+        channel = entry["To"]
         command_parts = entry["Message"].split(" ", 1)
         command = command_parts[0].lower()
-        if not command:
-            return False
+        if command and command[0] == "!":
+            if len(command_parts) < 2:
+                return False
 
-        if not command[0] == "!" or len(command_parts) < 2:
-            return False
-    
-        if command == "!discord":
-            if self.broadcast_wh:
+            if command == "!discord" and self.outgoing["broadcast"]:
                 dm = EDRDiscordMessage()
                 dm.content = _(u"Incoming broadcast")
                 dm.timestamp = entry["timestamp"]
                 de = EDRDiscordEmbed()
-                de.title = _("Channel `{}`").format(entry["To"])
+                de.title = _("Channel `{}`").format(channel)
                 de.description = " ".join(command_parts[1:])
                 de.author = {
                     "name": self.player.name,
@@ -266,6 +284,34 @@ class EDRDiscordIntegration(object):
                 }
                 de.color = self.__cmdrname_to_discord_color(self.player.name)
                 dm.add_embed(de)
-                return self.broadcast_wh.send(dm)
-        # TODO other
-        return False
+                de.footer = {
+                    "text": "Message sent via ED Recon on behalf of Cmdr {}".format(self.player.name),
+                    "icon_url": "https://lekeno.github.io/favicon-16x16.png"
+                }
+                
+                return self.outgoing["broadcast"].send(dm)
+            return False
+
+        dm = EDRDiscordMessage()
+        dm.content = ""
+        dm.timestamp = entry["timestamp"]
+        de = EDRDiscordEmbed()
+        de.title = _("Channel `{}`").format(channel)
+        de.description = entry["Message"]
+        de.author = {
+            "name": self.player.name,
+            "url": "",
+            "icon_url": ""
+        }
+        de.color = self.__cmdrname_to_discord_color(self.player.name)
+        de.footer = {
+            "text": "Message sent via ED Recon on behalf of Cmdr {}".format(self.player.name),
+            "icon_url": "https://lekeno.github.io/favicon-16x16.png"
+        }
+        dm.add_embed(de)
+        
+        if not channel in self.outgoing:
+            return False
+        
+        #TODO content is different....
+        return self.outgoing[channel].send(dm)

@@ -1890,10 +1890,14 @@ class EDRClient(object):
     def configure_resourcefinder(self, raw_profile):
         adjusted_profile = None if raw_profile == "default" else raw_profile
         result = self.edrresourcefinder.configure(adjusted_profile)
-        if result:
+        if not result:
+            self.__notify(_(u"Unrecognized materials profile"), [_(u"To see a list of profiles, send: !materials")])
+            return result
+        
+        if adjusted_profile:
             self.__notify(_(u"Using materials profile '{}'").format(raw_profile), [_(u"Revert to default profile by sending: !materials default")])
         else:
-            self.__notify(_(u"Unrecognized materials profile"), [_(u"To see a list of profiles, send: !materials")])
+            self.__notify(_(u"Using default materials profile"), [_(u"See the list of profiles by sending: !materials")])
         return result
 
     def show_material_profiles(self):

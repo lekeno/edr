@@ -19,25 +19,16 @@ class EDRUserConfig(object):
         except:
             self.config = None
 
-    def discord_afk_webhook(self):
+    def discord_webhook(self, name, incoming=True):
         if self.config:
-            return self.config.get('discord', 'afk_webhook')
+            section = "discord_incoming" if incoming else "discord_outgoing"
+            key = "{}_webhook".format(name)
+            try:
+                return self.config.get(section, key)
+            except:
+                return None
         return None
 
-    def discord_squadron_leaders_webhook(self):
-        if self.config:
-            return self.config.get('discord', 'squadron_leaders_webhook')
-        return None
-
-    def discord_squadron_webhook(self):
-        if self.config:
-            return self.config.get('discord', 'squadron_webhook')
-        return None
-
-    def discord_broadcast_webhook(self):
-        if self.config:
-            return self.config.get('discord', 'broadcast_webhook')
-        return None
 
 class EDRConfig(object):
     def __init__(self, config_file='config/config.ini'):
