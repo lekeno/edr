@@ -75,7 +75,7 @@ class EDRDiscordEmbed(object):
             "text": "Message sent via ED Recon",
             "icon_url": "https://lekeno.github.io/favicon-16x16.png"
         }
-        self.timestamp = datetime.now().isoformat()
+        self.timestamp = datetime.utcnow().isoformat()
 
 
 class EDRDiscordField(object):
@@ -170,9 +170,9 @@ class EDRDiscordIntegration(object):
     def process(self, entry):
         self.afk_detector.process(entry) # TODO move AFK state to player.
 
-        if entry["event"] == "ReceiveText" and entry["channel"] != "npc":
+        if entry["event"] == "ReceiveText" and entry["Channel"] != "npc":
             return self.__process_incoming(entry)
-        elif entry["event"] == "SendText" and entry["channel"] != "npc":
+        elif entry["event"] == "SendText":
             return self.__process_outgoing(entry)
         return False
 
@@ -187,7 +187,6 @@ class EDRDiscordIntegration(object):
         channel = entry.get("Channel", None)
         dm = EDRDiscordMessage()
         dm.content = ""
-        dm.timestamp = entry["timestamp"]
         de = EDRDiscordEmbed()
         de.title = ""
         de.description = entry["Message"]
@@ -196,13 +195,14 @@ class EDRDiscordIntegration(object):
             "url": "",
             "icon_url": ""
         }
+        de.timestamp = entry["timestamp"]
         de.color = self.__cmdrname_to_discord_color(from_cmdr)
         de.footer = {
             "text": "Message sent via ED Recon on behalf of Cmdr {}".format(self.player.name),
             "icon_url": "https://lekeno.github.io/favicon-16x16.png"
         }
         
-        if self.afk_detector.is_afk() and self.afk_wh and channel in ["player", "friend"]: # TODO verify the friend thing
+        if self.afk_detector.is_afk() and self.incoming["afk"] and channel in ["player", "friend"]: # TODO verify the friend thing
             dm.content = _(u"Direct message received while AFK @ `{}`".format(self.player.location.pretty_print()))
             de.title = _("To Cmdr `{}`").format(self.player.name)
             dm.add_embed(de)
@@ -273,7 +273,6 @@ class EDRDiscordIntegration(object):
             if command == "!discord" and self.outgoing["broadcast"]:
                 dm = EDRDiscordMessage()
                 dm.content = _(u"Incoming broadcast")
-                dm.timestamp = entry["timestamp"]
                 de = EDRDiscordEmbed()
                 de.title = _("Channel `{}`").format(channel)
                 de.description = " ".join(command_parts[1:])
@@ -282,6 +281,7 @@ class EDRDiscordIntegration(object):
                     "url": "",
                     "icon_url": ""
                 }
+                de.timestamp = entry["timestamp"]
                 de.color = self.__cmdrname_to_discord_color(self.player.name)
                 dm.add_embed(de)
                 de.footer = {
@@ -294,7 +294,6 @@ class EDRDiscordIntegration(object):
 
         dm = EDRDiscordMessage()
         dm.content = ""
-        dm.timestamp = entry["timestamp"]
         de = EDRDiscordEmbed()
         de.title = _("Channel `{}`").format(channel)
         de.description = entry["Message"]
@@ -303,6 +302,7 @@ class EDRDiscordIntegration(object):
             "url": "",
             "icon_url": ""
         }
+        de.timestamp = entry["timestamp"]
         de.color = self.__cmdrname_to_discord_color(self.player.name)
         de.footer = {
             "text": "Message sent via ED Recon on behalf of Cmdr {}".format(self.player.name),
