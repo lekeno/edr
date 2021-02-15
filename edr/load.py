@@ -1001,8 +1001,7 @@ def report_comms(player, entry):
                 from_cmdr = entry["From"][len("$cmdr_decorate:#name="):-1]
             EDRLOG.log(u"Text from {} in star system".format(from_cmdr), "INFO")
             contact = EDPlayer(from_cmdr)
-            contact.location = player.location
-            contact.place = "Unknown"
+            contact.star_system = player.star_system
             # TODO add blip to systemwideinstance ?
             edr_submit_contact(contact, entry["timestamp"],
                                 "Received text (starsystem channel)", player, system_wide = True)
