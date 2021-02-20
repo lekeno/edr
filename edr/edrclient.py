@@ -512,7 +512,7 @@ class EDRClient(object):
         materials_info = self.edrsystems.materials_on(star_system, body_name)
         facts = self.edrresourcefinder.assess_materials_density(materials_info, self.player.inventory)
         if facts:
-            qualifier = self.edrresourcefinder.profile or _("Noteworthy")
+            qualifier = self.edrresourcefinder.raw_profile or _("Noteworthy")
             self.__notify(_(u'{} material densities on {}').format(qualifier, body_name), facts, clear_before = True)
 
     def noteworthy_about_scan(self, scan_event):
@@ -522,7 +522,7 @@ class EDRClient(object):
             return
         facts = self.edrresourcefinder.assess_materials_density(scan_event["Materials"], self.player.inventory)
         if facts:
-            qualifier = self.edrresourcefinder.profile or _("Noteworthy")
+            qualifier = self.edrresourcefinder.raw_profile or _("Noteworthy")
             self.__notify(_(u'{} material densities on {}').format(qualifier, scan_event["BodyName"]), facts, clear_before = True)
 
     def noteworthy_about_signal(self, fss_event):
@@ -819,7 +819,12 @@ class EDRClient(object):
         if not target_cmdr:
             return False
 
-        if self.player.is_wingmate(target_cmdr["cmdr"]):
+        try:
+            if self.player.is_wingmate(target_cmdr["cmdr"]):
+                return False
+        except:
+            print(target_cmdr)
+            print(target_cmdr.keys())
             return False
 
         if self.edrcmdrs.is_friend(target_cmdr["cmdr"]):
@@ -1901,6 +1906,8 @@ class EDRClient(object):
         return result
 
     def show_material_profiles(self):
+        # TODO clear before, also on the other material profile things
+        # TODO fsd profiles for instnace returns a ton of stuff...
         profiles = self.edrresourcefinder.profiles()
         self.__notify(_(u"Available materials profiles"), [" ;; ".join(profiles)])
 

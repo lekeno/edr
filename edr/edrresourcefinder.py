@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 
 # TODO void opals: Smethells 1, planet 1. Double VO. Or Smei Ti, planet ABC 4.?
+# TODO lower case materials profile
 
 import math
 import json
@@ -856,7 +857,7 @@ class EDRResourceFinder(object):
             
             if self.raw_profile in EDRResourceFinder.RAW_MATS_PROFILES:
                 if name in EDRResourceFinder.RAW_MATS_PROFILES[self.raw_profile]:
-                    baseline = EDRResourceFinder.RAW_MATS[self.raw_profile]["name"].get("threshold", baseline)
+                    baseline = EDRResourceFinder.RAW_MATS_PROFILES[self.raw_profile][name].get("threshold", baseline)
                 else:
                     baseline = 1.0 # can't be more than 100%, so it will be ignored
             if material["Percent"] <= baseline:

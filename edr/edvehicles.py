@@ -81,6 +81,7 @@ class EDVehicle(object):
         self.power_capacity = None
         self.cargo_capacity = 0
         self.cargo = edcargo.EDCargo()
+        self.whole_loadout = False
         
     @property
     def hull_health(self):
@@ -138,11 +139,12 @@ class EDVehicle(object):
                 self.fuel_level = max(self.fuel_level, self.fuel_capacity * .25)
 
     def json(self, fuel_info=False):
+        shield_default = 100 if self.whole_loadout and self.has_shield_generator() else -1
         result = {
             u"timestamp": int(self.timestamp * 1000),
             u"type": self.type,
             u"hullHealth": {"timestamp": int(self.timestamp * 1000), "value": 100} if self._hull_health.empty() else self._hull_health.last(),
-            u"shieldHealth": {"timestamp": int(self.timestamp * 1000), "value": 100} if self._shield_health.empty() else self._shield_health.last(),
+            u"shieldHealth": {"timestamp": int(self.timestamp * 1000), "value": shield_default} if self._shield_health.empty() else self._shield_health.last(),
             u"shieldUp": self.shield_up,
             u"keySubsystems": self.__key_subsystems()
         }
@@ -206,6 +208,7 @@ class EDVehicle(object):
                 self.power_capacity = ed_module.power_generation
             health = module['Health'] * 100.0 if 'Health' in module else None 
             self.subsystem_health(module.get('Item', None), health)
+        self.whole_loadout = True
         self.cargo_capacity = event.get("CargoCapacity", 0)
         self.cargo.update(event)
 
@@ -246,6 +249,7 @@ class EDVehicle(object):
                 if the_module.power_draw > 0 or the_module.power_generation > 0:
                     EDRLOG.log(u"[New] {} in {}: power_draw: {}, priority: {}".format(self.slots[slot_name].cname, slot_name, self.slots[slot_name].power_draw, self.slots[slot_name].priority), "DEBUG")
                 updated |= the_module.power_draw > 0 or the_module.power_generation > 0
+        self.whole_loadout = True
         return updated
 
     def update_name(self, event):
@@ -281,6 +285,7 @@ class EDVehicle(object):
         self.slots = {}
         self.slots_timestamp = None
         self.module_info_timestamp = None
+        self.whole_loadout = False
     
     def destroy(self):
         now = EDTime.py_epoch_now()
@@ -473,6 +478,12 @@ class EDVehicle(object):
     def has_drone_controller(self):
         for slot_name in self.slots:
             if self.slots[slot_name].is_drone_controller():
+                return True
+        return False
+
+    def has_shield_generator(self):
+        for slot_name in self.slots:
+            if self.slots[slot_name].is_shield():
                 return True
         return False
     

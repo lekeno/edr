@@ -902,7 +902,7 @@ def report_crime(cmdr, entry):
             player_one.interdicted(interdictor, entry["event"] == "Interdicted")
             edr_submit_crime([interdictor], entry["event"], cmdr, entry["timestamp"])
         else:
-            interdictor = player_one.instanced_npc(entry["Interdictor"])
+            interdictor = player_one.instanced_npc(entry.get("Interdictor", "[N/A]"))
             player_one.interdicted(interdictor, entry["event"] == "Interdicted")
     elif entry["event"] == "Died":
         if "Killers" in entry:
@@ -924,7 +924,7 @@ def report_crime(cmdr, entry):
             edr_submit_crime_self(cmdr, offence, interdicted, entry["timestamp"])
         else:
             offence = "Interdiction" if entry["Success"] else "Failed interdiction"
-            interdicted = player_one.instanced_npc(entry["Interdicted"])
+            interdicted = player_one.instanced_npc(entry.get("Interdicted", "[N/A]"))
             player_one.interdiction(interdicted, entry["Success"])
     elif entry["event"] == "PVPKill":
         EDRLOG.log(u"PVPKill!", "INFO")

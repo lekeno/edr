@@ -202,13 +202,14 @@ class EDRDiscordIntegration(object):
             "icon_url": "https://lekeno.github.io/favicon-16x16.png"
         }
         
-        if self.afk_detector.is_afk() and self.incoming["afk"] and channel in ["player", "friend"]: # TODO verify the friend thing
+        if self.afk_detector.is_afk() and self.incoming["afk"] and channel in ["player", "friend"]: # TODO verify the friend thing : doesn't exist??
             dm.content = _(u"Direct message received while AFK @ `{}`".format(self.player.location.pretty_print()))
             de.title = _("To Cmdr `{}`").format(self.player.name)
             dm.add_embed(de)
             return self.incoming["afk"].send(dm)
         
         if not (channel in self.incoming and self.incoming[channel]):
+            # TODO: support voicechat channel?
             return False
 
         if channel == "local":
@@ -223,6 +224,9 @@ class EDRDiscordIntegration(object):
         elif channel == "squadronleaders":
             dm.content = _(u"Squadron Leaders message")
             de.title = _("To Squadron Leaders")
+        elif channel in ["player", "friend"]:
+            dm.content = _(u"Direct message")
+            de.title = _("To Cmdr `{}`").format(self.player.name)
         dm.add_embed(de)
         return self.incoming[channel].send(dm)
     
