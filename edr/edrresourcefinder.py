@@ -868,7 +868,7 @@ class EDRResourceFinder(object):
                 if name in EDRResourceFinder.RAW_MATS_PROFILES[self.raw_profile]:
                     baseline = EDRResourceFinder.RAW_MATS_PROFILES[self.raw_profile][name].get("threshold", baseline)
                 else:
-                    baseline = 1.0 # can't be more than 100%, so it will be ignored
+                    baseline = 100.0 # can't be more than 100%, so it will be ignored
             if material["Percent"] <= baseline:
                 continue
 
