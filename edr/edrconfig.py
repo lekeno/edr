@@ -19,15 +19,25 @@ class EDRUserConfig(object):
         except:
             self.config = None
 
-    def discord_webhook(self, name, incoming=True):
+    def discord_webhook(self, channel, incoming=True):
         if self.config:
             section = "discord_incoming" if incoming else "discord_outgoing"
-            key = "{}_webhook".format(name)
+            key = "{}_webhook".format(channel)
             try:
                 return self.config.get(section, key)
             except:
                 return None
         return None
+
+    def discord_tts(self, channel):
+        if self.config:
+            section = "discord_incoming"
+            key = "{}_tts".format(channel)
+            try:
+                return self.config.get(section, key)
+            except:
+                return False
+        return False
 
 
 class EDRConfig(object):

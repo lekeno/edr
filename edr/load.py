@@ -13,10 +13,8 @@ from edrlog import EDRLog
 import edentities
 import edrautoupdater
 from edri18n import _, _c
-from edrdiscord import EDRDiscordIntegration
 
 EDR_CLIENT = EDRClient()
-EDR_DISCORD_INTEGRATION = EDRDiscordIntegration(EDR_CLIENT.player)
 EDRLOG = EDRLog()
 LAST_KNOWN_SHIP_NAME = ""
 
@@ -509,7 +507,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if not prerequisites(EDR_CLIENT, is_beta):
         return
 
-    EDR_DISCORD_INTEGRATION.process(entry)
+    EDR_CLIENT.edrdiscord.process(entry)
 
     if entry["event"] in ["Shutdown", "ShutDown", "Music", "Resurrect", "Fileheader", "LoadGame", "Loadout"]:
         from_genesis = False

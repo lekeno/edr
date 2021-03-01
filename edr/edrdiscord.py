@@ -72,16 +72,16 @@ class EDRDiscordEmbed(object):
             "url": ""
         }
         self.footer = {
-            "text": "Message sent via ED Recon",
+            "text": "via ED Recon",
             "icon_url": "https://lekeno.github.io/favicon-16x16.png"
         }
         self.timestamp = datetime.utcnow().isoformat()
 
 
 class EDRDiscordField(object):
-    def __init__(self):
-        self.name = ""
-        self.value = ""
+    def __init__(self, name, value):
+        self.name = name
+        self.value = value
         self.inline = False
 
     def json(self):
@@ -135,28 +135,28 @@ class EDRDiscordWebhook(object):
 
         return response.status_code in [200, 204]
 
+# TODO localization
 class EDRDiscordIntegration(object):
-    def __init__(self, player):
-        self.player = player
+    def __init__(self, edrcmdrs):
+        self.edrcmdrs = edrcmdrs
         self.afk_detector = EDRAfkDetector()
         user_config = EDRUserConfig()
         
-        self.blocked_users = []
-        blocked_users_cfg_path = utils2to3.abspathmaker(__file__, 'config', 'user_blocklist.txt')
-        if os.path.exists(blocked_users_cfg_path):
-            with open(blocked_users_cfg_path,'r') as fh:
-                for curline in dropwhile(lambda s: s.startswith('; '), fh):
-                    self.blocked_users.append(curline.rstrip('\n'))
+        players_cfg_path = utils2to3.abspathmaker(__file__, 'config', 'user_discord_players.json')
+        try:
+            self.players_cfg = json.loads(open(players_cfg_path).read())
+        except:
+            self.players_cfg = {}
 
         self.incoming = {
-            "afk": EDRDiscordWebhook(user_config.discord_webhook("afk")),
-            "squadron": EDRDiscordWebhook(user_config.discord_webhook("squadron")),
-            "squadronleaders": EDRDiscordWebhook(user_config.discord_webhook("squadronleaders")),
-            "starsystem": EDRDiscordWebhook(user_config.discord_webhook("starsystem")),
-            "local": EDRDiscordWebhook(user_config.discord_webhook("local")),
-            "wing": EDRDiscordWebhook(user_config.discord_webhook("wing")),
-            "crew": EDRDiscordWebhook(user_config.discord_webhook("crew")),
-            "player": EDRDiscordWebhook(user_config.discord_webhook("player"))
+            "afk": {"wh": EDRDiscordWebhook(user_config.discord_webhook("afk")), "tts": user_config.discord_tts("afk")},
+            "squadron": {"wh": EDRDiscordWebhook(user_config.discord_webhook("squadron")), "tts": user_config.discord_tts("squadron")},
+            "squadronleaders": {"wh": EDRDiscordWebhook(user_config.discord_webhook("squadronleaders")), "tts": user_config.discord_tts("squadronleaders")},
+            "starsystem": {"wh": EDRDiscordWebhook(user_config.discord_webhook("starsystem")), "tts": user_config.discord_tts("starsystem")},
+            "local": {"wh": EDRDiscordWebhook(user_config.discord_webhook("local")), "tts": user_config.discord_tts("local")},
+            "wing": {"wh": EDRDiscordWebhook(user_config.discord_webhook("wing")), "tts": user_config.discord_tts("wing")},
+            "crew": {"wh": EDRDiscordWebhook(user_config.discord_webhook("crew")), "tts": user_config.discord_tts("crew")},
+            "player": {"wh": EDRDiscordWebhook(user_config.discord_webhook("player")), "tts": user_config.discord_tts("player")},
         }
         
         self.outgoing = {
@@ -177,62 +177,23 @@ class EDRDiscordIntegration(object):
         return False
 
     def __process_incoming(self, entry):
-        from_cmdr = entry["From"]
-        if entry["From"].startswith("$cmdr_decorate:#name="):
-            from_cmdr = entry["From"][len("$cmdr_decorate:#name="):-1]
-             
-        if from_cmdr in self.blocked_users:
-            return False
-        
+        dm = self.__create_discord_message(entry)
+
         channel = entry.get("Channel", None)
-        dm = EDRDiscordMessage()
-        dm.content = ""
-        de = EDRDiscordEmbed()
-        de.title = ""
-        de.description = entry["Message"]
-        de.author = {
-            "name": from_cmdr,
-            "url": "",
-            "icon_url": ""
-        }
-        de.timestamp = entry["timestamp"]
-        de.color = self.__cmdrname_to_discord_color(from_cmdr)
-        de.footer = {
-            "text": "Message sent via ED Recon on behalf of Cmdr {}".format(self.player.name),
-            "icon_url": "https://lekeno.github.io/favicon-16x16.png"
-        }
-        
         if self.afk_detector.is_afk() and self.incoming["afk"] and channel in ["player", "friend"]: # TODO verify the friend thing : doesn't exist??
-            dm.content = _(u"Direct message received while AFK @ `{}`".format(self.player.location.pretty_print()))
-            de.title = _("To Cmdr `{}`").format(self.player.name)
-            dm.add_embed(de)
-            return self.incoming["afk"].send(dm)
+            dm.tts |= self.incoming["afk"]["tts"]
+            return self.incoming["afk"]["wh"].send(dm)
         
         if not (channel in self.incoming and self.incoming[channel]):
             # TODO: support voicechat channel?
             return False
 
-        if channel == "local":
-            dm.content = _(u"Local message @ `{}`".format(self.player.location.pretty_print()))
-            de.title = _("To Local @ `{}`").format(self.player.location.pretty_print())
-        elif channel == "starsystem":
-            dm.content = _(u"System wide message @ `{}`".format(self.player.star_system))
-            de.title = _("To System @ `{}`").format(self.player.star_system)
-        elif channel == "squadron":
-            dm.content = _(u"Squadron message")
-            de.title = _("To Squadron")
-        elif channel == "squadronleaders":
-            dm.content = _(u"Squadron Leaders message")
-            de.title = _("To Squadron Leaders")
-        elif channel in ["player", "friend"]:
-            dm.content = _(u"Direct message")
-            de.title = _("To Cmdr `{}`").format(self.player.name)
-        dm.add_embed(de)
+        dm.tts |= self.incoming[channel]["tts"]
         return self.incoming[channel].send(dm)
     
     def __cmdrname_to_discord_color(self, name):
-        saturation = [0.35, 0.5, 0.65]
-        lightness = [0.35, 0.5, 0.65]
+        saturation = [x / 100 for x in range(10, 91, 20)]
+        lightness = [x / 100 for x in range(20, 81, 20)]
         
         hash = crc32(name.encode("utf-8")) & 0xFFFFFFFF
         h = hash % 359
@@ -265,9 +226,65 @@ class EDRDiscordIntegration(object):
             rgb.append(round(c * 255))
         return (rgb[0] << 16) + (rgb[1] << 8) + rgb[2]
 
+
+    def __create_discord_message(self, entry):
+        from_cmdr = entry["From"]
+        if entry["From"].startswith("$cmdr_decorate:#name="):
+            from_cmdr = entry["From"][len("$cmdr_decorate:#name="):-1]
+             
+        cfg = self.__default_cfg(from_cmdr)
+        if from_cmdr in self.players_cfg:
+            if self.players_cfg[from_cmdr].get("blocked", False):
+                return False
+            cfg.update(self.players_cfg[from_cmdr])
+
+        player = self.edrcmdrs.player
+        sender_profile = self.edrcmdrs.cmdr(cmdr_name, autocreate=False, check_inara_server=False)
+        
+        channel = entry.get("Channel", "unknown")
+        channels_lut = {
+            "player": _(u"Direct"),
+            "friend": _(u"Direct"),
+            "local": _(u"Local\n```{location}```").format(location=player.location.pretty_print()),
+            "starsystem": _(u"System\n```{location}```").format(location=player.star_system),
+            "squadron": _(u"Squadron"),
+            "squadronleaders": _(u"Squadron Leaders"),
+            "wing": _(u"Wing"),
+            "crew": _(u"Crew"),
+            "unknown": _(u"N/A")
+        }
+        
+        dm = EDRDiscordMessage()
+        dm.content = entry["Message"]
+        dm.username = cfg["name"]
+        dm.avatar_url = cfg["icon_url"]
+        dm.tts = cfg["tts"]
+
+        de = EDRDiscordEmbed()
+        de.title = "Channel"
+        de.description = channels_lut.get(channel, channel)
+        de.author = {
+            "name": cfg["name"],
+            "url": cfg["url"],
+            "icon_url": cfg["icon_url"]
+        }
+        de.timestamp = entry["timestamp"]
+        de.color = cfg["color"]
+        de.footer = {
+            "text": "via ED Recon on behalf of Cmdr {}".format(player.name),
+            "icon_url": "https://lekeno.github.io/favicon-16x16.png"
+        }
+
+        if sender_profile:
+            df = EDRDiscordField(_(u"EDR Karma"), _(u"```{} ({})```").format(sender_profile.readable_karma))
+            de.fields.append(de)
+        
+        dm.add_embed(de)
+        return dm
+
                 
     def __process_outgoing(self, entry):
-        channel = entry["To"]
+        dm = self.__create_discord_message(entry)
         command_parts = entry["Message"].split(" ", 1)
         command = command_parts[0].lower()
         if command and command[0] == "!":
@@ -275,47 +292,40 @@ class EDRDiscordIntegration(object):
                 return False
 
             if command == "!discord" and self.outgoing["broadcast"]:
-                dm = EDRDiscordMessage()
-                dm.content = _(u"Incoming broadcast")
-                de = EDRDiscordEmbed()
-                de.title = _("Channel `{}`").format(channel)
-                de.description = " ".join(command_parts[1:])
-                de.author = {
-                    "name": self.player.name,
-                    "url": "",
-                    "icon_url": ""
-                }
-                de.timestamp = entry["timestamp"]
-                de.color = self.__cmdrname_to_discord_color(self.player.name)
-                dm.add_embed(de)
-                de.footer = {
-                    "text": "Message sent via ED Recon on behalf of Cmdr {}".format(self.player.name),
-                    "icon_url": "https://lekeno.github.io/favicon-16x16.png"
-                }
-                
+                dm.content = " ".join(command_parts[1:])
                 return self.outgoing["broadcast"].send(dm)
             return False
 
-        dm = EDRDiscordMessage()
-        dm.content = ""
-        de = EDRDiscordEmbed()
-        de.title = _("Channel `{}`").format(channel)
-        de.description = entry["Message"]
-        de.author = {
-            "name": self.player.name,
-            "url": "",
-            "icon_url": ""
-        }
-        de.timestamp = entry["timestamp"]
-        de.color = self.__cmdrname_to_discord_color(self.player.name)
-        de.footer = {
-            "text": "Message sent via ED Recon on behalf of Cmdr {}".format(self.player.name),
-            "icon_url": "https://lekeno.github.io/favicon-16x16.png"
-        }
-        dm.add_embed(de)
-        
+        channel = entry.get("Channel", None)
         if not channel in self.outgoing:
             return False
         
-        #TODO content is different....
         return self.outgoing[channel].send(dm)
+
+    def __default_cfg(self, cmdr_name):
+        # TODO replace cmdr to discord color with a ambiguous color code
+        default_cfg = {
+            "name": cmdr_name,
+            "color": self.__cmdrname_to_discord_color(cmdr_name),
+            "url": "https://inara.cz/cmdr/11094/",
+            "icon_url": "https://inara.cz/data/users/11/11094x2648.jpg",
+            "image": "",
+            "thumbnail": "",
+            "tts": False,
+            "blocked": False
+        }
+        profile = self.edrcmdrs.cmdr(cmdr_name, autocreate=False, check_inara_server=True)
+        if profile:
+            default_cfg["color"] = self.__karma_to_discord_color(profile.readable_karma())
+            default_cfg["url"] = profile.url
+            default_cfg["icon_url"] = profile.avatar_url
+
+        return default_cfg
+
+    def __karma_to_discord_color(self, readable_karma):
+        colorLUT = {
+            "Outlaw++++": 14368588, "Outlaw+++": 14701123, "Outlaw++": 15099450, "Outlaw+": 15497521, "Outlaw": 15895848,
+            "Neutral": 8421246, "Ambiguous": 8421246,
+            "Lawful": 12971765, "Lawful+": 11001028, "Lawful++": 9030291, "Lawful+++": 7059554, "Lawful++++": 5088817
+        }
+        return colorLUT.get(readable_karma, 8421246)

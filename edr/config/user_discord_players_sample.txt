@@ -1,0 +1,32 @@
+; This file is a sample
+;  1. rename it to user_discord_players.json
+;  2. remove all the comment lines (e.g. prefixed with ;)
+;  3. modify its content to reflect your needs 
+;   
+; Use this to define a list of players that you don't want to see messages from in the discord integration feature (see user_config_sample.ini)
+;
+; Explanation of the different fields (all optional):
+;      "blocked": true          set to true if you don't want to read this commander's messages, remove or set to false otherwise
+;      "name": "potato"         use this to change the cmdr's name to something else (e.g. potato here)
+;      "color": "0099E1"       use this to force a specific color to this cmdr messages in discord
+;      "url": "",
+;      "icon_url": "",
+;      "image": "",
+;      "thumbnail": "",
+;      "tts": false            text-to-speech: set to true if you want discord to read this commander's message aloud
+;
+{
+    "Cranky North-Star": {
+        "blocked": true
+    },
+    "Chatty Plantain": {
+        "name": "[NPC] Chatty Plantain",
+    },
+    "LeKeno": {
+        "name": "[EDR] LeKeno",
+        "color": "0099E1",
+        "url": "https://inara.cz/cmdr/11094/",
+        "icon_url": "https://inara.cz/data/users/11/11094x2648.jpg",
+        "tts": true
+    }
+}
