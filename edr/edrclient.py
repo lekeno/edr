@@ -37,6 +37,7 @@ from helpcontent import HelpContent
 from edtime import EDTime
 from edrlegalrecords import EDRLegalRecords
 from edrxzibit import EDRXzibit
+from edrdiscord import EDRDiscordIntegration
 
 from edri18n import _, _c, _edr, set_language
 from clippy import copy
@@ -132,6 +133,7 @@ class EDRClient(object):
         self.help_content = HelpContent()
         self._throttle_until_timestamp = None
         self.edrfssinsights = EDRFSSInsights()
+        self.edrdiscord = EDRDiscordIntegration(self.edrcmdrs)
 
     def loud_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "loud")
@@ -1893,16 +1895,17 @@ class EDRClient(object):
         self.__notify(_(u"{} near {}").format(soi_checker.name, reference), details, clear_before = True)
 
     def configure_resourcefinder(self, raw_profile):
-        adjusted_profile = None if raw_profile == "default" else raw_profile
+        canonical_raw_profile = raw_profile.lower()
+        adjusted_profile = None if canonical_raw_profile == "default" else canonical_raw_profile
         result = self.edrresourcefinder.configure(adjusted_profile)
         if not result:
-            self.__notify(_(u"Unrecognized materials profile"), [_(u"To see a list of profiles, send: !materials")])
+            self.__notify(_(u"Unrecognized materials profile"), [_(u"To see a list of profiles, send: !materials")], clear_before = True)
             return result
         
         if adjusted_profile:
-            self.__notify(_(u"Using materials profile '{}'").format(raw_profile), [_(u"Revert to default profile by sending: !materials default")])
+            self.__notify(_(u"Using materials profile '{}'").format(raw_profile), [_(u"Revert to default profile by sending: !materials default")], clear_before = True)
         else:
-            self.__notify(_(u"Using default materials profile"), [_(u"See the list of profiles by sending: !materials")])
+            self.__notify(_(u"Using default materials profile"), [_(u"See the list of profiles by sending: !materials")], clear_before = True)
         return result
 
     def show_material_profiles(self):

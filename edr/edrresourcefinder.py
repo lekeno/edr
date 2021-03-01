@@ -21,6 +21,10 @@ class EDRResourceFinder(object):
 
     RAW_MATS = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'raw.json')).read())
     RAW_MATS_PROFILES = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'raw_profiles.json')).read())
+    try:
+        RAW_MATS_PROFILES = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'user_raw_profiles.json')).read())
+    except:
+        pass
 
     SUPPORTED_RESOURCES = {
         "antimony": "ant", "tellurium": "tel", "ruthenium": "rut", "tungsten": "tun", "zirconium": "zir", "arsenic": "ars",
@@ -169,8 +173,13 @@ class EDRResourceFinder(object):
         self.edr_factions.persist()
 
     def configure(self, raw_profile):
-        if raw_profile is None or raw_profile in EDRResourceFinder.RAW_MATS_PROFILES:
-            self.raw_profile = raw_profile
+        if raw_profile is None:
+            self.raw_profile = None
+            return True
+
+        canonical_raw_profile = raw_profile.lower()
+        if canonical_raw_profile in EDRResourceFinder.RAW_MATS_PROFILES:
+            self.raw_profile = canonical_raw_profile
             return True
         return False
     
