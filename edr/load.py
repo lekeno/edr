@@ -481,7 +481,7 @@ def handle_mining_events(ed_player, entry):
 def handle_bounty_hunting_events(ed_player, entry):
     if entry["event"] not in ["Bounty", "ShipTargeted"]:
         return
-    if entry["event"] == "Bounty" and entry.get("Reward", 0) > 0:
+    if entry["event"] == "Bounty" and entry.get("Rewards", None):
         ed_player.bounty_awarded(entry)
         EDR_CLIENT.bounty_hunting_guidance()
     elif entry["event"] == "ShipTargeted":

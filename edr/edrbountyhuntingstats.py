@@ -20,7 +20,7 @@ class EDRBountyHuntingStats(object):
         self.scans = deque(maxlen=20)
         self.efficiency = deque(maxlen=20)
         self.max_efficiency = 5000000
-        self.max_normal_bounty = 350000 * 4 # appears to be the highest bounty per faction for NPC and the 4x boost from Nov 30th 2020
+        self.max_normal_bounty = 350000 # appears to be the highest bounty per faction for NPC
         now = EDTime.py_epoch_now()
         self.start = now
         self.current = now
@@ -86,7 +86,6 @@ class EDRBountyHuntingStats(object):
         self.previous_min = self.min
         self.max = max(self.max, bounty)
         self.min = min(self.min, bounty)
-        index = min(int(round(bounty/self.max_normal_bounty * (len(self.distribution["bins"])-1), 0)), len(self.distribution["bins"])-1)
         self.distribution["last_index"] = index
         self.distribution["bins"][index] += 1
         self.scans.append((now, bounty))
