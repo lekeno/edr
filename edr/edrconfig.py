@@ -34,7 +34,7 @@ class EDRUserConfig(object):
             section = "discord_incoming"
             key = "{}_tts".format(channel)
             try:
-                return self.config.get(section, key)
+                return self.config.getboolean(section, key)
             except:
                 return False
         return False

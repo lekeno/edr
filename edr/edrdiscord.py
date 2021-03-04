@@ -31,8 +31,9 @@ class EDRDiscordMessage(object):
 
     def json(self):
         base = self.__dict__
-        base["embeds"] = [ embed.__dict__ for embed in self.embeds]
+        base["embeds"] = [ embed.json() for embed in self.embeds]
         # TODO files
+        print(base)
         return base
 
     def valid(self):
@@ -76,16 +77,36 @@ class EDRDiscordEmbed(object):
             "icon_url": "https://lekeno.github.io/favicon-16x16.png"
         }
         self.timestamp = datetime.utcnow().isoformat()
+    
+    def json(self):
+        print(self.fields)
+        return {
+            "title": self.title,
+            "url": self.url,
+            "description": self.description,
+            "color": self.color,
+            "author": self.author,
+            "fields": [ field.json() for field in self.fields],
+            "image": self.image,
+            "thumbnails": self.thumbnail,
+            "footer": self.footer,
+            "timestamp": self.timestamp
+        }
+
 
 
 class EDRDiscordField(object):
-    def __init__(self, name, value):
+    def __init__(self, name, value, inline=False):
         self.name = name
         self.value = value
-        self.inline = False
+        self.inline = inline
 
     def json(self):
-        return self.__dict__
+        return {
+            "name": self.name,
+            "value": self.value,
+            "inline": self.inline
+        }
 
 
 class EDRDiscordWebhook(object):
@@ -151,7 +172,7 @@ class EDRDiscordIntegration(object):
         self.incoming = {
             "afk": {"wh": EDRDiscordWebhook(user_config.discord_webhook("afk")), "tts": user_config.discord_tts("afk")},
             "squadron": {"wh": EDRDiscordWebhook(user_config.discord_webhook("squadron")), "tts": user_config.discord_tts("squadron")},
-            "squadronleaders": {"wh": EDRDiscordWebhook(user_config.discord_webhook("squadronleaders")), "tts": user_config.discord_tts("squadronleaders")},
+            "squadleaders": {"wh": EDRDiscordWebhook(user_config.discord_webhook("squadronleaders")), "tts": user_config.discord_tts("squadronleaders")},
             "starsystem": {"wh": EDRDiscordWebhook(user_config.discord_webhook("starsystem")), "tts": user_config.discord_tts("starsystem")},
             "local": {"wh": EDRDiscordWebhook(user_config.discord_webhook("local")), "tts": user_config.discord_tts("local")},
             "wing": {"wh": EDRDiscordWebhook(user_config.discord_webhook("wing")), "tts": user_config.discord_tts("wing")},
@@ -162,7 +183,7 @@ class EDRDiscordIntegration(object):
         self.outgoing = {
             "broadcast": EDRDiscordWebhook(user_config.discord_webhook("broadcast", incoming=False)),
             "squadron": EDRDiscordWebhook(user_config.discord_webhook("squadron", incoming=False)),
-            "squadronleaders": EDRDiscordWebhook(user_config.discord_webhook("squadronleaders", incoming=False)),
+            "squadleaders": EDRDiscordWebhook(user_config.discord_webhook("squadronleaders", incoming=False)),
             "wing": EDRDiscordWebhook(user_config.discord_webhook("wing", incoming=False)),
             "crew": EDRDiscordWebhook(user_config.discord_webhook("crew", incoming=False))
         }
@@ -189,7 +210,7 @@ class EDRDiscordIntegration(object):
             return False
 
         dm.tts |= self.incoming[channel]["tts"]
-        return self.incoming[channel].send(dm)
+        return self.incoming[channel]["wh"].send(dm)
     
     def __cmdrname_to_discord_color(self, name):
         saturation = [x / 100 for x in range(10, 91, 20)]
@@ -228,8 +249,9 @@ class EDRDiscordIntegration(object):
 
 
     def __create_discord_message(self, entry):
-        from_cmdr = entry["From"]
-        if entry["From"].startswith("$cmdr_decorate:#name="):
+        player = self.edrcmdrs.player
+        from_cmdr = entry.get("From", player.name)
+        if from_cmdr.startswith("$cmdr_decorate:#name="):
             from_cmdr = entry["From"][len("$cmdr_decorate:#name="):-1]
              
         cfg = self.__default_cfg(from_cmdr)
@@ -238,31 +260,31 @@ class EDRDiscordIntegration(object):
                 return False
             cfg.update(self.players_cfg[from_cmdr])
 
-        player = self.edrcmdrs.player
-        sender_profile = self.edrcmdrs.cmdr(cmdr_name, autocreate=False, check_inara_server=False)
+        sender_profile = self.edrcmdrs.cmdr(from_cmdr, autocreate=False, check_inara_server=False)
         
         channel = entry.get("Channel", "unknown")
-        channels_lut = {
-            "player": _(u"Direct"),
-            "friend": _(u"Direct"),
-            "local": _(u"Local\n```{location}```").format(location=player.location.pretty_print()),
-            "starsystem": _(u"System\n```{location}```").format(location=player.star_system),
-            "squadron": _(u"Squadron"),
-            "squadronleaders": _(u"Squadron Leaders"),
-            "wing": _(u"Wing"),
-            "crew": _(u"Crew"),
-            "unknown": _(u"N/A")
+        title_desc_lut = {
+            "player": {"title": _(u"Direct message"), "description": ""},
+            "friend": {"title": _(u"Direct message"), "description": ""},
+            "local": {"title": _(u"Local chat"), "description": "```{location}```".format(location=player.location.pretty_print())},
+            "starsystem": {"title": _(u"System chat"), "description": "```{location}```".format(location=player.star_system)},
+            "squadron": {"title": _(u"Squadron chat"), "description": ""},
+            "squadleaders": {"title": _(u"Squadron Leaders chat"), "description": ""},
+            "wing": {"title": _(u"Wing chat"), "description": ""},
+            "crew": {"title": _(u"Crew chat"), "description": ""},
+            "unknown": {"title": _(u"Unknown channel"), "description": ""}
         }
         
         dm = EDRDiscordMessage()
-        dm.content = entry["Message"]
+        dm.content = entry["Message"] # TODO can this be abused with @here @everyone?
         dm.username = cfg["name"]
         dm.avatar_url = cfg["icon_url"]
         dm.tts = cfg["tts"]
 
         de = EDRDiscordEmbed()
-        de.title = "Channel"
-        de.description = channels_lut.get(channel, channel)
+        title_desc = title_desc_lut.get(channel, {"title": channel, "description": ""})
+        de.title = title_desc["title"]
+        de.description = title_desc["description"]
         de.author = {
             "name": cfg["name"],
             "url": cfg["url"],
@@ -276,8 +298,8 @@ class EDRDiscordIntegration(object):
         }
 
         if sender_profile:
-            df = EDRDiscordField(_(u"EDR Karma"), _(u"```{} ({})```").format(sender_profile.readable_karma))
-            de.fields.append(de)
+            df = EDRDiscordField(_(u"EDR Karma"), _(u"```{}```").format(sender_profile.readable_karma(details=True)), True)
+            de.fields.append(df)
         
         dm.add_embed(de)
         return dm
@@ -292,7 +314,7 @@ class EDRDiscordIntegration(object):
                 return False
 
             if command == "!discord" and self.outgoing["broadcast"]:
-                dm.content = " ".join(command_parts[1:])
+                dm.content = " ".join(command_parts[1:]) # no escaping because it seems fine to be able to send @here?
                 return self.outgoing["broadcast"].send(dm)
             return False
 
@@ -306,9 +328,9 @@ class EDRDiscordIntegration(object):
         # TODO replace cmdr to discord color with a ambiguous color code
         default_cfg = {
             "name": cmdr_name,
-            "color": self.__cmdrname_to_discord_color(cmdr_name),
-            "url": "https://inara.cz/cmdr/11094/",
-            "icon_url": "https://inara.cz/data/users/11/11094x2648.jpg",
+            "color": 8421246,
+            "url": "",
+            "icon_url": "",
             "image": "",
             "thumbnail": "",
             "tts": False,
@@ -316,7 +338,7 @@ class EDRDiscordIntegration(object):
         }
         profile = self.edrcmdrs.cmdr(cmdr_name, autocreate=False, check_inara_server=True)
         if profile:
-            default_cfg["color"] = self.__karma_to_discord_color(profile.readable_karma())
+            default_cfg["color"] = self.__karma_to_discord_color(profile.readable_karma(prefix=False))
             default_cfg["url"] = profile.url
             default_cfg["icon_url"] = profile.avatar_url
 
