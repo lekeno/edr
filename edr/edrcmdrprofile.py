@@ -374,11 +374,11 @@ class EDRCmdrProfile(object):
             return u"[!{} ?{} +{}]".format(self.alignment_hints["outlaw"], self.alignment_hints["neutral"], self.alignment_hints["enforcer"])
         return u"[!{:.0%} ?{:.0%} +{:.0%}]".format(self.alignment_hints["outlaw"] // total_hints, self.alignment_hints["neutral"] // total_hints, self.alignment_hints["enforcer"] // total_hints)
 
-    def readable_karma(self, details=False):
+    def readable_karma(self, details=False, prefix=True):
         mapped_index = round(10*(self._karma + self.max_karma()) / (2.0*self.max_karma()))
         lut = [_(u"Outlaw++++"), _(u"Outlaw+++"), _(u"Outlaw++"), _(u"Outlaw+"), _(u"Outlaw"), _(u"Ambiguous"), _(u"Lawful"), _(u"Lawful+"), _(u"Lawful++"), _(u"Lawful+++"), _(u"Lawful++++")]
         karma = ""
-        if self.dyn_karma:
+        if prefix and self.dyn_karma:
             karma += u"≈ "
         if lut[mapped_index] == _(u"Ambiguous") and self._karma != 0:
             if self._karma < 0:
@@ -389,7 +389,7 @@ class EDRCmdrProfile(object):
             karma += lut[mapped_index]
         
         if details:
-            return _(u"{karma_name} ({karma_value})").format(karma, self._karma)
+            return _(u"{karma_name} ({karma_value})").format(karma_name=karma, karma_value=round(self._karma))
         return karma
 
     def short_profile(self, powerplay=None):
