@@ -11,6 +11,7 @@ from edri18n import _
 from edrconfig import EDRUserConfig, EDRConfig
 from lrucache import LRUCache
 from edrafkdetector import EDRAfkDetector
+from edtime import EDTime
 import backoff
 
 class EDRDiscordSimpleMessage(object):
@@ -363,6 +364,8 @@ class EDRDiscordIntegration(object):
         if last_comms is None:
             return True
 
-        delta = new_comms["timestamp"] - last_comms["timestamp"]
+        new_edt = EDTime()
+        new_edt.from_journal_timestamp(new_comms["timestamp"])
+        enough_time_has_passed = new_edt.elapsed_threshold(last_comms["timestamp"], self.cognitive_novelty_threshold)
         
-        return (new_comms["Channel"] != last_comms["Channel"] or new_comms["From"] != last_comms["From"]) or delta > self.cognitive_novelty_threshold
+        return enough_time_has_passed or (new_comms["Channel"] != last_comms["Channel"] or new_comms["From"] != last_comms["From"])
