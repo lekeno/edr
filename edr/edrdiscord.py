@@ -1,8 +1,10 @@
 import json
 import requests
 import os
+import random
 from datetime import datetime
 from binascii import crc32
+from hashlib import md5
 from numbers import Number
 from itertools import dropwhile
 
@@ -35,7 +37,6 @@ class EDRDiscordMessage(object):
         base = self.__dict__
         base["embeds"] = [ embed.json() for embed in self.embeds]
         # TODO files
-        print(base)
         return base
 
     def valid(self):
@@ -81,7 +82,6 @@ class EDRDiscordEmbed(object):
         self.timestamp = datetime.utcnow().isoformat()
     
     def json(self):
-        print(self.fields)
         return {
             "title": self.title,
             "url": self.url,
@@ -265,10 +265,10 @@ class EDRDiscordIntegration(object):
             if self.players_cfg[from_cmdr].get("blocked", False):
                 return False
             cfg.update(self.players_cfg[from_cmdr])
-
+            
         sender_profile = self.edrcmdrs.cmdr(from_cmdr, autocreate=False, check_inara_server=False)
         
-        channel = entry.get("Channel", "unknown")
+        channel = entry.get("Channel", entry.get("To", "unknown"))
         description_lut = {
             "player": _(u"Direct"),
             "friend": _(u"Direct"),
@@ -282,7 +282,7 @@ class EDRDiscordIntegration(object):
         }
         
         dm = EDRDiscordMessage()
-        dm.content = entry["Message"] # TODO can this be abused with @here @everyone?
+        dm.content = self.__discord_escape(entry["Message"], add_spoiler_tags=cfg["spoiler"])
         dm.username = cfg["name"]
         dm.avatar_url = cfg["icon_url"]
         dm.tts = cfg["tts"]
@@ -321,7 +321,7 @@ class EDRDiscordIntegration(object):
                 return False
 
             if command == "!discord" and self.outgoing["broadcast"]:
-                dm.content = " ".join(command_parts[1:]) # no escaping because it seems fine to be able to send @here?
+                dm.content = " ".join(command_parts[1:]) # no escaping
                 return self.outgoing["broadcast"].send(dm)
             return False
 
@@ -329,25 +329,30 @@ class EDRDiscordIntegration(object):
         if not channel in self.outgoing:
             return False
         
+        dm.content = self.__discord_escape(entry["Message"])
         return self.outgoing[channel].send(dm)
 
     def __default_cfg(self, cmdr_name):
         # TODO replace cmdr to discord color with a ambiguous color code
+        random.seed(len(cmdr_name))
+        style = random.choice(["identicon", "retro", "monsterid", "wavatar", "robohash"])
+        gravatar_url = u"https://www.gravatar.com/avatar/{}?d={}&f=y".format(md5(cmdr_name.encode('utf-8')).hexdigest(), style)
         default_cfg = {
             "name": cmdr_name,
             "color": 8421246,
             "url": "",
-            "icon_url": "",
+            "icon_url": gravatar_url,
             "image": "",
             "thumbnail": "",
             "tts": False,
-            "blocked": False
+            "blocked": False,
+            "spoiler": False
         }
         profile = self.edrcmdrs.cmdr(cmdr_name, autocreate=False, check_inara_server=True)
         if profile:
             default_cfg["color"] = self.__karma_to_discord_color(profile.readable_karma(prefix=False))
-            default_cfg["url"] = profile.url
-            default_cfg["icon_url"] = profile.avatar_url
+            default_cfg["url"] = profile.url or default_cfg["url"]
+            default_cfg["icon_url"] = profile.avatar_url or default_cfg["icon_url"]
 
         return default_cfg
 
@@ -368,4 +373,16 @@ class EDRDiscordIntegration(object):
         new_edt.from_journal_timestamp(new_comms["timestamp"])
         enough_time_has_passed = new_edt.elapsed_threshold(last_comms["timestamp"], self.cognitive_novelty_threshold)
         
-        return enough_time_has_passed or (new_comms["Channel"] != last_comms["Channel"] or new_comms["From"] != last_comms["From"])
+        new_channel = new_comms["Channel"] if "Channel" in new_comms else new_comms.get("To", None)
+        last_channel = last_comms["Channel"] if "Channel" in last_comms else last_comms.get("To", None)
+        new_from = new_comms["From"] if "From" in new_comms else sender
+        last_from = last_comms["From"] if "From" in last_comms else sender
+
+        return enough_time_has_passed or (new_channel != last_channel or new_from != last_from)
+
+    def __discord_escape(self, message, add_spoiler_tags=False):
+        escaped_message = message.replace(u'@', u'@​\u200b')
+        if add_spoiler_tags:
+            escaped_message = escaped_message.replace(u'||', u'|​\u200b|​\u200b')
+            return u"||{}||".format(escaped_message)
+        return escaped_message

@@ -206,7 +206,7 @@ class EDRCmdrProfile(object):
         self.patreon = None
         self.dex_profile = None
         self.sqdrdex_profile = None
-        self.avatar_url = json_cmdr["avatarImageURL"]
+        self.avatar_url = json_cmdr["inaraAvatar"]
         self.url = json_cmdr["inaraURL"]
 
     def from_dict(self, json_cmdr):
@@ -226,7 +226,7 @@ class EDRCmdrProfile(object):
         self.dex_profile = None
         self.powerplay = None
         self.sqdrdex_profile = None
-        self.avatar_url = json_cmdr.get("avatarImageURL", None)
+        self.avatar_url = json_cmdr.get("inaraAvatar", None)
         self.url = json_cmdr.get("inaraURL", None)
     
     def complement(self, other_profile):
