@@ -145,7 +145,7 @@ class EDVehicle(object):
             u"type": self.type,
             u"hullHealth": {"timestamp": int(self.timestamp * 1000), "value": 100} if self._hull_health.empty() else self._hull_health.last(),
             u"shieldHealth": {"timestamp": int(self.timestamp * 1000), "value": shield_default} if self._shield_health.empty() else self._shield_health.last(),
-            u"shieldUp": self.shield_up,
+            u"shieldUp": self.shield_up and shield_default != -1,
             u"keySubsystems": self.__key_subsystems()
         }
         if fuel_info:
