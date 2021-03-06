@@ -1,7 +1,7 @@
 import edtime
 
 class EDRAfkDetector(object):
-    PASSIVE_EVENTS = ["Died", "HeatDamage", "FighterDestroyed", "HeatWarning", "HullDamage", "Interdicted", "ShieldState", "SRVDestroyed", "UnderAttack", "CommunityGoal", "CommunityGoalReward", "MissionFailed", "MissionRedirected", "ReceiveText"]
+    PASSIVE_EVENTS = ["Died", "HeatDamage", "FighterDestroyed", "HeatWarning", "HullDamage", "Interdicted", "ShieldState", "SRVDestroyed", "UnderAttack", "CommunityGoal", "CommunityGoalReward", "MissionFailed", "MissionRedirected", "ReceiveText", "Fileheader", "Friends", "DisbandedSquadron", "InvitedToSquadron", "KickedFromSquadron", "SquadronDemotion", "SquadronPromotion", "WonATrophyForSquadron", "Continued", "CrewMemberJoins", "CrewMemberQuits", "CrimeVictim", "Music", "NpcCrewPaidWage", "WingInvite"]
 
     def __init__(self):
         self.inactive_threshold_seconds = 60*5

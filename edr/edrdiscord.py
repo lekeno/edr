@@ -8,7 +8,8 @@ from itertools import dropwhile
 
 import utils2to3
 from edri18n import _
-from edrconfig import EDRUserConfig 
+from edrconfig import EDRUserConfig, EDRConfig
+from lrucache import LRUCache
 from edrafkdetector import EDRAfkDetector
 import backoff
 
@@ -162,6 +163,7 @@ class EDRDiscordIntegration(object):
         self.edrcmdrs = edrcmdrs
         self.afk_detector = EDRAfkDetector()
         user_config = EDRUserConfig()
+        edr_config = EDRConfig()
         
         players_cfg_path = utils2to3.abspathmaker(__file__, 'config', 'user_discord_players.json')
         try:
@@ -187,6 +189,9 @@ class EDRDiscordIntegration(object):
             "wing": EDRDiscordWebhook(user_config.discord_webhook("wing", incoming=False)),
             "crew": EDRDiscordWebhook(user_config.discord_webhook("crew", incoming=False))
         }
+
+        self.cognitive_novelty_threshold = edr_config.cognitive_novelty_threshold()
+        self.cognitive_comms_cache = LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
 
     def process(self, entry):
         self.afk_detector.process(entry) # TODO move AFK state to player.
@@ -263,16 +268,16 @@ class EDRDiscordIntegration(object):
         sender_profile = self.edrcmdrs.cmdr(from_cmdr, autocreate=False, check_inara_server=False)
         
         channel = entry.get("Channel", "unknown")
-        title_desc_lut = {
-            "player": {"title": _(u"Direct message"), "description": ""},
-            "friend": {"title": _(u"Direct message"), "description": ""},
-            "local": {"title": _(u"Local chat"), "description": "```{location}```".format(location=player.location.pretty_print())},
-            "starsystem": {"title": _(u"System chat"), "description": "```{location}```".format(location=player.star_system)},
-            "squadron": {"title": _(u"Squadron chat"), "description": ""},
-            "squadleaders": {"title": _(u"Squadron Leaders chat"), "description": ""},
-            "wing": {"title": _(u"Wing chat"), "description": ""},
-            "crew": {"title": _(u"Crew chat"), "description": ""},
-            "unknown": {"title": _(u"Unknown channel"), "description": ""}
+        description_lut = {
+            "player": _(u"Direct"),
+            "friend": _(u"Direct"),
+            "local": _(u"Local: `{location}`").format(location=player.location.pretty_print()),
+            "starsystem": _(u"System: `{location}`").format(location=player.star_system),
+            "squadron": _(u"Squadron"),
+            "squadleaders": _(u"Squadron Leaders"),
+            "wing": _(u"Wing"),
+            "crew": _(u"Crew"),
+            "unknown": _(u"Unknown")
         }
         
         dm = EDRDiscordMessage()
@@ -281,27 +286,28 @@ class EDRDiscordIntegration(object):
         dm.avatar_url = cfg["icon_url"]
         dm.tts = cfg["tts"]
 
-        de = EDRDiscordEmbed()
-        title_desc = title_desc_lut.get(channel, {"title": channel, "description": ""})
-        de.title = title_desc["title"]
-        de.description = title_desc["description"]
-        de.author = {
-            "name": cfg["name"],
-            "url": cfg["url"],
-            "icon_url": cfg["icon_url"]
-        }
-        de.timestamp = entry["timestamp"]
-        de.color = cfg["color"]
-        de.footer = {
-            "text": "via ED Recon on behalf of Cmdr {}".format(player.name),
-            "icon_url": "https://lekeno.github.io/favicon-16x16.png"
-        }
+        if self.__novel_enough_comms(from_cmdr, entry):
+            de = EDRDiscordEmbed()
+            de.title = _(u"Channel")
+            de.description = description_lut[channel]
+            de.author = {
+                "name": cfg["name"],
+                "url": cfg["url"],
+                "icon_url": cfg["icon_url"]
+            }
+            de.timestamp = entry["timestamp"]
+            de.color = cfg["color"]
+            de.footer = {
+                "text": "via ED Recon on behalf of Cmdr {}".format(player.name),
+                "icon_url": "https://lekeno.github.io/favicon-16x16.png"
+            }
 
-        if sender_profile:
-            df = EDRDiscordField(_(u"EDR Karma"), _(u"```{}```").format(sender_profile.readable_karma(details=True)), True)
-            de.fields.append(df)
-        
-        dm.add_embed(de)
+            if sender_profile:
+                df = EDRDiscordField(_(u"EDR Karma"), format(sender_profile.readable_karma(details=True)), True)
+                de.fields.append(df)
+            
+            dm.add_embed(de)
+            self.cognitive_comms_cache.set(from_cmdr, entry)
         return dm
 
                 
@@ -351,3 +357,12 @@ class EDRDiscordIntegration(object):
             "Lawful": 12971765, "Lawful+": 11001028, "Lawful++": 9030291, "Lawful+++": 7059554, "Lawful++++": 5088817
         }
         return colorLUT.get(readable_karma, 8421246)
+
+    def __novel_enough_comms(self, sender, new_comms):
+        last_comms = self.cognitive_comms_cache.get(sender)
+        if last_comms is None:
+            return True
+
+        delta = new_comms["timestamp"] - last_comms["timestamp"]
+        
+        return (new_comms["Channel"] != last_comms["Channel"] or new_comms["From"] != last_comms["From"]) or delta > self.cognitive_novelty_threshold
