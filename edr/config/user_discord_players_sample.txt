@@ -8,7 +8,7 @@
 ; Per channel options:
 ; Top level "" allows you to set defaults for all channels
 ; Use specific channel names to override the defaults
-;   - Channel names: "local", "starsystem", "afk", "squadron", "squadleaders", "wing", "crew", "player"
+;   - Channel names: "local", "starsystem", "squadron", "squadleaders", "wing", "crew", "player"
 ;
 ; Per cmdr options:
 ;   - defaults can be set with the empty name (e.g. ""). For instance, you can set "": { "blocked": true } to only forward messages from specific commanders by overriding the defaults (e.g. "Space Cabbage Omega": {"blocked": false})
@@ -50,6 +50,10 @@
         "" :{
             "mismatching": [],
             "karma_min": -1000
+        },
+        "Chatty Plantain": {
+            "name": "Chatty Plantain",
+            "spoiler": false
         }
     },
     "wing": {
@@ -81,6 +85,5 @@
             "mismatching": [],
             "karma_min": -1000
         }
-    },
-
+    }
 }
