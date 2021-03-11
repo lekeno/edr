@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2021-03-06 14:39+0900\n"
-"PO-Revision-Date: 2021-03-06 14:43+0900\n"
+"POT-Creation-Date: 2021-03-11 18:34+0900\n"
+"PO-Revision-Date: 2021-03-11 18:34+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -1362,45 +1362,45 @@ msgstr "{iff} selon {tagged_by}"
 msgid "#friend"
 msgstr "#friend"
 
-#: edrdiscord.py:272 edrdiscord.py:273
+#: edrdiscord.py:294 edrdiscord.py:295
 msgid "Direct"
 msgstr ""
 
-#: edrdiscord.py:274
+#: edrdiscord.py:296
 #, python-brace-format
 msgid "Local: `{location}`"
 msgstr ""
 
-#: edrdiscord.py:275
+#: edrdiscord.py:297
 #, python-brace-format
 msgid "System: `{location}`"
 msgstr ""
 
-#: edrdiscord.py:276
+#: edrdiscord.py:298
 msgid "Squadron"
 msgstr "Escadron"
 
-#: edrdiscord.py:277
+#: edrdiscord.py:299
 msgid "Squadron Leaders"
 msgstr "Chefs d'escadron"
 
-#: edrdiscord.py:278
+#: edrdiscord.py:300
 msgid "Wing"
 msgstr ""
 
-#: edrdiscord.py:279
+#: edrdiscord.py:301
 msgid "Crew"
 msgstr ""
 
-#: edrdiscord.py:280 edrfactions.py:84
+#: edrdiscord.py:302 edrfactions.py:84
 msgid "Unknown"
 msgstr "Non reconnu"
 
-#: edrdiscord.py:291
+#: edrdiscord.py:313
 msgid "Channel"
 msgstr ""
 
-#: edrdiscord.py:306
+#: edrdiscord.py:328
 msgid "EDR Karma"
 msgstr "Karma EDR"
 
