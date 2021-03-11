@@ -182,9 +182,9 @@ class EDRDiscordIntegration(object):
         
         players_cfg_path = utils2to3.abspathmaker(__file__, 'config', 'user_discord_players.json')
         try:
-            self.players_cfg = json.loads(open(players_cfg_path).read())
+            self.channels_players_cfg = json.loads(open(players_cfg_path).read())
         except:
-            self.players_cfg = {}
+            self.channels_players_cfg = {}
 
         self.incoming = {
             "afk": {"wh": EDRDiscordWebhook(user_config.discord_webhook("afk")), "tts": user_config.discord_tts("afk")},
@@ -286,7 +286,7 @@ class EDRDiscordIntegration(object):
         if self.__unfit(from_cmdr, message, channel):
             return False
 
-        cfg = self.__combined_cfg(from_cmdr)
+        cfg = self.__combined_cfg(from_cmdr, channel)
 
         sender_profile = self.edrcmdrs.cmdr(from_cmdr, autocreate=False, check_inara_server=False)
         
@@ -383,18 +383,19 @@ class EDRDiscordIntegration(object):
             
         return default_cfg
 
-    def __combined_cfg(self, cmdr):
+    def __combined_cfg(self, cmdr, channel):
         cfg = self.__default_cfg(cmdr)
 
-        if "" in self.players_cfg:
-            cfg.update(self.players_cfg[""])
-        
-        if cmdr in self.players_cfg:
-            cfg.update(self.players_cfg[cmdr])
-        return cfg
+        top_level_cfg = self.channels_players_cfg.get("", {})
+        channel_level_cfg = self.channels_players_cfg.get(channel, {})
 
-    def __cmdr_cfg(self, cmdr):
-        return self.players_cfg.get(cmdr, None)
+        cfg.update(top_level_cfg.get("", {}))
+        cfg.update(top_level_cfg.get(cmdr, {}))
+
+        cfg.update(channel_level_cfg.get("", {}))
+        cfg.update(channel_level_cfg.get(cmdr, {}))
+        
+        return cfg
 
     def __karma_to_discord_color(self, readable_karma):
         colorLUT = {
@@ -429,11 +430,7 @@ class EDRDiscordIntegration(object):
 
 
     def __unfit(self, from_cmdr, message, channel):
-        critical_channels = ["wing", "crew", "squadron", "squadleaders". "player"]
-        cfg = self.__combined_cfg(from_cmdr)
-
-        if channel in critical_channels:
-            cfg = self.__cmdr_cfg(from_cmdr) or self.__default_cfg(from_cmdr)
+        cfg = self.__combined_cfg(from_cmdr, channel)
 
         if cfg.get("blocked", False):
             EDRLOG.log(u"blocked in player cfg: {}".format(cfg), u"DEBUG")
