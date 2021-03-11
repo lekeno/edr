@@ -645,10 +645,10 @@ class EDRClient(object):
         self.status = _(u"[Last: {} cr [{}]]   [Totals: {} cr/hour ({} awarded)]".format(bounty.pretty_print(), self.player.bounty_hunting_stats.last["name"], self.player.bounty_hunting_stats.awarded_nb, credits_per_hour.pretty_print()))
 
     def target_guidance(self, target_event, turn_off=False):
-        if self.visual_feedback:
-            if turn_off or (not target_event or not self.player.target_pilot() or not self.player.target_pilot().vehicle):
+        if turn_off or (not target_event or not self.player.target_pilot() or not self.player.target_pilot().vehicle):
+            if self.visual_feedback:
                 self.IN_GAME_MSG.clear_target_guidance()
-                return
+            return
         
         tgt = self.player.target_vehicle() or self.player.target_pilot().vehicle
         meaningful = tgt.hull_health_stats().meaningful() or tgt.shield_health_stats().meaningful()
