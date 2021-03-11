@@ -2,6 +2,7 @@ import json
 import requests
 import os
 import random
+import re
 from datetime import datetime
 from binascii import crc32
 from hashlib import md5
@@ -15,6 +16,9 @@ from lrucache import LRUCache
 from edrafkdetector import EDRAfkDetector
 from edtime import EDTime
 import backoff
+from edrlog import EDRLog
+
+EDRLOG = EDRLog()
 
 class EDRDiscordSimpleMessage(object):
     def __init__(self, message):
@@ -126,8 +130,8 @@ class EDRDiscordWebhook(object):
     
         message = DiscordSimpleMessage(text)
         payload_json = message.json()
-        resp = EDRDiscordWebhook.SESSION.post(self.webhook_url, json=payload_json)
-        return self.__check_response(resp)
+        
+        return self.__post(payload_json)        
 
     def send(self, discord_message):
         if not self.webhook_url:
@@ -140,11 +144,21 @@ class EDRDiscordWebhook(object):
         if discord_message.files:
             files = discord_message.files
             files["payload_json"] = (None, json.dumps(payload_json))
-            resp = EDRDiscordWebhook.SESSION.post(self.webhook_url, files=files)
+            return self.__post(payload_json=None, files=files)
         else:
-            resp = EDRDiscordWebhook.SESSION.post(self.webhook_url, json=payload_json)
-        return self.__check_response(resp)
+            return self.__post(payload_json)
 
+    def __post(self, payload_json, files=None, attempts=3):
+        while attempts:
+            try:
+                attempts -= 1
+                resp = EDRDiscordWebhook.SESSION.post(self.webhook_url, json=payload_json, files=files)
+                return self.__check_response(resp)
+            except requests.exceptions.RequestException as e:
+                EDRLOG.log(u"ConnectionException {} for POST Discord Webhook: attempts={}".format(e, attempts), u"WARNING")
+                last_connection_exception = e
+        raise last_connection_exception
+    
     def __check_response(self, response):
         if not response:
             return False
@@ -205,6 +219,8 @@ class EDRDiscordIntegration(object):
 
     def __process_incoming(self, entry):
         dm = self.__create_discord_message(entry)
+        if not dm:
+            return False
 
         channel = entry.get("Channel", None)
         if self.afk_detector.is_afk() and self.incoming["afk"] and channel in ["player", "friend"]: # TODO verify the friend thing : doesn't exist??
@@ -259,16 +275,21 @@ class EDRDiscordIntegration(object):
         from_cmdr = entry.get("From", player.name)
         if from_cmdr.startswith("$cmdr_decorate:#name="):
             from_cmdr = entry["From"][len("$cmdr_decorate:#name="):-1]
-             
-        cfg = self.__default_cfg(from_cmdr)
-        if from_cmdr in self.players_cfg:
-            if self.players_cfg[from_cmdr].get("blocked", False):
-                return False
-            cfg.update(self.players_cfg[from_cmdr])
+        
             
+        channel = entry.get("Channel", "unknown")
+        if "To" in entry:
+            channel = "player"
+        message = entry.get("Message", "")
+             
+        
+        if self.__unfit(from_cmdr, message, channel):
+            return False
+
+        cfg = self.__combined_cfg(from_cmdr)
+
         sender_profile = self.edrcmdrs.cmdr(from_cmdr, autocreate=False, check_inara_server=False)
         
-        channel = entry.get("Channel", entry.get("To", "unknown"))
         description_lut = {
             "player": _(u"Direct"),
             "friend": _(u"Direct"),
@@ -282,7 +303,7 @@ class EDRDiscordIntegration(object):
         }
         
         dm = EDRDiscordMessage()
-        dm.content = self.__discord_escape(entry["Message"], add_spoiler_tags=cfg["spoiler"])
+        dm.content = self.__discord_escape(message, add_spoiler_tags=cfg["spoiler"])
         dm.username = cfg["name"]
         dm.avatar_url = cfg["icon_url"]
         dm.tts = cfg["tts"]
@@ -290,7 +311,7 @@ class EDRDiscordIntegration(object):
         if self.__novel_enough_comms(from_cmdr, entry):
             de = EDRDiscordEmbed()
             de.title = _(u"Channel")
-            de.description = description_lut[channel]
+            de.description = description_lut.get(channel, channel)
             de.author = {
                 "name": cfg["name"],
                 "url": cfg["url"],
@@ -314,6 +335,8 @@ class EDRDiscordIntegration(object):
                 
     def __process_outgoing(self, entry):
         dm = self.__create_discord_message(entry)
+        if not dm:
+            return False
         command_parts = entry["Message"].split(" ", 1)
         command = command_parts[0].lower()
         if command and command[0] == "!":
@@ -333,7 +356,6 @@ class EDRDiscordIntegration(object):
         return self.outgoing[channel].send(dm)
 
     def __default_cfg(self, cmdr_name):
-        # TODO replace cmdr to discord color with a ambiguous color code
         random.seed(len(cmdr_name))
         style = random.choice(["identicon", "retro", "monsterid", "wavatar", "robohash"])
         gravatar_url = u"https://www.gravatar.com/avatar/{}?d={}&f=y".format(md5(cmdr_name.encode('utf-8')).hexdigest(), style)
@@ -346,15 +368,33 @@ class EDRDiscordIntegration(object):
             "thumbnail": "",
             "tts": False,
             "blocked": False,
-            "spoiler": False
+            "spoiler": False,
+            "mismatching": None,
+            "matching": None,
+            "min_karma": -1000,
+            "max_karma": 1000
         }
+        
         profile = self.edrcmdrs.cmdr(cmdr_name, autocreate=False, check_inara_server=True)
         if profile:
             default_cfg["color"] = self.__karma_to_discord_color(profile.readable_karma(prefix=False))
             default_cfg["url"] = profile.url or default_cfg["url"]
             default_cfg["icon_url"] = profile.avatar_url or default_cfg["icon_url"]
-
+            
         return default_cfg
+
+    def __combined_cfg(self, cmdr):
+        cfg = self.__default_cfg(cmdr)
+
+        if "" in self.players_cfg:
+            cfg.update(self.players_cfg[""])
+        
+        if cmdr in self.players_cfg:
+            cfg.update(self.players_cfg[cmdr])
+        return cfg
+
+    def __cmdr_cfg(self, cmdr):
+        return self.players_cfg.get(cmdr, None)
 
     def __karma_to_discord_color(self, readable_karma):
         colorLUT = {
@@ -386,3 +426,40 @@ class EDRDiscordIntegration(object):
             escaped_message = escaped_message.replace(u'||', u'|​\u200b|​\u200b')
             return u"||{}||".format(escaped_message)
         return escaped_message
+
+
+    def __unfit(self, from_cmdr, message, channel):
+        critical_channels = ["wing", "crew", "squadron", "squadleaders". "player"]
+        cfg = self.__combined_cfg(from_cmdr)
+
+        if channel in critical_channels:
+            cfg = self.__cmdr_cfg(from_cmdr) or self.__default_cfg(from_cmdr)
+
+        if cfg.get("blocked", False):
+            EDRLOG.log(u"blocked in player cfg: {}".format(cfg), u"DEBUG")
+            return True
+
+        if cfg["matching"]:
+            try:
+                if not(any(re.compile(regex).match(message) for regex in cfg["matching"])):
+                    EDRLOG.log(u"no matching in player cfg: {} {}".format(message, cfg["matching"]), u"DEBUG")
+                    return True
+            except:
+                pass
+        
+        if cfg["mismatching"]:
+            try:
+                if any(re.compile(regex).match(message) for regex in cfg["mismatching"]):
+                    EDRLOG.log(u"mismatching in player cfg: {} {}".format(message, cfg["mismatching"]), u"DEBUG")
+                    return True
+            except:
+                pass
+
+        if "min_karma" in cfg or "max_karma" in cfg:
+            profile = self.edrcmdrs.cmdr(from_cmdr, autocreate=False, check_inara_server=True)
+            karma = profile.karma if profile else 0
+            karma_check = karma < cfg["min_karma"] or karma > cfg["max_karma"]
+            EDRLOG.log(u"Karma check is {} ({} < karma < {})".format(karma_check, cfg["min_karma"], cfg["max_karma"]), u"DEBUG")
+            return karma_check
+        
+        return False
