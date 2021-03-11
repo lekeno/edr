@@ -3,7 +3,11 @@
 ;  2. remove all the comment lines (e.g. prefixed with ;)
 ;  3. modify its content to reflect your needs 
 ;   
-; Use this to define a list of players that you don't want to see messages from in the discord integration feature (see user_config_sample.ini)
+; Use this to customize the discord integration:
+;   - defaults by using the empty name (e.g. ""). For instance, you can set "": { "blocked": true } to only forward messages from specific commanders by overriding the defaults (e.g. "Space Cabbage Omega": {"blocked": false})
+;   - for specific players (e.g. blocking or hiding messages from a specific commander, etc.)
+;
+; Note that some of the defaults (i.e. blocked, matching, mismatching, min_karma, max_karma) are ignored for the wing, crew, player (direct), squadron, and squadron leaders channels
 ;
 ; Explanation of the different fields (all optional):
 ;      "blocked": true          set to true if you don't want to read this commander's messages, remove or set to false otherwise
@@ -15,20 +19,22 @@
 ;      "thumbnail": ""          use this to force a thumbnail in the extra info embed
 ;      "tts": false             text-to-speech: set to true if you want discord to read this commander's message aloud
 ;      "spoiler": false         set to true if you want to hide this commander's messages behind a spoiler tag (requires a click to reveal the content)
+;      "matching": ["list of","regular expressions"] message must match one of those regular expressions (ignored for wing, crew, squadron, squadron leaders channels)
+;      "mismatching:  ["list of", "regular expressions"] message must NOT match any of those regular expressions (ignored for wing, crew, squadron, squadron leaders channels)
+;      "min_karma": -100       use this to set the minimum EDR karma allowed
+;      "max_karma": 1000       use this to set the maximum EDR karma allowed
+;      
 ;
 {
+    "" :{
+        "mismatching": ["(?i)git[ ]*gud"],
+        "karma_min": -100
+    },
     "Cranky North-Star": {
         "blocked": true
     },
     "Chatty Plantain": {
         "name": "[NPC] Chatty Plantain",
         "spoiler": true
-    },
-    "LeKeno": {
-        "name": "[EDR] LeKeno",
-        "color": "0099E1",
-        "url": "https://inara.cz/cmdr/11094/",
-        "icon_url": "https://inara.cz/data/users/11/11094x2648.jpg",
-        "tts": true
     }
 }
