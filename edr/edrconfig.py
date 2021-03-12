@@ -29,16 +29,6 @@ class EDRUserConfig(object):
                 return None
         return None
 
-    def discord_tts(self, channel):
-        if self.config:
-            section = "discord_incoming"
-            key = "{}_tts".format(channel)
-            try:
-                return self.config.getboolean(section, key)
-            except:
-                return False
-        return False
-
 
 class EDRConfig(object):
     def __init__(self, config_file='config/config.ini'):

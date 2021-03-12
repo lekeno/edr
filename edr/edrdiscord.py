@@ -187,14 +187,14 @@ class EDRDiscordIntegration(object):
             self.channels_players_cfg = {}
 
         self.incoming = {
-            "afk": {"wh": EDRDiscordWebhook(user_config.discord_webhook("afk")), "tts": user_config.discord_tts("afk")},
-            "squadron": {"wh": EDRDiscordWebhook(user_config.discord_webhook("squadron")), "tts": user_config.discord_tts("squadron")},
-            "squadleaders": {"wh": EDRDiscordWebhook(user_config.discord_webhook("squadronleaders")), "tts": user_config.discord_tts("squadronleaders")},
-            "starsystem": {"wh": EDRDiscordWebhook(user_config.discord_webhook("starsystem")), "tts": user_config.discord_tts("starsystem")},
-            "local": {"wh": EDRDiscordWebhook(user_config.discord_webhook("local")), "tts": user_config.discord_tts("local")},
-            "wing": {"wh": EDRDiscordWebhook(user_config.discord_webhook("wing")), "tts": user_config.discord_tts("wing")},
-            "crew": {"wh": EDRDiscordWebhook(user_config.discord_webhook("crew")), "tts": user_config.discord_tts("crew")},
-            "player": {"wh": EDRDiscordWebhook(user_config.discord_webhook("player")), "tts": user_config.discord_tts("player")},
+            "afk": EDRDiscordWebhook(user_config.discord_webhook("afk")),
+            "squadron": EDRDiscordWebhook(user_config.discord_webhook("squadron")),
+            "squadleaders": EDRDiscordWebhook(user_config.discord_webhook("squadronleaders")),
+            "starsystem": EDRDiscordWebhook(user_config.discord_webhook("starsystem")),
+            "local": EDRDiscordWebhook(user_config.discord_webhook("local")),
+            "wing": EDRDiscordWebhook(user_config.discord_webhook("wing")),
+            "crew": EDRDiscordWebhook(user_config.discord_webhook("crew")),
+            "player": EDRDiscordWebhook(user_config.discord_webhook("player")),
         }
         
         self.outgoing = {
@@ -223,16 +223,14 @@ class EDRDiscordIntegration(object):
             return False
 
         channel = entry.get("Channel", None)
-        if self.afk_detector.is_afk() and self.incoming["afk"] and channel in ["player", "friend"]: # TODO verify the friend thing : doesn't exist??
-            dm.tts |= self.incoming["afk"]["tts"]
-            return self.incoming["afk"]["wh"].send(dm)
+        if self.afk_detector.is_afk() and self.incoming["afk"] and channel in ["player", "friend"]:
+            return self.incoming["afk"].send(dm)
         
         if not (channel in self.incoming and self.incoming[channel]):
             # TODO: support voicechat channel?
             return False
 
-        dm.tts |= self.incoming[channel]["tts"]
-        return self.incoming[channel]["wh"].send(dm)
+        return self.incoming[channel].send(dm)
     
     def __cmdrname_to_discord_color(self, name):
         saturation = [x / 100 for x in range(10, 91, 20)]

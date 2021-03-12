@@ -28,8 +28,8 @@
 ;      "spoiler": false         set to true if you want to hide this commander's messages behind a spoiler tag (requires a click to reveal the content)
 ;      "matching": ["list of","regular expressions"] message must match one of those regular expressions (ignored for wing, crew, squadron, squadron leaders channels)
 ;      "mismatching:  ["list of", "regular expressions"] message must NOT match any of those regular expressions (ignored for wing, crew, squadron, squadron leaders channels)
-;      "min_karma": -100       use this to set the minimum EDR karma allowed
-;      "max_karma": 1000       use this to set the maximum EDR karma allowed
+;      "min_karma": -100        use this to set the minimum EDR karma allowed
+;      "max_karma": 1000        use this to set the maximum EDR karma allowed
 ;      
 ;
 {
