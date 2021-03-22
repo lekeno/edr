@@ -1,8 +1,11 @@
 import re
 import os
 import json
+from collections import deque
+
 from edtime import EDTime
 import edrconfig
+import edrhitppoints
 import edmodule
 import edmodulesinforeader
 import edcargoreader
@@ -35,7 +38,6 @@ class EDVehicleAttitude(object):
             return False
         return True
 
-
 class EDVehicleSize(object):
     UNKNOWN = 1
     SMALL = 2
@@ -53,8 +55,10 @@ class EDVehicle(object):
         self._value = None
         self.hot = False
         now = EDTime.py_epoch_now()
-        self._hull_health = {"timestamp": now, "value": 100.0}
-        self._shield_health = {"timestamp": now, "value": 100.0}
+        now_ms = EDTime.ms_epoch_now()
+        config = edrconfig.EDR_CONFIG
+        self._hull_health = edrhitppoints.EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
+        self._shield_health = edrhitppoints.EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
         self.shield_up = True
         self.subsystems = {}
         self.timestamp = now
@@ -64,7 +68,6 @@ class EDVehicle(object):
         self.heat_damaged = {u"value": False, u"timestamp": now}
         self._in_danger = {u"value": False, u"timestamp": now}
         self._low_fuel = {u"value": False, u"timestamp": now}
-        config = edrconfig.EDRConfig()
         self.fight_staleness_threshold = config.instance_fight_staleness_threshold()
         self.danger_staleness_threshold = config.instance_danger_staleness_threshold()
         self.seats = 1
@@ -81,13 +84,16 @@ class EDVehicle(object):
         
     @property
     def hull_health(self):
-        return self._hull_health["value"]
+        if self._hull_health.empty():
+            return None
+        return self._hull_health.last_value()
+
+    def hull_health_stats(self):
+        return self._hull_health
 
     @hull_health.setter
     def hull_health(self, new_value):
-        now = EDTime.py_epoch_now()
-        self.timestamp = now
-        self._hull_health = {"timestamp": now, "value": new_value}
+        self._hull_health.update(new_value)
 
     @property
     def value(self):
@@ -100,13 +106,20 @@ class EDVehicle(object):
 
     @property
     def shield_health(self):
-        return self._shield_health["value"]
+        if self._shield_health.empty():
+            return None
+        return self._shield_health.last_value()
+
+    def shield_health_stats(self):
+        return self._shield_health
     
     @shield_health.setter
     def shield_health(self, new_value):
-        now = EDTime.py_epoch_now()
-        self.timestamp = now
-        self._shield_health = {"timestamp": now, "value": new_value}
+        if new_value == 0:
+            self.shield_up = False
+        elif not self.shield_up and new_value >= 90:
+            self.shield_up = True # highly speculative...
+        self._shield_health.update(new_value)
 
     @property
     def low_fuel(self):
@@ -128,8 +141,8 @@ class EDVehicle(object):
         result = {
             u"timestamp": int(self.timestamp * 1000),
             u"type": self.type,
-            u"hullHealth": self.__js_t_v(self._hull_health),
-            u"shieldHealth": self.__js_t_v(self._shield_health),
+            u"hullHealth": {"timestamp": int(self.timestamp * 1000), "value": 100} if self._hull_health.empty() else self._hull_health.last(),
+            u"shieldHealth": {"timestamp": int(self.timestamp * 1000), "value": 100} if self._shield_health.empty() else self._shield_health.last(),
             u"shieldUp": self.shield_up,
             u"keySubsystems": self.__key_subsystems()
         }
@@ -140,6 +153,7 @@ class EDVehicle(object):
 
         return result
 
+    # TODO adjust all timestamp to ms?
     def __js_t_v(self, t_v):
         result = t_v.copy()
         result["timestamp"] = int(t_v["timestamp"]*1000)
@@ -161,7 +175,7 @@ class EDVehicle(object):
             if match:
                 prefix = match.group(1)
                 canonical_name = key_prefixes_lut[prefix]
-                key_subsys[canonical_name] = self.__js_t_v(self.subsystems[internal_name])
+                key_subsys[canonical_name] = self.subsystems[internal_name].last()
         return key_subsys
 
     def __repr__(self):
@@ -307,18 +321,32 @@ class EDVehicle(object):
         if subsystem is None:
             return
         canonical = EDVehicleFactory.normalize_module_name(subsystem)
-        now = EDTime.py_epoch_now()
+        now = EDTime.ms_epoch_now()
         self.timestamp = now
-        self.subsystems[canonical] = {u"timestamp": now, u"value": health}
+        if canonical not in self.subsystems:
+            config = edrconfig.EDR_CONFIG
+            self.subsystems[canonical] = edrhitppoints.EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
+        self.subsystems[canonical].update(health)
+
+    def subsystem_details(self, subsystem):
+        if subsystem is None:
+            return
+        canonical = EDVehicleFactory.normalize_module_name(subsystem)
+        if canonical not in self.subsystems:
+            return
+        readable_name, short_name = EDVehicleFactory.readable_module_names(subsystem)
+        return {"name": readable_name, "shortname": short_name, "stats": self.subsystems[canonical]}
 
     def add_subsystem(self, subsystem):
         if not subsystem:
             return
         canonical = EDVehicleFactory.normalize_module_name(subsystem)
-        now = EDTime.py_epoch_now()
+        now = EDTime.ms_epoch_now()
         self.timestamp = now
         self.outfit_probably_changed()
-        self.subsystems[canonical] = {u"timestamp": now, u"value": None}
+        config = edrconfig.EDR_CONFIG
+        self.subsystems[canonical] = edrhitppoints.EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
+        self.subsystems[canonical].update(None)
     
     def remove_subsystem(self, subsystem):
         if subsystem is None:
@@ -437,6 +465,15 @@ class EDVehicle(object):
             if self.slots[slot_name].is_prospector_drone_controller():
                 return True
         return False
+    
+    def describe_loadout(self):
+        weighted_tags = {}
+        for  module in self.subsystems:
+            module_tags = EDVehicle.module_tags(slot_name)
+            for tag in module_tags:
+                weighted_tags[tag] = module_tags[tag] + weighted_tags.get(tag, 0) 
+
+        return sorted(weighted_tags, key=weighted_tags.get, reverse=True)
 
     def __eq__(self, other):
         if not isinstance(other, EDVehicle):
@@ -901,6 +938,7 @@ class EDVehicleFactory(object):
     }
 
     CANONICAL_SHIP_NAMES = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'shipnames.json')).read())
+    CANONICAL_MODULE_NAMES = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'modulenames.json')).read())
 
     @staticmethod
     def canonicalize(name):
@@ -934,7 +972,39 @@ class EDVehicleFactory(object):
         if normalized.startswith((u"int_", u"ext_", u"hpt_")):
             normalized = normalized[4:]
         return normalized
-        
+
+    @staticmethod
+    def readable_module_names(name):
+        if name is None:
+            return u"Unknown" # Note: this shouldn't be translated
+
+        if name in EDVehicleFactory.CANONICAL_MODULE_NAMES.values():
+            return name # Already canonical
+
+        normalized = EDVehicleFactory.normalize_module_name(name)
+        if normalized in EDVehicleFactory.CANONICAL_MODULE_NAMES:
+            return (EDVehicleFactory.CANONICAL_MODULE_NAMES[normalized]["name"], EDVehicleFactory.CANONICAL_MODULE_NAMES[normalized]["shortname"])
+
+        match = re.search('([a-zA-Z_]*)_size([0-9])_class([0-9])_?([a-zA-Z_]*)?', normalized)
+        if match:
+            class_letter = chr(70-int(match.group(3)))
+            synthetic_name = ""
+            if match.group(4):
+                synthetic_name = u"{} {} ({}{})".format(match.group(1), match.group(4), match.group(2), class_letter)
+            else:
+                synthetic_name = u"{} ({}{})".format(match.group(1), match.group(2), class_letter)
+            return (synthetic_name, synthetic_name)
+        return (normalized.lower(), normalized.lower())
+
+    @staticmethod
+    def module_tags(name):
+        if name is None:
+            return {}
+
+        normalized = EDVehicleFactory.normalize_module_name(name)
+        if normalized not in EDVehicleFactory.CANONICAL_MODULE_NAMES:
+            return {}
+        return EDVehicleFactory.CANONICAL_MODULE_NAMES[normalized].get("tags", {})
 
     @staticmethod
     def from_edmc_state(state):

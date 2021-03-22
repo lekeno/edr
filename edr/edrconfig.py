@@ -186,3 +186,14 @@ class EDRConfig(object):
 
     def instance_danger_staleness_threshold(self):
         return int(self.config.get('instance', 'danger_staleness_threshold'))
+
+    def hpp_trend_span(self):
+        return int(self.config.get('hpp', 'trend_span'))
+
+    def hpp_history_max_points(self):
+        return int(self.config.get('hpp', 'history_max_points'))
+    
+    def hpp_history_max_span(self):
+        return int(self.config.get('hpp', 'history_max_span'))
+
+EDR_CONFIG = EDRConfig()

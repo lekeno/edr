@@ -12,6 +12,7 @@ from edri18n import _, _c
 import utils2to3
 from edrlandables import EDRLandables
 from edentities import EDFineOrBounty
+from edtime import EDTime
 
 EDRLOG = edrlog.EDRLog()
 
@@ -28,7 +29,7 @@ except ImportError:
 import lrucache
 
 class InGameMsg(object):   
-    MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice", "help", "navigation", "docking", "mining", "bounty-hunting"]
+    MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice", "help", "navigation", "docking", "mining", "bounty-hunting", "target-guidance"]
     LEGAL_KINDS = ["intel", "warning"] 
 
     def __init__(self):
@@ -43,6 +44,7 @@ class InGameMsg(object):
         self.docking_config()
         self.mining_config()
         self.bounty_hunting_config()
+        self.target_guidance_config()
         self.msg_ids = lrucache.LRUCache(1000, 60*15)
 
     def general_config(self):
@@ -61,6 +63,7 @@ class InGameMsg(object):
     def message_config(self, kind):
         conf = igmconfig.IGMConfig() 
         self.cfg[kind] = {
+            "enabled": conf._getboolean(kind, "enabled"),
             "h": {
                 "x": conf.x(kind, "header"),
                 "y": conf.y(kind, "header"),
@@ -145,7 +148,7 @@ class InGameMsg(object):
 
     def docking_config(self):
         conf = igmconfig.IGMConfig()
-        kind = "docking-station" 
+        kind = "docking-station"
         self.cfg[kind] = {
             "enabled": conf._getboolean(kind, "enabled"),
             "schema": {
@@ -266,7 +269,52 @@ class InGameMsg(object):
             "fill": conf.fill(kind, "panel")
         }
 
+    def target_guidance_config(self):
+        conf = igmconfig.IGMConfig()
+        kind = "target-guidance-graphs" 
+        self.cfg[kind] = {
+            "enabled": conf._getboolean(kind, "enabled"),
+            "shield": {
+                "x": conf.x(kind, "shield"),
+                "y": conf.y(kind, "shield"),
+                "h": conf.h(kind, "shield"),
+                "w": conf.w(kind, "shield"),
+                "ttl": conf.ttl(kind, "shield"),
+                "rgb": conf.rgb_list(kind, "shield")
+            },
+            "hull": {
+                "x": conf.x(kind, "hull"),
+                "y": conf.y(kind, "hull"),
+                "h": conf.h(kind, "hull"),
+                "w": conf.w(kind, "hull"),
+                "ttl": conf.ttl(kind, "hull"),
+                "rgb": conf.rgb_list(kind, "hull")
+            },
+            "subsys": {
+                "x": conf.x(kind, "subsys"),
+                "y": conf.y(kind, "subsys"),
+                "h": conf.h(kind, "subsys"),
+                "w": conf.w(kind, "subsys"),
+                "ttl": conf.ttl(kind, "subsys"),
+                "rgb": conf.rgb_list(kind, "subsys")
+            },
+        }
+        if not conf.panel(kind):
+            return
+        self.cfg[kind]["panel"] = {
+            "x": conf.x(kind, "panel"),
+            "y": conf.y(kind, "panel"),
+            "x2": conf.x2(kind, "panel"),
+            "y2": conf.y2(kind, "panel"),
+            "ttl": conf.ttl(kind, "panel"),
+            "rgb": conf.rgb(kind, "panel"),
+            "fill": conf.fill(kind, "panel")
+        }
+
     def intel(self, header, details, legal=None):
+        if not self.cfg["intel"].get("enabled", None):
+            return
+
         self.__clear_if_needed()
         if "panel" in self.cfg["intel"]:
             self.__shape("intel", self.cfg["intel"]["panel"])
@@ -284,6 +332,9 @@ class InGameMsg(object):
         
 
     def warning(self, header, details, legal=None):
+        if not self.cfg["warning"].get("enabled", None):
+            return
+
         self.__clear_if_needed()
         if "panel" in self.cfg["warning"]:
             self.__shape("warning", self.cfg["warning"]["panel"])
@@ -299,6 +350,9 @@ class InGameMsg(object):
         self.__legal_vizualization(legal, "warning")
 
     def notify(self, header, details):
+        if not self.cfg["notice"].get("enabled", None):
+            return
+
         self.__clear_if_needed()
         if "panel" in self.cfg["notice"]:
             self.__shape("notify", self.cfg["notify"]["panel"])
@@ -306,6 +360,8 @@ class InGameMsg(object):
         self.__msg_body("notice", details)
     
     def help(self, header, details):
+        if not self.cfg["help"].get("enabled", None):
+            return
         self.__clear_if_needed()
         if "panel" in self.cfg["help"]:
             self.__shape("help", self.cfg["help"]["panel"])
@@ -314,6 +370,8 @@ class InGameMsg(object):
         self.must_clear = True
 
     def sitrep(self, header, details):
+        if not self.cfg["sitrep"].get("enabled", None):
+            return
         self.__clear_if_needed()
         self.__clear_kind("sitrep")
         if "panel" in self.cfg["sitrep"]:
@@ -322,6 +380,8 @@ class InGameMsg(object):
         self.__msg_body("sitrep", details)
 
     def navigation(self, bearing, destination, distance=None, pitch=None):
+        if not self.cfg["navigation"].get("enabled", None):
+            return
         self.clear_navigation()
         if "panel" in self.cfg["navigation"]:
             self.__shape("navigation", self.cfg["navigation"]["panel"])
@@ -335,6 +395,9 @@ class InGameMsg(object):
         self.__msg_body("navigation", details)
 
     def docking(self, system, station, pad):
+        if not self.cfg["docking"].get("enabled", None):
+            return
+
         self.clear_docking()
         if not station:
             return
@@ -780,6 +843,8 @@ class InGameMsg(object):
             m += 1
 
     def mining_guidance(self, mining_stats):
+        if not self.cfg["mining"].get("enabled", None):
+            return
         self.clear_mining_guidance()
         if "panel" in self.cfg["mining"]:
             self.__shape("mining", self.cfg["mining"]["panel"])
@@ -789,7 +854,10 @@ class InGameMsg(object):
         header = _(u"Mining Stats")
         details = []
         has_stuff = mining_stats.last["proportion"] > 0
-        details.append(_(u"ITM %: {:>6.2f}  [{}/{}; {}]".format(mining_stats.last["proportion"], 1 if has_stuff else 0, mining_stats.last["materials"], mining_stats.last["raw"])))
+        if mining_stats.depleted:
+            details.append(_(u">>>>  DEPLETED  <<<<"))
+        else:
+            details.append(_(u"ITM %: {:>6.2f}  [{}/{}; {}]".format(mining_stats.last["proportion"], 1 if has_stuff else 0, mining_stats.last["materials"], mining_stats.last["raw"])))
         details.append(_(u"MAX %: {:>6.2f}".format(mining_stats.max)))
         details.append(_(u"AVG %: {:>6.2f}".format(mining_stats.mineral_yield_average())))
         details.append(_(u"ITM/H: {:>6.0f} [TGT: {:.0f}]".format(mining_stats.mineral_per_hour(), mining_stats.max_efficiency)))
@@ -858,7 +926,7 @@ class InGameMsg(object):
         for c in mining_stats.distribution["bins"][1:]:
             dx = cfg["distribution"]["x"]
             dy = cfg["distribution"]["y"]
-            p = c / max_distribution
+            p = c / max_distribution if max_distribution > 0 else 1 
             h = max(p * cfg["distribution"]["h"],1) if c else 0
             x = h
             bar["x"] = int(dx)
@@ -905,7 +973,11 @@ class InGameMsg(object):
             x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}
 
     def bounty_hunting_guidance(self, bounty_hunting_stats):
+        if not self.cfg["bounty-hunting"].get("enabled", None):
+            return
+
         self.clear_bounty_hunting_guidance()
+        self.clear_docking()
         if "panel" in self.cfg["bounty-hunting"]:
             self.__shape("bounty-hunting", self.cfg["bounty-hunting"]["panel"])
         if "panel" in self.cfg["bounty-hunting-graphs"] and self.cfg["bounty-hunting-graphs"].get("enabled", False):
@@ -926,7 +998,7 @@ class InGameMsg(object):
         details.append(_(u"TOTALS: {} cr [{} rewards]".format(total_awarded.pretty_print(), bounty_hunting_stats.awarded_nb)))
         self.__msg_header("bounty-hunting", header)
         self.__msg_body("bounty-hunting", details)
-
+        
         if not self.cfg["bounty-hunting-graphs"].get("enabled", None):
             return
         self.__bounty_hunting_vizualization(bounty_hunting_stats)
@@ -988,7 +1060,7 @@ class InGameMsg(object):
         for c in bounty_hunting_stats.distribution["bins"][1:]:
             dx = cfg["distribution"]["x"]
             dy = cfg["distribution"]["y"]
-            p = c / max_distribution
+            p = c / max_distribution if max_distribution > 0 else 1
             h = max(p * cfg["distribution"]["h"],1) if c else 0
             x = h
             bar["x"] = int(dx)
@@ -1034,6 +1106,210 @@ class InGameMsg(object):
             self.__shape(u"bounty-hunting-graphs-efficiency-bar", bar)
             x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}
 
+    def target_guidance(self, target, subsys_details=None):
+        if not self.cfg["target-guidance"].get("enabled", None):
+            return
+
+        self.clear_target_guidance()
+        if not target or not target.vehicle:
+            return
+        tgt_vehicle = target.targeted_vehicle or target.vehicle
+        if "panel" in self.cfg["target-guidance"]:
+            self.__shape("target-guidance", self.cfg["target-guidance"]["panel"])
+        if "panel" in self.cfg["target-guidance-graphs"] and self.cfg["target-guidance-graphs"].get("enabled", False):
+            self.__shape("target-guidance-graphs", self.cfg["target-guidance-graphs"]["panel"])
+        
+        header = _(u"{prefix}{cmdr} ({ship})").format(prefix=_(u"CMDR ") if target.is_human() else "", cmdr=target.name, ship=tgt_vehicle.type)
+        details = []
+        
+        shield_stats = tgt_vehicle.shield_health_stats()
+        shield_label = u"{:.4g}".format(tgt_vehicle.shield_health) if tgt_vehicle.shield_health else u"-"
+        delta_shield = ""
+        signal = "●" if tgt_vehicle.shield_up and shield_stats.last_value() else "◌"
+        trend = shield_stats.trend()
+        if int(trend) > 0:
+            signal = "▴" if tgt_vehicle.shield_up and shield_stats.last_value() > 0 else "▵"
+            if trend < 60*60:
+                delta_shield = _(u"[{} to 100%/UP]").format(EDTime.pretty_print_timespan(int(trend), short=True, verbose=False))
+        elif int(trend) < 0:
+            signal = "▾"
+            if trend > -60*60:
+                delta_shield = _(u"[{} to   0%]").format(EDTime.pretty_print_timespan(int(-trend), short=True, verbose=False))
+        details.append(_(u"SHLD{}: {}% {}".format(signal, shield_label, delta_shield)))
+
+        hull_stats = tgt_vehicle.hull_health_stats()
+        hull_label = u"{:.4g}".format(tgt_vehicle.hull_health) if tgt_vehicle.hull_health else u"-"
+        delta_hull = ""
+        signal = "●"
+        trend = hull_stats.trend()
+        if int(trend) > 0:
+            signal = "▴"
+            if trend < 60*60:
+                delta_hull = _(u"[{} to 100%]").format(EDTime.pretty_print_timespan(int(trend), short=True, verbose=False))
+        elif int(trend) < 0:
+            signal = "▾"
+            if trend > -60*60:
+                delta_hull = _(u"[{} to   0%]").format(EDTime.pretty_print_timespan(int(-trend), short=True, verbose=False))
+        details.append(_(u"HULL{}: {}% {}".format(signal, hull_label, delta_hull)))
+
+        if subsys_details:
+            signal = "●"
+            delta_subsys = ""
+            if subsys_details["stats"].meaningful():
+                trend = subsys_details["stats"].trend()
+                if int(trend) > 0:
+                    signal = "▴"
+                    if trend < 60*60:
+                        delta_subsys = _(u"[{} to 100%]").format(EDTime.pretty_print_timespan(int(trend), short=True, verbose=False))
+                elif int(trend) < 0:
+                    signal = "▾"
+                    if trend > -60*60:
+                        delta_subsys = _(u"[{} to   0%]").format(EDTime.pretty_print_timespan(int(-trend), short=True, verbose=False))
+            details.append(_(u"{subsys}{signal}: {hp:.4g}% {delta}".format(subsys=subsys_details["shortname"], signal=signal, hp=subsys_details["stats"].last_value(), delta=delta_subsys)))
+        self.__msg_header("target-guidance", header)
+        self.__msg_body("target-guidance", details)
+
+        if not self.cfg["target-guidance-graphs"].get("enabled", None):
+            return
+        subsys_stats = subsys_details["stats"] if subsys_details else None
+        self.__target_guidance_vizualization(tgt_vehicle.shield_up, shield_stats, hull_stats, subsys_stats)
+    
+    def __target_guidance_vizualization(self, shield_up, shield_stats, hull_stats, subsys_stats):
+        shield_history = shield_stats.history
+        hull_history = hull_stats.history
+        subsys_history = subsys_stats.history if subsys_stats else None
+        if len(shield_history) == 0 or len(hull_history) == 0:
+            return
+
+        cfg = self.cfg[u"target-guidance-graphs"]
+        xspan = max(shield_stats.history_max_span_ms, hull_stats.history_max_span_ms)
+        if subsys_history:
+            xspan = max(xspan, subsys_stats.history_max_span_ms)
+        x = cfg["shield"]["x"]
+        y = cfg["shield"]["y"]
+        w = cfg["shield"]["w"]
+        h = cfg["shield"]["h"]
+        hw = w/2.0
+        hh = h/2.0
+        cx = x
+        cy = y+h
+        scaled = []
+        last = max(shield_history[-1]["timestamp"], hull_history[-1]["timestamp"])
+        if subsys_history:
+            last = max(last, subsys_history[-1]["timestamp"])
+        shield_down = not shield_up or (shield_history[-1]["value"] <= 0 if shield_history[-1] else False)
+        EDRLOG.log("shield {}".format(shield_history), "DEBUG")
+        for t_v in shield_history:
+            t = t_v["timestamp"]
+            if (last - t) > xspan and len(scaled) >= 2:
+                continue
+            x = max(0.0, 1.0 - (last-t) / xspan)
+            y = t_v["value"]/100.0
+            s = {"x":int(cx+x*w), "y":int(cy-(y*h))}
+            if scaled and scaled[-1]["x"] == s["x"]:
+                adjusted = scaled[-1]
+                adjusted["y"] = min(scaled[-1]["y"], s["y"])
+                EDRLOG.log("quantization s{} & ps{} >>> s{}".format(s, scaled[-1], adjusted), "DEBUG")
+                scaled[-1] = adjusted
+            else:
+                scaled.append(s)
+        vect = {
+            "id": u"shield-sparkline",
+            "color": cfg["shield"]["rgb"][1] if shield_down else cfg["shield"]["rgb"][0],
+            "ttl": cfg["shield"]["ttl"],
+            "vector": scaled
+        }
+        self.__vect(u"target-guidance", vect)
+
+        x = 1.0 - shield_stats.trend_span_ms / xspan
+        vect = {
+            "id": u"shield-trend-span",
+            "color": cfg["shield"]["rgb"][2],
+            "ttl": cfg["shield"]["ttl"],
+            "vector": [{"x":int(cx+x*w), "y":int(cy-.5*h-1)}, {"x":int(cx+x*w), "y":int(cy-.5*h+1)}]
+        }
+        self.__vect(u"target-guidance", vect)
+            
+
+        x = cfg["hull"]["x"]
+        y = cfg["hull"]["y"]
+        w = cfg["hull"]["w"]
+        h = cfg["hull"]["h"]
+        cx = x
+        cy = y+h
+        scaled = []
+        EDRLOG.log("hull {}".format(hull_history), "DEBUG")
+        for t_v in hull_history:
+            t = t_v["timestamp"]
+            if (last - t) > xspan and len(scaled) >= 2:
+                continue
+            x = max(0.0, 1.0 - (last-t) / xspan)
+            y = t_v["value"]/100.0
+            s = {"x":int(cx+x*w), "y":int(cy-(y*h))}
+            if scaled and scaled[-1]["x"] == s["x"]:
+                adjusted = scaled[-1]
+                adjusted["y"] = min(scaled[-1]["y"] , s["y"])
+                EDRLOG.log("quantization s{} & ps{} >>> s{}".format(s, scaled[-1], adjusted), "DEBUG")
+                scaled[-1] = adjusted
+            else:
+                scaled.append(s)
+        vect = {
+            "id": u"hull-sparkline",
+            "color": cfg["hull"]["rgb"][0],
+            "ttl": cfg["hull"]["ttl"],
+            "vector": scaled
+        }
+        self.__vect(u"target-guidance", vect)
+        
+        x = 1.0 - hull_stats.trend_span_ms / xspan
+        vect = {
+            "id": u"hull-trend-span",
+            "color": cfg["hull"]["rgb"][1],
+            "ttl": cfg["hull"]["ttl"],
+            "vector": [{"x":int(cx+x*w), "y":int(cy-.5*h-1)}, {"x":int(cx+x*w), "y":int(cy-.5*h+1)}]
+        }
+        self.__vect(u"target-guidance", vect)
+
+        if not subsys_history or len(subsys_history) == 0:
+            return
+        x = cfg["subsys"]["x"]
+        y = cfg["subsys"]["y"]
+        w = cfg["subsys"]["w"]
+        h = cfg["subsys"]["h"]
+        cx = x
+        cy = y+h
+        scaled = []
+        EDRLOG.log("subsys {}".format(subsys_history), "DEBUG")
+        for t_v in subsys_history:
+            t = t_v["timestamp"]
+            if (last - t) > xspan and len(scaled) >= 2:
+                continue
+            x = max(0.0, 1.0 - (last-t) / xspan)
+            y = t_v["value"]/100.0
+            s = {"x":int(cx+x*w), "y":int(cy-(y*h))}
+            if scaled and scaled[-1]["x"] == s["x"]:
+                adjusted = {"x": s["x"], "y": min(scaled[-1]["y"], s["y"])}
+                EDRLOG.log("quantization s{} & ps{} >>> adj.{}".format(s, scaled[-1], adjusted), "DEBUG")
+                scaled[-1] = adjusted
+            else:
+                scaled.append(s)
+        vect = {
+            "id": u"subsys-sparkline",
+            "color": cfg["subsys"]["rgb"][0],
+            "ttl": cfg["subsys"]["ttl"],
+            "vector": scaled
+        }
+        self.__vect(u"target-guidance", vect)
+
+        x = 1.0 - subsys_stats.trend_span_ms / xspan
+        vect = {
+            "id": u"subsys-trend-span",
+            "color": cfg["subsys"]["rgb"][1],
+            "ttl": cfg["subsys"]["ttl"],
+            "vector": [{"x":int(cx+x*w), "y":int(cy-.5*h-1)}, {"x":int(cx+x*w), "y":int(cy-.5*h+1)}]
+        }
+        self.__vect(u"target-guidance", vect)
+
     def clear(self):
         msg_ids = list(self.msg_ids.keys())
         for msg_id in msg_ids:
@@ -1064,6 +1340,9 @@ class InGameMsg(object):
 
     def clear_bounty_hunting_guidance(self):
         self.__clear_kind("bounty-hunting")
+
+    def clear_target_guidance(self):
+        self.__clear_kind("target-guidance")    
 
     def __clear_kind(self, kind):
         tag = "EDR-{}".format(kind)

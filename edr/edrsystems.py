@@ -183,6 +183,9 @@ class EDRSystems(object):
         
     def station(self, star_system, station_name, station_type):
         stations = self.stations_in_system(star_system)
+        if not stations:
+            return None
+            
         for station in stations:
             if station["name"] == station_name:
                 return station

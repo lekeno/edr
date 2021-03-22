@@ -11,7 +11,7 @@ from edtime import EDTime
 from edvehicles import EDVehicleFactory 
 from edinstance import EDInstance
 from edrlog import EDRLog
-from edrconfig import EDRConfig
+from edrconfig import EDRConfig #TODO replace config object with singleton
 from edreconbox import EDReconBox
 from edrinventory import EDRInventory
 from edri18n import _, _c
@@ -320,8 +320,8 @@ class EDLocation(object):
                 location += u", {place}".format(place=self.place)
         return location
 
-class EDPlayer(object):
-    def __init__(self, name=None):
+class EDPilot(object):
+    def __init__(self, name, rank):
         now = EDTime.py_epoch_now()
         self._name = name
         self.mothership = EDVehicleFactory.unknown_vehicle()
@@ -337,15 +337,16 @@ class EDPlayer(object):
         self.enemy = False
         self._bounty = None
         self._fine = None
-        self.targeted = False
+        self.targeted_vehicle = None
         self.timestamp = now
+        self.rank = rank
 
     def __repr__(self):
         return str(self.__dict__)
 
     def json(self):
         blob = {
-            u"cmdr": self.name,
+            u"name": self.name,
             u"timestamp": self.timestamp * 1000,
             u"wanted": self.wanted,
             u"bounty": self.bounty,
@@ -358,13 +359,16 @@ class EDPlayer(object):
             blob[u"sqid"] = self.sqid
         return blob
     
+    def is_human(self):
+        return False
+
     def killed(self):
         self._touch()
         self.destroyed = True
         self.wanted = False
         self._bounty = None
         self._fine = None
-        self.targeted = False
+        self.targeted_vehicle = None
         if self.mothership:
             self.mothership.destroy()
         if self.srv:
@@ -483,9 +487,10 @@ class EDPlayer(object):
 
     def to_normal_space(self):
         self._touch()
+        self.blue_tunnel = False
         self.location.space_dimension = EDSpaceDimension.NORMAL_SPACE
         self.mothership.safe()
-        self.targeted = False
+        self.targeted_vehicle = None
         if self.slf:
             self.slf.safe()
         if self.srv:
@@ -493,9 +498,10 @@ class EDPlayer(object):
 
     def to_super_space(self):
         self._touch()
+        self.blue_tunnel = False
         self.location.space_dimension = EDSpaceDimension.SUPER_SPACE
         self.mothership.safe()
-        self.targeted = False
+        self.targeted_vehicle = None
         if self.slf:
             self.slf.safe()
         if self.srv:
@@ -503,15 +509,34 @@ class EDPlayer(object):
 
     def to_hyper_space(self):
         self._touch()
+        self.blue_tunnel = True
         self.location.space_dimension = EDSpaceDimension.HYPER_SPACE
         self.planetary_destination = None # leaving the system, so no point in keep a planetary destination
         self.mothership.safe()
-        self.targeted = False
+        self.targeted_vehicle = None
         if self.slf:
             self.slf.safe()
         if self.srv:
             self.srv.safe()
 
+    def targeted(self, mothership=True, slf=False, srv=False):
+        if mothership:
+            self.targeted_vehicle = self.mothership
+        elif slf:
+            self.targeted_vehicle = self.slf
+        elif srv:
+            self.targeted_vehicle = self.srv
+        else:
+            self.targeted_vehicle = None
+        self._touch()
+    
+    def untargeted(self):
+        self.targeted_vehicle = None
+        self._touch()
+
+    def is_targeted(self):
+        return self.targeted_vehicle is not None
+    
     @property
     def bounty(self):
         if self._bounty:
@@ -581,32 +606,6 @@ class EDPlayer(object):
     def is_lone_wolf(self):
         return self.squadron is None
 
-    def is_trusted_by_squadron(self):
-        if self.is_lone_wolf():
-            return False
-        return self.squadron.is_somewhat_trusted()
-
-    def squadron_trusted_rank(self):
-        return EDRSquadronMember.SOMEWHAT_TRUSTED_LEVEL[u"rank"]
-
-    def squadron_empowered_rank(self):
-        return EDRSquadronMember.FULLY_TRUSTED_LEVEL[u"rank"]
-
-    def is_empowered_by_squadron(self):
-        if self.is_lone_wolf():
-            return False
-        return self.squadron.is_fully_trusted()
-    
-    def is_trusted_by_power(self):
-        if self.is_independent():
-            return False
-        return self.powerplay.is_somewhat_trusted()
-
-    def is_empowered_by_power(self):
-        if self.is_independent():
-            return True
-        return self.powerplay.is_fully_trusted()
-
     def has_partial_status(self):
         return self.mothership is None or self.location.star_system is None or self.location.place is None
 
@@ -671,6 +670,72 @@ class EDPlayer(object):
     def _touch(self):
         now = EDTime.py_epoch_now()
         self.timestamp = now
+
+class EDPlayer(EDPilot):
+    def __init__(self, name, rank=None):
+        super(EDPlayer, self).__init__(name, rank)
+        self.blue_tunnel = False
+
+    def json(self):
+        blob = {
+            u"cmdr": self.name,
+            u"timestamp": self.timestamp * 1000,
+            u"wanted": self.wanted,
+            u"bounty": self.bounty,
+            u"power": self.powerplay.canonicalize() if self.powerplay else u'',
+            u"enemy": self.enemy,
+            u"ship": self.piloted_vehicle.json(),
+        }
+        
+        if self.sqid:
+            blob[u"sqid"] = self.sqid
+        return blob
+    
+    def is_human(self):
+        return True
+
+    def to_normal_space(self):
+        self.blue_tunnel = False
+        super(EDPlayer, self).to_normal_space()
+
+    def to_super_space(self):
+        self.blue_tunnel = False
+        super(EDPlayer, self).to_super_space()
+
+    def to_hyper_space(self):
+        self.blue_tunnel = True
+        super(EDPlayer, self).to_hyper_space()
+
+    def in_blue_tunnel(self, tunnel=True):
+        if tunnel != self.blue_tunnel:
+            EDRLOG.log(u"Blue Tunnel update: {old} vs. {new}".format(old=self.blue_tunnel, new=tunnel), u"DEBUG")
+        self.blue_tunnel = tunnel
+
+    def is_trusted_by_squadron(self):
+        if self.is_lone_wolf():
+            return False
+        return self.squadron.is_somewhat_trusted()
+
+    def squadron_trusted_rank(self):
+        return EDRSquadronMember.SOMEWHAT_TRUSTED_LEVEL[u"rank"]
+
+    def squadron_empowered_rank(self):
+        return EDRSquadronMember.FULLY_TRUSTED_LEVEL[u"rank"]
+
+    def is_empowered_by_squadron(self):
+        if self.is_lone_wolf():
+            return False
+        return self.squadron.is_fully_trusted()
+    
+    def is_trusted_by_power(self):
+        if self.is_independent():
+            return False
+        return self.powerplay.is_somewhat_trusted()
+
+    def is_empowered_by_power(self):
+        if self.is_independent():
+            return True
+        return self.powerplay.is_fully_trusted()
 
 class EDWing(object):
     def __init__(self, wingmates=set()):
@@ -751,19 +816,43 @@ class EDPlayerOne(EDPlayer):
         with open(self.EDR_FLEET_CARRIER_CACHE, 'wb') as handle:
             pickle.dump(self.fleet_carrier, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    @property
-    def target(self):
+    def target_pilot(self):
         return self._target
 
-    @target.setter
-    def target(self, new_target):
+    def target_vehicle(self):
+        if not self._target:
+            return None
+        return self._target.targeted_vehicle
+
+    def targeting(self, pilot, ship_internal_name=None):
+        if pilot.is_human():
+            self.instance.player_in(pilot)
+        else:
+            self.instance.npc_in(pilot)
+
         if self._target:
-            self._target.targeted = False
+            self._target.untargeted()
             self._target._touch()
-        self._target = new_target
-        if new_target:
-            new_target.targeted = True
-            new_target._touch()
+        self._target = pilot
+        
+        mothership = True
+        slf = False
+        srv = False
+        if ship_internal_name:
+            vehicle = EDVehicleFactory.from_internal_name(ship_internal_name)
+            slf = EDVehicleFactory.is_ship_launched_fighter(vehicle)
+            srv = EDVehicleFactory.is_surface_vehicle(vehicle)
+            mothership = not(slf or srv)
+        
+        pilot.targeted(mothership, slf, srv)
+        pilot._touch()
+        self._touch()
+
+    def untarget(self):
+        if self._target:
+            self._target.untargeted()
+            self._target._touch()
+        self._target = None
         self._touch()
 
     def lowish_fuel(self):
@@ -792,7 +881,7 @@ class EDPlayerOne(EDPlayer):
             u"group": self.private_group
         }
         if with_target:
-            result[u"target"] = self.target.json() if self.target else {}
+            result[u"target"] = self.target_pilot().json() if self._target else {}
 
         result[u"crew"] = []
         if self.crew:
@@ -820,10 +909,11 @@ class EDPlayerOne(EDPlayer):
         self.wing = EDWing()
         self.crew = None
         self.destroyed = False
-        self.target = None
+        self.untarget()
         self.wanted = False
         self.mothership = EDVehicleFactory.unknown_vehicle()
         self.piloted_vehicle = self.mothership
+        self.targeted_vehicle = None
         self.srv = None
         self.slf = None
         self.location = EDLocation()
@@ -842,7 +932,7 @@ class EDPlayerOne(EDPlayer):
         self.private_group = None
         self.wing = EDWing()
         self.crew = None
-        self.target = None
+        self.untarget()
         self.instance.reset()
         self.recon_box.reset()
         self._touch()
@@ -854,7 +944,7 @@ class EDPlayerOne(EDPlayer):
         self.previous_mode = None
         self.previous_wing = set()
         self.destroyed = False
-        self.target = None
+        self.untarget()
         self.to_normal_space()
         self.instance.reset()
         self._touch()
@@ -914,7 +1004,7 @@ class EDPlayerOne(EDPlayer):
         self.instance.reset()
         self.crew = EDRCrew(captain)
         self.crew.add(self.name)
-        self.instanced(captain)
+        self.instanced_player(captain)
         self.mothership = EDVehicleFactory.unknown_vehicle()
         self.piloted_vehicle = self.mothership
         self.slf = None
@@ -927,7 +1017,7 @@ class EDPlayerOne(EDPlayer):
             self.crew = EDRCrew(self.name)
             self.wing = EDWing()
             self.instance.reset()
-        self.instanced(member)
+        self.instanced_player(member)
         return self.crew.add(member)
     
     def remove_from_crew(self, member):
@@ -997,11 +1087,11 @@ class EDPlayerOne(EDPlayer):
         if not self.in_a_fight():
             return False
 
-        if self.instance.is_empty():
-            # Can't PvP if there is no one.
+        if self.instance.is_void_of_player():
+            # Can't PvP if there is no other player.
             return False
         
-        if not self.instance.anyone_beside(self.wing_and_crew()):
+        if not self.instance.any_player_beside(self.wing_and_crew()):
             return False
 
         return True
@@ -1015,24 +1105,22 @@ class EDPlayerOne(EDPlayer):
         self.recon_box.reset()
         self._touch()
 
-    def targeting(self, cmdr):
-        self.instance.player_in(cmdr)
-        self.target = cmdr
-        self._touch()
-
     def destroy(self, cmdr):
         self._touch()
         cmdr.killed()
         self.instance.player_out(cmdr.name)
-        if self.target and self.target.name == cmdr.name:
-            self.target = None
+        if self.target_pilot() and self.target_pilot().name == cmdr.name:
+            self.untarget()
 
     def interdiction(self, interdicted, success):
         self._touch()
         self.to_normal_space()
-        if success:
+        if success and interdicted:
             interdicted.location = self.location
-            self.instance.player_in(interdicted)
+            if interdicted.is_human():
+                self.instance.player_in(interdicted)
+            else:
+                self.instance.npc_in(interdicted)
         else:
             self.recon_box.reset()
 
@@ -1040,20 +1128,28 @@ class EDPlayerOne(EDPlayer):
         self._touch()
         if success:
             self.to_normal_space()
-            interdictor.location = self.location
-            self.instance.player_in(interdictor)
+            if interdictor:
+                interdictor.location = self.location
+                if interdictor.is_human():
+                    self.instance.player_in(interdictor)
+                else:
+                    self.instance.npc_in(interdictor)
         else:
-            self.instance.player_out(interdictor.cmdr_name)
+            if interdictor:
+                if interdictor.is_human():
+                    self.instance.player_out(interdictor.name)
+                else:
+                    self.instance.npc_out(interdictor.name)
             self.recon_box.reset()
 
-    def is_instanced_with(self, cmdr_name):
+    def is_instanced_with_player(self, cmdr_name):
         return self.instance.player(cmdr_name) != None
 
-    def instanced(self, cmdr_name, ship_internal_name=None, piloted=True):
+    def instanced_player(self, cmdr_name, rank=None, ship_internal_name=None, piloted=True):
         self._touch()
         cmdr = self.instance.player(cmdr_name)
         if not cmdr:
-            cmdr = EDPlayer(cmdr_name)
+            cmdr = EDPlayer(cmdr_name, rank)
         cmdr.location = self.location
         if ship_internal_name:
             vehicle = EDVehicleFactory.from_internal_name(ship_internal_name)
@@ -1061,9 +1157,21 @@ class EDPlayerOne(EDPlayer):
         self.instance.player_in(cmdr)
         return cmdr
 
-    def deinstanced(self, cmdr_name):
+    def deinstanced_player(self, cmdr_name):
         self._touch()
         self.instance.player_out(cmdr_name)
+
+    def instanced_npc(self, name, rank=None, ship_internal_name=None, piloted=True):
+        self._touch()
+        npc = self.instance.npc(name, rank, ship_internal_name)
+        if not npc:
+            npc = EDPilot(name, rank)
+        npc.location = self.location
+        if ship_internal_name:
+            vehicle = EDVehicleFactory.from_internal_name(ship_internal_name)
+            npc.update_vehicle_if_obsolete(vehicle, piloted)
+        self.instance.npc_in(npc)
+        return npc
 
     def attacked(self, target):
         self._touch()

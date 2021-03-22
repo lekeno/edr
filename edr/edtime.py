@@ -12,6 +12,10 @@ class EDTime(comparable.ComparableMixin):
     @staticmethod
     def py_epoch_now():
         return calendar.timegm(time.gmtime())
+
+    def ms_epoch_now():
+        return int(round(time.time() * 1000))
+
     
     @staticmethod
     def immersive_delta():

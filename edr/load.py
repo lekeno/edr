@@ -93,6 +93,7 @@ def handle_wing_events(ed_player, entry):
         EDRLOG.log(u"Addition to wing: {}".format(ed_player.wing), "INFO")
         EDR_CLIENT.who(wingmate, autocreate=True)
     elif entry["event"] in ["WingJoin"]:
+        # TODO some inconsistency when other members leave the wing, and others come in...
         ed_player.join_wing(entry["Others"])
         EDR_CLIENT.status = _(u"joined wing.")
         EDRLOG.log(u"Joined a wing: {}".format(ed_player.wing), "INFO")
@@ -384,7 +385,7 @@ def handle_friends_events(ed_player, entry):
         requester = plain_cmdr_name(entry["Name"])
         EDR_CLIENT.who(requester, autocreate=True)
     elif entry["Status"] == "Offline":
-        ed_player.deinstanced(entry["Name"])
+        ed_player.deinstanced_player(entry["Name"])
 
 def handle_powerplay_events(ed_player, entry):
     if entry["event"] == "Powerplay":
@@ -414,6 +415,11 @@ def dashboard_entry(cmdr, is_beta, entry):
 
     if (entry['Flags'] & plug.FlagsInSRV):
         ed_player.in_srv()
+
+    if (entry['Flags'] & plug.FlagsFsdJump):
+        ed_player.in_blue_tunnel()
+    else:
+        ed_player.in_blue_tunnel(False)
     
     ed_player.piloted_vehicle.low_fuel = bool(entry['Flags'] & plug.FlagsLowFuel)
     ed_player.docked(bool(entry['Flags'] & plug.FlagsDocked))
@@ -467,13 +473,15 @@ def handle_mining_events(ed_player, entry):
 def handle_bounty_hunting_events(ed_player, entry):
     if entry["event"] not in ["Bounty", "ShipTargeted"]:
         return
-    if entry["event"] == "Bounty":
+    if entry["event"] == "Bounty" and entry.get("Reward", 0) > 0:
         ed_player.bounty_awarded(entry)
         EDR_CLIENT.bounty_hunting_guidance()
-    elif entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] >= 3 and entry.get("Bounty", 0) > 0:
-        ed_player.bounty_scanned(entry)
-        EDR_CLIENT.bounty_hunting_guidance()
-    
+    elif entry["event"] == "ShipTargeted":
+        if entry["TargetLocked"] and entry["ScanStage"] >= 3 and entry.get("Bounty", 0) > 0:
+            ed_player.bounty_scanned(entry)
+            EDR_CLIENT.bounty_hunting_guidance()
+        else:
+            EDR_CLIENT.bounty_hunting_guidance(turn_off=True) 
             
 def journal_entry(cmdr, is_beta, system, station, entry, state):
     """
@@ -596,7 +604,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
             handle_scan_events(ed_player, entry)
             handle_bounty_hunting_events(ed_player, entry)
         elif ("ScanStage" in entry and entry["ScanStage"] == 0) or ("TargetLocked" in entry and not entry["TargetLocked"]):
-            ed_player.target = None
+            ed_player.untarget()
+            EDR_CLIENT.target_guidance(entry, turn_off=True)
+            EDR_CLIENT.bounty_hunting_guidance(turn_off=True)
     
     if entry["event"] in ["HullDamage", "UnderAttack", "SRVDestroyed", "FighterDestroyed", "HeatDamage", "ShieldState", "CockpitBreached", "SelfDestruct"]:
         handle_damage_events(ed_player, entry)
@@ -888,30 +898,37 @@ def report_crime(cmdr, entry):
     player_one = EDR_CLIENT.player
     if entry["event"] in ["Interdicted", "EscapeInterdiction"]:
         if entry["IsPlayer"]:
-            interdictor = player_one.instanced(entry["Interdictor"])
+            interdictor = player_one.instanced_player(entry["Interdictor"])
             player_one.interdicted(interdictor, entry["event"] == "Interdicted")
             edr_submit_crime([interdictor], entry["event"], cmdr, entry["timestamp"])
+        else:
+            interdictor = player_one.instanced_npc(entry["Interdictor"])
+            player_one.interdicted(interdictor, entry["event"] == "Interdicted")
     elif entry["event"] == "Died":
         if "Killers" in entry:
             criminal_cmdrs = []
             for killer in entry["Killers"]:
                 if killer["Name"].startswith("Cmdr "):
-                    criminal_cmdr = player_one.instanced(killer["Name"][5:], killer["Ship"])
+                    criminal_cmdr = player_one.instanced_player(killer["Name"][5:], ship_internal_name=killer["Ship"])
                     criminal_cmdrs.append(criminal_cmdr)
             edr_submit_crime(criminal_cmdrs, "Murder", cmdr, entry["timestamp"])
         elif "KillerName" in entry and entry["KillerName"].startswith("Cmdr "):
-            criminal_cmdr = player_one.instanced(entry["KillerName"][5:], entry["KillerShip"])
+            criminal_cmdr = player_one.instanced_player(entry["KillerName"][5:], ship_internal_name=entry["KillerShip"])
             edr_submit_crime([criminal_cmdr], "Murder", cmdr, entry["timestamp"])
         player_one.killed()
     elif entry["event"] == "Interdiction":
         if entry["IsPlayer"]:
             offence = "Interdiction" if entry["Success"] else "Failed interdiction"
-            interdicted = player_one.instanced(entry["Interdicted"])
+            interdicted = player_one.instanced_player(entry["Interdicted"])
             player_one.interdiction(interdicted, entry["Success"])
             edr_submit_crime_self(cmdr, offence, interdicted, entry["timestamp"])
+        else:
+            offence = "Interdiction" if entry["Success"] else "Failed interdiction"
+            interdicted = player_one.instanced_npc(entry["Interdicted"])
+            player_one.interdiction(interdicted, entry["Success"])
     elif entry["event"] == "PVPKill":
         EDRLOG.log(u"PVPKill!", "INFO")
-        victim = player_one.instanced(entry["Victim"])
+        victim = player_one.instanced_player(entry["Victim"])
         victim.killed()
         edr_submit_crime_self(cmdr, "Murder", victim, entry["timestamp"])
         player_one.destroy(victim)
@@ -920,27 +937,29 @@ def report_crime(cmdr, entry):
         wingmate = player_one.is_wingmate(entry["Offender"]) 
         oneself = entry["Offender"].lower() == player_one.name.lower()
         crewmate = player_one.is_crewmate(entry["Offender"])
-        instanced = player_one.is_instanced_with(entry["Offender"])
+        instanced = player_one.is_instanced_with_player(entry["Offender"])
         if not irrelevant_pattern.match(entry["Offender"]) and instanced and not oneself and not wingmate and not crewmate:
-            offender = player_one.instanced(entry["Offender"])
+            offender = player_one.instanced_player(entry["Offender"])
             if "Bounty" in entry:
                 offender.bounty += entry["Bounty"]
             if "Fine" in entry:
                 offender.fine += entry["Fine"]
             edr_submit_crime([offender], u"{} (CrimeVictim)".format(entry["CrimeType"]), cmdr, entry["timestamp"])
         else:
-            EDRLOG.log(u"Ignoring 'CrimeVictim' event: offender={}; instanced_with={}".format(entry["Offender"], player_one.is_instanced_with(entry["Offender"])), "DEBUG")
+            # TODO extract npc name, instance, etc.
+            EDRLOG.log(u"Ignoring 'CrimeVictim' event: offender={}; instanced_with={}".format(entry["Offender"], player_one.is_instanced_with_player(entry["Offender"])), "DEBUG")
     elif entry["event"] == "CommitCrime" and "Victim" in entry and player_one.name and (entry["Victim"].lower() != player_one.name.lower()):
         irrelevant_pattern = re.compile(r"^(\$([A-Za-z0-9]+_)+[A-Za-z0-9]+;)$")
-        if not irrelevant_pattern.match(entry["Victim"]) and player_one.is_instanced_with(entry["Victim"]):
-            victim = player_one.instanced(entry["Victim"])
+        if not irrelevant_pattern.match(entry["Victim"]) and player_one.is_instanced_with_player(entry["Victim"]):
+            victim = player_one.instanced_player(entry["Victim"])
             if "Bounty" in entry:
                 player_one.bounty += entry["Bounty"]
             if "Fine" in entry:
                 player_one.fine += entry["Fine"]
             edr_submit_crime_self(player_one, u"{} (CommitCrime)".format(entry["CrimeType"]), victim, entry["timestamp"])
         else:
-            EDRLOG.log(u"Ignoring 'CommitCrime' event: Victim={}; instanced_with={}".format(entry["Victim"], player_one.is_instanced_with(entry["Victim"])), "DEBUG")
+            # TODO extract npc name, instance, etc.
+            EDRLOG.log(u"Ignoring 'CommitCrime' event: Victim={}; instanced_with={}".format(entry["Victim"], player_one.is_instanced_with_player(entry["Victim"])), "DEBUG")
 
 
 def report_comms(player, entry):
@@ -951,12 +970,13 @@ def report_comms(player, entry):
     :return:
     """
     # Note: Channel can be missing... probably not safe to assume anything in that case
+    # TODO npc instancing
     if entry["event"] == "ReceiveText" and "Channel" in entry:
         if entry["Channel"] in ["local"]:
             from_cmdr = entry["From"]
             if entry["From"].startswith("$cmdr_decorate:#name="):
                 from_cmdr = entry["From"][len("$cmdr_decorate:#name="):-1]
-            contact = player.instanced(from_cmdr)
+            contact = player.instanced_player(from_cmdr)
             edr_submit_contact(contact, entry["timestamp"], "Received text (local)", player)
         elif entry["Channel"] in ["player"]:
             from_cmdr = entry["From"]
@@ -969,7 +989,7 @@ def report_comms(player, entry):
                 if player.from_genesis:
                     EDRLOG.log(u"Text from {} (not friend/wing) == same location".format(from_cmdr),
                             "INFO")
-                    contact = player.instanced(from_cmdr)
+                    contact = player.instanced_player(from_cmdr)
                     edr_submit_contact(contact, entry["timestamp"],
                                     "Received text (non wing/friend player)", player)
                 else:
@@ -996,7 +1016,7 @@ def report_comms(player, entry):
             if player.from_genesis:
                 EDRLOG.log(u"Sent text to {} (not friend/wing) == same location".format(to_cmdr),
                         "INFO")
-                contact = player.instanced(to_cmdr)
+                contact = player.instanced_player(to_cmdr)
                 edr_submit_contact(contact, entry["timestamp"], "Sent text (non wing/friend player)",
                                 player)
             else:
@@ -1110,11 +1130,21 @@ def handle_legal_fees(player, entry):
             player.bounty = max(0, player.bounty - true_amount)
 
 def handle_scan_events(player, entry):
-    if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0):
+    if not (entry["event"] == "ShipTargeted"):
         return False
 
+    if not (entry["TargetLocked"]) or entry["ScanStage"] <= 0:
+        EDR_CLIENT.target_guidance(entry, turn_off=True)
+        EDR_CLIENT.bounty_hunting_guidance(turn_off=True)
+        return False
+    
     prefix = None
     piloted = False
+    mothership = True
+    slf = False
+    srv = False
+    npc = False
+
     if entry["PilotName"].startswith("$cmdr_decorate:#name="):
         prefix = "$cmdr_decorate:#name="
         piloted = True
@@ -1122,23 +1152,50 @@ def handle_scan_events(player, entry):
         prefix = "$RolePanel2_unmanned; $cmdr_decorate:#name="
     elif entry["PilotName"].startswith("$RolePanel2_crew; $cmdr_decorate:#name="):
         prefix = "$RolePanel2_crew; $cmdr_decorate:#name="
+        mothership = False
+        slf = True
+        piloted = True
+    elif entry["PilotName"].startswith("$npc_name_decorate:#name="):
+        prefix = "$npc_name_decorate:#name="
+        piloted = True
+        npc = True
+    elif entry["PilotName"] in ["$ShipName_Police_Independent;", "$ShipName_Police_Federation;", "$ShipName_Police_Empire;", "$LUASC_Scenario_Warzone_NPC_WarzoneGeneral_Ind;", "$ShipName_Military_Federation;", "$ShipName_Military_Independent;", "$ShipName_SearchAndRescue;", "$ShipName_ATR_Federation;", "$ShipName_Military_Empire;", "$ShipName_PassengerLiner_Wedding;", "$ShipName_PassengerLiner_Cruise;"]:
+        piloted = True
+        npc = True
     else:
-        player.target = None #NPC
-    
-    if not prefix:
+        player.untarget()
+        EDR_CLIENT.target_guidance(entry, turn_off=True)
+        EDR_CLIENT.bounty_hunting_guidance(turn_off=True)
         return False
-
-    target_name = entry["PilotName"][len(prefix):-1]
+    
+    target_name = entry.get("PilotName_Localised", entry["PilotName"])
+    if prefix:
+        target_name = entry["PilotName"][len(prefix):-1]
+    
     if target_name == player.name:
         # Happens when scanning one's unmanned ship, etc.
+        EDR_CLIENT.target_guidance(entry, turn_off=True)
+        EDR_CLIENT.bounty_hunting_guidance(turn_off=True)
         return False
 
-    target = player.instanced(target_name, entry["Ship"], piloted)
+    if player.target_pilot() and target_name != player.target_pilot().name:
+        # clear previous guidance if any
+        EDR_CLIENT.target_guidance(entry, turn_off=True)
+        EDR_CLIENT.bounty_hunting_guidance(turn_off=True)
+
+    target = None
+    if npc:
+        target = player.instanced_npc(target_name, entry["PilotRank"], entry["Ship"], piloted)
+    else:
+        target = player.instanced_player(target_name, rank=entry["PilotRank"], ship_internal_name=entry["Ship"], piloted=piloted)
+
     target.sqid = entry.get("SquadronID", None)
     nodotpower = entry["Power"].replace(".", "") if "Power" in entry else None
     target.pledged_to(nodotpower)
  
-    edr_submit_contact(target, entry["timestamp"], "Ship targeted", player)
+    if target.is_human():
+        edr_submit_contact(target, entry["timestamp"], "Ship targeted", player)
+
     if entry["ScanStage"] >= 2:
         if "ShieldHealth" in entry:
             target.vehicle.shield_health = entry["ShieldHealth"]
@@ -1168,9 +1225,13 @@ def handle_scan_events(player, entry):
             # Note: power is only present in shiptargeted events if the player is pledged
             # This means that we can only know that the target is independent if a player is pledged and the power attribute is missing
             scan["power"] = "independent"
-        edr_submit_scan(scan, entry["timestamp"], "Ship targeted [{}]".format(entry["LegalStatus"]), player)
+    
+        if target.is_human():
+            edr_submit_scan(scan, entry["timestamp"], "Ship targeted [{}]".format(entry["LegalStatus"]), player)
 
-    player.targeting(target)
+    player.targeting(target, ship_internal_name=entry["Ship"])
+    EDR_CLIENT.target_guidance(entry)
+
     return True
 
 def handle_material_events(cmdr, entry, state):
@@ -1229,8 +1290,8 @@ def handle_bang_commands(cmdr, command, command_parts):
         if len(command_parts) == 2:
             target_cmdr = command_parts[1]
         else:
-            target = EDR_CLIENT.player.target
-            target_cmdr = target.name if target else None
+            target = EDR_CLIENT.player.target_pilot()
+            target_cmdr = target.name if target and target.is_human() else None
         if target_cmdr:
             EDRLOG.log(u"Explicit who command for {}".format(target_cmdr), "INFO")
             EDR_CLIENT.who(target_cmdr)
@@ -1261,8 +1322,8 @@ def handle_bang_commands(cmdr, command, command_parts):
         if len(command_parts) == 2:
             target_cmdr = command_parts[1]
         else:
-            target = EDR_CLIENT.player.target
-            target_cmdr = target.name if target else None
+            target = EDR_CLIENT.player.target_pilot()
+            target_cmdr = target.name if target and target.is_human() else None
         if target_cmdr:
             EDRLOG.log(u"Explicit where command for {}".format(target_cmdr), "INFO")
             EDR_CLIENT.where(target_cmdr)
@@ -1490,8 +1551,8 @@ def get_target_cmdr(command_parts, entry, player):
             prefix = "$cmdr_decorate:#name="
             target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
         else:
-            target = player.target
-            target_cmdr = target.name if target else None
+            target = player.target_pilot()
+            target_cmdr = target.name if target and target.is_human() else None
     return target_cmdr
 
 def handle_minus_commands(command, command_parts, entry):
@@ -1543,8 +1604,8 @@ def handle_at_commands(entry):
             target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
             EDRLOG.log(u"Memo command for tagged cmdr {}".format(target_cmdr), "INFO")
         else:
-            target = EDR_CLIENT.player.target
-            target_cmdr = target.name if target else None
+            target = EDR_CLIENT.player.target_pilot()
+            target_cmdr = target.name if target and target.is_human() else None
     elif command.startswith("@# ") and len(command)>2:
         target_cmdr = command[3:]
         EDRLOG.log(u"Memo command for tagged cmdr {}".format(target_cmdr), "INFO")

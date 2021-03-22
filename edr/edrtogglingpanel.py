@@ -47,7 +47,7 @@ class ToggledFrame(tk.Frame):
         self.label = tk.Label(self.status_frame, text=label, foreground=conf.rgb("status", "label"), background=bg)
         self.label.grid(sticky="w", row=1, column=0)
         self.status_ui = ttkHyperlinkLabel.HyperlinkLabel(self.status_frame, textvariable=status, foreground=fg, background=bg)
-        self.status_ui.grid(sticky="w", row=1, column=1)
+        self.status_ui.grid(sticky="ew", row=1, column=1)
         
         self.toggle_button = tk.Checkbutton(self.status_frame, width=2, text='+', command=self.toggle,
                                             variable=self.show, foreground=conf.rgb("status", "check"), background=bg)
@@ -67,6 +67,7 @@ class ToggledFrame(tk.Frame):
             self.toggle_button.configure(text='+')
     
     def refresh_theme(self):
+        self.status_frame.grid_propagate(False)
         conf = IGMConfig(config_file='config/igm_alt_config.v3.ini', user_config_file=['config/user_igm_alt_config.v3.ini', 'config/user_igm_alt_config.v2.ini'])
         theme=EDMCConfig.config.getint('theme') # hat tip to ewanm89@
         if (theme):
