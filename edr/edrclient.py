@@ -614,6 +614,14 @@ class EDRClient(object):
             self.IN_GAME_MSG.mining_guidance(self.player.mining_stats)
         
         self.status = _(u"[Yield: {:.2f}%]   [Items: {} ({:.0f}/hour)]".format(self.player.mining_stats.last["proportion"], self.player.mining_stats.refined_nb, self.player.mining_stats.mineral_per_hour()))
+    
+    def bounty_hunting_guidance(self):
+        if self.visual_feedback:
+            self.IN_GAME_MSG.bounty_hunting_guidance(self.player.bounty_hunting_stats)
+        
+        bounty = EDFineOrBounty(self.player.bounty_hunting_stats.last["bounty"])
+        credits_per_hour = EDFineOrBounty(int(self.player.bounty_hunting_stats.credits_per_hour()))
+        self.status = _(u"[Last: {} cr [{}]]   [Totals: {} cr/hour ({} awarded)]".format(bounty.pretty_print(), self.player.bounty_hunting_stats.last["name"], self.player.bounty_hunting_stats.awarded_nb, credits_per_hour.pretty_print()))
 
     def notams(self):
         summary = self.edrsystems.systems_with_active_notams()
@@ -1132,8 +1140,8 @@ class EDRClient(object):
 
         return success
 
-    def traffic(self, star_system, traffic):
-        if self.player.in_solo():
+    def traffic(self, star_system, traffic, system_wide=False):
+        if self.player.in_solo() and not system_wide:
             EDRLOG.log(u"Skipping traffic since the user is in solo (unexpected).", "INFO")
             return False
 

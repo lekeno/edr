@@ -289,7 +289,7 @@ def handle_change_events(ed_player, entry):
                 capacity = ed_player.mothership.cargo_capacity
                 EDR_CLIENT.notify_with_details(_(U"Restock reminder"), [_(u"Don't forget to restock on limpets before heading out mining."), _(u"Limpets: {}/{}").format(limpets, capacity)])
         elif entry["event"] == "Undocked" and ed_player.mothership.is_mining_rig():
-            ed_player.reset_mining_stats()
+            ed_player.reset_stats()
         outcome["reason"] = "Docking events"
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
     return outcome
@@ -463,6 +463,17 @@ def handle_mining_events(ed_player, entry):
     elif entry["event"] == "MiningRefined":
         ed_player.refined(entry)
     EDR_CLIENT.mining_guidance()
+
+def handle_bounty_hunting_events(ed_player, entry):
+    if entry["event"] not in ["Bounty", "ShipTargeted"]:
+        return
+    if entry["event"] == "Bounty":
+        ed_player.bounty_awarded(entry)
+        EDR_CLIENT.bounty_hunting_guidance()
+    elif entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] >= 3 and entry.get("Bounty", 0) > 0:
+        ed_player.bounty_scanned(entry)
+        EDR_CLIENT.bounty_hunting_guidance()
+    
             
 def journal_entry(cmdr, is_beta, system, station, entry, state):
     """
@@ -526,6 +537,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     if entry["event"] in ["MiningRefined", "ProspectedAsteroid"]:
         handle_mining_events(ed_player, entry)
+    
+    if entry["event"] == "Bounty":
+        handle_bounty_hunting_events(ed_player, entry)
 
     if entry["event"] in ["CarrierJump", "CarrierBuy", "CarrierStats", "CarrierJumpRequest", "CarrierJumpCancelled", "CarrierDecommission", "CarrierCancelDecommission", "CarrierDockingPermission"]:
         handle_carrier_events(ed_player, entry)
@@ -580,6 +594,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["ShipTargeted"]:
         if "ScanStage" in entry and entry["ScanStage"] > 0:
             handle_scan_events(ed_player, entry)
+            handle_bounty_hunting_events(ed_player, entry)
         elif ("ScanStage" in entry and entry["ScanStage"] == 0) or ("TargetLocked" in entry and not entry["TargetLocked"]):
             ed_player.target = None
     
@@ -750,7 +765,7 @@ def report_fight(player):
     report = player.json(with_target=True)
     EDR_CLIENT.fight(report)
 
-def edr_submit_contact(contact, timestamp, source, witness):
+def edr_submit_contact(contact, timestamp, source, witness, system_wide=False):
     """
     Report a contact with a cmdr
     :param contact:
@@ -785,7 +800,7 @@ def edr_submit_contact(contact, timestamp, source, witness):
     if not EDR_CLIENT.blip(contact.name, report):
         EDR_CLIENT.status = _(u"failed to report contact.")
         
-    edr_submit_traffic(contact, timestamp, source, witness)
+    edr_submit_traffic(contact, timestamp, source, witness, system_wide)
 
 def edr_submit_scan(scan, timestamp, source, witness):
     edt = EDTime()
@@ -815,7 +830,7 @@ def edr_submit_scan(scan, timestamp, source, witness):
     if not EDR_CLIENT.scanned(scan["cmdr"], report):
         EDR_CLIENT.status = _(u"failed to report scan.")
         
-def edr_submit_traffic(contact, timestamp, source, witness):
+def edr_submit_traffic(contact, timestamp, source, witness, system_wide=False):
     """
     Report a contact with a cmdr
     :param cmdr:
@@ -841,8 +856,8 @@ def edr_submit_traffic(contact, timestamp, source, witness):
         "group": witness.private_group
     }
 
-    if not witness.in_open():
-        EDRLOG.log(u"Skipping submit traffic due to unconfirmed Open mode", "INFO")
+    if not witness.in_open() and not system_wide:
+        EDRLOG.log(u"Skipping submit traffic due to unconfirmed Open mode, and event not being system wide.", "INFO")
         EDR_CLIENT.status = _(u"Traffic reporting disabled in solo/private modes.")
         return
 
@@ -850,7 +865,7 @@ def edr_submit_traffic(contact, timestamp, source, witness):
         EDRLOG.log(u"Skipping traffic update due to partial status", "INFO")
         return
 
-    if not EDR_CLIENT.traffic(witness.star_system, report):
+    if not EDR_CLIENT.traffic(witness.star_system, report, system_wide):
         EDR_CLIENT.status = _(u"failed to report traffic.")
         EDR_CLIENT.evict_system(witness.star_system)
 
@@ -970,7 +985,7 @@ def report_comms(player, entry):
             contact.place = "Unknown"
             # TODO add blip to systemwideinstance ?
             edr_submit_contact(contact, entry["timestamp"],
-                                "Received text (starsystem channel)", player)
+                                "Received text (starsystem channel)", player, system_wide = True)
     elif entry["event"] == "SendText" and not entry["To"] in ["local", "wing", "starsystem", "squadron", "squadleaders"]:
         to_cmdr = entry["To"]
         if entry["To"].startswith("$cmdr_decorate:#name="):
@@ -988,10 +1003,9 @@ def report_comms(player, entry):
                 EDRLOG.log(u"Sent text to {}. Player not created from game start => can't infer location".format(to_cmdr),
                         "INFO")
 
-    # Not The Perfect URL regexp but that should be good enough
-    m = re.match(r".*(https?://[0-9a-z.\-]*\.[0-9a-z\-]*) ?.*", entry["Message"], flags=re.IGNORECASE)
-    if m and m.group(1):
-        EDR_CLIENT.linkable_status(m.group(1))
+    m = re.findall(r"(http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-f][0-9a-f]))+)", entry["Message"], flags=re.IGNORECASE)
+    if m:
+        EDR_CLIENT.linkable_status(m[0])
 
 def handle_damage_events(ed_player, entry):
     if not entry["event"] in ["HullDamage", "UnderAttack", "SRVDestroyed", "FighterDestroyed", "HeatDamage", "ShieldState", "CockpitBreached", "SelfDestruct"]:
@@ -1094,7 +1108,6 @@ def handle_legal_fees(player, entry):
         else:
             true_amount = entry["Amount"] * (1.0 - entry.get("BrokerPercentage", 0)/100.0)
             player.bounty = max(0, player.bounty - true_amount)
-
 
 def handle_scan_events(player, entry):
     if not (entry["event"] == "ShipTargeted" and entry["TargetLocked"] and entry["ScanStage"] > 0):
