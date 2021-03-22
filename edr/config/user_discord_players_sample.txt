@@ -19,15 +19,15 @@
 ; Explanation of the different fields (all optional):
 ;      "blocked": true          set to true if you don't want to read this commander's messages, remove or set to false otherwise
 ;      "name": "potato"         use this to change the cmdr's name to something else (e.g. potato here)
-;      "color": "0099E1"        use this to force a specific color to this cmdr's extra info embed
+;      "color": 8421246         use this to force a specific color to this cmdr's extra info embed (RGB in decimal)
 ;      "url": ""                use this to force a link on the author field in the extra info embed
 ;      "icon_url": ""           use this to force an avatar
 ;      "image": ""              use this to force an image in the extra info embed
 ;      "thumbnail": ""          use this to force a thumbnail in the extra info embed
 ;      "tts": false             text-to-speech: set to true if you want discord to read this commander's message aloud
 ;      "spoiler": false         set to true if you want to hide this commander's messages behind a spoiler tag (requires a click to reveal the content)
-;      "matching": ["list of","regular expressions"] message must match one of those regular expressions (ignored for wing, crew, squadron, squadron leaders channels)
-;      "mismatching:  ["list of", "regular expressions"] message must NOT match any of those regular expressions (ignored for wing, crew, squadron, squadron leaders channels)
+;      "matching": ["list of","regular expressions"] message must match one of those regular expressions
+;      "mismatching:  ["list of", "regular expressions"] message must NOT match any of those regular expressions
 ;      "min_karma": -100        use this to set the minimum EDR karma allowed
 ;      "max_karma": 1000        use this to set the maximum EDR karma allowed
 ;      
@@ -50,10 +50,6 @@
         "" :{
             "mismatching": [],
             "karma_min": -1000
-        },
-        "Chatty Plantain": {
-            "name": "Chatty Plantain",
-            "spoiler": false
         }
     },
     "wing": {
@@ -69,12 +65,6 @@
         }
     },
     "squadleaders": {
-        "" :{
-            "mismatching": [],
-            "karma_min": -1000
-        }
-    },
-    "player": {
         "" :{
             "mismatching": [],
             "karma_min": -1000
