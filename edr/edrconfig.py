@@ -11,6 +11,34 @@ except ImportError:
 
 import utils2to3
 
+class EDRUserConfig(object):
+    def __init__(self, config_file='config/user_config.ini'):
+        self.config = cp.ConfigParser()
+        try:
+            self.config.read(utils2to3.abspathmaker(__file__, config_file))
+        except:
+            self.config = None
+
+    def discord_afk_webhook(self):
+        if self.config:
+            return self.config.get('discord', 'afk_webhook')
+        return None
+
+    def discord_squadron_leaders_webhook(self):
+        if self.config:
+            return self.config.get('discord', 'squadron_leaders_webhook')
+        return None
+
+    def discord_squadron_webhook(self):
+        if self.config:
+            return self.config.get('discord', 'squadron_webhook')
+        return None
+
+    def discord_broadcast_webhook(self):
+        if self.config:
+            return self.config.get('discord', 'broadcast_webhook')
+        return None
+
 class EDRConfig(object):
     def __init__(self, config_file='config/config.ini'):
         self.config = cp.ConfigParser()

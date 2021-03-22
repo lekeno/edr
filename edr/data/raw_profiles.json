@@ -1,0 +1,100 @@
+{
+    "refuel srv": {
+        "sulphur": {
+            "threshold": 0.0
+        },
+        "phosphorous": {
+            "threshold": 0.0
+        },
+        "arsenic": {
+            "threshold": 0.0
+        },
+        "mercury": {
+            "threshold": 0.0
+        },
+        "technetium": {
+            "threshold": 0.0
+        }
+    },
+    "repair srv": {
+        "iron": {
+            "threshold": 0.0
+        },
+        "nickel": {
+            "threshold": 0.0
+        },
+        "manganese": {
+            "threshold": 0.0
+        },
+        "vanadium": {
+            "threshold": 0.0
+        },
+        "molybdenum": {
+            "threshold": 0.0
+        },
+        "zinc": {
+            "threshold": 0.0
+        },
+        "chromium": {
+            "threshold": 0.0
+        },
+        "tungsten": {
+            "threshold": 0.0
+        },
+        "tellurium": {
+            "threshold": 0.0
+        }
+    },
+    "afmu": {
+        "nickel": {
+            "threshold": 0.0
+        },
+        "zinc": {
+            "threshold": 0.0
+        },
+        "chromium": {
+            "threshold": 0.0
+        },
+        "tin": {
+            "threshold": 0.0
+        },
+        "manganese": {
+            "threshold": 0.0
+        },
+        "vanadium": {
+            "threshold": 0.0
+        },
+        "molybdenum": {
+            "threshold": 0.0
+        },
+        "zirconium": {
+            "threshold": 0.0
+        },
+        "rhuthenium": {
+            "threshold": 0.0
+        }
+    },
+    "fsd": {
+        "vanadium": {
+            "threshold": 0.0
+        },
+        "germanium": {
+            "threshold": 0.0
+        },
+        "cadmium": {
+            "threshold": 0.0
+        },
+        "niobium": {
+            "threshold": 0.0
+        },
+        "arsenic": {
+            "threshold": 0.0
+        },
+        "yttrium": {
+            "threshold": 0.0
+        },
+        "polonium": {
+            "threshold": 0.0
+        }
+    }
+}

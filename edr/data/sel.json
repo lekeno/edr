@@ -2767,5 +2767,31 @@
             "z": -139.375
         },
         "type": "geological"
+    },
+    {
+        "name": "Kangulu",
+        "planet": "14 d a",
+        "gravity": 0.05,
+        "concentration": 0.047,
+        "distanceToArrival": 910,
+        "coords": {
+            "x": 238.321,
+            "y": 306.198,
+            "z": -42.021
+        },
+        "type": "geological"
+    },
+    {
+        "name": "CPD-51 3323",
+        "planet": " 1 d a",
+        "gravity": 0.04,
+        "concentration": 0.0489,
+        "distanceToArrival": 675,
+        "coords": {
+            "x": 76.125,
+            "y": 6.90625,
+            "z": 16.1875
+        },
+        "type": "geological"
     }
 ]

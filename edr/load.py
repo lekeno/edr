@@ -13,8 +13,10 @@ from edrlog import EDRLog
 import edentities
 import edrautoupdater
 from edri18n import _, _c
+from edrdiscord import EDRDiscordIntegration
 
 EDR_CLIENT = EDRClient()
+EDR_DISCORD_INTEGRATION = EDRDiscordIntegration(EDR_CLIENT.player)
 EDRLOG = EDRLog()
 LAST_KNOWN_SHIP_NAME = ""
 
@@ -288,7 +290,7 @@ def handle_change_events(ed_player, entry):
             if ed_player.mothership.could_use_limpets():
                 limpets = ed_player.mothership.cargo.how_many("drones")
                 capacity = ed_player.mothership.cargo_capacity
-                EDR_CLIENT.notify_with_details(_(U"Restock reminder"), [_(u"Don't forget to restock on limpets before heading out mining."), _(u"Limpets: {}/{}").format(limpets, capacity)])
+                EDR_CLIENT.notify_with_details(_(U"Restock reminder"), [_(u"Don't forget to restock on limpets before heading out."), _(u"Limpets: {}/{}").format(limpets, capacity)])
         elif entry["event"] == "Undocked" and ed_player.mothership.is_mining_rig():
             ed_player.reset_stats()
         outcome["reason"] = "Docking events"
@@ -334,6 +336,9 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
         elif entry["MusicTrack"] in ["Supercruise", "Exploration", "NoTrack"] and ed_player.in_a_fight():
             ed_player.in_danger(False)
             return
+        elif entry ["MusicTrack"] == "SystemMap":
+            EDR_CLIENT.noteworthy_signals_in_system() # probably annoying
+            return
 
     if entry["event"] == "Shutdown":
         EDRLOG.log(u"Shutting down in-game features...", "INFO")
@@ -371,6 +376,11 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
     if entry["event"] in ["Loadout"]:
         if ed_player.mothership.id == entry.get("ShipID", None):
             ed_player.mothership.update_from_loadout(entry)
+            ed_player.mothership.update_cargo()
+            if ed_player.mothership.could_use_limpets():
+                limpets = ed_player.mothership.cargo.how_many("drones")
+                capacity = ed_player.mothership.cargo_capacity
+                EDR_CLIENT.notify_with_details(_(U"Restock reminder"), [_(u"Don't forget to restock on limpets before heading out."), _(u"Limpets: {}/{}").format(limpets, capacity)])
             global LAST_KNOWN_SHIP_NAME
             LAST_KNOWN_SHIP_NAME = ed_player.mothership.name
         else:
@@ -498,6 +508,8 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         
     if not prerequisites(EDR_CLIENT, is_beta):
         return
+
+    EDR_DISCORD_INTEGRATION.process(entry)
 
     if entry["event"] in ["Shutdown", "ShutDown", "Music", "Resurrect", "Fileheader", "LoadGame", "Loadout"]:
         from_genesis = False
@@ -826,19 +838,7 @@ def edr_submit_scan(scan, timestamp, source, witness):
     report["mode"] = witness.game_mode
     report["group"] = witness.private_group
 
-    if not witness.in_open():
-        EDRLOG.log(u"Scan not submitted due to unconfirmed Open mode", "INFO")
-        EDR_CLIENT.status = _(u"Scan reporting disabled in solo/private modes.")
-        EDR_CLIENT.who(scan["cmdr"], autocreate=True)
-        return
-
-    if witness.has_partial_status():
-        EDRLOG.log(u"Scan not submitted due to partial status", "INFO")
-        EDR_CLIENT.who(scan["cmdr"], autocreate=True)
-        return
-
-    if not EDR_CLIENT.scanned(scan["cmdr"], report):
-        EDR_CLIENT.status = _(u"failed to report scan.")
+    EDR_CLIENT.scanned(scan["cmdr"], report):
         
 def edr_submit_traffic(contact, timestamp, source, witness, system_wide=False):
     """
@@ -1304,6 +1304,9 @@ def handle_bang_commands(cmdr, command, command_parts):
     elif command == "!sitreps":
         EDRLOG.log(u"Sitreps command", "INFO")
         EDR_CLIENT.sitreps()
+    elif command == "!signals":
+        EDRLOG.log(u"Signals command", "INFO")
+        EDR_CLIENT.noteworthy_signals_in_system()
     elif command == "!notams":
         EDRLOG.log(u"Notams command", "INFO")
         EDR_CLIENT.notams()
@@ -1329,11 +1332,15 @@ def handle_bang_commands(cmdr, command, command_parts):
             EDR_CLIENT.where(target_cmdr)
     elif command == "!search":
         resource = None
+        system = cmdr.star_system
         if len(command_parts) == 2:
-            resource = command_parts[1]
+            better_parts = command_parts[1].split(" @", 1)
+            if len(better_parts) == 2:
+                system = better_parts[1]
+            resource = better_parts[0]
         if resource:
             EDRLOG.log(u"Search command for {}".format(resource), "INFO")
-            EDR_CLIENT.search_resource(resource)
+            EDR_CLIENT.search_resource(resource, system)
     elif command in ["!distance", "!d"] and len(command_parts) >= 2:
         EDRLOG.log(u"Distance command", "INFO")
         systems = " ".join(command_parts[1:]).split(" > ", 1)
@@ -1480,6 +1487,12 @@ def handle_bang_commands(cmdr, command, command_parts):
     elif command == "!clear":
         EDRLOG.log(u"Clear command", "INFO")
         EDR_CLIENT.clear()
+    elif command == "!materials":
+        profile = None
+        if len(command_parts) == 2:
+            profile = command_parts[1]
+        EDRLOG.log(u"Materials command with {}".format(profile), "INFO")
+        EDR_CLIENT.configure_resourcefinder(profile)
 
 def handle_query_commands(cmdr, command, command_parts):
     if command == "?outlaws":
