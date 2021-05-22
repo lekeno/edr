@@ -315,7 +315,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
             # { "timestamp":"2018-06-19T13:06:04Z", "event":"QuitACrew", "Captain":"Dummy" }
             # { "timestamp":"2018-06-19T13:06:16Z", "event":"Music", "MusicTrack":"MainMenu" }
             EDR_CLIENT.clear()
-            EDR_CLIENT.game_mode(None)
+            EDR_CLIENT.game_mode(None, None)
             ed_player.leave_wing()
             ed_player.leave_crew()
             ed_player.leave_vehicle()
@@ -365,7 +365,12 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
         if from_genesis:
             EDRLOG.log(u"Heuristics genesis: probably accurate picture of friends/wings.",
                    "DEBUG")
-        EDR_CLIENT.game_mode(entry["GameMode"], entry.get("Group", None))
+        dlc_name = "unknown" 
+        if entry.get("horizons", False):
+            dlc_name = "Horizons"
+        elif entry.get("Odyssey", False):
+            dlc_name = "odyssey"
+        EDR_CLIENT.game_mode(entry["GameMode"], dlc_name, entry.get("Group", None))
         ed_player.update_vehicle_if_obsolete(EDVehicleFactory.from_load_game_event(entry), piloted=True)
         EDRLOG.log(u"Game mode is {}".format(entry["GameMode"]), "DEBUG")
         EDR_CLIENT.warmup()
@@ -674,6 +679,7 @@ def edr_update_cmdr_status(cmdr, reason_for_update, timestamp):
         "source": reason_for_update,
         "reportedBy": cmdr.name,
         "mode": cmdr.game_mode,
+        "dlc": cmdr.dlc_name,
         "group": cmdr.private_group
     }
 
@@ -722,6 +728,7 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
         "victimPower": victim.powerplay.canonicalize() if victim.powerplay else u"",
         "byPledge": victim.powerplay.canonicalize() if victim.powerplay else "",
         "mode": victim.game_mode,
+        "dlc": victim.dlc_name,
         "group": victim.private_group
     }
 
@@ -767,6 +774,7 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim, timestamp):
         "victimPower": victim.powerplay.canonicalize() if victim.powerplay else u"",
         "byPledge": victim.powerplay.canonicalize() if victim.powerplay else "",
         "mode": criminal_cmdr.game_mode,
+        "dlc": criminal_cmdr.dlc_name,
         "group": criminal_cmdr.private_group
     }
 
@@ -807,6 +815,7 @@ def edr_submit_contact(contact, timestamp, source, witness, system_wide=False):
         "reportedBy": witness.name,
         "byPledge": witness.powerplay.canonicalize() if witness.powerplay else "",
         "mode": witness.game_mode,
+        "dlc": witness.dlc_name,
         "group": witness.private_group
     }
 
@@ -834,6 +843,7 @@ def edr_submit_scan(scan, timestamp, source, witness):
     report["reportedBy"] = witness.name
     report["byPledge"] = witness.powerplay.canonicalize() if witness.powerplay else ""
     report["mode"] = witness.game_mode
+    report["dlc"] = witness.dlc_name
     report["group"] = witness.private_group
 
     EDR_CLIENT.scanned(scan["cmdr"], report)
@@ -861,6 +871,7 @@ def edr_submit_traffic(contact, timestamp, source, witness, system_wide=False):
         "reportedBy": witness.name,
         "byPledge": witness.powerplay.canonicalize() if witness.powerplay else "",
         "mode": witness.game_mode,
+        "dlc": witness.dlc_name,
         "group": witness.private_group
     }
 
