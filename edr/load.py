@@ -544,6 +544,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["Materials", "MaterialCollected", "MaterialDiscarded", "EngineerContribution", "EngineerCraft", "MaterialTrade", "MissionCompleted", "ScientificResearch", "TechnologyBroker", "Synthesis"]:
         handle_material_events(ed_player, entry, state)
 
+    if entry["event"] in ["ShipLockerMaterials", "BuyMicroResources", "CollectItems", "TransferMicroResources"]:
+        handle_odyssey_material_events(ed_player, entry, state)
+
     if entry["event"] == "StoredShips":
         ed_player.update_fleet(entry)
 
@@ -1230,6 +1233,17 @@ def handle_scan_events(player, entry):
     EDR_CLIENT.target_guidance(entry)
 
     return True
+
+def handle_odyssey_material_events(cmdr, entry, state):
+    if entry["event"] == "ShipLockerMaterials":
+        cmdr.inventory.initialize(entry)
+    elif entry["event"] == "BuyMicroResources":
+        cmdr.inventory.bought(entry)
+    elif entry["event"] == "CollectItems":
+        cmdr.inventory.collect(entry)
+    elif entry["TransferMicroResources"]:
+        # TODO "event":"TransferMicroResources", "Transfers":[ { "Name":"healthpack", "Name_Localised":"Medkit", "Category":"Consumable", "Count":3, "Direction":"ToShipLocker" }, { "Name":"energycell", "Name_Localised":"Energy Cell", "Category":"Consumable", "Count":2, "Direction":"ToShipLocker" }, { "Name":"amm_grenade_emp", "Name_Localised":"Shield Disruptor", "Category":"Consumable", "Count":1, "Direction":"ToShipLocker" }, { "Name":"amm_grenade_frag", "Name_Localised":"Frag Grenade", "Category":"Consumable", "Count":1, "Direction":"ToShipLocker" }, { "Name":"graphene", "Category":"Component", "Count":1, "Direction":"ToShipLocker" }, { "Name":"aerogel", "Category":"Component", "Count":1, "Direction":"ToShipLocker" }, { "Name":"chemicalsuperbase", "Name_Localised":"Chemical Superbase", "Category":"Component", "Count":1, "Direction":"ToShipLocker" }, { "Name":"circuitswitch", "Name_Localised":"Circuit Switch", "Category":"Component", "Count":3, "Direction":"ToShipLocker" }, { "Name":"epoxyadhesive", "Name_Localised":"Epoxy Adhesive", "Category":"Component", "Count":1, "Direction":"ToShipLocker" }, { "Name":"opticallens", "Name_Localised":"Optical Lens", "Category":"Component", "Count":1, "Direction":"ToShipLocker" }, { "Name":"titaniumplating", "Name_Localised":"Titanium Plating", "Category":"Component", "Count":1, "Direction":"ToShipLocker" }, { "Name":"tungstencarbide", "Name_Localised":"Tungsten Carbide", "Category":"Component", "Count":1, "Direction":"ToShipLocker" } ] }
+        pass
 
 def handle_material_events(cmdr, entry, state):
     if cmdr.inventory.stale_or_incorrect():
