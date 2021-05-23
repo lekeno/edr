@@ -3,7 +3,7 @@ Plugin for "EDR"
 """
 import sys
 import re
-import plug
+import edmc_data
 from edrclient import EDRClient
 from edentities import EDPlayerOne, EDPlayer
 from edvehicles import EDVehicleFactory
@@ -365,11 +365,11 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
         if from_genesis:
             EDRLOG.log(u"Heuristics genesis: probably accurate picture of friends/wings.",
                    "DEBUG")
-        dlc_name = "unknown" 
-        if entry.get("horizons", False):
+        dlc_name = "???" 
+        if entry.get("Horizons", False):
             dlc_name = "Horizons"
         elif entry.get("Odyssey", False):
-            dlc_name = "odyssey"
+            dlc_name = "Odyssey"
         EDR_CLIENT.game_mode(entry["GameMode"], dlc_name, entry.get("Group", None))
         ed_player.update_vehicle_if_obsolete(EDVehicleFactory.from_load_game_event(entry), piloted=True)
         EDRLOG.log(u"Game mode is {}".format(entry["GameMode"]), "DEBUG")
@@ -420,25 +420,25 @@ def dashboard_entry(cmdr, is_beta, entry):
     if not 'Flags' in entry:
         return
 
-    if (entry['Flags'] & plug.FlagsInMainShip):
+    if (entry['Flags'] & edmc_data.FlagsInMainShip):
         ed_player.in_mothership()
     
-    if (entry['Flags'] & plug.FlagsInFighter):
+    if (entry['Flags'] & edmc_data.FlagsInFighter):
         ed_player.in_slf()
 
-    if (entry['Flags'] & plug.FlagsInSRV):
+    if (entry['Flags'] & edmc_data.FlagsInSRV):
         ed_player.in_srv()
 
-    if (entry['Flags'] & plug.FlagsFsdJump):
+    if (entry['Flags'] & edmc_data.FlagsFsdJump):
         ed_player.in_blue_tunnel()
     else:
         ed_player.in_blue_tunnel(False)
     
-    ed_player.piloted_vehicle.low_fuel = bool(entry['Flags'] & plug.FlagsLowFuel)
-    ed_player.docked(bool(entry['Flags'] & plug.FlagsDocked))
-    unsafe = bool(entry['Flags'] & plug.FlagsIsInDanger)
+    ed_player.piloted_vehicle.low_fuel = bool(entry['Flags'] & edmc_data.FlagsLowFuel)
+    ed_player.docked(bool(entry['Flags'] & edmc_data.FlagsDocked))
+    unsafe = bool(entry['Flags'] & edmc_data.FlagsIsInDanger)
     ed_player.in_danger(unsafe)
-    deployed = bool(entry['Flags'] & plug.FlagsHardpointsDeployed)
+    deployed = bool(entry['Flags'] & edmc_data.FlagsHardpointsDeployed)
     ed_player.hardpoints(deployed)
     
     safe = not unsafe
@@ -447,7 +447,7 @@ def dashboard_entry(cmdr, is_beta, entry):
         ed_player.recon_box.reset()
         EDR_CLIENT.notify_with_details(_(u"EDR Central"), [_(u"Fight reporting disabled"), _(u"Looks like you are safe, and disengaged.")])
     
-    if ed_player.in_normal_space() and ed_player.recon_box.process_signal(entry['Flags'] & plug.FlagsLightsOn):
+    if ed_player.in_normal_space() and ed_player.recon_box.process_signal(entry['Flags'] & edmc_data.FlagsLightsOn):
         if ed_player.recon_box.active:
             EDR_CLIENT.notify_with_details(_(u"EDR Central"), [_(u"Fight reporting enabled"), _(u"Turn it off: flash your lights twice, or leave this area, or escape danger and retract hardpoints.")])
         else:
