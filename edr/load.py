@@ -366,10 +366,10 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
             EDRLOG.log(u"Heuristics genesis: probably accurate picture of friends/wings.",
                    "DEBUG")
         dlc_name = "???" 
-        if entry.get("Horizons", False):
-            dlc_name = "Horizons"
-        elif entry.get("Odyssey", False):
+        if entry.get("Odyssey", False):
             dlc_name = "Odyssey"
+        elif entry.get("Horizons", False):
+            dlc_name = "Horizons"
         EDR_CLIENT.game_mode(entry["GameMode"], dlc_name, entry.get("Group", None))
         ed_player.update_vehicle_if_obsolete(EDVehicleFactory.from_load_game_event(entry), piloted=True)
         EDRLOG.log(u"Game mode is {}".format(entry["GameMode"]), "DEBUG")
