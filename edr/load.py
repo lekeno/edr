@@ -13,10 +13,8 @@ from edrlog import EDRLog
 import edentities
 import edrautoupdater
 from edri18n import _, _c
-from edrdiscord import EDRDiscordIntegration
 
 EDR_CLIENT = EDRClient()
-EDR_DISCORD_INTEGRATION = EDRDiscordIntegration(EDR_CLIENT.player)
 EDRLOG = EDRLog()
 LAST_KNOWN_SHIP_NAME = ""
 
@@ -377,7 +375,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
         if ed_player.mothership.id == entry.get("ShipID", None):
             ed_player.mothership.update_from_loadout(entry)
             ed_player.mothership.update_cargo()
-            if ed_player.mothership.could_use_limpets():
+            if ed_player.mothership.could_use_limpets() and ed_player.is_docked:
                 limpets = ed_player.mothership.cargo.how_many("drones")
                 capacity = ed_player.mothership.cargo_capacity
                 EDR_CLIENT.notify_with_details(_(U"Restock reminder"), [_(u"Don't forget to restock on limpets before heading out."), _(u"Limpets: {}/{}").format(limpets, capacity)])
@@ -483,7 +481,7 @@ def handle_mining_events(ed_player, entry):
 def handle_bounty_hunting_events(ed_player, entry):
     if entry["event"] not in ["Bounty", "ShipTargeted"]:
         return
-    if entry["event"] == "Bounty" and entry.get("Reward", 0) > 0:
+    if entry["event"] == "Bounty" and entry.get("Rewards", None):
         ed_player.bounty_awarded(entry)
         EDR_CLIENT.bounty_hunting_guidance()
     elif entry["event"] == "ShipTargeted":
@@ -509,7 +507,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if not prerequisites(EDR_CLIENT, is_beta):
         return
 
-    EDR_DISCORD_INTEGRATION.process(entry)
+    EDR_CLIENT.edrdiscord.process(entry)
 
     if entry["event"] in ["Shutdown", "ShutDown", "Music", "Resurrect", "Fileheader", "LoadGame", "Loadout"]:
         from_genesis = False
@@ -838,7 +836,7 @@ def edr_submit_scan(scan, timestamp, source, witness):
     report["mode"] = witness.game_mode
     report["group"] = witness.private_group
 
-    EDR_CLIENT.scanned(scan["cmdr"], report):
+    EDR_CLIENT.scanned(scan["cmdr"], report)
         
 def edr_submit_traffic(contact, timestamp, source, witness, system_wide=False):
     """
@@ -902,7 +900,7 @@ def report_crime(cmdr, entry):
             player_one.interdicted(interdictor, entry["event"] == "Interdicted")
             edr_submit_crime([interdictor], entry["event"], cmdr, entry["timestamp"])
         else:
-            interdictor = player_one.instanced_npc(entry["Interdictor"])
+            interdictor = player_one.instanced_npc(entry.get("Interdictor", "[N/A]"))
             player_one.interdicted(interdictor, entry["event"] == "Interdicted")
     elif entry["event"] == "Died":
         if "Killers" in entry:
@@ -924,7 +922,7 @@ def report_crime(cmdr, entry):
             edr_submit_crime_self(cmdr, offence, interdicted, entry["timestamp"])
         else:
             offence = "Interdiction" if entry["Success"] else "Failed interdiction"
-            interdicted = player_one.instanced_npc(entry["Interdicted"])
+            interdicted = player_one.instanced_npc(entry.get("Interdicted", "[N/A]"))
             player_one.interdiction(interdicted, entry["Success"])
     elif entry["event"] == "PVPKill":
         EDRLOG.log(u"PVPKill!", "INFO")
@@ -1001,8 +999,7 @@ def report_comms(player, entry):
                 from_cmdr = entry["From"][len("$cmdr_decorate:#name="):-1]
             EDRLOG.log(u"Text from {} in star system".format(from_cmdr), "INFO")
             contact = EDPlayer(from_cmdr)
-            contact.location = player.location
-            contact.place = "Unknown"
+            contact.star_system = player.star_system
             # TODO add blip to systemwideinstance ?
             edr_submit_contact(contact, entry["timestamp"],
                                 "Received text (starsystem channel)", player, system_wide = True)
@@ -1334,10 +1331,10 @@ def handle_bang_commands(cmdr, command, command_parts):
         resource = None
         system = cmdr.star_system
         if len(command_parts) == 2:
-            better_parts = command_parts[1].split(" @", 1)
+            better_parts = command_parts[1].split("@", 1)
             if len(better_parts) == 2:
-                system = better_parts[1]
-            resource = better_parts[0]
+                system = better_parts[1].lstrip()
+            resource = better_parts[0].rstrip()
         if resource:
             EDRLOG.log(u"Search command for {}".format(resource), "INFO")
             EDR_CLIENT.search_resource(resource, system)
@@ -1488,11 +1485,13 @@ def handle_bang_commands(cmdr, command, command_parts):
         EDRLOG.log(u"Clear command", "INFO")
         EDR_CLIENT.clear()
     elif command == "!materials":
-        profile = None
         if len(command_parts) == 2:
             profile = command_parts[1]
-        EDRLOG.log(u"Materials command with {}".format(profile), "INFO")
-        EDR_CLIENT.configure_resourcefinder(profile)
+            EDRLOG.log(u"Configure material profile with {}".format(profile), "INFO")
+            EDR_CLIENT.configure_resourcefinder(profile)
+        else:
+            EDR_CLIENT.show_material_profiles()
+            EDRLOG.log(u"Listing material profiles", "INFO")
 
 def handle_query_commands(cmdr, command, command_parts):
     if command == "?outlaws":

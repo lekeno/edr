@@ -68,7 +68,7 @@ class EDModule(object):
 
     def is_drone_controller(self):
         return self.cname.startswith('int_dronecontrol')
-
+    
     def __repr__(self):
         return str(self.__dict__)
 

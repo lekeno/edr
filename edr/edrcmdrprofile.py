@@ -180,6 +180,8 @@ class EDRCmdrProfile(object):
         self.dex_profile = None
         self.sqdrdex_profile = None
         self.powerplay = None
+        self.avatar_url = None
+        self.url = None
 
         
     @property
@@ -204,6 +206,8 @@ class EDRCmdrProfile(object):
         self.patreon = None
         self.dex_profile = None
         self.sqdrdex_profile = None
+        self.avatar_url = json_cmdr["inaraAvatar"]
+        self.url = json_cmdr["inaraURL"]
 
     def from_dict(self, json_cmdr):
         self.name = json_cmdr.get("name", "")
@@ -222,6 +226,8 @@ class EDRCmdrProfile(object):
         self.dex_profile = None
         self.powerplay = None
         self.sqdrdex_profile = None
+        self.avatar_url = json_cmdr.get("inaraAvatar", None)
+        self.url = json_cmdr.get("inaraURL", None)
     
     def complement(self, other_profile):
         if self.name.lower() != other_profile.name.lower():
@@ -368,12 +374,11 @@ class EDRCmdrProfile(object):
             return u"[!{} ?{} +{}]".format(self.alignment_hints["outlaw"], self.alignment_hints["neutral"], self.alignment_hints["enforcer"])
         return u"[!{:.0%} ?{:.0%} +{:.0%}]".format(self.alignment_hints["outlaw"] // total_hints, self.alignment_hints["neutral"] // total_hints, self.alignment_hints["enforcer"] // total_hints)
 
-    def short_profile(self, powerplay=None):
-        edr_parts = []
+    def readable_karma(self, details=False, prefix=True):
         mapped_index = round(10*(self._karma + self.max_karma()) / (2.0*self.max_karma()))
         lut = [_(u"Outlaw++++"), _(u"Outlaw+++"), _(u"Outlaw++"), _(u"Outlaw+"), _(u"Outlaw"), _(u"Ambiguous"), _(u"Lawful"), _(u"Lawful+"), _(u"Lawful++"), _(u"Lawful+++"), _(u"Lawful++++")]
         karma = ""
-        if self.dyn_karma:
+        if prefix and self.dyn_karma:
             karma += u"≈ "
         if lut[mapped_index] == _(u"Ambiguous") and self._karma != 0:
             if self._karma < 0:
@@ -382,8 +387,14 @@ class EDRCmdrProfile(object):
                 karma +=  _(u"Ambiguous+")
         else:
             karma += lut[mapped_index]
+        
+        if details:
+            return _(u"{karma_name} ({karma_value})").format(karma_name=karma, karma_value=round(self._karma))
+        return karma
 
-        edr_parts.append(karma)
+    def short_profile(self, powerplay=None):
+        edr_parts = []
+        edr_parts.append(self.readable_karma())
         
         alignment = self.crowd_alignment()
         if not (alignment is None or alignment == ""):

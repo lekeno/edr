@@ -1,0 +1,79 @@
+; This file is a sample
+;  1. rename it to user_discord_players.json
+;  2. remove all the comment lines (e.g. prefixed with ;)
+;  3. modify its content to reflect your needs 
+;   
+; Use this to customize the discord integration on a per channel basis, and a per cmdr basis.
+;
+; Per channel options:
+; Top level "" allows you to set defaults for all channels
+; Use specific channel names to override the defaults
+;   - Channel names: "local", "starsystem", "squadron", "squadleaders", "wing", "crew", "player"
+;
+; Per cmdr options:
+;   - defaults can be set with the empty name (e.g. ""). For instance, you can set "": { "blocked": true } to only forward messages from specific commanders by overriding the defaults (e.g. "Space Cabbage Omega": {"blocked": false})
+;   - for specific players (e.g. blocking or hiding messages from a specific commander, etc.)
+;
+;
+;
+; Explanation of the different fields (all optional):
+;      "blocked": true          set to true if you don't want to read this commander's messages, remove or set to false otherwise
+;      "name": "potato"         use this to change the cmdr's name to something else (e.g. potato here)
+;      "color": 8421246         use this to force a specific color to this cmdr's extra info embed (RGB in decimal)
+;      "url": ""                use this to force a link on the author field in the extra info embed
+;      "icon_url": ""           use this to force an avatar
+;      "image": ""              use this to force an image in the extra info embed
+;      "thumbnail": ""          use this to force a thumbnail in the extra info embed
+;      "tts": false             text-to-speech: set to true if you want discord to read this commander's message aloud
+;      "spoiler": false         set to true if you want to hide this commander's messages behind a spoiler tag (requires a click to reveal the content)
+;      "matching": ["list of","regular expressions"] message must match one of those regular expressions
+;      "mismatching:  ["list of", "regular expressions"] message must NOT match any of those regular expressions
+;      "min_karma": -100        use this to set the minimum EDR karma allowed
+;      "max_karma": 1000        use this to set the maximum EDR karma allowed
+;      
+;
+{
+    "": {
+        "" :{
+            "mismatching": ["(?i)git[ ]*gud"],
+            "karma_min": -100
+        },
+        "Cranky North-Star": {
+            "blocked": true
+        },
+        "Chatty Plantain": {
+            "name": "[NPC] Chatty Plantain",
+            "spoiler": true
+        }
+    },
+    "player": {
+        "" :{
+            "mismatching": [],
+            "karma_min": -1000
+        }
+    },
+    "wing": {
+        "" :{
+            "mismatching": [],
+            "karma_min": -1000
+        }
+    },
+    "squadron": {
+        "" :{
+            "mismatching": [],
+            "karma_min": -1000
+        }
+    },
+    "squadleaders": {
+        "" :{
+            "mismatching": [],
+            "karma_min": -1000
+        }
+    },
+    "crew": {
+        "" :{
+            "mismatching": [],
+            "karma_min": -1000
+        }
+    }
+}

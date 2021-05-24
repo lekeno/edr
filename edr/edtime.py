@@ -138,7 +138,7 @@ class EDTime(comparable.ComparableMixin):
         if edt < self:
             return False
 
-        return (edt._datetime - self._datetime) >= threshold_timedelta
+        return (edt._datetime - self._datetime).total_seconds() >= threshold_timedelta
 
     def __str__(self):
         return str(self.as_journal_timestamp())

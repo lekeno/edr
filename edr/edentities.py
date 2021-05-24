@@ -289,6 +289,15 @@ class EDLocation(object):
 
     def __repr__(self):
         return str(self.__dict__)
+
+    def from_other(self, other_location):
+        self.star_system = other_location.star_system
+        self.place = other_location.place
+        self.security = other_location.security
+        self.space_dimension = other_location.space_dimension
+        self.population = other_location.population
+        self.allegiance = other_location.allegiance
+        self.star_system_address = other_location.star_system_address
    
     def in_normal_space(self):
         return self.space_dimension == EDSpaceDimension.NORMAL_SPACE
@@ -341,6 +350,7 @@ class EDPilot(object):
         self.targeted_vehicle = None
         self.timestamp = now
         self.rank = rank
+        self.is_docked = False
 
     def __repr__(self):
         return str(self.__dict__)
@@ -377,6 +387,7 @@ class EDPilot(object):
         if self.slf:
             self.slf.destroy()    
         self.to_normal_space()
+        self.is_docked = False # probably OK (assuming a proper event after resurrection)
 
     def needs_large_landing_pad(self):
         return self.mothership is None or self.mothership.needs_large_landing_pad()
@@ -452,6 +463,7 @@ class EDPilot(object):
 
     def in_srv(self):
         self._touch()
+        self.is_docked = False
         if not self.mothership or not self.mothership.supports_srv():
             self.mothership = EDVehicleFactory.unknown_vehicle() 
         if not self.srv:
@@ -468,6 +480,7 @@ class EDPilot(object):
 
     def docked(self, is_docked = True):
         self._touch()
+        self.is_docked = is_docked
         if is_docked:
             self.mothership.safe()
             if self.slf:
@@ -503,6 +516,7 @@ class EDPilot(object):
         self.location.space_dimension = EDSpaceDimension.SUPER_SPACE
         self.mothership.safe()
         self.targeted_vehicle = None
+        self.is_docked = False
         if self.slf:
             self.slf.safe()
         if self.srv:
@@ -515,6 +529,7 @@ class EDPilot(object):
         self.planetary_destination = None # leaving the system, so no point in keep a planetary destination
         self.mothership.safe()
         self.targeted_vehicle = None
+        self.is_docked = False
         if self.slf:
             self.slf.safe()
         if self.srv:
@@ -1117,7 +1132,7 @@ class EDPlayerOne(EDPlayer):
         self._touch()
         self.to_normal_space()
         if success and interdicted:
-            interdicted.location = self.location
+            interdicted.location.from_other(self.location)
             if interdicted.is_human():
                 self.instance.player_in(interdicted)
             else:
@@ -1130,7 +1145,7 @@ class EDPlayerOne(EDPlayer):
         if success:
             self.to_normal_space()
             if interdictor:
-                interdictor.location = self.location
+                interdictor.location.from_other(self.location)
                 if interdictor.is_human():
                     self.instance.player_in(interdictor)
                 else:
@@ -1151,7 +1166,7 @@ class EDPlayerOne(EDPlayer):
         cmdr = self.instance.player(cmdr_name)
         if not cmdr:
             cmdr = EDPlayer(cmdr_name, rank)
-        cmdr.location = self.location
+        cmdr.location.from_other(self.location)
         if ship_internal_name:
             vehicle = EDVehicleFactory.from_internal_name(ship_internal_name)
             cmdr.update_vehicle_if_obsolete(vehicle, piloted)
@@ -1167,7 +1182,7 @@ class EDPlayerOne(EDPlayer):
         npc = self.instance.npc(name, rank, ship_internal_name)
         if not npc:
             npc = EDPilot(name, rank)
-        npc.location = self.location
+        npc.location.from_other(self.location)
         if ship_internal_name:
             vehicle = EDVehicleFactory.from_internal_name(ship_internal_name)
             npc.update_vehicle_if_obsolete(vehicle, piloted)

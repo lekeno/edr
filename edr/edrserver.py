@@ -121,29 +121,59 @@ class EDRServer(object):
             self.backoff["Inara"].throttle()
         return None
 
-    def __get(self, endpoint, service, params=None, headers=None):
+    def __get(self, endpoint, service, params=None, headers=None, attempts=3):
         if self.backoff[service].throttled():
             return None
         
-        return EDRServer.SESSION.get(endpoint, params=params, headers=headers)
+        while attempts:
+            try:
+                attempts -= 1
+                return EDRServer.SESSION.get(endpoint, params=params, headers=headers)
+            except requests.exceptions.RequestException as e:
+                last_connection_exception = e
+                EDRLOG.log(u"ConnectionException {} for GET EDR: attempts={}}".format(e, attempts), u"WARNING")
+        raise last_connection_exception
 
-    def __put(self, endpoint, service, json, params=None, headers=None):
+    def __put(self, endpoint, service, json, params=None, headers=None, attempts=3):
         if self.backoff[service].throttled():
             return None
-        
-        return EDRServer.SESSION.put(endpoint, params=params, json=json, headers=headers)
+
+        while attempts:
+            try:
+                attempts -= 1
+                return EDRServer.SESSION.put(endpoint, params=params, json=json, headers=headers)
+            except requests.exceptions.RequestException as e:
+                last_connection_exception = e
+                EDRLOG.log(u"ConnectionException {} for PUT EDR: attempts={}".format(e, attempts), u"WARNING")
+        raise last_connection_exception
     
-    def __delete(self, endpoint, service, params=None):
+    def __delete(self, endpoint, service, params=None, attempts=3):
         if self.backoff[service].throttled():
             return None
-        
-        return EDRServer.SESSION.delete(endpoint, params=params)
 
-    def __post(self, endpoint, service, json, params=None):
+        while attempts:
+            try:
+                attempts -= 1
+                return EDRServer.SESSION.delete(endpoint, params=params)
+            except requests.exceptions.RequestException as e:
+                last_connection_exception = e
+                EDRLOG.log(u"ConnectionException {} for DELETE EDR: attempts={}".format(e, attempts), u"WARNING")
+        raise last_connection_exception
+        
+
+    def __post(self, endpoint, service, json, params=None, attempts=3):
         if self.backoff[service].throttled():
             return None
         
-        return EDRServer.SESSION.post(endpoint, params=params, json=json)
+        while attempts:
+            try:
+                attempts -= 1
+                return EDRServer.SESSION.post(endpoint, params=params, json=json)
+            except requests.exceptions.RequestException as e:
+                last_connection_exception = e
+                EDRLOG.log(u"ConnectionException {} for POST EDR: attempts={}".format(e, attempts), u"WARNING")
+        raise last_connection_exception
+        
 
     def server_version(self):
         resp = self.__get("{}/version/.json".format(self.EDR_SERVER), "EDR")
