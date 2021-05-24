@@ -3,7 +3,12 @@ Plugin for "EDR"
 """
 import sys
 import re
-import edmc_data
+
+try:
+    import edmc_data
+except ImportError:
+    import plug as edmc_data
+
 from edrclient import EDRClient
 from edentities import EDPlayerOne, EDPlayer
 from edvehicles import EDVehicleFactory
