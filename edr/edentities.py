@@ -330,6 +330,25 @@ class EDLocation(object):
                 location += u", {place}".format(place=self.place)
         return location
 
+class EDSuit(object):
+    def __init__(self, name, grade=1):
+        self.name = name
+        self.grade = grade
+        self.slots = []
+        self.shields_up = False
+        self.energy = 1.0
+        self.health = 1.0
+    
+class EDFlightSuit(EDSuit):
+    def __init__(self, rank=1):
+        super(EDFlightSuit, self).__init__("Flight Suite", rank)
+        # TODO slots
+
+# TacticalSuit_Class1 : Dominator Suit
+# UtilitySuit_Class1: Maverick Suit
+# FlightSuit: Flight Suite
+
+
 class EDPilot(object):
     def __init__(self, name, rank):
         now = EDTime.py_epoch_now()
