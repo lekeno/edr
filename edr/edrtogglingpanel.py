@@ -18,7 +18,7 @@ class ToggledFrame(tk.Frame):
 
     def __init__(self, parent, label, status, show, *args, **options):
         conf = IGMConfig(config_file='config/igm_alt_config.v3.ini', user_config_file=['config/user_igm_alt_config.v3.ini', 'config/user_igm_alt_config.v2.ini'])
-        theme=EDMCConfig.config.getint('theme') # hat tip to ewanm89@
+        theme=EDMCConfig.config.get_int('theme') # hat tip to ewanm89@
         if (theme):
             conf = IGMConfig(config_file='config/igm_alt_themed_config.v3.ini', user_config_file=['config/user_igm_alt_themed_config.v3.ini', 'config/user_igm_alt_themed_config.v2.ini'])
         
@@ -69,7 +69,7 @@ class ToggledFrame(tk.Frame):
     def refresh_theme(self):
         self.status_frame.grid_propagate(False)
         conf = IGMConfig(config_file='config/igm_alt_config.v3.ini', user_config_file=['config/user_igm_alt_config.v3.ini', 'config/user_igm_alt_config.v2.ini'])
-        theme=EDMCConfig.config.getint('theme') # hat tip to ewanm89@
+        theme=EDMCConfig.config.get_int('theme') # hat tip to ewanm89@
         if (theme):
             conf = IGMConfig(config_file='config/igm_alt_themed_config.v3.ini', user_config_file=['config/user_igm_alt_themed_config.v3.ini', 'config/user_igm_alt_themed_config.v2.ini'])
         
@@ -88,7 +88,7 @@ class ToggledFrame(tk.Frame):
 class EDRTogglingPanel(ToggledFrame):
     def __init__(self, status, show, parent=0):
         conf = IGMConfig(config_file='config/igm_alt_config.v3.ini', user_config_file=['config/user_igm_alt_config.v3.ini', 'config/user_igm_alt_config.v2.ini'])
-        theme=EDMCConfig.config.getint('theme') # hat tip to ewanm89@
+        theme=EDMCConfig.config.get_int('theme') # hat tip to ewanm89@
         if (theme):
             conf = IGMConfig(config_file='config/igm_alt_themed_config.v3.ini', user_config_file=['config/user_igm_alt_themed_config.v3.ini', 'config/user_igm_alt_themed_config.v2.ini'])
         ToggledFrame.__init__(self, parent, label="EDR:", status=status, show=show)
@@ -145,7 +145,7 @@ class EDRTogglingPanel(ToggledFrame):
     
     def refresh_theme(self):
         conf = IGMConfig(config_file='config/igm_alt_config.v3.ini', user_config_file=['config/user_igm_alt_config.v3.ini', 'config/user_igm_alt_config.v2.ini'])
-        theme=EDMCConfig.config.getint('theme') # hat tip to ewanm89@
+        theme=EDMCConfig.config.get_int('theme') # hat tip to ewanm89@
         if (theme):
             conf = IGMConfig(config_file='config/igm_alt_themed_config.v3.ini', user_config_file=['config/user_igm_alt_themed_config.v3.ini', 'config/user_igm_alt_themed_config.v2.ini'])
         if sys.version_info.major == 2:

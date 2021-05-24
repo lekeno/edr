@@ -9,7 +9,7 @@ EDRLOG = EDRLog()
 
 class EDCargoReader(object):
     def __init__(self):
-        self.journal_location = config.get('journaldir') or config.default_journal_dir
+        self.journal_location = config.get_str('journaldir') or config.default_journal_dir
 
     def process(self):
         # From EDMarketConnector while waiting for first party support

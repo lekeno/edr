@@ -50,7 +50,7 @@ class EDRClient(object):
 
     def __init__(self):
         edr_config = EDRConfig()
-        set_language(config.get("language"))
+        set_language(config.get_str("language"))
 
         self.edr_version = edr_config.edr_version()
         EDRLOG.log(u"Version {}".format(self.edr_version), "INFO")
@@ -75,45 +75,45 @@ class EDRClient(object):
         self.alerts_cache = LRUCache(edr_config.lru_max_size(), edr_config.alerts_max_age())
         self.fights_cache = LRUCache(edr_config.lru_max_size(), edr_config.fights_max_age())
 
-        self._email = tk.StringVar(value=config.get("EDREmail"))
-        self._password = tk.StringVar(value=config.get("EDRPassword"))
+        self._email = tk.StringVar(value=config.get_str("EDREmail"))
+        self._password = tk.StringVar(value=config.get_str("EDRPassword"))
         # Translators: this is shown on the EDMC's status line
         self._status = tk.StringVar(value=_(u"not authenticated."))
         
-        visual = 1 if config.get("EDRVisualFeedback") == "True" else 0
+        visual = 1 if config.get_str("EDRVisualFeedback") == "True" else 0
         self.IN_GAME_MSG = InGameMsg() if visual else None
         self._visual_feedback = tk.IntVar(value=visual)
 
-        visual_alt = 1 if config.get("EDRVisualAltFeedback") == "True" else 0
+        visual_alt = 1 if config.get_str("EDRVisualAltFeedback") == "True" else 0
         self._visual_alt_feedback = tk.IntVar(value=visual_alt)
         
         self.ui = None # EDRTogglingPanel(self._status, self._visual_alt_feedback)
 
-        audio = 1 if config.get("EDRAudioFeedback") == "True" else 0
+        audio = 1 if config.get_str("EDRAudioFeedback") == "True" else 0
         self._audio_feedback = tk.IntVar(value=audio)
 
         self.server = EDRServer()
 
         anonymous_reports = _(u"Auto")
         self.server.anonymous_reports = None
-        if config.get("EDRRedactMyInfo") in [_(u"Always"), _(U"Never")]:
-            anonymous_reports = config.get("EDRRedactMyInfo")
+        if config.get_str("EDRRedactMyInfo") in [_(u"Always"), _(U"Never")]:
+            anonymous_reports = config.get_str("EDRRedactMyInfo")
             self.server.anonymous_reports = anonymous_reports == _(u"Always")
         self._anonymous_reports = tk.StringVar(value=anonymous_reports)
 
         fc_jump_psa = _(u"Never")
         self.server.fc_jump_psa = None
-        if config.get("EDRFCJumpPSA") in [_(u"Public"), _(U"Private")]:
-            fc_jump_psa = config.get("EDRFCJumpPSA")
+        if config.get_str("EDRFCJumpPSA") in [_(u"Public"), _(U"Private")]:
+            fc_jump_psa = config.get_str("EDRFCJumpPSA")
             self.server.fc_jump_psa = fc_jump_psa == _(u"Public")
         self._fc_jump_psa = tk.StringVar(value=fc_jump_psa)
 
         
         self.realtime_params = {
-            EDROpponents.OUTLAWS: { "min_bounty": None if config.get("EDROutlawsAlertsMinBounty") == "None" else config.getint("EDROutlawsAlertsMinBounty"),
-                         "max_distance": None if config.get("EDROutlawsAlertsMaxDistance") == "None" else config.getint("EDROutlawsAlertsMaxDistance")},
-            EDROpponents.ENEMIES: { "min_bounty": None if config.get("EDREnemiesAlertsMinBounty") == "None" else config.getint("EDREnemiesAlertsMinBounty"),
-                         "max_distance": None if config.get("EDREnemiesAlertsMaxDistance") == "None" else config.getint("EDREnemiesAlertsMaxDistance")}
+            EDROpponents.OUTLAWS: { "min_bounty": None if config.get_str("EDROutlawsAlertsMinBounty") == "None" else config.get_int("EDROutlawsAlertsMinBounty"),
+                         "max_distance": None if config.get_str("EDROutlawsAlertsMaxDistance") == "None" else config.get_int("EDROutlawsAlertsMaxDistance")},
+            EDROpponents.ENEMIES: { "min_bounty": None if config.get_str("EDREnemiesAlertsMinBounty") == "None" else config.get_int("EDREnemiesAlertsMinBounty"),
+                         "max_distance": None if config.get_str("EDREnemiesAlertsMaxDistance") == "None" else config.get_int("EDREnemiesAlertsMaxDistance")}
         }
         
         self.edrsystems = EDRSystems(self.server)
@@ -148,14 +148,14 @@ class EDRClient(object):
         self.status = _(u"soft audio cues.")
 
     def apply_config(self):
-        c_email = config.get("EDREmail")
-        c_password = config.get("EDRPassword")
-        c_visual_feedback = config.get("EDRVisualFeedback")
-        c_visual_alt_feedback = config.get("EDRVisualAltFeedback")
-        c_audio_feedback = config.get("EDRAudioFeedback")
-        c_audio_volume = config.get("EDRAudioFeedbackVolume")
-        c_redact_my_info = config.get("EDRRedactMyInfo")
-        c_fc_jump_announcements = config.get("EDRFCJumpPSA")
+        c_email = config.get_str("EDREmail")
+        c_password = config.get_str("EDRPassword")
+        c_visual_feedback = config.get_str("EDRVisualFeedback")
+        c_visual_alt_feedback = config.get_str("EDRVisualAltFeedback")
+        c_audio_feedback = config.get_str("EDRAudioFeedback")
+        c_audio_volume = config.get_str("EDRAudioFeedbackVolume")
+        c_redact_my_info = config.get_str("EDRRedactMyInfo")
+        c_fc_jump_announcements = config.get_str("EDRFCJumpPSA")
 
         if c_email is None:
             self._email.set("")
@@ -320,10 +320,11 @@ class EDRClient(object):
         self.edrcmdrs.set_player_name(name)
         self.server.set_player_name(name)
 
-    def game_mode(self, mode, group = None):
+    def game_mode(self, mode, dlc = None, group = None):
         self.player.game_mode = mode
+        self.player.dlc_name = dlc
         self.player.private_group = group  
-        self.server.set_game_mode(mode, group)
+        self.server.set_game_mode(mode, dlc, group)
 
     def pledged_to(self, power, time_pledged=0):
         if self.server.is_anonymous():
@@ -468,7 +469,7 @@ class EDRClient(object):
             
 
     def prefs_changed(self):
-        set_language(config.get("language"))
+        set_language(config.get_str("language"))
         if self.mandatory_update:
             EDRLOG.log(u"Out-of-date client, aborting.", "ERROR")
             self.__status_update_pending()
@@ -480,9 +481,9 @@ class EDRClient(object):
         config.set("EDRAudioFeedback", "True" if self.audio_feedback else "False")
         config.set("EDRRedactMyInfo", self.anonymous_reports)
         config.set("EDRFCJumpPSA", self.fc_jump_psa)
-        EDRLOG.log(u"Audio cues: {}, {}".format(config.get("EDRAudioFeedback"),
-                                                config.get("EDRAudioFeedbackVolume")), "DEBUG")
-        EDRLOG.log(u"Anonymous reports: {}".format(config.get("EDRRedactMyInfo")), "DEBUG")
+        EDRLOG.log(u"Audio cues: {}, {}".format(config.get_str("EDRAudioFeedback"),
+                                                config.get_str("EDRAudioFeedbackVolume")), "DEBUG")
+        EDRLOG.log(u"Anonymous reports: {}".format(config.get_str("EDRRedactMyInfo")), "DEBUG")
         self.ui.refresh_theme()
         self.login()
 

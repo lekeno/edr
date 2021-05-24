@@ -1,6 +1,5 @@
 import os
 import sys
-import os
 
 def abspathmaker(currentfile, *paths):
     base = os.path.abspath(os.path.dirname(currentfile))
