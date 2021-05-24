@@ -822,6 +822,7 @@ class EDPlayerOne(EDPlayer):
         super(EDPlayerOne, self).__init__(name)
         self.powerplay = None
         self.game_mode = None
+        self.dlc_name = None
         self.private_group = None
         self.previous_mode = None
         self.previous_wing = set()
@@ -913,6 +914,7 @@ class EDPlayerOne(EDPlayer):
             u"byPledge": self.powerplay.canonicalize() if self.powerplay else u'',
             u"ship": self.piloted_vehicle.json(fuel_info=fuel_info),
             u"mode": self.game_mode,
+            u"dlc": self.dlc_name,
             u"group": self.private_group
         }
         if with_target:

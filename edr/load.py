@@ -3,7 +3,12 @@ Plugin for "EDR"
 """
 import sys
 import re
-import plug
+
+try:
+    import edmc_data
+except ImportError:
+    import plug as edmc_data
+
 from edrclient import EDRClient
 from edentities import EDPlayerOne, EDPlayer
 from edvehicles import EDVehicleFactory
@@ -315,7 +320,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
             # { "timestamp":"2018-06-19T13:06:04Z", "event":"QuitACrew", "Captain":"Dummy" }
             # { "timestamp":"2018-06-19T13:06:16Z", "event":"Music", "MusicTrack":"MainMenu" }
             EDR_CLIENT.clear()
-            EDR_CLIENT.game_mode(None)
+            EDR_CLIENT.game_mode(None, None)
             ed_player.leave_wing()
             ed_player.leave_crew()
             ed_player.leave_vehicle()
@@ -365,7 +370,12 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
         if from_genesis:
             EDRLOG.log(u"Heuristics genesis: probably accurate picture of friends/wings.",
                    "DEBUG")
-        EDR_CLIENT.game_mode(entry["GameMode"], entry.get("Group", None))
+        dlc_name = "???" 
+        if entry.get("Odyssey", False):
+            dlc_name = "Odyssey"
+        elif entry.get("Horizons", False):
+            dlc_name = "Horizons"
+        EDR_CLIENT.game_mode(entry["GameMode"], dlc_name, entry.get("Group", None))
         ed_player.update_vehicle_if_obsolete(EDVehicleFactory.from_load_game_event(entry), piloted=True)
         EDRLOG.log(u"Game mode is {}".format(entry["GameMode"]), "DEBUG")
         EDR_CLIENT.warmup()
@@ -415,25 +425,25 @@ def dashboard_entry(cmdr, is_beta, entry):
     if not 'Flags' in entry:
         return
 
-    if (entry['Flags'] & plug.FlagsInMainShip):
+    if (entry['Flags'] & edmc_data.FlagsInMainShip):
         ed_player.in_mothership()
     
-    if (entry['Flags'] & plug.FlagsInFighter):
+    if (entry['Flags'] & edmc_data.FlagsInFighter):
         ed_player.in_slf()
 
-    if (entry['Flags'] & plug.FlagsInSRV):
+    if (entry['Flags'] & edmc_data.FlagsInSRV):
         ed_player.in_srv()
 
-    if (entry['Flags'] & plug.FlagsFsdJump):
+    if (entry['Flags'] & edmc_data.FlagsFsdJump):
         ed_player.in_blue_tunnel()
     else:
         ed_player.in_blue_tunnel(False)
     
-    ed_player.piloted_vehicle.low_fuel = bool(entry['Flags'] & plug.FlagsLowFuel)
-    ed_player.docked(bool(entry['Flags'] & plug.FlagsDocked))
-    unsafe = bool(entry['Flags'] & plug.FlagsIsInDanger)
+    ed_player.piloted_vehicle.low_fuel = bool(entry['Flags'] & edmc_data.FlagsLowFuel)
+    ed_player.docked(bool(entry['Flags'] & edmc_data.FlagsDocked))
+    unsafe = bool(entry['Flags'] & edmc_data.FlagsIsInDanger)
     ed_player.in_danger(unsafe)
-    deployed = bool(entry['Flags'] & plug.FlagsHardpointsDeployed)
+    deployed = bool(entry['Flags'] & edmc_data.FlagsHardpointsDeployed)
     ed_player.hardpoints(deployed)
     
     safe = not unsafe
@@ -442,7 +452,7 @@ def dashboard_entry(cmdr, is_beta, entry):
         ed_player.recon_box.reset()
         EDR_CLIENT.notify_with_details(_(u"EDR Central"), [_(u"Fight reporting disabled"), _(u"Looks like you are safe, and disengaged.")])
     
-    if ed_player.in_normal_space() and ed_player.recon_box.process_signal(entry['Flags'] & plug.FlagsLightsOn):
+    if ed_player.in_normal_space() and ed_player.recon_box.process_signal(entry['Flags'] & edmc_data.FlagsLightsOn):
         if ed_player.recon_box.active:
             EDR_CLIENT.notify_with_details(_(u"EDR Central"), [_(u"Fight reporting enabled"), _(u"Turn it off: flash your lights twice, or leave this area, or escape danger and retract hardpoints.")])
         else:
@@ -677,6 +687,7 @@ def edr_update_cmdr_status(cmdr, reason_for_update, timestamp):
         "source": reason_for_update,
         "reportedBy": cmdr.name,
         "mode": cmdr.game_mode,
+        "dlc": cmdr.dlc_name,
         "group": cmdr.private_group
     }
 
@@ -725,6 +736,7 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
         "victimPower": victim.powerplay.canonicalize() if victim.powerplay else u"",
         "byPledge": victim.powerplay.canonicalize() if victim.powerplay else "",
         "mode": victim.game_mode,
+        "dlc": victim.dlc_name,
         "group": victim.private_group
     }
 
@@ -770,6 +782,7 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim, timestamp):
         "victimPower": victim.powerplay.canonicalize() if victim.powerplay else u"",
         "byPledge": victim.powerplay.canonicalize() if victim.powerplay else "",
         "mode": criminal_cmdr.game_mode,
+        "dlc": criminal_cmdr.dlc_name,
         "group": criminal_cmdr.private_group
     }
 
@@ -810,6 +823,7 @@ def edr_submit_contact(contact, timestamp, source, witness, system_wide=False):
         "reportedBy": witness.name,
         "byPledge": witness.powerplay.canonicalize() if witness.powerplay else "",
         "mode": witness.game_mode,
+        "dlc": witness.dlc_name,
         "group": witness.private_group
     }
 
@@ -837,6 +851,7 @@ def edr_submit_scan(scan, timestamp, source, witness):
     report["reportedBy"] = witness.name
     report["byPledge"] = witness.powerplay.canonicalize() if witness.powerplay else ""
     report["mode"] = witness.game_mode
+    report["dlc"] = witness.dlc_name
     report["group"] = witness.private_group
 
     EDR_CLIENT.scanned(scan["cmdr"], report)
@@ -864,6 +879,7 @@ def edr_submit_traffic(contact, timestamp, source, witness, system_wide=False):
         "reportedBy": witness.name,
         "byPledge": witness.powerplay.canonicalize() if witness.powerplay else "",
         "mode": witness.game_mode,
+        "dlc": witness.dlc_name,
         "group": witness.private_group
     }
 
