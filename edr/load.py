@@ -254,7 +254,7 @@ def handle_movement_events(ed_player, entry):
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
         outcome["reason"] = "Approach event"
         if EDR_CLIENT.noteworthy_about_body(entry["StarSystem"], entry["Body"]) and ed_player.planetary_destination is None:
-            poi = EDR_CLIENT.closest_poi_on_body(entry["StarSystem"], entry["Body"], ed_player.piloted_vehicle.attitude)
+            poi = EDR_CLIENT.closest_poi_on_body(entry["StarSystem"], entry["Body"], ed_player.attitude)
             ed_player.planetary_destination = edentities.EDPlanetaryLocation(poi)
     elif entry["event"] in ["LeaveBody"]:
         place = "Supercruise"
@@ -476,10 +476,9 @@ def dashboard_entry(cmdr, is_beta, entry):
     attitude = { key.lower():value for key,value in entry.items() if key in attitude_keys }
     if "altitude" in attitude:
         attitude["altitude"] /= 1000.0
-    if ed_player.piloted_vehicle: # TODO on foot case?
-        ed_player.piloted_vehicle.update_attitude(attitude)
-        if ed_player.planetary_destination:
-            EDR_CLIENT.show_navigation()
+    ed_player.update_attitude(attitude)
+    if ed_player.planetary_destination:
+        EDR_CLIENT.show_navigation()
 
 def handle_mining_events(ed_player, entry):
     if entry["event"] not in ["MiningRefined", "ProspectedAsteroid"]:
@@ -1462,9 +1461,9 @@ def handle_bang_commands(cmdr, command, command_parts):
             EDRLOG.log(u"Clearing destination", "INFO")
             EDR_CLIENT.player.planetary_destination = None
             return
-        elif command_parts[1].lower() == "set" and EDR_CLIENT.player.piloted_vehicle.attitude.valid(): # TODO on foot case
+        elif command_parts[1].lower() == "set" and EDR_CLIENT.player.attitude.valid():
             EDRLOG.log(u"Setting destination", "INFO")
-            attitude = EDR_CLIENT.player.piloted_vehicle.attitude
+            attitude = EDR_CLIENT.player.attitude
             EDR_CLIENT.navigation(attitude.latitude, attitude.longitude)
             return
         lat_long = command_parts[1].split(" ")
