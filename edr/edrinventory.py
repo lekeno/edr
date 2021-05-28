@@ -274,6 +274,10 @@ class EDRInventory(object):
         self.encoded = {}
         self.raw = {}
         self.manufactured = {}
+        self.items = {}
+        self.components = {}
+        self.consumables = {}
+        self.data = {}
         for thing in state.get("Encoded", {}):
             cname = self.__c_name(thing)
             self.encoded[cname] = state["Encoded"][thing]
@@ -285,6 +289,22 @@ class EDRInventory(object):
         for thing in state.get("Manufactured", {}):
             cname = self.__c_name(thing)
             self.manufactured[cname] = state["Manufactured"][thing]
+
+        for thing in state.get("Item", {}):
+            cname = self.__c_name(thing)
+            self.items[cname] = state["Item"][thing]
+
+        for thing in state.get("Component", {}):
+            cname = self.__c_name(thing)
+            self.components[cname] = state["Component"][thing]
+
+        for thing in state.get("Consumable", {}):
+            cname = self.__c_name(thing)
+            self.consumables[cname] = state["Consumable"][thing]
+
+        for thing in state.get("Data", {}):
+            cname = self.__c_name(thing)
+            self.data[cname] = state["Data"][thing]
         self.initialized = True
         self.inconsistencies = False
 

@@ -29,10 +29,7 @@ class EDSpaceSuit(object):
         self.type = None
         self.id = None
         self.loadout = EDSpaceSuitLoadout()
-        # TODO verify if needed/available
-        self.rebuy = None
-        self._value = None
-        self.hot = False
+        self.mods = {}
         now = EDTime.py_epoch_now()
         now_ms = EDTime.ms_epoch_now()
         config = edrconfig.EDR_CONFIG
@@ -41,25 +38,12 @@ class EDSpaceSuit(object):
         self.shield_up = True
         self.timestamp = now
         self.fight = {u"value": False, "large": False, u"timestamp": now}
-        self._hardpoints_deployed = {u"value": False, u"timestamp": now}
         self._attacked = {u"value": False, u"timestamp": now}
-        self.heat_damaged = {u"value": False, u"timestamp": now}
         self._in_danger = {u"value": False, u"timestamp": now}
-        self._low_fuel = {u"value": False, u"timestamp": now}
         self.fight_staleness_threshold = config.instance_fight_staleness_threshold()
         self.danger_staleness_threshold = config.instance_danger_staleness_threshold()
-        self.seats = 1
         self.fuel_capacity = None
         self.fuel_level = None
-        self.attitude = EDVehicleAttitude()
-        self.module_info_timestamp = None
-        self.slots_timestamp = None
-        self.slots = {}
-        self.modules = None
-        self.power_capacity = None
-        self.cargo_capacity = 0
-        self.cargo = edcargo.EDCargo()
-        self.whole_loadout = False
         
     @property
     def hull_health(self):
@@ -270,80 +254,16 @@ class EDSpaceSuit(object):
         self.timestamp = now
         self.hull_health = 0.0
 
-    def cockpit_breached(self):
-        self.cockpit_health(0.0)
-
-    def cockpit_health(self, value):
-        now = EDTime.py_epoch_now()
-        self.timestamp = now
-        cockpit_suffix = "_cockpit"
-        for internal_name in self.subsystems:
-            if not internal_name.endswith(cockpit_suffix):
-                continue
-            self.subsystem_health(internal_name, value)
-            break
-
     def taking_hull_damage(self, remaining_health):
         now = EDTime.py_epoch_now()
         self.timestamp = now
         self.hull_health = remaining_health
-
-    def taking_heat_damage(self):
-        now = EDTime.py_epoch_now()
-        self.timestamp = now
-        self.heat_damaged = {u"value": True, u"timestamp": now}        
 
     def outfit_probably_changed(self, timestamp=None):
         edt = EDTime()
         if timestamp:
             edt.from_journal_timestamp(timestamp)
         self.module_info_timestamp = edt
-
-
-    def subsystem_health(self, subsystem, health):
-        if subsystem is None:
-            return
-        canonical = EDSpaceSuitFactory.normalize_module_name(subsystem)
-        now = EDTime.ms_epoch_now()
-        self.timestamp = now
-        if canonical not in self.subsystems:
-            config = edrconfig.EDR_CONFIG
-            self.subsystems[canonical] = edrhitppoints.EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
-        self.subsystems[canonical].update(health)
-
-    def subsystem_details(self, subsystem):
-        if subsystem is None:
-            return
-        canonical = EDSpaceSuitFactory.normalize_module_name(subsystem)
-        if canonical not in self.subsystems:
-            return
-        readable_name, short_name = EDSpaceSuitFactory.readable_module_names(subsystem)
-        return {"name": readable_name, "shortname": short_name, "stats": self.subsystems[canonical]}
-
-    def add_subsystem(self, subsystem):
-        if not subsystem:
-            return
-        canonical = EDSpaceSuitFactory.normalize_module_name(subsystem)
-        now = EDTime.ms_epoch_now()
-        self.timestamp = now
-        self.outfit_probably_changed()
-        config = edrconfig.EDR_CONFIG
-        self.subsystems[canonical] = edrhitppoints.EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
-        self.subsystems[canonical].update(None)
-    
-    def remove_subsystem(self, subsystem):
-        if subsystem is None:
-            return
-        canonical = EDSpaceSuitFactory.normalize_module_name(subsystem)
-        if canonical.startswith("shieldgenerator_"):
-            self.shield_health = 0.0
-        now = EDTime.py_epoch_now()
-        self.timestamp = now
-        try:
-            del self.subsystems[canonical]
-            self.outfit_probably_changed()
-        except:
-            pass
 
     def attacked(self):
         now = EDTime.py_epoch_now()
@@ -370,15 +290,6 @@ class EDSpaceSuit(object):
         if self._in_danger["value"]:
             now = EDTime.py_epoch_now()
             return (now >= self._in_danger["timestamp"]) and ((now - self._in_danger["timestamp"]) <= self.danger_staleness_threshold)
-        return False
-
-    def hardpoints(self, deployed):
-        self._hardpoints_deployed = {u"value": deployed, u"timestamp": EDTime.py_epoch_now()}
-
-    def hardpoints_deployed(self):
-        if self._hardpoints_deployed["value"]:
-            now = EDTime.py_epoch_now()
-            return (now >= self._hardpoints_deployed["timestamp"]) and ((now - self._hardpoints_deployed["timestamp"]) <= self.fight_staleness_threshold)
         return False
 
     def shield_state(self, is_up):
@@ -422,46 +333,6 @@ class EDSpaceSuit(object):
             for subsystem in self.subsystems:
                 self.subsystem_health(subsystem, 100.0)
 
-    def could_use_limpets(self, mining_only=False):
-        if self.cargo_capacity <= 0:
-            return False
-        
-        if mining_only:
-            if not self.is_mining_rig():
-                return False
-        elif not self.has_drone_controller():
-            return False
-
-        return  self.cargo.how_many("drones") < self.cargo_capacity
-
-    def is_mining_rig(self):
-        for slot_name in self.slots:
-            if self.slots[slot_name].is_prospector_drone_controller():
-                return True
-        return False
-
-
-    def has_drone_controller(self):
-        for slot_name in self.slots:
-            if self.slots[slot_name].is_drone_controller():
-                return True
-        return False
-
-    def has_shield_generator(self):
-        for slot_name in self.slots:
-            if self.slots[slot_name].is_shield():
-                return True
-        return False
-    
-    def describe_loadout(self):
-        weighted_tags = {}
-        for  module in self.subsystems:
-            module_tags = EDVehicle.module_tags(slot_name)
-            for tag in module_tags:
-                weighted_tags[tag] = module_tags[tag] + weighted_tags.get(tag, 0) 
-
-        return sorted(weighted_tags, key=weighted_tags.get, reverse=True)
-
     def __eq__(self, other):
         if not isinstance(other, EDVehicle):
             return False
@@ -471,33 +342,28 @@ class EDSpaceSuit(object):
         return not self.__eq__(other)
 
 class EDFlightSuit(EDSpaceSuit):
-    def __init__(self):
-        super(EDFlightSuit, self).__init__()
+    def __init__(self, class_level=1):
+        super(EDFlightSuit, self).__init__(class_level)
         self.type = u'Flight Suit'
-        self.value = 31000 # TODO
 
 class EDMaverickSuit(EDSpaceSuit):
-    def __init__(self):
-        super(EDMaverickSuit, self).__init__()
+    def __init__(self, class_level=1):
+        super(EDMaverickSuit, self).__init__(class_level)
         self.type = u'Maverick Suit'
-        self.value = 150000
 
 class EDDominatorSuit(EDSpaceSuit):
-    def __init__(self):
-        super(EDDominatorSuit, self).__init__()
+    def __init__(self, class_level=1):
+        super(EDDominatorSuit, self).__init__(class_level)
         self.type = u'Dominator Suit'
-        self.value = 150000
 
 class EDArtemisSuit(EDSpaceSuit):
-    def __init__(self):
-        super(EDDominatorSuit, self).__init__()
+    def __init__(self, class_level=1):
+        super(EDDominatorSuit, self).__init__(class_level)
         self.type = u'Artemis Suit'
-        self.value = 150000
-
 
 class EDUnknownSuit(EDSpaceSuit):
-    def __init__(self):
-        super(EDUnknownSuit, self).__init__()
+    def __init__(self, class_level=1):
+        super(EDUnknownSuit, self).__init__(class_level)
         self.type = u'Unknown Suit'
 
 class EDSpaceSuitFactory(object):
@@ -611,7 +477,7 @@ class EDSpaceSuitFactory(object):
     # TODO after this
     @staticmethod
     def from_internal_name(internal_name):
-        return EDSpaceSuitFactory.__vehicle_classes.get(internal_name.lower(), EDUnknownVehicle)()
+        return EDSpaceSuitFactory.__suit_classes.get(internal_name.lower(), EDUnknownSuit)()
 
     @staticmethod
     def from_load_game_event(event):
