@@ -669,7 +669,7 @@ class EDPilot(object):
 
     def update_star_system_if_obsolete(self, star_system):
         self._touch()
-        if self.location.star_system is None or self.location.star_system != star_system:
+        if star_system and (self.location.star_system is None or self.location.star_system != star_system):
             EDRLOG.log(u"Updating system info (was missing or obsolete). {old} vs. {system}".format(old=self.location.star_system, system=star_system), u"INFO")
             self.location.star_system = star_system
             return True

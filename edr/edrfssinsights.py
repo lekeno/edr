@@ -72,6 +72,8 @@ class EDRFSSInsights(object):
             self.star_system["name"] = None
 
     def process(self, fss_event, current_star_system):
+        if current_star_system is None:
+            return False
         system_address = fss_event.get("SystemAddress", None)
         if system_address is None:
             self.reset()
