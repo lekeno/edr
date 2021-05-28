@@ -336,6 +336,7 @@ class EDPilot(object):
         self._name = name
         self.mothership = EDVehicleFactory.unknown_vehicle()
         self.piloted_vehicle = self.mothership
+        self.on_foot = False
         self.srv = None
         self.slf = None
         self.location = EDLocation()
@@ -388,15 +389,20 @@ class EDPilot(object):
             self.slf.destroy()    
         self.to_normal_space()
         self.is_docked = False # probably OK (assuming a proper event after resurrection)
+        self.on_foot = False # probably OK (assuming a proper event after resurrection)
 
     def needs_large_landing_pad(self):
         return self.mothership is None or self.mothership.needs_large_landing_pad()
 
     @property
     def vehicle(self):
+        if self.on_foot:
+            return None
         return self.piloted_vehicle or self.mothership
 
     def vehicle_type(self):
+        if self.on_foot:
+            return None
         return self.piloted_vehicle.type or self.mothership.type
 
     @property
@@ -452,11 +458,16 @@ class EDPilot(object):
 
         if self.srv and self.srv.in_a_fight() and self.srv.in_danger():
             return True
+
+        if self.on_foot:
+            # TODO attacked when on foot
+            return False
         
         return False
 
     def in_mothership(self):
         self._touch()
+        self.on_foot = False
         if not self.mothership:
             self.mothership = EDVehicleFactory.unknown_vehicle() 
         self.piloted_vehicle = self.mothership
@@ -464,6 +475,7 @@ class EDPilot(object):
     def in_srv(self):
         self._touch()
         self.is_docked = False
+        self.on_foot = False
         if not self.mothership or not self.mothership.supports_srv():
             self.mothership = EDVehicleFactory.unknown_vehicle() 
         if not self.srv:
@@ -472,16 +484,23 @@ class EDPilot(object):
 
     def in_slf(self):
         self._touch()
+        self.on_foot = False
         if not self.mothership or not self.mothership.supports_slf():
             self.mothership = EDVehicleFactory.unknown_vehicle() 
         if not self.slf:
             self.slf = EDVehicleFactory.unknown_slf()
         self.piloted_vehicle = self.slf
+    
+    def in_spacesuit(self):
+        self._touch()
+        self.on_foot = True
+        self.piloted_vehicle = None
 
     def docked(self, is_docked = True):
         self._touch()
         self.is_docked = is_docked
         if is_docked:
+            self.on_foot = False
             self.mothership.safe()
             if self.slf:
                 self.slf.safe()
@@ -490,10 +509,13 @@ class EDPilot(object):
 
     def hardpoints(self, deployed):
         self._touch()
-        self.piloted_vehicle.hardpoints(deployed)
+        if self.piloted_vehicle:
+            self.piloted_vehicle.hardpoints(deployed)
 
     def in_danger(self, danger = True):
         self._touch()
+        if self.piloted_vehicle is None:
+            return
         if not danger:
             self.piloted_vehicle.safe()
         else:
@@ -505,6 +527,7 @@ class EDPilot(object):
         self.location.space_dimension = EDSpaceDimension.NORMAL_SPACE
         self.mothership.safe()
         self.targeted_vehicle = None
+        self.on_foot = False
         if self.slf:
             self.slf.safe()
         if self.srv:
@@ -517,6 +540,7 @@ class EDPilot(object):
         self.mothership.safe()
         self.targeted_vehicle = None
         self.is_docked = False
+        self.on_foot = False
         if self.slf:
             self.slf.safe()
         if self.srv:
@@ -530,6 +554,7 @@ class EDPilot(object):
         self.mothership.safe()
         self.targeted_vehicle = None
         self.is_docked = False
+        self.on_foot = False
         if self.slf:
             self.slf.safe()
         if self.srv:
@@ -700,7 +725,7 @@ class EDPlayer(EDPilot):
             u"bounty": self.bounty,
             u"power": self.powerplay.canonicalize() if self.powerplay else u'',
             u"enemy": self.enemy,
-            u"ship": self.piloted_vehicle.json(),
+            u"ship": self.piloted_vehicle.json(), # TODO on_foot caveat
         }
         
         if self.sqid:
@@ -893,7 +918,7 @@ class EDPlayerOne(EDPlayer):
             u"wingof": len(self.wing.wingmates),
             u"wing": self.wing.noteworthy_changes_json(self.instance),
             u"byPledge": self.powerplay.canonicalize() if self.powerplay else u'',
-            u"ship": self.piloted_vehicle.json(fuel_info=fuel_info),
+            u"ship": self.piloted_vehicle.json(fuel_info=fuel_info), # TODO on_foot caveat
             u"mode": self.game_mode,
             u"dlc": self.dlc_name,
             u"group": self.private_group
@@ -1201,7 +1226,10 @@ class EDPlayerOne(EDPlayer):
             else:
                 EDRLOG.log(u"SLF attacked but player had none", u"WARNING")
         elif target == u"You":
-            self.piloted_vehicle.attacked()
+            if self.on_foot:
+                pass # TODO
+            else:
+                self.piloted_vehicle.attacked()
 
     def update_fleet(self, stored_ships_entry):
         self.fleet.update(stored_ships_entry)
