@@ -10,13 +10,8 @@ import utils2to3
 class EDRInventory(object):
     EDR_INVENTORY_ENCODED_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'encoded_mats.v1.p')
     EDR_INVENTORY_RAW_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'raw_mats.v1.p')
-    EDR_INVENTORY_MANUFACTURED_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'manufactured_mats.v1.p')
-    EDR_INVENTORY_OD_CONSUMABLES_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'odyssey_consumables.v1.p')
-    EDR_INVENTORY_OD_COMPONENTS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'odyssey_components.v1.p')
-    EDR_INVENTORY_OD_ITEMS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'odyssey_items.v1.p')
-    EDR_INVENTORY_OD_DATA_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'odyssey_data.v1.p')
+    EDR_INVENTORY_MANUFACTURED_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'manufactured_mats.v1.p')    
 
-    # TODO add odyssey names....
     MATERIALS_LUT = {
         "zinc": {"localized": _(u"Zinc"), "raw": "Zinc", "category": "raw", "grade": 2},
         "mercury": {"localized": _(u"Mercury"), "raw": "Mercury", "category": "raw", "grade": 3},
@@ -202,43 +197,9 @@ class EDRInventory(object):
                 self.manufactured = pickle.load(handle)
         except:
             self.manufactured = {}
-
-        try:
-            with open(self.EDR_INVENTORY_OD_ITEMS_CACHE, 'rb') as handle:
-                self.items = pickle.load(handle)
-        except:
-            self.items = {}
-
-        try:
-            with open(self.EDR_INVENTORY_OD_CONSUMABLES_CACHE, 'rb') as handle:
-                self.consumables = pickle.load(handle)
-        except:
-            self.consumables = {}
-
-        try:
-            with open(self.EDR_INVENTORY_OD_COMPONENTS_CACHE, 'rb') as handle:
-                self.components = pickle.load(handle)
-        except:
-            self.components = {}
-
-        try:
-            with open(self.EDR_INVENTORY_OD_DATA_CACHE, 'rb') as handle:
-                self.data = pickle.load(handle)
-        except:
-            self.data = {}
         self.__check()
 
     def initialize(self, materials):
-        if materials.get("event", None) == "Materials":
-            self.encoded = {}
-            self.raw = {}
-            self.manufactured = {}
-        elif materials.get("event", None) == "ShipLockerMaterials":
-            self.items = {}
-            self.components = {}
-            self.consumables = {}
-            self.data = {}
-
         for thing in materials.get("Encoded", []):
             cname = self.__c_name(thing["Name"])
             self.encoded[cname] = thing["Count"]
@@ -250,30 +211,10 @@ class EDRInventory(object):
         for thing in materials.get("Manufactured", []):
             cname = self.__c_name(thing["Name"])
             self.manufactured[cname] = thing["Count"]
-
-        for thing in materials.get("Items", []):
-            cname = self.__c_name(thing["Name"])
-            self.items[cname] = thing["Count"]
-
-        for thing in materials.get("Components", []):
-            cname = self.__c_name(thing["Name"])
-            self.components[cname] = thing["Count"]
-
-        for thing in materials.get("Consumables", []):
-            cname = self.__c_name(thing["Name"])
-            self.consumables[cname] = thing["Count"]
-
-        for thing in materials.get("Data", []):
-            cname = self.__c_name(thing["Name"])
-            self.data[cname] = thing["Count"]
-
         self.initialized = True
         self.inconsistencies = False
 
     def initialize_with_edmc(self, state):
-        self.encoded = {}
-        self.raw = {}
-        self.manufactured = {}
         for thing in state.get("Encoded", {}):
             cname = self.__c_name(thing)
             self.encoded[cname] = state["Encoded"][thing]
@@ -391,20 +332,6 @@ class EDRInventory(object):
             self.raw[cname] = min(self.raw.get(cname, 0) + count, self.slots(name))
         elif ccategory == "manufactured":
             self.manufactured[cname] = min(self.manufactured.get(cname, 0) + count, self.slots(name))
-        elif ccategory == "consumable":
-            self.consumables[cname] = min(self.consumables.get(cname, 0) + count, self.slots(name)) # TODO slot based max?
-        elif ccategory == "item": # TODO possible?
-            self.items[cname] = min(self.items.get(cname, 0) + count, self.slots(name)) # TODO slot based max?
-        elif ccategory == "data": # TODO possible?
-            self.data[cname] = min(self.data.get(cname, 0) + count, self.slots(name)) # TODO slot based max?
-        elif ccategory == "component": # TODO possible?
-            self.components[cname] = min(self.components.get(cname, 0) + count, self.slots(name)) # TODO slot based max?
-    
-    def bought(self, info):
-        self.add(info["Category"], info["Name"], info["Count"])
-
-    def collect(self, info):
-        self.add(info["Category"], info["Name"], info["Count"])
 
     def slots(self, name):
         cname = self.__c_name(name)
