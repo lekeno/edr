@@ -533,6 +533,11 @@ class EDAdder(EDVehicle):
         self.seats = 2
         self.value = 86472
 
+class EDAdderApex(EDAdder):
+    def __init__(self):
+        super(EDAdder, self).__init__()
+        self.type = u'Adder Apex'
+
 class EDViperMkIII(EDVehicle):
     def __init__(self):
         super(EDViperMkIII, self).__init__()
@@ -584,6 +589,11 @@ class EDVulture(EDVehicle):
         self.size = EDVehicleSize.SMALL
         self.seats = 2
         self.value = 4922534
+    
+class EDVultureFrontlines(EDVulture):
+    def __init__(self):
+        super(EDVulture, self).__init__()
+        self.type = u'Vulture Frontlines'
 
 class EDImperialClipper(EDVehicle):
     def __init__(self):
@@ -912,7 +922,7 @@ class EDVehicleFactory(object):
         "eagle": EDEagle,
         "hauler": EDHauler,
         "adder": EDAdder,
-        "adder_taxi": EDAdder,
+        "adder_taxi": EDAdderApex,
         "viper": EDViperMkIII,
         "cobramkiii": EDCobraMkIII,
         "type6": EDT6Transporter,
@@ -920,7 +930,7 @@ class EDVehicleFactory(object):
         "type7": EDT7Transporter,
         "asp": EDAspExplorer,
         "vulture": EDVulture,
-        "vulture_taxi": EDVulture,
+        "vulture_taxi": EDVultureFrontlines,
         "empire_trader": EDImperialClipper,
         "federation_dropship": EDFederalDropship,
         "orca": EDOrca,
