@@ -103,7 +103,7 @@ class EDRClient(object):
 
         fc_jump_psa = _(u"Never")
         self.server.fc_jump_psa = None
-        if config.get_str("EDRFCJumpPSA") in [_(u"Public"), _(U"Private")]:
+        if config.get_str("EDRFCJumpPSA") in [_(u"Public"), _(U"Private"), _(u"Direct")]:
             fc_jump_psa = config.get_str("EDRFCJumpPSA")
             self.server.fc_jump_psa = fc_jump_psa == _(u"Public")
         self._fc_jump_psa = tk.StringVar(value=fc_jump_psa)
@@ -312,7 +312,7 @@ class EDRClient(object):
         self._fc_jump_psa.set(new_value)
         if new_value is None or new_value == _(u"Never"):
             self.server.fc_jump_psa = None
-        elif new_value in [_(u"Public"), _(u"Private")]:
+        elif new_value in [_(u"Public"), _(u"Private"), _(u"Direct")]:
             self.server.fc_jump_psa = (new_value == _(u"Public")) 
 
 
@@ -423,12 +423,15 @@ class EDRClient(object):
 
         notebook.Label(frame, text=_(u"Announce my Fleet Carrier's jump schedule (α)")).grid(padx=10, row = 17, sticky=tk.W)
         choices = { _(u'Never'),_(u'Public'),_(u'Private')}
-        popupMenu = notebook.OptionMenu(frame, self._fc_jump_psa, self.fc_jump_psa, *choices, command=self.__toggle_private_fc_link)
+        popupMenu = notebook.OptionMenu(frame, self._fc_jump_psa, self.fc_jump_psa, *choices, command=self.__toggle_fc_links)
         popupMenu.grid(padx=10, row=17, column=1, sticky=tk.EW)
         popupMenu["menu"].configure(background="white", foreground="black")
-        self._private_fc_link = ttkHyperlinkLabel.HyperlinkLabel(frame, text=_(u"Configure your private channel"), background=notebook.Label().cget('background'), url="https://forms.gle/7pntJRpDgRBcbcfp8", underline=True)
+        self._private_fc_link = ttkHyperlinkLabel.HyperlinkLabel(frame, text=_(u"Configure your private channel (managed by EDR)"), background=notebook.Label().cget('background'), url="https://forms.gle/7pntJRpDgRBcbcfp8", underline=True)
+        self._direct_fc_link = ttkHyperlinkLabel.HyperlinkLabel(frame, text=_(u"Configure your direct channel"), background=notebook.Label().cget('background'), url="https://example.org/TODO", underline=True)
         if self.fc_jump_psa == _(u'Private'):
             self._private_fc_link.grid(padx=10, row=18, column=1, sticky=tk.EW)
+        elif self.fc_jump_psa == _(u'Direct'):
+            self._direct_fc_link.grid(padx=10, row=18, column=1, sticky=tk.EW)
 
         if self.server.is_authenticated():
             if self.is_anonymous():
@@ -451,11 +454,16 @@ class EDRClient(object):
 
         return frame
 
-    def __toggle_private_fc_link(self, choice):
+    def __toggle_fc_links(self, choice):
         if choice == _(u'Private'):
             self._private_fc_link.grid()
+            self._direct_fc_link.grid_remove()
+        elif choice == _(u"Direct"):
+            self._direct_fc_link.grid()
+            self._private_fc_link.grid_remove()
         else:
             self._private_fc_link.grid_remove()
+            self._direct_fc_link.grid_remove()
 
     def __status_update_pending(self):
         # Translators: this is shown in EDMC's status

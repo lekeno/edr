@@ -14,43 +14,22 @@ import edcargo
 import utils2to3
 EDRLOG = edrlog.EDRLog()
 
-class EDVehicleAttitude(object):
+class EDSpaceSuitModule(object):
+    self.id = None
+    self.name = None
+
+class EDSpaceSuitLoadout(object):
     def __init__(self):
-        self.latitude = None
-        self.longitude = None
-        self.altitude = None
-        self.heading = None
-
-    def update(self, attitude):
-        self.latitude = attitude.get("latitude", None)
-        self.longitude = attitude.get("longitude", None)
-        self.altitude = attitude.get("altitude", None)
-        self.heading = attitude.get("heading", None)
-
-    def valid(self):
-        if self.latitude is None or self.longitude is None or self.altitude is None or self.heading is None:
-            return False
-        if abs(self.latitude) > 90:
-            return False
-        if abs(self.longitude) > 180:
-            return False
-        if abs(self.heading) > 360:
-            return False
-        return True
-
-class EDVehicleSize(object):
-    UNKNOWN = 1
-    SMALL = 2
-    MEDIUM = 3
-    LARGE = 4
-
-class EDVehicle(object):
-    def __init__(self):
-        self.type = None
-        self.size = None
         self.name = None
         self.id = None
-        self.identity = None
+        self.slots = {}
+
+class EDSpaceSuit(object):
+    def __init__(self):
+        self.type = None
+        self.id = None
+        self.loadout = EDSpaceSuitLoadout()
+        # TODO verify if needed/available
         self.rebuy = None
         self._value = None
         self.hot = False
@@ -60,7 +39,6 @@ class EDVehicle(object):
         self._hull_health = edrhitppoints.EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
         self._shield_health = edrhitppoints.EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
         self.shield_up = True
-        self.subsystems = {}
         self.timestamp = now
         self.fight = {u"value": False, "large": False, u"timestamp": now}
         self._hardpoints_deployed = {u"value": False, u"timestamp": now}
@@ -185,7 +163,7 @@ class EDVehicle(object):
 
     def update_from_loadout(self, event):
         other_id = event.get("ShipID", None)
-        other_type = EDVehicleFactory.canonicalize(event.get("Ship", "unknown")) 
+        other_type = EDSpaceSuitFactory.canonicalize(event.get("Ship", "unknown")) 
 
         if other_id != self.id or other_type != self.type:
             EDRLOG.log(u"Mismatch between ID ({} vs {}) and/or Type ({} vs. {}), can't update from loadout".format(self.id, other_id, self.type, other_type), "WARNING")
@@ -254,7 +232,7 @@ class EDVehicle(object):
 
     def update_name(self, event):
         other_id = event.get("ShipID", None)
-        other_type = EDVehicleFactory.canonicalize(event.get("Ship", "unknown")) 
+        other_type = EDSpaceSuitFactory.canonicalize(event.get("Ship", "unknown")) 
         if other_id != self.id or other_type != self.type:
             EDRLOG.log(u"Mismatch between ID ({} vs {}) and/or Type ({} vs. {}), can't update name/identity".format(self.id, other_id, self.type, other_type), "WARNING")
             return
@@ -325,7 +303,7 @@ class EDVehicle(object):
     def subsystem_health(self, subsystem, health):
         if subsystem is None:
             return
-        canonical = EDVehicleFactory.normalize_module_name(subsystem)
+        canonical = EDSpaceSuitFactory.normalize_module_name(subsystem)
         now = EDTime.ms_epoch_now()
         self.timestamp = now
         if canonical not in self.subsystems:
@@ -336,16 +314,16 @@ class EDVehicle(object):
     def subsystem_details(self, subsystem):
         if subsystem is None:
             return
-        canonical = EDVehicleFactory.normalize_module_name(subsystem)
+        canonical = EDSpaceSuitFactory.normalize_module_name(subsystem)
         if canonical not in self.subsystems:
             return
-        readable_name, short_name = EDVehicleFactory.readable_module_names(subsystem)
+        readable_name, short_name = EDSpaceSuitFactory.readable_module_names(subsystem)
         return {"name": readable_name, "shortname": short_name, "stats": self.subsystems[canonical]}
 
     def add_subsystem(self, subsystem):
         if not subsystem:
             return
-        canonical = EDVehicleFactory.normalize_module_name(subsystem)
+        canonical = EDSpaceSuitFactory.normalize_module_name(subsystem)
         now = EDTime.ms_epoch_now()
         self.timestamp = now
         self.outfit_probably_changed()
@@ -356,7 +334,7 @@ class EDVehicle(object):
     def remove_subsystem(self, subsystem):
         if subsystem is None:
             return
-        canonical = EDVehicleFactory.normalize_module_name(subsystem)
+        canonical = EDSpaceSuitFactory.normalize_module_name(subsystem)
         if canonical.startswith("shieldgenerator_"):
             self.shield_health = 0.0
         now = EDTime.py_epoch_now()
@@ -366,18 +344,6 @@ class EDVehicle(object):
             self.outfit_probably_changed()
         except:
             pass
-
-    def needs_large_landing_pad(self):
-        return self.size in [EDVehicleSize.LARGE, EDVehicleSize.UNKNOWN]
-
-    def supports_slf(self):
-        return False
-
-    def supports_srv(self):
-        return True
-
-    def supports_crew(self):
-        return self.seats > 1
 
     def attacked(self):
         now = EDTime.py_epoch_now()
@@ -504,480 +470,64 @@ class EDVehicle(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
-class EDSidewinder(EDVehicle):
+class EDFlightSuit(EDSpaceSuit):
     def __init__(self):
-        super(EDSidewinder, self).__init__()
-        self.type = u'Sidewinder'
-        self.size = EDVehicleSize.SMALL
-        self.value = 31000
+        super(EDFlightSuit, self).__init__()
+        self.type = u'Flight Suit'
+        self.value = 31000 # TODO
 
-class EDHauler(EDVehicle):
+class EDMaverickSuit(EDSpaceSuit):
     def __init__(self):
-        super(EDHauler, self).__init__()
-        self.type = u'Hauler'
-        self.size = EDVehicleSize.SMALL
-        self.value = 51720
+        super(EDMaverickSuit, self).__init__()
+        self.type = u'Maverick Suit'
+        self.value = 150000
 
-class EDEagle(EDVehicle):
+class EDDominatorSuit(EDSpaceSuit):
     def __init__(self):
-        super(EDEagle, self).__init__()
-        self.type = u'Eagle'
-        self.size = EDVehicleSize.SMALL
-        self.value = 43800
+        super(EDDominatorSuit, self).__init__()
+        self.type = u'Dominator Suit'
+        self.value = 150000
 
-class EDAdder(EDVehicle):
+class EDArtemisSuit(EDSpaceSuit):
     def __init__(self):
-        super(EDAdder, self).__init__()
-        self.type = u'Adder'
-        self.size = EDVehicleSize.SMALL
-        self.seats = 2
-        self.value = 86472
+        super(EDDominatorSuit, self).__init__()
+        self.type = u'Artemis Suit'
+        self.value = 150000
 
-class EDViperMkIII(EDVehicle):
+
+class EDUnknownSuit(EDSpaceSuit):
     def __init__(self):
-        super(EDViperMkIII, self).__init__()
-        self.type = u'Viper Mk III'
-        self.size = EDVehicleSize.SMALL
-        self.value = 141592
+        super(EDUnknownSuit, self).__init__()
+        self.type = u'Unknown Suit'
 
-class EDCobraMkIII(EDVehicle):
-    def __init__(self):
-        super(EDCobraMkIII, self).__init__()
-        self.type = u'Cobra Mk III'
-        self.size = EDVehicleSize.SMALL
-        self.seats = 2
-        self.value = 346634
-
-class EDT6Transporter(EDVehicle):
-    def __init__(self):
-        super(EDT6Transporter, self).__init__()
-        self.type = u'Type-6 Transporter'
-        self.size = EDVehicleSize.MEDIUM
-        self.value = 1044612
-
-class EDDolphin(EDVehicle):
-    def __init__(self):
-        super(EDDolphin, self).__init__()
-        self.type = u'Dolphin'
-        self.size = EDVehicleSize.SMALL
-        self.value = 1334244
-
-class EDT7Transporter(EDVehicle):
-    def __init__(self):
-        super(EDT7Transporter, self).__init__()
-        self.type = u'Type-7 Transporter'
-        self.size = EDVehicleSize.LARGE
-        self.value = 17469174
-
-class EDAspExplorer(EDVehicle):
-    def __init__(self):
-        super(EDAspExplorer, self).__init__()
-        self.type = u'Asp Explorer'
-        self.size = EDVehicleSize.MEDIUM
-        self.seats = 2
-        self.value = 6650520
-
-class EDVulture(EDVehicle):
-    def __init__(self):
-        super(EDVulture, self).__init__()
-        self.type = u'Vulture'
-        self.size = EDVehicleSize.SMALL
-        self.seats = 2
-        self.value = 4922534
-
-class EDImperialClipper(EDVehicle):
-    def __init__(self):
-        super(EDImperialClipper, self).__init__()
-        self.type = u'Imperial Clipper'
-        self.size = EDVehicleSize.LARGE
-        self.seats = 2
-        self.value = 22256248
-
-class EDFederalDropship(EDVehicle):
-    def __init__(self):
-        super(EDFederalDropship, self).__init__()
-        self.type = u'Federal Dropship'
-        self.size = EDVehicleSize.MEDIUM
-        self.seats = 2
-        self.value = 14273598
-
-class EDOrca(EDVehicle):
-    def __init__(self):
-        super(EDOrca, self).__init__()
-        self.type = u'Orca'
-        self.size = EDVehicleSize.LARGE
-        self.seats = 2
-        self.value = 48529270
-
-class EDT9Heavy(EDVehicle):
-    def __init__(self):
-        super(EDT9Heavy, self).__init__()
-        self.type = u'Type-9 Heavy'
-        self.size = EDVehicleSize.LARGE
-        self.seats = 3
-        self.value = 77693648
-
-    def supports_slf(self):
-        return True
-
-class EDT10Defender(EDVehicle):
-    def __init__(self):
-        super(EDT10Defender, self).__init__()
-        self.type = u'Type-10 Defender'
-        self.size = EDVehicleSize.LARGE
-        self.seats = 3
-        self.value = 124874411
-    
-    def supports_slf(self):
-        return True
-
-class EDPython(EDVehicle):
-    def __init__(self):
-        super(EDPython, self).__init__()
-        self.type = u'Python'
-        self.size = EDVehicleSize.MEDIUM
-        self.seats = 2
-        self.value = 56824391
-    
-class EDBelugaLiner(EDVehicle):
-    def __init__(self):
-        super(EDBelugaLiner, self).__init__()
-        self.type = u'Beluga Liner'
-        self.size = EDVehicleSize.LARGE
-        self.seats = 3
-        self.value = 84492158
-
-    def supports_slf(self):
-        return True
-
-class EDFerDeLance(EDVehicle):
-    def __init__(self):
-        super(EDFerDeLance, self).__init__()
-        self.type = u'Fer-de-Lance'
-        self.size = EDVehicleSize.MEDIUM
-        self.seats = 2
-        self.value = 51556410
-
-class EDAnaconda(EDVehicle):
-    def __init__(self):
-        super(EDAnaconda, self).__init__()
-        self.type = u'Anaconda'
-        self.size = EDVehicleSize.LARGE
-        self.seats = 3
-        self.value = 146402444
-
-    def supports_slf(self):
-        return True
-
-class EDFederalCorvette(EDVehicle):
-    def __init__(self):
-        super(EDFederalCorvette, self).__init__()
-        self.type = u'Federal Corvette'
-        self.size = EDVehicleSize.LARGE
-        self.seats = 3
-        self.value = 187402444
-    
-    def supports_slf(self):
-        return True
-
-class EDImperialCutter(EDVehicle):
-    def __init__(self):
-        super(EDImperialCutter, self).__init__()
-        self.type = u'Imperial Cutter'
-        self.size = EDVehicleSize.LARGE
-        self.seats = 3
-        self.value = 208402444
-
-    def supports_slf(self):
-        return True
-
-class EDDiamondbackScout(EDVehicle):
-    def __init__(self):
-        super(EDDiamondbackScout, self).__init__()
-        self.type = u'Diamondback Scout'
-        self.size = EDVehicleSize.SMALL
-        self.value = 561244
-
-class EDImperialCourier(EDVehicle):
-    def __init__(self):
-        super(EDImperialCourier, self).__init__()
-        self.type = u'Imperial Courier'
-        self.size = EDVehicleSize.SMALL
-        self.value = 2539844
-
-class EDDiamondbackExplorer(EDVehicle):
-    def __init__(self):
-        super(EDDiamondbackExplorer, self).__init__()
-        self.type = u'Diamondback Explorer'
-        self.size = EDVehicleSize.SMALL
-        self.value = 1891674
-
-class EDImperialEagle(EDVehicle):
-    def __init__(self):
-        super(EDImperialEagle, self).__init__()
-        self.type = u'Imperial Eagle'
-        self.size = EDVehicleSize.SMALL
-        self.value = 109492
-
-class EDFederalAssaultShip(EDVehicle):
-    def __init__(self):
-        super(EDFederalAssaultShip, self).__init__()
-        self.type = u'Federal Assault Ship'
-        self.size = EDVehicleSize.MEDIUM
-        self.seats = 2
-        self.value = 19774598
-
-class EDFederalGunship(EDVehicle):
-    def __init__(self):
-        super(EDFederalGunship, self).__init__()
-        self.type = u'Federal Gunship'
-        self.size = EDVehicleSize.MEDIUM
-        self.seats = 2
-        self.value = 35773598
-
-    def supports_slf(self):
-        return True
-
-class EDViperMkIV(EDVehicle):
-    def __init__(self):
-        super(EDViperMkIV, self).__init__()
-        self.type = u'Viper Mk IV'
-        self.size = EDVehicleSize.SMALL
-        self.value = 434844
-
-class EDCobraMkIV(EDVehicle):
-    def __init__(self):
-        super(EDCobraMkIV, self).__init__()
-        self.type = u'Cobra Mk IV'
-        self.size = EDVehicleSize.SMALL
-        self.seats = 2
-        self.value = 744574
-
-class EDKeelback(EDVehicle):
-    def __init__(self):
-        super(EDKeelback, self).__init__()
-        self.type = u'Keelback'
-        self.size = EDVehicleSize.MEDIUM
-        self.seats = 2
-        self.value = 3123064
-
-    def supports_slf(self):
-        return True
-
-class EDAspScout(EDVehicle):
-    def __init__(self):
-        super(EDAspScout, self).__init__()
-        self.type = u'Asp Scout'
-        self.size = EDVehicleSize.MEDIUM
-        self.seats = 2
-        self.value = 3959064
-
-class EDAllianceChieftain(EDVehicle):
-    def __init__(self):
-        super(EDAllianceChieftain, self).__init__()
-        self.type = u'Alliance Chieftain'
-        self.size = EDVehicleSize.MEDIUM
-        self.seats = 2
-        self.value = 18952161
-
-class EDAllianceChallenger(EDVehicle):
-    def __init__(self):
-        super(EDAllianceChallenger, self).__init__()
-        self.type = u'Alliance Challenger'
-        self.size = EDVehicleSize.MEDIUM
-        self.seats = 2
-        self.value = 30540973
-
-class EDAllianceCrusader(EDVehicle):
-    def __init__(self):
-        super(EDAllianceCrusader, self).__init__()
-        self.type = u'Alliance Crusader'
-        self.size = EDVehicleSize.MEDIUM
-        self.seats = 3
-        self.value = 23635619
-
-    def supports_slf(self):
-        return True
-
-class EDKraitMkII(EDVehicle):
-    def __init__(self):
-        super(EDKraitMkII, self).__init__()
-        self.type = u'Krait Mk II'
-        self.size = EDVehicleSize.MEDIUM
-        self.seats = 3
-        self.value = 45660416
-
-    def supports_slf(self):
-        return True
-
-class EDKraitPhantom(EDVehicle):
-    def __init__(self):
-        super(EDKraitPhantom, self).__init__()
-        self.type = u'Krait Phantom'
-        self.size = EDVehicleSize.MEDIUM
-        self.seats = 2
-        self.value = 44139676
-
-class EDMamba(EDVehicle):
-    def __init__(self):
-        super(EDMamba, self).__init__()
-        self.type = u'Mamba'
-        self.size = EDVehicleSize.MEDIUM
-        self.seats = 2
-        self.value = 56289969
-
-class EDShipLaunchedFighter(EDVehicle):
-    def __init__(self):
-        super(EDShipLaunchedFighter, self).__init__()
-
-    def supports_slf(self):
-        return False
-    
-    def supports_srv(self):
-        return False
-
-class EDImperialFighter(EDShipLaunchedFighter):
-    def __init__(self):
-        super(EDImperialFighter, self).__init__()
-        self.type = u'Imperial Fighter'
-        self.size = EDVehicleSize.UNKNOWN
-
-class EDF63Condor(EDShipLaunchedFighter):
-    def __init__(self):
-        super(EDF63Condor, self).__init__()
-        self.type = u'F63 Condor'
-        self.size = EDVehicleSize.UNKNOWN
-
-class EDTaipanFighter(EDShipLaunchedFighter):
-    def __init__(self):
-        super(EDTaipanFighter, self).__init__()
-        self.type = u'Taipan Fighter'
-        self.size = EDVehicleSize.UNKNOWN
-
-class EDTrident(EDShipLaunchedFighter):
-    def __init__(self):
-        super(EDTrident, self).__init__()
-        self.type = u'Trident'
-        self.size = EDVehicleSize.UNKNOWN
-
-class EDJavelin(EDShipLaunchedFighter):
-    def __init__(self):
-        super(EDJavelin, self).__init__()
-        self.type = u'Javelin'
-        self.size = EDVehicleSize.UNKNOWN
-
-class EDLance(EDShipLaunchedFighter):
-    def __init__(self):
-        super(EDLance, self).__init__()
-        self.type = u'Lance'
-        self.size = EDVehicleSize.UNKNOWN
-
-class EDSurfaceVehicle(EDVehicle):
-    def __init__(self):
-        super(EDSurfaceVehicle, self).__init__()
-
-    def supports_slf(self):
-        return False
-
-    def supports_srv(self):
-        return False
-
-class EDSRV(EDSurfaceVehicle):
-    def __init__(self):
-        super(EDSRV, self).__init__()
-        self.type = u'SRV'
-        self.size = EDVehicleSize.UNKNOWN
-
-class EDUnknownVehicle(EDVehicle):
-    def __init__(self):
-        super(EDUnknownVehicle, self).__init__()
-        self.type = u'Unknown'
-        self.size = EDVehicleSize.UNKNOWN
-
-class EDCrewUnknownVehicle(EDVehicle):
-    def __init__(self):
-        super(EDCrewUnknownVehicle, self).__init__()
-        self.type = u'Unknown (crew)'
-        self.size = EDVehicleSize.UNKNOWN
-
-class EDCaptainUnknownVehicle(EDVehicle):
-    def __init__(self):
-        super(EDCaptainUnknownVehicle, self).__init__()
-        self.type = u'Unknown (captain)'
-        self.size = EDVehicleSize.UNKNOWN
-
-class EDVehicleFactory(object):
-    __vehicle_classes = {
-        "sidewinder": EDSidewinder,
-        "eagle": EDEagle,
-        "hauler": EDHauler,
-        "adder": EDAdder,
-        "adder_taxi": EDAdder,
-        "viper": EDViperMkIII,
-        "cobramkiii": EDCobraMkIII,
-        "type6": EDT6Transporter,
-        "dolphin": EDDolphin,
-        "type7": EDT7Transporter,
-        "asp": EDAspExplorer,
-        "vulture": EDVulture,
-        "vulture_taxi": EDVulture,
-        "empire_trader": EDImperialClipper,
-        "federation_dropship": EDFederalDropship,
-        "orca": EDOrca,
-        "type9": EDT9Heavy,
-        "type9_military": EDT10Defender,
-        "python": EDPython,
-        "belugaliner": EDBelugaLiner,
-        "ferdelance": EDFerDeLance,
-        "anaconda": EDAnaconda,
-        "federation_corvette": EDFederalCorvette,
-        "cutter": EDImperialCutter,
-        "diamondback": EDDiamondbackScout,
-        "empire_courier": EDImperialCourier,
-        "diamondbackxl": EDDiamondbackExplorer,
-        "empire_eagle": EDImperialEagle,
-        "federation_dropship_mkii": EDFederalAssaultShip,
-        "federation_gunship": EDFederalGunship,
-        "viper_mkiv": EDViperMkIV,
-        "cobramkiv": EDCobraMkIV,
-        "independant_trader": EDKeelback,
-        "asp_scout": EDAspScout,
-        "typex": EDAllianceChieftain,
-        "typex_2": EDAllianceCrusader,
-        "typex_3": EDAllianceChallenger,
-        "krait_mkii": EDKraitMkII,
-        "krait_light": EDKraitPhantom, 
-        "mamba": EDMamba,
-        "empire_fighter": EDImperialFighter,
-        "federation_fighter": EDF63Condor,
-        "independent_fighter" : EDTaipanFighter,
-        "gdn_hybrid_fighter_v1": EDTrident,
-        "gdn_hybrid_fighter_v2": EDJavelin,
-        "gdn_hybrid_fighter_v3": EDLance,
-        "testbuggy": EDSRV,
-        "unknown": EDUnknownVehicle,
-        "unknown (crew)": EDCrewUnknownVehicle,
-        "unknown (captain)": EDCaptainUnknownVehicle
+class EDSpaceSuitFactory(object):
+    __suit_classes = {
+        "flightsuit": EDFlightSuit,
+        "tacticalsuit_class1": EDDominatorSuit,
+        "explorationsuit_class1": EDArtemisSuit,
+        "utilitysuit_class1": EDMaverickSuit,
+        "unknown": EDUnknownSuit,
     }
 
-    CANONICAL_SHIP_NAMES = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'shipnames.json')).read())
-    CANONICAL_MODULE_NAMES = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'modulenames.json'), encoding="utf-8", errors='ignore').read())
+    CANONICAL_SPACESUIT_NAMES = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'spacesuitnames.json')).read())
+    CANONICAL_SUITMODULE_NAMES = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'suitsmodulenames.json'), encoding="utf-8", errors='ignore').read())
 
     @staticmethod
     def canonicalize(name):
         if name is None:
             return u"Unknown" # Note: this shouldn't be translated
 
-        if name in EDVehicleFactory.CANONICAL_SHIP_NAMES.values():
+        if name in EDSpaceSuitFactory.CANONICAL_SPACESUIT_NAMES.values():
             return name # Already canonical
 
-        if name.lower() in EDVehicleFactory.CANONICAL_SHIP_NAMES:
-            return EDVehicleFactory.CANONICAL_SHIP_NAMES[name.lower()]
+        if name.lower() in EDSpaceSuitFactory.CANONICAL_SPACESUIT_NAMES:
+            return EDSpaceSuitFactory.CANONICAL_SPACESUIT_NAMES[name.lower()]
 
         return name.lower()
 
     @staticmethod
     def normalize_module_name(name):
+        # TODO
         normalized = name.lower()
         
         # suffix _name or _name; is not used in loadout or afmurepair events 
@@ -998,15 +548,16 @@ class EDVehicleFactory(object):
 
     @staticmethod
     def readable_module_names(name):
+        #TODO
         if name is None:
             return u"Unknown" # Note: this shouldn't be translated
 
-        if name in EDVehicleFactory.CANONICAL_MODULE_NAMES.values():
+        if name in EDSpaceSuitFactory.CANONICAL_MODULE_NAMES.values():
             return name # Already canonical
 
-        normalized = EDVehicleFactory.normalize_module_name(name)
-        if normalized in EDVehicleFactory.CANONICAL_MODULE_NAMES:
-            return (EDVehicleFactory.CANONICAL_MODULE_NAMES[normalized]["name"], EDVehicleFactory.CANONICAL_MODULE_NAMES[normalized]["shortname"])
+        normalized = EDSpaceSuitFactory.normalize_module_name(name)
+        if normalized in EDSpaceSuitFactory.CANONICAL_MODULE_NAMES:
+            return (EDSpaceSuitFactory.CANONICAL_MODULE_NAMES[normalized]["name"], EDSpaceSuitFactory.CANONICAL_MODULE_NAMES[normalized]["shortname"])
 
         match = re.search('([a-zA-Z_]*)_size([0-9])_class([0-9])_?([a-zA-Z_]*)?', normalized)
         if match:
@@ -1021,22 +572,25 @@ class EDVehicleFactory(object):
 
     @staticmethod
     def module_tags(name):
+        # TODO
         if name is None:
             return {}
 
-        normalized = EDVehicleFactory.normalize_module_name(name)
-        if normalized not in EDVehicleFactory.CANONICAL_MODULE_NAMES:
+        normalized = EDSpaceSuitFactory.normalize_module_name(name)
+        if normalized not in EDSpaceSuitFactory.CANONICAL_MODULE_NAMES:
             return {}
-        return EDVehicleFactory.CANONICAL_MODULE_NAMES[normalized].get("tags", {})
+        return EDSpaceSuitFactory.CANONICAL_MODULE_NAMES[normalized].get("tags", {})
 
     @staticmethod
     def from_edmc_state(state):
+        # TODO equivalent option?
+        return
         name = state.get('ShipType', None)
 
         if name is None:
             name = 'unknown'
 
-        vehicle_class = EDVehicleFactory.__vehicle_classes.get(name.lower(), None)
+        vehicle_class = EDSpaceSuitFactory.__vehicle_classes.get(name.lower(), None)
         if vehicle_class is None:
             raise NotImplementedError("The requested vehicle has not been implemented")
         
@@ -1054,13 +608,14 @@ class EDVehicleFactory(object):
                 vehicle.subsystem_health(modules[module].get('Item', None), health)
         return vehicle
 
+    # TODO after this
     @staticmethod
     def from_internal_name(internal_name):
-        return EDVehicleFactory.__vehicle_classes.get(internal_name.lower(), EDUnknownVehicle)()
+        return EDSpaceSuitFactory.__vehicle_classes.get(internal_name.lower(), EDUnknownVehicle)()
 
     @staticmethod
     def from_load_game_event(event):
-        vehicle = EDVehicleFactory.from_internal_name(event.get("Ship", 'unknown'))
+        vehicle = EDSpaceSuitFactory.from_internal_name(event.get("Ship", 'unknown'))
         vehicle.id = event.get('ShipID', None)
         vehicle.identity = event.get('ShipIdent', None)
         vehicle.name = event.get('ShipName', None)
@@ -1070,7 +625,7 @@ class EDVehicleFactory(object):
 
     @staticmethod
     def from_loadout_event(event):
-        vehicle = EDVehicleFactory.from_internal_name(event.get("Ship", 'unknown'))
+        vehicle = EDSpaceSuitFactory.from_internal_name(event.get("Ship", 'unknown'))
         vehicle.id = event.get('ShipID', None)
         vehicle.identity = event.get('ShipIdent', None)
         vehicle.name = event.get('ShipName', None)
@@ -1088,7 +643,7 @@ class EDVehicleFactory(object):
 
     @staticmethod
     def from_stored_ship(ship_info):
-        vehicle = EDVehicleFactory.from_internal_name(ship_info.get("ShipType", 'unknown'))
+        vehicle = EDSpaceSuitFactory.from_internal_name(ship_info.get("ShipType", 'unknown'))
         vehicle.id = ship_info.get('ShipID', None)
         vehicle.name = ship_info.get('Name', None)
         vehicle.value = ship_info.get('Value', None)
@@ -1096,21 +651,5 @@ class EDVehicleFactory(object):
         return vehicle
 
     @staticmethod
-    def is_ship_launched_fighter(vehicle):
-        return isinstance(vehicle, EDShipLaunchedFighter)
-
-    @staticmethod
-    def is_surface_vehicle(vehicle):
-        return isinstance(vehicle, EDSurfaceVehicle)
-
-    @staticmethod
-    def unknown_vehicle():
-        return EDUnknownVehicle()
-
-    @staticmethod
-    def default_srv():
-        return EDSRV()
-
-    @staticmethod
-    def unknown_slf():
-        return EDShipLaunchedFighter()
+    def unknown_spacesuit():
+        return EDUnknownSuit()
