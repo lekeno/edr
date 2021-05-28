@@ -5,6 +5,7 @@ from __future__ import division
 import pickle
 from edsitu import EDLocation, EDAttitude, EDPlanetaryLocation, EDSpaceDimension 
 
+from edspacesuits import EDSpaceSuit
 from edtime import EDTime
 from edvehicles import EDVehicleFactory 
 from edinstance import EDInstance
@@ -226,6 +227,7 @@ class EDPilot(object):
         now = EDTime.py_epoch_now()
         self._name = name
         self.mothership = EDVehicleFactory.unknown_vehicle()
+        self.spacesuit = EDSpaceSuit()
         self.piloted_vehicle = self.mothership
         self.on_foot = False
         self.srv = None
@@ -278,7 +280,9 @@ class EDPilot(object):
         if self.srv:
             self.srv.destroy()
         if self.slf:
-            self.slf.destroy()    
+            self.slf.destroy()
+        if self.spacesuit:
+            self.spacesuit.destroy()
         self.to_normal_space()
         self.is_docked = False # probably OK (assuming a proper event after resurrection)
         self.on_foot = False # probably OK (assuming a proper event after resurrection)
@@ -354,9 +358,8 @@ class EDPilot(object):
         if self.srv and self.srv.in_a_fight() and self.srv.in_danger():
             return True
 
-        if self.on_foot:
-            # TODO attacked when on foot
-            return False
+        if self.on_foot and self.spacesuit:
+            return self.spacesuit.in_a_fight() and self.srv.in_danger()
         
         return False
 
@@ -409,19 +412,24 @@ class EDPilot(object):
 
     def in_danger(self, danger = True):
         self._touch()
-        if self.piloted_vehicle is None:
-            # TODO on foot case
-            return
         if not danger:
-            self.piloted_vehicle.safe()
+            if self.piloted_vehicle:
+                self.piloted_vehicle.safe()
+            else:
+                self.spacesuit.safe()
         else:
-            self.piloted_vehicle.unsafe()
+            if self.piloted_vehicle:
+                self.piloted_vehicle.unsafe()
+            else:
+                self.spacesuit.unsafe()
+            
 
     def to_normal_space(self):
         self._touch()
         self.blue_tunnel = False
         self.location.space_dimension = EDSpaceDimension.NORMAL_SPACE
         self.mothership.safe()
+        self.spacesuit.safe()
         self.targeted_vehicle = None
         self.on_foot = False
         if self.slf:
@@ -434,6 +442,7 @@ class EDPilot(object):
         self.blue_tunnel = False
         self.location.space_dimension = EDSpaceDimension.SUPER_SPACE
         self.mothership.safe()
+        self.spacesuit.safe()
         self.targeted_vehicle = None
         self.is_docked = False
         self.on_foot = False
@@ -448,6 +457,7 @@ class EDPilot(object):
         self.location.space_dimension = EDSpaceDimension.HYPER_SPACE
         self.planetary_destination = None # leaving the system, so no point in keep a planetary destination
         self.mothership.safe()
+        self.spacesuit.safe()
         self.targeted_vehicle = None
         self.is_docked = False
         self.on_foot = False
@@ -620,9 +630,13 @@ class EDPlayer(EDPilot):
             u"wanted": self.wanted,
             u"bounty": self.bounty,
             u"power": self.powerplay.canonicalize() if self.powerplay else u'',
-            u"enemy": self.enemy,
-            u"ship": self.piloted_vehicle.json(), # TODO on_foot caveat
+            u"enemy": self.enemy
         }
+
+        if (self.piloted_vehicle):
+            blob[u"ship"] = self.piloted_vehicle.json()
+        else:
+            blob[u"spacesuit"] = self.spacesuit.json()
         
         if self.sqid:
             blob[u"sqid"] = self.sqid
@@ -814,11 +828,16 @@ class EDPlayerOne(EDPlayer):
             u"wingof": len(self.wing.wingmates),
             u"wing": self.wing.noteworthy_changes_json(self.instance),
             u"byPledge": self.powerplay.canonicalize() if self.powerplay else u'',
-            u"ship": self.piloted_vehicle.json(fuel_info=fuel_info), # TODO on_foot caveat
             u"mode": self.game_mode,
             u"dlc": self.dlc_name,
             u"group": self.private_group
         }
+
+        if (self.piloted_vehicle):
+            result[u"ship"] = self.piloted_vehicle.json(fuel_info=fuel_info)
+        else:
+            result[u"spacesuit"] = self.spacesuit.json()
+
         if with_target:
             result[u"target"] = self.target_pilot().json() if self._target else {}
 
@@ -889,6 +908,7 @@ class EDPlayerOne(EDPlayer):
         self._touch()
         if rebought:
             self.mothership.reset()
+            self.spacesuit.reset()
             if self.slf:
                 self.slf.reset()
             if self.srv:
@@ -896,6 +916,7 @@ class EDPlayerOne(EDPlayer):
         else:
             self.mothership = EDVehicleFactory.unknown_vehicle()
             self.piloted_vehicle = self.mothership
+            self.spacesuit = EDSpaceSuit()
             self.slf = None
             self.srv = None
 
@@ -1123,7 +1144,7 @@ class EDPlayerOne(EDPlayer):
                 EDRLOG.log(u"SLF attacked but player had none", u"WARNING")
         elif target == u"You":
             if self.on_foot:
-                pass # TODO
+                self.spacesuit.attacked()
             else:
                 self.piloted_vehicle.attacked()
 

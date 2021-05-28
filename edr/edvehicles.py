@@ -31,7 +31,6 @@ class EDVehicle(object):
         self._value = None
         self.hot = False
         now = EDTime.py_epoch_now()
-        now_ms = EDTime.ms_epoch_now()
         config = edrconfig.EDR_CONFIG
         self._hull_health = edrhitppoints.EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
         self._shield_health = edrhitppoints.EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())

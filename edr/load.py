@@ -417,6 +417,7 @@ def handle_powerplay_events(ed_player, entry):
         EDR_CLIENT.pledged_to(None)
 
 def dashboard_entry(cmdr, is_beta, entry):
+    # TODO suit/on foot specific flags
     ed_player = EDR_CLIENT.player
     
     if not prerequisites(EDR_CLIENT, is_beta):
@@ -433,8 +434,23 @@ def dashboard_entry(cmdr, is_beta, entry):
 
     if (entry['Flags'] & edmc_data.FlagsInSRV):
         ed_player.in_srv()
+    
+    # TODO in taxi, in multicrew
 
-    if (entry['Flags'] & edmc_data.FlagsFsdJump):
+    flags2 = entry.get('Flags2', 0)
+    if flags2:
+        if (flags2 & (edmc_data.Flags2OnFoot | edmc_data.Flags2OnFootInStation | edmc_data.Flags2OnFootOnPlanet | edmc_data.Flags2OnFootInHangar | edmc_data.Flags2OnFootSocialSpace | edmc_data.Flags2OnFootExterior)):
+            ed_player.in_spacesuit()
+        ed_player.spacesuit.low_health = flags2 & edmc_data.Flags2LowHealth
+        ed_player.spacesuit.low_oxygen = flags2 & edmc_data.Flags2LowOxygen
+    if (entry.get("Oxygen", None)):
+        ed_player.spacesuit.oxygen = entry["Oxygen"]
+    
+    if (entry.get("Health", None)):
+        ed_player.spacesuit.health = entry["Health"]
+
+
+    if (entry['Flags'] & edmc_data.FlagsFsdJump or flags2 & edmc_data.Flags2GlideMode):
         ed_player.in_blue_tunnel()
     else:
         ed_player.in_blue_tunnel(False)
@@ -1063,7 +1079,7 @@ def handle_damage_events(ed_player, entry):
             pass
     elif entry["event"] == "UnderAttack":
         ed_player.attacked(entry["Target"])
-    elif entry["event"] == "HeatDamage":
+    elif entry["event"] == "HeatDamage" and ed_player.piloted_vehicle:
         ed_player.piloted_vehicle.taking_heat_damage()
     elif entry["event"] == "SRVDestroyed":
         if ed_player.srv:
@@ -1075,8 +1091,8 @@ def handle_damage_events(ed_player, entry):
             ed_player.slf.destroy()
         else:
             EDRLOG.log("SLF got destroyed but player had none...", "WARNING")
-    elif entry["event"] == "SelfDestruct":
-        ed_player.piloted_vehicle.destroy()
+    elif entry["event"] == "SelfDestruct" and ed_player.piloted_vehicle:
+        ed_player.piloted_vehicle.destroy() # TODO on foot case?
     else:
         return False
     return True
