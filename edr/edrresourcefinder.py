@@ -837,6 +837,8 @@ class EDRResourceFinder(object):
         return self.edr_factions.summarize_yields(fsdjump_event["StarSystem"], security, population, inventory)
         
     def assess_signal(self, fsssignal_event, location, inventory):
+        if location.star_system is None:
+            return None
         uss_type = fsssignal_event.get("USSType", None)    
         state = EDRFaction._simplified_state(fsssignal_event.get("SpawningState", None))
         faction = self.edr_factions.get(fsssignal_event.get("SpawningFaction", ""), location.star_system)
