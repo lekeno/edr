@@ -14,30 +14,6 @@ import edcargo
 import utils2to3
 EDRLOG = edrlog.EDRLog()
 
-class EDVehicleAttitude(object):
-    def __init__(self):
-        self.latitude = None
-        self.longitude = None
-        self.altitude = None
-        self.heading = None
-
-    def update(self, attitude):
-        self.latitude = attitude.get("latitude", None)
-        self.longitude = attitude.get("longitude", None)
-        self.altitude = attitude.get("altitude", None)
-        self.heading = attitude.get("heading", None)
-
-    def valid(self):
-        if self.latitude is None or self.longitude is None or self.altitude is None or self.heading is None:
-            return False
-        if abs(self.latitude) > 90:
-            return False
-        if abs(self.longitude) > 180:
-            return False
-        if abs(self.heading) > 360:
-            return False
-        return True
-
 class EDVehicleSize(object):
     UNKNOWN = 1
     SMALL = 2
@@ -73,7 +49,6 @@ class EDVehicle(object):
         self.seats = 1
         self.fuel_capacity = None
         self.fuel_level = None
-        self.attitude = EDVehicleAttitude()
         self.module_info_timestamp = None
         self.slots_timestamp = None
         self.slots = {}
@@ -260,9 +235,6 @@ class EDVehicle(object):
             return
         self.identity = event.get('UserShipId', None)
         self.name = event.get('UserShipName', None)
-        
-    def update_attitude(self, attitude):
-        self.attitude.update(attitude)
 
     def update_cargo(self):
         reader = edcargoreader.EDCargoReader()

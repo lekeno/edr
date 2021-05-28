@@ -2,10 +2,8 @@ from __future__ import absolute_import
 from __future__ import division
 #from builtins import round
 
-import os
-import json
-import math
 import pickle
+from edsitu import EDLocation, EDAttitude, EDPlanetaryLocation, EDSpaceDimension 
 
 from edtime import EDTime
 from edvehicles import EDVehicleFactory 
@@ -223,119 +221,13 @@ class EDFineOrBounty(object):
             readable = _(u"{}").format(self.value)
         return readable
 
-class EDSpaceDimension(object):
-    UNKNOWN = 0
-    NORMAL_SPACE = 1
-    SUPER_SPACE = 2
-    HYPER_SPACE = 3
-
-class EDPlanetaryLocation(object):
-    def __init__(self, poi=None):
-        self.latitude = poi[u"latitude"] if poi else None
-        self.longitude = poi[u"longitude"] if poi else None
-        self.altitude = poi.get(u"altitude", 0.0) if poi else None
-        self.title = poi.get(u"title", None) if poi else None
-
-    def update(self, attitude):
-        self.latitude = attitude.get(u"latitude", None)
-        self.longitude = attitude.get(u"longitude", None)
-        self.altitude = attitude.get(u"altitude", None)
-
-    def valid(self):
-        if self.latitude is None or self.longitude is None or self.altitude is None:
-            return False
-        if abs(self.latitude) > 90:
-            return False
-        if abs(self.longitude) > 180:
-            return False
-        return True
-
-    def distance(self, loc, planet_radius):
-        dlat = math.radians(loc.latitude - self.latitude)
-        dlon = math.radians(loc.longitude - self.longitude)
-        lat1 = math.radians(self.latitude)
-        lat2 = math.radians(loc.latitude)
-        a = math.sin(dlat/2.0) * math.sin(dlat/2.0) + math.sin(dlon/2.0) * math.sin(dlon/2.0) * math.cos(lat1) * math.cos(lat2)
-        c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0-a))
-        return int(round(planet_radius * c, 0))
-
-    def bearing(self, loc):
-        current_latitude = math.radians(loc.latitude)
-        destination_latitude = math.radians(self.latitude)
-        delta_longitude = math.radians(self.longitude - loc.longitude)
-        delta_latitude = math.log(math.tan(math.pi/4.0 + destination_latitude/2.0)/math.tan(math.pi/4.0 + current_latitude/2.0))
-        bearing = math.degrees(math.atan2(delta_longitude, delta_latitude))
-        if bearing < 0:
-            bearing += 360
-            
-        return int(round(bearing, 0))
-
-    @staticmethod
-    def pitch(loc, distance):
-        if loc.altitude < 1.0 or abs(distance) < 1.0:
-            return None
-        pitch = -math.degrees(math.atan(loc.altitude / distance))
-        return int(round(pitch, 0))
-
-class EDLocation(object):
-    def __init__(self, star_system=None, place=None, security=None, space_dimension=EDSpaceDimension.UNKNOWN):
-        self.star_system = star_system
-        self.place = place
-        self.security = security
-        self.space_dimension = space_dimension
-        self.population = None
-        self.allegiance = None
-        self.star_system_address = None
-
-    def __repr__(self):
-        return str(self.__dict__)
-
-    def from_other(self, other_location):
-        self.star_system = other_location.star_system
-        self.place = other_location.place
-        self.security = other_location.security
-        self.space_dimension = other_location.space_dimension
-        self.population = other_location.population
-        self.allegiance = other_location.allegiance
-        self.star_system_address = other_location.star_system_address
-   
-    def in_normal_space(self):
-        return self.space_dimension == EDSpaceDimension.NORMAL_SPACE
-
-    def in_supercruise(self):
-        return self.space_dimension == EDSpaceDimension.SUPER_SPACE
-
-    def in_hyper_space(self):
-        return self.space_dimension == EDSpaceDimension.HYPER_SPACE
-
-    def to_normal_space(self):
-        self.space_dimension = EDSpaceDimension.NORMAL_SPACE
-
-    def to_supercruise(self):
-        self.space_dimension = EDSpaceDimension.SUPER_SPACE
-
-    def to_hyper_space(self):
-        self.space_dimension = EDSpaceDimension.HYPER_SPACE
-
-    def is_anarchy_or_lawless(self):
-        return self.security in [u"$GAlAXY_MAP_INFO_state_anarchy;", u"$GALAXY_MAP_INFO_state_lawless;"]
-
-    def pretty_print(self):
-        location = u"{system}".format(system=self.star_system)
-        if self.place and self.place != self.star_system:
-            if self.place.startswith(self.star_system + " "):
-                # Translators: this is a continuation of the previous item (location of recently sighted outlaw) and shows a place in the system (e.g. supercruise, Cleve Hub) 
-                location += u", {place}".format(place=self.place.partition(self.star_system + u" ")[2])
-            else:
-                location += u", {place}".format(place=self.place)
-        return location
-
 class EDPilot(object):
     def __init__(self, name, rank):
         now = EDTime.py_epoch_now()
         self._name = name
         self.mothership = EDVehicleFactory.unknown_vehicle()
         self.piloted_vehicle = self.mothership
+        self.on_foot = False
         self.srv = None
         self.slf = None
         self.location = EDLocation()
@@ -351,6 +243,7 @@ class EDPilot(object):
         self.timestamp = now
         self.rank = rank
         self.is_docked = False
+        self.attitude = EDAttitude()
 
     def __repr__(self):
         return str(self.__dict__)
@@ -388,15 +281,20 @@ class EDPilot(object):
             self.slf.destroy()    
         self.to_normal_space()
         self.is_docked = False # probably OK (assuming a proper event after resurrection)
+        self.on_foot = False # probably OK (assuming a proper event after resurrection)
 
     def needs_large_landing_pad(self):
         return self.mothership is None or self.mothership.needs_large_landing_pad()
 
     @property
     def vehicle(self):
+        if self.on_foot:
+            return None
         return self.piloted_vehicle or self.mothership
 
     def vehicle_type(self):
+        if self.on_foot:
+            return None
         return self.piloted_vehicle.type or self.mothership.type
 
     @property
@@ -423,6 +321,9 @@ class EDPilot(object):
     def place(self, place):
         self._touch()
         self.location.place = place
+
+    def update_attitude(self, attitude):
+        self.attitude.update(attitude)
     
     def location_security(self, ed_security_state):
         self._touch()
@@ -452,11 +353,16 @@ class EDPilot(object):
 
         if self.srv and self.srv.in_a_fight() and self.srv.in_danger():
             return True
+
+        if self.on_foot:
+            # TODO attacked when on foot
+            return False
         
         return False
 
     def in_mothership(self):
         self._touch()
+        self.on_foot = False
         if not self.mothership:
             self.mothership = EDVehicleFactory.unknown_vehicle() 
         self.piloted_vehicle = self.mothership
@@ -464,6 +370,7 @@ class EDPilot(object):
     def in_srv(self):
         self._touch()
         self.is_docked = False
+        self.on_foot = False
         if not self.mothership or not self.mothership.supports_srv():
             self.mothership = EDVehicleFactory.unknown_vehicle() 
         if not self.srv:
@@ -472,16 +379,23 @@ class EDPilot(object):
 
     def in_slf(self):
         self._touch()
+        self.on_foot = False
         if not self.mothership or not self.mothership.supports_slf():
             self.mothership = EDVehicleFactory.unknown_vehicle() 
         if not self.slf:
             self.slf = EDVehicleFactory.unknown_slf()
         self.piloted_vehicle = self.slf
+    
+    def in_spacesuit(self):
+        self._touch()
+        self.on_foot = True
+        self.piloted_vehicle = None
 
     def docked(self, is_docked = True):
         self._touch()
         self.is_docked = is_docked
         if is_docked:
+            self.on_foot = False
             self.mothership.safe()
             if self.slf:
                 self.slf.safe()
@@ -490,10 +404,14 @@ class EDPilot(object):
 
     def hardpoints(self, deployed):
         self._touch()
-        self.piloted_vehicle.hardpoints(deployed)
+        if self.piloted_vehicle:
+            self.piloted_vehicle.hardpoints(deployed)
 
     def in_danger(self, danger = True):
         self._touch()
+        if self.piloted_vehicle is None:
+            # TODO on foot case
+            return
         if not danger:
             self.piloted_vehicle.safe()
         else:
@@ -505,6 +423,7 @@ class EDPilot(object):
         self.location.space_dimension = EDSpaceDimension.NORMAL_SPACE
         self.mothership.safe()
         self.targeted_vehicle = None
+        self.on_foot = False
         if self.slf:
             self.slf.safe()
         if self.srv:
@@ -517,6 +436,7 @@ class EDPilot(object):
         self.mothership.safe()
         self.targeted_vehicle = None
         self.is_docked = False
+        self.on_foot = False
         if self.slf:
             self.slf.safe()
         if self.srv:
@@ -530,6 +450,7 @@ class EDPilot(object):
         self.mothership.safe()
         self.targeted_vehicle = None
         self.is_docked = False
+        self.on_foot = False
         if self.slf:
             self.slf.safe()
         if self.srv:
@@ -700,7 +621,7 @@ class EDPlayer(EDPilot):
             u"bounty": self.bounty,
             u"power": self.powerplay.canonicalize() if self.powerplay else u'',
             u"enemy": self.enemy,
-            u"ship": self.piloted_vehicle.json(),
+            u"ship": self.piloted_vehicle.json(), # TODO on_foot caveat
         }
         
         if self.sqid:
@@ -893,7 +814,7 @@ class EDPlayerOne(EDPlayer):
             u"wingof": len(self.wing.wingmates),
             u"wing": self.wing.noteworthy_changes_json(self.instance),
             u"byPledge": self.powerplay.canonicalize() if self.powerplay else u'',
-            u"ship": self.piloted_vehicle.json(fuel_info=fuel_info),
+            u"ship": self.piloted_vehicle.json(fuel_info=fuel_info), # TODO on_foot caveat
             u"mode": self.game_mode,
             u"dlc": self.dlc_name,
             u"group": self.private_group
@@ -1201,7 +1122,10 @@ class EDPlayerOne(EDPlayer):
             else:
                 EDRLOG.log(u"SLF attacked but player had none", u"WARNING")
         elif target == u"You":
-            self.piloted_vehicle.attacked()
+            if self.on_foot:
+                pass # TODO
+            else:
+                self.piloted_vehicle.attacked()
 
     def update_fleet(self, stored_ships_entry):
         self.fleet.update(stored_ships_entry)
