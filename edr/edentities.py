@@ -3,6 +3,7 @@ from __future__ import division
 #from builtins import round
 
 import pickle
+import re
 from edsitu import EDLocation, EDAttitude, EDPlanetaryLocation, EDSpaceDimension 
 
 from edspacesuits import EDSpaceSuit
@@ -1112,8 +1113,12 @@ class EDPlayerOne(EDPlayer):
             cmdr = EDPlayer(cmdr_name, rank)
         cmdr.location.from_other(self.location)
         if ship_internal_name:
-            vehicle = EDVehicleFactory.from_internal_name(ship_internal_name)
-            cmdr.update_vehicle_if_obsolete(vehicle, piloted)
+            space_suit_regexp = r"^(?:flightsuit|(?:exploration|utility|tactical)suit_class[1-5])$" # TODO confirm that those are the internal names used for players
+            if re.match(space_suit_regexp, ship_internal_name):
+                cmdr.in_spacesuit()
+            else:
+                vehicle = EDVehicleFactory.from_internal_name(ship_internal_name)
+                cmdr.update_vehicle_if_obsolete(vehicle, piloted)
         self.instance.player_in(cmdr)
         return cmdr
 

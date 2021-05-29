@@ -350,7 +350,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
 
     if entry["event"] == "Resurrect":
         EDR_CLIENT.clear()
-        ed_player.resurrect(entry["Option"] == "rebuy")
+        ed_player.resurrect(entry["Option"] in ["rebuy", "recover"])
         EDRLOG.log(u"Player has been resurrected.", "DEBUG")
         return
 
