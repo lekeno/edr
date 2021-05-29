@@ -559,7 +559,7 @@ class EDPilot(object):
         return self.mothership is None or self.location.star_system is None or self.location.place is None
 
     def update_vehicle_or_suit_if_obsolete(self, event):
-        if event.get("event", None) == "SuitLoadout":
+        if event.get("event", None) in ["SuitLoadout", "SwitchSuitLoadout"]:
             self.in_spacesuit()
             if self.spacesuit.id == event.get("SuitID", None):
                 self.spacesuit.update_from_suitloadout(event)

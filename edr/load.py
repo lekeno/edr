@@ -399,7 +399,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
             ed_player.update_vehicle_if_obsolete(EDVehicleFactory.from_load_game_event(entry), piloted=True)
         return
 
-    if entry["event"] in ["SuitLoadout"]:
+    if entry["event"] in ["SuitLoadout", "SwitchSuitLoadout"]:
         ed_player.update_vehicle_or_suit_if_obsolete(entry)
         return
 
@@ -544,7 +544,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     EDR_CLIENT.edrdiscord.process(entry)
 
-    if entry["event"] in ["Shutdown", "ShutDown", "Music", "Resurrect", "Fileheader", "LoadGame", "Loadout", "SuitLoadout"]:
+    if entry["event"] in ["Shutdown", "ShutDown", "Music", "Resurrect", "Fileheader", "LoadGame", "Loadout", "SuitLoadout", "SwitchSuitLoadout"]:
         from_genesis = False
         if "first_run" not in journal_entry.__dict__:
             journal_entry.first_run = False

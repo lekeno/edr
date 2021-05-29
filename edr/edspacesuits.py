@@ -4,12 +4,26 @@ import re
 from edtime import EDTime
 import edrconfig
 
+class EDSuitLoadout(object):
+    def __init__(self):
+        self.id = None
+        self.name = None
+        self.suit_mods = []
+        self.modules = []
+
+    def update_from_suitloadout(self, event):
+        self.id = event.get("LoadoutID", None)
+        self.name = event.get("LoadoutName", None)
+        self.suit_mods = event.get("SuitMods", [])
+        self.modules = event.get("Modules", [])
+
+
 class EDSpaceSuit(object):    
     def __init__(self):
         self.type = None
         self.id = None
-        self._grade = 1
-        # TODO mods slot, weapons/...
+        self.grade = 1
+        self.loadout = EDSuitLoadout()
         now = EDTime.py_epoch_now()
         self.timestamp = now
         self._health = {u"value": 1.0, u"timestamp": now}
@@ -24,15 +38,6 @@ class EDSpaceSuit(object):
         self.fight_staleness_threshold = config.instance_fight_staleness_threshold()
         self.danger_staleness_threshold = config.instance_danger_staleness_threshold()
 
-    @property
-    def grade(self):
-        return self._grade
-
-    @grade.setter
-    def grade(self, new_value):
-        self._grade = new_value
-        # TODO add relevant number of mods slots
-    
     @property
     def health(self):
         return self._health["value"]
@@ -164,7 +169,8 @@ class EDSpaceSuit(object):
         if other_id != self.id or other_type != self.type:
             EDRLOG.log(u"Mismatch between Suit ID ({} vs {}) and/or Type ({} vs. {}), can't update from loadout".format(self.id, other_id, self.type, other_type), "WARNING")
             return
-        # TODO "SuitMods":[  ], "LoadoutID":4293000003, "LoadoutName":"Maverick G3", "Modules":[ { "SlotName":"PrimaryWeapon1", "SuitModuleID":1700370764353759, "ModuleName":"wpn_m_assaultrifle_kinetic_fauto", "ModuleName_Localised":"Karma AR-50", "Class":3, "WeaponMods":[ "weapon_reloadspeed" ] }, { "SlotName":"SecondaryWeapon", "SuitModuleID":1700369275710090, "ModuleName":"wpn_s_pistol_laser_sauto", "ModuleName_Localised":"TK Zenith", "Class":3, "WeaponMods":[ "weapon_backpackreloading" ] } ] }
+        
+        self.loadout.update_from_suitloadout(event)
 
 
     def __eq__(self, other):
@@ -271,10 +277,7 @@ class EDSuitFactory(object):
     def from_suitloadout_event(event):
         suit = EDSuitFactory.from_internal_name(event.get("SuitName", 'unknown'))
         suit.id = event.get('SuitID', None)
-        # TODO suit modules "SuitMods":[  ],
-        # TODO loadoutID and name
-        # TODO Modules "Modules":[ { "SlotName":"PrimaryWeapon1", "SuitModuleID":1700370764353759, "ModuleName":"wpn_m_assaultrifle_kinetic_fauto", "ModuleName_Localised":"Karma AR-50", "Class":3, "WeaponMods":[ "weapon_reloadspeed" ] }, { "SlotName":"SecondaryWeapon", "SuitModuleID":1700369275710090, "ModuleName":"wpn_s_pistol_laser_sauto", "ModuleName_Localised":"TK Zenith", "Class":3, "WeaponMods":[ "weapon_backpackreloading" ] } ] }
-
+        suit.loadout.update_from_suitloadout_event(event)
         return suit
 
     #@staticmethod
