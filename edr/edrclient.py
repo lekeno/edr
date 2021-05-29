@@ -320,11 +320,14 @@ class EDRClient(object):
         self.edrcmdrs.set_player_name(name)
         self.server.set_player_name(name)
 
-    def game_mode(self, mode, dlc = None, group = None):
+    def game_mode(self, mode, group = None):
         self.player.game_mode = mode
-        self.player.dlc_name = dlc
         self.player.private_group = group  
-        self.server.set_game_mode(mode, dlc, group)
+        self.server.set_game_mode(mode, group)
+
+    def set_dlc(self, dlc):
+        self.player.dlc_name = dlc
+        self.server.set_dlc(dlc)
 
     def pledged_to(self, power, time_pledged=0):
         if self.server.is_anonymous():

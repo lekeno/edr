@@ -57,10 +57,14 @@ class EDRServer(object):
     def set_player_name(self, name):
         self.player_name = name
 
-    def set_game_mode(self, mode, dlc, group = None):
+    def set_game_mode(self, mode, group = None):
         self.game_mode = mode
-        self.dlc_name = dlc
         self.private_group = group
+
+
+    def set_game_mode(self, dlc):
+        self.dlc_name = dlc
+
 
     def is_authenticated(self):
         return self.REST_firebase.is_valid_auth_token()

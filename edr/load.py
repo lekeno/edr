@@ -320,7 +320,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
             # { "timestamp":"2018-06-19T13:06:04Z", "event":"QuitACrew", "Captain":"Dummy" }
             # { "timestamp":"2018-06-19T13:06:16Z", "event":"Music", "MusicTrack":"MainMenu" }
             EDR_CLIENT.clear()
-            EDR_CLIENT.game_mode(None, None)
+            EDR_CLIENT.game_mode(None)
             ed_player.leave_wing()
             ed_player.leave_crew()
             ed_player.leave_vehicle()
@@ -370,12 +370,14 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
         if from_genesis:
             EDRLOG.log(u"Heuristics genesis: probably accurate picture of friends/wings.",
                    "DEBUG")
-        dlc_name = "???" 
         if entry.get("Odyssey", False):
-            dlc_name = "Odyssey"
+            EDR_CLIENT.set_dlc("Odyssey")
+            EDRLOG.log(u"DLC is Odyssey", "DEBUG")
         elif entry.get("Horizons", False):
-            dlc_name = "Horizons"
-        EDR_CLIENT.game_mode(entry["GameMode"], dlc_name, entry.get("Group", None))
+            EDR_CLIENT.set_dlc("Horizons")
+            EDRLOG.log(u"DLC is Horizons", "DEBUG")
+        EDR_CLIENT.game_mode(entry["GameMode"], entry.get("Group", None))
+        
         ed_player.update_vehicle_if_obsolete(EDVehicleFactory.from_load_game_event(entry), piloted=True)
         EDRLOG.log(u"Game mode is {}".format(entry["GameMode"]), "DEBUG")
         EDR_CLIENT.warmup()
