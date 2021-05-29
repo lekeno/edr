@@ -592,7 +592,7 @@ class EDRClient(object):
             self.IN_GAME_MSG.clear_docking()
 
     def show_navigation(self):
-        current = self.player.piloted_vehicle.attitude
+        current = self.player.attitude
         destination = self.player.planetary_destination
 
         if not destination or not current:

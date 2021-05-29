@@ -14,30 +14,6 @@ import edcargo
 import utils2to3
 EDRLOG = edrlog.EDRLog()
 
-class EDVehicleAttitude(object):
-    def __init__(self):
-        self.latitude = None
-        self.longitude = None
-        self.altitude = None
-        self.heading = None
-
-    def update(self, attitude):
-        self.latitude = attitude.get("latitude", None)
-        self.longitude = attitude.get("longitude", None)
-        self.altitude = attitude.get("altitude", None)
-        self.heading = attitude.get("heading", None)
-
-    def valid(self):
-        if self.latitude is None or self.longitude is None or self.altitude is None or self.heading is None:
-            return False
-        if abs(self.latitude) > 90:
-            return False
-        if abs(self.longitude) > 180:
-            return False
-        if abs(self.heading) > 360:
-            return False
-        return True
-
 class EDVehicleSize(object):
     UNKNOWN = 1
     SMALL = 2
@@ -55,7 +31,6 @@ class EDVehicle(object):
         self._value = None
         self.hot = False
         now = EDTime.py_epoch_now()
-        now_ms = EDTime.ms_epoch_now()
         config = edrconfig.EDR_CONFIG
         self._hull_health = edrhitppoints.EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
         self._shield_health = edrhitppoints.EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
@@ -73,7 +48,6 @@ class EDVehicle(object):
         self.seats = 1
         self.fuel_capacity = None
         self.fuel_level = None
-        self.attitude = EDVehicleAttitude()
         self.module_info_timestamp = None
         self.slots_timestamp = None
         self.slots = {}
@@ -260,9 +234,6 @@ class EDVehicle(object):
             return
         self.identity = event.get('UserShipId', None)
         self.name = event.get('UserShipName', None)
-        
-    def update_attitude(self, attitude):
-        self.attitude.update(attitude)
 
     def update_cargo(self):
         reader = edcargoreader.EDCargoReader()
@@ -533,6 +504,11 @@ class EDAdder(EDVehicle):
         self.seats = 2
         self.value = 86472
 
+class EDAdderApex(EDAdder):
+    def __init__(self):
+        super(EDAdder, self).__init__()
+        self.type = u'Adder Apex'
+
 class EDViperMkIII(EDVehicle):
     def __init__(self):
         super(EDViperMkIII, self).__init__()
@@ -584,6 +560,11 @@ class EDVulture(EDVehicle):
         self.size = EDVehicleSize.SMALL
         self.seats = 2
         self.value = 4922534
+    
+class EDVultureFrontlines(EDVulture):
+    def __init__(self):
+        super(EDVulture, self).__init__()
+        self.type = u'Vulture Frontlines'
 
 class EDImperialClipper(EDVehicle):
     def __init__(self):
@@ -912,7 +893,7 @@ class EDVehicleFactory(object):
         "eagle": EDEagle,
         "hauler": EDHauler,
         "adder": EDAdder,
-        "adder_taxi": EDAdder,
+        "adder_taxi": EDAdderApex,
         "viper": EDViperMkIII,
         "cobramkiii": EDCobraMkIII,
         "type6": EDT6Transporter,
@@ -920,7 +901,7 @@ class EDVehicleFactory(object):
         "type7": EDT7Transporter,
         "asp": EDAspExplorer,
         "vulture": EDVulture,
-        "vulture_taxi": EDVulture,
+        "vulture_taxi": EDVultureFrontlines,
         "empire_trader": EDImperialClipper,
         "federation_dropship": EDFederalDropship,
         "orca": EDOrca,

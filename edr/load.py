@@ -254,7 +254,7 @@ def handle_movement_events(ed_player, entry):
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
         outcome["reason"] = "Approach event"
         if EDR_CLIENT.noteworthy_about_body(entry["StarSystem"], entry["Body"]) and ed_player.planetary_destination is None:
-            poi = EDR_CLIENT.closest_poi_on_body(entry["StarSystem"], entry["Body"], ed_player.piloted_vehicle.attitude)
+            poi = EDR_CLIENT.closest_poi_on_body(entry["StarSystem"], entry["Body"], ed_player.attitude)
             ed_player.planetary_destination = edentities.EDPlanetaryLocation(poi)
     elif entry["event"] in ["LeaveBody"]:
         place = "Supercruise"
@@ -327,10 +327,10 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
             EDRLOG.log(u"Player is on the main menu.", "DEBUG")
             return
         elif entry["MusicTrack"] == "Combat_Dogfight":
-            ed_player.piloted_vehicle.skirmish()
+            ed_player.piloted_vehicle.skirmish() # TODO check music event for on foot combat
             return
         elif entry["MusicTrack"] == "Combat_LargeDogFight":
-            ed_player.piloted_vehicle.battle()
+            ed_player.piloted_vehicle.battle()  # TODO check music event for on foot combat
             return
         elif entry["MusicTrack"] == "Combat_SRV":
             if ed_player.srv:
@@ -419,6 +419,7 @@ def handle_powerplay_events(ed_player, entry):
         EDR_CLIENT.pledged_to(None)
 
 def dashboard_entry(cmdr, is_beta, entry):
+    # TODO suit/on foot specific flags
     ed_player = EDR_CLIENT.player
     
     if not prerequisites(EDR_CLIENT, is_beta):
@@ -435,13 +436,29 @@ def dashboard_entry(cmdr, is_beta, entry):
 
     if (entry['Flags'] & edmc_data.FlagsInSRV):
         ed_player.in_srv()
+    
+    # TODO in taxi, in multicrew
 
-    if (entry['Flags'] & edmc_data.FlagsFsdJump):
+    flags2 = entry.get('Flags2', 0)
+    if flags2:
+        if (flags2 & (edmc_data.Flags2OnFoot | edmc_data.Flags2OnFootInStation | edmc_data.Flags2OnFootOnPlanet | edmc_data.Flags2OnFootInHangar | edmc_data.Flags2OnFootSocialSpace | edmc_data.Flags2OnFootExterior)):
+            ed_player.in_spacesuit()
+        ed_player.spacesuit.low_health = flags2 & edmc_data.Flags2LowHealth
+        ed_player.spacesuit.low_oxygen = flags2 & edmc_data.Flags2LowOxygen
+    if (entry.get("Oxygen", None)):
+        ed_player.spacesuit.oxygen = entry["Oxygen"]
+    
+    if (entry.get("Health", None)):
+        ed_player.spacesuit.health = entry["Health"]
+
+
+    if (entry['Flags'] & edmc_data.FlagsFsdJump or flags2 & edmc_data.Flags2GlideMode):
         ed_player.in_blue_tunnel()
     else:
         ed_player.in_blue_tunnel(False)
     
-    ed_player.piloted_vehicle.low_fuel = bool(entry['Flags'] & edmc_data.FlagsLowFuel)
+    if ed_player.piloted_vehicle:
+        ed_player.piloted_vehicle.low_fuel = bool(entry['Flags'] & edmc_data.FlagsLowFuel)
     ed_player.docked(bool(entry['Flags'] & edmc_data.FlagsDocked))
     unsafe = bool(entry['Flags'] & edmc_data.FlagsIsInDanger)
     ed_player.in_danger(unsafe)
@@ -461,7 +478,7 @@ def dashboard_entry(cmdr, is_beta, entry):
             EDR_CLIENT.notify_with_details(_(u"EDR Central"), [_(u"Fight reporting disabled"), _(u"Flash your lights twice to re-enable.")])
 
     fuel = entry.get('Fuel', None)
-    if fuel:
+    if fuel and ed_player.piloted_vehicle:  # TODO on foot case?
         main = fuel.get('FuelMain', ed_player.piloted_vehicle.fuel_level)
         reservoir = fuel.get('FuelReservoir', 0)
         ed_player.piloted_vehicle.fuel_level = main + reservoir
@@ -477,7 +494,7 @@ def dashboard_entry(cmdr, is_beta, entry):
     attitude = { key.lower():value for key,value in entry.items() if key in attitude_keys }
     if "altitude" in attitude:
         attitude["altitude"] /= 1000.0
-    ed_player.piloted_vehicle.update_attitude(attitude)
+    ed_player.update_attitude(attitude)
     if ed_player.planetary_destination:
         EDR_CLIENT.show_navigation()
 
@@ -1057,10 +1074,14 @@ def handle_damage_events(ed_player, entry):
     elif entry["event"] == "CockpitBreached":
         ed_player.piloted_vehicle.cockpit_breached()
     elif entry["event"] == "ShieldState":
-        ed_player.piloted_vehicle.shield_state(entry["ShieldsUp"])
+        if ed_player.piloted_vehicle:
+            ed_player.piloted_vehicle.shield_state(entry["ShieldsUp"])
+        else:
+            # TODO on_foot case
+            pass
     elif entry["event"] == "UnderAttack":
         ed_player.attacked(entry["Target"])
-    elif entry["event"] == "HeatDamage":
+    elif entry["event"] == "HeatDamage" and ed_player.piloted_vehicle:
         ed_player.piloted_vehicle.taking_heat_damage()
     elif entry["event"] == "SRVDestroyed":
         if ed_player.srv:
@@ -1072,8 +1093,8 @@ def handle_damage_events(ed_player, entry):
             ed_player.slf.destroy()
         else:
             EDRLOG.log("SLF got destroyed but player had none...", "WARNING")
-    elif entry["event"] == "SelfDestruct":
-        ed_player.piloted_vehicle.destroy()
+    elif entry["event"] == "SelfDestruct" and ed_player.piloted_vehicle:
+        ed_player.piloted_vehicle.destroy() # TODO on foot case?
     else:
         return False
     return True
@@ -1458,9 +1479,9 @@ def handle_bang_commands(cmdr, command, command_parts):
             EDRLOG.log(u"Clearing destination", "INFO")
             EDR_CLIENT.player.planetary_destination = None
             return
-        elif command_parts[1].lower() == "set" and EDR_CLIENT.player.piloted_vehicle.attitude.valid():
+        elif command_parts[1].lower() == "set" and EDR_CLIENT.player.attitude.valid():
             EDRLOG.log(u"Setting destination", "INFO")
-            attitude = EDR_CLIENT.player.piloted_vehicle.attitude
+            attitude = EDR_CLIENT.player.attitude
             EDR_CLIENT.navigation(attitude.latitude, attitude.longitude)
             return
         lat_long = command_parts[1].split(" ")
