@@ -21,7 +21,8 @@ from config import config
 
 from edrconfig import EDRConfig
 from lrucache import LRUCache
-from edentities import EDPlanetaryLocation, EDFineOrBounty, EDLocation
+from edentities import EDFineOrBounty
+from edsitu import EDPlanetaryLocation, EDLocation
 from edrserver import EDRServer, CommsJammedError
 from audiofeedback import AudioFeedback
 from edrlog import EDRLog

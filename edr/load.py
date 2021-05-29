@@ -10,7 +10,8 @@ except ImportError:
     import plug as edmc_data
 
 from edrclient import EDRClient
-from edentities import EDPlayerOne, EDPlayer
+from edentities import EDPlayer
+from edsitu import EDPlanetaryLocation
 from edvehicles import EDVehicleFactory
 from edrrawdepletables import EDRRawDepletables
 from edtime import EDTime
@@ -255,7 +256,7 @@ def handle_movement_events(ed_player, entry):
         outcome["reason"] = "Approach event"
         if EDR_CLIENT.noteworthy_about_body(entry["StarSystem"], entry["Body"]) and ed_player.planetary_destination is None:
             poi = EDR_CLIENT.closest_poi_on_body(entry["StarSystem"], entry["Body"], ed_player.attitude)
-            ed_player.planetary_destination = edentities.EDPlanetaryLocation(poi)
+            ed_player.planetary_destination = edsitu.EDPlanetaryLocation(poi)
     elif entry["event"] in ["LeaveBody"]:
         place = "Supercruise"
         ed_player.planetary_destination = None
