@@ -1,6 +1,7 @@
 """
 Plugin for "EDR"
 """
+from edspacesuits import EDSpaceSuit
 import sys
 import re
 
@@ -379,7 +380,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
             EDRLOG.log(u"DLC is Horizons", "DEBUG")
         EDR_CLIENT.game_mode(entry["GameMode"], entry.get("Group", None))
         
-        ed_player.update_vehicle_if_obsolete(EDVehicleFactory.from_load_game_event(entry), piloted=True)
+        ed_player.update_vehicle_or_suit_if_obsolete(entry, active=True)
         EDRLOG.log(u"Game mode is {}".format(entry["GameMode"]), "DEBUG")
         EDR_CLIENT.warmup()
         return
@@ -396,6 +397,10 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
             LAST_KNOWN_SHIP_NAME = ed_player.mothership.name
         else:
             ed_player.update_vehicle_if_obsolete(EDVehicleFactory.from_load_game_event(entry), piloted=True)
+        return
+
+    if entry["event"] in ["SuitLoadout"]:
+        ed_player.update_vehicle_or_suit_if_obsolete(entry)
         return
 
 def handle_friends_events(ed_player, entry):
@@ -539,7 +544,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     EDR_CLIENT.edrdiscord.process(entry)
 
-    if entry["event"] in ["Shutdown", "ShutDown", "Music", "Resurrect", "Fileheader", "LoadGame", "Loadout"]:
+    if entry["event"] in ["Shutdown", "ShutDown", "Music", "Resurrect", "Fileheader", "LoadGame", "Loadout", "SuitLoadout"]:
         from_genesis = False
         if "first_run" not in journal_entry.__dict__:
             journal_entry.first_run = False

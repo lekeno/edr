@@ -9,6 +9,7 @@ from edsitu import EDLocation, EDAttitude, EDPlanetaryLocation, EDSpaceDimension
 from edspacesuits import EDSpaceSuit
 from edtime import EDTime
 from edvehicles import EDVehicleFactory 
+from edspacesuits import EDSuitFactory
 from edinstance import EDInstance
 from edrlog import EDRLog
 from edrconfig import EDRConfig #TODO replace config object with singleton
@@ -557,6 +558,32 @@ class EDPilot(object):
     def has_partial_status(self):
         return self.mothership is None or self.location.star_system is None or self.location.place is None
 
+    def update_vehicle_or_suit_if_obsolete(self, event):
+        if event.get("event", None) == "SuitLoadout":
+            self.in_spacesuit()
+            if self.spacesuit.id == event.get("SuitID", None):
+                self.spacesuit.update_from_suitloadout(event)
+            else:
+                self.spacesuit = EDSuitFactory.from_suitloadout_event(event)
+            # TODO should this be more conservative?
+            self._touch()
+            return True
+        elif event.get("event", None) in ["LoadGame", "Loadout"]:
+            so_called_ship = event.get("Ship", None)
+            if not so_called_ship:
+                return False
+            
+            if EDSuitFactory.is_spacesuit(so_called_ship):
+                self.in_spacesuit()
+                self.spacesuit = EDSuitFactory.from_load_game_event(event)
+                # TODO should this be more conservative?
+                self._touch()
+                return True
+            else:
+                return self.update_vehicle_if_obsolete(EDVehicleFactory.from_loadgame_or_loadout_event(event))
+        return False
+
+    
     def update_vehicle_if_obsolete(self, vehicle, piloted=True):
         if vehicle is None:
             return False
@@ -1113,8 +1140,7 @@ class EDPlayerOne(EDPlayer):
             cmdr = EDPlayer(cmdr_name, rank)
         cmdr.location.from_other(self.location)
         if ship_internal_name:
-            space_suit_regexp = r"^(?:flightsuit|(?:exploration|utility|tactical)suit_class[1-5])$" # TODO confirm that those are the internal names used for players
-            if re.match(space_suit_regexp, ship_internal_name):
+            if EDSuitFactory.is_spacesuit(ship_internal_name):
                 cmdr.in_spacesuit()
             else:
                 vehicle = EDVehicleFactory.from_internal_name(ship_internal_name)

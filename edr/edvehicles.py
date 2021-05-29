@@ -1039,6 +1039,25 @@ class EDVehicleFactory(object):
     def from_internal_name(internal_name):
         return EDVehicleFactory.__vehicle_classes.get(internal_name.lower(), EDUnknownVehicle)()
 
+    
+    @staticmethod
+    def from_loadgame_or_loadout_event(event):
+        vehicle = EDVehicleFactory.from_internal_name(event.get("Ship", 'unknown'))
+        vehicle.id = event.get('ShipID', None)
+        vehicle.identity = event.get('ShipIdent', None)
+        vehicle.name = event.get('ShipName', None)
+        vehicle.hull_health = event.get('HullHealth', 0) * 100.0 # normalized to 0.0 ... 1.0
+        vehicle.fuel_capacity = event.get('FuelCapacity', None)
+        vehicle.fuel_level = event.get('FuelLevel', None)
+        if not 'Modules' in event:
+            return vehicle
+
+        modules = event['Modules']
+        for module in modules:
+            health = modules[module]['Health'] * 100.0 if 'Health' in modules[module] else None 
+            vehicle.subsystem_health(modules[module].get('Item', None), health)
+        return vehicle
+    
     @staticmethod
     def from_load_game_event(event):
         vehicle = EDVehicleFactory.from_internal_name(event.get("Ship", 'unknown'))
@@ -1055,7 +1074,7 @@ class EDVehicleFactory(object):
         vehicle.id = event.get('ShipID', None)
         vehicle.identity = event.get('ShipIdent', None)
         vehicle.name = event.get('ShipName', None)
-        vehicle.hull_health = event.get('HullHealth', None) * 100.0 # normalized to 0.0 ... 1.0
+        vehicle.hull_health = event.get('HullHealth', 0) * 100.0 # normalized to 0.0 ... 1.0
         vehicle.fuel_capacity = event.get('FuelCapacity', None) #missing from loadout event...
         vehicle.fuel_level = event.get('FuelLevel', None) #missing from loadout event...
         if not 'Modules' in event:
