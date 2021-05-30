@@ -278,7 +278,7 @@ class EDSuitFactory(object):
     def from_suitloadout_event(event):
         suit = EDSuitFactory.from_internal_name(event.get("SuitName", 'unknown'))
         suit.id = event.get('SuitID', None)
-        suit.loadout.update_from_suitloadout_event(event)
+        suit.loadout.update_from_suitloadout(event)
         return suit
 
     #@staticmethod

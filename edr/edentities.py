@@ -260,8 +260,12 @@ class EDPilot(object):
             u"bounty": self.bounty,
             u"power": self.powerplay.canonicalize() if self.powerplay else u'',
             u"enemy": self.enemy,
-            u"ship": self.piloted_vehicle.json(),
         }
+
+        if self.piloted_vehicle:
+            blob["ship"] = self.piloted_vehicle.json()
+        else:
+            blob["suit"] = self.spacesuit.json()
         
         if self.sqid:
             blob[u"sqid"] = self.sqid
@@ -400,10 +404,7 @@ class EDPilot(object):
         if entry.get("SRV", False):
             self.in_srv()
         elif entry.get("Taxi", False):
-            if not self.shuttle:
-                EDRLOG.log("Player embarked a taxi but we had none", "DEBUG")
-                self.shuttle = EDVehicleFactory.unknown_taxi()
-            self.piloted_vehicle = self.shuttle
+            self.in_taxi()
         elif entry.get("Multicrew", False):
             # TODO multicrew, hmmm
             self.mothership = EDVehicleFactory.unknown_crew_vehicle()
@@ -832,6 +833,7 @@ class EDPlayerOne(EDPlayer):
         self.dlc_name = None
         self.private_group = None
         self.previous_mode = None
+        self.previous_private_group = None
         self.previous_wing = set()
         self.from_genesis = False
         self.wing = EDWing()

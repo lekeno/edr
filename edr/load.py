@@ -457,26 +457,29 @@ def dashboard_entry(cmdr, is_beta, entry):
     if not 'Flags' in entry:
         return
 
-    if (entry['Flags'] & edmc_data.FlagsInMainShip):
+    flags = entry.get('Flags', 0)
+    flags2 = entry.get('Flags2', 0)
+
+    if (flags & edmc_data.FlagsInMainShip) and not (flags2 & edmc_data.Flags2InTaxi):
         ed_player.in_mothership()
     
-    if (entry['Flags'] & edmc_data.FlagsInFighter):
+    if (flags & edmc_data.FlagsInFighter):
         ed_player.in_slf()
 
-    if (entry['Flags'] & edmc_data.FlagsInSRV):
+    if (flags & edmc_data.FlagsInSRV):
         ed_player.in_srv()
     
     
 
-    flags2 = entry.get('Flags2', 0)
-    if flags2:
-        if (flags2 & (edmc_data.Flags2OnFoot | edmc_data.Flags2OnFootInStation | edmc_data.Flags2OnFootOnPlanet | edmc_data.Flags2OnFootInHangar | edmc_data.Flags2OnFootSocialSpace | edmc_data.Flags2OnFootExterior)):
-            ed_player.in_spacesuit()
-        # TODO in taxi, in multicrew
-        if (flags2 & edmc_data.Flags2InTaxi):
-            ed_player.in_taxi()
-        ed_player.spacesuit.low_health = flags2 & edmc_data.Flags2LowHealth
-        ed_player.spacesuit.low_oxygen = flags2 & edmc_data.Flags2LowOxygen
+    if (flags2 & (edmc_data.Flags2OnFoot | edmc_data.Flags2OnFootInStation | edmc_data.Flags2OnFootOnPlanet | edmc_data.Flags2OnFootInHangar | edmc_data.Flags2OnFootSocialSpace | edmc_data.Flags2OnFootExterior)):
+        ed_player.in_spacesuit()
+    if (flags2 & edmc_data.Flags2InTaxi):
+        ed_player.in_taxi()
+    # TODO in multicrew
+    
+    ed_player.spacesuit.low_health = flags2 & edmc_data.Flags2LowHealth
+    ed_player.spacesuit.low_oxygen = flags2 & edmc_data.Flags2LowOxygen
+    
     if (entry.get("Oxygen", None)):
         ed_player.spacesuit.oxygen = entry["Oxygen"]
     
@@ -484,17 +487,17 @@ def dashboard_entry(cmdr, is_beta, entry):
         ed_player.spacesuit.health = entry["Health"]
 
 
-    if (entry['Flags'] & edmc_data.FlagsFsdJump or flags2 & edmc_data.Flags2GlideMode):
+    if (flags & edmc_data.FlagsFsdJump or flags2 & edmc_data.Flags2GlideMode):
         ed_player.in_blue_tunnel()
     else:
         ed_player.in_blue_tunnel(False)
     
     if ed_player.piloted_vehicle:
-        ed_player.piloted_vehicle.low_fuel = bool(entry['Flags'] & edmc_data.FlagsLowFuel)
-    ed_player.docked(bool(entry['Flags'] & edmc_data.FlagsDocked))
-    unsafe = bool(entry['Flags'] & edmc_data.FlagsIsInDanger)
+        ed_player.piloted_vehicle.low_fuel = bool(flags & edmc_data.FlagsLowFuel)
+    ed_player.docked(bool(flags & edmc_data.FlagsDocked))
+    unsafe = bool(flags & edmc_data.FlagsIsInDanger)
     ed_player.in_danger(unsafe)
-    deployed = bool(entry['Flags'] & edmc_data.FlagsHardpointsDeployed)
+    deployed = bool(flags & edmc_data.FlagsHardpointsDeployed)
     ed_player.hardpoints(deployed)
     
     safe = not unsafe
@@ -503,7 +506,7 @@ def dashboard_entry(cmdr, is_beta, entry):
         ed_player.recon_box.reset()
         EDR_CLIENT.notify_with_details(_(u"EDR Central"), [_(u"Fight reporting disabled"), _(u"Looks like you are safe, and disengaged.")])
     
-    if ed_player.in_normal_space() and ed_player.recon_box.process_signal(entry['Flags'] & edmc_data.FlagsLightsOn):
+    if ed_player.in_normal_space() and ed_player.recon_box.process_signal(flags & edmc_data.FlagsLightsOn):
         if ed_player.recon_box.active:
             EDR_CLIENT.notify_with_details(_(u"EDR Central"), [_(u"Fight reporting enabled"), _(u"Turn it off: flash your lights twice, or leave this area, or escape danger and retract hardpoints.")])
         else:
@@ -630,11 +633,11 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     vehicle = None
     if ed_player.is_crew_member():
-        vehicle = EDVehicleFactory.unknown_vehicle()
+        vehicle = EDVehicleFactory.unknown_crew_vehicle()
     elif state.get("ShipType", None):
         vehicle = EDVehicleFactory.from_edmc_state(state)
 
-    status_outcome["updated"] = ed_player.update_vehicle_if_obsolete(vehicle)
+    status_outcome["updated"] = ed_player.update_vehicle_if_obsolete(vehicle, piloted=False)
     status_outcome["updated"] |= ed_player.update_star_system_if_obsolete(system)
         
     if entry["event"] in ["Location", "Undocked", "Docked", "DockingCancelled", "DockingDenied",
@@ -1189,10 +1192,10 @@ def handle_legal_fees(player, entry):
     #TODO this should be on a ship whose id is in the entry rather than the player
     if entry["event"] == "PayFines":
         if entry.get("AllFines", None):
-            player.fines = 0
+            player.fine = 0
         else:
             true_amount = entry["Amount"] * (1.0 - entry.get("BrokerPercentage", 0)/100.0)
-            player.fines = max(0, player.fines - true_amount)
+            player.fine = max(0, player.fine - true_amount)
     elif entry["event"] == "PayBounties":
         if entry.get("AllFines", None):
             player.bounty = 0

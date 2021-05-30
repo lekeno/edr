@@ -517,7 +517,7 @@ class EDTaxi(EDVehicle):
 
 class EDAdderApex(EDTaxi):
     def __init__(self):
-        super(EDAdder, self).__init__()
+        super(EDAdderApex, self).__init__()
         self.type = u'Adder Apex'
         self.size = EDVehicleSize.SMALL
         self.seats = 2
@@ -578,7 +578,7 @@ class EDVulture(EDVehicle):
     
 class EDVultureFrontlines(EDTaxi):
     def __init__(self):
-        super(EDVulture, self).__init__()
+        super(EDVultureFrontlines, self).__init__()
         self.type = u'Vulture Frontlines'
         self.size = EDVehicleSize.SMALL
         self.seats = 2
