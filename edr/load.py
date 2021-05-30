@@ -341,8 +341,11 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
         elif entry["MusicTrack"] in ["Supercruise", "Exploration", "NoTrack"] and ed_player.in_a_fight():
             ed_player.in_danger(False)
             return
-        elif entry ["MusicTrack"] == "SystemMap":
+        elif entry["MusicTrack"] == "SystemMap":
             EDR_CLIENT.noteworthy_signals_in_system() # probably annoying
+            return
+        elif entry["MusicTrack"] == "OnFoot":
+            ed_player.in_spacesuit()
             return
 
     if entry["event"] == "Shutdown":
@@ -401,6 +404,26 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
 
     if entry["event"] in ["SuitLoadout", "SwitchSuitLoadout"]:
         ed_player.update_vehicle_or_suit_if_obsolete(entry)
+        return
+
+    if entry["event"] in ["LaunchSRV"] and entry.get("PlayerControlled", False):
+        ed_player.in_srv()
+        return
+    
+    if entry["event"] in ["DockSRV"]:
+        ed_player.in_mothership()
+        return
+
+    if entry["event"] in ["Disembark"]:
+        ed_player.disembark(entry)
+        return
+
+    if entry["event"] in ["Embark"]:
+        ed_player.embark(entry)
+        return
+
+    if entry["event"] in ["DropshipDeploy"]:
+        ed_player.dropship_deployed(entry)
         return
 
 def handle_friends_events(ed_player, entry):
@@ -544,7 +567,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     EDR_CLIENT.edrdiscord.process(entry)
 
-    if entry["event"] in ["Shutdown", "ShutDown", "Music", "Resurrect", "Fileheader", "LoadGame", "Loadout", "SuitLoadout", "SwitchSuitLoadout"]:
+    if entry["event"] in ["Shutdown", "ShutDown", "Music", "Resurrect", "Fileheader", "LoadGame", "Loadout", "SuitLoadout", "SwitchSuitLoadout", "LaunchSRV", "DockSRV", "Disembark", "Embark", "DropShipDeploy"]:
         from_genesis = False
         if "first_run" not in journal_entry.__dict__:
             journal_entry.first_run = False

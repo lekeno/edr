@@ -365,6 +365,55 @@ class EDPilot(object):
         
         return False
 
+    def disembark(self, entry):
+        if entry.get("event", None) != "Disembark":
+            return
+        
+        self.in_spacesuit()
+        if entry.get("ShipID", self.mothership.id) != self.mothership.id:
+            EDRLOG.log("Player disembarked from their ship but the ID was different new:{} vs old:{}".format(entry["ShipID"], self.mothership.id), "DEBUG")
+            self.mothership = EDVehicleFactory.unknown_vehicle()
+            self.mothership.id = entry["ShipID"]
+        self.location.from_entry(entry)
+
+        # TODO handle other info?
+        '''
+        SRV: true if getting out of SRV, false if getting out of a ship
+        Taxi: true when getting out of a taxi transposrt ship
+        Multicrew: true when getting out of another player’s vessel
+        '''
+
+    def embark(self, entry):
+        if entry.get("event", None) != "Embark":
+            return
+        
+        if entry.get("SRV", False):
+            self.in_srv()
+        elif entry.get("Taxi", False):
+            if not self.mothership.is_taxi():
+                EDRLOG.log("Player embarked a taxi but mothership isn't one", "DEBUG")
+                # TODO need to instantiate a taxi ship (Apex Adder or Frontline Vulture)
+                self.mothership = EDVehicleFactory.unknown_taxi()
+            self.in_mothership()
+        elif entry.get("Multicrew", False):
+            # TODO multicrew, hmmm
+            self.mothership = EDVehicleFactory.unknown_crew_vehicle()
+            self.in_mothership()
+        else:
+            if entry.get("ShipID", self.mothership.id) != self.mothership.id:
+                EDRLOG.log("Player embarked on their ship but the ID was different new:{} vs old:{}".format(entry["ShipID"], self.mothership.id), "DEBUG")
+                self.mothership = EDVehicleFactory.unknown_vehicle()
+                self.mothership.id = entry["ShipID"]
+            self.in_mothership()
+        self.location.from_entry(entry)
+        
+    def dropship_deployed(self, entry):
+        if entry.get("event", None) != "DropshipDeploy":
+            return
+        
+        self.in_spacesuit()
+        self.location.from_entry(entry)
+    
     def in_mothership(self):
         self._touch()
         self.on_foot = False

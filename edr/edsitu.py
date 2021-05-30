@@ -67,6 +67,15 @@ class EDLocation(object):
     def __repr__(self):
         return str(self.__dict__)
 
+    def from_entry(self, entry):
+        self.star_system = entry.get("StarSystem", self.star_system)
+        self.star_system_address = entry.get("SystemAddress", self.star_system_address)
+        self.place = entry.get("Body", self.place)
+        if entry.get("OnStation", False):
+            # TODO should there be a separate field for station (also stationtype, market id ?)
+            self.place = entry.get("Station", self.place)
+        # TODO use "OnPlanet" too?
+
     def from_other(self, other_location):
         self.star_system = other_location.star_system
         self.place = other_location.place

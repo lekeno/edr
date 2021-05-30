@@ -875,6 +875,12 @@ class EDUnknownVehicle(EDVehicle):
         self.type = u'Unknown'
         self.size = EDVehicleSize.UNKNOWN
 
+class EDUnknownTaxi(EDVehicle):
+    def __init__(self):
+        super(EDUnknownTaxi, self).__init__()
+        self.type = u'Unknown (taxi)'
+        self.size = EDVehicleSize.UNKNOWN
+
 class EDCrewUnknownVehicle(EDVehicle):
     def __init__(self):
         super(EDCrewUnknownVehicle, self).__init__()
@@ -937,6 +943,7 @@ class EDVehicleFactory(object):
         "gdn_hybrid_fighter_v3": EDLance,
         "testbuggy": EDSRV,
         "unknown": EDUnknownVehicle,
+        "unknown (taxi)": EDUnknownTaxi,
         "unknown (crew)": EDCrewUnknownVehicle,
         "unknown (captain)": EDCaptainUnknownVehicle
     }
@@ -1106,6 +1113,14 @@ class EDVehicleFactory(object):
     @staticmethod
     def unknown_vehicle():
         return EDUnknownVehicle()
+
+    @staticmethod
+    def unknown_taxi():
+        return EDUnknownTaxi()
+    
+    @staticmethod
+    def unknown_crew_vehicle():
+        return EDCrewUnknownVehicle()
 
     @staticmethod
     def default_srv():
