@@ -607,6 +607,11 @@ class EDRClient(object):
         body = self.edrsystems.body(self.player.star_system, self.player.place)
         radius = body.get("radius", None) if body else None
         distance = destination.distance(current, radius) if radius else None
+        
+        if distance is None:
+            EDRLOG.log(u"No distance info out of System:{}, Place:{}, Radius:{}".format(self.player.star_system, self.player.place, radius), "DEBUG")
+            return
+            
         if distance <= 1.0:
             return
         pitch = destination.pitch(current, distance) if distance and distance <= 700 else None
