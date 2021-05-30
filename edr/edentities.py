@@ -561,10 +561,7 @@ class EDPilot(object):
     def update_vehicle_or_suit_if_obsolete(self, event):
         if event.get("event", None) in ["SuitLoadout", "SwitchSuitLoadout"]:
             self.in_spacesuit()
-            if self.spacesuit.id == event.get("SuitID", None):
-                self.spacesuit.update_from_suitloadout(event)
-            else:
-                self.spacesuit = EDSuitFactory.from_suitloadout_event(event)
+            self.spacesuit = EDSuitFactory.from_suitloadout_event(event)
             # TODO should this be more conservative?
             self._touch()
             return True
@@ -944,7 +941,7 @@ class EDPlayerOne(EDPlayer):
         else:
             self.mothership = EDVehicleFactory.unknown_vehicle()
             self.piloted_vehicle = self.mothership
-            self.spacesuit = EDSpaceSuit()
+            self.spacesuit = EDSuitFactory.unknown_suit()
             self.slf = None
             self.srv = None
 
