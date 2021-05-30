@@ -466,12 +466,15 @@ def dashboard_entry(cmdr, is_beta, entry):
     if (entry['Flags'] & edmc_data.FlagsInSRV):
         ed_player.in_srv()
     
-    # TODO in taxi, in multicrew
+    
 
     flags2 = entry.get('Flags2', 0)
     if flags2:
         if (flags2 & (edmc_data.Flags2OnFoot | edmc_data.Flags2OnFootInStation | edmc_data.Flags2OnFootOnPlanet | edmc_data.Flags2OnFootInHangar | edmc_data.Flags2OnFootSocialSpace | edmc_data.Flags2OnFootExterior)):
             ed_player.in_spacesuit()
+        # TODO in taxi, in multicrew
+        if (flags2 & edmc_data.Flags2InTaxi):
+            ed_player.in_taxi()
         ed_player.spacesuit.low_health = flags2 & edmc_data.Flags2LowHealth
         ed_player.spacesuit.low_oxygen = flags2 & edmc_data.Flags2LowOxygen
     if (entry.get("Oxygen", None)):
@@ -574,6 +577,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
             from_genesis = (entry["event"] == "LoadGame") and (cmdr and system is None and station is None)
         handle_lifecycle_events(ed_player, entry, state, from_genesis)
 
+    if entry["event"] in ["BookTaxi", "BookDropship", "CancelTaxi", "CancelDropship"]:
+        handle_shuttle_events(entry)
+    
     if entry["event"] in ["SetUserShipName", "SellShipOnRebuy", "ShipyardBuy", "ShipyardNew", "ShipyardSell", "ShipyardTransfer", "ShipyardSwap"]:
         handle_fleet_events(entry)
 
@@ -1743,6 +1749,15 @@ def audiocue_command(param):
         EDR_CLIENT.soft_audio_feedback()
         EDR_CLIENT.audio_feedback = True
         EDR_CLIENT.notify_with_details("EDR audio cues", ["Enabled", "Soft"])
+
+def handle_shuttle_events(entry):
+    if entry["event"]  not in ["BookTaxi", "BookDropship", "CancelTaxi", "CancelDropship"]:
+        return
+    ed_player = EDR_CLIENT.player
+    if entry["event"] in ["BookTaxi", "BookDropship"]:
+        ed_player.booked_shuttle(entry)
+    elif entry["event"] in ["CancelTaxi", "CancelDropship"]:
+        ed_player.cancelled_shuttle(entry)
 
 def handle_fleet_events(entry):
     global LAST_KNOWN_SHIP_NAME

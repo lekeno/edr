@@ -504,10 +504,25 @@ class EDAdder(EDVehicle):
         self.seats = 2
         self.value = 86472
 
-class EDAdderApex(EDAdder):
+class EDTaxi(EDVehicle):
+    def __init__(self):
+        super(EDTaxi, self).__init__()
+        self.type = u'Unknown (taxi)'
+        self.size = EDVehicleSize.UNKNOWN
+        self.destination = {"system": None, "location": None}
+    
+    def bound_for(self, system, location):
+        self.destination["system"]= system
+        self.destination["location"]= location
+
+class EDAdderApex(EDTaxi):
     def __init__(self):
         super(EDAdder, self).__init__()
         self.type = u'Adder Apex'
+        self.size = EDVehicleSize.SMALL
+        self.seats = 2
+        self.value = 86472
+    
 
 class EDViperMkIII(EDVehicle):
     def __init__(self):
@@ -561,10 +576,13 @@ class EDVulture(EDVehicle):
         self.seats = 2
         self.value = 4922534
     
-class EDVultureFrontlines(EDVulture):
+class EDVultureFrontlines(EDTaxi):
     def __init__(self):
         super(EDVulture, self).__init__()
         self.type = u'Vulture Frontlines'
+        self.size = EDVehicleSize.SMALL
+        self.seats = 2
+        self.value = 4922534
 
 class EDImperialClipper(EDVehicle):
     def __init__(self):
@@ -875,12 +893,6 @@ class EDUnknownVehicle(EDVehicle):
         self.type = u'Unknown'
         self.size = EDVehicleSize.UNKNOWN
 
-class EDUnknownTaxi(EDVehicle):
-    def __init__(self):
-        super(EDUnknownTaxi, self).__init__()
-        self.type = u'Unknown (taxi)'
-        self.size = EDVehicleSize.UNKNOWN
-
 class EDCrewUnknownVehicle(EDVehicle):
     def __init__(self):
         super(EDCrewUnknownVehicle, self).__init__()
@@ -943,7 +955,7 @@ class EDVehicleFactory(object):
         "gdn_hybrid_fighter_v3": EDLance,
         "testbuggy": EDSRV,
         "unknown": EDUnknownVehicle,
-        "unknown (taxi)": EDUnknownTaxi,
+        "unknown (taxi)": EDTaxi,
         "unknown (crew)": EDCrewUnknownVehicle,
         "unknown (captain)": EDCaptainUnknownVehicle
     }
@@ -1116,7 +1128,7 @@ class EDVehicleFactory(object):
 
     @staticmethod
     def unknown_taxi():
-        return EDUnknownTaxi()
+        return EDTaxi()
     
     @staticmethod
     def unknown_crew_vehicle():
@@ -1125,6 +1137,24 @@ class EDVehicleFactory(object):
     @staticmethod
     def default_srv():
         return EDSRV()
+
+    @staticmethod
+    def unknown_slf():
+        return EDShipLaunchedFighter()
+
+    @staticmethod
+    def apex_taxi(entry=None):
+        vehicle = EDAdderApex()
+        if entry and entry.get("event", None) == "BookTaxi":
+            vehicle.bound_for(entry.get("DestinationSystem", None), entry.get("DestinationLocation", None))
+        return vehicle
+
+    @staticmethod
+    def frontlines_dropship(entry=None):
+        vehicle = EDVultureFrontlines()
+        if entry and entry.get("event", None) == "BookDropship":
+            vehicle.bound_for(entry.get("DestinationSystem", None), entry.get("DestinationLocation", None))
+        return vehicle
 
     @staticmethod
     def unknown_slf():

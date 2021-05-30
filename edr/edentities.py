@@ -3,8 +3,7 @@ from __future__ import division
 #from builtins import round
 
 import pickle
-import re
-from edsitu import EDLocation, EDAttitude, EDPlanetaryLocation, EDSpaceDimension 
+from edsitu import EDLocation, EDAttitude, EDSpaceDimension 
 
 from edspacesuits import EDSpaceSuit
 from edtime import EDTime
@@ -234,6 +233,7 @@ class EDPilot(object):
         self.on_foot = False
         self.srv = None
         self.slf = None
+        self.shuttle = None
         self.location = EDLocation()
         self.powerplay = EDRPowerplayUnknown()
         self.squadron = None
@@ -277,6 +277,7 @@ class EDPilot(object):
         self._bounty = None
         self._fine = None
         self.targeted_vehicle = None
+        self.shuttle = None
         if self.mothership:
             self.mothership.destroy()
         if self.srv:
@@ -364,6 +365,15 @@ class EDPilot(object):
             return self.spacesuit.in_a_fight() and self.srv.in_danger()
         
         return False
+    
+    def booked_shuttle(self, entry):
+        if entry.get("event", None) == "BookTaxi":
+            self.shuttle = EDVehicleFactory.apex_taxi(entry)
+        elif entry.get("event", None) == "BookDropship":
+            self.shuttle = EDVehicleFactory.frontlines_dropship(entry)
+
+    def cancelled_shuttle(self, entry):
+        self.shuttle = None
 
     def disembark(self, entry):
         if entry.get("event", None) != "Disembark":
@@ -390,11 +400,10 @@ class EDPilot(object):
         if entry.get("SRV", False):
             self.in_srv()
         elif entry.get("Taxi", False):
-            if not self.mothership.is_taxi():
-                EDRLOG.log("Player embarked a taxi but mothership isn't one", "DEBUG")
-                # TODO need to instantiate a taxi ship (Apex Adder or Frontline Vulture)
-                self.mothership = EDVehicleFactory.unknown_taxi()
-            self.in_mothership()
+            if not self.shuttle:
+                EDRLOG.log("Player embarked a taxi but we had none", "DEBUG")
+                self.shuttle = EDVehicleFactory.unknown_taxi()
+            self.piloted_vehicle = self.shuttle
         elif entry.get("Multicrew", False):
             # TODO multicrew, hmmm
             self.mothership = EDVehicleFactory.unknown_crew_vehicle()
@@ -444,6 +453,14 @@ class EDPilot(object):
         self._touch()
         self.on_foot = True
         self.piloted_vehicle = None
+
+    def in_taxi(self):
+        self._touch()
+        self.on_foot = False
+        if not self.shuttle:
+            EDRLOG.log("Player in a taxi but we had none", "DEBUG")
+            self.shuttle = EDVehicleFactory.unknown_taxi()
+        self.piloted_vehicle = self.shuttle
 
     def docked(self, is_docked = True):
         self._touch()
@@ -943,6 +960,7 @@ class EDPlayerOne(EDPlayer):
         self.destroyed = False
         self.untarget()
         self.wanted = False
+        self.shuttle = None
         self.mothership = EDVehicleFactory.unknown_vehicle()
         self.piloted_vehicle = self.mothership
         self.targeted_vehicle = None
@@ -964,6 +982,7 @@ class EDPlayerOne(EDPlayer):
         self.private_group = None
         self.wing = EDWing()
         self.crew = None
+        self.shuttle = None
         self.untarget()
         self.instance.reset()
         self.recon_box.reset()
