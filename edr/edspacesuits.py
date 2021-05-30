@@ -263,6 +263,7 @@ class EDSuitFactory(object):
         grade = EDSuitFactory.grade(internal_name)
         suit = EDSuitFactory.__suit_classes.get(suit_name, EDUnknownSuit)()
         suit.grade = grade
+        return suit
     
     @staticmethod
     def from_load_game_event(event):

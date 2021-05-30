@@ -380,7 +380,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
             EDRLOG.log(u"DLC is Horizons", "DEBUG")
         EDR_CLIENT.game_mode(entry["GameMode"], entry.get("Group", None))
         
-        ed_player.update_vehicle_or_suit_if_obsolete(entry, active=True)
+        ed_player.update_vehicle_or_suit_if_obsolete(entry)
         EDRLOG.log(u"Game mode is {}".format(entry["GameMode"]), "DEBUG")
         EDR_CLIENT.warmup()
         return
