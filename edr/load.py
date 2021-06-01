@@ -329,10 +329,12 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
             EDRLOG.log(u"Player is on the main menu.", "DEBUG")
             return
         elif entry["MusicTrack"] == "Combat_Dogfight":
-            ed_player.piloted_vehicle.skirmish() # TODO check music event for on foot combat
+            if ed_player.mothership:
+                ed_player.mothership.skirmish() # TODO check music event for on foot combat
             return
         elif entry["MusicTrack"] == "Combat_LargeDogFight":
-            ed_player.piloted_vehicle.battle()  # TODO check music event for on foot combat
+            if ed_player.mothership:
+                ed_player.mothership.battle()  # TODO check music event for on foot combat
             return
         elif entry["MusicTrack"] == "Combat_SRV":
             if ed_player.srv:
@@ -736,7 +738,6 @@ def edr_update_cmdr_status(cmdr, reason_for_update, timestamp):
         "cmdr" : cmdr.name,
         "starSystem": cmdr.star_system,
         "place": cmdr.place,
-        "ship": cmdr.vehicle_type(),
         "timestamp": edt.as_js_epoch(),
         "source": reason_for_update,
         "reportedBy": cmdr.name,
@@ -744,6 +745,11 @@ def edr_update_cmdr_status(cmdr, reason_for_update, timestamp):
         "dlc": cmdr.dlc_name,
         "group": cmdr.private_group
     }
+
+    if cmdr.vehicle_type():
+        report["ship"] = cmdr.vehicle_type()
+    elif cmdr.spacesuit_type():
+        report["suit"] = cmdr.spacesuit_type()
 
     EDRLOG.log(u"report: {}".format(report), "DEBUG")
 
@@ -762,6 +768,7 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
     :param victim:
     :return:
     """
+    #TODO sort out ship and suit...
     if not victim.in_open():
         EDRLOG.log(u"Skipping submit crime (wing) due to unconfirmed Open mode", "INFO")
         EDR_CLIENT.status = _(u"Crime reporting disabled in solo/private modes.")
@@ -769,10 +776,14 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
 
     criminals = []
     for criminal_cmdr in criminal_cmdrs:
-        EDRLOG.log(u"Appending criminal {} with ship {}".format(criminal_cmdr.name,
-                                                                criminal_cmdr.vehicle_type()),
+        EDRLOG.log(u"Appending criminal {} with ship {}, suit {}".format(criminal_cmdr.name,
+                                                                criminal_cmdr.vehicle_type(), criminal_cmdr.spacesuit_type()),
                    "DEBUG")
-        blob = {"name": criminal_cmdr.name, "ship": criminal_cmdr.vehicle_type(), "enemy": criminal_cmdr.enemy, "wanted": criminal_cmdr.wanted, "bounty": criminal_cmdr.bounty, "fine": criminal_cmdr.fine}
+        blob = {"name": criminal_cmdr.name, "enemy": criminal_cmdr.enemy, "wanted": criminal_cmdr.wanted, "bounty": criminal_cmdr.bounty, "fine": criminal_cmdr.fine}
+        if criminal_cmdr.vehicle_type():
+            blob["ship"] = criminal_cmdr.vehicle_type()
+        elif criminal_cmdr.spacesuit_type():
+            blob["suit"] = criminal_cmdr.spacesuit_type()
         blob["power"] = criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else u""
         criminals.append(blob)
 
@@ -785,7 +796,6 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
         "criminals": criminals,
         "offence": offence.capitalize(),
         "victim": victim.name,
-        "victimShip": victim.vehicle_type(),
         "reportedBy": victim.name,
         "victimPower": victim.powerplay.canonicalize() if victim.powerplay else u"",
         "byPledge": victim.powerplay.canonicalize() if victim.powerplay else "",
@@ -793,6 +803,11 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
         "dlc": victim.dlc_name,
         "group": victim.private_group
     }
+
+    if victim.vehicle_type():
+        report["victimShip"] = victim.vehicle_type()
+    elif victim.spacesuit_type():
+        report["victimSuit"] = victim.spacesuit_type()
 
     if not EDR_CLIENT.crime(victim.star_system, report):
         EDR_CLIENT.status = _(u"failed to report crime.")
@@ -814,21 +829,27 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim, timestamp):
 
     edt = EDTime()
     edt.from_journal_timestamp(timestamp)
+    criminal_blob = {
+        "name": criminal_cmdr.name,
+        "wanted": criminal_cmdr.wanted,
+        "bounty": criminal_cmdr.bounty,
+        "fine": criminal_cmdr.fine,
+        "power": criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else u"",
+    }
+
+    if criminal_cmdr.vehicle_type():
+        criminal_blob["ship"] = criminal_cmdr.vehicle_type()
+    elif criminal_cmdr.spacesuit_type():
+        criminal_blob["suit"] = criminal_cmdr.spacesuit_type()
+
+
     report = {
         "starSystem": criminal_cmdr.star_system,
         "place": criminal_cmdr.place,
         "timestamp": edt.as_js_epoch(),
-        "criminals" : [
-            {"name": criminal_cmdr.name,
-             "ship" : criminal_cmdr.vehicle_type(),
-             "wanted": criminal_cmdr.wanted,
-             "bounty": criminal_cmdr.bounty,
-             "fine": criminal_cmdr.fine,
-             "power": criminal_cmdr.powerplay.canonicalize() if criminal_cmdr.powerplay else u"",
-            }],
+        "criminals" : [ criminal_blob ],
         "offence": offence.capitalize(),
         "victim": victim.name,
-        "victimShip": victim.vehicle_type(),
         "reportedBy": criminal_cmdr.name,
         "victimWanted": victim.wanted,
         "victimBounty": victim.bounty,
@@ -839,6 +860,11 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim, timestamp):
         "dlc": criminal_cmdr.dlc_name,
         "group": criminal_cmdr.private_group
     }
+
+    if victim.vehicle_type():
+        report["victimShip"] = victim.vehicle_type()
+    elif victim.spacesuit_type():
+        report["victimSuit"] = victim.spacesuit_type()
 
     EDRLOG.log(u"Perpetrated crime: {}".format(report), "DEBUG")
 
@@ -872,7 +898,6 @@ def edr_submit_contact(contact, timestamp, source, witness, system_wide=False):
         "starSystem": witness.star_system,
         "place": witness.place,
         "timestamp": edt.as_js_epoch(),
-        "ship" : contact.vehicle_type(),
         "source": source,
         "reportedBy": witness.name,
         "byPledge": witness.powerplay.canonicalize() if witness.powerplay else "",
@@ -880,6 +905,11 @@ def edr_submit_contact(contact, timestamp, source, witness, system_wide=False):
         "dlc": witness.dlc_name,
         "group": witness.private_group
     }
+
+    if contact.vehicle_type():
+        report["ship"] = contact.vehicle_type()
+    elif contact.spacesuit_type():
+        report["suit"] = contact.spacesuit_type()
 
     if contact.sqid:
         report["sqid"] = contact.sqid
@@ -928,7 +958,6 @@ def edr_submit_traffic(contact, timestamp, source, witness, system_wide=False):
         "starSystem": witness.star_system,
         "place": witness.place,
         "timestamp": edt.as_js_epoch(),
-        "ship" : contact.vehicle_type(),
         "source": source,
         "reportedBy": witness.name,
         "byPledge": witness.powerplay.canonicalize() if witness.powerplay else "",
@@ -936,6 +965,11 @@ def edr_submit_traffic(contact, timestamp, source, witness, system_wide=False):
         "dlc": witness.dlc_name,
         "group": witness.private_group
     }
+
+    if contact.vehicle_type():
+        report["ship"] = contact.vehicle_type()
+    elif contact.spacesuit_type():
+        report["ship"] = contact.spacesuit_type()
 
     if not witness.in_open() and not system_wide:
         EDRLOG.log(u"Skipping submit traffic due to unconfirmed Open mode, and event not being system wide.", "INFO")
@@ -1283,6 +1317,7 @@ def handle_scan_events(player, entry):
         if "Subsystem" in entry and "SubsystemHealth" in entry:
             target.vehicle.subsystem_health(entry["Subsystem"], entry["SubsystemHealth"])
         
+        # Scans event are only for ships, so no need for dissociating ship vs. suit situations.
         scan = {
             "cmdr": target.name,
             "ship": target.vehicle_type(),
@@ -1290,6 +1325,7 @@ def handle_scan_events(player, entry):
             "enemy": target.enemy,
             "bounty": target.bounty
         }
+        
         if target.sqid:
             scan["sqid"] = target.sqid
 

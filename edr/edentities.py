@@ -228,7 +228,7 @@ class EDPilot(object):
         now = EDTime.py_epoch_now()
         self._name = name
         self.mothership = EDVehicleFactory.unknown_vehicle()
-        self.spacesuit = EDSpaceSuit()
+        self.spacesuit = EDSuitFactory.unknown_suit()
         self.piloted_vehicle = self.mothership
         self.on_foot = False
         self.srv = None
@@ -307,6 +307,11 @@ class EDPilot(object):
         if self.on_foot:
             return None
         return self.piloted_vehicle.type or self.mothership.type
+
+    def spacesuit_type(self):
+        if not self.spacesuit:
+            return None
+        return self.spacesuit.type
 
     @property
     def name(self):
@@ -1208,6 +1213,8 @@ class EDPlayerOne(EDPlayer):
         cmdr.location.from_other(self.location)
         if ship_internal_name:
             if EDSuitFactory.is_spacesuit(ship_internal_name):
+                suit = EDSuitFactory.from_internal_name(ship_internal_name)
+                cmdr.spacesuit = suit
                 cmdr.in_spacesuit()
             else:
                 vehicle = EDVehicleFactory.from_internal_name(ship_internal_name)
