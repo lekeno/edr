@@ -213,11 +213,12 @@ def handle_movement_events(ed_player, entry):
     outcome = {"updated": False, "reason": None}
 
     if entry["event"] in ["SupercruiseExit"]:
-        place = entry["Body"]
-        outcome["updated"] |= ed_player.update_place_if_obsolete(place)
+        body = entry["Body"]
+        outcome["updated"] |= ed_player.update_body_if_obsolete(body)
+        outcome["updated"] |= ed_player.update_place_if_obsolete(body)
         outcome["reason"] = "Supercruise exit"
         ed_player.to_normal_space()
-        EDRLOG.log(u"Place changed: {}".format(place), "INFO")
+        EDRLOG.log(u"Body changed: {}".format(body), "INFO")
     elif entry["event"] in ["FSDJump", "CarrierJump"]:
         place = "Supercruise"
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
@@ -247,22 +248,26 @@ def handle_movement_events(ed_player, entry):
         EDR_CLIENT.check_system(entry["StarSystem"], may_create=True)
     elif entry["event"] in ["ApproachSettlement"]:
         place = entry["Name"]
+        body = entry.get("BodyName", None)
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
-        EDRLOG.log(u"Place changed: {}".format(place), "INFO")
+        outcome["updated"] |= ed_player.update_body_if_obsolete(body)        
+        EDRLOG.log(u"Place/Body changed: {}, {}".format(place, body), "INFO")
         outcome["reason"] = "Approach event"
     elif entry["event"] in ["ApproachBody"]:
-        place = entry["Body"]
-        outcome["updated"] |= ed_player.update_place_if_obsolete(place)
-        EDRLOG.log(u"Place changed: {}".format(place), "INFO")
+        body = entry["Body"]
+        outcome["updated"] |= ed_player.update_body_if_obsolete(body)
+        outcome["updated"] |= ed_player.update_place_if_obsolete(body)
+        EDRLOG.log(u"Body & place changed: {}".format(body), "INFO")
         outcome["reason"] = "Approach event"
         if EDR_CLIENT.noteworthy_about_body(entry["StarSystem"], entry["Body"]) and ed_player.planetary_destination is None:
             poi = EDR_CLIENT.closest_poi_on_body(entry["StarSystem"], entry["Body"], ed_player.attitude)
-            ed_player.planetary_destination = edsitu.EDPlanetaryLocation(poi)
+            ed_player.planetary_destination = EDPlanetaryLocation(poi)
     elif entry["event"] in ["LeaveBody"]:
         place = "Supercruise"
         ed_player.planetary_destination = None
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
-        EDRLOG.log(u"Place changed: {}".format(place), "INFO")
+        outcome["updated"] |= ed_player.update_body_if_obsolete(None)
+        EDRLOG.log(u"Place changed: {}, body cleared".format(place), "INFO")
         outcome["reason"] = "Leave event"
     return outcome
 
@@ -271,16 +276,17 @@ def handle_change_events(ed_player, entry):
     if entry["event"] in ["Location"]:
         if entry["Docked"]:
             place = entry["StationName"]
-        else:
-            place = entry["Body"]
-        outcome["updated"] |= ed_player.update_place_if_obsolete(place)
+            outcome["updated"] |= ed_player.update_place_if_obsolete(place)
+            EDRLOG.log(u"Place changed: {} (location event)".format(place), "INFO")
+        body = entry.get("Body", None)
+        outcome["updated"] |= ed_player.update_body_if_obsolete(body)
+        EDRLOG.log(u"Body changed: {} (location event)".format(body), "INFO")
         ed_player.to_normal_space()
         ed_player.wanted = entry.get("Wanted", False)
         ed_player.location_security(entry.get("SystemSecurity", None))
         ed_player.location.population = entry.get("Population", None)
         ed_player.location.allegiance = entry.get("SystemAllegiance", None)
         outcome["reason"] = "Location event"
-        EDRLOG.log(u"Place changed: {} (location event)".format(place), "INFO")
         EDR_CLIENT.check_system(entry["StarSystem"], may_create=True, coords=entry.get("StarPos", None))
 
     if entry["event"] in ["Undocked", "Docked", "DockingCancelled", "DockingDenied",
@@ -908,8 +914,10 @@ def edr_submit_contact(contact, timestamp, source, witness, system_wide=False):
 
     if contact.vehicle_type():
         report["ship"] = contact.vehicle_type()
+        print("report[ship]: {}".format(report["ship"]))
     elif contact.spacesuit_type():
         report["suit"] = contact.spacesuit_type()
+        print("report[suit]: {}".format(report["suit"]))
 
     if contact.sqid:
         report["sqid"] = contact.sqid

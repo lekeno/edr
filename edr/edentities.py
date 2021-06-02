@@ -338,6 +338,19 @@ class EDPilot(object):
         self._touch()
         self.location.place = place
 
+    @property
+    def body(self):
+        if self.location.body is None:
+            # Translators: this is used when a location, comprised of a system and a body (e.g. Alpha Centauri & 3 A), has no body specified
+            return _c(u"For an unknown or missing body|Unknown")
+        return self.location.body
+
+    @body.setter
+    def body(self, body):
+        self._touch()
+        print("body changed {} => {}".format(self.location.body, body))
+        self.location.body = body
+
     def update_attitude(self, attitude):
         self.attitude.update(attitude)
     
@@ -658,19 +671,24 @@ class EDPilot(object):
             return False
         updated = False
         if EDVehicleFactory.is_ship_launched_fighter(vehicle):
+            print("is slf: {}".format(vehicle.type))
             updated = self.__update_slf_if_obsolete(vehicle)
             if not self.mothership.supports_slf():
+                print("Unknown mothership")
                 self.mothership = EDVehicleFactory.unknown_vehicle()
             if piloted:
                 self.piloted_vehicle = self.slf
         elif EDVehicleFactory.is_surface_vehicle(vehicle):
             updated = self.__update_srv_if_obsolete(vehicle)
+            print("is srv: {}".format(vehicle.type))
             if not self.mothership.supports_srv():
+                print("Unknown motership for SRV")
                 self.mothership = EDVehicleFactory.unknown_vehicle()
             if piloted:
                 self.piloted_vehicle = self.srv
         else:
             updated = self.__update_mothership_if_obsolete(vehicle)
+            print("updted mothership {}? {} with {}".format(updated, vehicle.type, self.mothership.type))
             if piloted:
                 self.piloted_vehicle = self.mothership
         if updated:
@@ -708,6 +726,14 @@ class EDPilot(object):
         if self.location.place is None or self.location.place != place:
             EDRLOG.log(u"Updating place info (was missing or obsolete). {old} vs. {place}".format(old=self.location.place, place=place), u"INFO")
             self.location.place = place
+            return True
+        return False
+
+    def update_body_if_obsolete(self, body):
+        self._touch()
+        if self.location.body is None or self.location.body != body:
+            EDRLOG.log(u"Updating body info (was missing or obsolete). {old} vs. {body}".format(old=self.location.body, body=body), u"INFO")
+            self.location.place = body
             return True
         return False
 
@@ -1207,17 +1233,20 @@ class EDPlayerOne(EDPlayer):
 
     def instanced_player(self, cmdr_name, rank=None, ship_internal_name=None, piloted=True):
         self._touch()
+        print("Instanced with, ship: {}".format(ship_internal_name))
         cmdr = self.instance.player(cmdr_name)
         if not cmdr:
             cmdr = EDPlayer(cmdr_name, rank)
         cmdr.location.from_other(self.location)
         if ship_internal_name:
             if EDSuitFactory.is_spacesuit(ship_internal_name):
+                print("Instanced with, is suit! 'ship': {}".format(ship_internal_name))
                 suit = EDSuitFactory.from_internal_name(ship_internal_name)
                 cmdr.spacesuit = suit
                 cmdr.in_spacesuit()
             else:
                 vehicle = EDVehicleFactory.from_internal_name(ship_internal_name)
+                print("Instanced with, vehicle type: {}".format(vehicle.type))
                 cmdr.update_vehicle_if_obsolete(vehicle, piloted)
         self.instance.player_in(cmdr)
         return cmdr

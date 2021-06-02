@@ -34,7 +34,13 @@ class EDPlanetaryLocation(object):
         lat2 = math.radians(loc.latitude)
         a = math.sin(dlat/2.0) * math.sin(dlat/2.0) + math.sin(dlon/2.0) * math.sin(dlon/2.0) * math.cos(lat1) * math.cos(lat2)
         c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0-a))
-        return int(round(planet_radius * c, 0))
+        alt1 = self.altitude
+        alt2 = loc.altitude
+        dist = planet_radius * c
+        if (alt1 is not None and alt2 is not None) and dist <= 10.0:
+            dist = math.sqrt((planet_radius * c)**2 + (alt1 - alt2)**2)
+        # TODO check if other callers actually needed the rounding and int()
+        return dist
 
     def bearing(self, loc):
         current_latitude = math.radians(loc.latitude)
@@ -49,15 +55,16 @@ class EDPlanetaryLocation(object):
 
     @staticmethod
     def pitch(loc, distance):
-        if loc.altitude < 1.0 or abs(distance) < 1.0:
+        if loc.altitude is None or loc.altitude < 1.0 or abs(distance) < 1.0:
             return None
         pitch = -math.degrees(math.atan(loc.altitude / distance))
         return int(round(pitch, 0))
 
 class EDLocation(object):
-    def __init__(self, star_system=None, place=None, security=None, space_dimension=EDSpaceDimension.UNKNOWN):
+    def __init__(self, star_system=None, body=None, place=None, security=None, space_dimension=EDSpaceDimension.UNKNOWN):
         self.star_system = star_system
         self.place = place
+        self.body = body
         self.security = security
         self.space_dimension = space_dimension
         self.population = None
@@ -68,22 +75,24 @@ class EDLocation(object):
         return str(self.__dict__)
 
     def from_entry(self, entry):
+        print("{} from entry {}".format(self, entry))
         self.star_system = entry.get("StarSystem", self.star_system)
         self.star_system_address = entry.get("SystemAddress", self.star_system_address)
-        self.place = entry.get("Body", self.place)
-        if entry.get("OnStation", False):
-            # TODO should there be a separate field for station (also stationtype, market id ?)
-            self.place = entry.get("Station", self.place)
-        # TODO use "OnPlanet" too?
+        self.body = entry.get("Body", self.body)
+        self.place = entry.get("StationName", self.place)
+        print("after: {}".format(self))
 
     def from_other(self, other_location):
+        print("{} from other {}".format(self, other_location))
         self.star_system = other_location.star_system
+        self.body = other_location.body
         self.place = other_location.place
         self.security = other_location.security
         self.space_dimension = other_location.space_dimension
         self.population = other_location.population
         self.allegiance = other_location.allegiance
         self.star_system_address = other_location.star_system_address
+        print("after: {}".format(self))
    
     def in_normal_space(self):
         return self.space_dimension == EDSpaceDimension.NORMAL_SPACE
@@ -130,7 +139,7 @@ class EDAttitude(object):
         self.heading = attitude.get("heading", None)
 
     def valid(self):
-        if self.latitude is None or self.longitude is None or self.altitude is None or self.heading is None:
+        if self.latitude is None or self.longitude is None or self.heading is None:
             return False
         if abs(self.latitude) > 90:
             return False
@@ -139,3 +148,6 @@ class EDAttitude(object):
         if abs(self.heading) > 360:
             return False
         return True
+
+    def __repr__(self):
+        return str(self.__dict__)

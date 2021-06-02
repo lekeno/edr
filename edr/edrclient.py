@@ -39,6 +39,7 @@ from edtime import EDTime
 from edrlegalrecords import EDRLegalRecords
 from edrxzibit import EDRXzibit
 from edrdiscord import EDRDiscordIntegration
+from edvehicles import EDVehicleFactory
 
 from edri18n import _, _c, _edr, set_language
 from clippy import copy
@@ -587,7 +588,7 @@ class EDRClient(object):
         self.edrsystems.materials_info(self.player.star_system, scan_event["BodyName"], scan_event["Materials"])
 
     def closest_poi_on_body(self, star_system, body_name, attitude):
-        body = self.edrsystems.body(self.player.star_system, self.player.place)
+        body = self.edrsystems.body(star_system, body_name)
         radius = body.get("radius", None) if body else None
         return EDRBodiesOfInterest.closest_point_of_interest(star_system, body_name, attitude, radius)
 
@@ -625,18 +626,24 @@ class EDRClient(object):
 
         bearing = destination.bearing(current)
         
-        body = self.edrsystems.body(self.player.star_system, self.player.place)
+        location = self.player.location
+        body = self.edrsystems.body(location.star_system, location.body or location.place)
         radius = body.get("radius", None) if body else None
         distance = destination.distance(current, radius) if radius else None
         
         if distance is None:
-            EDRLOG.log(u"No distance info out of System:{}, Place:{}, Radius:{}".format(self.player.star_system, self.player.place, radius), "DEBUG")
+            EDRLOG.log(u"No distance info out of System:{}, Body:{}, Place: {}, Radius:{}".format(location.star_system, location.body, location.place, radius), "DEBUG")
             return
-            
-        if distance <= 1.0:
+        
+        threshold = 1.0
+        if self.player.piloted_vehicle is None:
+            threshold = 0.001
+        elif EDVehicleFactory.is_surface_vehicle(self.player.piloted_vehicle):
+            threshold = 0.01
+        if distance <= threshold:
             return
         pitch = destination.pitch(current, distance) if distance and distance <= 700 else None
-                
+        
         if self.visual_feedback:
             self.IN_GAME_MSG.navigation(bearing, destination, distance, pitch)
         self.status = _(u"> {:03} < for Lat:{:.4f} Lon:{:.4f}".format(bearing, destination.latitude, destination.longitude))
@@ -1052,7 +1059,7 @@ class EDRClient(object):
         if not self._worthy_alert(kind, event):
             EDRLOG.log(u"Skipped realtime {} event because it wasn't worth alerting about: {}.".format(kind, event), "DEBUG")
         else:
-            location = EDLocation(event["starSystem"], event["place"])
+            location = EDLocation(event["starSystem"], place=event["place"], body=event.get("body", None))
             copy(event["starSystem"])
             distance = None
             try:
