@@ -75,15 +75,12 @@ class EDLocation(object):
         return str(self.__dict__)
 
     def from_entry(self, entry):
-        print("{} from entry {}".format(self, entry))
         self.star_system = entry.get("StarSystem", self.star_system)
         self.star_system_address = entry.get("SystemAddress", self.star_system_address)
         self.body = entry.get("Body", self.body)
         self.place = entry.get("StationName", self.place)
-        print("after: {}".format(self))
 
     def from_other(self, other_location):
-        print("{} from other {}".format(self, other_location))
         self.star_system = other_location.star_system
         self.body = other_location.body
         self.place = other_location.place
@@ -92,7 +89,6 @@ class EDLocation(object):
         self.population = other_location.population
         self.allegiance = other_location.allegiance
         self.star_system_address = other_location.star_system_address
-        print("after: {}".format(self))
    
     def in_normal_space(self):
         return self.space_dimension == EDSpaceDimension.NORMAL_SPACE

@@ -914,10 +914,8 @@ def edr_submit_contact(contact, timestamp, source, witness, system_wide=False):
 
     if contact.vehicle_type():
         report["ship"] = contact.vehicle_type()
-        print("report[ship]: {}".format(report["ship"]))
     elif contact.spacesuit_type():
         report["suit"] = contact.spacesuit_type()
-        print("report[suit]: {}".format(report["suit"]))
 
     if contact.sqid:
         report["sqid"] = contact.sqid
