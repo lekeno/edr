@@ -102,15 +102,15 @@ class RemoteThread(threading.Thread):
         edr_log = EDRLog()
         try:
             for msg in self.sse:
-                if msg.event is "keep-alive":
+                if msg.event == "keep-alive":
                     edr_log.log(u"SSE keep-alive received", "DEBUG")
                     continue
-                if msg.event is "auth_revoked":
+                if msg.event == "auth_revoked":
                     edr_log.log(u"SSE auth_revoked received", "DEBUG")
                     self.message_queue.put(msg)
                     self.close()
                     break
-                if msg.event is "cancel":
+                if msg.event == "cancel":
                     edr_log.log(u"SSE cancel received", "DEBUG")
                     self.message_queue.put(msg)
                     self.close()
