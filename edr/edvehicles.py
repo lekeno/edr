@@ -504,10 +504,25 @@ class EDAdder(EDVehicle):
         self.seats = 2
         self.value = 86472
 
-class EDAdderApex(EDAdder):
+class EDTaxi(EDVehicle):
     def __init__(self):
-        super(EDAdder, self).__init__()
+        super(EDTaxi, self).__init__()
+        self.type = u'Unknown (taxi)'
+        self.size = EDVehicleSize.UNKNOWN
+        self.destination = {"system": None, "location": None}
+    
+    def bound_for(self, system, location):
+        self.destination["system"]= system
+        self.destination["location"]= location
+
+class EDAdderApex(EDTaxi):
+    def __init__(self):
+        super(EDAdderApex, self).__init__()
         self.type = u'Adder Apex'
+        self.size = EDVehicleSize.SMALL
+        self.seats = 2
+        self.value = 86472
+    
 
 class EDViperMkIII(EDVehicle):
     def __init__(self):
@@ -561,10 +576,13 @@ class EDVulture(EDVehicle):
         self.seats = 2
         self.value = 4922534
     
-class EDVultureFrontlines(EDVulture):
+class EDVultureFrontlines(EDTaxi):
     def __init__(self):
-        super(EDVulture, self).__init__()
+        super(EDVultureFrontlines, self).__init__()
         self.type = u'Vulture Frontlines'
+        self.size = EDVehicleSize.SMALL
+        self.seats = 2
+        self.value = 4922534
 
 class EDImperialClipper(EDVehicle):
     def __init__(self):
@@ -937,6 +955,7 @@ class EDVehicleFactory(object):
         "gdn_hybrid_fighter_v3": EDLance,
         "testbuggy": EDSRV,
         "unknown": EDUnknownVehicle,
+        "unknown (taxi)": EDTaxi,
         "unknown (crew)": EDCrewUnknownVehicle,
         "unknown (captain)": EDCaptainUnknownVehicle
     }
@@ -1039,6 +1058,25 @@ class EDVehicleFactory(object):
     def from_internal_name(internal_name):
         return EDVehicleFactory.__vehicle_classes.get(internal_name.lower(), EDUnknownVehicle)()
 
+    
+    @staticmethod
+    def from_loadgame_or_loadout_event(event):
+        vehicle = EDVehicleFactory.from_internal_name(event.get("Ship", 'unknown'))
+        vehicle.id = event.get('ShipID', None)
+        vehicle.identity = event.get('ShipIdent', None)
+        vehicle.name = event.get('ShipName', None)
+        vehicle.hull_health = event.get('HullHealth', 0) * 100.0 # normalized to 0.0 ... 1.0
+        vehicle.fuel_capacity = event.get('FuelCapacity', None)
+        vehicle.fuel_level = event.get('FuelLevel', None)
+        if not 'Modules' in event:
+            return vehicle
+
+        modules = event['Modules']
+        for module in modules:
+            health = modules[module]['Health'] * 100.0 if 'Health' in modules[module] else None 
+            vehicle.subsystem_health(modules[module].get('Item', None), health)
+        return vehicle
+    
     @staticmethod
     def from_load_game_event(event):
         vehicle = EDVehicleFactory.from_internal_name(event.get("Ship", 'unknown'))
@@ -1055,7 +1093,7 @@ class EDVehicleFactory(object):
         vehicle.id = event.get('ShipID', None)
         vehicle.identity = event.get('ShipIdent', None)
         vehicle.name = event.get('ShipName', None)
-        vehicle.hull_health = event.get('HullHealth', None) * 100.0 # normalized to 0.0 ... 1.0
+        vehicle.hull_health = event.get('HullHealth', 0) * 100.0 # normalized to 0.0 ... 1.0
         vehicle.fuel_capacity = event.get('FuelCapacity', None) #missing from loadout event...
         vehicle.fuel_level = event.get('FuelLevel', None) #missing from loadout event...
         if not 'Modules' in event:
@@ -1089,8 +1127,34 @@ class EDVehicleFactory(object):
         return EDUnknownVehicle()
 
     @staticmethod
+    def unknown_taxi():
+        return EDTaxi()
+    
+    @staticmethod
+    def unknown_crew_vehicle():
+        return EDCrewUnknownVehicle()
+
+    @staticmethod
     def default_srv():
         return EDSRV()
+
+    @staticmethod
+    def unknown_slf():
+        return EDShipLaunchedFighter()
+
+    @staticmethod
+    def apex_taxi(entry=None):
+        vehicle = EDAdderApex()
+        if entry and entry.get("event", None) == "BookTaxi":
+            vehicle.bound_for(entry.get("DestinationSystem", None), entry.get("DestinationLocation", None))
+        return vehicle
+
+    @staticmethod
+    def frontlines_dropship(entry=None):
+        vehicle = EDVultureFrontlines()
+        if entry and entry.get("event", None) == "BookDropship":
+            vehicle.bound_for(entry.get("DestinationSystem", None), entry.get("DestinationLocation", None))
+        return vehicle
 
     @staticmethod
     def unknown_slf():

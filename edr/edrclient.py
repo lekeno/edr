@@ -39,6 +39,7 @@ from edtime import EDTime
 from edrlegalrecords import EDRLegalRecords
 from edrxzibit import EDRXzibit
 from edrdiscord import EDRDiscordIntegration
+from edvehicles import EDVehicleFactory
 
 from edri18n import _, _c, _edr, set_language
 from clippy import copy
@@ -111,12 +112,10 @@ class EDRClient(object):
 
         
         self.realtime_params = {
-            EDROpponents.OUTLAWS: { "min_bounty": None if config.get_str("EDROutlawsAlertsMinBounty") == "None" else config.get_int("EDROutlawsAlertsMinBounty"),
-                         "max_distance": None if config.get_str("EDROutlawsAlertsMaxDistance") == "None" else config.get_int("EDROutlawsAlertsMaxDistance")},
-            EDROpponents.ENEMIES: { "min_bounty": None if config.get_str("EDREnemiesAlertsMinBounty") == "None" else config.get_int("EDREnemiesAlertsMinBounty"),
-                         "max_distance": None if config.get_str("EDREnemiesAlertsMaxDistance") == "None" else config.get_int("EDREnemiesAlertsMaxDistance")}
+            EDROpponents.OUTLAWS: self.__get_realtime_params("EDROutlawsAlerts"),
+            EDROpponents.ENEMIES: self.__get_realtime_params("EDREnemiesAlerts")
         }
-        
+ 
         self.edrsystems = EDRSystems(self.server)
         self.edrresourcefinder = EDRResourceFinder(self.edrsystems)
         self.edrcmdrs = EDRCmdrs(self.server)
@@ -136,6 +135,29 @@ class EDRClient(object):
         self.edrfssinsights = EDRFSSInsights()
         self.edrdiscord = EDRDiscordIntegration(self.edrcmdrs)
 
+    def __get_realtime_params(self, kind):
+        min_bounty = None
+        key = "{}MinBounty".format(kind)
+        try:
+            min_bounty = config.get_str(key)
+        except:
+            min_bounty = config.get_int(key)
+        
+        if min_bounty == "None":
+            min_bounty = None
+
+        max_distance = None
+        key = "{}MaxBounty".format(kind)
+        try:
+            max_distance = config.get_str(key)
+        except:
+            max_distance = config.get_int(key)
+        
+        if max_distance == "None":
+            max_distance = None
+
+        return { "min_bounty": min_bounty, "max_distance": max_distance} 
+    
     def loud_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "loud")
         self.AUDIO_FEEDBACK.loud()
@@ -566,7 +588,7 @@ class EDRClient(object):
         self.edrsystems.materials_info(self.player.star_system, scan_event["BodyName"], scan_event["Materials"])
 
     def closest_poi_on_body(self, star_system, body_name, attitude):
-        body = self.edrsystems.body(self.player.star_system, self.player.place)
+        body = self.edrsystems.body(star_system, body_name)
         radius = body.get("radius", None) if body else None
         return EDRBodiesOfInterest.closest_point_of_interest(star_system, body_name, attitude, radius)
 
@@ -604,13 +626,24 @@ class EDRClient(object):
 
         bearing = destination.bearing(current)
         
-        body = self.edrsystems.body(self.player.star_system, self.player.place)
+        location = self.player.location
+        body = self.edrsystems.body(location.star_system, location.body or location.place)
         radius = body.get("radius", None) if body else None
         distance = destination.distance(current, radius) if radius else None
-        if distance <= 1.0:
+        
+        if distance is None:
+            EDRLOG.log(u"No distance info out of System:{}, Body:{}, Place: {}, Radius:{}".format(location.star_system, location.body, location.place, radius), "DEBUG")
+            return
+        
+        threshold = 1.0
+        if self.player.piloted_vehicle is None:
+            threshold = 0.001
+        elif EDVehicleFactory.is_surface_vehicle(self.player.piloted_vehicle):
+            threshold = 0.01
+        if distance <= threshold:
             return
         pitch = destination.pitch(current, distance) if distance and distance <= 700 else None
-                
+        
         if self.visual_feedback:
             self.IN_GAME_MSG.navigation(bearing, destination, distance, pitch)
         self.status = _(u"> {:03} < for Lat:{:.4f} Lon:{:.4f}".format(bearing, destination.latitude, destination.longitude))
@@ -1026,7 +1059,7 @@ class EDRClient(object):
         if not self._worthy_alert(kind, event):
             EDRLOG.log(u"Skipped realtime {} event because it wasn't worth alerting about: {}.".format(kind, event), "DEBUG")
         else:
-            location = EDLocation(event["starSystem"], event["place"])
+            location = EDLocation(event["starSystem"], place=event["place"], body=event.get("body", None))
             copy(event["starSystem"])
             distance = None
             try:

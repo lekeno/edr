@@ -387,8 +387,10 @@ class InGameMsg(object):
             self.__shape("navigation", self.cfg["navigation"]["panel"])
         header = u"› {:03} ‹     ↓ {:02} ↓".format(bearing, pitch) if pitch else u"> {:03} <".format(bearing)
         details = [destination.title] if destination.title else []
-        if distance:
+        if distance >= 1.0:
             details.append(_(u"Dis: {}km".format(int(distance))))
+        else:
+            details.append(_(u"Dis: {}m".format(int(distance*1000))))
         details.append(_(u"Lat: {:.4f}".format(destination.latitude)))
         details.append(_(u"Lon: {:.4f}".format(destination.longitude)))
         self.__msg_header("navigation", header)

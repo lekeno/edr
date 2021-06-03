@@ -3,12 +3,12 @@ from __future__ import division
 #from builtins import round
 
 import pickle
-import re
-from edsitu import EDLocation, EDAttitude, EDPlanetaryLocation, EDSpaceDimension 
+from edsitu import EDLocation, EDAttitude, EDSpaceDimension 
 
 from edspacesuits import EDSpaceSuit
 from edtime import EDTime
 from edvehicles import EDVehicleFactory 
+from edspacesuits import EDSuitFactory
 from edinstance import EDInstance
 from edrlog import EDRLog
 from edrconfig import EDRConfig #TODO replace config object with singleton
@@ -228,11 +228,12 @@ class EDPilot(object):
         now = EDTime.py_epoch_now()
         self._name = name
         self.mothership = EDVehicleFactory.unknown_vehicle()
-        self.spacesuit = EDSpaceSuit()
+        self.spacesuit = EDSuitFactory.unknown_suit()
         self.piloted_vehicle = self.mothership
         self.on_foot = False
         self.srv = None
         self.slf = None
+        self.shuttle = None
         self.location = EDLocation()
         self.powerplay = EDRPowerplayUnknown()
         self.squadron = None
@@ -259,8 +260,12 @@ class EDPilot(object):
             u"bounty": self.bounty,
             u"power": self.powerplay.canonicalize() if self.powerplay else u'',
             u"enemy": self.enemy,
-            u"ship": self.piloted_vehicle.json(),
         }
+
+        if self.piloted_vehicle:
+            blob["ship"] = self.piloted_vehicle.json()
+        else:
+            blob["suit"] = self.spacesuit.json()
         
         if self.sqid:
             blob[u"sqid"] = self.sqid
@@ -276,6 +281,7 @@ class EDPilot(object):
         self._bounty = None
         self._fine = None
         self.targeted_vehicle = None
+        self.shuttle = None
         if self.mothership:
             self.mothership.destroy()
         if self.srv:
@@ -302,6 +308,11 @@ class EDPilot(object):
             return None
         return self.piloted_vehicle.type or self.mothership.type
 
+    def spacesuit_type(self):
+        if not self.spacesuit:
+            return None
+        return self.spacesuit.type
+
     @property
     def name(self):
         return self._name
@@ -326,6 +337,18 @@ class EDPilot(object):
     def place(self, place):
         self._touch()
         self.location.place = place
+
+    @property
+    def body(self):
+        if self.location.body is None:
+            # Translators: this is used when a location, comprised of a system and a body (e.g. Alpha Centauri & 3 A), has no body specified
+            return _c(u"For an unknown or missing body|Unknown")
+        return self.location.body
+
+    @body.setter
+    def body(self, body):
+        self._touch()
+        self.location.body = body
 
     def update_attitude(self, attitude):
         self.attitude.update(attitude)
@@ -363,7 +386,61 @@ class EDPilot(object):
             return self.spacesuit.in_a_fight() and self.srv.in_danger()
         
         return False
+    
+    def booked_shuttle(self, entry):
+        if entry.get("event", None) == "BookTaxi":
+            self.shuttle = EDVehicleFactory.apex_taxi(entry)
+        elif entry.get("event", None) == "BookDropship":
+            self.shuttle = EDVehicleFactory.frontlines_dropship(entry)
 
+    def cancelled_shuttle(self, entry):
+        self.shuttle = None
+
+    def disembark(self, entry):
+        if entry.get("event", None) != "Disembark":
+            return
+        
+        self.in_spacesuit()
+        if entry.get("ShipID", self.mothership.id) != self.mothership.id:
+            EDRLOG.log("Player disembarked from their ship but the ID was different new:{} vs old:{}".format(entry["ShipID"], self.mothership.id), "DEBUG")
+            self.mothership = EDVehicleFactory.unknown_vehicle()
+            self.mothership.id = entry["ShipID"]
+        self.location.from_entry(entry)
+
+        # TODO handle other info?
+        '''
+        SRV: true if getting out of SRV, false if getting out of a ship
+        Taxi: true when getting out of a taxi transposrt ship
+        Multicrew: true when getting out of another player’s vessel
+        '''
+
+    def embark(self, entry):
+        if entry.get("event", None) != "Embark":
+            return
+        
+        if entry.get("SRV", False):
+            self.in_srv()
+        elif entry.get("Taxi", False):
+            self.in_taxi()
+        elif entry.get("Multicrew", False):
+            # TODO multicrew, hmmm
+            self.mothership = EDVehicleFactory.unknown_crew_vehicle()
+            self.in_mothership()
+        else:
+            if entry.get("ShipID", self.mothership.id) != self.mothership.id:
+                EDRLOG.log("Player embarked on their ship but the ID was different new:{} vs old:{}".format(entry["ShipID"], self.mothership.id), "DEBUG")
+                self.mothership = EDVehicleFactory.unknown_vehicle()
+                self.mothership.id = entry["ShipID"]
+            self.in_mothership()
+        self.location.from_entry(entry)
+        
+    def dropship_deployed(self, entry):
+        if entry.get("event", None) != "DropshipDeploy":
+            return
+        
+        self.in_spacesuit()
+        self.location.from_entry(entry)
+    
     def in_mothership(self):
         self._touch()
         self.on_foot = False
@@ -394,6 +471,14 @@ class EDPilot(object):
         self._touch()
         self.on_foot = True
         self.piloted_vehicle = None
+
+    def in_taxi(self):
+        self._touch()
+        self.on_foot = False
+        if not self.shuttle:
+            EDRLOG.log("Player in a taxi but we had none", "DEBUG")
+            self.shuttle = EDVehicleFactory.unknown_taxi()
+        self.piloted_vehicle = self.shuttle
 
     def docked(self, is_docked = True):
         self._touch()
@@ -557,6 +642,29 @@ class EDPilot(object):
     def has_partial_status(self):
         return self.mothership is None or self.location.star_system is None or self.location.place is None
 
+    def update_vehicle_or_suit_if_obsolete(self, event):
+        if event.get("event", None) in ["SuitLoadout", "SwitchSuitLoadout"]:
+            self.in_spacesuit()
+            self.spacesuit = EDSuitFactory.from_suitloadout_event(event)
+            # TODO should this be more conservative?
+            self._touch()
+            return True
+        elif event.get("event", None) in ["LoadGame", "Loadout"]:
+            so_called_ship = event.get("Ship", None)
+            if not so_called_ship:
+                return False
+            
+            if EDSuitFactory.is_spacesuit(so_called_ship):
+                self.in_spacesuit()
+                self.spacesuit = EDSuitFactory.from_load_game_event(event)
+                # TODO should this be more conservative?
+                self._touch()
+                return True
+            else:
+                return self.update_vehicle_if_obsolete(EDVehicleFactory.from_loadgame_or_loadout_event(event))
+        return False
+
+    
     def update_vehicle_if_obsolete(self, vehicle, piloted=True):
         if vehicle is None:
             return False
@@ -612,6 +720,14 @@ class EDPilot(object):
         if self.location.place is None or self.location.place != place:
             EDRLOG.log(u"Updating place info (was missing or obsolete). {old} vs. {place}".format(old=self.location.place, place=place), u"INFO")
             self.location.place = place
+            return True
+        return False
+
+    def update_body_if_obsolete(self, body):
+        self._touch()
+        if self.location.body is None or self.location.body != body:
+            EDRLOG.log(u"Updating body info (was missing or obsolete). {old} vs. {body}".format(old=self.location.body, body=body), u"INFO")
+            self.location.place = body
             return True
         return False
 
@@ -742,6 +858,7 @@ class EDPlayerOne(EDPlayer):
         self.dlc_name = None
         self.private_group = None
         self.previous_mode = None
+        self.previous_private_group = None
         self.previous_wing = set()
         self.from_genesis = False
         self.wing = EDWing()
@@ -870,6 +987,7 @@ class EDPlayerOne(EDPlayer):
         self.destroyed = False
         self.untarget()
         self.wanted = False
+        self.shuttle = None
         self.mothership = EDVehicleFactory.unknown_vehicle()
         self.piloted_vehicle = self.mothership
         self.targeted_vehicle = None
@@ -891,6 +1009,7 @@ class EDPlayerOne(EDPlayer):
         self.private_group = None
         self.wing = EDWing()
         self.crew = None
+        self.shuttle = None
         self.untarget()
         self.instance.reset()
         self.recon_box.reset()
@@ -917,7 +1036,7 @@ class EDPlayerOne(EDPlayer):
         else:
             self.mothership = EDVehicleFactory.unknown_vehicle()
             self.piloted_vehicle = self.mothership
-            self.spacesuit = EDSpaceSuit()
+            self.spacesuit = EDSuitFactory.unknown_suit()
             self.slf = None
             self.srv = None
 
@@ -1113,8 +1232,9 @@ class EDPlayerOne(EDPlayer):
             cmdr = EDPlayer(cmdr_name, rank)
         cmdr.location.from_other(self.location)
         if ship_internal_name:
-            space_suit_regexp = r"^(?:flightsuit|(?:exploration|utility|tactical)suit_class[1-5])$" # TODO confirm that those are the internal names used for players
-            if re.match(space_suit_regexp, ship_internal_name):
+            if EDSuitFactory.is_spacesuit(ship_internal_name):
+                suit = EDSuitFactory.from_internal_name(ship_internal_name)
+                cmdr.spacesuit = suit
                 cmdr.in_spacesuit()
             else:
                 vehicle = EDVehicleFactory.from_internal_name(ship_internal_name)

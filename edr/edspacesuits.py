@@ -1,18 +1,29 @@
+from os import stat
+import re
+
 from edtime import EDTime
 import edrconfig
 
-'''
-Additional values when on foot:
-  Oxygen: (0.0 .. 1.0)
-  Health: (0.0 .. 1.0)
-  Temperature (kelvin)
-  SelectedWeapon: name
- Gravity: (relative to 1G) 
-'''
+class EDSuitLoadout(object):
+    def __init__(self):
+        self.id = None
+        self.name = None
+        self.suit_mods = []
+        self.modules = []
 
-class EDSpaceSuit(object):
-    def __init__(self, suit_type="UnknownSuit"):
-        self.type = suit_type
+    def update_from_suitloadout(self, event):
+        self.id = event.get("LoadoutID", None)
+        self.name = event.get("LoadoutName", None)
+        self.suit_mods = event.get("SuitMods", [])
+        self.modules = event.get("Modules", [])
+
+
+class EDSpaceSuit(object):    
+    def __init__(self):
+        self.type = None
+        self.id = None
+        self.grade = 1
+        self.loadout = EDSuitLoadout()
         now = EDTime.py_epoch_now()
         self.timestamp = now
         self._health = {u"value": 1.0, u"timestamp": now}
@@ -26,7 +37,7 @@ class EDSpaceSuit(object):
         config = edrconfig.EDR_CONFIG
         self.fight_staleness_threshold = config.instance_fight_staleness_threshold()
         self.danger_staleness_threshold = config.instance_danger_staleness_threshold()
-        
+
     @property
     def health(self):
         return self._health["value"]
@@ -151,6 +162,17 @@ class EDSpaceSuit(object):
             return (now >= self.fight["timestamp"]) and ((now - self.fight["timestamp"]) <= self.fight_staleness_threshold)
         return False
 
+    def update_from_suitloadout(self, event):
+        other_id = event.get("SuitID", None)
+        other_type = EDSuitFactory.canonicalize(event.get("SuitName", "unknown")) 
+
+        if other_id != self.id or other_type != self.type:
+            EDRLOG.log(u"Mismatch between Suit ID ({} vs {}) and/or Type ({} vs. {}), can't update from loadout".format(self.id, other_id, self.type, other_type), "WARNING")
+            return
+        
+        self.loadout.update_from_suitloadout(event)
+
+
     def __eq__(self, other):
         if not isinstance(other, EDSpaceSuit):
             return False
@@ -158,3 +180,110 @@ class EDSpaceSuit(object):
         
     def __ne__(self, other):
         return not self.__eq__(other)
+
+
+class EDUnknownSuit(EDSpaceSuit):
+    def __init__(self):
+        super(EDUnknownSuit, self).__init__()
+        self.type = u'Unknown'
+
+class EDFlightSuit(EDSpaceSuit):
+    def __init__(self):
+        super(EDFlightSuit, self).__init__()
+        self.type = u'Flight'
+
+class EDMaverickSuit(EDSpaceSuit):
+    def __init__(self):
+        super(EDMaverickSuit, self).__init__()
+        self.type = u'Maverick'
+
+class EDArtemisSuit(EDSpaceSuit):
+    def __init__(self):
+        super(EDArtemisSuit, self).__init__()
+        self.type = u'Artemis'
+
+class EDDominatorSuit(EDSpaceSuit):
+    def __init__(self):
+        super(EDDominatorSuit, self).__init__()
+        self.type = u'Dominator'
+
+
+class EDSuitFactory(object):
+    __suit_classes = {
+        "flightsuit": EDFlightSuit,
+        "utilitysuit": EDMaverickSuit,
+        "explorersuit": EDArtemisSuit,
+        "assaultsuit": EDDominatorSuit,
+        "unknown": EDUnknownSuit
+    }
+
+    @staticmethod
+    def is_spacesuit(name):
+        return EDSuitFactory.is_player_spacesuit(name) or EDSuitFactory.is_ai_spacesuit(name) 
+
+    @staticmethod
+    def is_player_spacesuit(name):
+        cname = name.lower()
+        player_space_suit_regexp = r"^(?:flightsuit|(?:exploration|utility|tactical)suit_class[1-5])$" # TODO confirm that those are the internal names used for players
+        return re.match(player_space_suit_regexp, cname)
+
+    @staticmethod
+    def is_ai_spacesuit(name):
+        cname = name.lower()
+        # ai_space_suit_regexp = r"^(?:assault|lightassault|close|ranged)aisuit_class[1-5])$" # TODO use this to tighten up things?
+        ai_space_suit_lax_regexp = r"^[a-z0-9_]*aisuit_class[1-5]$"
+        return re.match(ai_space_suit_lax_regexp, cname)
+
+    @staticmethod
+    def canonicalize(name):
+        if name is None:
+            return u"unknown" # Note: this shouldn't be translated
+        cname = name.lower()
+        player_space_suit_regexp = r"^(flightsuit|(explorationsuit|utilitysuit|tacticalsuit)_class[1-5])$" # TODO confirm that those are the internal names used for players
+        m = re.match(player_space_suit_regexp, cname)
+        if m:
+            cname = m.group(1)
+        return cname
+
+    @staticmethod
+    def grade(name):
+        cname = name.lower()
+        player_space_suit_regexp = r"^[a-z0-9_]suit_class([1-5])$" # TODO confirm that those are the internal names used for players
+        m = re.match(player_space_suit_regexp, cname)
+        if m:
+            return m.group(1)
+        return 1
+
+    # TODO @staticmethod
+    # def from_edmc_state(state):
+
+    @staticmethod
+    def from_internal_name(internal_name):
+        suit_name = EDSuitFactory.canonicalize(internal_name)
+        grade = EDSuitFactory.grade(internal_name)
+        suit = EDSuitFactory.__suit_classes.get(suit_name, EDUnknownSuit)()
+        suit.grade = grade
+        return suit
+    
+    @staticmethod
+    def from_load_game_event(event):
+        suit = EDSuitFactory.from_internal_name(event.get("Ship", 'unknown'))
+        suit.id = event.get('ShipID', None)
+        suit.identity = event.get('ShipIdent', None) # Always empty?
+        suit.name = event.get('ShipName', None) # Always empty
+        # TODO the event also has Fuel and Fuelcapacity but it's unclear if this is a bug or reusing fields for Energy levels?
+        return suit
+
+    @staticmethod
+    def from_suitloadout_event(event):
+        suit = EDSuitFactory.from_internal_name(event.get("SuitName", 'unknown'))
+        suit.id = event.get('SuitID', None)
+        suit.loadout.update_from_suitloadout(event)
+        return suit
+
+    #@staticmethod
+    #def from_stored_ship(ship_info): # TODO suitloadout swapping?
+        
+    @staticmethod
+    def unknown_suit():
+        return EDUnknownSuit()
