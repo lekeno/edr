@@ -582,7 +582,7 @@ class EDRResourceFinder(object):
         
         pretty_dist = _(u"{distance:.3g}").format(distance=best_distance) if best_distance < 50.0 else _(u"{distance}").format(distance=int(best_distance))
         copy(best["name"])
-        if best.get("type", None) is 'crystals':
+        if best.get("type", None) == "crystals":
             return [
                 _(u'{} ({}LY), Planet {} ({}LS, {}G), {} @ biological sites').format(best['name'], pretty_dist, best['planet'], best['distanceToArrival'], best['gravity'], resource),
                 _(u"Bring: detailed surface scanner, SRV, synth materials for SRV fuel and ammo."),
