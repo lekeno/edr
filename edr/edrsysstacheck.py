@@ -29,3 +29,24 @@ class EDRSystemStationCheck(object):
 
     def is_service_availability_ambiguous(self, station):
         return False
+
+class EDRApexSystemStationCheck(EDRSystemStationCheck):
+
+    def __init__(self, max_sc_distance=1500):
+        super(EDRApexSystemStationCheck, self).__init__()
+        self.max_distance = 100
+        self.max_sc_distance = max_sc_distance
+
+    def check_station(self, station):
+        print(station)
+        if not super(EDRApexSystemStationCheck, self).check_station(station):
+            return False
+        
+        if not station.get('type', None):
+            print("no station type")
+            return False
+
+        if not station.get('type', "n/a").lower() in ["asteroid base", 'bernal starport', "coriolis starport", "ocellus starport", "orbis starport", "bernal", "bernal statioport", "planetary port", "asteroid base", "outpost", "planetary outpost"]:
+            print("wrong station type {}".format(station.get('type', "n/a").lower()))
+            return False
+        return True

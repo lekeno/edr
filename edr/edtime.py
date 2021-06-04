@@ -102,6 +102,9 @@ class EDTime(comparable.ComparableMixin):
 
     def from_journal_timestamp(self, journal_timestamp):
         self._datetime = datetime.datetime.strptime(journal_timestamp, '%Y-%m-%dT%H:%M:%SZ')
+
+    def from_edsm_timestamp(self, edsm_timestamp):
+        self._datetime = datetime.datetime.strptime(edsm_timestamp, '%Y-%m-%d %H:%M:%S')
     
     def as_js_epoch(self):
         return int(calendar.timegm(self._datetime.timetuple()) * 1000) # JavaScript expects milliseconds while Python uses seconds for Epoch
@@ -131,14 +134,22 @@ class EDTime(comparable.ComparableMixin):
     def is_in_the_past(self):
         return self < EDTime()
 
-    def elapsed_threshold(self, journal_timestamp, threshold_timedelta):
+    def elapsed_threshold(self, journal_timestamp, threshold_timedelta_seconds):
         edt= EDTime()
         edt.from_journal_timestamp(journal_timestamp)
 
         if edt < self:
             return False
 
-        return (edt._datetime - self._datetime).total_seconds() >= threshold_timedelta
+        return (edt._datetime - self._datetime).total_seconds() >= threshold_timedelta_seconds
+
+    def older_than(self, threshold_timedelta_seconds):
+        now= EDTime()
+        
+        if now < self:
+            return False
+
+        return (now._datetime - self._datetime).total_seconds() >= threshold_timedelta_seconds
 
     def __str__(self):
         return str(self.as_journal_timestamp())

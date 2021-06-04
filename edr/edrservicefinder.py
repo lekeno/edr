@@ -18,6 +18,9 @@ class EDRServiceFinder(threading.Thread):
         self.callback = callback
         self.large_pad_required = True
         self.permits = []
+        self.shuffle_systems = False
+        self.shuffle_stations = False
+        self.include_center = True
         super(EDRServiceFinder, self).__init__()
 
     def with_large_pad(self, required):
@@ -32,6 +35,13 @@ class EDRServiceFinder(threading.Thread):
     def permits_in_possesion(self, permits):
         self.permits = permits
 
+    def shuffling(self, shuffle_stations, shuffle_systems):
+        self.shuffle_systems = shuffle_systems
+        self.shuffle_stations = shuffle_stations
+
+    def ignore_center(self, exclude_center):
+        self.include_center = exclude_center
+
     def run(self):
         self.trials = 0
         results = self.nearby()
@@ -45,13 +55,17 @@ class EDRServiceFinder(threading.Thread):
         candidates = {'prime': servicePrime, 'alt': serviceAlt}
         
         system = self.edr_systems.system(self.star_system)
-        candidates = self.__check_system(system[0] if isinstance(system, list) else system, candidates)
-        if candidates["prime"]:
-            return candidates["prime"]
-
+        if not self.ignore_center:
+            candidates = self.__check_system(system[0] if isinstance(system, list) else system, candidates)
+            if candidates["prime"]:
+                return candidates["prime"]
+               
         systems = self.edr_systems.systems_within_radius(self.star_system, self.radius)
         if not systems:
             return None
+
+        if self.shuffle_systems:
+            shuffle(systems)
 
         candidates = {'prime': servicePrime, 'alt': serviceAlt}
         candidates = self.__search(systems, candidates)
@@ -117,6 +131,9 @@ class EDRServiceFinder(threading.Thread):
         if not systems:
             return None
         for system in systems:
+            if self.ignore_center and self.star_system == system.get("name", None):
+                continue
+
             candidates = self.__check_system(system, candidates)                  
 
             if candidates and candidates.get('prime', None):
@@ -165,6 +182,9 @@ class EDRServiceFinder(threading.Thread):
         all_stations = self.edr_systems.stations_in_system(system['name'])
         if not all_stations or not len(all_stations):
             return None
+
+        if self.shuffle_stations:
+            shuffle(all_stations)
 
         return self.closest_station_with_service(all_stations)
 

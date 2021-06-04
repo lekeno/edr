@@ -787,17 +787,23 @@ class EDRSystems(object):
         checker = edrservicecheck.EDRGuardianTechBrokerCheck()
         self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
 
-    def __search_a_service(self, star_system, callback, checker, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+    def search_offbeat_station(self, star_system, callback, with_large_pad = True, override_radius = 100, override_sc_distance = 100000, permits = []):
+        checker = edrservicecheck.EDROffBeatStationCheck(override_sc_distance)
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits, shuffle_systems=True, shuffle_stations=True, exclude_center=True)
+
+    def __search_a_service(self, star_system, callback, checker, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = [], shuffle_systems=False, shuffle_stations=False, exclude_center=False):
         sc_distance = override_sc_distance or self.reasonable_sc_distance
         sc_distance = max(250, sc_distance)
         radius = override_radius or self.reasonable_hs_radius
-        radius = min(60, radius)
+        radius = min(100, radius)
 
         finder = edrservicefinder.EDRServiceFinder(star_system, checker, self, callback)
         finder.with_large_pad(with_large_pad)
         finder.within_radius(radius)
         finder.within_supercruise_distance(sc_distance)
         finder.permits_in_possesion(permits)
+        finder.shuffling(shuffle_systems, shuffle_stations)
+        finder.ignore_center(exclude_center)
         finder.start()
 
     def systems_within_radius(self, star_system, override_radius = None):
