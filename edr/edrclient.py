@@ -828,10 +828,21 @@ class EDRClient(object):
                     old["place"] == "Unknown" or
                     delta > self.place_novelty_threshold)
 
-        if new["ship"] != old["ship"]:
+        if (new.get("ship", None) != old.get("ship", None)) and "ship" in old:
             return (old["ship"] == "" or
                     old["ship"] == "Unknown" or
                     delta > self.ship_novelty_threshold)
+        
+        if (new.get("suit", None) != old.get("suit", None)) and "suit" in old:
+            return (old["suit"] == "" or
+                    old["suit"] == "Unknown" or
+                    delta > self.ship_novelty_threshold)
+
+        if "suit" in new:
+            return ("suit" not in old)
+
+        if "ship" in new:
+            return ("ship" not in old)
         
         if "wanted" in new:
             return ("wanted" not in old or
