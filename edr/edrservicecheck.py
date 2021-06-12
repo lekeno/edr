@@ -274,7 +274,6 @@ class EDROffBeatStationCheck(EDRApexSystemStationCheck):
         updateTime=station['updateTime']['information']
         edt = EDTime()
         edt.from_edsm_timestamp(updateTime)
-        print(updateTime)
         return edt.older_than(self.threshold_seconds)
 
     def is_service_availability_ambiguous(self, station):
@@ -290,5 +289,5 @@ class EDROffBeatStationCheck(EDRApexSystemStationCheck):
         print(updateTime)
         if not edt.older_than(self.threshold_seconds):
             return True
-        close_call = edt.older_than(self.threshold_seconds*1.25)
+        close_call = not edt.older_than(self.threshold_seconds*1.25)
         return close_call
