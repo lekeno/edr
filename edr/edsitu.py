@@ -112,6 +112,8 @@ class EDLocation(object):
         return self.security in [u"$GAlAXY_MAP_INFO_state_anarchy;", u"$GALAXY_MAP_INFO_state_lawless;"]
 
     def pretty_print(self):
+        if self.star_system is None:
+            return u"Unknown"
         location = u"{system}".format(system=self.star_system)
         if self.place and self.place != self.star_system:
             if self.place.startswith(self.star_system + " "):
