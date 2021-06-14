@@ -159,7 +159,7 @@ class EDRResourceFinder(object):
         "low temperature diamonds": 'recommend_prospecting_ring',
         "boron": 'mat_trader_mining_all',
         "ambiguous abbreviation (pc)": "ambiguous_p_c",
-        "ambiguous abbreviation (cc)": "ambiguous_c_c",
+        "ambiguous abbreviation (cc)": "ambiguous_c_c"
     }
 
     def __init__(self, edr_systems, permits = []):

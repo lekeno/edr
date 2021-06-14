@@ -166,17 +166,33 @@ DEFAULT_TIPS = {
         _(u"[Mining] Limit your cargo (e.g. LTD) to be within 10% of the demand of a market in order to get the highest price.")
     ]
 }
+DLC_TIPS = {
+    "odyssey": [
+        _(u"To reset items and data at an Odyssey settlement: fly out in supercruise until reaching orbital altitude, then go back to the settlement."),
+        _(u"[Stealth] You can drop a  on NPC and insta-kill them with the "),
+    ]
+}
 
 del _
 
 class RandomTips(object):
 
-    def __init__(self, tips_file=None):
-        global DEFAULT_TIPS
+    def __init__(self, tips_file=None, dlcs=[]):
+        global DEFAULT_TIPS, DLC_TIPS
         if tips_file:
             self.tips = json.loads(open(utils2to3.abspathmaker(__file__, tips_file)).read())
         else:
             self.tips = DEFAULT_TIPS
+
+    def set_dlc(self, dlc):
+        if not dlc:
+            return
+            
+        c_dlc = dlc.lower()
+        if dlc not in DLC_TIPS:
+            return
+        relevant_dlc_tips = {c_dlc: DLC_TIPS[c_dlc]}
+        self.tips = {**self.tips, **relevant_dlc_tips}
 
     def tip(self):
         category = random.choice(list(self.tips))

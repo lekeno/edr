@@ -351,6 +351,7 @@ class EDRClient(object):
     def set_dlc(self, dlc):
         self.player.dlc_name = dlc
         self.server.set_dlc(dlc)
+        self.tips.set_dlc(dlc)
 
     def pledged_to(self, power, time_pledged=0):
         if self.server.is_anonymous():
