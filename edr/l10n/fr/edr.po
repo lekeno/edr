@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
 "POT-Creation-Date: 2021-06-14 18:56+0900\n"
-"PO-Revision-Date: 2021-06-14 18:57+0900\n"
+"PO-Revision-Date: 2021-06-14 19:04+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -2589,7 +2589,7 @@ msgstr "Spatioport pas visité récemment"
 msgid ""
 "Look for low traffic systems with stations that haven't been visited in a "
 "while."
-msgstr ""
+msgstr "Cherchez un système avec peu de traffic et des stations à l'écart."
 
 #: edrservicefinder.py:120
 msgid "[Confidence: LOW]"
@@ -3995,11 +3995,11 @@ msgstr "MOY %: {:>6.2f}"
 
 #: ingamemsg.py:867
 msgid ">>>>  DEPLETED  <<<<"
-msgstr ""
+msgstr ">>>> APPAUVRI <<<<"
 
 #: ingamemsg.py:871
 msgid ">>>>  WORTHLESS  <<<<"
-msgstr ""
+msgstr ">>>>  SANS VALEUR  <<<<"
 
 #: ingamemsg.py:875
 msgid "ITM/H: {:>6.0f} [TGT: {:.0f}]"
@@ -4924,12 +4924,17 @@ msgid ""
 "Send '!offbeat' to get a station whose info hasn't been updated recently and "
 "has a higher chance of carrying premium weapons/suits."
 msgstr ""
+"Envoyez '!offbeat' pour trouver un statioport qui n'a pas été mise à jour "
+"récemment pour accroire les chances de trouver des combinaison spatiales our "
+"des armes pré-upgradés."
 
 #: randomtips.py:115
 msgid ""
 "Send '!materials' to get a list of material profiles supported by EDR (e.g. "
 "synthesis for FSD, etc.)"
 msgstr ""
+"Enoyez '!materials' pour obtenir une liste des profils matériaux supportés "
+"par EDR (e.g. synthèse pour FSD, etc.)"
 
 #: randomtips.py:118
 msgid ""
