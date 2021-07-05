@@ -1472,7 +1472,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         search_center = cmdr.star_system
         override_sc_dist = None
         if len(command_parts) >= 2:
-            parameters = [param.strip() for param in filter(len, " ".join(command_parts[1:]).split("< ", 1))]
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.interstellar_factors_near(search_center, override_sc_dist)
@@ -1481,7 +1481,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         search_center = cmdr.star_system
         override_sc_dist = None
         if len(command_parts) >= 2:
-            parameters = [param.strip() for param in filter(len, " ".join(command_parts[1:]).split("< ", 1))]
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.raw_material_trader_near(search_center, override_sc_dist)
@@ -1490,7 +1490,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         search_center = cmdr.star_system
         override_sc_dist = None
         if len(command_parts) >= 2:
-            parameters = [param.strip() for param in filter(len, " ".join(command_parts[1:]).split("< ", 1))]
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.encoded_material_trader_near(search_center, override_sc_dist)
@@ -1499,7 +1499,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         search_center = cmdr.star_system
         override_sc_dist = None
         if len(command_parts) >= 2:
-            parameters = [param.strip() for param in filter(len, " ".join(command_parts[1:]).split("< ", 1))]
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.manufactured_material_trader_near(search_center, override_sc_dist)
@@ -1508,7 +1508,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         search_center = cmdr.star_system
         override_sc_dist = None
         if len(command_parts) >= 2:
-            parameters = [param.strip() for param in filter(len, " ".join(command_parts[1:]).split("< ", 1))]
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.staging_station_near(search_center, override_sc_dist)
@@ -1517,7 +1517,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         search_center = cmdr.star_system
         override_radius = None
         if len(command_parts) >= 2:
-            parameters = [param.strip() for param in filter(len, " ".join(command_parts[1:]).split("< ", 1))]
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
             search_center = parameters[0] or cmdr.star_system
             override_radius = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.rrr_fc_near(search_center, override_radius)
@@ -1526,7 +1526,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         search_center = cmdr.star_system
         override_sc_dist = None
         if len(command_parts) >= 2:
-            parameters = [param.strip() for param in filter(len, " ".join(command_parts[1:]).split("< ", 1))]
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.human_tech_broker_near(search_center, override_sc_dist)
@@ -1535,7 +1535,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         search_center = cmdr.star_system
         override_sc_dist = None
         if len(command_parts) >= 2:
-            parameters = [param.strip() for param in filter(len, " ".join(command_parts[1:]).split("< ", 1))]
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.guardian_tech_broker_near(search_center, override_sc_dist)
@@ -1544,7 +1544,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         search_center = cmdr.star_system
         override_sc_dist = None
         if len(command_parts) >= 2:
-            parameters = [param.strip() for param in filter(len, " ".join(command_parts[1:]).split("< ", 1))]
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
             print(parameters)
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None

@@ -25,6 +25,8 @@ class EDRStationServiceCheck(EDRSystemStationCheck):
     def is_service_availability_ambiguous(self, station):
         if "odyssey" in station.get("type", "").lower():
             return self.service not in ["Refuel","Repair","Contacts","Missions"] # TODO possibly too strict? confirmed: IFactors
+        if "planetary" in station.get("type", "").lower():
+            return True # TODO not sure what's up but since Odyssey release, the planetary port/outpost don't seem to have I.Factors anymore :/
         return False
     
 class EDRStationFacilityCheck(EDRSystemStationCheck):
@@ -102,22 +104,18 @@ class EDRFleetCarrierRRRCheck(EDRSystemStationCheck):
             return False
 
         if not super(EDRFleetCarrierRRRCheck, self).check_station(station):
-            print("failing parent check: {}".format(station))
             return False
 
         if not (all(service in station['otherServices'] for service in ['Restock', 'Refuel', 'Repair'])):
-            print("missing Rs: {}".format(station))
             return False
 
         return True
 
     def is_service_availability_ambiguous(self, station):
         if not station.get('updateTime', None):
-            print("no update time for {}".format(station))
             return True
 
         if not station['updateTime'].get('information', None):
-            print("no update time on information for {}".format(station))
             return True
         
         updateTime=station['updateTime']['information']
@@ -125,9 +123,7 @@ class EDRFleetCarrierRRRCheck(EDRSystemStationCheck):
         edt.from_edsm_timestamp(updateTime)
         #return edt.older_than(self.threshold_seconds)
         if edt.older_than(self.threshold_seconds):
-            print("ambiguous: {}".format(station))
             return True
-        print("good: {}".format(station))
         return False
 
 

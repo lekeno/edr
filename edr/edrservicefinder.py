@@ -22,6 +22,7 @@ class EDRServiceFinder(threading.Thread):
         self.shuffle_systems = False
         self.shuffle_stations = False
         self.exclude_center = False
+        self.checked_systems = []
         super(EDRServiceFinder, self).__init__()
 
     def with_large_pad(self, required):
@@ -58,33 +59,36 @@ class EDRServiceFinder(threading.Thread):
     def nearby(self):
         servicePrime = None
         serviceAlt = None
+        self.checked_systems = []
 
         candidates = {'prime': servicePrime, 'alt': serviceAlt}
         
         system = self.edr_systems.system(self.star_system)
         if not self.exclude_center:
-            print(system)
             if isinstance(system, list):
                 if system[0] and "distance" not in system[0]:
                     system[0]["distance"] = 0
             else:
                 if "distance" not in system[0]:
                     system["distance"] = 0
-            candidates = self.__check_system(system[0] if isinstance(system, list) else system, candidates)
+            the_system = system[0] if isinstance(system, list) else system
+            candidates = self.__check_system(the_system, candidates)
+            self.checked_systems.append(the_system.get('name', ""))
             if candidates["prime"]:
                 return candidates["prime"]
                
         systems = self.edr_systems.systems_within_radius(self.star_system, self.radius)
         if not systems:
-            return None
+            return candidates
 
         if self.shuffle_systems:
             shuffle(systems)
 
-        candidates = {'prime': servicePrime, 'alt': serviceAlt}
         candidates = self.__search(systems, candidates)
         if not (candidates and candidates.get('prime', None)):
             EDRLOG.log(u"Couldn't find any prime candidate so far. Trying again after a shuffle", "DEBUG")
+            # TODO remove from systems the checked systems
+            # TODO check colonia commands
             shuffle(systems)
             candidates = self.__search(systems, candidates)
 
@@ -143,19 +147,22 @@ class EDRServiceFinder(threading.Thread):
     def __search(self, systems, candidates):
         self.trials = 0
         if not systems:
-            return None
+            return candidates
         for system in systems:
+            if self.trials > self.max_trials:
+                EDRLOG.log(u"Tried too many. Aborting here.", "DEBUG")
+                break
+
             if self.exclude_center and self.star_system == system.get("name", None):
                 continue
 
+            if system.get('name', None) in self.checked_systems:
+                continue
             candidates = self.__check_system(system, candidates)                  
+            self.checked_systems.append(system.get('name', ""))
 
             if candidates and candidates.get('prime', None):
                 EDRLOG.log(u"Prime found, breaking here.", "DEBUG")
-                break
-                
-            if self.trials > self.max_trials:
-                EDRLOG.log(u"Tried too many. Aborting here.", "DEBUG")
                 break
 
         return candidates        
@@ -170,9 +177,7 @@ class EDRServiceFinder(threading.Thread):
             return None
 
         for station in stations:
-            print(station)
             if not self.checker.check_station(station):
-                print("bad check")
                 continue
             
             if overall == None:

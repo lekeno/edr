@@ -16,14 +16,11 @@ class EDRSystemStationCheck(object):
     def check_system(self, system):
         self.systems_counter = self.systems_counter + 1
         if not system:
-            print("not system")
             return False
         
         if system.get('distance', None) is None:
-            print("distance none")
             return False
         
-        print("distance check: {} <= {}".format(system['distance'], self.max_distance))
         return system['distance'] <= self.max_distance
 
     def check_station(self, station):
