@@ -112,7 +112,11 @@ DEFAULT_TIPS = {
         _(u"Send '!ship In Front Of Things' to find out where you've parked your ship named 'In Front of Things'."),
         _(u"Send '!eval power' to get an assessment of your power priorities."),
         _(u"Send '!offbeat' to get a station whose info hasn't been updated recently and has a higher chance of carrying premium weapons/suits."),
-        _(u"Send '!materials' to get a list of material profiles supported by EDR (e.g. synthesis for FSD, etc.)")
+        _(u"Send '!materials' to get a list of material profiles supported by EDR (e.g. synthesis for FSD, etc.)"),
+        _(u"Send '!rrrfc' to get a fleet carrier with repair, rearm, refuel in the current system. Double check docking access before proceeding)."),
+        _(u"Send '!rrrfc < 15' to get a fleet carrier with repair, rearm, refuel within 15 LY of the current system. Double check docking access before proceeding)."),
+        _(u"Send '!rrrfc deciat' to get a fleet carrier with repair, rearm, refuel within the specified system (e.g. Deciat). Double check docking access before proceeding)."),
+        _(u"Send 'When using EDR's search features, the system name will be placed in the clipboard. Hit Ctrl+V to paste the result.")
     ],
     "OPEN tips": [
         _(u"Never fly what you can't afford to lose. Check your rebuy and credit balance on your right panel."),
