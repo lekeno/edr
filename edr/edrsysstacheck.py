@@ -7,6 +7,11 @@ class EDRSystemStationCheck(object):
         self.hint = None
         self.systems_counter = 0
         self.stations_counter = 0
+        self.dlc_name = None
+
+
+    def set_dlc(self, name):
+        self.dlc_name = name
 
     def check_system(self, system):
         self.systems_counter = self.systems_counter + 1
@@ -24,6 +29,9 @@ class EDRSystemStationCheck(object):
             return False
 
         if not station.get('distanceToArrival', None):
+            return False
+
+        if "odyssey" in station.get("type", "").lower() and self.dlc_name != "Odyssey":
             return False
         return station['distanceToArrival'] < self.max_sc_distance
 
@@ -43,10 +51,8 @@ class EDRApexSystemStationCheck(EDRSystemStationCheck):
             return False
         
         if not station.get('type', None):
-            print("no station type")
             return False
 
         if not station.get('type', "n/a").lower() in ["asteroid base", 'bernal starport', "coriolis starport", "ocellus starport", "orbis starport", "bernal", "bernal statioport", "planetary port", "asteroid base", "outpost", "planetary outpost"]:
-            print("wrong station type {}".format(station.get('type', "n/a").lower()))
             return False
         return True

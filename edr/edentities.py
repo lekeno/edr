@@ -297,6 +297,9 @@ class EDPilot(object):
     def needs_large_landing_pad(self):
         return self.mothership is None or self.mothership.needs_large_landing_pad()
 
+    def needs_medium_landing_pad(self):
+        return self.mothership is None or self.mothership.needs_medium_landing_pad()
+
     @property
     def vehicle(self):
         if self.on_foot:

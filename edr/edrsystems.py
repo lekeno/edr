@@ -145,6 +145,10 @@ class EDRSystems(object):
         self.timespan_notams = edr_config.notams_timespan()
         self.server = server
         self.edsm_server = edsmserver.EDSMServer()
+        self.dlc_name = None
+
+    def set_dlc(self, name):
+        self.dlc_name = name
 
     def system_id(self, star_system, may_create=False, coords=None):
         if not star_system:
@@ -791,7 +795,7 @@ class EDRSystems(object):
         checker = edrservicecheck.EDROffBeatStationCheck(override_sc_distance)
         self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits, shuffle_systems=True, shuffle_stations=True, exclude_center=True)
 
-    def __search_a_service(self, star_system, callback, checker, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = [], shuffle_systems=False, shuffle_stations=False, exclude_center=False):
+    def __search_a_service(self, star_system, callback, checker, with_large_pad = True, with_medium_pad = False, override_radius = None, override_sc_distance = None, permits = [], shuffle_systems=False, shuffle_stations=False, exclude_center=False):
         sc_distance = override_sc_distance or self.reasonable_sc_distance
         sc_distance = max(250, sc_distance)
         radius = override_radius or self.reasonable_hs_radius
@@ -799,11 +803,13 @@ class EDRSystems(object):
 
         finder = edrservicefinder.EDRServiceFinder(star_system, checker, self, callback)
         finder.with_large_pad(with_large_pad)
+        finder.with_medium_pad(with_medium_pad)
         finder.within_radius(radius)
         finder.within_supercruise_distance(sc_distance)
         finder.permits_in_possesion(permits)
         finder.shuffling(shuffle_systems, shuffle_stations)
         finder.ignore_center(exclude_center)
+        finder.set_dlc(self.dlc_name)
         finder.start()
 
     def systems_within_radius(self, star_system, override_radius = None):

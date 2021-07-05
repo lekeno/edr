@@ -17,6 +17,7 @@ class EDRServiceFinder(threading.Thread):
         self.edr_systems = edr_systems
         self.callback = callback
         self.large_pad_required = True
+        self.medium_pad_required = True
         self.permits = []
         self.shuffle_systems = False
         self.shuffle_stations = False
@@ -25,6 +26,9 @@ class EDRServiceFinder(threading.Thread):
 
     def with_large_pad(self, required):
         self.large_pad_required = required
+
+    def with_medium_pad(self, required):
+        self.medium_pad_required = required
 
     def within_radius(self, radius):
         self.radius = radius
@@ -41,6 +45,9 @@ class EDRServiceFinder(threading.Thread):
 
     def ignore_center(self, exclude_center):
         self.include_center = exclude_center
+
+    def set_dlc(self, name):
+        self.checker.set_dlc(name)
 
     def run(self):
         self.trials = 0
@@ -106,7 +113,7 @@ class EDRServiceFinder(threading.Thread):
         candidate = self.__service_in_system(system)
         if candidate:
             check_sc_distance = candidate['distanceToArrival'] <= self.sc_distance
-            check_landing_pads = self.__has_large_lading_pads(candidate['type']) if self.large_pad_required else True
+            check_landing_pads = self.__check_landing_pads()
             ambiguous = self.checker.is_service_availability_ambiguous(candidate)
             EDRLOG.log(u"System {} is a candidate: ambiguous {}, sc_distance {}, landing_pads {}".format(system['name'], ambiguous, check_sc_distance, check_landing_pads), "DEBUG")
             if check_sc_distance and check_landing_pads and not ambiguous:
@@ -149,6 +156,7 @@ class EDRServiceFinder(threading.Thread):
     def closest_station_with_service(self, stations):
         overall = None
         with_large_landing_pads = None
+        with_medium_landing_pads = None
         for station in stations:
             if not self.checker.check_station(station):
                 continue
@@ -163,14 +171,35 @@ class EDRServiceFinder(threading.Thread):
             elif station['distanceToArrival'] < overall['distanceToArrival']:
                 overall = station
             
-            if self.__has_large_lading_pads(station['type']):
+            if self.__has_large_landing_pads(station['type']):
                 with_large_landing_pads = station
-        
-        return with_large_landing_pads if self.large_pad_required and with_large_landing_pads else overall
+            elif self.__has_medium_landing_pads(station['type']):
+                with_medium_landing_pads = station
+        if self.large_pad_required and with_large_landing_pads:
+            return with_large_landing_pads
+        elif self.medium_pad_required and with_medium_landing_pads:
+            return with_medium_landing_pads
+        return overall
 
+    def __check_landing_pads(self, type):
+        if self.large_pad_required:
+            return self.__has_large_landing_pads(type)
+        elif self.medium_pad_required:
+            return self.__has_medium_landing_pads(type)
+        return self.__has_small_landing_pads(type)
 
-    def __has_large_lading_pads(self, stationType):
-        return stationType.lower() in ['coriolis starport', 'ocellus starport', 'orbis starport', 'planetary port', 'asteroid base', 'mega ship']
+    def __has_large_landing_pads(self, stationType):
+        return stationType.lower() in ['coriolis starport', 'ocellus starport', 'orbis starport', 'planetary port', 'planetary outpost', 'asteroid base', 'mega ship']
+
+    def __has_medium_landing_pads(self, stationType):
+        if self.__has_large_landing_pads(self, stationType):
+            return True
+        return False # TODO odyssey settlements can be anything at this point :(
+
+    def __has_small_landing_pads(self, stationType):
+        if self.__has_large_landing_pads(self, stationType):
+            return True
+        return stationType.lower() in ['odyssey settlement']
 
     def __service_in_system(self, system):
         if not system:
