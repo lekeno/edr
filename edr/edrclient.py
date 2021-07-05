@@ -1879,12 +1879,33 @@ class EDRClient(object):
             return
 
         try:
-            self.edrsystems.search_staging_station(star_system, self.__staoi_found)
+            self.edrsystems.search_staging_station(star_system, self.__staoi_found, override_sc_distance=override_sc_distance)
             self.searching = True
             self.status = _(u"Staging station: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Staging station: searching...")], clear_before = True)
         except ValueError:
             self.status = _(u"Staging station: failed")
+            self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
+
+    def rrr_fc_near(self, star_system, override_radius = None):
+        if not star_system:
+            return
+
+        if self.searching:
+            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True)
+            return
+        
+        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
+            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")], clear_before = True)
+            return
+
+        try:
+            self.edrsystems.search_rrr_fc(star_system, self.__staoi_found, override_radius=override_radius)
+            self.searching = True
+            self.status = _(u"RRR Fleet Carrier: searching...")
+            self.__notify(_(u"EDR Search"), [_(u"RRR Fleet Carrier: searching...")], clear_before = True)
+        except ValueError:
+            self.status = _(u"RRR Fleet Carrier: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
     def human_tech_broker_near(self, star_system, override_sc_distance = None):

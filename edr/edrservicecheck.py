@@ -21,6 +21,11 @@ class EDRStationServiceCheck(EDRSystemStationCheck):
             return False
         
         return self.service in station['otherServices']
+
+    def is_service_availability_ambiguous(self, station):
+        if "odyssey" in station.get("type", "").lower():
+            return self.service not in ["Refuel","Repair","Contacts","Missions"] # TODO possibly too strict? confirmed: IFactors
+        return False
     
 class EDRStationFacilityCheck(EDRSystemStationCheck):
 
@@ -53,10 +58,13 @@ class EDRStagingCheck(EDRSystemStationCheck):
         if not super(EDRStagingCheck, self).check_system(system):
             return False
         
-        return system.get('distance', 1) > 0 and system.get('distance', self.max_distance + 1) < self.max_distance
+        return system.get('distance', 1) >= 0 and system.get('distance', self.max_distance + 1) <= self.max_distance
 
     def check_station(self, station):
         if not super(EDRStagingCheck, self).check_station(station):
+            return False
+
+        if station.get("type", "") == "Fleet Carrier":
             return False
 
         if not station.get('otherServices', False):
@@ -72,6 +80,56 @@ class EDRStagingCheck(EDRSystemStationCheck):
             return False
 
         return True
+
+class EDRFleetCarrierRRRCheck(EDRSystemStationCheck):
+
+    def __init__(self, max_distance, max_sc_distance):
+        super(EDRFleetCarrierRRRCheck, self).__init__()
+        self.max_distance = max_distance
+        self.max_sc_distance = max_sc_distance
+        self.name = _(u"RRR Fleet Carrier")
+        self.hint = None
+        self.threshold_seconds = 60*60*24*2
+
+    def check_system(self, system):
+        if not super(EDRFleetCarrierRRRCheck, self).check_system(system):
+            return False
+        
+        return system.get('distance', 1) >= 0 and system.get('distance', self.max_distance + 1) <= self.max_distance
+
+    def check_station(self, station):
+        if not station.get("type", "") == "Fleet Carrier":
+            return False
+
+        if not super(EDRFleetCarrierRRRCheck, self).check_station(station):
+            print("failing parent check: {}".format(station))
+            return False
+
+        if not (all(service in station['otherServices'] for service in ['Restock', 'Refuel', 'Repair'])):
+            print("missing Rs: {}".format(station))
+            return False
+
+        return True
+
+    def is_service_availability_ambiguous(self, station):
+        if not station.get('updateTime', None):
+            print("no update time for {}".format(station))
+            return True
+
+        if not station['updateTime'].get('information', None):
+            print("no update time on information for {}".format(station))
+            return True
+        
+        updateTime=station['updateTime']['information']
+        edt = EDTime()
+        edt.from_edsm_timestamp(updateTime)
+        #return edt.older_than(self.threshold_seconds)
+        if edt.older_than(self.threshold_seconds):
+            print("ambiguous: {}".format(station))
+            return True
+        print("good: {}".format(station))
+        return False
+
 
 class EDRMaterialTraderBasicCheck(EDRStationServiceCheck):
 
@@ -257,18 +315,16 @@ class EDROffBeatStationCheck(EDRApexSystemStationCheck):
         if not super(EDROffBeatStationCheck, self).check_system(system):
             return False
         
-        return system.get('distance', 1) > 0 and system.get('distance', self.max_distance + 1) < self.max_distance
+        return system.get('distance', 0) > 0 and system.get('distance', self.max_distance + 1) <= self.max_distance
 
     def check_station(self, station):
         if not super(EDROffBeatStationCheck, self).check_station(station):
             return False
 
         if not station.get('updateTime', None):
-            print("no updateTime, yeah! ?")
             return True
 
         if not station['updateTime'].get('information', None):
-            print("updateTime but not for information, yeah! ?")
             return True
         
         updateTime=station['updateTime']['information']
@@ -286,7 +342,6 @@ class EDROffBeatStationCheck(EDRApexSystemStationCheck):
         updateTime=station['updateTime']['information']
         edt = EDTime()
         edt.from_edsm_timestamp(updateTime)
-        print(updateTime)
         if not edt.older_than(self.threshold_seconds):
             return True
         close_call = not edt.older_than(self.threshold_seconds*1.25)

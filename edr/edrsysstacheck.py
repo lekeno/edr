@@ -16,11 +16,14 @@ class EDRSystemStationCheck(object):
     def check_system(self, system):
         self.systems_counter = self.systems_counter + 1
         if not system:
+            print("not system")
             return False
         
         if system.get('distance', None) is None:
+            print("distance none")
             return False
         
+        print("distance check: {} <= {}".format(system['distance'], self.max_distance))
         return system['distance'] <= self.max_distance
 
     def check_station(self, station):
@@ -28,7 +31,7 @@ class EDRSystemStationCheck(object):
         if not station:
             return False
 
-        if not station.get('distanceToArrival', None):
+        if station.get('distanceToArrival', None) is None:
             return False
 
         if "odyssey" in station.get("type", "").lower() and self.dlc_name != "Odyssey":
@@ -46,7 +49,6 @@ class EDRApexSystemStationCheck(EDRSystemStationCheck):
         self.max_sc_distance = max_sc_distance
 
     def check_station(self, station):
-        print(station)
         if not super(EDRApexSystemStationCheck, self).check_station(station):
             return False
         
