@@ -580,7 +580,7 @@ class EDRClient(object):
         summary = self.edrfssinsights.summarize()
         if not summary:
             return False
-        header = _(u"Known signals in {system}".format(system=self.player.star_system))
+        header = _(u"Known signals in {system}").format(system=self.player.star_system)
         self.__notify(header, summary, clear_before = True)
         return True
 
@@ -648,7 +648,7 @@ class EDRClient(object):
         
         if self.visual_feedback:
             self.IN_GAME_MSG.navigation(bearing, destination, distance, pitch)
-        self.status = _(u"> {:03} < for Lat:{:.4f} Lon:{:.4f}".format(bearing, destination.latitude, destination.longitude))
+        self.status = _(u"> {:03} < for Lat:{:.4f} Lon:{:.4f}").format(bearing, destination.latitude, destination.longitude)
 
     def check_system(self, star_system, may_create=False, coords=None):
         try:
@@ -715,9 +715,9 @@ class EDRClient(object):
         hull_label = u"{:.4g}".format(tgt.hull_health) if tgt.hull_health else u"-"
         
         if subsys_details:
-            self.status = _(u"S/H %: {}/{} - {} %: {:.4g}".format(shield_label, hull_label, subsys_details["shortname"], subsys_details["stats"].last_value()))
+            self.status = _(u"S/H %: {}/{} - {} %: {:.4g}").format(shield_label, hull_label, subsys_details["shortname"], subsys_details["stats"].last_value())
         else:
-            self.status = _(u"S/H %: {}/{}".format(shield_label, hull_label))
+            self.status = _(u"S/H %: {}/{}").format(shield_label, hull_label)
         
         if self.visual_feedback:
             self.IN_GAME_MSG.target_guidance(self.player.target_pilot(), subsys_details)
@@ -1398,7 +1398,7 @@ class EDRClient(object):
 
         crew_id = self.cmdr_id(report["crew"])
         if crew_id is None:
-            self.status = _(u"{} is unknown to EDR.".format(report["crew"]))
+            self.status = _(u"{} is unknown to EDR.").format(report["crew"])
             EDRLOG.log(u"Can't submit crew report (no cmdr id for {}).".format(report["crew"]), "ERROR")
             return False
         
@@ -1869,9 +1869,9 @@ class EDRClient(object):
             self.edrsystems.search_rrr_fc(star_system, self.__staoi_found, override_radius=override_radius)
             self.searching = True
             self.status = _(u"RRR Fleet Carrier: searching...")
-            details = [_(u"RRR Fleet Carrier: searching in {}...".format(star_system)), _(u"If there are no results, try: !rrrfc {} < 15".format(star_system))]
+            details = [_(u"RRR Fleet Carrier: searching in {}...").format(star_system), _(u"If there are no results, try: !rrrfc {} < 15").format(star_system)]
             if override_radius:
-                details = [_(u"RRR Fleet Carrier: searching within {} LY of {}...".format(override_radius, star_system))]
+                details = [_(u"RRR Fleet Carrier: searching within {} LY of {}...").format(override_radius, star_system)]
             self.__notify(_(u"EDR Search"), details, clear_before = True)
         except ValueError:
             self.status = _(u"RRR Fleet Carrier: failed")
@@ -1885,9 +1885,9 @@ class EDRClient(object):
             self.edrsystems.search_rrr(star_system, self.__staoi_found, override_radius=override_radius)
             self.searching = True
             self.status = _(u"RRR Station: searching...")
-            details = [_(u"RRR Station: searching in {}...".format(star_system)), _(u"If there are no results, try: !rrr {} < 15".format(star_system))]
+            details = [_(u"RRR Station: searching in {}...").format(star_system), _(u"If there are no results, try: !rrr {} < 15").format(star_system)]
             if override_radius:
-                details = [_(u"RRR Station: searching within {} LY of {}...".format(override_radius, star_system))]
+                details = [_(u"RRR Station: searching within {} LY of {}...").format(override_radius, star_system)]
             self.__notify(_(u"EDR Search"), details, clear_before = True)
         except ValueError:
             self.status = _(u"RRR Station: failed")
@@ -1946,7 +1946,7 @@ class EDRClient(object):
             self.status = u"{item}: {system}, {dist} - {station} ({type}), {sc_dist}".format(item=soi_checker.name, system=result['name'], dist=pretty_dist, station=result['station']['name'], type=result['station']['type'], sc_dist=pretty_sc_dist)
             copy(result["name"])
         else:
-            self.status = _(u"{}: nothing within [{}LY, {}LS] of {}".format(soi_checker.name, int(radius), int(sc), reference))
+            self.status = _(u"{}: nothing within [{}LY, {}LS] of {}").format(soi_checker.name, int(radius), int(sc), reference)
             checked = _("checked {} systems").format(soi_checker.systems_counter) 
             if soi_checker.stations_counter: 
                 checked = _("checked {} systems and {} stations").format(soi_checker.systems_counter, soi_checker.stations_counter) 
@@ -1997,7 +1997,7 @@ class EDRClient(object):
             outcome = self.edrresourcefinder.resource_near(resource, star_system, self.__resource_found)
             if outcome == True:
                 self.searching = True
-                self.status = _(u"{}: searching...".format(cresource))
+                self.status = _(u"{}: searching...").format(cresource)
                 self.__notify(_(u"EDR Search"), [_(u"{}: searching...").format(cresource)], clear_before = True)
             elif outcome == False or outcome == None:
                 self.status = _(u"{}: failed...").format(cresource)
@@ -2025,7 +2025,7 @@ class EDRClient(object):
             self.status = u"{}: {} ({}LY)".format(checker.name, result['name'], pretty_dist)
             copy(result["name"])
         else:
-            self.status = _(u"{}: nothing within [{}LY] of {}".format(checker.name, int(radius), reference))
+            self.status = _(u"{}: nothing within [{}LY] of {}").format(checker.name, int(radius), reference)
             checked = _("checked {} systems").format(checker.systems_counter) 
             if checker.stations_counter: 
                 checked = _("checked {} systems").format(checker.systems_counter)

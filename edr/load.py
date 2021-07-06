@@ -130,7 +130,7 @@ def handle_multicrew_events(ed_player, entry):
         kicked = entry["event"] == "KickCrewMember"
         crimes = False if not "OnCrimes" in entry else entry["OnCrimes"]
         ed_player.remove_from_crew(crew)
-        EDR_CLIENT.status = _(u"{} left the crew.".format(crew))
+        EDR_CLIENT.status = _(u"{} left the crew.").format(crew)
         EDRLOG.log(u"{} left the crew.".format(crew), "INFO")
         edt = EDTime()
         edt.from_journal_timestamp(entry["timestamp"])
