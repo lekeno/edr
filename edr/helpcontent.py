@@ -216,6 +216,8 @@ class HelpContent(object):
                 _(u" - '!gtb', '!guardiantechbroker' or '!gtb Lave' to find a Guardian Tech Broker near your position or Lave"),
                 _(u" - '!nav 12.3 -4.5', '!nav set' or '!nav off' to obtain planetary guidance for getting to a specific location"),
                 _(u" - '!offbeat', '!offbeat Lave' to find a station that hasn't been recently visited near your position or Lave"),
+                _(u" - '!rrrfc', '!rrrfc Lave < 10' to find a fleet carrier with repair/rearm/refuel near your position or within 10 LY of Lave"),
+                _(u" - '!rrr', '!rrr Lave < 10' to find a station with repair/rearm/refuel near your position or within 10 LY of Lave"),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
             ]

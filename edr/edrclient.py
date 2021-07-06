@@ -3,6 +3,7 @@ from __future__ import absolute_import
 #from builtins import map, filter
 
 import datetime
+from sys import float_repr_style
 import time
 import random
 import math
@@ -1780,16 +1781,21 @@ class EDRClient(object):
         self.previous_ad = now_epoch
         return True
 
-    def interstellar_factors_near(self, star_system, override_sc_distance = None):
+    def __search_prerequisites(self, star_system):
         if not star_system:
-            return
-        
+            return False
+
         if self.searching:
             self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True)
-            return
-
+            return False
+        
         if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
             self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")], clear_before = True)
+            return False
+        return True
+
+    def interstellar_factors_near(self, star_system, override_sc_distance = None):
+        if not self.__search_prerequisites(star_system):
             return
 
         try:
@@ -1802,15 +1808,7 @@ class EDRClient(object):
             self.notify_with_details(_(u"EDR Search"), [_(u"Unknown system")])
 
     def raw_material_trader_near(self, star_system, override_sc_distance = None):
-        if not star_system:
-            return
-        
-        if self.searching:
-            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True)
-            return
-
-        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
-            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")], clear_before = True)
+        if not self.__search_prerequisites(star_system):
             return
 
         try:
@@ -1823,15 +1821,7 @@ class EDRClient(object):
             self.notify_with_details(_(u"EDR Search"), [_(u"Unknown system")])
         
     def encoded_material_trader_near(self, star_system, override_sc_distance = None):
-        if not star_system:
-            return
-        
-        if self.searching:
-            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True)
-            return
-
-        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
-            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")], clear_before = True)
+        if not self.__search_prerequisites(star_system):
             return
 
         try:
@@ -1845,15 +1835,7 @@ class EDRClient(object):
 
 
     def manufactured_material_trader_near(self, star_system, override_sc_distance = None):
-        if not star_system:
-            return
-        
-        if self.searching:
-            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True)
-            return
-
-        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
-            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")], clear_before = True)
+        if not self.__search_prerequisites(star_system):
             return
         
         try:
@@ -1867,15 +1849,7 @@ class EDRClient(object):
 
 
     def staging_station_near(self, star_system, override_sc_distance = None):
-        if not star_system:
-            return
-
-        if self.searching:
-            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True)
-            return
-        
-        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
-            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")], clear_before = True)
+        if not self.__search_prerequisites(star_system):
             return
 
         try:
@@ -1888,36 +1862,39 @@ class EDRClient(object):
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
     def rrr_fc_near(self, star_system, override_radius = None):
-        if not star_system:
-            return
-
-        if self.searching:
-            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True)
-            return
-        
-        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
-            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")], clear_before = True)
+        if not self.__search_prerequisites(star_system):
             return
 
         try:
             self.edrsystems.search_rrr_fc(star_system, self.__staoi_found, override_radius=override_radius)
             self.searching = True
             self.status = _(u"RRR Fleet Carrier: searching...")
-            self.__notify(_(u"EDR Search"), [_(u"RRR Fleet Carrier: searching...")], clear_before = True)
+            details = [_(u"RRR Fleet Carrier: searching in {}...".format(star_system)), _(u"If there are no results, try: !rrrfc {} < 15".format(star_system))]
+            if override_radius:
+                details = [_(u"RRR Fleet Carrier: searching within {} LY of {}...".format(override_radius, star_system))]
+            self.__notify(_(u"EDR Search"), details, clear_before = True)
         except ValueError:
             self.status = _(u"RRR Fleet Carrier: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
-    def human_tech_broker_near(self, star_system, override_sc_distance = None):
-        if not star_system:
-            return
-        
-        if self.searching:
-            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True)
+    def rrr_near(self, star_system, override_radius = None):
+        if not self.__search_prerequisites(star_system):
             return
 
-        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
-            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")], clear_before = True)
+        try:
+            self.edrsystems.search_rrr(star_system, self.__staoi_found, override_radius=override_radius)
+            self.searching = True
+            self.status = _(u"RRR Station: searching...")
+            details = [_(u"RRR Station: searching in {}...".format(star_system)), _(u"If there are no results, try: !rrr {} < 15".format(star_system))]
+            if override_radius:
+                details = [_(u"RRR Station: searching within {} LY of {}...".format(override_radius, star_system))]
+            self.__notify(_(u"EDR Search"), details, clear_before = True)
+        except ValueError:
+            self.status = _(u"RRR Station: failed")
+            self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
+
+    def human_tech_broker_near(self, star_system, override_sc_distance = None):
+        if not self.__search_prerequisites(star_system):
             return
 
         try:
@@ -1930,15 +1907,7 @@ class EDRClient(object):
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
     
     def guardian_tech_broker_near(self, star_system, override_sc_distance = None):
-        if not star_system:
-            return
-        
-        if self.searching:
-            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True)
-            return
-
-        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
-            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")], clear_before = True)
+        if not self.__search_prerequisites(star_system):
             return
 
         try:
@@ -1951,15 +1920,7 @@ class EDRClient(object):
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
     def offbeat_station_near(self, star_system, override_sc_distance = None):
-        if not star_system:
-            return
-        
-        if self.searching:
-            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True)
-            return
-
-        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
-            self.__notify(_(u"EDR Search near {}").format(star_system), [_(u"Search features only work in the bubble or Colonia.")], clear_before = True)
+        if not self.__search_prerequisites(star_system):
             return
 
         try:

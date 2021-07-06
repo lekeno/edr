@@ -1521,6 +1521,15 @@ def handle_bang_commands(cmdr, command, command_parts):
             search_center = parameters[0] or cmdr.star_system
             override_radius = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.rrr_fc_near(search_center, override_radius)
+    elif command == "!rrr":
+        EDRLOG.log(u"Looking for a RRR Station", "INFO")
+        search_center = cmdr.star_system
+        override_radius = None
+        if len(command_parts) >= 2:
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
+            search_center = parameters[0] or cmdr.star_system
+            override_radius = int(parameters[1]) if len(parameters) > 1 else None
+        EDR_CLIENT.rrr_near(search_center, override_radius)
     elif command in ["!htb", "!humantechbroker"]:
         EDRLOG.log(u"Looking for a human tech broker", "INFO")
         search_center = cmdr.star_system

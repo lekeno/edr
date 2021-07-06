@@ -83,13 +83,53 @@ class EDRStagingCheck(EDRSystemStationCheck):
 
         return True
 
+class EDRStationRRRCheck(EDRSystemStationCheck):
+
+    def __init__(self, max_distance, max_sc_distance):
+        super(EDRStationRRRCheck, self).__init__()
+        self.max_distance = max_distance
+        self.max_sc_distance = max_sc_distance
+        self.name = _(u"Station with Repair/Rearm/Refuel")
+        self.hint = None
+        self.threshold_seconds = 60*60*24*7
+
+    def check_system(self, system):
+        if not super(EDRStationRRRCheck, self).check_system(system):
+            return False
+        
+        return system.get('distance', 1) >= 0 and system.get('distance', self.max_distance + 1) <= self.max_distance
+
+    def check_station(self, station):
+        if station.get("type", "") == "Fleet Carrier":
+            return False
+
+        if not super(EDRStationRRRCheck, self).check_station(station):
+            return False
+
+        if not (all(service in station['otherServices'] for service in ['Restock', 'Refuel', 'Repair'])):
+            return False
+
+        return True
+
+    def is_service_availability_ambiguous(self, station):
+        if not station.get('updateTime', None):
+            return True
+
+        if not station['updateTime'].get('information', None):
+            return True
+        
+        updateTime=station['updateTime']['information']
+        edt = EDTime()
+        edt.from_edsm_timestamp(updateTime)
+        return edt.older_than(self.threshold_seconds)
+
 class EDRFleetCarrierRRRCheck(EDRSystemStationCheck):
 
     def __init__(self, max_distance, max_sc_distance):
         super(EDRFleetCarrierRRRCheck, self).__init__()
         self.max_distance = max_distance
         self.max_sc_distance = max_sc_distance
-        self.name = _(u"RRR Fleet Carrier")
+        self.name = _(u"Fleet Carrier with Repair/Rearm/Refuel")
         self.hint = None
         self.threshold_seconds = 60*60*24*2
 
@@ -100,7 +140,7 @@ class EDRFleetCarrierRRRCheck(EDRSystemStationCheck):
         return system.get('distance', 1) >= 0 and system.get('distance', self.max_distance + 1) <= self.max_distance
 
     def check_station(self, station):
-        if not station.get("type", "") == "Fleet Carrier":
+        if station.get("type", "") != "Fleet Carrier":
             return False
 
         if not super(EDRFleetCarrierRRRCheck, self).check_station(station):
@@ -121,11 +161,7 @@ class EDRFleetCarrierRRRCheck(EDRSystemStationCheck):
         updateTime=station['updateTime']['information']
         edt = EDTime()
         edt.from_edsm_timestamp(updateTime)
-        #return edt.older_than(self.threshold_seconds)
-        if edt.older_than(self.threshold_seconds):
-            return True
-        return False
-
+        return edt.older_than(self.threshold_seconds)
 
 class EDRMaterialTraderBasicCheck(EDRStationServiceCheck):
 

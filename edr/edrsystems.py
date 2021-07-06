@@ -778,6 +778,12 @@ class EDRSystems(object):
         checker = edrservicecheck.EDRFleetCarrierRRRCheck(radius, sc_dist)
         self.__search_a_service(star_system, callback, checker, override_radius = radius, permits = permits, shuffle_stations=True, override_sc_distance=sc_dist)
 
+    def search_rrr(self, star_system, callback, override_radius = None, permits = []):
+        radius = override_radius if override_radius is not None and override_radius >= 0 else 0
+        sc_dist = 10000
+        checker = edrservicecheck.EDRStationRRRCheck(radius, sc_dist)
+        self.__search_a_service(star_system, callback, checker, override_radius = radius, permits = permits, shuffle_stations=True, override_sc_distance=sc_dist)
+
     def search_shipyard(self, star_system, callback, with_large_pad = True, with_medium_pad = False, override_radius = None, override_sc_distance = None, permits = []):
         checker = edrservicecheck.EDRStationFacilityCheck('Shipyard')
         self.__search_a_service(star_system, callback, checker,  with_large_pad, with_medium_pad, override_radius, override_sc_distance, permits)

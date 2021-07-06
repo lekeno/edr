@@ -113,9 +113,12 @@ DEFAULT_TIPS = {
         _(u"Send '!eval power' to get an assessment of your power priorities."),
         _(u"Send '!offbeat' to get a station whose info hasn't been updated recently and has a higher chance of carrying premium weapons/suits."),
         _(u"Send '!materials' to get a list of material profiles supported by EDR (e.g. synthesis for FSD, etc.)"),
-        _(u"Send '!rrrfc' to get a fleet carrier with repair, rearm, refuel in the current system. Double check docking access before proceeding)."),
-        _(u"Send '!rrrfc < 15' to get a fleet carrier with repair, rearm, refuel within 15 LY of the current system. Double check docking access before proceeding)."),
-        _(u"Send '!rrrfc deciat' to get a fleet carrier with repair, rearm, refuel within the specified system (e.g. Deciat). Double check docking access before proceeding)."),
+        _(u"Send '!rrrfc' to get a fleet carrier with repair, rearm, refuel in the current system. Double check docking access before proceeding."),
+        _(u"Send '!rrrfc < 15' to get a fleet carrier with repair, rearm, refuel within 15 LY of the current system. Double check docking access before proceeding."),
+        _(u"Send '!rrrfc deciat' to get a fleet carrier with repair, rearm, refuel within the specified system (e.g. Deciat). Double check docking access before proceeding."),
+        _(u"Send '!rrr' to get a station with repair, rearm, refuel in the current system."),
+        _(u"Send '!rrr < 15' to get a station with repair, rearm, refuel within 15 LY of the current system."),
+        _(u"Send '!rrr deciat' to get a station with repair, rearm, refuel within the specified system (e.g. Deciat)."),
         _(u"Send 'When using EDR's search features, the system name will be placed in the clipboard. Hit Ctrl+V to paste the result.")
     ],
     "OPEN tips": [
