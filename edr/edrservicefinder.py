@@ -64,14 +64,9 @@ class EDRServiceFinder(threading.Thread):
         candidates = {'prime': servicePrime, 'alt': serviceAlt}
         
         system = self.edr_systems.system(self.star_system)
-        if not self.exclude_center:
-            if isinstance(system, list):
-                if system[0] and "distance" not in system[0]:
-                    system[0]["distance"] = 0
-            else:
-                if "distance" not in system[0]:
-                    system["distance"] = 0
+        if system and not self.exclude_center:
             the_system = system[0] if isinstance(system, list) else system
+            the_system["distance"] = 0
             candidates = self.__check_system(the_system, candidates)
             self.checked_systems.append(the_system.get('name', ""))
             if candidates["prime"]:
@@ -87,7 +82,6 @@ class EDRServiceFinder(threading.Thread):
         candidates = self.__search(systems, candidates)
         if not (candidates and candidates.get('prime', None)):
             EDRLOG.log(u"Couldn't find any prime candidate so far. Trying again after a shuffle", "DEBUG")
-            # TODO remove from systems the checked systems
             # TODO check colonia commands
             shuffle(systems)
             candidates = self.__search(systems, candidates)
@@ -97,7 +91,10 @@ class EDRServiceFinder(threading.Thread):
             key_colonia_star_systems = [ "Alberta", "Amatsuboshi", "Asura", "Aurora Astrum", "Benzaiten", "Centralis", "Coeus", "Colonia", "Deriso", "Desy", "Diggidiggi", "Dubbuennel", "Edge Fraternity Landing", "Einheriar", "Eol Procul Centauri", "Helgoland", "Kajuku", "Kinesi", "Kojeara", "Kopernik", "Los", "Luchtaine", "Magellan", "Mriya", "Pennsylvania", "Poe", "Randgnid", "Ratraii", "Saraswati", "Solitude", "Tir", "White Sun" ]
             for star_system in key_colonia_star_systems:
                 system = self.edr_systems.system(star_system)
-                candidates = self.__check_system(system[0] if isinstance(system, list) else system, candidates)
+                distance = self.edr_systems.distance(self.star_system, star_system)
+                the_system = system[0] if isinstance(system, list) else system
+                the_system["distance"] = distance
+                candidates = self.__check_system(the_system, candidates)
                 if candidates and candidates.get('prime', None):
                     break
 

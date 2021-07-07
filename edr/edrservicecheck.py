@@ -202,6 +202,9 @@ class EDRRawTraderCheck(EDRMaterialTraderBasicCheck):
         if not super(EDRRawTraderCheck, self).check_system(system):
             return False
 
+        if system.get('name', '') in ['Kojeara']:
+            return True
+
         info = system['information']
         info['economy'] = info.get('economy', 'N/A')
         
@@ -221,6 +224,9 @@ class EDRManufacturedTraderCheck(EDRMaterialTraderBasicCheck):
     def check_system(self, system):
         if not super(EDRManufacturedTraderCheck, self).check_system(system):
             return False
+
+        if system.get('name', '') in ['Coeus']:
+            return True
 
         info = system['information']
         info['economy'] = info.get('economy', 'N/A')
@@ -242,6 +248,9 @@ class EDREncodedTraderCheck(EDRMaterialTraderBasicCheck):
     def check_system(self, system):
         if not super(EDREncodedTraderCheck, self).check_system(system):
             return False
+
+        if system.get('name', '') in ['Ratraii']:
+            return True
 
         info = system['information']
         info['economy'] = info.get('economy', 'N/A')
@@ -291,6 +300,9 @@ class EDRHumanTechBrokerCheck(EDRStationServiceCheck):
         if not super(EDRHumanTechBrokerCheck, self).check_system(system):
             return False
 
+        if system.get('name', '') in ['Tir']:
+            return True
+
         if not system.get('information', None):
             return False
 
@@ -317,6 +329,9 @@ class EDRGuardianTechBrokerCheck(EDRStationServiceCheck):
     def check_system(self, system):
         if not super(EDRGuardianTechBrokerCheck, self).check_system(system):
             return False
+
+        if system.get('name', '') in ['Colonia']:
+            return True
 
         if not system.get('information', None):
             return False
