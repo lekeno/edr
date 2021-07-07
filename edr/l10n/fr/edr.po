@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2021-07-07 07:15+0900\n"
-"PO-Revision-Date: 2021-07-07 07:25+0900\n"
+"POT-Creation-Date: 2021-07-07 13:48+0900\n"
+"PO-Revision-Date: 2021-07-07 13:48+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -974,7 +974,7 @@ msgstr ""
 
 #: edrclient.py:1630
 msgid "You haven't set any contract yet"
-msgstr "Vous n'avez pas encore placé de contrat."
+msgstr "Vous n'avez pas encore placé de contrat"
 
 #: edrclient.py:1640 edrclient.py:1653
 msgid "Reward of {} for a kill on Cmdr {}"
@@ -982,8 +982,7 @@ msgstr "Prime de {} pour la destruction de Cmdt {}"
 
 #: edrclient.py:1653
 msgid "Send '!contract {} $$$ 0' in chat to remove the kill reward"
-msgstr ""
-"Envoyez '!contract {} $$$ 0' dans le chat pour supprimer votre contrat."
+msgstr "Envoyez '!contract {} $$$ 0' dans le chat pour supprimer votre contrat"
 
 #: edrclient.py:1655
 msgid "Failed to place a reward for a kill on Cmdr {}"
@@ -2580,7 +2579,7 @@ msgstr ""
 "Présent dans les systèmes avec une sécurité moyenne-haute, une économie "
 "'extraction' ou 'raffinerie ', et une large population (>= 1 million)"
 
-#: edrservicecheck.py:219
+#: edrservicecheck.py:227
 msgid ""
 "Found in systems with medium-high security, an 'industrial' economy, and a "
 "rather large population (>= 1 million)"
@@ -2588,7 +2587,7 @@ msgstr ""
 "Présent dans les systèmes avec une sécurité moyenne-haute, une économie "
 "'industrielle', et une large population (>= 1 million)"
 
-#: edrservicecheck.py:240
+#: edrservicecheck.py:256
 msgid ""
 "Found in systems with medium-high security, a 'high tech' or 'military' "
 "economy, and a rather large population (>= 1 million)"
@@ -2596,11 +2595,11 @@ msgstr ""
 "Présent dans les systèmes avec une sécurité moyenne-haute, une économie "
 "'high tech' ou 'militaire', et une large population (>= 1 million)"
 
-#: edrservicecheck.py:287
+#: edrservicecheck.py:311
 msgid "Human Technology Broker"
 msgstr "Courtier en technologie humaine"
 
-#: edrservicecheck.py:288
+#: edrservicecheck.py:312
 msgid ""
 "Found in systems with an 'Industrial' economy', and a rather large "
 "population (>= 1 million)"
@@ -2608,11 +2607,11 @@ msgstr ""
 "Présent dans les systèmes avec une économie 'industrielle' et une large "
 "population (>= 1 million)"
 
-#: edrservicecheck.py:314
+#: edrservicecheck.py:346
 msgid "Guardian Technology Broker"
 msgstr "Courtier en technologie Gardien"
 
-#: edrservicecheck.py:315
+#: edrservicecheck.py:347
 msgid ""
 "Found in systems with a 'high tech' economy', and a rather large population "
 "(>= 1 million)"
@@ -2620,17 +2619,17 @@ msgstr ""
 "Présent dans les systèmes avec une économie 'high tech' et une large "
 "population (>= 1 million)"
 
-#: edrservicecheck.py:342
+#: edrservicecheck.py:382
 msgid "Offbeat station"
 msgstr "Spatioport pas visité récemment"
 
-#: edrservicecheck.py:343
+#: edrservicecheck.py:383
 msgid ""
 "Look for low traffic systems with stations that haven't been visited in a "
 "while."
 msgstr "Cherchez un système avec peu de traffic et des stations à l'écart."
 
-#: edrservicefinder.py:138
+#: edrservicefinder.py:135
 msgid "[Confidence: LOW]"
 msgstr "[Confidence: BASSE]"
 

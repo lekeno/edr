@@ -199,16 +199,21 @@ class EDRRawTraderCheck(EDRMaterialTraderBasicCheck):
         self.hint = _(u"Found in systems with medium-high security, an 'extraction' or 'refinery' economy, a rather large population (>= 1 million)")
 
     def check_system(self, system):
-        if not super(EDRRawTraderCheck, self).check_system(system):
-            return False
-
         if system.get('name', '') in ['Kojeara']:
             return True
+
+        if not super(EDRRawTraderCheck, self).check_system(system):
+            return False
 
         info = system['information']
         info['economy'] = info.get('economy', 'N/A')
         
         return info['economy'].lower() in ['extraction', 'refinery']
+
+    def check_station(self, station):
+        if station.get('name', '') in ["TolaGarf's Junkyard"]:
+            return True
+        return super(EDRRawTraderCheck, self).check_station(station)
 
     def is_service_availability_ambiguous(self, station):
         if not station or not station.get("secondEconomy", None):
@@ -222,16 +227,21 @@ class EDRManufacturedTraderCheck(EDRMaterialTraderBasicCheck):
         self.hint = _(u"Found in systems with medium-high security, an 'industrial' economy, and a rather large population (>= 1 million)")
 
     def check_system(self, system):
-        if not super(EDRManufacturedTraderCheck, self).check_system(system):
-            return False
-
         if system.get('name', '') in ['Coeus']:
             return True
+
+        if not super(EDRManufacturedTraderCheck, self).check_system(system):
+            return False
 
         info = system['information']
         info['economy'] = info.get('economy', 'N/A')
         
         return info['economy'].lower() == 'industrial'
+
+    def check_station(self, station):
+        if station.get('name', '') in ["Foster Terminal"]:
+            return True
+        return super(EDRManufacturedTraderCheck, self).check_station(station)
 
     def is_service_availability_ambiguous(self, station):
         if not station or not station.get("secondEconomy", None):
@@ -246,16 +256,21 @@ class EDREncodedTraderCheck(EDRMaterialTraderBasicCheck):
         self.hint = _(u"Found in systems with medium-high security, a 'high tech' or 'military' economy, and a rather large population (>= 1 million)")
 
     def check_system(self, system):
-        if not super(EDREncodedTraderCheck, self).check_system(system):
-            return False
-
         if system.get('name', '') in ['Ratraii']:
             return True
+
+        if not super(EDREncodedTraderCheck, self).check_system(system):
+            return False
 
         info = system['information']
         info['economy'] = info.get('economy', 'N/A')
 
         return info['economy'].lower() in ['high tech', 'military']
+
+    def check_station(self, station):
+        if station.get('name', '') in ["Colonia Dream"]:
+            return True
+        return super(EDREncodedTraderCheck, self).check_station(station)
 
     def is_service_availability_ambiguous(self, station):
         if not station or not station.get("secondEconomy", None):
@@ -297,11 +312,11 @@ class EDRHumanTechBrokerCheck(EDRStationServiceCheck):
         self.hint = _(u"Found in systems with an 'Industrial' economy', and a rather large population (>= 1 million)")
 
     def check_system(self, system):
-        if not super(EDRHumanTechBrokerCheck, self).check_system(system):
-            return False
-
         if system.get('name', '') in ['Tir']:
             return True
+
+        if not super(EDRHumanTechBrokerCheck, self).check_system(system):
+            return False
 
         if not system.get('information', None):
             return False
@@ -314,6 +329,11 @@ class EDRHumanTechBrokerCheck(EDRStationServiceCheck):
             return False
 
         return info['economy'].lower() == 'industrial'
+
+    def check_station(self, station):
+        if station.get('name', '') in ["Bolden's Enterprise"]:
+            return True
+        return super(EDRHumanTechBrokerCheck, self).check_station(station)
     
     def is_service_availability_ambiguous(self, station):
         if not station or not station.get("secondEconomy", None):
@@ -327,11 +347,11 @@ class EDRGuardianTechBrokerCheck(EDRStationServiceCheck):
         self.hint = _(u"Found in systems with a 'high tech' economy', and a rather large population (>= 1 million)")
 
     def check_system(self, system):
-        if not super(EDRGuardianTechBrokerCheck, self).check_system(system):
-            return False
-
         if system.get('name', '') in ['Colonia']:
             return True
+
+        if not super(EDRGuardianTechBrokerCheck, self).check_system(system):
+            return False
 
         if not system.get('information', None):
             return False
@@ -344,6 +364,11 @@ class EDRGuardianTechBrokerCheck(EDRStationServiceCheck):
             return False
 
         return info['economy'].lower() == 'high tech'
+
+    def check_station(self, station):
+        if station.get('name', '') in ["Jaques Station"]:
+            return True
+        return super(EDRGuardianTechBrokerCheck, self).check_station(station)
 
     def is_service_availability_ambiguous(self, station):
         if not station or not station.get("secondEconomy", None):
