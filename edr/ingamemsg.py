@@ -387,8 +387,10 @@ class InGameMsg(object):
             self.__shape("navigation", self.cfg["navigation"]["panel"])
         header = u"› {:03} ‹     ↓ {:02} ↓".format(bearing, pitch) if pitch else u"> {:03} <".format(bearing)
         details = [destination.title] if destination.title else []
-        if distance:
+        if distance >= 1.0:
             details.append(_(u"Dis: {}km".format(int(distance))))
+        else:
+            details.append(_(u"Dis: {}m".format(int(distance*1000))))
         details.append(_(u"Lat: {:.4f}".format(destination.latitude)))
         details.append(_(u"Lon: {:.4f}".format(destination.longitude)))
         self.__msg_header("navigation", header)
@@ -1052,9 +1054,9 @@ class InGameMsg(object):
             "ttl": 0,
         }
 
+        dx = cfg["bounty"]["x"]
+        dy = cfg["bounty"]["y"]
         for p in bounty_hunting_stats.scans:
-            dx = cfg["bounty"]["x"]
-            dy = cfg["bounty"]["y"]
             scan = p[1]
             if scan > 0:
                 h = max(scan/ystep["bounty"],1)
@@ -1086,9 +1088,9 @@ class InGameMsg(object):
 
         y = {"distribution": cfg["distribution"]["w"]+cfg["distribution"]["s"]}
         i = 1
+        dx = cfg["distribution"]["x"]
+        dy = cfg["distribution"]["y"]
         for c in bounty_hunting_stats.distribution["bins"][1:]:
-            dx = cfg["distribution"]["x"]
-            dy = cfg["distribution"]["y"]
             p = c / max_distribution if max_distribution > 0 else 1
             h = max(p * cfg["distribution"]["h"],1) if c else 0
             x = h
@@ -1104,8 +1106,6 @@ class InGameMsg(object):
             i = i+1
             y = {category: y[category] + cfg[category]["w"] + cfg[category]["s"] for category in y}
 
-        dx = cfg["distribution"]["x"]
-        dy = cfg["distribution"]["y"]
         h = (bounty_hunting_stats.last["distribution_index"] * (cfg["distribution"]["w"] + cfg["distribution"]["s"]))
         bar["x"] = int(dx-3)
         bar["y"] = int(dy-h)
@@ -1119,9 +1119,9 @@ class InGameMsg(object):
 
 
         x = {"efficiency": 0}
+        dx = cfg["efficiency"]["x"]
+        dy = cfg["efficiency"]["y"]
         for e in bounty_hunting_stats.efficiency:
-            dx = cfg["efficiency"]["x"]
-            dy = cfg["efficiency"]["y"]
             efficiency = e[1]
             h = max(efficiency/ystep["efficiency"],1) if efficiency else 0
             bar["x"] = int(x["efficiency"]+dx)

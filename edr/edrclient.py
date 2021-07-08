@@ -21,7 +21,8 @@ from config import config
 
 from edrconfig import EDRConfig
 from lrucache import LRUCache
-from edentities import EDPlanetaryLocation, EDFineOrBounty, EDLocation
+from edentities import EDFineOrBounty
+from edsitu import EDPlanetaryLocation, EDLocation
 from edrserver import EDRServer, CommsJammedError
 from audiofeedback import AudioFeedback
 from edrlog import EDRLog
@@ -38,6 +39,7 @@ from edtime import EDTime
 from edrlegalrecords import EDRLegalRecords
 from edrxzibit import EDRXzibit
 from edrdiscord import EDRDiscordIntegration
+from edvehicles import EDVehicleFactory
 
 from edri18n import _, _c, _edr, set_language
 from clippy import copy
@@ -103,19 +105,17 @@ class EDRClient(object):
 
         fc_jump_psa = _(u"Never")
         self.server.fc_jump_psa = None
-        if config.get_str("EDRFCJumpPSA") in [_(u"Public"), _(U"Private")]:
+        if config.get_str("EDRFCJumpPSA") in [_(u"Public"), _(U"Private"), _(u"Direct")]:
             fc_jump_psa = config.get_str("EDRFCJumpPSA")
             self.server.fc_jump_psa = fc_jump_psa == _(u"Public")
         self._fc_jump_psa = tk.StringVar(value=fc_jump_psa)
 
         
         self.realtime_params = {
-            EDROpponents.OUTLAWS: { "min_bounty": None if config.get_str("EDROutlawsAlertsMinBounty") == "None" else config.get_int("EDROutlawsAlertsMinBounty"),
-                         "max_distance": None if config.get_str("EDROutlawsAlertsMaxDistance") == "None" else config.get_int("EDROutlawsAlertsMaxDistance")},
-            EDROpponents.ENEMIES: { "min_bounty": None if config.get_str("EDREnemiesAlertsMinBounty") == "None" else config.get_int("EDREnemiesAlertsMinBounty"),
-                         "max_distance": None if config.get_str("EDREnemiesAlertsMaxDistance") == "None" else config.get_int("EDREnemiesAlertsMaxDistance")}
+            EDROpponents.OUTLAWS: self.__get_realtime_params("EDROutlawsAlerts"),
+            EDROpponents.ENEMIES: self.__get_realtime_params("EDREnemiesAlerts")
         }
-        
+ 
         self.edrsystems = EDRSystems(self.server)
         self.edrresourcefinder = EDRResourceFinder(self.edrsystems)
         self.edrcmdrs = EDRCmdrs(self.server)
@@ -135,6 +135,29 @@ class EDRClient(object):
         self.edrfssinsights = EDRFSSInsights()
         self.edrdiscord = EDRDiscordIntegration(self.edrcmdrs)
 
+    def __get_realtime_params(self, kind):
+        min_bounty = None
+        key = "{}MinBounty".format(kind)
+        try:
+            min_bounty = config.get_str(key)
+        except:
+            min_bounty = config.get_int(key)
+        
+        if min_bounty == "None":
+            min_bounty = None
+
+        max_distance = None
+        key = "{}MaxBounty".format(kind)
+        try:
+            max_distance = config.get_str(key)
+        except:
+            max_distance = config.get_int(key)
+        
+        if max_distance == "None":
+            max_distance = None
+
+        return { "min_bounty": min_bounty, "max_distance": max_distance} 
+    
     def loud_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "loud")
         self.AUDIO_FEEDBACK.loud()
@@ -312,7 +335,7 @@ class EDRClient(object):
         self._fc_jump_psa.set(new_value)
         if new_value is None or new_value == _(u"Never"):
             self.server.fc_jump_psa = None
-        elif new_value in [_(u"Public"), _(u"Private")]:
+        elif new_value in [_(u"Public"), _(u"Private"), _(u"Direct")]:
             self.server.fc_jump_psa = (new_value == _(u"Public")) 
 
 
@@ -320,11 +343,14 @@ class EDRClient(object):
         self.edrcmdrs.set_player_name(name)
         self.server.set_player_name(name)
 
-    def game_mode(self, mode, dlc = None, group = None):
+    def game_mode(self, mode, group = None):
         self.player.game_mode = mode
-        self.player.dlc_name = dlc
         self.player.private_group = group  
-        self.server.set_game_mode(mode, dlc, group)
+        self.server.set_game_mode(mode, group)
+
+    def set_dlc(self, dlc):
+        self.player.dlc_name = dlc
+        self.server.set_dlc(dlc)
 
     def pledged_to(self, power, time_pledged=0):
         if self.server.is_anonymous():
@@ -423,12 +449,15 @@ class EDRClient(object):
 
         notebook.Label(frame, text=_(u"Announce my Fleet Carrier's jump schedule (α)")).grid(padx=10, row = 17, sticky=tk.W)
         choices = { _(u'Never'),_(u'Public'),_(u'Private')}
-        popupMenu = notebook.OptionMenu(frame, self._fc_jump_psa, self.fc_jump_psa, *choices, command=self.__toggle_private_fc_link)
+        popupMenu = notebook.OptionMenu(frame, self._fc_jump_psa, self.fc_jump_psa, *choices, command=self.__toggle_fc_links)
         popupMenu.grid(padx=10, row=17, column=1, sticky=tk.EW)
         popupMenu["menu"].configure(background="white", foreground="black")
-        self._private_fc_link = ttkHyperlinkLabel.HyperlinkLabel(frame, text=_(u"Configure your private channel"), background=notebook.Label().cget('background'), url="https://forms.gle/7pntJRpDgRBcbcfp8", underline=True)
+        self._private_fc_link = ttkHyperlinkLabel.HyperlinkLabel(frame, text=_(u"Configure your private channel (managed by EDR)"), background=notebook.Label().cget('background'), url="https://forms.gle/7pntJRpDgRBcbcfp8", underline=True)
+        self._direct_fc_link = ttkHyperlinkLabel.HyperlinkLabel(frame, text=_(u"Configure your direct channel"), background=notebook.Label().cget('background'), url="https://example.org/TODO", underline=True)
         if self.fc_jump_psa == _(u'Private'):
             self._private_fc_link.grid(padx=10, row=18, column=1, sticky=tk.EW)
+        elif self.fc_jump_psa == _(u'Direct'):
+            self._direct_fc_link.grid(padx=10, row=18, column=1, sticky=tk.EW)
 
         if self.server.is_authenticated():
             if self.is_anonymous():
@@ -451,11 +480,16 @@ class EDRClient(object):
 
         return frame
 
-    def __toggle_private_fc_link(self, choice):
+    def __toggle_fc_links(self, choice):
         if choice == _(u'Private'):
             self._private_fc_link.grid()
+            self._direct_fc_link.grid_remove()
+        elif choice == _(u"Direct"):
+            self._direct_fc_link.grid()
+            self._private_fc_link.grid_remove()
         else:
             self._private_fc_link.grid_remove()
+            self._direct_fc_link.grid_remove()
 
     def __status_update_pending(self):
         # Translators: this is shown in EDMC's status
@@ -554,7 +588,7 @@ class EDRClient(object):
         self.edrsystems.materials_info(self.player.star_system, scan_event["BodyName"], scan_event["Materials"])
 
     def closest_poi_on_body(self, star_system, body_name, attitude):
-        body = self.edrsystems.body(self.player.star_system, self.player.place)
+        body = self.edrsystems.body(star_system, body_name)
         radius = body.get("radius", None) if body else None
         return EDRBodiesOfInterest.closest_point_of_interest(star_system, body_name, attitude, radius)
 
@@ -581,7 +615,7 @@ class EDRClient(object):
             self.IN_GAME_MSG.clear_docking()
 
     def show_navigation(self):
-        current = self.player.piloted_vehicle.attitude
+        current = self.player.attitude
         destination = self.player.planetary_destination
 
         if not destination or not current:
@@ -592,13 +626,24 @@ class EDRClient(object):
 
         bearing = destination.bearing(current)
         
-        body = self.edrsystems.body(self.player.star_system, self.player.place)
+        location = self.player.location
+        body = self.edrsystems.body(location.star_system, location.body or location.place)
         radius = body.get("radius", None) if body else None
         distance = destination.distance(current, radius) if radius else None
-        if distance <= 1.0:
+        
+        if distance is None:
+            EDRLOG.log(u"No distance info out of System:{}, Body:{}, Place: {}, Radius:{}".format(location.star_system, location.body, location.place, radius), "DEBUG")
+            return
+        
+        threshold = 1.0
+        if self.player.piloted_vehicle is None:
+            threshold = 0.001
+        elif EDVehicleFactory.is_surface_vehicle(self.player.piloted_vehicle):
+            threshold = 0.01
+        if distance <= threshold:
             return
         pitch = destination.pitch(current, distance) if distance and distance <= 700 else None
-                
+        
         if self.visual_feedback:
             self.IN_GAME_MSG.navigation(bearing, destination, distance, pitch)
         self.status = _(u"> {:03} < for Lat:{:.4f} Lon:{:.4f}".format(bearing, destination.latitude, destination.longitude))
@@ -1014,7 +1059,7 @@ class EDRClient(object):
         if not self._worthy_alert(kind, event):
             EDRLOG.log(u"Skipped realtime {} event because it wasn't worth alerting about: {}.".format(kind, event), "DEBUG")
         else:
-            location = EDLocation(event["starSystem"], event["place"])
+            location = EDLocation(event["starSystem"], place=event["place"], body=event.get("body", None))
             copy(event["starSystem"])
             distance = None
             try:

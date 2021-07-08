@@ -4,7 +4,7 @@ import os
 import json
 
 import utils2to3
-from edentities import EDPlanetaryLocation
+from edsitu import EDPlanetaryLocation
 
 class EDRBodiesOfInterest(object):
     BOI = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'boi.json')).read())
