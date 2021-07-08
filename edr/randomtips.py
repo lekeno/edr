@@ -110,7 +110,9 @@ DEFAULT_TIPS = {
         _(u"Send '!nav set' to mark your current location as your navigation target."),
         _(u"Send '!ship fdl' to find out where you've parked your Fer-de-Lance."),
         _(u"Send '!ship In Front Of Things' to find out where you've parked your ship named 'In Front of Things'."),
-        _(u"Send '!eval power' to get an assessment of your power priorities.")
+        _(u"Send '!eval power' to get an assessment of your power priorities."),
+        _(u"Send '!offbeat' to get a station whose info hasn't been updated recently and has a higher chance of carrying premium weapons/suits."),
+        _(u"Send '!materials' to get a list of material profiles supported by EDR (e.g. synthesis for FSD, etc.)")
     ],
     "OPEN tips": [
         _(u"Never fly what you can't afford to lose. Check your rebuy and credit balance on your right panel."),
