@@ -6,6 +6,7 @@ import pickle
 from math import sqrt, ceil
 
 import datetime
+import sys
 import time
 import collections
 import operator
@@ -145,6 +146,10 @@ class EDRSystems(object):
         self.timespan_notams = edr_config.notams_timespan()
         self.server = server
         self.edsm_server = edsmserver.EDSMServer()
+        self.dlc_name = None
+
+    def set_dlc(self, name):
+        self.dlc_name = name
 
     def system_id(self, star_system, may_create=False, coords=None):
         if not star_system:
@@ -741,76 +746,90 @@ class EDRSystems(object):
 
         return summary
 
-    def search_interstellar_factors(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+    def search_interstellar_factors(self, star_system, callback, with_large_pad = True, with_medium_pad = False, override_radius = None, override_sc_distance = None, permits = []):
         checker = edrservicecheck.EDRStationServiceCheck('Interstellar Factors Contact')
         checker.name = 'Interstellar Factors Contact'
         checker.hint = 'Look for low security systems, or stations run by an anarchy faction regardless of system security'
-        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, with_medium_pad, override_radius, override_sc_distance, permits)
 
-    def search_raw_trader(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+    def search_raw_trader(self, star_system, callback, with_large_pad = True, with_medium_pad = False, override_radius = None, override_sc_distance = None, permits = []):
         checker = edrservicecheck.EDRRawTraderCheck()
-        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, with_medium_pad, override_radius, override_sc_distance, permits)
 
-    def search_encoded_trader(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+    def search_encoded_trader(self, star_system, callback, with_large_pad = True, with_medium_pad = False, override_radius = None, override_sc_distance = None, permits = []):
         checker = edrservicecheck.EDREncodedTraderCheck()
-        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, with_medium_pad, override_radius, override_sc_distance, permits)
 
-    def search_manufactured_trader(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+    def search_manufactured_trader(self, star_system, callback, with_large_pad = True, with_medium_pad = False, override_radius = None, override_sc_distance = None, permits = []):
         checker = edrservicecheck.EDRManufacturedTraderCheck()
-        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, with_medium_pad, override_radius, override_sc_distance, permits)
 
-    def search_black_market(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+    def search_black_market(self, star_system, callback, with_large_pad = True, with_medium_pad = False, override_radius = None, override_sc_distance = None, permits = []):
         checker = edrservicecheck.EDRBlackMarketCheck()
-        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, with_medium_pad, override_radius, override_sc_distance, permits)
 
-    def search_staging_station(self, star_system, callback, permits = []):
+    def search_staging_station(self, star_system, callback, override_sc_distance = None, permits = []):
         checker = edrservicecheck.EDRStagingCheck(15)
-        self.__search_a_service(star_system, callback, checker, with_large_pad = True, override_radius = 15, permits = permits)
+        self.__search_a_service(star_system, callback, checker, with_large_pad = True, with_medium_pad = False, override_radius = 15, override_sc_distance = override_sc_distance, permits = permits, exclude_center = True)
 
-    def search_shipyard(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+    def search_rrr_fc(self, star_system, callback, override_radius = None, permits = []):
+        radius = override_radius if override_radius is not None and override_radius >= 0 else 0
+        sc_dist = 10000
+        checker = edrservicecheck.EDRFleetCarrierRRRCheck(radius, sc_dist)
+        self.__search_a_service(star_system, callback, checker, override_radius = radius, permits = permits, shuffle_stations=True, override_sc_distance=sc_dist)
+
+    def search_rrr(self, star_system, callback, override_radius = None, permits = []):
+        radius = override_radius if override_radius is not None and override_radius >= 0 else 0
+        sc_dist = 10000
+        checker = edrservicecheck.EDRStationRRRCheck(radius, sc_dist)
+        self.__search_a_service(star_system, callback, checker, override_radius = radius, permits = permits, shuffle_stations=True, override_sc_distance=sc_dist)
+
+    def search_shipyard(self, star_system, callback, with_large_pad = True, with_medium_pad = False, override_radius = None, override_sc_distance = None, permits = []):
         checker = edrservicecheck.EDRStationFacilityCheck('Shipyard')
-        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, with_medium_pad, override_radius, override_sc_distance, permits)
 
-    def search_outfitting(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+    def search_outfitting(self, star_system, callback, with_large_pad = True, with_medium_pad = False, override_radius = None, override_sc_distance = None, permits = []):
         checker = edrservicecheck.EDRStationFacilityCheck('Outfitting')
-        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, with_medium_pad, override_radius, override_sc_distance, permits)
 
-    def search_market(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+    def search_market(self, star_system, callback, with_large_pad = True, with_medium_pad = False, override_radius = None, override_sc_distance = None, permits = []):
         checker = edrservicecheck.EDRStationFacilityCheck('Market')
-        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, with_medium_pad, override_radius, override_sc_distance, permits)
 
-    def search_human_tech_broker(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+    def search_human_tech_broker(self, star_system, callback, with_large_pad = True, with_medium_pad = False, override_radius = None, override_sc_distance = None, permits = []):
         checker = edrservicecheck.EDRHumanTechBrokerCheck()
-        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, with_medium_pad, override_radius, override_sc_distance, permits)
 
-    def search_guardian_tech_broker(self, star_system, callback, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = []):
+    def search_guardian_tech_broker(self, star_system, callback, with_large_pad = True, with_medium_pad = False, override_radius = None, override_sc_distance = None, permits = []):
         checker = edrservicecheck.EDRGuardianTechBrokerCheck()
-        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits)
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, with_medium_pad, override_radius, override_sc_distance, permits)
 
-    def search_offbeat_station(self, star_system, callback, with_large_pad = True, override_radius = 100, override_sc_distance = 100000, permits = []):
+    def search_offbeat_station(self, star_system, callback, with_large_pad = True, with_medium_pad = False, override_radius = 100, override_sc_distance = 100000, permits = []):
         checker = edrservicecheck.EDROffBeatStationCheck(override_sc_distance)
-        self.__search_a_service(star_system, callback, checker,  with_large_pad, override_radius, override_sc_distance, permits, shuffle_systems=True, shuffle_stations=True, exclude_center=True)
+        self.__search_a_service(star_system, callback, checker,  with_large_pad, with_medium_pad, override_radius, override_sc_distance, permits, shuffle_systems=True, shuffle_stations=True, exclude_center=True)
 
-    def __search_a_service(self, star_system, callback, checker, with_large_pad = True, override_radius = None, override_sc_distance = None, permits = [], shuffle_systems=False, shuffle_stations=False, exclude_center=False):
+    def __search_a_service(self, star_system, callback, checker, with_large_pad = True, with_medium_pad = False, override_radius = None, override_sc_distance = None, permits = [], shuffle_systems=False, shuffle_stations=False, exclude_center=False):
         sc_distance = override_sc_distance or self.reasonable_sc_distance
         sc_distance = max(250, sc_distance)
-        radius = override_radius or self.reasonable_hs_radius
+        radius = override_radius if override_radius is not None and override_radius >= 0 else self.reasonable_hs_radius
         radius = min(100, radius)
 
         finder = edrservicefinder.EDRServiceFinder(star_system, checker, self, callback)
         finder.with_large_pad(with_large_pad)
+        finder.with_medium_pad(with_medium_pad)
         finder.within_radius(radius)
         finder.within_supercruise_distance(sc_distance)
         finder.permits_in_possesion(permits)
         finder.shuffling(shuffle_systems, shuffle_stations)
         finder.ignore_center(exclude_center)
+        finder.set_dlc(self.dlc_name)
         finder.start()
 
     def systems_within_radius(self, star_system, override_radius = None):
         if not star_system:
             return None
 
-        radius = override_radius or self.reasonable_hs_radius
+        radius = override_radius if override_radius is not None and override_radius >= 0 else self.reasonable_hs_radius
         key = u"{}@{}".format(star_system.lower(), radius)
         systems = self.edsm_systems_within_radius_cache.get(key)
         cached = self.edsm_systems_within_radius_cache.has_key(key)
@@ -898,6 +917,9 @@ class EDRSystems(object):
 
         sc_distance = override_sc_distance or self.reasonable_sc_distance 
 
+        print(sysAndSta1)
+        print(sysAndSta2)
+        print(sc_distance)
         if sysAndSta1['station']['distanceToArrival'] > sc_distance and sysAndSta2['station']['distanceToArrival'] > sc_distance:
             if abs(sysAndSta1['distance'] - sysAndSta2['distance']) < 5:
                 return sysAndSta1 if sysAndSta1['station']['distanceToArrival'] < sysAndSta2['station']['distanceToArrival'] else sysAndSta2

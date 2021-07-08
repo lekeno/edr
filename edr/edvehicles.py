@@ -340,6 +340,9 @@ class EDVehicle(object):
 
     def needs_large_landing_pad(self):
         return self.size in [EDVehicleSize.LARGE, EDVehicleSize.UNKNOWN]
+    
+    def needs_medium_landing_pad(self):
+        return self.size in [EDVehicleSize.MEDIUM, EDVehicleSize.UNKNOWN]
 
     def supports_slf(self):
         return False

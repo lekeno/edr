@@ -3,6 +3,7 @@ from __future__ import absolute_import
 #from builtins import map, filter
 
 import datetime
+from sys import float_repr_style
 import time
 import random
 import math
@@ -351,6 +352,7 @@ class EDRClient(object):
     def set_dlc(self, dlc):
         self.player.dlc_name = dlc
         self.server.set_dlc(dlc)
+        self.edrsystems.set_dlc(dlc)
 
     def pledged_to(self, power, time_pledged=0):
         if self.server.is_anonymous():
@@ -578,7 +580,7 @@ class EDRClient(object):
         summary = self.edrfssinsights.summarize()
         if not summary:
             return False
-        header = _(u"Known signals in {system}".format(system=self.player.star_system))
+        header = _(u"Known signals in {system}").format(system=self.player.star_system)
         self.__notify(header, summary, clear_before = True)
         return True
 
@@ -646,7 +648,7 @@ class EDRClient(object):
         
         if self.visual_feedback:
             self.IN_GAME_MSG.navigation(bearing, destination, distance, pitch)
-        self.status = _(u"> {:03} < for Lat:{:.4f} Lon:{:.4f}".format(bearing, destination.latitude, destination.longitude))
+        self.status = _(u"> {:03} < for Lat:{:.4f} Lon:{:.4f}").format(bearing, destination.latitude, destination.longitude)
 
     def check_system(self, star_system, may_create=False, coords=None):
         try:
@@ -713,9 +715,9 @@ class EDRClient(object):
         hull_label = u"{:.4g}".format(tgt.hull_health) if tgt.hull_health else u"-"
         
         if subsys_details:
-            self.status = _(u"S/H %: {}/{} - {} %: {:.4g}".format(shield_label, hull_label, subsys_details["shortname"], subsys_details["stats"].last_value()))
+            self.status = _(u"S/H %: {}/{} - {} %: {:.4g}").format(shield_label, hull_label, subsys_details["shortname"], subsys_details["stats"].last_value())
         else:
-            self.status = _(u"S/H %: {}/{}".format(shield_label, hull_label))
+            self.status = _(u"S/H %: {}/{}").format(shield_label, hull_label)
         
         if self.visual_feedback:
             self.IN_GAME_MSG.target_guidance(self.player.target_pilot(), subsys_details)
@@ -1396,7 +1398,7 @@ class EDRClient(object):
 
         crew_id = self.cmdr_id(report["crew"])
         if crew_id is None:
-            self.status = _(u"{} is unknown to EDR.".format(report["crew"]))
+            self.status = _(u"{} is unknown to EDR.").format(report["crew"])
             EDRLOG.log(u"Can't submit crew report (no cmdr id for {}).".format(report["crew"]), "ERROR")
             return False
         
@@ -1779,20 +1781,25 @@ class EDRClient(object):
         self.previous_ad = now_epoch
         return True
 
-    def interstellar_factors_near(self, star_system, override_sc_distance = None):
+    def __search_prerequisites(self, star_system):
         if not star_system:
-            return
-        
+            return False
+
         if self.searching:
             self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True)
-            return
-
+            return False
+        
         if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
             self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")], clear_before = True)
+            return False
+        return True
+
+    def interstellar_factors_near(self, star_system, override_sc_distance = None):
+        if not self.__search_prerequisites(star_system):
             return
 
         try:
-            self.edrsystems.search_interstellar_factors(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), override_sc_distance = override_sc_distance)
+            self.edrsystems.search_interstellar_factors(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"I.Factors: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Interstellar Factors: searching...")], clear_before = True)
@@ -1801,19 +1808,11 @@ class EDRClient(object):
             self.notify_with_details(_(u"EDR Search"), [_(u"Unknown system")])
 
     def raw_material_trader_near(self, star_system, override_sc_distance = None):
-        if not star_system:
-            return
-        
-        if self.searching:
-            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True)
-            return
-
-        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
-            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")], clear_before = True)
+        if not self.__search_prerequisites(star_system):
             return
 
         try:
-            self.edrsystems.search_raw_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), override_sc_distance = override_sc_distance)
+            self.edrsystems.search_raw_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"Raw mat. trader: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Raw material trader: searching...")], clear_before = True)
@@ -1822,19 +1821,11 @@ class EDRClient(object):
             self.notify_with_details(_(u"EDR Search"), [_(u"Unknown system")])
         
     def encoded_material_trader_near(self, star_system, override_sc_distance = None):
-        if not star_system:
-            return
-        
-        if self.searching:
-            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True)
-            return
-
-        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
-            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")], clear_before = True)
+        if not self.__search_prerequisites(star_system):
             return
 
         try:
-            self.edrsystems.search_encoded_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), override_sc_distance = override_sc_distance)
+            self.edrsystems.search_encoded_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"Encoded data trader: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Encoded data trader: searching...")], clear_before = True)
@@ -1844,19 +1835,11 @@ class EDRClient(object):
 
 
     def manufactured_material_trader_near(self, star_system, override_sc_distance = None):
-        if not star_system:
-            return
-        
-        if self.searching:
-            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True)
-            return
-
-        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
-            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")], clear_before = True)
+        if not self.__search_prerequisites(star_system):
             return
         
         try:
-            self.edrsystems.search_manufactured_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), override_sc_distance = override_sc_distance)
+            self.edrsystems.search_manufactured_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"Manufactured mat. trader: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Manufactured material trader: searching...")], clear_before = True)
@@ -1866,19 +1849,11 @@ class EDRClient(object):
 
 
     def staging_station_near(self, star_system, override_sc_distance = None):
-        if not star_system:
-            return
-
-        if self.searching:
-            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True)
-            return
-        
-        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
-            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")], clear_before = True)
+        if not self.__search_prerequisites(star_system):
             return
 
         try:
-            self.edrsystems.search_staging_station(star_system, self.__staoi_found)
+            self.edrsystems.search_staging_station(star_system, self.__staoi_found, override_sc_distance=override_sc_distance)
             self.searching = True
             self.status = _(u"Staging station: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Staging station: searching...")], clear_before = True)
@@ -1886,20 +1861,44 @@ class EDRClient(object):
             self.status = _(u"Staging station: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
-    def human_tech_broker_near(self, star_system, override_sc_distance = None):
-        if not star_system:
-            return
-        
-        if self.searching:
-            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True)
-            return
-
-        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
-            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")], clear_before = True)
+    def rrr_fc_near(self, star_system, override_radius = None):
+        if not self.__search_prerequisites(star_system):
             return
 
         try:
-            self.edrsystems.search_human_tech_broker(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), override_sc_distance = override_sc_distance)
+            self.edrsystems.search_rrr_fc(star_system, self.__staoi_found, override_radius=override_radius)
+            self.searching = True
+            self.status = _(u"RRR Fleet Carrier: searching...")
+            details = [_(u"RRR Fleet Carrier: searching in {}...").format(star_system), _(u"If there are no results, try: !rrrfc {} < 15").format(star_system)]
+            if override_radius:
+                details = [_(u"RRR Fleet Carrier: searching within {} LY of {}...").format(override_radius, star_system)]
+            self.__notify(_(u"EDR Search"), details, clear_before = True)
+        except ValueError:
+            self.status = _(u"RRR Fleet Carrier: failed")
+            self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
+
+    def rrr_near(self, star_system, override_radius = None):
+        if not self.__search_prerequisites(star_system):
+            return
+
+        try:
+            self.edrsystems.search_rrr(star_system, self.__staoi_found, override_radius=override_radius)
+            self.searching = True
+            self.status = _(u"RRR Station: searching...")
+            details = [_(u"RRR Station: searching in {}...").format(star_system), _(u"If there are no results, try: !rrr {} < 15").format(star_system)]
+            if override_radius:
+                details = [_(u"RRR Station: searching within {} LY of {}...").format(override_radius, star_system)]
+            self.__notify(_(u"EDR Search"), details, clear_before = True)
+        except ValueError:
+            self.status = _(u"RRR Station: failed")
+            self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
+
+    def human_tech_broker_near(self, star_system, override_sc_distance = None):
+        if not self.__search_prerequisites(star_system):
+            return
+
+        try:
+            self.edrsystems.search_human_tech_broker(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"Human tech broker: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Human tech broker: searching...")], clear_before = True)
@@ -1908,19 +1907,11 @@ class EDRClient(object):
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
     
     def guardian_tech_broker_near(self, star_system, override_sc_distance = None):
-        if not star_system:
-            return
-        
-        if self.searching:
-            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True)
-            return
-
-        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
-            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")], clear_before = True)
+        if not self.__search_prerequisites(star_system):
             return
 
         try:
-            self.edrsystems.search_guardian_tech_broker(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), override_sc_distance = override_sc_distance)
+            self.edrsystems.search_guardian_tech_broker(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"Guardian tech broker: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Guardian tech broker: searching...")], clear_before = True)
@@ -1929,19 +1920,11 @@ class EDRClient(object):
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
     def offbeat_station_near(self, star_system, override_sc_distance = None):
-        if not star_system:
-            return
-        
-        if self.searching:
-            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True)
-            return
-
-        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
-            self.__notify(_(u"EDR Search near {}").format(star_system), [_(u"Search features only work in the bubble or Colonia.")], clear_before = True)
+        if not self.__search_prerequisites(star_system):
             return
 
         try:
-            self.edrsystems.search_offbeat_station(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), override_sc_distance = override_sc_distance)
+            self.edrsystems.search_offbeat_station(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"Offbeat station: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Offbeat station: searching...")], clear_before = True)
@@ -1963,7 +1946,7 @@ class EDRClient(object):
             self.status = u"{item}: {system}, {dist} - {station} ({type}), {sc_dist}".format(item=soi_checker.name, system=result['name'], dist=pretty_dist, station=result['station']['name'], type=result['station']['type'], sc_dist=pretty_sc_dist)
             copy(result["name"])
         else:
-            self.status = _(u"{}: nothing within [{}LY, {}LS] of {}".format(soi_checker.name, int(radius), int(sc), reference))
+            self.status = _(u"{}: nothing within [{}LY, {}LS] of {}").format(soi_checker.name, int(radius), int(sc), reference)
             checked = _("checked {} systems").format(soi_checker.systems_counter) 
             if soi_checker.stations_counter: 
                 checked = _("checked {} systems and {} stations").format(soi_checker.systems_counter, soi_checker.stations_counter) 
@@ -2014,7 +1997,7 @@ class EDRClient(object):
             outcome = self.edrresourcefinder.resource_near(resource, star_system, self.__resource_found)
             if outcome == True:
                 self.searching = True
-                self.status = _(u"{}: searching...".format(cresource))
+                self.status = _(u"{}: searching...").format(cresource)
                 self.__notify(_(u"EDR Search"), [_(u"{}: searching...").format(cresource)], clear_before = True)
             elif outcome == False or outcome == None:
                 self.status = _(u"{}: failed...").format(cresource)
@@ -2042,7 +2025,7 @@ class EDRClient(object):
             self.status = u"{}: {} ({}LY)".format(checker.name, result['name'], pretty_dist)
             copy(result["name"])
         else:
-            self.status = _(u"{}: nothing within [{}LY] of {}".format(checker.name, int(radius), reference))
+            self.status = _(u"{}: nothing within [{}LY] of {}").format(checker.name, int(radius), reference)
             checked = _("checked {} systems").format(checker.systems_counter) 
             if checker.stations_counter: 
                 checked = _("checked {} systems").format(checker.systems_counter)

@@ -17,14 +17,19 @@ class EDRServiceFinder(threading.Thread):
         self.edr_systems = edr_systems
         self.callback = callback
         self.large_pad_required = True
+        self.medium_pad_required = True
         self.permits = []
         self.shuffle_systems = False
         self.shuffle_stations = False
-        self.include_center = True
+        self.exclude_center = False
+        self.checked_systems = []
         super(EDRServiceFinder, self).__init__()
 
     def with_large_pad(self, required):
         self.large_pad_required = required
+
+    def with_medium_pad(self, required):
+        self.medium_pad_required = required
 
     def within_radius(self, radius):
         self.radius = radius
@@ -35,12 +40,15 @@ class EDRServiceFinder(threading.Thread):
     def permits_in_possesion(self, permits):
         self.permits = permits
 
-    def shuffling(self, shuffle_stations, shuffle_systems):
+    def shuffling(self, shuffle_systems, shuffle_stations):
         self.shuffle_systems = shuffle_systems
         self.shuffle_stations = shuffle_stations
 
     def ignore_center(self, exclude_center):
-        self.include_center = exclude_center
+        self.exclude_center = exclude_center
+
+    def set_dlc(self, name):
+        self.checker.set_dlc(name)
 
     def run(self):
         self.trials = 0
@@ -51,26 +59,30 @@ class EDRServiceFinder(threading.Thread):
     def nearby(self):
         servicePrime = None
         serviceAlt = None
+        self.checked_systems = []
 
         candidates = {'prime': servicePrime, 'alt': serviceAlt}
         
         system = self.edr_systems.system(self.star_system)
-        if not self.ignore_center:
-            candidates = self.__check_system(system[0] if isinstance(system, list) else system, candidates)
+        if system and not self.exclude_center:
+            the_system = system[0] if isinstance(system, list) else system
+            the_system["distance"] = 0
+            candidates = self.__check_system(the_system, candidates)
+            self.checked_systems.append(the_system.get('name', ""))
             if candidates["prime"]:
                 return candidates["prime"]
                
         systems = self.edr_systems.systems_within_radius(self.star_system, self.radius)
         if not systems:
-            return None
+            return candidates
 
         if self.shuffle_systems:
             shuffle(systems)
 
-        candidates = {'prime': servicePrime, 'alt': serviceAlt}
         candidates = self.__search(systems, candidates)
         if not (candidates and candidates.get('prime', None)):
             EDRLOG.log(u"Couldn't find any prime candidate so far. Trying again after a shuffle", "DEBUG")
+            # TODO check colonia commands
             shuffle(systems)
             candidates = self.__search(systems, candidates)
 
@@ -79,7 +91,10 @@ class EDRServiceFinder(threading.Thread):
             key_colonia_star_systems = [ "Alberta", "Amatsuboshi", "Asura", "Aurora Astrum", "Benzaiten", "Centralis", "Coeus", "Colonia", "Deriso", "Desy", "Diggidiggi", "Dubbuennel", "Edge Fraternity Landing", "Einheriar", "Eol Procul Centauri", "Helgoland", "Kajuku", "Kinesi", "Kojeara", "Kopernik", "Los", "Luchtaine", "Magellan", "Mriya", "Pennsylvania", "Poe", "Randgnid", "Ratraii", "Saraswati", "Solitude", "Tir", "White Sun" ]
             for star_system in key_colonia_star_systems:
                 system = self.edr_systems.system(star_system)
-                candidates = self.__check_system(system[0] if isinstance(system, list) else system, candidates)
+                distance = self.edr_systems.distance(self.star_system, star_system)
+                the_system = system[0] if isinstance(system, list) else system
+                the_system["distance"] = distance
+                candidates = self.__check_system(the_system, candidates)
                 if candidates and candidates.get('prime', None):
                     break
 
@@ -106,9 +121,9 @@ class EDRServiceFinder(threading.Thread):
         candidate = self.__service_in_system(system)
         if candidate:
             check_sc_distance = candidate['distanceToArrival'] <= self.sc_distance
-            check_landing_pads = self.__has_large_lading_pads(candidate['type']) if self.large_pad_required else True
+            check_landing_pads = self.__check_landing_pads(candidate.get('type', ''))
             ambiguous = self.checker.is_service_availability_ambiguous(candidate)
-            EDRLOG.log(u"System {} is a candidate: ambiguous {}, sc_distance {}, landing_pads {}".format(system['name'], ambiguous, check_sc_distance, check_landing_pads), "DEBUG")
+            EDRLOG.log(u"System {} has a candidate {}: ambiguous {}, sc_distance {}, landing_pads {}".format(system['name'], candidate['name'], ambiguous, check_sc_distance, check_landing_pads), "DEBUG")
             if check_sc_distance and check_landing_pads and not ambiguous:
                 trialed = system
                 trialed['station'] = candidate
@@ -129,48 +144,75 @@ class EDRServiceFinder(threading.Thread):
     def __search(self, systems, candidates):
         self.trials = 0
         if not systems:
-            return None
+            return candidates
         for system in systems:
-            if self.ignore_center and self.star_system == system.get("name", None):
-                continue
-
-            candidates = self.__check_system(system, candidates)                  
-
-            if candidates and candidates.get('prime', None):
-                EDRLOG.log(u"Prime found, breaking here.", "DEBUG")
-                break
-                
             if self.trials > self.max_trials:
                 EDRLOG.log(u"Tried too many. Aborting here.", "DEBUG")
                 break
 
+            if self.exclude_center and self.star_system == system.get("name", None):
+                continue
+
+            if system.get('name', None) in self.checked_systems:
+                continue
+            candidates = self.__check_system(system, candidates)                  
+            self.checked_systems.append(system.get('name', ""))
+
+            if candidates and candidates.get('prime', None):
+                EDRLOG.log(u"Prime found, breaking here.", "DEBUG")
+                break
+
         return candidates        
 
-    def closest_station_with_service(self, stations):
+    def closest_station_with_service(self, stations, system_name):
         overall = None
         with_large_landing_pads = None
+        with_medium_landing_pads = None
+        (state, _) = self.edr_systems.system_state(system_name)
+        state = state.lower() if state else state
+        if state == u'lockdown':
+            return None
+
         for station in stations:
             if not self.checker.check_station(station):
                 continue
-
-            (state, _) = self.edr_systems.system_state(self.star_system)
-            state = state.lower() if state else state
-            if state == u'lockdown':
-                continue
-
+            
             if overall == None:
                 overall = station
-            elif station['distanceToArrival'] < overall['distanceToArrival']:
+            elif station['distanceToArrival'] < overall['distanceToArrival'] and not self.checker.is_service_availability_ambiguous(station):
                 overall = station
             
-            if self.__has_large_lading_pads(station['type']):
+            if self.__has_large_landing_pads(station['type']):
                 with_large_landing_pads = station
-        
-        return with_large_landing_pads if self.large_pad_required and with_large_landing_pads else overall
+            elif self.__has_medium_landing_pads(station['type']):
+                with_medium_landing_pads = station
+        if self.large_pad_required and with_large_landing_pads:
+            return with_large_landing_pads
+        elif self.medium_pad_required and with_medium_landing_pads:
+            return with_medium_landing_pads
+        return overall
 
+    def __check_landing_pads(self, type):
+        if self.large_pad_required:
+            return self.__has_large_landing_pads(type)
+        elif self.medium_pad_required:
+            return self.__has_medium_landing_pads(type)
+        return self.__has_small_landing_pads(type)
 
-    def __has_large_lading_pads(self, stationType):
-        return stationType.lower() in ['coriolis starport', 'ocellus starport', 'orbis starport', 'planetary port', 'asteroid base', 'mega ship']
+    def __has_large_landing_pads(self, stationType):
+        return stationType.lower() in ['coriolis starport', 'ocellus starport', 'orbis starport', 'planetary port', 'planetary outpost', 'asteroid base', 'mega ship', 'fleet carrier']
+
+    def __has_medium_landing_pads(self, stationType):
+        if self.__has_large_landing_pads(stationType):
+            return True
+        return False # TODO odyssey settlements can be anything at this point :(
+
+    def __has_small_landing_pads(self, stationType):
+        if self.__has_large_landing_pads(stationType):
+            return True
+        if self.__has_medium_landing_pads(stationType):
+            return True
+        return stationType.lower() in ['odyssey settlement']
 
     def __service_in_system(self, system):
         if not system:
@@ -186,7 +228,7 @@ class EDRServiceFinder(threading.Thread):
         if self.shuffle_stations:
             shuffle(all_stations)
 
-        return self.closest_station_with_service(all_stations)
+        return self.closest_station_with_service(all_stations, system['name'])
 
     def close(self):
         return None

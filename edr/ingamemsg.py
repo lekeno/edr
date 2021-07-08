@@ -388,11 +388,11 @@ class InGameMsg(object):
         header = u"› {:03} ‹     ↓ {:02} ↓".format(bearing, pitch) if pitch else u"> {:03} <".format(bearing)
         details = [destination.title] if destination.title else []
         if distance >= 1.0:
-            details.append(_(u"Dis: {}km".format(int(distance))))
+            details.append(_(u"Dis: {}km").format(int(distance)))
         else:
-            details.append(_(u"Dis: {}m".format(int(distance*1000))))
-        details.append(_(u"Lat: {:.4f}".format(destination.latitude)))
-        details.append(_(u"Lon: {:.4f}".format(destination.longitude)))
+            details.append(_(u"Dis: {}m").format(int(distance*1000)))
+        details.append(_(u"Lat: {:.4f}").format(destination.latitude))
+        details.append(_(u"Lon: {:.4f}").format(destination.longitude))
         self.__msg_header("navigation", header)
         self.__msg_body("navigation", details)
 
@@ -859,9 +859,9 @@ class InGameMsg(object):
         if has_stuff:
             detailed_stats = mining_stats.last["minerals_stats"]
             header = _(u"Mining Stats - MNR: {}").format(",".join(m.symbol for m in detailed_stats))
-            details.append(_(u"MNR %: {:>6.2f}  [{}/{}; {}]".format(detailed_stats[0].last["proportion"], detailed_stats[0].symbol, mining_stats.last["materials"], mining_stats.last["raw"])))
-            details.append(_(u"MAX %: {:>6.2f}".format(detailed_stats[0].max)))
-            details.append(_(u"AVG %: {:>6.2f}".format(detailed_stats[0].yield_average(mining_stats.prospected_nb))))
+            details.append(_(u"MNR %: {:>6.2f}  [{}/{}; {}]").format(detailed_stats[0].last["proportion"], detailed_stats[0].symbol, mining_stats.last["materials"], mining_stats.last["raw"]))
+            details.append(_(u"MAX %: {:>6.2f}").format(detailed_stats[0].max))
+            details.append(_(u"AVG %: {:>6.2f}").format(detailed_stats[0].yield_average(mining_stats.prospected_nb)))
         elif mining_stats.depleted:
             details.append(u"")
             details.append(_(u">>>>  DEPLETED  <<<<"))
@@ -872,8 +872,8 @@ class InGameMsg(object):
             details.append(u"")
         
         
-        details.append(_(u"ITM/H: {:>6.0f} [TGT: {:.0f}]".format(mining_stats.items_per_hour(), mining_stats.max_efficiency)))
-        details.append(_(u"ITM #: {:>6}".format(mining_stats.refined_nb)))
+        details.append(_(u"ITM/H: {:>6.0f} [TGT: {:.0f}]").format(mining_stats.items_per_hour(), mining_stats.max_efficiency))
+        details.append(_(u"ITM #: {:>6}").format(mining_stats.refined_nb))
         self.__msg_header("mining", header)
         self.__msg_body("mining", details)
 
@@ -1022,11 +1022,11 @@ class InGameMsg(object):
         cr_h = EDFineOrBounty(bounty_hunting_stats.credits_per_hour())
         tgt = EDFineOrBounty(bounty_hunting_stats.max_efficiency)
         total_awarded = EDFineOrBounty(bounty_hunting_stats.sum_awarded)
-        details.append(_(u"BOUNTY: {} cr [{}]".format(last_bounty.pretty_print(), bounty_hunting_stats.last["name"])))
-        details.append(_(u"MAX B.: {} cr".format(max_bounty.pretty_print())))
-        details.append(_(u"AVG B.: {} cr".format(avg_bounty.pretty_print())))
-        details.append(_(u"CR / H: {} [TGT: {}]".format(cr_h.pretty_print(), tgt.pretty_print())))
-        details.append(_(u"TOTALS: {} cr [{} rewards]".format(total_awarded.pretty_print(), bounty_hunting_stats.awarded_nb)))
+        details.append(_(u"BOUNTY: {} cr [{}]").format(last_bounty.pretty_print(), bounty_hunting_stats.last["name"]))
+        details.append(_(u"MAX B.: {} cr").format(max_bounty.pretty_print()))
+        details.append(_(u"AVG B.: {} cr").format(avg_bounty.pretty_print()))
+        details.append(_(u"CR / H: {} [TGT: {}]").format(cr_h.pretty_print(), tgt.pretty_print()))
+        details.append(_(u"TOTALS: {} cr [{} rewards]").format(total_awarded.pretty_print(), bounty_hunting_stats.awarded_nb))
         self.__msg_header("bounty-hunting", header)
         self.__msg_body("bounty-hunting", details)
         
@@ -1164,7 +1164,7 @@ class InGameMsg(object):
             signal = "▾"
             if trend > -60*60:
                 delta_shield = _(u"[{} to   0%]").format(EDTime.pretty_print_timespan(int(-trend), short=True, verbose=False))
-        details.append(_(u"SHLD{}: {}% {}".format(signal, shield_label, delta_shield)))
+        details.append(_(u"SHLD{}: {}% {}").format(signal, shield_label, delta_shield))
 
         hull_stats = tgt_vehicle.hull_health_stats()
         hull_label = u"{:.4g}".format(tgt_vehicle.hull_health) if tgt_vehicle.hull_health else u"-"
@@ -1179,7 +1179,7 @@ class InGameMsg(object):
             signal = "▾"
             if trend > -60*60:
                 delta_hull = _(u"[{} to   0%]").format(EDTime.pretty_print_timespan(int(-trend), short=True, verbose=False))
-        details.append(_(u"HULL{}: {}% {}".format(signal, hull_label, delta_hull)))
+        details.append(_(u"HULL{}: {}% {}").format(signal, hull_label, delta_hull))
 
         if subsys_details:
             signal = "●"
@@ -1194,7 +1194,7 @@ class InGameMsg(object):
                     signal = "▾"
                     if trend > -60*60:
                         delta_subsys = _(u"[{} to   0%]").format(EDTime.pretty_print_timespan(int(-trend), short=True, verbose=False))
-            details.append(_(u"{subsys}{signal}: {hp:.4g}% {delta}".format(subsys=subsys_details["shortname"], signal=signal, hp=subsys_details["stats"].last_value(), delta=delta_subsys)))
+            details.append(_(u"{subsys}{signal}: {hp:.4g}% {delta}").format(subsys=subsys_details["shortname"], signal=signal, hp=subsys_details["stats"].last_value(), delta=delta_subsys))
         self.__msg_header("target-guidance", header)
         self.__msg_body("target-guidance", details)
 

@@ -21,6 +21,13 @@ class EDRStationServiceCheck(EDRSystemStationCheck):
             return False
         
         return self.service in station['otherServices']
+
+    def is_service_availability_ambiguous(self, station):
+        if "odyssey" in station.get("type", "").lower():
+            return self.service not in ["Refuel","Repair","Contacts","Missions"] # TODO possibly too strict? confirmed: IFactors
+        if "planetary" in station.get("type", "").lower():
+            return True # TODO not sure what's up but since Odyssey release, the planetary port/outpost don't seem to have I.Factors anymore :/
+        return False
     
 class EDRStationFacilityCheck(EDRSystemStationCheck):
 
@@ -53,10 +60,13 @@ class EDRStagingCheck(EDRSystemStationCheck):
         if not super(EDRStagingCheck, self).check_system(system):
             return False
         
-        return system.get('distance', 1) > 0 and system.get('distance', self.max_distance + 1) < self.max_distance
+        return system.get('distance', 1) >= 0 and system.get('distance', self.max_distance + 1) <= self.max_distance
 
     def check_station(self, station):
         if not super(EDRStagingCheck, self).check_station(station):
+            return False
+
+        if station.get("type", "") == "Fleet Carrier":
             return False
 
         if not station.get('otherServices', False):
@@ -72,6 +82,86 @@ class EDRStagingCheck(EDRSystemStationCheck):
             return False
 
         return True
+
+class EDRStationRRRCheck(EDRSystemStationCheck):
+
+    def __init__(self, max_distance, max_sc_distance):
+        super(EDRStationRRRCheck, self).__init__()
+        self.max_distance = max_distance
+        self.max_sc_distance = max_sc_distance
+        self.name = _(u"Station with Repair/Rearm/Refuel")
+        self.hint = None
+        self.threshold_seconds = 60*60*24*7
+
+    def check_system(self, system):
+        if not super(EDRStationRRRCheck, self).check_system(system):
+            return False
+        
+        return system.get('distance', 1) >= 0 and system.get('distance', self.max_distance + 1) <= self.max_distance
+
+    def check_station(self, station):
+        if station.get("type", "") == "Fleet Carrier":
+            return False
+
+        if not super(EDRStationRRRCheck, self).check_station(station):
+            return False
+
+        if not (all(service in station['otherServices'] for service in ['Restock', 'Refuel', 'Repair'])):
+            return False
+
+        return True
+
+    def is_service_availability_ambiguous(self, station):
+        if not station.get('updateTime', None):
+            return True
+
+        if not station['updateTime'].get('information', None):
+            return True
+        
+        updateTime=station['updateTime']['information']
+        edt = EDTime()
+        edt.from_edsm_timestamp(updateTime)
+        return edt.older_than(self.threshold_seconds)
+
+class EDRFleetCarrierRRRCheck(EDRSystemStationCheck):
+
+    def __init__(self, max_distance, max_sc_distance):
+        super(EDRFleetCarrierRRRCheck, self).__init__()
+        self.max_distance = max_distance
+        self.max_sc_distance = max_sc_distance
+        self.name = _(u"Fleet Carrier with Repair/Rearm/Refuel")
+        self.hint = None
+        self.threshold_seconds = 60*60*24*2
+
+    def check_system(self, system):
+        if not super(EDRFleetCarrierRRRCheck, self).check_system(system):
+            return False
+        
+        return system.get('distance', 1) >= 0 and system.get('distance', self.max_distance + 1) <= self.max_distance
+
+    def check_station(self, station):
+        if station.get("type", "") != "Fleet Carrier":
+            return False
+
+        if not super(EDRFleetCarrierRRRCheck, self).check_station(station):
+            return False
+
+        if not (all(service in station['otherServices'] for service in ['Restock', 'Refuel', 'Repair'])):
+            return False
+
+        return True
+
+    def is_service_availability_ambiguous(self, station):
+        if not station.get('updateTime', None):
+            return True
+
+        if not station['updateTime'].get('information', None):
+            return True
+        
+        updateTime=station['updateTime']['information']
+        edt = EDTime()
+        edt.from_edsm_timestamp(updateTime)
+        return edt.older_than(self.threshold_seconds)
 
 class EDRMaterialTraderBasicCheck(EDRStationServiceCheck):
 
@@ -109,6 +199,9 @@ class EDRRawTraderCheck(EDRMaterialTraderBasicCheck):
         self.hint = _(u"Found in systems with medium-high security, an 'extraction' or 'refinery' economy, a rather large population (>= 1 million)")
 
     def check_system(self, system):
+        if system.get('name', '') in ['Kojeara']:
+            return True
+
         if not super(EDRRawTraderCheck, self).check_system(system):
             return False
 
@@ -116,6 +209,11 @@ class EDRRawTraderCheck(EDRMaterialTraderBasicCheck):
         info['economy'] = info.get('economy', 'N/A')
         
         return info['economy'].lower() in ['extraction', 'refinery']
+
+    def check_station(self, station):
+        if station.get('name', '') in ["TolaGarf's Junkyard"]:
+            return True
+        return super(EDRRawTraderCheck, self).check_station(station)
 
     def is_service_availability_ambiguous(self, station):
         if not station or not station.get("secondEconomy", None):
@@ -129,6 +227,9 @@ class EDRManufacturedTraderCheck(EDRMaterialTraderBasicCheck):
         self.hint = _(u"Found in systems with medium-high security, an 'industrial' economy, and a rather large population (>= 1 million)")
 
     def check_system(self, system):
+        if system.get('name', '') in ['Coeus']:
+            return True
+
         if not super(EDRManufacturedTraderCheck, self).check_system(system):
             return False
 
@@ -136,6 +237,11 @@ class EDRManufacturedTraderCheck(EDRMaterialTraderBasicCheck):
         info['economy'] = info.get('economy', 'N/A')
         
         return info['economy'].lower() == 'industrial'
+
+    def check_station(self, station):
+        if station.get('name', '') in ["Foster Terminal"]:
+            return True
+        return super(EDRManufacturedTraderCheck, self).check_station(station)
 
     def is_service_availability_ambiguous(self, station):
         if not station or not station.get("secondEconomy", None):
@@ -150,6 +256,9 @@ class EDREncodedTraderCheck(EDRMaterialTraderBasicCheck):
         self.hint = _(u"Found in systems with medium-high security, a 'high tech' or 'military' economy, and a rather large population (>= 1 million)")
 
     def check_system(self, system):
+        if system.get('name', '') in ['Ratraii']:
+            return True
+
         if not super(EDREncodedTraderCheck, self).check_system(system):
             return False
 
@@ -157,6 +266,11 @@ class EDREncodedTraderCheck(EDRMaterialTraderBasicCheck):
         info['economy'] = info.get('economy', 'N/A')
 
         return info['economy'].lower() in ['high tech', 'military']
+
+    def check_station(self, station):
+        if station.get('name', '') in ["Colonia Dream"]:
+            return True
+        return super(EDREncodedTraderCheck, self).check_station(station)
 
     def is_service_availability_ambiguous(self, station):
         if not station or not station.get("secondEconomy", None):
@@ -198,6 +312,9 @@ class EDRHumanTechBrokerCheck(EDRStationServiceCheck):
         self.hint = _(u"Found in systems with an 'Industrial' economy', and a rather large population (>= 1 million)")
 
     def check_system(self, system):
+        if system.get('name', '') in ['Tir']:
+            return True
+
         if not super(EDRHumanTechBrokerCheck, self).check_system(system):
             return False
 
@@ -212,6 +329,11 @@ class EDRHumanTechBrokerCheck(EDRStationServiceCheck):
             return False
 
         return info['economy'].lower() == 'industrial'
+
+    def check_station(self, station):
+        if station.get('name', '') in ["Bolden's Enterprise"]:
+            return True
+        return super(EDRHumanTechBrokerCheck, self).check_station(station)
     
     def is_service_availability_ambiguous(self, station):
         if not station or not station.get("secondEconomy", None):
@@ -225,6 +347,9 @@ class EDRGuardianTechBrokerCheck(EDRStationServiceCheck):
         self.hint = _(u"Found in systems with a 'high tech' economy', and a rather large population (>= 1 million)")
 
     def check_system(self, system):
+        if system.get('name', '') in ['Colonia']:
+            return True
+
         if not super(EDRGuardianTechBrokerCheck, self).check_system(system):
             return False
 
@@ -239,6 +364,11 @@ class EDRGuardianTechBrokerCheck(EDRStationServiceCheck):
             return False
 
         return info['economy'].lower() == 'high tech'
+
+    def check_station(self, station):
+        if station.get('name', '') in ["Jaques Station"]:
+            return True
+        return super(EDRGuardianTechBrokerCheck, self).check_station(station)
 
     def is_service_availability_ambiguous(self, station):
         if not station or not station.get("secondEconomy", None):
@@ -257,18 +387,16 @@ class EDROffBeatStationCheck(EDRApexSystemStationCheck):
         if not super(EDROffBeatStationCheck, self).check_system(system):
             return False
         
-        return system.get('distance', 1) > 0 and system.get('distance', self.max_distance + 1) < self.max_distance
+        return system.get('distance', 0) > 0 and system.get('distance', self.max_distance + 1) <= self.max_distance
 
     def check_station(self, station):
         if not super(EDROffBeatStationCheck, self).check_station(station):
             return False
 
         if not station.get('updateTime', None):
-            print("no updateTime, yeah! ?")
             return True
 
         if not station['updateTime'].get('information', None):
-            print("updateTime but not for information, yeah! ?")
             return True
         
         updateTime=station['updateTime']['information']
@@ -286,7 +414,6 @@ class EDROffBeatStationCheck(EDRApexSystemStationCheck):
         updateTime=station['updateTime']['information']
         edt = EDTime()
         edt.from_edsm_timestamp(updateTime)
-        print(updateTime)
         if not edt.older_than(self.threshold_seconds):
             return True
         close_call = not edt.older_than(self.threshold_seconds*1.25)

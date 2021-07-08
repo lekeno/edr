@@ -130,7 +130,7 @@ def handle_multicrew_events(ed_player, entry):
         kicked = entry["event"] == "KickCrewMember"
         crimes = False if not "OnCrimes" in entry else entry["OnCrimes"]
         ed_player.remove_from_crew(crew)
-        EDR_CLIENT.status = _(u"{} left the crew.".format(crew))
+        EDR_CLIENT.status = _(u"{} left the crew.").format(crew)
         EDRLOG.log(u"{} left the crew.".format(crew), "INFO")
         edt = EDTime()
         edt.from_journal_timestamp(entry["timestamp"])
@@ -1472,7 +1472,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         search_center = cmdr.star_system
         override_sc_dist = None
         if len(command_parts) >= 2:
-            parameters = " ".join(command_parts[1:]).split(" < ", 1)
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.interstellar_factors_near(search_center, override_sc_dist)
@@ -1481,7 +1481,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         search_center = cmdr.star_system
         override_sc_dist = None
         if len(command_parts) >= 2:
-            parameters = " ".join(command_parts[1:]).split(" < ", 1)
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.raw_material_trader_near(search_center, override_sc_dist)
@@ -1490,7 +1490,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         search_center = cmdr.star_system
         override_sc_dist = None
         if len(command_parts) >= 2:
-            parameters = " ".join(command_parts[1:]).split(" < ", 1)
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.encoded_material_trader_near(search_center, override_sc_dist)
@@ -1499,7 +1499,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         search_center = cmdr.star_system
         override_sc_dist = None
         if len(command_parts) >= 2:
-            parameters = " ".join(command_parts[1:]).split(" < ", 1)
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.manufactured_material_trader_near(search_center, override_sc_dist)
@@ -1508,16 +1508,34 @@ def handle_bang_commands(cmdr, command, command_parts):
         search_center = cmdr.star_system
         override_sc_dist = None
         if len(command_parts) >= 2:
-            parameters = " ".join(command_parts[1:]).split(" < ", 1)
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.staging_station_near(search_center, override_sc_dist)
+    elif command == "!rrrfc":
+        EDRLOG.log(u"Looking for a RRR Fleet Carrier", "INFO")
+        search_center = cmdr.star_system
+        override_radius = None
+        if len(command_parts) >= 2:
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
+            search_center = parameters[0] or cmdr.star_system
+            override_radius = int(parameters[1]) if len(parameters) > 1 else None
+        EDR_CLIENT.rrr_fc_near(search_center, override_radius)
+    elif command == "!rrr":
+        EDRLOG.log(u"Looking for a RRR Station", "INFO")
+        search_center = cmdr.star_system
+        override_radius = None
+        if len(command_parts) >= 2:
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
+            search_center = parameters[0] or cmdr.star_system
+            override_radius = int(parameters[1]) if len(parameters) > 1 else None
+        EDR_CLIENT.rrr_near(search_center, override_radius)
     elif command in ["!htb", "!humantechbroker"]:
         EDRLOG.log(u"Looking for a human tech broker", "INFO")
         search_center = cmdr.star_system
         override_sc_dist = None
         if len(command_parts) >= 2:
-            parameters = " ".join(command_parts[1:]).split(" < ", 1)
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.human_tech_broker_near(search_center, override_sc_dist)
@@ -1526,7 +1544,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         search_center = cmdr.star_system
         override_sc_dist = None
         if len(command_parts) >= 2:
-            parameters = " ".join(command_parts[1:]).split(" < ", 1)
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.guardian_tech_broker_near(search_center, override_sc_dist)
@@ -1535,7 +1553,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         search_center = cmdr.star_system
         override_sc_dist = None
         if len(command_parts) >= 2:
-            parameters = " ".join(command_parts[1:]).split(" < ", 1)
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
             print(parameters)
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
@@ -1598,15 +1616,15 @@ def handle_bang_commands(cmdr, command, command_parts):
         target_cmdr = cmdr.target
         reward = None
         if len(command_parts) >= 2:
-            parts = " ".join(command_parts[1:]).split(" $$$ ", 1)
+            parts = [p.strip() for p in filter(len, " ".join(command_parts[1:]).split("$$$ ", 1))]
             target_cmdr = parts[0]
             if len(parts)>=2:
-                reward = int(part[1])
+                reward = int(parts[1])
         EDRLOG.log(u"Contract command on {} with reward of {}".format(target_cmdr, reward), "INFO")
         if reward is None:
             EDR_CLIENT.contract(target_cmdr)
         else:
-            EDR_CLIENT.contract_on(target_cmdr, reward, unit)
+            EDR_CLIENT.contract_on(target_cmdr, reward)
     elif command == "!help":
         EDRLOG.log(u"Help command", "INFO")
         EDR_CLIENT.help("" if len(command_parts) == 1 else command_parts[1])
