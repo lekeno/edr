@@ -1,7 +1,8 @@
 from __future__ import absolute_import
 
 from edri18n import _, _c, _edr
-from edrsysstacheck import EDRSystemStationCheck
+from edrsysstacheck import EDRSystemStationCheck, EDRApexSystemStationCheck
+from edtime import EDTime
 
 
 class EDRStationServiceCheck(EDRSystemStationCheck):
@@ -243,3 +244,51 @@ class EDRGuardianTechBrokerCheck(EDRStationServiceCheck):
         if not station or not station.get("secondEconomy", None):
             return False
         return station["secondEconomy"].lower() in ['industrial']
+
+class EDROffBeatStationCheck(EDRApexSystemStationCheck):
+
+    def __init__(self, max_distance_sc=100000):
+        super(EDROffBeatStationCheck, self).__init__(max_distance_sc or 100000)
+        self.name = _(u"Offbeat station")
+        self.hint = _(u"Look for low traffic systems with stations that haven't been visited in a while.")
+        self.threshold_seconds = 60*60*24*14
+        
+    def check_system(self, system):
+        if not super(EDROffBeatStationCheck, self).check_system(system):
+            return False
+        
+        return system.get('distance', 1) > 0 and system.get('distance', self.max_distance + 1) < self.max_distance
+
+    def check_station(self, station):
+        if not super(EDROffBeatStationCheck, self).check_station(station):
+            return False
+
+        if not station.get('updateTime', None):
+            print("no updateTime, yeah! ?")
+            return True
+
+        if not station['updateTime'].get('information', None):
+            print("updateTime but not for information, yeah! ?")
+            return True
+        
+        updateTime=station['updateTime']['information']
+        edt = EDTime()
+        edt.from_edsm_timestamp(updateTime)
+        print(updateTime)
+        return edt.older_than(self.threshold_seconds)
+
+    def is_service_availability_ambiguous(self, station):
+        if not station.get('updateTime', None):
+            return False
+
+        if not station['updateTime'].get('information', None):
+            return False
+        
+        updateTime=station['updateTime']['information']
+        edt = EDTime()
+        edt.from_edsm_timestamp(updateTime)
+        print(updateTime)
+        if not edt.older_than(self.threshold_seconds):
+            return True
+        close_call = edt.older_than(self.threshold_seconds*1.25)
+        return close_call

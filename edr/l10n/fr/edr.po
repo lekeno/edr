@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2021-06-03 13:12+0900\n"
-"PO-Revision-Date: 2021-06-03 13:17+0900\n"
+"POT-Creation-Date: 2021-06-04 14:03+0900\n"
+"PO-Revision-Date: 2021-06-04 14:04+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -1073,18 +1073,21 @@ msgstr "C'est gratuit et sans obligations."
 #: edrclient.py:1862 edrclient.py:1866 edrclient.py:1873 edrclient.py:1876
 #: edrclient.py:1883 edrclient.py:1887 edrclient.py:1894 edrclient.py:1897
 #: edrclient.py:1904 edrclient.py:1908 edrclient.py:1915 edrclient.py:1918
-#: edrclient.py:1968 edrclient.py:1972 edrclient.py:1978 edrclient.py:1986
-#: edrclient.py:1989 edrclient.py:1995
+#: edrclient.py:1925 edrclient.py:1936 edrclient.py:1939 edrclient.py:1989
+#: edrclient.py:1993 edrclient.py:1999 edrclient.py:2007 edrclient.py:2010
+#: edrclient.py:2016
 msgid "EDR Search"
 msgstr "Recherche EDR"
 
 #: edrclient.py:1776 edrclient.py:1797 edrclient.py:1818 edrclient.py:1840
-#: edrclient.py:1862 edrclient.py:1883 edrclient.py:1904 edrclient.py:1968
+#: edrclient.py:1862 edrclient.py:1883 edrclient.py:1904 edrclient.py:1925
+#: edrclient.py:1989
 msgid "Already searching for something, please wait..."
 msgstr "Recherche en cours, veuillez patienter..."
 
 #: edrclient.py:1780 edrclient.py:1801 edrclient.py:1822 edrclient.py:1844
-#: edrclient.py:1866 edrclient.py:1887 edrclient.py:1908 edrclient.py:1972
+#: edrclient.py:1866 edrclient.py:1887 edrclient.py:1908 edrclient.py:1929
+#: edrclient.py:1993
 msgid "Search features only work in the bubble or Colonia."
 msgstr ""
 "Désolé, cette fonctionnalité ne fonctionne que dans la bulle ou à Colonia."
@@ -1102,7 +1105,7 @@ msgid "I.Factors: failed"
 msgstr "I. Factors: échec"
 
 #: edrclient.py:1790 edrclient.py:1811 edrclient.py:1832 edrclient.py:1854
-#: edrclient.py:1876 edrclient.py:1897 edrclient.py:1918
+#: edrclient.py:1876 edrclient.py:1897 edrclient.py:1918 edrclient.py:1939
 msgid "Unknown system"
 msgstr "Système inconnu"
 
@@ -1162,127 +1165,139 @@ msgstr "Courtier en technologie Gardien: recherche en cours..."
 msgid "Guardian tech broker: failed"
 msgstr "Courtier en technologie gardien: échec"
 
-#: edrclient.py:1926
+#: edrclient.py:1929
+msgid "EDR Search near {}"
+msgstr "Recherche EDR autour de {}"
+
+#: edrclient.py:1935 edrclient.py:1936
+msgid "Offbeat station: searching..."
+msgstr "Spatioport pas visité récemment: recherche en cours..."
+
+#: edrclient.py:1938
+msgid "Offbeat station: failed"
+msgstr "Spatioport pas visité récemment: échec"
+
+#: edrclient.py:1947
 #, python-brace-format
 msgid "{dist:.3g}LY"
 msgstr "{dist:.3g}AL"
 
-#: edrclient.py:1926
+#: edrclient.py:1947
 #, python-brace-format
 msgid "{dist}LY"
 msgstr "{dist}AL"
 
-#: edrclient.py:1927
+#: edrclient.py:1948
 #, python-brace-format
 msgid "{dist}LS"
 msgstr "{dist}LS"
 
-#: edrclient.py:1928
+#: edrclient.py:1949
 #, python-brace-format
 msgid "{system}, {dist}"
 msgstr "{system}, {dist}"
 
-#: edrclient.py:1929
+#: edrclient.py:1950
 #, python-brace-format
 msgid "{station} ({type}), {sc_dist}"
 msgstr "{station} ({type}), {sc_dist}"
 
-#: edrclient.py:1930
+#: edrclient.py:1951
 #, python-brace-format
 msgid "as of {date} {ci}"
 msgstr "date des infos: {date} {ci}"
 
-#: edrclient.py:1934
+#: edrclient.py:1955
 msgid "{}: nothing within [{}LY, {}LS] of {}"
 msgstr "{}: rien dans un rayon de [{}LY, {}LS] autour de {}"
 
-#: edrclient.py:1935 edrclient.py:2014 edrclient.py:2016
+#: edrclient.py:1956 edrclient.py:2035 edrclient.py:2037
 msgid "checked {} systems"
 msgstr "{} systèmes dans la recherche"
 
-#: edrclient.py:1937
+#: edrclient.py:1958
 msgid "checked {} systems and {} stations"
 msgstr "{} systèmes et {} statioports dans la recherche"
 
-#: edrclient.py:1938
+#: edrclient.py:1959
 msgid "nothing found within [{}LY, {}LS], {}."
 msgstr "rien dans un rayon de [{}LY, {}LS], {}."
 
-#: edrclient.py:1941 edrclient.py:2020
+#: edrclient.py:1962 edrclient.py:2041
 msgid "{} near {}"
 msgstr "{} proche de {}"
 
-#: edrclient.py:1948
+#: edrclient.py:1969
 msgid "Unrecognized materials profile"
 msgstr "Profile matériaux non reconnu"
 
-#: edrclient.py:1948
+#: edrclient.py:1969
 msgid "To see a list of profiles, send: !materials"
 msgstr "Envoyez !materials pour voir la liste des profiles"
 
-#: edrclient.py:1952
+#: edrclient.py:1973
 msgid "Using materials profile '{}'"
 msgstr "Profile {} utilisé"
 
-#: edrclient.py:1952
+#: edrclient.py:1973
 msgid "Revert to default profile by sending: !materials default"
 msgstr "Pour revenir au profile de base, envoyez: !materials default"
 
-#: edrclient.py:1954
+#: edrclient.py:1975
 msgid "Using default materials profile"
 msgstr "Utilisation du profile de base"
 
-#: edrclient.py:1954
+#: edrclient.py:1975
 msgid "See the list of profiles by sending: !materials"
 msgstr "Pour voir la liste des profiles, envoyez: !materials"
 
-#: edrclient.py:1961
+#: edrclient.py:1982
 msgid "Available materials profiles"
 msgstr "Liste des profiles disponibles"
 
-#: edrclient.py:1977 edrclient.py:1978
+#: edrclient.py:1998 edrclient.py:1999
 msgid "{}: not supported."
 msgstr "{}: non disponible."
 
-#: edrclient.py:1978 edrclient.py:1989 edrclient.py:1995
+#: edrclient.py:1999 edrclient.py:2010 edrclient.py:2016
 msgid "To learn how to use the feature, send: !help search"
 msgstr "Pour afficher l'aide, envoyez: !help search"
 
-#: edrclient.py:1985 edrclient.py:1986
+#: edrclient.py:2006 edrclient.py:2007
 msgid "{}: searching..."
 msgstr "{}: recherche en cours..."
 
-#: edrclient.py:1988 edrclient.py:1989 edrclient.py:1994 edrclient.py:1995
+#: edrclient.py:2009 edrclient.py:2010 edrclient.py:2015 edrclient.py:2016
 msgid "{}: failed..."
 msgstr "{}: échec..."
 
-#: edrclient.py:1991
+#: edrclient.py:2012
 msgid "{}: found"
 msgstr "{}: succès"
 
-#: edrclient.py:2002
+#: edrclient.py:2023
 #, python-brace-format
 msgid "{dist:.3g}"
 msgstr "{dist:.3g}"
 
-#: edrclient.py:2002
+#: edrclient.py:2023
 #, python-brace-format
 msgid "{dist}"
 msgstr "{dist}"
 
-#: edrclient.py:2003
+#: edrclient.py:2024
 msgid "{} ({}LY, {})"
 msgstr "{} ({}AL, {})"
 
-#: edrclient.py:2007
+#: edrclient.py:2028
 msgid "as of {}"
 msgstr "date des infos: {}"
 
-#: edrclient.py:2013
+#: edrclient.py:2034
 msgid "{}: nothing within [{}LY] of {}"
 msgstr "{}: rien dans un rayon de [{}LY] autour de {}"
 
-#: edrclient.py:2017
+#: edrclient.py:2038
 msgid "nothing found within {}LY, {}."
 msgstr "rien dans un rayon de {}LY, {}."
 
@@ -2514,11 +2529,11 @@ msgstr "Probabilité accrue dans les systèmes avec une large population"
 msgid "{raw} {chance} @ {actual:.1f}% (median={typical:.1f}%; max={max:.1f}%)"
 msgstr "{raw}{chance} @ {actual:.1f}% (médiane={typical:.1f}%; max={max:.1f}%)"
 
-#: edrservicecheck.py:48
+#: edrservicecheck.py:49
 msgid "Staging station"
 msgstr "Spatioport de retraite"
 
-#: edrservicecheck.py:108
+#: edrservicecheck.py:109
 msgid ""
 "Found in systems with medium-high security, an 'extraction' or 'refinery' "
 "economy, a rather large population (>= 1 million)"
@@ -2526,7 +2541,7 @@ msgstr ""
 "Présent dans les systèmes avec une sécurité moyenne-haute, une économie "
 "'extraction' ou 'raffinerie ', et une large population (>= 1 million)"
 
-#: edrservicecheck.py:128
+#: edrservicecheck.py:129
 msgid ""
 "Found in systems with medium-high security, an 'industrial' economy, and a "
 "rather large population (>= 1 million)"
@@ -2534,7 +2549,7 @@ msgstr ""
 "Présent dans les systèmes avec une sécurité moyenne-haute, une économie "
 "'industrielle', et une large population (>= 1 million)"
 
-#: edrservicecheck.py:149
+#: edrservicecheck.py:150
 msgid ""
 "Found in systems with medium-high security, a 'high tech' or 'military' "
 "economy, and a rather large population (>= 1 million)"
@@ -2542,11 +2557,11 @@ msgstr ""
 "Présent dans les systèmes avec une sécurité moyenne-haute, une économie "
 "'high tech' ou 'militaire', et une large population (>= 1 million)"
 
-#: edrservicecheck.py:196
+#: edrservicecheck.py:197
 msgid "Human Technology Broker"
 msgstr "Courtier en technologie humaine"
 
-#: edrservicecheck.py:197
+#: edrservicecheck.py:198
 msgid ""
 "Found in systems with an 'Industrial' economy', and a rather large "
 "population (>= 1 million)"
@@ -2554,11 +2569,11 @@ msgstr ""
 "Présent dans les systèmes avec une économie 'industrielle' et une large "
 "population (>= 1 million)"
 
-#: edrservicecheck.py:223
+#: edrservicecheck.py:224
 msgid "Guardian Technology Broker"
 msgstr "Courtier en technologie Gardien"
 
-#: edrservicecheck.py:224
+#: edrservicecheck.py:225
 msgid ""
 "Found in systems with a 'high tech' economy', and a rather large population "
 "(>= 1 million)"
@@ -2566,7 +2581,17 @@ msgstr ""
 "Présent dans les systèmes avec une économie 'high tech' et une large "
 "population (>= 1 million)"
 
-#: edrservicefinder.py:106
+#: edrservicecheck.py:252
+msgid "Offbeat station"
+msgstr "Spatioport pas visité récemment"
+
+#: edrservicecheck.py:253
+msgid ""
+"Look for low traffic systems with stations that haven't been visited in a "
+"while."
+msgstr ""
+
+#: edrservicefinder.py:120
 msgid "[Confidence: LOW]"
 msgstr "[Confidence: BASSE]"
 
@@ -2901,7 +2926,7 @@ msgstr ":{nb_seconds}{suffix}"
 msgid "{nb_seconds}{suffix}"
 msgstr "{nb_seconds}{suffix}"
 
-#: edtime.py:123
+#: edtime.py:126
 msgid "%Y-%m-%d"
 msgstr "%d-%m-%Y"
 
@@ -4148,32 +4173,32 @@ msgstr "Pas de rapport multicrew en mode privé."
 msgid "failed to report multicrew session."
 msgstr "crime équipage non rapporté (échec)."
 
-#: load.py:1544
+#: load.py:1554
 msgid "Call rejected: you seem to have enough fuel."
 msgstr "Appel rejeté: il semble que vous ayez assez de carburant."
 
-#: load.py:1544 load.py:1548
+#: load.py:1554 load.py:1558
 msgid "Contact Cmdr LeKeno if this is inaccurate"
 msgstr "Contactez Cmdr LeKeno si ceci est incorrect"
 
-#: load.py:1548
+#: load.py:1558
 msgid "Call rejected: you seem to have enough hull left."
 msgstr ""
 "Appel rejeté: il semble que votre coque n'est pas dans un état critique."
 
-#: load.py:1583
+#: load.py:1593
 msgid "Loadout information is stale"
 msgstr "Les informations ne sont pas à jour"
 
-#: load.py:1583
+#: load.py:1593
 msgid "Congrats, you've found a bug in Elite!"
 msgstr "Félicitations! Vous avez trouvé un bug dans Elite!"
 
-#: load.py:1583
+#: load.py:1593
 msgid "The modules info isn't updated right away :("
 msgstr "Les informations de vos modules ne sont pas mises à jour de suite :("
 
-#: load.py:1583
+#: load.py:1593
 msgid "Try again after moving around or relog and check your modules."
 msgstr ""
 "Essayez plus tard après avoir bougé ou reloguez et regardez vos modules."

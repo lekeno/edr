@@ -1474,7 +1474,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         if len(command_parts) >= 2:
             parameters = " ".join(command_parts[1:]).split(" < ", 1)
             search_center = parameters[0] or cmdr.star_system
-            override_sc_dist = parameters[1] if len(parameters) > 1 else None
+            override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.interstellar_factors_near(search_center, override_sc_dist)
     elif command == "!raw":
         EDRLOG.log(u"Raw Material Trader command", "INFO")
@@ -1483,7 +1483,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         if len(command_parts) >= 2:
             parameters = " ".join(command_parts[1:]).split(" < ", 1)
             search_center = parameters[0] or cmdr.star_system
-            override_sc_dist = parameters[1] if len(parameters) > 1 else None
+            override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.raw_material_trader_near(search_center, override_sc_dist)
     elif command in ["!encoded", "!enc"]:
         EDRLOG.log(u"Encoded Material Trader command", "INFO")
@@ -1492,7 +1492,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         if len(command_parts) >= 2:
             parameters = " ".join(command_parts[1:]).split(" < ", 1)
             search_center = parameters[0] or cmdr.star_system
-            override_sc_dist = parameters[1] if len(parameters) > 1 else None
+            override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.encoded_material_trader_near(search_center, override_sc_dist)
     elif command in ["!manufactured", "!man"]:
         EDRLOG.log(u"Manufactured Material Trader command", "INFO")
@@ -1501,7 +1501,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         if len(command_parts) >= 2:
             parameters = " ".join(command_parts[1:]).split(" < ", 1)
             search_center = parameters[0] or cmdr.star_system
-            override_sc_dist = parameters[1] if len(parameters) > 1 else None
+            override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.manufactured_material_trader_near(search_center, override_sc_dist)
     elif command == "!staging":
         EDRLOG.log(u"Looking for a staging station", "INFO")
@@ -1510,7 +1510,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         if len(command_parts) >= 2:
             parameters = " ".join(command_parts[1:]).split(" < ", 1)
             search_center = parameters[0] or cmdr.star_system
-            override_sc_dist = parameters[1] if len(parameters) > 1 else None
+            override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.staging_station_near(search_center, override_sc_dist)
     elif command in ["!htb", "!humantechbroker"]:
         EDRLOG.log(u"Looking for a human tech broker", "INFO")
@@ -1519,7 +1519,7 @@ def handle_bang_commands(cmdr, command, command_parts):
         if len(command_parts) >= 2:
             parameters = " ".join(command_parts[1:]).split(" < ", 1)
             search_center = parameters[0] or cmdr.star_system
-            override_sc_dist = parameters[1] if len(parameters) > 1 else None
+            override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.human_tech_broker_near(search_center, override_sc_dist)
     elif command in ["!gtb", "!guardiantechbroker"]:
         EDRLOG.log(u"Looking for a guardian tech broker", "INFO")
@@ -1528,8 +1528,18 @@ def handle_bang_commands(cmdr, command, command_parts):
         if len(command_parts) >= 2:
             parameters = " ".join(command_parts[1:]).split(" < ", 1)
             search_center = parameters[0] or cmdr.star_system
-            override_sc_dist = parameters[1] if len(parameters) > 1 else None
+            override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.guardian_tech_broker_near(search_center, override_sc_dist)
+    elif command in ["!offbeat"]:
+        EDRLOG.log(u"Looking for an offbeat station", "INFO")
+        search_center = cmdr.star_system
+        override_sc_dist = None
+        if len(command_parts) >= 2:
+            parameters = " ".join(command_parts[1:]).split(" < ", 1)
+            print(parameters)
+            search_center = parameters[0] or cmdr.star_system
+            override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
+        EDR_CLIENT.offbeat_station_near(search_center, override_sc_dist)
     elif command in ["!edr", "!911", "!fuel", "!repair"]:
         services = {
             "!edr": "edr",

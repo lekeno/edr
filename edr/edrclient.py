@@ -1917,6 +1917,27 @@ class EDRClient(object):
             self.status = _(u"Guardian tech broker: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
+    def offbeat_station_near(self, star_system, override_sc_distance = None):
+        if not star_system:
+            return
+        
+        if self.searching:
+            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True)
+            return
+
+        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
+            self.__notify(_(u"EDR Search near {}").format(star_system), [_(u"Search features only work in the bubble or Colonia.")], clear_before = True)
+            return
+
+        try:
+            self.edrsystems.search_offbeat_station(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), override_sc_distance = override_sc_distance)
+            self.searching = True
+            self.status = _(u"Offbeat station: searching...")
+            self.__notify(_(u"EDR Search"), [_(u"Offbeat station: searching...")], clear_before = True)
+        except ValueError:
+            self.status = _(u"Offbeat station: failed")
+            self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
+
     def __staoi_found(self, reference, radius, sc, soi_checker, result):
         self.searching = False
         details = []
