@@ -444,6 +444,11 @@ def handle_friends_events(ed_player, entry):
     elif entry["Status"] == "Offline":
         ed_player.deinstanced_player(entry["Name"])
 
+def handle_engineer_progress(ed_player, entry):
+    if entry["event"] != "EngineerProgress":
+        return
+    ed_player.engineers.update(entry)
+
 def handle_powerplay_events(ed_player, entry):
     if entry["event"] == "Powerplay":
         EDRLOG.log(u"Initial powerplay event: {}".format(entry), "DEBUG")
@@ -615,6 +620,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     if entry["event"] == "Friends":
         handle_friends_events(ed_player, entry)
+
+    if entry["event"] == "EngineerProgress":
+        handle_engineer_progress(ed_player, entry)
 
     if entry["event"] in ["Materials", "MaterialCollected", "MaterialDiscarded", "EngineerContribution", "EngineerCraft", "MaterialTrade", "MissionCompleted", "ScientificResearch", "TechnologyBroker", "Synthesis"]:
         handle_material_events(ed_player, entry, state)
