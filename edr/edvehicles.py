@@ -463,8 +463,8 @@ class EDVehicle(object):
     
     def describe_loadout(self):
         weighted_tags = {}
-        for  module in self.subsystems:
-            module_tags = EDVehicle.module_tags(slot_name)
+        for internal_name in self.subsystems:
+            module_tags = EDVehicle.module_tags(internal_name)
             for tag in module_tags:
                 weighted_tags[tag] = module_tags[tag] + weighted_tags.get(tag, 0) 
 
