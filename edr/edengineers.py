@@ -16,8 +16,10 @@ class EDEngineer(object):
     
     def dibs(self, materials):
         return None
-    
 
+    def interested_in(self, material_name):
+        return False
+    
 class EDDominoGreen(EDEngineer):
     def __init__(self):
         self.name = "Domino Green"
@@ -26,6 +28,11 @@ class EDDominoGreen(EDEngineer):
         if self.progress != "Unlocked":
             return {"push": 5}
         return None
+
+    def interested_in(self, material_name):
+        if self.progress != "Unlocked":
+            return material_name.lower() == "push"
+        return False
 
 class EDKitFowler(EDEngineer):
     def __init__(self):
@@ -36,6 +43,11 @@ class EDKitFowler(EDEngineer):
             return {"opinion polls": 20}
         return None
 
+    def interested_in(self, material_name):
+        if self.progress != "Unlocked":
+            return material_name.lower() == "opinion polls"
+        return False
+
 class EDYardenBond(EDEngineer):
     def __init__(self):
         self.name = "Yarden Bond"
@@ -44,6 +56,11 @@ class EDYardenBond(EDEngineer):
         if self.progress != "Unlocked":
             return {"smear campaign plans": 8}
         return None
+
+    def interested_in(self, material_name):
+        if self.progress != "Unlocked":
+            return material_name.lower() == "smear campaign plans"
+        return False
 
 class EDTerraVelasquez(EDEngineer):
     def __init__(self):
@@ -54,6 +71,11 @@ class EDTerraVelasquez(EDEngineer):
             return {"financial projections": 15}
         return None
 
+    def interested_in(self, material_name):
+        if self.progress != "Unlocked":
+            return material_name.lower() == "financial projections"
+        return False
+
 class EDJudeNavarro(EDEngineer):
     def __init__(self):
         self.name = "Jude Navarro"
@@ -62,6 +84,11 @@ class EDJudeNavarro(EDEngineer):
         if self.progress != "Unlocked":
             return {"genetic repair meds": 5}
         return None
+    
+    def interested_in(self, material_name):
+        if self.progress != "Unlocked":
+            return material_name.lower() == "genetic repair meds"
+        return False
 
 class EDHeroFerrari(EDEngineer):
     def __init__(self):
@@ -71,6 +98,11 @@ class EDHeroFerrari(EDEngineer):
         if self.progress != "Unlocked":
             return {"settlement defence plans": 15}
         return None
+
+    def interested_in(self, material_name):
+        if self.progress != "Unlocked":
+            return material_name.lower() == "settlement defence plans"
+        return False
 
 class EDWellingtonBeck(EDEngineer):
     def __init__(self):
@@ -87,6 +119,11 @@ class EDWellingtonBeck(EDEngineer):
             
             return {"multimedia entertainment":me, "classic entertainment":ce, "cat media": cm}
         return None
+
+    def interested_in(self, material_name):
+        if self.progress != "Unlocked":
+            return material_name.lower() in ["multimedia entertainment", "classic entertainment", "cat media"]
+        return False
 
 class EDUmaLaszlo(EDEngineer):
     def __init__(self):
@@ -107,6 +144,11 @@ class EDOdenGeiger(EDEngineer):
             
             return {"biological sample":me, "employee genetic data":ce, "genetic research": cm}
         return None
+
+    def interested_in(self, material_name):
+        if self.progress != "Unlocked":
+            return material_name.lower() in ["biological sample", "employee genetic data", "genetic research"]
+        return False
 
 class EDEngineers(object):
     ODYSSEY_MATS = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'odyssey_mats.json')).read())
@@ -130,6 +172,18 @@ class EDEngineers(object):
             if EDEngineers.ODYSSEY_MATS[name].get("used", 0) > 0 and quantity:
                 dibs_list.append({name: quantity})
         return dibs_list
+
+    def is_useless(self, material_name):
+        if material_name not in EDEngineers.ODYSSEY_MATS:
+            return False # better safe than sorry
+        
+        if EDEngineers.ODYSSEY_MATS[material_name].get("used", 0) > 0:
+            return False
+        
+        for name in self.engineers:
+            if self.engineers[name].interested_in(material_name):
+                return False
+        return True
 
 
 class EDUnknownEngineer(EDEngineer):

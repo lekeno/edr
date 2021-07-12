@@ -624,7 +624,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] == "EngineerProgress":
         handle_engineer_progress(ed_player, entry)
 
-    if entry["event"] in ["Materials", "MaterialCollected", "MaterialDiscarded", "EngineerContribution", "EngineerCraft", "MaterialTrade", "MissionCompleted", "ScientificResearch", "TechnologyBroker", "Synthesis"]:
+    if entry["event"] in ["Materials", "MaterialCollected", "MaterialDiscarded", "EngineerContribution", "EngineerCraft", "MaterialTrade", "MissionCompleted", "ScientificResearch", "TechnologyBroker", "Synthesis", "BackpackChange"]:
         handle_material_events(ed_player, entry, state)
 
     if entry["event"] == "StoredShips":
@@ -1378,6 +1378,10 @@ def handle_material_events(cmdr, entry, state):
         cmdr.inventory.traded(entry)
     elif entry["event"] == "MissionCompleted":
         cmdr.inventory.rewarded(entry)
+    elif entry["event"] == "BackpackChange" and "Added" in entry:
+        useless = [item["Name"] for item in entry["Added"] if cmdr.engineers.is_useless(item["Name"]) and "MissionID" not in item]
+        if useless:
+            EDR_CLIENT.notify_with_details("Useless Materials", [_(u"no known use for: {}").format(useless.join(", "))])
 	
 def handle_commands(cmdr, entry):
     if not entry["event"] == "SendText":
