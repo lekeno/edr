@@ -17,6 +17,9 @@ class EDEngineer(object):
     def dibs(self, materials):
         return None
 
+    def relevant(self, material_name):
+        return False
+
     def interested_in(self, material_name):
         return False
     
@@ -29,9 +32,12 @@ class EDDominoGreen(EDEngineer):
             return {"push": 5}
         return None
 
+    def relevant(self, material_name):
+        return material_name.lower() == "push"
+
     def interested_in(self, material_name):
         if self.progress != "Unlocked":
-            return material_name.lower() == "push"
+            return self.relevant(material_name)
         return False
 
 class EDKitFowler(EDEngineer):
@@ -40,12 +46,15 @@ class EDKitFowler(EDEngineer):
 
     def dibs(self, materials):
         if self.progress != "Unlocked":
-            return {"opinion polls": 20}
+            return {"opinionpolls": 20}
         return None
+
+    def relevant(self, material_name):
+        return material_name.lower() == "opinionpolls"
 
     def interested_in(self, material_name):
         if self.progress != "Unlocked":
-            return material_name.lower() == "opinion polls"
+            return self.relevant(material_name)
         return False
 
 class EDYardenBond(EDEngineer):
@@ -54,12 +63,15 @@ class EDYardenBond(EDEngineer):
 
     def dibs(self, materials):
         if self.progress != "Unlocked":
-            return {"smear campaign plans": 8}
+            return {"smearcampaignplans": 8}
         return None
+
+    def relevant(self, material_name):
+        return material_name.lower() == "smearcampaignplans"
 
     def interested_in(self, material_name):
         if self.progress != "Unlocked":
-            return material_name.lower() == "smear campaign plans"
+            return self.relevant(material_name)
         return False
 
 class EDTerraVelasquez(EDEngineer):
@@ -68,12 +80,15 @@ class EDTerraVelasquez(EDEngineer):
 
     def dibs(self, materials):
         if self.progress != "Unlocked":
-            return {"financial projections": 15}
+            return {"financialprojections": 15}
         return None
+
+    def relevant(self, material_name):
+        return material_name.lower() == "financialprojections"
 
     def interested_in(self, material_name):
         if self.progress != "Unlocked":
-            return material_name.lower() == "financial projections"
+            return self.relevant(material_name)
         return False
 
 class EDJudeNavarro(EDEngineer):
@@ -82,12 +97,15 @@ class EDJudeNavarro(EDEngineer):
 
     def dibs(self, materials):
         if self.progress != "Unlocked":
-            return {"genetic repair meds": 5}
+            return {"geneticrepairmeds": 5}
         return None
+
+    def relevant(self, material_name):
+        return material_name.lower() == "geneticrepairmeds"
     
     def interested_in(self, material_name):
         if self.progress != "Unlocked":
-            return material_name.lower() == "genetic repair meds"
+            return self.relevant(material_name)
         return False
 
 class EDHeroFerrari(EDEngineer):
@@ -96,12 +114,15 @@ class EDHeroFerrari(EDEngineer):
 
     def dibs(self, materials):
         if self.progress != "Unlocked":
-            return {"settlement defence plans": 15}
+            return {"settlementdefenceplans": 15}
         return None
+
+    def relevant(self, material_name):
+        return material_name.lower() == "settlementdefenceplans"
 
     def interested_in(self, material_name):
         if self.progress != "Unlocked":
-            return material_name.lower() == "settlement defence plans"
+            return self.relevant(material_name)
         return False
 
 class EDWellingtonBeck(EDEngineer):
@@ -110,9 +131,9 @@ class EDWellingtonBeck(EDEngineer):
 
     def dibs(self, materials):
         if self.progress != "Unlocked":
-            me = materials.get("multimedia entertainment", 0)
-            ce = materials.get("classic entertainment", 0)
-            cm = materials.get("cat media", 0)
+            me = materials.get("multimediaentertainment", 0)
+            ce = materials.get("classicentertainment", 0)
+            cm = materials.get("catmedia", 0)
             me = max(min(25, me), 8)
             ce = max(min(25-me, ce), 25-me-8)
             cm = 25-me-ce
@@ -120,9 +141,12 @@ class EDWellingtonBeck(EDEngineer):
             return {"multimedia entertainment":me, "classic entertainment":ce, "cat media": cm}
         return None
 
+    def relevant(self, material_name):
+        return material_name.lower() in ["multimediaentertainment", "classicentertainment", "catmedia"]
+
     def interested_in(self, material_name):
         if self.progress != "Unlocked":
-            return material_name.lower() in ["multimedia entertainment", "classic entertainment", "cat media"]
+            return self.relevant(material_name)
         return False
 
 class EDUmaLaszlo(EDEngineer):
@@ -135,19 +159,22 @@ class EDOdenGeiger(EDEngineer):
 
     def dibs(self, materials):
         if self.progress != "Unlocked":
-            me = materials.get("biological sample", 0)
-            ce = materials.get("employee genetic data", 0)
-            cm = materials.get("genetic research", 0)
+            me = materials.get("biologicalsample", 0)
+            ce = materials.get("employeegenetic data", 0)
+            cm = materials.get("geneticresearch", 0)
             me = max(min(20, me), 7)
             ce = max(min(20-me, ce), 7)
             cm = 20-me-ce
             
-            return {"biological sample":me, "employee genetic data":ce, "genetic research": cm}
+            return {"biologicalsample":me, "employeegenetic data":ce, "geneticresearch": cm}
         return None
+
+    def relevant(Self, material_name):
+        return material_name.lower() in ["biologicalsample", "employeegeneticdata", "geneticresearch"]
 
     def interested_in(self, material_name):
         if self.progress != "Unlocked":
-            return material_name.lower() in ["biological sample", "employee genetic data", "genetic research"]
+            return self.relevant(material_name)
         return False
 
 class EDEngineers(object):
@@ -162,6 +189,7 @@ class EDEngineers(object):
             self.engineers[e["Engineer"]] = EDEngineerFactory.from_engineer_progress_dict(e)
 
     def dibs(self, materials):
+        # TODO not needed?
         dibs_list = []
         for name in self.engineers:
             dibs = self.engineers[name].dibs(materials)
@@ -175,15 +203,26 @@ class EDEngineers(object):
 
     def is_useless(self, material_name):
         if material_name not in EDEngineers.ODYSSEY_MATS:
+            print(material_name)
             return False # better safe than sorry
         
         if EDEngineers.ODYSSEY_MATS[material_name].get("used", 0) > 0:
             return False
         
-        for name in self.engineers:
-            if self.engineers[name].interested_in(material_name):
-                return False
         return True
+
+    def is_unnecessary(self, material_name):
+        if material_name not in EDEngineers.ODYSSEY_MATS:
+            print(material_name)
+            return False # better safe than sorry
+
+        if EDEngineers.ODYSSEY_MATS[material_name].get("used", 0) > 0:
+            return False
+        
+        for name in self.engineers:
+            if self.engineers[name].relevant(material_name):
+                return not self.engineers[name].interested_in(material_name)
+        return False
 
 
 class EDUnknownEngineer(EDEngineer):
