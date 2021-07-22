@@ -25,6 +25,7 @@ class EDEngineer(object):
     
 class EDDominoGreen(EDEngineer):
     def __init__(self):
+        super().__init__()
         self.name = "Domino Green"
 
     def dibs(self, materials):
@@ -42,6 +43,7 @@ class EDDominoGreen(EDEngineer):
 
 class EDKitFowler(EDEngineer):
     def __init__(self):
+        super().__init__()
         self.name = "Kit Fowler"
 
     def dibs(self, materials):
@@ -59,6 +61,7 @@ class EDKitFowler(EDEngineer):
 
 class EDYardenBond(EDEngineer):
     def __init__(self):
+        super().__init__()
         self.name = "Yarden Bond"
 
     def dibs(self, materials):
@@ -76,6 +79,7 @@ class EDYardenBond(EDEngineer):
 
 class EDTerraVelasquez(EDEngineer):
     def __init__(self):
+        super().__init__()
         self.name = "Terra Velasquez"
 
     def dibs(self, materials):
@@ -93,6 +97,7 @@ class EDTerraVelasquez(EDEngineer):
 
 class EDJudeNavarro(EDEngineer):
     def __init__(self):
+        super().__init__()
         self.name = "Jude Navarro"
 
     def dibs(self, materials):
@@ -110,6 +115,7 @@ class EDJudeNavarro(EDEngineer):
 
 class EDHeroFerrari(EDEngineer):
     def __init__(self):
+        super().__init__()
         self.name = "Hero Ferrari"
 
     def dibs(self, materials):
@@ -127,6 +133,7 @@ class EDHeroFerrari(EDEngineer):
 
 class EDWellingtonBeck(EDEngineer):
     def __init__(self):
+        super().__init__()
         self.name = "Wellington Beck"
 
     def dibs(self, materials):
@@ -147,14 +154,25 @@ class EDWellingtonBeck(EDEngineer):
     def interested_in(self, material_name):
         if self.progress != "Unlocked":
             return self.relevant(material_name)
+            # TODO add referral requirements: For this one, it's insightentertainmentsuite. Check the other too.
         return False
 
 class EDUmaLaszlo(EDEngineer):
     def __init__(self):
+        super().__init__()
         self.name = "Uma Laszlo"
+
+    def relevant(self, material_name):
+        return material_name.lower() == "insightentertainmentsuite"
+
+    def interested_in(self, material_name):
+        if self.progress is None:
+            return self.relevant(material_name)
+        return False
 
 class EDOdenGeiger(EDEngineer):
     def __init__(self):
+        super().__init__()
         self.name = "Oden Geiger"
 
     def dibs(self, materials):
@@ -182,6 +200,9 @@ class EDEngineers(object):
 
     def __init__(self):
         self.engineers = {}
+        engineers = ["domino green", "kit fowler", "yarden bond", "terra velasquez", "jude navarro", "hero ferrari", "wellington beck", "uma laszlo", "oden geiger"]
+        for e in engineers:
+            self.engineers[e] = EDEngineerFactory.from_engineer_name(e)
 
     def update(self, engineer_progress_event):
         engineers = engineer_progress_event.get("Engineers", [])
@@ -203,8 +224,7 @@ class EDEngineers(object):
 
     def is_useless(self, material_name):
         if material_name not in EDEngineers.ODYSSEY_MATS:
-            print(material_name)
-            return False # better safe than sorry
+            return False # better safe than sorry, and currently takes care of consumables.
         
         if EDEngineers.ODYSSEY_MATS[material_name].get("used", 0) > 0:
             return False
@@ -212,13 +232,6 @@ class EDEngineers(object):
         return True
 
     def is_unnecessary(self, material_name):
-        if material_name not in EDEngineers.ODYSSEY_MATS:
-            print(material_name)
-            return False # better safe than sorry
-
-        if EDEngineers.ODYSSEY_MATS[material_name].get("used", 0) > 0:
-            return False
-        
         for name in self.engineers:
             if self.engineers[name].relevant(material_name):
                 return not self.engineers[name].interested_in(material_name)

@@ -776,12 +776,24 @@ class EDRClient(object):
             self.__commsjammed()
             return None
 
-    def eval_build(self, eval_type):
-        canonical_commands = ["power"]
-        synonym_commands = ["priority", "pp", "priorities"]
-        supported_commands = set(canonical_commands + synonym_commands)
+    def eval(self, eval_type):
+        canonical_commands = ["power", "backpack", "locker"]
+        synonym_commands = {"power": ["priority", "pp", "priorities"]}
+        supported_commands = set(canonical_commands + synonym_commands["power"])
         if eval_type not in supported_commands:
             self.__notify(_(u"EDR Evals"), [_(u"Yo dawg, I don't do evals for '{}'").format(eval_type), _(u"Try {} instead.").format(", ".join(canonical_commands))], clear_before=True)
+            return
+
+        if eval_type == "power" or eval_type in synonym_commands["power"]:
+            self.eval_build()
+        elif eval_type == "backpack":
+            self.eval_backpack()
+        elif eval_type == "locker":
+            self.eval_locker()
+
+    def eval_build(self):
+        if not self.player.mothership.update_modules():
+            self.notify_with_details(_(u"Loadout information is stale"), [_(u"Congrats, you've found a bug in Elite!"), _(u"The modules info isn't updated right away :("), _(u"Try again after moving around or relog and check your modules.")])
             return
 
         vehicle = self.player.mothership
@@ -808,8 +820,36 @@ class EDRClient(object):
             praise = _(u"  ✓: {}").format(assessment[fraction]["praise"]) if "praise" in assessment[fraction] else u""
             formatted_assessment.append(_(u"{}{}").format(recommendation, praise))
         self.__notify(_(u"Basic Power Assessment (β; oddities? relog, look at your modules)"), formatted_assessment, clear_before=True)
+
+    def eval_backpack(self):
+        micro_resources = dict(sorted(self.player.inventory.all_in_backpack().items(), key=lambda item: item[1]))
+        details = self.eval_micro_resources(micro_resources)
+        if details:
+            self.notify_with_details("Backpack assessment", details)
+        else:
+            self.notify_with_details(_("Backpack assessment"), [_(u"Something went wrong :(")])
+
+    def eval_locker(self):
+        micro_resources = dict(sorted(self.player.inventory.all_in_locker().items(), key=lambda item: item[1]))
+        details = self.eval_micro_resources(micro_resources)
         
-    
+        if details:
+            self.notify_with_details(_(u"Storage assessment"), details)
+        else:
+            self.notify_with_details(_("Storage assessment"), [_(u"Something went wrong :(")])
+
+    def eval_micro_resources(self, micro_resources):
+        discardable = [self.player.inventory.oneliner(name) for name in micro_resources if self.player.engineers.is_useless(name) and not self.player.engineers.is_unnecessary(name)]
+        unnecessary = [self.player.inventory.oneliner(name) for name in micro_resources if self.player.engineers.is_unnecessary(name)]
+        details = []
+        discardable = discardable[0:min(len(discardable), 3)]
+        unnecessary = unnecessary[0:min(len(unnecessary), 3)]
+        if discardable:
+            details.append(_(u"Useless: {}").format(", ".join(discardable)))
+        if unnecessary:
+            details.append(_(u"Unnecessary: {}").format(", ".join(unnecessary)))
+        return details
+
     def evict_system(self, star_system):
         self.edrsystems.evict(star_system)
 

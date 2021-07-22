@@ -169,7 +169,7 @@ class EDRInventory(object):
         "universaltranslator": { "localized": _(u"Universal Translator"), "category": "item", "raw": "Universal Translator", "grade":0},
         "biochemicalagent": { "localized": _(u"Biochemical Agent"), "category": "item", "raw": "Biochemical Agent", "grade":0},
         "degradedpowerregulator": { "localized": _(u"Degraded Power Regulator"), "category": "item", "raw": "Degraded Power Regulator", "grade":0},
-        "hush": { "localized": _(u"hush"), "category": "item", "raw": "hush", "grade":0},
+        "hush": { "localized": _(u"Hush"), "category": "item", "raw": "Hush", "grade":0},
         "maintenancelogs": { "localized": _(u"Maintenance Logs"), "category": "data", "raw": "Maintenance Logs", "grade":0},
         "patrolroutes": { "localized": _(u"Patrol Routes"), "category": "data", "raw": "Patrol Routes", "grade":0},
         "push": { "localized": _(u"push"), "category": "item", "raw": "push", "grade":0},
@@ -301,7 +301,15 @@ class EDRInventory(object):
         "spyware": { "localized": _(u"Spyware"), "category": "data", "raw": "Spyware", "grade":0},
         "tacticalplans": { "localized": _(u"Tactical Plans"), "category": "data", "raw": "Tactical plans", "grade":0},
         "virus": { "localized": _(u"Virus"), "category": "data", "raw": "Virus", "grade":0},
-        "aerogel": { "localized": _(u"Aerogel"), "category": "component", "raw": "Aerogel", "grade":0}
+        "aerogel": { "localized": _(u"Aerogel"), "category": "component", "raw": "Aerogel", "grade":0},
+        "geneticrepairmeds": { "localized": _(u"Genetic Repair Meds"), "category": "item", "raw": "Genetic Repair Meds", "grade":0},
+        "cropyieldanalysis": { "localized": _(u"Crop Yield Analysis"), "category": "data", "raw": "Crop Yield Analysis", "grade":0},
+        "kompromat": { "localized": _(u"Kompromat"), "category": "data", "raw": "Kompromat", "grade":0},
+        "xenodefenceprotocols":  { "localized": _(u"Xeno Defence Protocols"), "category": "data", "raw": "Xeno Defence Protocols", "grade":0},
+        "geologicaldata":  { "localized": _(u"Geological Data"), "category": "data", "raw": "Geological Data", "grade":0},
+        "opinionpolls":  { "localized": _(u"Opinion Polls"), "category": "data", "raw": "Opinion Polls", "grade":0},
+        "propaganda":  { "localized": _(u"Propaganda"), "category": "data", "raw": "Propaganda", "grade":0},
+
     }
 
     INTERNAL_NAMES_LUT = { u'classified scan databanks': 'scandatabanks', u'conductive components': 'conductivecomponents', u'abnormal compact emissions data': 'compactemissionsdata', u'germanium': 'germanium',
@@ -399,6 +407,22 @@ class EDRInventory(object):
             cname = self.__c_name(thing["Name"])
             self.manufactured[cname] = thing["Count"]
 
+        for thing in materials.get("Items", []):
+            cname = self.__c_name(thing["Name"])
+            self.items[cname] = thing["Count"]
+
+        for thing in materials.get("Components", []):
+            cname = self.__c_name(thing["Name"])
+            self.components[cname] = thing["Count"]
+
+        for thing in materials.get("Data", []):
+            cname = self.__c_name(thing["Name"])
+            self.data[cname] = thing["Count"]
+
+        for thing in materials.get("Consumables", []):
+            cname = self.__c_name(thing["Name"])
+            self.consumables[cname] = thing["Count"]
+
         self.initialized = True
         self.inconsistencies = False
 
@@ -433,15 +457,17 @@ class EDRInventory(object):
 
         backpack = state.get("BackPack", {})
         for category in backpack:
-            self.backpack[category] = {}
+            ccategory = category.lower()
+            self.backpack[ccategory] = {}
             for thing in backpack[category]:
                 cname = self.__c_name(thing)
-                self.backpack[category][cname] = backpack[category][thing]
+                self.backpack[ccategory][cname] = backpack[category][thing]
 
         self.initialized = True
         self.inconsistencies = False
 
     def stale_or_incorrect(self):
+        self.__check()
         return not self.initialized or self.inconsistencies
 
     def persist(self):
@@ -469,9 +495,11 @@ class EDRInventory(object):
         with open(self.EDR_INVENTORY_BACKPACK_CACHE, 'wb') as handle:
             pickle.dump(self.backpack, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    def all_micro_resources(self):
+    def all_in_locker(self):
         return {**self.items, **self.consumables, **self.data, **self.components}
 
+    def all_in_backpack(self):
+        return {**self.backpack.get("item",{}), **self.backpack.get("consumable",{}), **self.backpack.get("data",{}), **self.backpack.get("component",{})}
 
     def bought(self, info):
         self.add(info["Category"], info["Name"], info["Count"])
@@ -518,12 +546,16 @@ class EDRInventory(object):
         elif category == "manufactured":
             return self.manufactured.get(cname, 0)
         elif category == "item":
+            print("item count for: {}: {}".format(name, self.items.get(cname, 0)))
             return self.items.get(cname, 0) + self.count_backpack(name)
         elif category == "component":
+            print("compo count for: {}: {}".format(name, self.components.get(cname, 0)))
             return self.components.get(cname, 0) + self.count_backpack(name)
         elif category == "data":
+            print("data count for: {}: {}".format(name, self.data.get(cname, 0)))
             return self.data.get(cname, 0) + self.count_backpack(name)
         elif category == "consumables":
+            print("consu count for: {}: {}".format(name, self.consumables.get(cname, 0)))
             return self.consumables.get(cname, 0) + self.count_backpack(name)
         return 0
 
@@ -531,6 +563,7 @@ class EDRInventory(object):
         cname = self.__c_name(name)
         category = self.category(cname)
         if category not in self.backpack:
+            print("cat {} not in backpack: {}".format(category, self.backpack))
             return 0
         return self.backpack[category].get(cname, 0)
 
@@ -539,8 +572,9 @@ class EDRInventory(object):
         category = self.category(cname)
         entry = self.MATERIALS_LUT.get(cname, None)
         if not category or not entry:
+            print("no cat or no entry: {} - {}".format(name, cname))
             return name
-        count = self.count(cname)
+        count = self.count(name)
         if category in ["encoded", "raw", "manufactured"]:
             grades = [u"?", u"Ⅰ", u"Ⅱ", u"Ⅲ", u"Ⅳ", u"Ⅴ"]
             slots = [u"?", u"300", u"250", u"200", u"150", u"100"]
@@ -554,7 +588,20 @@ class EDRInventory(object):
                 self.__check_item(thing)
                 if self.inconsistencies:
                     return False
-        return True
+
+        for collection in [self.items, self.data, self.components]:
+            tally = 0
+            for thing in collection:
+                count = self.count(thing)
+                if count < 0:
+                    self.inconsistencies = True
+                    break
+                tally += count
+            if tally > 1000:
+                self.inconsistencies = True
+                break
+
+        return self.inconsistencies
     
     def __check_item(self, name):
         cname = self.__c_name(name)
@@ -565,10 +612,12 @@ class EDRInventory(object):
         if count < 0:
             self.inconsistencies = True
             return False
-        max_for_slot = self.slots(name)
-        if count > max_for_slot:
-            self.inconsistencies = True
-            return False
+        
+        if self.category(name) in ["raw", "manufactured", "encoded"]:
+            max_for_slot = self.slots(name)
+            if count > max_for_slot:
+                self.inconsistencies = True
+                return False
         return True
 
     def donated_engineer(self, info):
@@ -664,9 +713,10 @@ class EDRInventory(object):
             self.consumables[cname] = newcount
 
     def adjust_backpack(self, category, name, count):
-        if category not in self.backpack:
-            self.backpack[category] = {}
-        self.backpack[category][name] = max(self.backpack[category].get(name, 0) + count, 0)
+        ccategory = category.lower()
+        if ccategory not in self.backpack:
+            self.backpack[ccategory] = {}
+        self.backpack[ccategory][name] = max(self.backpack[ccategory].get(name, 0) + count, 0)
 
     def category(self, name):
         cname = self.__c_name(name)

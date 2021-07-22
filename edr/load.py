@@ -624,7 +624,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] == "EngineerProgress":
         handle_engineer_progress(ed_player, entry)
 
-    if entry["event"] in ["Materials", "MaterialCollected", "MaterialDiscarded", "EngineerContribution", "EngineerCraft", "MaterialTrade", "MissionCompleted", "ScientificResearch", "TechnologyBroker", "Synthesis", "BackpackChange", "BuyMicroResources", "SellMicroResources", "TransferMicroResources", "TradeMicroResources"]:
+    if entry["event"] in ["Materials", "MaterialCollected", "MaterialDiscarded", "EngineerContribution", "EngineerCraft", "MaterialTrade", "MissionCompleted", "ScientificResearch", "TechnologyBroker", "Synthesis", "BackpackChange", "BuyMicroResources", "SellMicroResources", "TransferMicroResources", "TradeMicroResources", "ShipLockerMaterials"]:
         handle_material_events(ed_player, entry, state)
 
     if entry["event"] == "StoredShips":
@@ -1361,7 +1361,8 @@ def handle_scan_events(player, entry):
 def handle_material_events(cmdr, entry, state):
     if cmdr.inventory.stale_or_incorrect():
         cmdr.inventory.initialize_with_edmc(state)
-    if entry["event"] == "Materials":
+
+    if entry["event"] in ["Materials", "ShipLockerMaterials"]:
         cmdr.inventory.initialize(entry)
     elif entry["event"] == "MaterialCollected":
         cmdr.inventory.collected(entry)
@@ -1379,35 +1380,18 @@ def handle_material_events(cmdr, entry, state):
     elif entry["event"] == "MissionCompleted":
         cmdr.inventory.rewarded(entry)
     elif entry["event"] == "BackpackChange" and "Added" in entry:
-        added = [cmdr.inventory.oneliner(item["Name"]) for item in entry["Added"] if not(cmdr.engineers.is_useless(item["Name"])) or not(cmdr.engineers.is_unnecessary(item["Name"])) or "MissionID" in item]
-        useless = [cmdr.inventory.oneliner(item["Name"]) for item in entry["Added"] if cmdr.engineers.is_useless(item["Name"]) and "MissionID" not in item]
+        added = [cmdr.inventory.oneliner(item["Name"]) for item in entry["Added"] if not(cmdr.engineers.is_useless(item["Name"]) or cmdr.engineers.is_unnecessary(item["Name"])) or "MissionID" in item]
+        discardable = [cmdr.inventory.oneliner(item["Name"]) for item in entry["Added"] if cmdr.engineers.is_useless(item["Name"]) and not cmdr.engineers.is_unnecessary(item["Name"]) and "MissionID" not in item]
         unnecessary = [cmdr.inventory.oneliner(item["Name"]) for item in entry["Added"] if cmdr.engineers.is_unnecessary(item["Name"]) and "MissionID" not in item]
         details = [", ".join(added)]
-        if useless:
-            details.append(_(u"useless: {}").format(", ".join(useless)))
+        if discardable:
+            details.append(_(u"Useless: {}").format(", ".join(discardable)))
         if unnecessary:
-            details.append(_(u"unnecessary: {}").format(", ".join(unnecessary)))
+            details.append(_(u"Unnecessary: {}").format(", ".join(unnecessary)))
         EDR_CLIENT.notify_with_details("Materials Info", details)
     elif entry["event"] == "SellMicroResources":
         cmdr.inventory.sold(entry)
-        micro_resources = dict(sorted(cmdr.inventory.all_micro_resources().items(), key=lambda item: item[1]))
-        print(micro_resources)
-        useless = [cmdr.inventory.oneliner(name) for name in micro_resources if cmdr.engineers.is_useless(name)] # TODO and "MissionID" not in item]
-        unnecessary = [cmdr.inventory.oneliner(name) for name in micro_resources if cmdr.engineers.is_unnecessary(name)] # TODO and "MissionID" not in item]
-        details = []
-        print("useless: {}".format(useless))
-        print("unnecessary: {}".format(unnecessary))
-        useless = useless[0:min(len(useless), 2)]
-        unnecessary = unnecessary[0:min(len(unnecessary), 2)]
-        print("redux useless: {}".format(useless))
-        print("redux unnecessary: {}".format(unnecessary))
-        if useless:
-            details.append(_(u"useless: {}").format(", ".join(useless)))
-        if unnecessary:
-            details.append(_(u"unnecessary: {}").format(", ".join(unnecessary)))
-
-        if details:
-            EDR_CLIENT.notify_with_details("Discardable materials", details)
+        EDR_CLIENT.eval_storage()
     elif entry["event"] == "BuyMicroResources":
         cmdr.inventory.bought(entry)
     elif entry["event"] == "TransferMicroResources":
@@ -1649,10 +1633,7 @@ def handle_bang_commands(cmdr, command, command_parts):
     elif command == "!eval" and len(command_parts) == 2:
         eval_type = command_parts[1]
         EDRLOG.log(u"Eval command for {}".format(eval_type), "INFO")
-        if EDR_CLIENT.player.mothership.update_modules():
-            EDR_CLIENT.eval_build(eval_type)
-        else:
-            EDR_CLIENT.notify_with_details(_(u"Loadout information is stale"), [_(u"Congrats, you've found a bug in Elite!"), _(u"The modules info isn't updated right away :("), _(u"Try again after moving around or relog and check your modules.")])
+        EDR_CLIENT.eval(eval_type)
     elif command == "!contracts" and len(command_parts) == 1:
         EDRLOG.log(u"Contracts command", "INFO")
         EDR_CLIENT.contracts()
