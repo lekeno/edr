@@ -822,28 +822,38 @@ class EDRClient(object):
         self.__notify(_(u"Basic Power Assessment (β; oddities? relog, look at your modules)"), formatted_assessment, clear_before=True)
 
     def eval_backpack(self):
-        micro_resources = dict(sorted(self.player.inventory.all_in_backpack().items(), key=lambda item: item[1]))
-        details = self.eval_micro_resources(micro_resources)
-        if details:
-            self.notify_with_details("Backpack assessment", details)
+        micro_resources = dict(sorted(self.player.inventory.all_in_backpack().items(), key=lambda item: item[1], reverse=True))
+        if micro_resources:
+            details = self.eval_micro_resources(micro_resources)
+            if details:
+                self.notify_with_details("Backpack assessment", details)
+            else:
+                self.notify_with_details(_("Backpack assessment"), [_(u"Nothing superfluous")])
         else:
-            self.notify_with_details(_("Backpack assessment"), [_(u"Something went wrong :(")])
+            self.notify_with_details(_("Backpack assessment"), [_(u"Empty backpack?")])
 
     def eval_locker(self):
-        micro_resources = dict(sorted(self.player.inventory.all_in_locker().items(), key=lambda item: item[1]))
-        details = self.eval_micro_resources(micro_resources)
-        
-        if details:
-            self.notify_with_details(_(u"Storage assessment"), details)
+        micro_resources = dict(sorted(self.player.inventory.all_in_locker().items(), key=lambda item: item[1], reverse=True))
+        if micro_resources:
+            details = self.eval_micro_resources(micro_resources)
+            if details:
+                self.notify_with_details(_(u"Storage assessment"), details)
+            else:
+                self.notify_with_details(_("Storage assessment"), [_(u"Nothing superfluous")])
         else:
-            self.notify_with_details(_("Storage assessment"), [_(u"Something went wrong :(")])
+            self.notify_with_details(_("Storage assessment"), [_(u"Empty ship locker?")])
 
     def eval_micro_resources(self, micro_resources):
-        discardable = [self.player.inventory.oneliner(name) for name in micro_resources if self.player.engineers.is_useless(name) and not self.player.engineers.is_unnecessary(name)]
+        print(self.player.inventory.data)
+        print(micro_resources)
+        discardable = [self.player.inventory.oneliner(name) for name in micro_resources if self.player.engineers.is_useless(name)]
         unnecessary = [self.player.inventory.oneliner(name) for name in micro_resources if self.player.engineers.is_unnecessary(name)]
         details = []
+        print(discardable)
+        print(unnecessary)
         discardable = discardable[0:min(len(discardable), 3)]
         unnecessary = unnecessary[0:min(len(unnecessary), 3)]
+        print(discardable)
         if discardable:
             details.append(_(u"Useless: {}").format(", ".join(discardable)))
         if unnecessary:

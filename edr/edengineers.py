@@ -9,8 +9,11 @@ class EDEngineer(object):
         self.rank = None
     
     def update(self, progress):
+        print(progress)
         if self.name is None or self.name == progress.get("Engineer", None):
-            self.progress = progress.get("EngineerProgress", None)
+            print("updating")
+            self.progress = progress.get("Progress", None)
+            print("progress: {}".format(self.progress))
             self.rank_progress = progress.get("RankProgress", 0)
             self.rank = progress.get("Rank", 0)
     
@@ -167,6 +170,7 @@ class EDUmaLaszlo(EDEngineer):
 
     def interested_in(self, material_name):
         if self.progress is None:
+            print("uma laszlo interested in {}".format(material_name))
             return self.relevant(material_name)
         return False
 
@@ -206,7 +210,10 @@ class EDEngineers(object):
 
     def update(self, engineer_progress_event):
         engineers = engineer_progress_event.get("Engineers", [])
+        print(engineers)
         for e in engineers:
+            print(e)
+            print("updating")
             self.engineers[e["Engineer"]] = EDEngineerFactory.from_engineer_progress_dict(e)
 
     def dibs(self, materials):
@@ -229,13 +236,23 @@ class EDEngineers(object):
         if EDEngineers.ODYSSEY_MATS[material_name].get("used", 0) > 0:
             return False
         
-        return True
+        return not self.is_contributing(material_name)
+
+    def is_contributing(self, material_name):
+        for name in self.engineers:
+            print("Contributing? checking {} with {}: {}".format(material_name, name, self.engineers[name].relevant(material_name)))
+            if self.engineers[name].relevant(material_name):
+                return True
+        return False
 
     def is_unnecessary(self, material_name):
+        outcome = False
         for name in self.engineers:
-            if self.engineers[name].relevant(material_name):
-                return not self.engineers[name].interested_in(material_name)
-        return False
+            print("checking {} with {}".format(material_name, name))
+            if self.engineers[name].relevant(material_name) and not self.engineers[name].interested_in(material_name):
+                outcome = True
+                break
+        return outcome
 
 
 class EDUnknownEngineer(EDEngineer):
