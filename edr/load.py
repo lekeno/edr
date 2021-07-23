@@ -1360,10 +1360,8 @@ def handle_scan_events(player, entry):
 
 def handle_material_events(cmdr, entry, state):
     if entry["event"] in ["Materials", "ShipLockerMaterials"] or (entry["event"] == "ShipLocker" and len(entry.keys()) > 2):
-        print(entry)
         cmdr.inventory.initialize(entry)
-        print(cmdr.inventory)
-    
+        
     if cmdr.inventory.stale_or_incorrect():
         cmdr.inventory.initialize_with_edmc(state)
 
