@@ -520,6 +520,15 @@ class EDRInventory(object):
             self.set(transfer["Category"], transfer["Name"], transfer.get("NewCount", transfer.get("Count", 0)))
             self.adjust_backpack(transfer["Category"], transfer["Name"], transfer.get("OldCount", 0) - transfer.get("NewCount", 0))
 
+    def backpack_change(self, info):
+        if "Added" in info:
+            for addition in info["Added"]:
+                self.adjust_backpack(addition["Type"], addition["Name"], addition.get("Count", 0))
+        
+        if "Removed" in info:
+            for removal in info["Removed"]:
+                self.adjust_backpack(removal["Type"], removal["Name"], -removal.get("Count", 0))
+
 
     def traded(self, info):
         if "Offered" not in info:
@@ -546,16 +555,12 @@ class EDRInventory(object):
         elif category == "manufactured":
             return self.manufactured.get(cname, 0)
         elif category == "item":
-            print("item count for: {}: {}".format(name, self.items.get(cname, 0)))
             return self.items.get(cname, 0) + self.count_backpack(name)
         elif category == "component":
-            print("compo count for: {}: {}".format(name, self.components.get(cname, 0)))
             return self.components.get(cname, 0) + self.count_backpack(name)
         elif category == "data":
-            print("data count for: {}: {}".format(name, self.data.get(cname, 0)))
             return self.data.get(cname, 0) + self.count_backpack(name)
         elif category == "consumables":
-            print("consu count for: {}: {}".format(name, self.consumables.get(cname, 0)))
             return self.consumables.get(cname, 0) + self.count_backpack(name)
         return 0
 
@@ -563,23 +568,29 @@ class EDRInventory(object):
         cname = self.__c_name(name)
         category = self.category(cname)
         if category not in self.backpack:
-            print("cat {} not in backpack: {}".format(category, self.backpack))
             return 0
         return self.backpack[category].get(cname, 0)
 
-    def oneliner(self, name):
+    def oneliner(self, name, from_backpack):
         cname = self.__c_name(name)
         category = self.category(cname)
         entry = self.MATERIALS_LUT.get(cname, None)
         if not category or not entry:
-            print("no cat or no entry: {} - {}".format(name, cname))
             return name
-        count = self.count(name)
+        total_count = self.count(name)
+        count = total_count
+        if from_backpack:
+            count = self.count_backpack(name)
+
         if category in ["encoded", "raw", "manufactured"]:
             grades = [u"?", u"Ⅰ", u"Ⅱ", u"Ⅲ", u"Ⅳ", u"Ⅴ"]
             slots = [u"?", u"300", u"250", u"200", u"150", u"100"]
-            return u"{} (Grade {}; {}/{})".format(_(entry["raw"]), grades[entry["grade"]], count, slots[entry["grade"]])
-        return u"{} ({})".format(_(entry["raw"]), count)
+            return u"{} (Grade {}; {}/{})".format(_(entry["raw"]), grades[entry["grade"]], total_count, slots[entry["grade"]])
+        
+        if from_backpack:
+            return u"{} ({}/{})".format(_(entry["raw"]), count, total_count)
+        return u"{} ({})".format(_(entry["raw"]), total_count)
+
 
     def __check(self):
         self.inconsistencies = False

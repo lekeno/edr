@@ -917,9 +917,6 @@ class EDRSystems(object):
 
         sc_distance = override_sc_distance or self.reasonable_sc_distance 
 
-        print(sysAndSta1)
-        print(sysAndSta2)
-        print(sc_distance)
         if sysAndSta1['station']['distanceToArrival'] > sc_distance and sysAndSta2['station']['distanceToArrival'] > sc_distance:
             if abs(sysAndSta1['distance'] - sysAndSta2['distance']) < 5:
                 return sysAndSta1 if sysAndSta1['station']['distanceToArrival'] < sysAndSta2['station']['distanceToArrival'] else sysAndSta2

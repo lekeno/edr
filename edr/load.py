@@ -784,7 +784,7 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
     """
     #TODO sort out ship and suit...
     if not victim.in_open():
-        EDRLOG.log(u"Skipping submit crime (wing) due to unconfirmed Open mode", "INFO")
+        EDRLOG.log(u"Skipping submit crime due to unconfirmed Open mode", "INFO")
         EDR_CLIENT.status = _(u"Crime reporting disabled in solo/private modes.")
         return
 
@@ -1379,25 +1379,32 @@ def handle_material_events(cmdr, entry, state):
         cmdr.inventory.traded(entry)
     elif entry["event"] == "MissionCompleted":
         cmdr.inventory.rewarded(entry)
-    elif entry["event"] == "BackpackChange" and "Added" in entry:
-        added = [cmdr.inventory.oneliner(item["Name"]) for item in entry["Added"] if not(cmdr.engineers.is_useless(item["Name"]) or cmdr.engineers.is_unnecessary(item["Name"])) or "MissionID" in item]
-        discardable = [cmdr.inventory.oneliner(item["Name"]) for item in entry["Added"] if cmdr.engineers.is_useless(item["Name"]) and not cmdr.engineers.is_unnecessary(item["Name"]) and "MissionID" not in item]
-        unnecessary = [cmdr.inventory.oneliner(item["Name"]) for item in entry["Added"] if cmdr.engineers.is_unnecessary(item["Name"]) and "MissionID" not in item]
-        details = [", ".join(added)]
-        if discardable:
-            details.append(_(u"Useless: {}").format(", ".join(discardable)))
-        if unnecessary:
-            details.append(_(u"Unnecessary: {}").format(", ".join(unnecessary)))
-        EDR_CLIENT.notify_with_details("Materials Info", details)
+        EDR_CLIENT.eval_locker(passive=True)
+    elif entry["event"] == "BackpackChange":
+        cmdr.inventory.backpack_change(entry)
+        if "Added" in entry:
+            added = [cmdr.inventory.oneliner(item["Name"]) for item in entry["Added"] if not(cmdr.engineers.is_useless(item["Name"]) or cmdr.engineers.is_unnecessary(item["Name"])) or "MissionID" in item]
+            discardable = [cmdr.inventory.oneliner(item["Name"]) for item in entry["Added"] if cmdr.engineers.is_useless(item["Name"]) and not cmdr.engineers.is_unnecessary(item["Name"]) and "MissionID" not in item]
+            unnecessary = [cmdr.inventory.oneliner(item["Name"]) for item in entry["Added"] if cmdr.engineers.is_unnecessary(item["Name"]) and "MissionID" not in item]
+            details = [", ".join(added)]
+            if discardable:
+                details.append(_(u"Useless: {}").format(", ".join(discardable)))
+            if unnecessary:
+                details.append(_(u"Unnecessary: {}").format(", ".join(unnecessary)))
+            EDR_CLIENT.notify_with_details("Materials Info", details)
+        elif "Removed" in entry:
+            EDR_CLIENT.eval_backpack(passive=True)
     elif entry["event"] == "SellMicroResources":
         cmdr.inventory.sold(entry)
-        EDR_CLIENT.eval_storage()
+        EDR_CLIENT.eval_locker(passive=True)
     elif entry["event"] == "BuyMicroResources":
         cmdr.inventory.bought(entry)
     elif entry["event"] == "TransferMicroResources":
         cmdr.inventory.bought(entry)
+        EDR_CLIENT.eval_backpack(passive=True)
     elif entry["event"] == "TradeMicroResources":
         cmdr.inventory.traded(entry)
+        EDR_CLIENT.eval_locker(passive=True)
 
 def handle_commands(cmdr, entry):
     if not entry["event"] == "SendText":
@@ -1582,7 +1589,6 @@ def handle_bang_commands(cmdr, command, command_parts):
         override_sc_dist = None
         if len(command_parts) >= 2:
             parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
-            print(parameters)
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.offbeat_station_near(search_center, override_sc_dist)
