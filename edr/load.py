@@ -624,7 +624,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] == "EngineerProgress":
         handle_engineer_progress(ed_player, entry)
 
-    if entry["event"] in ["Materials", "MaterialCollected", "MaterialDiscarded", "EngineerContribution", "EngineerCraft", "MaterialTrade", "MissionCompleted", "ScientificResearch", "TechnologyBroker", "Synthesis", "BackpackChange", "BuyMicroResources", "SellMicroResources", "TransferMicroResources", "TradeMicroResources", "ShipLockerMaterials"]:
+    if entry["event"] in ["Materials", "MaterialCollected", "MaterialDiscarded", "EngineerContribution", "EngineerCraft", "MaterialTrade", "MissionCompleted", "ScientificResearch", "TechnologyBroker", "Synthesis", "BackpackChange", "BuyMicroResources", "SellMicroResources", "TransferMicroResources", "TradeMicroResources", "ShipLockerMaterials", "ShipLocker"]:
         handle_material_events(ed_player, entry, state)
 
     if entry["event"] == "StoredShips":
@@ -1359,12 +1359,15 @@ def handle_scan_events(player, entry):
     return True
 
 def handle_material_events(cmdr, entry, state):
+    if entry["event"] in ["Materials", "ShipLockerMaterials"] or (entry["event"] == "ShipLocker" and len(entry.keys()) > 2):
+        print(entry)
+        cmdr.inventory.initialize(entry)
+        print(cmdr.inventory)
+    
     if cmdr.inventory.stale_or_incorrect():
         cmdr.inventory.initialize_with_edmc(state)
 
-    if entry["event"] in ["Materials", "ShipLockerMaterials"]:
-        cmdr.inventory.initialize(entry)
-    elif entry["event"] == "MaterialCollected":
+    if entry["event"] == "MaterialCollected":
         cmdr.inventory.collected(entry)
     elif entry["event"] == "MaterialDiscarded":
         cmdr.inventory.discarded(entry)
@@ -1383,9 +1386,9 @@ def handle_material_events(cmdr, entry, state):
     elif entry["event"] == "BackpackChange":
         cmdr.inventory.backpack_change(entry)
         if "Added" in entry:
-            added = [cmdr.inventory.oneliner(item["Name"]) for item in entry["Added"] if not(cmdr.engineers.is_useless(item["Name"]) or cmdr.engineers.is_unnecessary(item["Name"])) or "MissionID" in item]
-            discardable = [cmdr.inventory.oneliner(item["Name"]) for item in entry["Added"] if cmdr.engineers.is_useless(item["Name"]) and not cmdr.engineers.is_unnecessary(item["Name"]) and "MissionID" not in item]
-            unnecessary = [cmdr.inventory.oneliner(item["Name"]) for item in entry["Added"] if cmdr.engineers.is_unnecessary(item["Name"]) and "MissionID" not in item]
+            added = [cmdr.inventory.oneliner(item["Name"], from_backpack=True) for item in entry["Added"] if not(cmdr.engineers.is_useless(item["Name"]) or cmdr.engineers.is_unnecessary(item["Name"])) or "MissionID" in item]
+            discardable = [cmdr.inventory.oneliner(item["Name"], from_backpack=True) for item in entry["Added"] if cmdr.engineers.is_useless(item["Name"]) and not cmdr.engineers.is_unnecessary(item["Name"]) and "MissionID" not in item]
+            unnecessary = [cmdr.inventory.oneliner(item["Name"], from_backpack=True) for item in entry["Added"] if cmdr.engineers.is_unnecessary(item["Name"]) and "MissionID" not in item]
             details = [", ".join(added)]
             if discardable:
                 details.append(_(u"Useless: {}").format(", ".join(discardable)))

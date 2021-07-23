@@ -7,6 +7,8 @@ import os
 from edri18n import _
 import utils2to3
 
+#TODO anarchy only microresources...
+
 class EDRInventory(object):
     EDR_INVENTORY_ENCODED_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'encoded_mats.v1.p')
     EDR_INVENTORY_RAW_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'raw_mats.v1.p')
@@ -309,7 +311,44 @@ class EDRInventory(object):
         "geologicaldata":  { "localized": _(u"Geological Data"), "category": "data", "raw": "Geological Data", "grade":0},
         "opinionpolls":  { "localized": _(u"Opinion Polls"), "category": "data", "raw": "Opinion Polls", "grade":0},
         "propaganda":  { "localized": _(u"Propaganda"), "category": "data", "raw": "Propaganda", "grade":0},
-
+        "hydroponicdata": { "localized": _(u"Hydroponic Data"), "category": "data", "raw": "Hydroponic Data", "grade":0},
+        "mininganalytics" :{ "localized": _(u"Mining Analytics"), "raw": "Mining Analytics", "category": "data", "grade": 0},
+        "compressionliquefiedgas" :{ "localized": _(u"Compression Liquefied Gas"), "raw": "Compression Liquefied Gas", "category": "item", "grade": 0},
+        "weapontestdata" :{ "localized": _(u"Weapon Test Data"), "raw": "Weapon Test Data", "category": "data", "grade": 0},
+        "spectralanalysisdata" :{ "localized": _(u"Spectral Analysis Data"), "raw": "Spectral Analysis Data", "category": "data", "grade": 0},
+        "audiologs" :{ "localized": _(u"Audiologs"), "raw": "Audiologs", "category": "data", "grade": 0},
+        "geneticresearch" :{ "localized": _(u"Genetic Research"), "raw": "Genetic Research", "category": "data", "grade": 0},
+        "clinicaltrialrecords" :{ "localized": _(u"Clinical Trial Records"), "raw": "Clinical Trial Records", "category": "data", "grade": 0},
+        "gmeds" :{ "localized": _(u"G-Meds"), "raw": "G-Meds", "category": "data", "grade": 0},
+        "genesequencingdata" :{ "localized": _(u"Gene Sequencing Data"), "raw": "Gene Sequencing Data", "category": "data", "grade": 0},
+        "settlementassaultplans" :{ "localized": _(u"Settlement Assault Plans"), "raw": "Settlement Assault Plans", "category": "data", "grade": 0},
+        "biologicalsample" :{ "localized": _(u"Biological Sample"), "raw": "Biological Sample", "category": "data", "grade": 0},
+        "smearcampaignplans" :{ "localized": _(u"Smear Campaign Plans"), "raw": "Smear Campaign Plans", "category": "data", "grade": 0},
+        "axcombatlogs" :{ "localized": _(u"Ax Combat Logs"), "raw": "Ax Combat Logs", "category": "data", "grade": 0},
+        "biologicalweapondata" :{ "localized": _(u"Biological Weapon Data"), "raw": "Biological Weapon Data", "category": "data", "grade": 0},
+        "chemicalweapondata" :{ "localized": _(u"Chemical Weapon Data"), "raw": "Chemical Weapon Data", "category": "data", "grade": 0},
+        "criminalrecords" :{ "localized": _(u"Criminal Records"), "raw": "Criminal Records", "category": "data", "grade": 0},
+        "enhancedinterrogationrecordings" :{ "localized": _(u"Enhanced Interrogation Recordings"), "raw": "Enhanced Interrogation Recordings", "category": "data", "grade": 0},
+        "espionagematerial" :{ "localized": _(u"Espionage Material"), "raw": "Espionage Material", "category": "data", "grade": 0},
+        "incidentlogs" :{ "localized": _(u"Incident Logs"), "raw": "Incident Logs", "category": "data", "grade": 0},
+        "inorganiccontaminant" :{ "localized": _(u"Inorganic Contaminant"), "raw": "Inorganic Contaminant", "category": "item", "grade": 0},
+        "interrogationrecordings" :{ "localized": _(u"Interrogation Recordings"), "raw": "Interrogation Recordings", "category": "data", "grade": 0},
+        "mutageniccatalyst" :{ "localized": _(u"Mutagenic Catalyst"), "raw": "Mutagenic Catalyst", "category": "item", "grade": 0},
+        "networksecurityprotocols" :{ "localized": _(u"Network Security Protocols"), "raw": "Network Security Protocols", "category": "data", "grade": 0},
+        "patienthistory" :{ "localized": _(u"Patient History"), "raw": "Patient History", "category": "data", "grade": 0},
+        "plantgrowthcharts" :{ "localized": _(u"Plant Growth Charts"), "raw": "Plant Growth Charts", "category": "data", "grade": 0},
+        "prisonerlogs" :{ "localized": _(u"Prisoner Logs"), "raw": "Prisoner Logs", "category": "data", "grade": 0},
+        "seedgeneaology" :{ "localized": _(u"Seed Geneaology"), "raw": "Seed Geneaology", "category": "data", "grade": 0},
+        "slushfundlogs" :{ "localized": _(u"Slush Fund Logs"), "raw": "Slush Fund Logs", "category": "data", "grade": 0},
+        "syntheticgenome" :{ "localized": _(u"Synthetic Genome"), "raw": "Synthetic Genome", "category": "item", "grade": 0},
+        "epinephrine" :{ "localized": _(u"Epinephrine"), "raw": "Epinephrine", "category": "component", "grade": 0},
+        "graphene" :{ "localized": _(u"Graphene"), "raw": "Graphene", "category": "component", "grade": 0},
+        "rdx" :{ "localized": _(u"Rdx"), "raw": "Rdx", "category": "component", "grade": 0},
+        "electromagnet" :{ "localized": _(u"Electromagnet"), "raw": "Electromagnet", "category": "component", "grade": 0},
+        "microelectrode" :{ "localized": _(u"Microelectrode"), "raw": "Microelectrode", "category": "component", "grade": 0},
+        "motor" :{ "localized": _(u"Motor"), "raw": "Motor", "category": "component", "grade": 0},
+        "scrambler" :{ "localized": _(u"Scrambler"), "raw": "Scrambler", "category": "component", "grade": 0},
+        "transmitter" :{ "localized": _(u"Transmitter"), "raw": "Transmitter", "category": "component", "grade": 0},
     }
 
     INTERNAL_NAMES_LUT = { u'classified scan databanks': 'scandatabanks', u'conductive components': 'conductivecomponents', u'abnormal compact emissions data': 'compactemissionsdata', u'germanium': 'germanium',
@@ -395,30 +434,44 @@ class EDRInventory(object):
         self.__check()
 
     def initialize(self, materials):
+        if "Encoded" in materials:
+            self.encoded = {}
         for thing in materials.get("Encoded", []):
             cname = self.__c_name(thing["Name"])
             self.encoded[cname] = thing["Count"]
 
+        if "Raw" in materials:
+            self.raw = {}
         for thing in materials.get("Raw", []):
             cname = self.__c_name(thing["Name"])
             self.raw[cname] = thing["Count"]
 
+        if "Manufactured" in materials:
+            self.manufactured = {}
         for thing in materials.get("Manufactured", []):
             cname = self.__c_name(thing["Name"])
             self.manufactured[cname] = thing["Count"]
 
+        if "Items" in materials:
+            self.items = {}
         for thing in materials.get("Items", []):
             cname = self.__c_name(thing["Name"])
             self.items[cname] = thing["Count"]
 
+        if "Components" in materials:
+            self.components = {}
         for thing in materials.get("Components", []):
             cname = self.__c_name(thing["Name"])
             self.components[cname] = thing["Count"]
 
+        if "Data" in materials:
+            self.data = {}
         for thing in materials.get("Data", []):
             cname = self.__c_name(thing["Name"])
             self.data[cname] = thing["Count"]
 
+        if "Consumables" in materials:
+            self.consumables = {}
         for thing in materials.get("Consumables", []):
             cname = self.__c_name(thing["Name"])
             self.consumables[cname] = thing["Count"]
@@ -427,35 +480,42 @@ class EDRInventory(object):
         self.inconsistencies = False
 
     def initialize_with_edmc(self, state):
+        self.encoded = {} if "Encoded" in state else self.encoded
         for thing in state.get("Encoded", {}):
             cname = self.__c_name(thing)
             self.encoded[cname] = state["Encoded"][thing]
 
+        self.raw = {} if "Raw" in state else self.raw
         for thing in state.get("Raw", {}):
             cname = self.__c_name(thing)
             self.raw[cname] = state["Raw"][thing]
 
+        self.manufactured = {} if "Manufactured" in state else self.manufactured
         for thing in state.get("Manufactured", {}):
             cname = self.__c_name(thing)
             self.manufactured[cname] = state["Manufactured"][thing]
 
+        self.components = {} if "Component" in state else self.components
         for thing in state.get("Component", {}):
             cname = self.__c_name(thing)
             self.components[cname] = state["Component"][thing]
 
+        self.items = {} if "Item" in state else self.items
         for thing in state.get("Item", {}):
             cname = self.__c_name(thing)
             self.items[cname] = state["Item"][thing]
 
+        self.consumables = {} if "Consumable" in state else self.consumables
         for thing in state.get("Consumable", {}):
             cname = self.__c_name(thing)
             self.consumables[cname] = state["Consumable"][thing]
 
+        self.data = {} if "Data" in state else self.data
         for thing in state.get("Data", {}):
             cname = self.__c_name(thing)
             self.data[cname] = state["Data"][thing]
 
-        backpack = state.get("BackPack", {})
+        backpack = {} if "BackPack" in state else self.backpack
         for category in backpack:
             ccategory = category.lower()
             self.backpack[ccategory] = {}
@@ -571,7 +631,7 @@ class EDRInventory(object):
             return 0
         return self.backpack[category].get(cname, 0)
 
-    def oneliner(self, name, from_backpack):
+    def oneliner(self, name, from_backpack=False):
         cname = self.__c_name(name)
         category = self.category(cname)
         entry = self.MATERIALS_LUT.get(cname, None)
@@ -587,9 +647,10 @@ class EDRInventory(object):
             slots = [u"?", u"300", u"250", u"200", u"150", u"100"]
             return u"{} (Grade {}; {}/{})".format(_(entry["raw"]), grades[entry["grade"]], total_count, slots[entry["grade"]])
         
+        shorthands = {"data": _("DAT"), "component": _("ASS"), "item": _("GDS"), "consumable": _("CNS") }
         if from_backpack:
-            return u"{} ({}/{})".format(_(entry["raw"]), count, total_count)
-        return u"{} ({})".format(_(entry["raw"]), total_count)
+            return u"{} ({}:{}/{})".format(_(entry["raw"]), shorthands.get(category, category[0:min(3,len(category))]), count, total_count)
+        return u"{} ({}:{})".format(_(entry["raw"]), shorthands.get(category, category[0:min(3,len(category))]), total_count)
 
 
     def __check(self):
