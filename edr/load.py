@@ -444,6 +444,11 @@ def handle_friends_events(ed_player, entry):
     elif entry["Status"] == "Offline":
         ed_player.deinstanced_player(entry["Name"])
 
+def handle_engineer_progress(ed_player, entry):
+    if entry["event"] != "EngineerProgress":
+        return
+    ed_player.engineers.update(entry)
+
 def handle_powerplay_events(ed_player, entry):
     if entry["event"] == "Powerplay":
         EDRLOG.log(u"Initial powerplay event: {}".format(entry), "DEBUG")
@@ -616,7 +621,10 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] == "Friends":
         handle_friends_events(ed_player, entry)
 
-    if entry["event"] in ["Materials", "MaterialCollected", "MaterialDiscarded", "EngineerContribution", "EngineerCraft", "MaterialTrade", "MissionCompleted", "ScientificResearch", "TechnologyBroker", "Synthesis"]:
+    if entry["event"] == "EngineerProgress":
+        handle_engineer_progress(ed_player, entry)
+
+    if entry["event"] in ["Materials", "MaterialCollected", "MaterialDiscarded", "EngineerContribution", "EngineerCraft", "MaterialTrade", "MissionCompleted", "ScientificResearch", "TechnologyBroker", "Synthesis", "Backpack", "BackpackChange", "BuyMicroResources", "SellMicroResources", "TransferMicroResources", "TradeMicroResources", "ShipLockerMaterials", "ShipLocker"]:
         handle_material_events(ed_player, entry, state)
 
     if entry["event"] == "StoredShips":
@@ -776,7 +784,7 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
     """
     #TODO sort out ship and suit...
     if not victim.in_open():
-        EDRLOG.log(u"Skipping submit crime (wing) due to unconfirmed Open mode", "INFO")
+        EDRLOG.log(u"Skipping submit crime due to unconfirmed Open mode", "INFO")
         EDR_CLIENT.status = _(u"Crime reporting disabled in solo/private modes.")
         return
 
@@ -1351,11 +1359,13 @@ def handle_scan_events(player, entry):
     return True
 
 def handle_material_events(cmdr, entry, state):
+    if entry["event"] in ["Materials", "ShipLockerMaterials"] or (entry["event"] == "ShipLocker" and len(entry.keys()) > 2) or (entry["event"] == "Backpack" and len(entry.keys()) > 2):
+        cmdr.inventory.initialize(entry)
+        
     if cmdr.inventory.stale_or_incorrect():
         cmdr.inventory.initialize_with_edmc(state)
-    if entry["event"] == "Materials":
-        cmdr.inventory.initialize(entry)
-    elif entry["event"] == "MaterialCollected":
+
+    if entry["event"] == "MaterialCollected":
         cmdr.inventory.collected(entry)
     elif entry["event"] == "MaterialDiscarded":
         cmdr.inventory.discarded(entry)
@@ -1370,7 +1380,33 @@ def handle_material_events(cmdr, entry, state):
         cmdr.inventory.traded(entry)
     elif entry["event"] == "MissionCompleted":
         cmdr.inventory.rewarded(entry)
-	
+        EDR_CLIENT.eval_locker(passive=True)
+    elif entry["event"] == "BackpackChange":
+        cmdr.inventory.backpack_change(entry)
+        if "Added" in entry:
+            added = [cmdr.inventory.oneliner(item["Name"], from_backpack=True) for item in entry["Added"] if not(cmdr.engineers.is_useless(item["Name"]) or cmdr.engineers.is_unnecessary(item["Name"])) or "MissionID" in item]
+            discardable = [cmdr.inventory.oneliner(item["Name"], from_backpack=True) for item in entry["Added"] if cmdr.engineers.is_useless(item["Name"]) and not cmdr.engineers.is_unnecessary(item["Name"]) and "MissionID" not in item]
+            unnecessary = [cmdr.inventory.oneliner(item["Name"], from_backpack=True) for item in entry["Added"] if cmdr.engineers.is_unnecessary(item["Name"]) and "MissionID" not in item]
+            details = [", ".join(added)]
+            if discardable:
+                details.append(_(u"Useless: {}").format(", ".join(discardable)))
+            if unnecessary:
+                details.append(_(u"Unnecessary: {}").format(", ".join(unnecessary)))
+            EDR_CLIENT.notify_with_details("Materials Info", details)
+        elif "Removed" in entry:
+            EDR_CLIENT.eval_backpack(passive=True)
+    elif entry["event"] == "SellMicroResources":
+        cmdr.inventory.sold(entry)
+        EDR_CLIENT.eval_locker(passive=True)
+    elif entry["event"] == "BuyMicroResources":
+        cmdr.inventory.bought(entry)
+    elif entry["event"] == "TransferMicroResources":
+        cmdr.inventory.bought(entry)
+        EDR_CLIENT.eval_backpack(passive=True)
+    elif entry["event"] == "TradeMicroResources":
+        cmdr.inventory.traded(entry)
+        EDR_CLIENT.eval_locker(passive=True)
+
 def handle_commands(cmdr, entry):
     if not entry["event"] == "SendText":
         return
@@ -1554,7 +1590,6 @@ def handle_bang_commands(cmdr, command, command_parts):
         override_sc_dist = None
         if len(command_parts) >= 2:
             parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
-            print(parameters)
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.offbeat_station_near(search_center, override_sc_dist)
@@ -1605,10 +1640,7 @@ def handle_bang_commands(cmdr, command, command_parts):
     elif command == "!eval" and len(command_parts) == 2:
         eval_type = command_parts[1]
         EDRLOG.log(u"Eval command for {}".format(eval_type), "INFO")
-        if EDR_CLIENT.player.mothership.update_modules():
-            EDR_CLIENT.eval_build(eval_type)
-        else:
-            EDR_CLIENT.notify_with_details(_(u"Loadout information is stale"), [_(u"Congrats, you've found a bug in Elite!"), _(u"The modules info isn't updated right away :("), _(u"Try again after moving around or relog and check your modules.")])
+        EDR_CLIENT.eval(eval_type)
     elif command == "!contracts" and len(command_parts) == 1:
         EDRLOG.log(u"Contracts command", "INFO")
         EDR_CLIENT.contracts()

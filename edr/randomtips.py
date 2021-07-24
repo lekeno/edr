@@ -111,6 +111,8 @@ DEFAULT_TIPS = {
         _(u"Send '!ship fdl' to find out where you've parked your Fer-de-Lance."),
         _(u"Send '!ship In Front Of Things' to find out where you've parked your ship named 'In Front of Things'."),
         _(u"Send '!eval power' to get an assessment of your power priorities."),
+        _(u"[Odyssey] Send '!eval backpack' to get an assessment of items in your backpack."),
+        _(u"[Odyssey] Send '!eval locker' to get an assessment of items in your ship locker."),
         _(u"Send '!offbeat' to get a station whose info hasn't been updated recently and has a higher chance of carrying premium weapons/suits."),
         _(u"Send '!materials' to get a list of material profiles supported by EDR (e.g. synthesis for FSD, etc.)"),
         _(u"Send '!rrrfc' to get a fleet carrier with repair, rearm, refuel in the current system. Double check docking access before proceeding."),

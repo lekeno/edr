@@ -19,6 +19,7 @@ import edrfleet
 import edrfleetcarrier
 import edrminingstats
 import edrbountyhuntingstats
+import edengineers
 import utils2to3
 EDRLOG = EDRLog()
 
@@ -880,6 +881,7 @@ class EDPlayerOne(EDPlayer):
             self.fleet_carrier = edrfleetcarrier.EDRFleetCarrier()
         self.mining_stats = edrminingstats.EDRMiningStats()
         self.bounty_hunting_stats = edrbountyhuntingstats.EDRBountyHuntingStats()
+        self.engineers = edengineers.EDEngineers()
 
     def __repr__(self):
         return str(self.__dict__)
