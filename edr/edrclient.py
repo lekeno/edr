@@ -826,26 +826,26 @@ class EDRClient(object):
         if micro_resources:
             details = self.__eval_micro_resources(micro_resources, from_backpack=True)
             if details:
-                self.notify_with_details("Backpack assessment", details)
+                self.__notify("Backpack assessment", details, clear_before=True)
             elif not passive:
-                self.notify_with_details(_("Backpack assessment"), [_(u"Nothing superfluous")])
+                self.__notify(_("Backpack assessment"), [_(u"Nothing superfluous")], clear_before = True)
         elif not passive:
-            self.notify_with_details(_("Backpack assessment"), [_(u"Empty backpack?")])
+            self.__notify(_("Backpack assessment"), [_(u"Empty backpack?")], clear_before=True)
 
     def eval_locker(self, passive=False):
         micro_resources = dict(sorted(self.player.inventory.all_in_locker().items(), key=lambda item: item[1], reverse=True))
         if micro_resources:
             details = self.__eval_micro_resources(micro_resources)
             if details:
-                self.notify_with_details(_(u"Storage assessment"), details)
+                self.__notify(_(u"Storage assessment"), details, clear_before=True)
             elif not passive:
-                self.notify_with_details(_("Storage assessment"), [_(u"Nothing superfluous")])
+                self.__notify(_("Storage assessment"), [_(u"Nothing superfluous")], clear_before=True)
         elif not passive:
-            self.notify_with_details(_("Storage assessment"), [_(u"Empty ship locker?")])
+            self.__notify(_("Storage assessment"), [_(u"Empty ship locker?")], clear_before=True)
 
     def __eval_micro_resources(self, micro_resources, from_backpack=False):
-        discardable = [self.player.inventory.oneliner(name, from_backpack) for name in micro_resources if self.player.engineers.is_useless(name)]
-        unnecessary = [self.player.inventory.oneliner(name, from_backpack) for name in micro_resources if self.player.engineers.is_unnecessary(name)]
+        discardable = [self.player.inventory.oneliner(name, from_backpack) for name in micro_resources if (self.player.engineers.is_useless(name) and self.player.inventory.count(name, from_backpack=from_backpack, from_locker=not from_backpack))]
+        unnecessary = [self.player.inventory.oneliner(name, from_backpack) for name in micro_resources if (self.player.engineers.is_unnecessary(name) and self.player.inventory.count(name, from_backpack=from_backpack, from_locker=not from_backpack))]
         details = []
         discardable = discardable[0:min(len(discardable), 3)]
         unnecessary = unnecessary[0:min(len(unnecessary), 3)]

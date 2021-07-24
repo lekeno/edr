@@ -8,6 +8,8 @@ from edri18n import _
 import utils2to3
 
 #TODO anarchy only microresources...
+#TODO clear backpack when boarding, etc.
+#TODO consistency checks, or at least not showing useless/unnecessary for items that are at 0
 
 class EDRInventory(object):
     EDR_INVENTORY_ENCODED_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'encoded_mats.v1.p')
@@ -181,7 +183,7 @@ class EDRInventory(object):
         "buildingschematic": { "localized": _(u"Building Schematic"), "category": "item", "raw": "Building Schematic", "grade":0},
         "operationalmanual": { "localized": _(u"Operational Manual"), "category": "data", "raw": "Operational Manual", "grade":0},
         "blacklistdata": { "localized": _(u"Blacklist Data"), "category": "data", "raw": "Blacklist Data", "grade":0},
-        "insight": { "localized": _(u"insight"), "category": "item", "raw": "insight", "grade":0},
+        "insight": { "localized": _(u"Insight"), "category": "item", "raw": "Insight", "grade":0},
         "airqualityreports": { "localized": _(u"Air Quality Reports"), "category": "data", "raw": "Air Quality Reports", "grade":0},
         "employeedirectory": { "localized": _(u"Employee Directory"), "category": "data", "raw": "Employee Directory", "grade":0},
         "factionassociates": { "localized": _(u"Faction Associates"), "category": "data", "raw": "Faction Associates", "grade":0},
@@ -605,7 +607,16 @@ class EDRInventory(object):
     def discarded(self, info):
         self.substract(info["Category"], info["Name"], info["Count"])
 
-    def count(self, name):
+    
+    def count(self, name, from_backpack=True, from_locker=True):
+        total = 0
+        if from_backpack:
+            total += self.count_backpack(name)
+        if from_locker:
+            total += self.count_locker(name)
+        return total
+
+    def count_locker(self, name):
         cname = self.__c_name(name)
         category = self.category(cname)
         if category == "encoded":
@@ -615,13 +626,13 @@ class EDRInventory(object):
         elif category == "manufactured":
             return self.manufactured.get(cname, 0)
         elif category == "item":
-            return self.items.get(cname, 0) + self.count_backpack(name)
+            return self.items.get(cname, 0)
         elif category == "component":
-            return self.components.get(cname, 0) + self.count_backpack(name)
+            return self.components.get(cname, 0)
         elif category == "data":
-            return self.data.get(cname, 0) + self.count_backpack(name)
+            return self.data.get(cname, 0)
         elif category == "consumables":
-            return self.consumables.get(cname, 0) + self.count_backpack(name)
+            return self.consumables.get(cname, 0)
         return 0
 
     def count_backpack(self, name):
@@ -751,24 +762,56 @@ class EDRInventory(object):
         ccategory = self.__c_cat(category)
         cname = self.__c_name(name)
         if ccategory == "encoded":
-            self.encoded[cname] = max(self.encoded.get(cname, 0) - count, 0)
+            newcount = max(self.encoded.get(cname, 0) - count, 0)
+            if newcount > 0:
+                self.encoded[cname] = newcount
+            else:
+                self.encoded.pop(cname, None)
         elif ccategory == "raw":
-            self.raw[cname] = max(self.raw.get(cname, 0) - count, 0)
+            newcount = max(self.raw.get(cname, 0) - count, 0)
+            if newcount > 0:
+                self.raw[cname]  = newcount
+            else:
+                self.raw.pop(cname, None)
         elif ccategory == "manufactured":
-            self.manufactured[cname] = max(self.manufactured.get(cname, 0) - count, 0)
+            newcount = max(self.manufactured.get(cname, 0) - count, 0)
+            if newcount > 0:
+                self.manufactured[cname]  = newcount
+            else:
+                self.manufactured.pop(cname, None)
         elif ccategory == "data":
-            self.data[cname] = max(self.data.get(cname, 0) - count, 0)
+            newcount = max(self.data.get(cname, 0) - count, 0)
+            if newcount > 0:
+                self.data[cname] = newcount
+            else:
+                self.data.pop(cname, None)
         elif ccategory == "item":
-            self.items[cname] = max(self.items.get(cname, 0) - count, 0)
+            newcount = max(self.items.get(cname, 0) - count, 0)
+            if newcount > 0:
+                self.items[cname] = newcount
+            else:
+                self.items.pop(cname, None)
         elif ccategory == "component":
-            self.components[cname] = max(self.components.get(cname, 0) - count, 0)
+            newcount = max(self.components.get(cname, 0) - count, 0)
+            if newcount > 0:
+                self.components[cname] = newcount
+            else:
+                self.components.pop(cname, None)
         elif ccategory == "consumable":
-            self.consumables[cname] = max(self.consumables.get(cname, 0) - count, 0)
+            newcount = max(self.consumables.get(cname, 0) - count, 0)
+            if newcount > 0:
+                self.consumables[cname] = newcount
+            else:
+                self.consumables.pop(cname, None)
 
 
     def set(self, category, name, newcount):
         ccategory = self.__c_cat(category)
         cname = self.__c_name(name)
+        if newcount == 0:
+            self.remove(category, name)
+            return
+
         if ccategory == "encoded":
             self.encoded[cname] = newcount
         elif ccategory == "raw":
@@ -784,11 +827,34 @@ class EDRInventory(object):
         elif ccategory == "consumable":
             self.consumables[cname] = newcount
 
+    def remove(self, category, name):
+        ccategory = self.__c_cat(category)
+        cname = self.__c_name(name)
+        
+        if ccategory == "encoded":
+            self.encoded.pop(cname, None)
+        elif ccategory == "raw":
+            self.raw.pop(cname, None)
+        elif ccategory == "manufactured":
+            self.manufactured.pop(cname, None)
+        elif ccategory == "data":
+            self.data.pop(cname, None)
+        elif ccategory == "item":
+            self.items.pop(cname, None)
+        elif ccategory == "component":
+            self.components.pop(cname, None)
+        elif ccategory == "consumable":
+            self.consumables.pop(cname, None)
+
     def adjust_backpack(self, category, name, count):
         ccategory = category.lower()
         if ccategory not in self.backpack:
             self.backpack[ccategory] = {}
-        self.backpack[ccategory][name] = max(self.backpack[ccategory].get(name, 0) + count, 0)
+        newcount = max(self.backpack[ccategory].get(name, 0) + count, 0)
+        if newcount > 0:
+            self.backpack[ccategory][name] = newcount
+        else:
+            self.backpack[ccategory].pop(name, None)
 
     def category(self, name):
         cname = self.__c_name(name)

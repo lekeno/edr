@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2021-07-23 18:01+0900\n"
-"PO-Revision-Date: 2021-07-23 18:05+0900\n"
+"POT-Creation-Date: 2021-07-24 10:19+0900\n"
+"PO-Revision-Date: 2021-07-24 10:20+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -1668,1335 +1668,1335 @@ msgstr ""
 msgid "Pirates"
 msgstr ""
 
-#: edrinventory.py:23
+#: edrinventory.py:25
 msgid "Zinc"
 msgstr ""
 
-#: edrinventory.py:24
+#: edrinventory.py:26
 msgid "Mercury"
 msgstr ""
 
-#: edrinventory.py:25
+#: edrinventory.py:27
 msgid "Polonium"
 msgstr ""
 
-#: edrinventory.py:26
+#: edrinventory.py:28
 msgid "Tellurium"
 msgstr ""
 
-#: edrinventory.py:27
+#: edrinventory.py:29
 msgid "Yttrium"
 msgstr ""
 
-#: edrinventory.py:28
+#: edrinventory.py:30
 msgid "Antimony"
 msgstr ""
 
-#: edrinventory.py:29
+#: edrinventory.py:31
 msgid "Selenium"
 msgstr ""
 
-#: edrinventory.py:30
+#: edrinventory.py:32
 msgid "Ruthenium"
 msgstr ""
 
-#: edrinventory.py:31
+#: edrinventory.py:33
 msgid "Zirconium"
 msgstr ""
 
-#: edrinventory.py:32
+#: edrinventory.py:34
 msgid "Vanadium"
 msgstr ""
 
-#: edrinventory.py:33
+#: edrinventory.py:35
 msgid "Manganese"
 msgstr ""
 
-#: edrinventory.py:34
+#: edrinventory.py:36
 msgid "Chromium"
 msgstr ""
 
-#: edrinventory.py:35
+#: edrinventory.py:37
 msgid "Molybdenum"
 msgstr ""
 
-#: edrinventory.py:36
+#: edrinventory.py:38
 msgid "Technetium"
 msgstr ""
 
-#: edrinventory.py:37
+#: edrinventory.py:39
 msgid "Tin"
 msgstr ""
 
-#: edrinventory.py:38
+#: edrinventory.py:40
 msgid "Arsenic"
 msgstr ""
 
-#: edrinventory.py:39
+#: edrinventory.py:41
 msgid "Cadmium"
 msgstr ""
 
-#: edrinventory.py:40
+#: edrinventory.py:42
 msgid "Iron"
 msgstr ""
 
-#: edrinventory.py:41
+#: edrinventory.py:43
 msgid "Niobium"
 msgstr ""
 
-#: edrinventory.py:42
+#: edrinventory.py:44
 msgid "Phosphorus"
 msgstr ""
 
-#: edrinventory.py:43
+#: edrinventory.py:45
 msgid "Germanium"
 msgstr ""
 
-#: edrinventory.py:44
+#: edrinventory.py:46
 msgid "Tungsten"
 msgstr ""
 
-#: edrinventory.py:45
+#: edrinventory.py:47
 msgid "Sulphur"
 msgstr ""
 
-#: edrinventory.py:46
+#: edrinventory.py:48
 msgid "Carbon"
 msgstr ""
 
-#: edrinventory.py:47
+#: edrinventory.py:49
 msgid "Nickel"
 msgstr ""
 
-#: edrinventory.py:48
+#: edrinventory.py:50
 msgid "Rhenium"
 msgstr ""
 
-#: edrinventory.py:49
+#: edrinventory.py:51
 msgid "Boron"
 msgstr ""
 
-#: edrinventory.py:50
+#: edrinventory.py:52
 msgid "Lead"
 msgstr ""
 
-#: edrinventory.py:51
+#: edrinventory.py:53
 msgid "Focus Crystals"
 msgstr ""
 
-#: edrinventory.py:52
+#: edrinventory.py:54
 msgid "Compound Shielding"
 msgstr ""
 
-#: edrinventory.py:53
+#: edrinventory.py:55
 msgid "Galvanising Alloys"
 msgstr ""
 
-#: edrinventory.py:54
+#: edrinventory.py:56
 msgid "Heat Vanes"
 msgstr ""
 
-#: edrinventory.py:55
+#: edrinventory.py:57
 msgid "Configurable Components"
 msgstr ""
 
-#: edrinventory.py:56
+#: edrinventory.py:58
 msgid "Biotech Conductors"
 msgstr ""
 
-#: edrinventory.py:57
+#: edrinventory.py:59
 msgid "Chemical Manipulators"
 msgstr ""
 
-#: edrinventory.py:58
+#: edrinventory.py:60
 msgid "Mechanical Components"
 msgstr ""
 
-#: edrinventory.py:59
+#: edrinventory.py:61
 msgid "Proprietary Composites"
 msgstr ""
 
-#: edrinventory.py:60
+#: edrinventory.py:62
 msgid "High Density Composites"
 msgstr ""
 
-#: edrinventory.py:61
+#: edrinventory.py:63
 msgid "Proto Radiolic Alloys"
 msgstr ""
 
-#: edrinventory.py:62
+#: edrinventory.py:64
 msgid "Chemical Distillery"
 msgstr ""
 
-#: edrinventory.py:63
+#: edrinventory.py:65
 msgid "Chemical Processors"
 msgstr ""
 
-#: edrinventory.py:64
+#: edrinventory.py:66
 msgid "Imperial Shielding"
 msgstr ""
 
-#: edrinventory.py:65
+#: edrinventory.py:67
 msgid "Grid Resistors"
 msgstr ""
 
-#: edrinventory.py:66
+#: edrinventory.py:68
 msgid "Heat Conduction Wiring"
 msgstr ""
 
-#: edrinventory.py:67
+#: edrinventory.py:69
 msgid "Military Grade Alloys"
 msgstr ""
 
-#: edrinventory.py:68
+#: edrinventory.py:70
 msgid "Hybrid Capacitors"
 msgstr ""
 
-#: edrinventory.py:69
+#: edrinventory.py:71
 msgid "Heat Exchangers"
 msgstr ""
 
-#: edrinventory.py:70
+#: edrinventory.py:72
 msgid "Conductive Polymers"
 msgstr ""
 
-#: edrinventory.py:71
+#: edrinventory.py:73
 msgid "Shielding Sensors"
 msgstr ""
 
-#: edrinventory.py:72
+#: edrinventory.py:74
 msgid "Heat Dispersion Plate"
 msgstr ""
 
-#: edrinventory.py:73
+#: edrinventory.py:75
 msgid "Electrochemical Arrays"
 msgstr ""
 
-#: edrinventory.py:74
+#: edrinventory.py:76
 msgid "Conductive Ceramics"
 msgstr ""
 
-#: edrinventory.py:75
+#: edrinventory.py:77
 msgid "Conductive Components"
 msgstr ""
 
-#: edrinventory.py:76
+#: edrinventory.py:78
 msgid "Military Supercapacitors"
 msgstr ""
 
-#: edrinventory.py:77
+#: edrinventory.py:79
 msgid "Mechanical Equipment"
 msgstr ""
 
-#: edrinventory.py:78
+#: edrinventory.py:80
 msgid "Phase Alloys"
 msgstr ""
 
-#: edrinventory.py:79
+#: edrinventory.py:81
 msgid "Pharmaceutical Isolators"
 msgstr ""
 
-#: edrinventory.py:80
+#: edrinventory.py:82
 msgid "Core Dynamics Composites"
 msgstr ""
 
-#: edrinventory.py:81
+#: edrinventory.py:83
 msgid "Basic Conductors"
 msgstr ""
 
-#: edrinventory.py:82
+#: edrinventory.py:84
 msgid "Mechanical Scrap"
 msgstr ""
 
-#: edrinventory.py:83
+#: edrinventory.py:85
 msgid "Salvaged Alloys"
 msgstr ""
 
-#: edrinventory.py:84
+#: edrinventory.py:86
 msgid "Proto Light Alloys"
 msgstr ""
 
-#: edrinventory.py:85
+#: edrinventory.py:87
 msgid "Refined Focus Crystals"
 msgstr ""
 
-#: edrinventory.py:86
+#: edrinventory.py:88
 msgid "Shield Emitters"
 msgstr ""
 
-#: edrinventory.py:87
+#: edrinventory.py:89
 msgid "Precipitated Alloys"
 msgstr ""
 
-#: edrinventory.py:88
+#: edrinventory.py:90
 msgid "Worn Shield Emitters"
 msgstr ""
 
-#: edrinventory.py:89
+#: edrinventory.py:91
 msgid "Exquisite Focus Crystals"
 msgstr ""
 
-#: edrinventory.py:90
+#: edrinventory.py:92
 msgid "Polymer Capacitors"
 msgstr ""
 
-#: edrinventory.py:91
+#: edrinventory.py:93
 msgid "Thermic Alloys"
 msgstr ""
 
-#: edrinventory.py:92
+#: edrinventory.py:94
 msgid "Improvised Components"
 msgstr ""
 
-#: edrinventory.py:93
+#: edrinventory.py:95
 msgid "Crystal Shards"
 msgstr ""
 
-#: edrinventory.py:94
+#: edrinventory.py:96
 msgid "Heat Resistant Ceramics"
 msgstr ""
 
-#: edrinventory.py:95
+#: edrinventory.py:97
 msgid "Tempered Alloys"
 msgstr ""
 
-#: edrinventory.py:96
+#: edrinventory.py:98
 msgid "Flawed Focus Crystals"
 msgstr ""
 
-#: edrinventory.py:97
+#: edrinventory.py:99
 msgid "Filament Composites"
 msgstr ""
 
-#: edrinventory.py:98
+#: edrinventory.py:100
 msgid "Compact Composites"
 msgstr ""
 
-#: edrinventory.py:99
+#: edrinventory.py:101
 msgid "Chemical Storage Units"
 msgstr ""
 
-#: edrinventory.py:100
+#: edrinventory.py:102
 msgid "Proto Heat Radiators"
 msgstr ""
 
-#: edrinventory.py:101
+#: edrinventory.py:103
 msgid "Guardian Power Conduit"
 msgstr ""
 
-#: edrinventory.py:102
+#: edrinventory.py:104
 msgid "Guardian Power Cell"
 msgstr ""
 
-#: edrinventory.py:103
+#: edrinventory.py:105
 msgid "Guardian Technology Component"
 msgstr ""
 
-#: edrinventory.py:104
+#: edrinventory.py:106
 msgid "Guardian Wreckage Components"
 msgstr ""
 
-#: edrinventory.py:105
+#: edrinventory.py:107
 msgid "Guardian Sentinel Weapon Parts"
 msgstr ""
 
-#: edrinventory.py:106
+#: edrinventory.py:108
 msgid "Classified Scan Fragment"
 msgstr ""
 
-#: edrinventory.py:107
+#: edrinventory.py:109
 msgid "Security Firmware Patch"
 msgstr ""
 
-#: edrinventory.py:108
+#: edrinventory.py:110
 msgid "Datamined Wake Exceptions"
 msgstr "Datamined Wake Exception (Centre de distribution"
 
-#: edrinventory.py:109
+#: edrinventory.py:111
 msgid "Abnormal Compact Emissions Data"
 msgstr ""
 
-#: edrinventory.py:110
+#: edrinventory.py:112
 msgid "Aberrant Shield Pattern Analysis"
 msgstr ""
 
-#: edrinventory.py:111
+#: edrinventory.py:113
 msgid "Adaptive Encryptors Capture"
 msgstr ""
 
-#: edrinventory.py:112
+#: edrinventory.py:114
 msgid "Unexpected Emission Data"
 msgstr ""
 
-#: edrinventory.py:113
+#: edrinventory.py:115
 msgid "Cracked Industrial Firmware"
 msgstr ""
 
-#: edrinventory.py:114
+#: edrinventory.py:116
 msgid "Classified Scan Databanks"
 msgstr ""
 
-#: edrinventory.py:115
+#: edrinventory.py:117
 msgid "Specialised Legacy Firmware"
 msgstr ""
 
-#: edrinventory.py:116
+#: edrinventory.py:118
 msgid "Modified Embedded Firmware"
 msgstr ""
 
-#: edrinventory.py:117
+#: edrinventory.py:119
 msgid "Distorted Shield Cycle Recordings"
 msgstr ""
 
-#: edrinventory.py:118
+#: edrinventory.py:120
 msgid "Decoded Emission Data"
 msgstr ""
 
-#: edrinventory.py:119
+#: edrinventory.py:121
 msgid "Anomalous Bulk Scan Data"
 msgstr ""
 
-#: edrinventory.py:120
+#: edrinventory.py:122
 msgid "Unidentified Scan Archives"
 msgstr ""
 
-#: edrinventory.py:121
+#: edrinventory.py:123
 msgid "Inconsistent Shield Soak Analysis"
 msgstr ""
 
-#: edrinventory.py:122
+#: edrinventory.py:124
 msgid "Divergent Scan Data"
 msgstr ""
 
-#: edrinventory.py:123
+#: edrinventory.py:125
 msgid "Untypical Shield Scans"
 msgstr ""
 
-#: edrinventory.py:124
+#: edrinventory.py:126
 msgid "Peculiar Shield Frequency Data"
 msgstr ""
 
-#: edrinventory.py:125
+#: edrinventory.py:127
 msgid "Tagged Encryption Codes"
 msgstr ""
 
-#: edrinventory.py:126
+#: edrinventory.py:128
 msgid "Modified Consumer Firmware"
 msgstr ""
 
-#: edrinventory.py:127
+#: edrinventory.py:129
 msgid "Irregular Emission Data"
 msgstr ""
 
-#: edrinventory.py:128
+#: edrinventory.py:130
 msgid "Open Symmetric Keys"
 msgstr ""
 
-#: edrinventory.py:129
+#: edrinventory.py:131
 msgid "Unusual Encrypted Files"
 msgstr ""
 
-#: edrinventory.py:130
+#: edrinventory.py:132
 msgid "Exceptional Scrambled Emission Data"
 msgstr ""
 
-#: edrinventory.py:131
+#: edrinventory.py:133
 msgid "Anomalous FSD Telemetry"
 msgstr ""
 
-#: edrinventory.py:132
+#: edrinventory.py:134
 msgid "Eccentric Hyperspace Trajectories"
 msgstr ""
 
-#: edrinventory.py:133
+#: edrinventory.py:135
 msgid "Atypical Disrupted Wake Echoes"
 msgstr ""
 
-#: edrinventory.py:134
+#: edrinventory.py:136
 msgid "Strange Wake Solutions"
 msgstr ""
 
-#: edrinventory.py:135
+#: edrinventory.py:137
 msgid "Atypical Encryption Archives"
 msgstr ""
 
-#: edrinventory.py:136
+#: edrinventory.py:138
 msgid "Pattern Alpha Obelisk Data"
 msgstr ""
 
-#: edrinventory.py:137
+#: edrinventory.py:139
 msgid "Pattern Gamma Obelisk Data"
 msgstr ""
 
-#: edrinventory.py:138
+#: edrinventory.py:140
 msgid "Guardian Module Blueprint Fragment"
 msgstr ""
 
-#: edrinventory.py:139
+#: edrinventory.py:141
 msgid "Pattern Beta Obelisk Data"
 msgstr ""
 
-#: edrinventory.py:140
+#: edrinventory.py:142
 msgid "Pattern Delta Obelisk Data"
 msgstr ""
 
-#: edrinventory.py:141
+#: edrinventory.py:143
 msgid "Guardian Starship Blueprint Fragment"
 msgstr ""
 
-#: edrinventory.py:142
+#: edrinventory.py:144
 msgid "Guardian Weapon Blueprint Fragment"
 msgstr ""
 
-#: edrinventory.py:143
+#: edrinventory.py:145
 msgid "Pattern Epsilon Obelisk Data"
 msgstr ""
 
-#: edrinventory.py:144
+#: edrinventory.py:146
 msgid "Ship Systems Data"
 msgstr ""
 
-#: edrinventory.py:145
+#: edrinventory.py:147
 msgid "Ship Flight Data"
 msgstr ""
 
-#: edrinventory.py:146
+#: edrinventory.py:148
 msgid "Thargoid Ship Signature"
 msgstr ""
 
-#: edrinventory.py:147
+#: edrinventory.py:149
 msgid "Thargoid Structural Data"
 msgstr ""
 
-#: edrinventory.py:148
+#: edrinventory.py:150
 msgid "Thargoid Wake Data"
 msgstr ""
 
-#: edrinventory.py:149
+#: edrinventory.py:151
 msgid "Bio-Mechanical Conduits"
 msgstr ""
 
-#: edrinventory.py:150
+#: edrinventory.py:152
 msgid "Propulsion Elements"
 msgstr ""
 
-#: edrinventory.py:151
+#: edrinventory.py:153
 msgid "Thargoid Carapace"
 msgstr ""
 
-#: edrinventory.py:152
+#: edrinventory.py:154
 msgid "Thargoid Energy Cell"
 msgstr ""
 
-#: edrinventory.py:153
+#: edrinventory.py:155
 msgid "Thargoid Organic Circuitry"
 msgstr ""
 
-#: edrinventory.py:154
+#: edrinventory.py:156
 msgid "Thargoid Technological Components"
 msgstr ""
 
-#: edrinventory.py:155
+#: edrinventory.py:157
 msgid "E-Breach"
 msgstr ""
 
-#: edrinventory.py:156
+#: edrinventory.py:158
 msgid "Power Regulator"
 msgstr ""
 
-#: edrinventory.py:157
+#: edrinventory.py:159
 msgid "Chemical Inventory"
 msgstr ""
 
-#: edrinventory.py:158
+#: edrinventory.py:160
 msgid "Duty Rota"
 msgstr ""
 
-#: edrinventory.py:159
+#: edrinventory.py:161
 msgid "Evacuation Protocols"
 msgstr ""
 
-#: edrinventory.py:160
+#: edrinventory.py:162
 msgid "Exploration Journals"
 msgstr ""
 
-#: edrinventory.py:161
+#: edrinventory.py:163
 msgid "Faction News"
 msgstr ""
 
-#: edrinventory.py:162
+#: edrinventory.py:164
 msgid "Financial Projections"
 msgstr ""
 
-#: edrinventory.py:163
+#: edrinventory.py:165
 msgid "Sales Records"
 msgstr ""
 
-#: edrinventory.py:164
+#: edrinventory.py:166
 msgid "Union Membership"
 msgstr ""
 
-#: edrinventory.py:165
+#: edrinventory.py:167
 msgid "Compact Library"
 msgstr ""
 
-#: edrinventory.py:166
+#: edrinventory.py:168
 msgid "infinity"
 msgstr ""
 
-#: edrinventory.py:167
+#: edrinventory.py:169
 msgid "Insight Entertainment Suite"
 msgstr ""
 
-#: edrinventory.py:168
+#: edrinventory.py:170
 msgid "lazarus"
 msgstr ""
 
-#: edrinventory.py:169
+#: edrinventory.py:171
 msgid "Energy Cell"
 msgstr ""
 
-#: edrinventory.py:170
+#: edrinventory.py:172
 msgid "Medkit"
 msgstr ""
 
-#: edrinventory.py:171
+#: edrinventory.py:173
 msgid "Universal Translator"
 msgstr ""
 
-#: edrinventory.py:172
+#: edrinventory.py:174
 msgid "Biochemical Agent"
 msgstr ""
 
-#: edrinventory.py:173
+#: edrinventory.py:175
 msgid "Degraded Power Regulator"
 msgstr ""
 
-#: edrinventory.py:174
+#: edrinventory.py:176
 msgid "Hush"
 msgstr ""
 
-#: edrinventory.py:175
+#: edrinventory.py:177
 msgid "Maintenance Logs"
 msgstr ""
 
-#: edrinventory.py:176
+#: edrinventory.py:178
 msgid "Patrol Routes"
 msgstr ""
 
-#: edrinventory.py:177
+#: edrinventory.py:179
 msgid "push"
 msgstr ""
 
-#: edrinventory.py:178
+#: edrinventory.py:180
 msgid "Settlement Defence Plans"
 msgstr ""
 
-#: edrinventory.py:179
+#: edrinventory.py:181
 msgid "Surveillance Logs"
 msgstr ""
 
-#: edrinventory.py:180
+#: edrinventory.py:182
 msgid "Synthetic Pathogen"
 msgstr ""
 
-#: edrinventory.py:181
+#: edrinventory.py:183
 msgid "Building Schematic"
 msgstr ""
 
-#: edrinventory.py:182
+#: edrinventory.py:184
 msgid "Operational Manual"
 msgstr ""
 
-#: edrinventory.py:183
+#: edrinventory.py:185
 msgid "Blacklist Data"
 msgstr ""
 
-#: edrinventory.py:184
-msgid "insight"
-msgstr ""
-
-#: edrinventory.py:185
-msgid "Air Quality Reports"
-msgstr ""
-
 #: edrinventory.py:186
-msgid "Employee Directory"
+msgid "Insight"
 msgstr ""
 
 #: edrinventory.py:187
-msgid "Faction Associates"
+msgid "Air Quality Reports"
 msgstr ""
 
 #: edrinventory.py:188
-msgid "Meeting Minutes"
+msgid "Employee Directory"
 msgstr ""
 
 #: edrinventory.py:189
-msgid "Multimedia Entertainment"
+msgid "Faction Associates"
 msgstr ""
 
 #: edrinventory.py:190
-msgid "Network Access History"
+msgid "Meeting Minutes"
 msgstr ""
 
 #: edrinventory.py:191
-msgid "Purchase Records"
+msgid "Multimedia Entertainment"
 msgstr ""
 
 #: edrinventory.py:192
-msgid "Radioactivity Data"
+msgid "Network Access History"
 msgstr ""
 
 #: edrinventory.py:193
-msgid "Residential Directory"
+msgid "Purchase Records"
 msgstr ""
 
 #: edrinventory.py:194
-msgid "Shareholder Information"
+msgid "Radioactivity Data"
 msgstr ""
 
 #: edrinventory.py:195
-msgid "Travel Permits"
+msgid "Residential Directory"
 msgstr ""
 
 #: edrinventory.py:196
-msgid "Accident Logs"
+msgid "Shareholder Information"
 msgstr ""
 
 #: edrinventory.py:197
-msgid "Campaign Plans"
+msgid "Travel Permits"
 msgstr ""
 
 #: edrinventory.py:198
-msgid "Combat Training Material"
+msgid "Accident Logs"
 msgstr ""
 
 #: edrinventory.py:199
-msgid "Internal Correspondence"
+msgid "Campaign Plans"
 msgstr ""
 
 #: edrinventory.py:200
-msgid "Payroll Information"
+msgid "Combat Training Material"
 msgstr ""
 
 #: edrinventory.py:201
-msgid "Personal Logs"
+msgid "Internal Correspondence"
 msgstr ""
 
 #: edrinventory.py:202
-msgid "Weapon Inventory"
+msgid "Payroll Information"
 msgstr ""
 
 #: edrinventory.py:203
-msgid "Atmospheric Data"
+msgid "Personal Logs"
 msgstr ""
 
 #: edrinventory.py:204
-msgid "Topographical Surveys"
+msgid "Weapon Inventory"
 msgstr ""
 
 #: edrinventory.py:205
-msgid "Literary Fiction"
+msgid "Atmospheric Data"
 msgstr ""
 
 #: edrinventory.py:206
-msgid "Reactor Output Review"
+msgid "Topographical Surveys"
 msgstr ""
 
 #: edrinventory.py:207
-msgid "Next of Kin Records"
+msgid "Literary Fiction"
 msgstr ""
 
 #: edrinventory.py:208
-msgid "Purchase Requests"
+msgid "Reactor Output Review"
 msgstr ""
 
 #: edrinventory.py:209
-msgid "Tax Records"
+msgid "Next of Kin Records"
 msgstr ""
 
 #: edrinventory.py:210
-msgid "Visitor Register"
+msgid "Purchase Requests"
 msgstr ""
 
 #: edrinventory.py:211
-msgid "Pharmaceutical Patents"
+msgid "Tax Records"
 msgstr ""
 
 #: edrinventory.py:212
-msgid "Vaccine Research"
+msgid "Visitor Register"
 msgstr ""
 
 #: edrinventory.py:213
-msgid "Virology Data"
+msgid "Pharmaceutical Patents"
 msgstr ""
 
 #: edrinventory.py:214
-msgid "Vaccination Records"
+msgid "Vaccine Research"
 msgstr ""
 
 #: edrinventory.py:215
-msgid "Census Data"
+msgid "Virology Data"
 msgstr ""
 
 #: edrinventory.py:216
-msgid "Geographical Data"
+msgid "Vaccination Records"
 msgstr ""
 
 #: edrinventory.py:217
-msgid "Mineral Survey"
+msgid "Census Data"
 msgstr ""
 
 #: edrinventory.py:218
-msgid "Chemical Formulae"
+msgid "Geographical Data"
 msgstr ""
 
 #: edrinventory.py:219
-msgid "Frag Grenade"
+msgid "Mineral Survey"
 msgstr ""
 
 #: edrinventory.py:220
-msgid "Shield Disruptor"
+msgid "Chemical Formulae"
 msgstr ""
 
 #: edrinventory.py:221
-msgid "Shield Projector"
+msgid "Frag Grenade"
 msgstr ""
 
 #: edrinventory.py:222
-msgid "Chemical Experiment Data"
+msgid "Shield Disruptor"
 msgstr ""
 
 #: edrinventory.py:223
-msgid "Chemical Patents"
+msgid "Shield Projector"
 msgstr ""
 
 #: edrinventory.py:224
-msgid "Production Reports"
+msgid "Chemical Experiment Data"
 msgstr ""
 
 #: edrinventory.py:225
-msgid "Production Schedule"
+msgid "Chemical Patents"
 msgstr ""
 
 #: edrinventory.py:226
-msgid "Blood Test Results"
+msgid "Production Reports"
 msgstr ""
 
 #: edrinventory.py:227
-msgid "Combatant Performance"
+msgid "Production Schedule"
 msgstr ""
 
 #: edrinventory.py:228
-msgid "Troop Deployment Records"
+msgid "Blood Test Results"
 msgstr ""
 
 #: edrinventory.py:229
-msgid "Cat Media"
+msgid "Combatant Performance"
 msgstr ""
 
 #: edrinventory.py:230
-msgid "Employee Genetic Data"
+msgid "Troop Deployment Records"
 msgstr ""
 
 #: edrinventory.py:231
-msgid "Faction Donator List"
+msgid "Cat Media"
 msgstr ""
 
 #: edrinventory.py:232
-msgid "NOC Data"
+msgid "Employee Genetic Data"
 msgstr ""
 
 #: edrinventory.py:233
-msgid "True Form Fossil"
+msgid "Faction Donator List"
 msgstr ""
 
 #: edrinventory.py:234
-msgid "Health Monitor"
+msgid "NOC Data"
 msgstr ""
 
 #: edrinventory.py:235
-msgid "Nutritional Concentrate"
+msgid "True Form Fossil"
 msgstr ""
 
 #: edrinventory.py:236
-msgid "Personal Documents"
+msgid "Health Monitor"
 msgstr ""
 
 #: edrinventory.py:237
-msgid "Chemical Sample"
+msgid "Nutritional Concentrate"
 msgstr ""
 
 #: edrinventory.py:238
-msgid "Insight Data Bank"
+msgid "Personal Documents"
 msgstr ""
 
 #: edrinventory.py:239
-msgid "Ionised Gas"
+msgid "Chemical Sample"
 msgstr ""
 
 #: edrinventory.py:240
-msgid "Personal Computer"
+msgid "Insight Data Bank"
 msgstr ""
 
 #: edrinventory.py:241
-msgid "Ship Schematic"
+msgid "Ionised Gas"
 msgstr ""
 
 #: edrinventory.py:242
-msgid "Suit Schematic"
+msgid "Personal Computer"
 msgstr ""
 
 #: edrinventory.py:243
-msgid "Vehicle Schematic"
+msgid "Ship Schematic"
 msgstr ""
 
 #: edrinventory.py:244
-msgid "Weapon Schematic"
+msgid "Suit Schematic"
 msgstr ""
 
 #: edrinventory.py:245
-msgid "Inertia Canister"
+msgid "Vehicle Schematic"
 msgstr ""
 
 #: edrinventory.py:246
-msgid "Surveillance Equipment"
+msgid "Weapon Schematic"
 msgstr ""
 
 #: edrinventory.py:247
-msgid "Deep Mantle Sample"
+msgid "Inertia Canister"
 msgstr ""
 
 #: edrinventory.py:248
-msgid "Microbial Inhibitor"
+msgid "Surveillance Equipment"
 msgstr ""
 
 #: edrinventory.py:249
-msgid "Cast Fossil"
+msgid "Deep Mantle Sample"
 msgstr ""
 
 #: edrinventory.py:250
-msgid "Petrified Fossil"
+msgid "Microbial Inhibitor"
 msgstr ""
 
 #: edrinventory.py:251
-msgid "Agricultural Process Sample"
+msgid "Cast Fossil"
 msgstr ""
 
 #: edrinventory.py:252
-msgid "Chemical Process Sample"
+msgid "Petrified Fossil"
 msgstr ""
 
 #: edrinventory.py:253
-msgid "Refinement Process Sample"
+msgid "Agricultural Process Sample"
 msgstr ""
 
 #: edrinventory.py:254
-msgid "Micro Supercapacitor"
+msgid "Chemical Process Sample"
 msgstr ""
 
 #: edrinventory.py:255
-msgid "Micro Transformer"
+msgid "Refinement Process Sample"
 msgstr ""
 
 #: edrinventory.py:256
-msgid "Chemical Superbase"
+msgid "Micro Supercapacitor"
 msgstr ""
 
 #: edrinventory.py:257
-msgid "Circuit Switch"
+msgid "Micro Transformer"
 msgstr ""
 
 #: edrinventory.py:258
-msgid "Electrical Wiring"
+msgid "Chemical Superbase"
 msgstr ""
 
 #: edrinventory.py:259
-msgid "Encrypted Memory Chip"
+msgid "Circuit Switch"
 msgstr ""
 
 #: edrinventory.py:260
-msgid "Epoxy Adhesive"
+msgid "Electrical Wiring"
 msgstr ""
 
 #: edrinventory.py:261
-msgid "Memory Chip"
+msgid "Encrypted Memory Chip"
 msgstr ""
 
 #: edrinventory.py:262
-msgid "Micro Hydraulics"
+msgid "Epoxy Adhesive"
 msgstr ""
 
 #: edrinventory.py:263
-msgid "Optical Fibre"
+msgid "Memory Chip"
 msgstr ""
 
 #: edrinventory.py:264
-msgid "Titanium Plating"
+msgid "Micro Hydraulics"
 msgstr ""
 
 #: edrinventory.py:265
-msgid "pH Neutraliser"
+msgid "Optical Fibre"
 msgstr ""
 
 #: edrinventory.py:266
-msgid "Metal Coil"
+msgid "Titanium Plating"
 msgstr ""
 
 #: edrinventory.py:267
-msgid "Viscoelastic Polymer"
+msgid "pH Neutraliser"
 msgstr ""
 
 #: edrinventory.py:268
-msgid "Ion Battery"
+msgid "Metal Coil"
 msgstr ""
 
 #: edrinventory.py:269
-msgid "Chemical Catalyst"
+msgid "Viscoelastic Polymer"
 msgstr ""
 
 #: edrinventory.py:270
-msgid "Electrical Fuse"
+msgid "Ion Battery"
 msgstr ""
 
 #: edrinventory.py:271
-msgid "Optical Lens"
+msgid "Chemical Catalyst"
 msgstr ""
 
 #: edrinventory.py:272
-msgid "Weapon Component"
+msgid "Electrical Fuse"
 msgstr ""
 
 #: edrinventory.py:273
-msgid "Carbon Fibre Plating"
+msgid "Optical Lens"
 msgstr ""
 
 #: edrinventory.py:274
-msgid "Micro Thrusters"
+msgid "Weapon Component"
 msgstr ""
 
 #: edrinventory.py:275
-msgid "Oxygenic Bacteria"
+msgid "Carbon Fibre Plating"
 msgstr ""
 
 #: edrinventory.py:276
-msgid "Circuit Board"
+msgid "Micro Thrusters"
 msgstr ""
 
 #: edrinventory.py:277
-msgid "Tungsten Carbide"
+msgid "Oxygenic Bacteria"
 msgstr ""
 
 #: edrinventory.py:278
-msgid "Ballistics Data"
+msgid "Circuit Board"
 msgstr ""
 
 #: edrinventory.py:279
-msgid "Political Affiliations"
+msgid "Tungsten Carbide"
 msgstr ""
 
 #: edrinventory.py:280
-msgid "Conflict History"
+msgid "Ballistics Data"
 msgstr ""
 
 #: edrinventory.py:281
-msgid "Risk Assessments"
+msgid "Political Affiliations"
 msgstr ""
 
 #: edrinventory.py:282
-msgid "Stellar Activity Logs"
+msgid "Conflict History"
 msgstr ""
 
 #: edrinventory.py:283
-msgid "Manufacturing Instructions"
+msgid "Risk Assessments"
 msgstr ""
 
 #: edrinventory.py:284
-msgid "Digital Designs"
+msgid "Stellar Activity Logs"
 msgstr ""
 
 #: edrinventory.py:285
-msgid "Medical Records"
+msgid "Manufacturing Instructions"
 msgstr ""
 
 #: edrinventory.py:286
-msgid "Employment History"
+msgid "Digital Designs"
 msgstr ""
 
 #: edrinventory.py:287
-msgid "VIP Security Detail"
+msgid "Medical Records"
 msgstr ""
 
 #: edrinventory.py:288
-msgid "Classic Entertainment"
+msgid "Employment History"
 msgstr ""
 
 #: edrinventory.py:289
-msgid "Photo Albums"
+msgid "VIP Security Detail"
 msgstr ""
 
 #: edrinventory.py:290
-msgid "Biometric Data"
+msgid "Classic Entertainment"
 msgstr ""
 
 #: edrinventory.py:291
-msgid "Extraction Yield Data"
+msgid "Photo Albums"
 msgstr ""
 
 #: edrinventory.py:292
-msgid "Security Expenses"
+msgid "Biometric Data"
 msgstr ""
 
 #: edrinventory.py:293
-msgid "Culinary Recipes"
+msgid "Extraction Yield Data"
 msgstr ""
 
 #: edrinventory.py:294
-msgid "Fleet Registry"
+msgid "Security Expenses"
 msgstr ""
 
 #: edrinventory.py:295
-msgid "Influence Projections"
+msgid "Culinary Recipes"
 msgstr ""
 
 #: edrinventory.py:296
-msgid "Cocktail Recipes"
+msgid "Fleet Registry"
 msgstr ""
 
 #: edrinventory.py:297
-msgid "Employee Expenses"
+msgid "Influence Projections"
 msgstr ""
 
 #: edrinventory.py:298
-msgid "Interview Recordings"
+msgid "Cocktail Recipes"
 msgstr ""
 
 #: edrinventory.py:299
-msgid "Recycling Logs"
+msgid "Employee Expenses"
 msgstr ""
 
 #: edrinventory.py:300
-msgid "Job Applications"
+msgid "Interview Recordings"
 msgstr ""
 
 #: edrinventory.py:301
-msgid "Californium"
+msgid "Recycling Logs"
 msgstr ""
 
 #: edrinventory.py:302
-msgid "Pyrolytic catalyst"
+msgid "Job Applications"
 msgstr ""
 
 #: edrinventory.py:303
-msgid "Spyware"
+msgid "Californium"
 msgstr ""
 
 #: edrinventory.py:304
-msgid "Tactical Plans"
+msgid "Pyrolytic catalyst"
 msgstr ""
 
 #: edrinventory.py:305
-msgid "Virus"
+msgid "Spyware"
 msgstr ""
 
 #: edrinventory.py:306
-msgid "Aerogel"
+msgid "Tactical Plans"
 msgstr ""
 
 #: edrinventory.py:307
-msgid "Genetic Repair Meds"
+msgid "Virus"
 msgstr ""
 
 #: edrinventory.py:308
-msgid "Crop Yield Analysis"
+msgid "Aerogel"
 msgstr ""
 
 #: edrinventory.py:309
-msgid "Kompromat"
+msgid "Genetic Repair Meds"
 msgstr ""
 
 #: edrinventory.py:310
-msgid "Xeno Defence Protocols"
+msgid "Crop Yield Analysis"
 msgstr ""
 
 #: edrinventory.py:311
-msgid "Geological Data"
+msgid "Kompromat"
 msgstr ""
 
 #: edrinventory.py:312
-msgid "Opinion Polls"
+msgid "Xeno Defence Protocols"
 msgstr ""
 
 #: edrinventory.py:313
-msgid "Propaganda"
+msgid "Geological Data"
 msgstr ""
 
 #: edrinventory.py:314
-msgid "Hydroponic Data"
+msgid "Opinion Polls"
 msgstr ""
 
 #: edrinventory.py:315
-msgid "Mining Analytics"
+msgid "Propaganda"
 msgstr ""
 
 #: edrinventory.py:316
-msgid "Compression Liquefied Gas"
+msgid "Hydroponic Data"
 msgstr ""
 
 #: edrinventory.py:317
-msgid "Weapon Test Data"
+msgid "Mining Analytics"
 msgstr ""
 
 #: edrinventory.py:318
-msgid "Spectral Analysis Data"
+msgid "Compression Liquefied Gas"
 msgstr ""
 
 #: edrinventory.py:319
-msgid "Audiologs"
+msgid "Weapon Test Data"
 msgstr ""
 
 #: edrinventory.py:320
-msgid "Genetic Research"
+msgid "Spectral Analysis Data"
 msgstr ""
 
 #: edrinventory.py:321
-msgid "Clinical Trial Records"
+msgid "Audiologs"
 msgstr ""
 
 #: edrinventory.py:322
-msgid "G-Meds"
+msgid "Genetic Research"
 msgstr ""
 
 #: edrinventory.py:323
-msgid "Gene Sequencing Data"
+msgid "Clinical Trial Records"
 msgstr ""
 
 #: edrinventory.py:324
-msgid "Settlement Assault Plans"
+msgid "G-Meds"
 msgstr ""
 
 #: edrinventory.py:325
-msgid "Biological Sample"
+msgid "Gene Sequencing Data"
 msgstr ""
 
 #: edrinventory.py:326
-msgid "Smear Campaign Plans"
+msgid "Settlement Assault Plans"
 msgstr ""
 
 #: edrinventory.py:327
-msgid "Ax Combat Logs"
+msgid "Biological Sample"
 msgstr ""
 
 #: edrinventory.py:328
-msgid "Biological Weapon Data"
+msgid "Smear Campaign Plans"
 msgstr ""
 
 #: edrinventory.py:329
-msgid "Chemical Weapon Data"
+msgid "Ax Combat Logs"
 msgstr ""
 
 #: edrinventory.py:330
-msgid "Criminal Records"
+msgid "Biological Weapon Data"
 msgstr ""
 
 #: edrinventory.py:331
-msgid "Enhanced Interrogation Recordings"
+msgid "Chemical Weapon Data"
 msgstr ""
 
 #: edrinventory.py:332
-msgid "Espionage Material"
+msgid "Criminal Records"
 msgstr ""
 
 #: edrinventory.py:333
-msgid "Incident Logs"
+msgid "Enhanced Interrogation Recordings"
 msgstr ""
 
 #: edrinventory.py:334
-msgid "Inorganic Contaminant"
+msgid "Espionage Material"
 msgstr ""
 
 #: edrinventory.py:335
-msgid "Interrogation Recordings"
+msgid "Incident Logs"
 msgstr ""
 
 #: edrinventory.py:336
-msgid "Mutagenic Catalyst"
+msgid "Inorganic Contaminant"
 msgstr ""
 
 #: edrinventory.py:337
-msgid "Network Security Protocols"
+msgid "Interrogation Recordings"
 msgstr ""
 
 #: edrinventory.py:338
-msgid "Patient History"
+msgid "Mutagenic Catalyst"
 msgstr ""
 
 #: edrinventory.py:339
-msgid "Plant Growth Charts"
+msgid "Network Security Protocols"
 msgstr ""
 
 #: edrinventory.py:340
-msgid "Prisoner Logs"
+msgid "Patient History"
 msgstr ""
 
 #: edrinventory.py:341
-msgid "Seed Geneaology"
+msgid "Plant Growth Charts"
 msgstr ""
 
 #: edrinventory.py:342
-msgid "Slush Fund Logs"
+msgid "Prisoner Logs"
 msgstr ""
 
 #: edrinventory.py:343
-msgid "Synthetic Genome"
+msgid "Seed Geneaology"
 msgstr ""
 
 #: edrinventory.py:344
-msgid "Epinephrine"
+msgid "Slush Fund Logs"
 msgstr ""
 
 #: edrinventory.py:345
-msgid "Graphene"
+msgid "Synthetic Genome"
 msgstr ""
 
 #: edrinventory.py:346
-msgid "Rdx"
+msgid "Epinephrine"
 msgstr ""
 
 #: edrinventory.py:347
-msgid "Electromagnet"
+msgid "Graphene"
 msgstr ""
 
 #: edrinventory.py:348
-msgid "Microelectrode"
+msgid "Rdx"
 msgstr ""
 
 #: edrinventory.py:349
-msgid "Motor"
+msgid "Electromagnet"
 msgstr ""
 
 #: edrinventory.py:350
-msgid "Scrambler"
+msgid "Microelectrode"
 msgstr ""
 
 #: edrinventory.py:351
+msgid "Motor"
+msgstr ""
+
+#: edrinventory.py:352
+msgid "Scrambler"
+msgstr ""
+
+#: edrinventory.py:353
 msgid "Transmitter"
 msgstr ""
 
-#: edrinventory.py:650
+#: edrinventory.py:661
 msgid "DAT"
 msgstr ""
 
-#: edrinventory.py:650
+#: edrinventory.py:661
 msgid "ASS"
 msgstr "ASS"
 
-#: edrinventory.py:650
+#: edrinventory.py:661
 msgid "GDS"
 msgstr ""
 
-#: edrinventory.py:650
+#: edrinventory.py:661
 msgid "CNS"
 msgstr ""
 

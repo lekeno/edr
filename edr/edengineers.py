@@ -28,35 +28,29 @@ class EDDominoGreen(EDEngineer):
         super().__init__()
         self.name = "Domino Green"
 
-    def dibs(self, materials):
-        if self.progress != "Unlocked":
-            return {"push": 5}
-        return None
-
-    def relevant(self, material_name):
-        return material_name.lower() == "push"
-
-    def interested_in(self, material_name):
-        if self.progress != "Unlocked":
-            return self.relevant(material_name)
-        return False
-
 class EDKitFowler(EDEngineer):
     def __init__(self):
         super().__init__()
         self.name = "Kit Fowler"
 
     def dibs(self, materials):
+        needed = {}
+        if self.progress is None:
+            needed["push"] = 5
         if self.progress != "Unlocked":
-            return {"opinionpolls": 20}
-        return None
+            needed["opinionpolls"] = 20
+        return needed
 
     def relevant(self, material_name):
-        return material_name.lower() == "opinionpolls"
+        return material_name.lower() in ["opinionpolls", "push"]
 
     def interested_in(self, material_name):
+        theset = ["opinionpolls"]
+        if self.progress is None:
+            theset.append("push")
+        
         if self.progress != "Unlocked":
-            return self.relevant(material_name)
+            return material_name.lower() in theset
         return False
 
 class EDYardenBond(EDEngineer):
@@ -65,34 +59,23 @@ class EDYardenBond(EDEngineer):
         self.name = "Yarden Bond"
 
     def dibs(self, materials):
+        needed = {}
+        if self.progress is None:
+            needed["surveillanceequipment"] = 5
         if self.progress != "Unlocked":
-            return {"smearcampaignplans": 8}
-        return None
+            needed["smearcampaignplans"] = 8
+        return needed
 
     def relevant(self, material_name):
-        return material_name.lower() == "smearcampaignplans"
+        return material_name.lower() in ["smearcampaignplans", "surveillanceequipment"]
 
     def interested_in(self, material_name):
+        theset = ["smearcampaignplans"]
+        if self.progress is None:
+            theset.append("surveillanceequipment")
+        
         if self.progress != "Unlocked":
-            return self.relevant(material_name)
-        return False
-
-class EDTerraVelasquez(EDEngineer):
-    def __init__(self):
-        super().__init__()
-        self.name = "Terra Velasquez"
-
-    def dibs(self, materials):
-        if self.progress != "Unlocked":
-            return {"financialprojections": 15}
-        return None
-
-    def relevant(self, material_name):
-        return material_name.lower() == "financialprojections"
-
-    def interested_in(self, material_name):
-        if self.progress != "Unlocked":
-            return self.relevant(material_name)
+            return material_name.lower() in theset
         return False
 
 class EDJudeNavarro(EDEngineer):
@@ -100,75 +83,26 @@ class EDJudeNavarro(EDEngineer):
         super().__init__()
         self.name = "Jude Navarro"
 
+class EDTerraVelasquez(EDEngineer):
+    def __init__(self):
+        super().__init__()
+        self.name = "Terra Velasquez"
+
     def dibs(self, materials):
-        if self.progress != "Unlocked":
-            return {"geneticrepairmeds": 5}
-        return None
+        needed = {}
+        if self.progress is None:
+            needed["geneticrepairmeds"] = 5
+        return needed
 
     def relevant(self, material_name):
         return material_name.lower() == "geneticrepairmeds"
-    
-    def interested_in(self, material_name):
-        if self.progress != "Unlocked":
-            return self.relevant(material_name)
-        return False
-
-class EDHeroFerrari(EDEngineer):
-    def __init__(self):
-        super().__init__()
-        self.name = "Hero Ferrari"
-
-    def dibs(self, materials):
-        if self.progress != "Unlocked":
-            return {"settlementdefenceplans": 15}
-        return None
-
-    def relevant(self, material_name):
-        return material_name.lower() == "settlementdefenceplans"
 
     def interested_in(self, material_name):
-        if self.progress != "Unlocked":
-            return self.relevant(material_name)
-        return False
-
-class EDWellingtonBeck(EDEngineer):
-    def __init__(self):
-        super().__init__()
-        self.name = "Wellington Beck"
-
-    def dibs(self, materials):
-        if self.progress != "Unlocked":
-            me = materials.get("multimediaentertainment", 0)
-            ce = materials.get("classicentertainment", 0)
-            cm = materials.get("catmedia", 0)
-            me = max(min(25, me), 8)
-            ce = max(min(25-me, ce), 25-me-8)
-            cm = 25-me-ce
-            
-            return {"multimedia entertainment":me, "classic entertainment":ce, "cat media": cm}
-        return None
-
-    def relevant(self, material_name):
-        return material_name.lower() in ["multimediaentertainment", "classicentertainment", "catmedia"]
-
-    def interested_in(self, material_name):
-        if self.progress != "Unlocked":
-            return self.relevant(material_name)
-            # TODO add referral requirements: For this one, it's insightentertainmentsuite. Check the other too.
-        return False
-
-class EDUmaLaszlo(EDEngineer):
-    def __init__(self):
-        super().__init__()
-        self.name = "Uma Laszlo"
-
-    def relevant(self, material_name):
-        return material_name.lower() == "insightentertainmentsuite"
-
-    def interested_in(self, material_name):
+        theset = []
         if self.progress is None:
-            return self.relevant(material_name)
-        return False
+            theset.append("geneticrepairmeds")
+        
+        return material_name.lower() in theset
 
 class EDOdenGeiger(EDEngineer):
     def __init__(self):
@@ -176,6 +110,7 @@ class EDOdenGeiger(EDEngineer):
         self.name = "Oden Geiger"
 
     def dibs(self, materials):
+        needed = {}
         if self.progress != "Unlocked":
             me = materials.get("biologicalsample", 0)
             ce = materials.get("employeegenetic data", 0)
@@ -184,16 +119,84 @@ class EDOdenGeiger(EDEngineer):
             ce = max(min(20-me, ce), 7)
             cm = 20-me-ce
             
-            return {"biologicalsample":me, "employeegenetic data":ce, "geneticresearch": cm}
-        return None
+        
+            needed = {"biologicalsample":me, "employeegenetic data":ce, "geneticresearch": cm}
+        
+        if self.progress is None:
+            needed["financialprojections"] = 15
+        
+        return needed
 
     def relevant(Self, material_name):
-        return material_name.lower() in ["biologicalsample", "employeegeneticdata", "geneticresearch"]
+        return material_name.lower() in ["financialprojections", "biologicalsample", "employeegeneticdata", "geneticresearch"]
 
     def interested_in(self, material_name):
+        theset = ["biologicalsample", "employeegeneticdata", "geneticresearch"]
+        if self.progress is None:
+            theset.append("financialprojections")
+        
         if self.progress != "Unlocked":
+            return material_name.lower() in theset
+        return False
+
+class EDHeroFerrari(EDEngineer):
+    def __init__(self):
+        super().__init__()
+        self.name = "Hero Ferrari"
+
+class EDWellingtonBeck(EDEngineer):
+    def __init__(self):
+        super().__init__()
+        self.name = "Wellington Beck"
+
+    def dibs(self, materials):
+        needed = {}
+        if self.progress != "Unlocked":
+            me = materials.get("multimediaentertainment", 0)
+            ce = materials.get("classicentertainment", 0)
+            cm = materials.get("catmedia", 0)
+            me = max(min(25, me), 8)
+            ce = max(min(25-me, ce), 25-me-8)
+            cm = 25-me-ce
+            
+            needed = {"multimedia entertainment":me, "classic entertainment":ce, "cat media": cm}
+        
+        if self.progress is None:
+            needed["settlementdefenceplans"] = 15
+        return needed
+
+    def relevant(self, material_name):
+        return material_name.lower() in ["settlementdefenceplans", "multimediaentertainment", "classicentertainment", "catmedia"]
+
+    def interested_in(self, material_name):
+        theset = ["multimediaentertainment", "classicentertainment", "catmedia"]
+        if self.progress is None:
+            theset.append("settlementdefenceplans")
+        
+        if self.progress != "Unlocked":
+            return material_name.lower() in theset
+        return False
+
+class EDUmaLaszlo(EDEngineer):
+    def __init__(self):
+        super().__init__()
+        self.name = "Uma Laszlo"
+
+    
+    def dibs(self, materials):
+        needed = {}
+        if self.progress is None:
+            needed["insightentertainmentsuite"] = 5
+        return needed
+
+    def relevant(self, material_name):
+        return material_name.lower() == "insightentertainmentsuite"
+
+    def interested_in(self, material_name):
+        if self.progress is None:
             return self.relevant(material_name)
         return False
+        
 
 class EDEngineers(object):
     ODYSSEY_MATS = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'odyssey_mats.json')).read())

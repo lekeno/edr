@@ -624,7 +624,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] == "EngineerProgress":
         handle_engineer_progress(ed_player, entry)
 
-    if entry["event"] in ["Materials", "MaterialCollected", "MaterialDiscarded", "EngineerContribution", "EngineerCraft", "MaterialTrade", "MissionCompleted", "ScientificResearch", "TechnologyBroker", "Synthesis", "BackpackChange", "BuyMicroResources", "SellMicroResources", "TransferMicroResources", "TradeMicroResources", "ShipLockerMaterials", "ShipLocker"]:
+    if entry["event"] in ["Materials", "MaterialCollected", "MaterialDiscarded", "EngineerContribution", "EngineerCraft", "MaterialTrade", "MissionCompleted", "ScientificResearch", "TechnologyBroker", "Synthesis", "Backpack", "BackpackChange", "BuyMicroResources", "SellMicroResources", "TransferMicroResources", "TradeMicroResources", "ShipLockerMaterials", "ShipLocker"]:
         handle_material_events(ed_player, entry, state)
 
     if entry["event"] == "StoredShips":
@@ -1359,7 +1359,7 @@ def handle_scan_events(player, entry):
     return True
 
 def handle_material_events(cmdr, entry, state):
-    if entry["event"] in ["Materials", "ShipLockerMaterials"] or (entry["event"] == "ShipLocker" and len(entry.keys()) > 2):
+    if entry["event"] in ["Materials", "ShipLockerMaterials"] or (entry["event"] == "ShipLocker" and len(entry.keys()) > 2) or (entry["event"] == "Backpack" and len(entry.keys()) > 2):
         cmdr.inventory.initialize(entry)
         
     if cmdr.inventory.stale_or_incorrect():
