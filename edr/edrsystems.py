@@ -677,7 +677,7 @@ class EDRSystems(object):
                     bounty = EDFineOrBounty(traffic.get("bounty", 0))
                     enemy = traffic.get("enemy", False)
                     by_pledge = traffic.get("byPledge", None)
-                    if karma < 0 or bounty.is_significant():
+                    if karma <= -100 or bounty.is_significant():
                         wanted_cmdrs[traffic["cmdr"]] = [ traffic["timestamp"], karma ]
                     elif powerplay and enemy and powerplay == by_pledge:
                         enemies[traffic["cmdr"]] = [traffic["timestamp"], karma]
@@ -710,7 +710,7 @@ class EDRSystems(object):
                             bounty = EDFineOrBounty(traffic.get("bounty", 0))
                             enemy = traffic.get("enemy", False)
                             by_pledge = traffic.get("byPledge", None)
-                            if karma < 0 or bounty.is_significant():
+                            if karma <= -100 or bounty.is_significant():
                                 wanted_cmdrs[criminal["name"]] = [ crime["timestamp"], karma]
                             elif powerplay and enemy and powerplay == by_pledge:
                                 enemies[traffic["cmdr"]] = [traffic["timestamp"], karma]
