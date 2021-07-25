@@ -324,7 +324,7 @@ class EDRInventory(object):
         "gmeds" :{ "localized": _(u"G-Meds"), "raw": "G-Meds", "category": "data", "grade": 0},
         "genesequencingdata" :{ "localized": _(u"Gene Sequencing Data"), "raw": "Gene Sequencing Data", "category": "data", "grade": 0},
         "settlementassaultplans" :{ "localized": _(u"Settlement Assault Plans"), "raw": "Settlement Assault Plans", "category": "data", "grade": 0},
-        "biologicalsample" :{ "localized": _(u"Biological Sample"), "raw": "Biological Sample", "category": "data", "grade": 0},
+        "geneticresearch" :{ "localized": _(u"Biological Sample"), "raw": "Biological Sample", "category": "data", "grade": 0},
         "smearcampaignplans" :{ "localized": _(u"Smear Campaign Plans"), "raw": "Smear Campaign Plans", "category": "data", "grade": 0},
         "axcombatlogs" :{ "localized": _(u"Ax Combat Logs"), "raw": "Ax Combat Logs", "category": "data", "grade": 0},
         "biologicalweapondata" :{ "localized": _(u"Biological Weapon Data"), "raw": "Biological Weapon Data", "category": "data", "grade": 0},
