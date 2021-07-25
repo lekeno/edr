@@ -117,7 +117,7 @@ class EDRFleet(object):
         check = self.db.execute("SELECT id from ships limit 1")
         if not check.fetchone():
             return False
-        cursor = self.db.execute('SELECT name, localised, star_system, eta FROM ships WHERE (type=? OR name=? OR localised=?) and piloted=0', (ship_type.lower(), type_or_name.lower(), type_or_name.lower(),))
+        cursor = self.db.execute('SELECT name, localised, star_system, eta, ship_market_id FROM ships WHERE (type=? OR name=? OR localised=?) and piloted=0', (ship_type.lower(), type_or_name.lower(), type_or_name.lower(),))
         return cursor.fetchall()
 
     def sell(self, sell_event):

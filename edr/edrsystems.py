@@ -36,6 +36,9 @@ class EDRSystems(object):
     EDSM_FACTIONS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_factions.v1.p')
     EDSM_TRAFFIC_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_traffic.v1.p')
     EDSM_DEATHS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_deaths.v1.p')
+    EDSM_MARKETS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_markets.v1.p')
+    EDSM_SHIPYARDS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_shipyards.v1.p')
+    EDSM_OUTFITTING_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_outfitting.v1.p')
     EDR_NOTAMS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'notams.v2.p')
     EDR_SITREPS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'sitreps.v3.p')
     EDR_TRAFFIC_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'traffic.v2.p')
@@ -131,6 +134,28 @@ class EDRSystems(object):
             self.edsm_traffic_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                   edr_config.edsm_traffic_max_age())
 
+        try:
+            with open(self.EDSM_MARKETS_CACHE, 'rb') as handle:
+                self.edsm_markets_cache = pickle.load(handle)
+        except:
+            self.edsm_markets_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.edsm_markets_max_age())
+
+        try:
+            with open(self.EDSM_SHIPYARD_CACHE, 'rb') as handle:
+                self.edsm_shipyard_cache = pickle.load(handle)
+        except:
+            self.edsm_shipyard_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.edsm_shipyard_max_age())
+
+        try:
+            with open(self.EDSM_OUTFITTING_CACHE, 'rb') as handle:
+                self.edsm_outfitting_cache = pickle.load(handle)
+        except:
+            self.edsm_outfitting_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.edsm_outfitting_max_age())
+
+        
         try:
             with open(self.EDSM_DEATHS_CACHE, 'rb') as handle:
                 self.edsm_deaths_cache = pickle.load(handle)
@@ -297,6 +322,99 @@ class EDRSystems(object):
         if the_system:
             self.edsm_systems_cache.set(name.lower(), the_system)
             return the_system
+        
+        return None
+
+    def station(self, star_system, station_name, station_type):
+        stations = self.stations_in_system(star_system)
+        if not stations:
+            return None
+            
+        for station in stations:
+            if station["name"] == station_name:
+                return station
+        
+        worth_retrying_age = 60*60*6 
+        if station_type == "FleetCarrier" and self.edsm_stations_cache.is_older_than(star_system.lower(), worth_retrying_age):
+            # FleetCarrier are a bit more dynamic, so evict a lukewarm entry and get a new fresh one in case the info has been reflected since last time
+            self.edsm_stations_cache.evict(star_system.lower())
+            stations = self.stations_in_system(star_system)
+            for station in stations:
+                if station["name"] == station_name:
+                    return station
+        
+        return None
+
+
+    def market(self, marketId):
+        marketInfo = self.edsm_markets_cache.get(marketId)
+        cached = self.edsm_markets_cache.has_key(marketId)
+        if cached or marketInfo:
+            EDRLOG.log(u"Market info for marketId {} is in the cache.".format(marketId), "DEBUG")
+            return marketInfo
+
+        marketInfo = self.edsm_server.market(marketId)
+        if marketInfo:
+            self.edsm_markets_cache.set(marketId, marketInfo)
+            EDRLOG.log(u"Cached {}'s market info".format(marketId), "DEBUG")
+            return marketInfo
+
+        self.edsm_markets_cache.set(marketId, None)
+        EDRLOG.log(u"No match on EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
+        return None
+
+    def shipyard(self, shipyardId):
+        shipyardInfo = self.edsm_shipyards_cache.get(shipyardId)
+        cached = self.edsm_shipyards_cache.has_key(shipyardId)
+        if cached or shipyardInfo:
+            EDRLOG.log(u"shipyard info for shipyardId {} is in the cache.".format(shipyardId), "DEBUG")
+            return shipyardInfo
+
+        shipyardInfo = self.edsm_server.shipyard(shipyardId)
+        if shipyardInfo:
+            self.edsm_shipyards_cache.set(shipyardId, shipyardInfo)
+            EDRLOG.log(u"Cached {}'s shipyard info".format(shipyardId), "DEBUG")
+            return shipyardInfo
+
+        self.edsm_shipyards_cache.set(shipyardId, None)
+        EDRLOG.log(u"No match on EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
+        return None
+
+    def outfitting(self, outfittingId):
+        outfittingInfo = self.edsm_outfittings_cache.get(outfittingId)
+        cached = self.edsm_outfittings_cache.has_key(outfittingId)
+        if cached or outfittingInfo:
+            EDRLOG.log(u"outfitting info for outfittingId {} is in the cache.".format(outfittingId), "DEBUG")
+            return outfittingInfo
+
+        outfittingInfo = self.edsm_server.outfitting(outfittingId)
+        if outfittingInfo:
+            self.edsm_outfittings_cache.set(outfittingId, outfittingInfo)
+            EDRLOG.log(u"Cached {}'s outfitting info".format(outfittingId), "DEBUG")
+            return outfittingInfo
+
+        self.edsm_outfittings_cache.set(outfittingId, None)
+        EDRLOG.log(u"No match on EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
+        return None
+
+
+    def station(self, star_system, station_name, station_type):
+        stations = self.stations_in_system(star_system)
+        if not stations:
+            return None
+            
+        for station in stations:
+            if station["name"] == station_name:
+                return station
+        
+        worth_retrying_age = 60*60*6 
+        if station_type == "FleetCarrier" and self.edsm_stations_cache.is_older_than(star_system.lower(), worth_retrying_age):
+            # FleetCarrier are a bit more dynamic, so evict a lukewarm entry and get a new fresh one in case the info has been reflected since last time
+            self.edsm_stations_cache.evict(star_system.lower())
+            stations = self.stations_in_system(star_system)
+            for station in stations:
+                if station["name"] == station_name:
+                    return station
         
         return None
 
