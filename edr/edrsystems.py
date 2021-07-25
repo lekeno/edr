@@ -142,11 +142,11 @@ class EDRSystems(object):
                                                   edr_config.edsm_markets_max_age())
 
         try:
-            with open(self.EDSM_SHIPYARD_CACHE, 'rb') as handle:
-                self.edsm_shipyard_cache = pickle.load(handle)
+            with open(self.EDSM_SHIPYARDS_CACHE, 'rb') as handle:
+                self.edsm_shipyards_cache = pickle.load(handle)
         except:
-            self.edsm_shipyard_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                                  edr_config.edsm_shipyard_max_age())
+            self.edsm_shipyards_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.edsm_shipyards_max_age())
 
         try:
             with open(self.EDSM_OUTFITTING_CACHE, 'rb') as handle:

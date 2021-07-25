@@ -146,6 +146,15 @@ class EDRConfig(object):
     def edsm_factions_max_age(self):
         return int(self.config.get('lrucaches', 'edsm_factions_max_age'))
 
+    def edsm_markets_max_age(self):
+        return int(self.config.get('lrucaches', 'edsm_markets_max_age'))
+
+    def edsm_shipyards_max_age(self):
+        return int(self.config.get('lrucaches', 'edsm_shipyards_max_age'))
+
+    def edsm_outfitting_max_age(self):
+        return int(self.config.get('lrucaches', 'edsm_outfitting_max_age'))
+    
     def edsm_traffic_max_age(self):
         return int(self.config.get('lrucaches', 'edsm_traffic_max_age'))
 
