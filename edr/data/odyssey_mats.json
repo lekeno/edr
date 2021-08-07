@@ -50,7 +50,7 @@
     "surveilleancelogs": { "type": "data", "locations": ["CMD buildings", "Crashed satellite", "Mission reward"], "used": 3},
     "tacticalplans": { "type": "data", "locations": ["Irregular markers", "CMD buildings", "Mission reward"], "used": 3},
     "troopdeploymentrecords": { "type": "data", "locations": ["CMD buildings", "Mission reward"], "used": 3},
-    "geneticsample": { "type": "item", "locations": ["STO buildings", "AGRI buildings"], "used": 0},
+    "biologicalsample": { "type": "item", "locations": ["STO buildings", "AGRI buildings"], "used": 0},
     "catmedia": { "type": "data", "locations": ["HAB buildings"], "used": 0},
     "classicentertainment": { "type": "data", "locations": ["HAB buildings"], "used": 0},
     "employeegeneticdata": { "type": "data", "locations": ["RES buildings", "CMD buildings"], "used": 0},
