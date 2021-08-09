@@ -64,7 +64,25 @@ class EDSMServer(object):
         endpoint = "{}/api-system-v1/factions".format(self.EDSM_SERVER)
         return self.__get(endpoint, params)
 
-        
+
+    def market(self, marketId):
+        params = {"marketId": marketId}
+        endpoint = "{}/api-system-v1/stations/market".format(self.EDSM_SERVER)
+        return self.__get(endpoint, params)
+
+
+    def shipyard(self, marketId):
+        params = {"marketId": marketId}
+        endpoint = "{}/api-system-v1/stations/shipyard".format(self.EDSM_SERVER)
+        return self.__get(endpoint, params)
+
+
+    def outfitting(self, marketId):
+        params = {"marketId": marketId}
+        endpoint = "{}/api-system-v1/stations/outfitting".format(self.EDSM_SERVER)
+        return self.__get(endpoint, params)
+
+
     def deaths(self, system_name):
         params = {"systemName": system_name}
         endpoint = "{}/api-system-v1/deaths".format(self.EDSM_SERVER)

@@ -112,15 +112,15 @@ class EDOdenGeiger(EDEngineer):
     def dibs(self, materials):
         needed = {}
         if self.progress != "Unlocked":
-            me = materials.get("biologicalsample", 0)
-            ce = materials.get("employeegenetic data", 0)
+            me = materials.get("geneticsample", 0)
+            ce = materials.get("employeegeneticdata", 0)
             cm = materials.get("geneticresearch", 0)
             me = max(min(20, me), 7)
             ce = max(min(20-me, ce), 7)
             cm = 20-me-ce
             
         
-            needed = {"biologicalsample":me, "employeegenetic data":ce, "geneticresearch": cm}
+            needed = {"geneticsample":me, "employeegeneticdata":ce, "geneticresearch": cm}
         
         if self.progress is None:
             needed["financialprojections"] = 15
@@ -128,10 +128,10 @@ class EDOdenGeiger(EDEngineer):
         return needed
 
     def relevant(Self, material_name):
-        return material_name.lower() in ["financialprojections", "biologicalsample", "employeegeneticdata", "geneticresearch"]
+        return material_name.lower() in ["financialprojections", "geneticsample", "employeegeneticdata", "geneticresearch"]
 
     def interested_in(self, material_name):
-        theset = ["biologicalsample", "employeegeneticdata", "geneticresearch"]
+        theset = ["geneticsample", "employeegeneticdata", "geneticresearch"]
         if self.progress is None:
             theset.append("financialprojections")
         

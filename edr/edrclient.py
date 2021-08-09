@@ -1648,10 +1648,14 @@ class EDRClient(object):
             in_clipboard = False
             for hit in results:
                 transit = _(u" @ {}").format(EDTime.t_plus_py(hit[3])) if hit[3] else u""
+                location = _(u"{}").format(hit[2])
+                marketInfo = self.edrsystems.market(hit[4])
+                if marketInfo and marketInfo.get("sName", None) is not None:
+                    location = _(u" {} ({})").format(hit[2], marketInfo["sName"])
                 if hit[0]:
-                    hits.append(_(u"'{}' ({}): {}{}").format(hit[0], hit[1], hit[2], transit))
+                    hits.append(_(u"'{}' ({}): {}{}").format(hit[0], hit[1], location, transit))
                 else:
-                    hits.append(_(u"{}: {}{}").format(hit[1], hit[2], transit))
+                    hits.append(_(u"{}: {}{}").format(hit[1], location, transit))
                 if not in_clipboard and hit[2]:
                     copy(hit[2])
                     in_clipboard = True
