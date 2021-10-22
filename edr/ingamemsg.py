@@ -35,13 +35,27 @@ class InGameMsg(object):
     def __init__(self):
         self._overlay = edmcoverlay.Overlay()
         self.cfg = {}
+        self.layout_type = None
         self.must_clear = False
-        self.reconfigure()
         self.msg_ids = lrucache.LRUCache(1000, 60*15)
+        self.in_ship_layout()
 
-    def reconfigure(self):
-        self.clear()
-        conf = igmconfig.IGMConfig()
+    def in_ship_layout(self):
+        if self.layout_type != "ship":
+            self.clear()
+            conf = igmconfig.IGMConfigInShip()
+            self.configure_layout(conf)
+            self.layout_type = "ship"
+    
+    def on_foot_layout(self):
+        if self.layout_type != "spacelegs":
+            self.clear()
+            conf = igmconfig.IGMConfigOnFoot()
+            self.configure_layout(conf)
+            self.layout_type = "spacelegs"
+
+    def configure_layout(self, conf):
+        self.cfg = {}
         self.general_config(conf)
         for kind in self.MESSAGE_KINDS:
             self.message_config(kind, conf)
@@ -51,8 +65,16 @@ class InGameMsg(object):
         self.mining_config(conf)
         self.bounty_hunting_config(conf)
         self.target_guidance_config(conf)
+
+    def reconfigure(self):
+        if self.layout_type == "spacelegs":
+            self.layout_type = None
+            self.on_foot_layout()
+        else:
+            self.layout_type = None
+            self.in_ship_layout()
+          
         
-    
     def general_config(self, conf):
         self.cfg["general"] = {
             "large" : {
