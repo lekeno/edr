@@ -502,7 +502,14 @@ class EDRClient(object):
             status = _(u"mandatory EDR update!") if self.mandatory_update else _(u"please update EDR!")
             link = "https://edrecon.com/latest"
             self.linkable_status(link, status)
-            
+
+    def on_foot(self):
+        self.player.in_spacesuit()
+        self.IN_GAME_MSG.on_foot_layout()
+
+    def in_ship(self):
+        self.player.in_spacesuit()
+        self.IN_GAME_MSG.in_ship_layout()       
 
     def prefs_changed(self):
         set_language(config.get_str("language"))
