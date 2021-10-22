@@ -473,22 +473,24 @@ def dashboard_entry(cmdr, is_beta, entry):
     flags = entry.get('Flags', 0)
     flags2 = entry.get('Flags2', 0)
 
-    if (flags & edmc_data.FlagsInMainShip) and not (flags2 & edmc_data.Flags2InTaxi):
-        ed_player.in_mothership()
+    # TODO in multicrew
     
-    if (flags & edmc_data.FlagsInFighter):
-        ed_player.in_slf()
-
-    if (flags & edmc_data.FlagsInSRV):
-        ed_player.in_srv()
-    
-    
-
     if (flags2 & (edmc_data.Flags2OnFoot | edmc_data.Flags2OnFootInStation | edmc_data.Flags2OnFootOnPlanet | edmc_data.Flags2OnFootInHangar | edmc_data.Flags2OnFootSocialSpace | edmc_data.Flags2OnFootExterior)):
         ed_player.in_spacesuit()
-    if (flags2 & edmc_data.Flags2InTaxi):
-        ed_player.in_taxi()
-    # TODO in multicrew
+        EDR_CLIENT.on_foot()
+    else:
+        EDR_CLIENT.in_ship()
+        if (flags & edmc_data.FlagsInMainShip) and not (flags2 & edmc_data.Flags2InTaxi):
+            ed_player.in_mothership()
+        
+        if (flags & edmc_data.FlagsInFighter):
+            ed_player.in_slf()
+
+        if (flags & edmc_data.FlagsInSRV):
+            ed_player.in_srv()
+        
+        if (flags2 & edmc_data.Flags2InTaxi):
+            ed_player.in_taxi()
     
     ed_player.spacesuit.low_health = flags2 & edmc_data.Flags2LowHealth
     ed_player.spacesuit.low_oxygen = flags2 & edmc_data.Flags2LowOxygen

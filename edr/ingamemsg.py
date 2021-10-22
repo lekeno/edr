@@ -35,20 +35,38 @@ class InGameMsg(object):
     def __init__(self):
         self._overlay = edmcoverlay.Overlay()
         self.cfg = {}
-        self.general_config()
+        self.layout_type = None
         self.must_clear = False
-        for kind in self.MESSAGE_KINDS:
-            self.message_config(kind)
-        for kind in self.LEGAL_KINDS:
-            self.legal_config(kind)
-        self.docking_config()
-        self.mining_config()
-        self.bounty_hunting_config()
-        self.target_guidance_config()
         self.msg_ids = lrucache.LRUCache(1000, 60*15)
+        self.in_ship_layout()
 
-    def general_config(self):
-        conf = igmconfig.IGMConfig()
+    def in_ship_layout(self):
+        if self.layout_type != "ship":
+            self.clear()
+            conf = igmconfig.IGMConfigInShip()
+            self.configure_layout(conf)
+            self.layout_type = "ship"
+    
+    def on_foot_layout(self):
+        if self.layout_type != "spacelegs":
+            self.clear()
+            conf = igmconfig.IGMConfigOnFoot()
+            self.configure_layout(conf)
+            self.layout_type = "spacelegs"
+
+    def configure_layout(self, conf):
+        self.cfg = {}
+        self.general_config(conf)
+        for kind in self.MESSAGE_KINDS:
+            self.message_config(kind, conf)
+        for kind in self.LEGAL_KINDS:
+            self.legal_config(kind, conf)
+        self.docking_config(conf)
+        self.mining_config(conf)
+        self.bounty_hunting_config(conf)
+        self.target_guidance_config(conf)
+
+    def general_config(self, conf):
         self.cfg["general"] = {
             "large" : {
                 "h": conf.large_height(),
@@ -60,8 +78,7 @@ class InGameMsg(object):
             }
         }
 
-    def message_config(self, kind):
-        conf = igmconfig.IGMConfig() 
+    def message_config(self, kind, conf):
         self.cfg[kind] = {
             "enabled": conf._getboolean(kind, "enabled"),
             "h": {
@@ -98,8 +115,7 @@ class InGameMsg(object):
             "fill": conf.fill(kind, "panel")
         }
 
-    def legal_config(self, kind):
-        conf = igmconfig.IGMConfig() 
+    def legal_config(self, kind, conf):
         kind = u"{}-legal".format(kind)
         self.cfg[kind] = {
             "enabled": conf._getboolean(kind, "enabled"),
@@ -146,8 +162,7 @@ class InGameMsg(object):
             "fill": conf.fill(kind, "panel")
         }
 
-    def docking_config(self):
-        conf = igmconfig.IGMConfig()
+    def docking_config(self, conf):
         kind = "docking-station"
         self.cfg[kind] = {
             "enabled": conf._getboolean(kind, "enabled"),
@@ -173,8 +188,7 @@ class InGameMsg(object):
             "fill": conf.fill(kind, "panel")
         }
 
-    def mining_config(self):
-        conf = igmconfig.IGMConfig()
+    def mining_config(self, conf):
         kind = "mining-graphs" 
         self.cfg[kind] = {
             "enabled": conf._getboolean(kind, "enabled"),
@@ -221,8 +235,7 @@ class InGameMsg(object):
             "fill": conf.fill(kind, "panel")
         }
 
-    def bounty_hunting_config(self):
-        conf = igmconfig.IGMConfig()
+    def bounty_hunting_config(self, conf):
         kind = "bounty-hunting-graphs" 
         self.cfg[kind] = {
             "enabled": conf._getboolean(kind, "enabled"),
@@ -269,8 +282,7 @@ class InGameMsg(object):
             "fill": conf.fill(kind, "panel")
         }
 
-    def target_guidance_config(self):
-        conf = igmconfig.IGMConfig()
+    def target_guidance_config(self, conf):
         kind = "target-guidance-graphs" 
         self.cfg[kind] = {
             "enabled": conf._getboolean(kind, "enabled"),
