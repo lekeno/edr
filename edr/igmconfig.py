@@ -12,7 +12,7 @@ from edrlog import EDRLog
 import utils2to3
 
 class IGMConfig(object):
-    def __init__(self, config_file, user_config_file):
+    def __init__(self, config_file='config/igm_config.v7.ini', user_config_file=['config/user_igm_config.v7.ini', 'config/user_igm_config.v6.ini']):
         self.config = cp.ConfigParser()
         self.fallback_config = cp.ConfigParser()
         self.fallback_config.read(utils2to3.abspathmaker(__file__, config_file))
@@ -130,11 +130,3 @@ class IGMConfig(object):
                 return self.fallback_config.getint(category, variable)
             else:
                 return default
-
-class IGMConfigOnFoot(IGMConfig):
-    def __init__(self, config_file='config/igm_config_spacelegs.v7.ini', user_config_file=['config/user_igm_config_spacelegs.v7.ini']):
-        super(IGMConfigOnFoot, self).__init__(config_file, user_config_file)
-        
-class IGMConfigInShip(IGMConfig):
-    def __init__(self, config_file='config/igm_config.v7.ini', user_config_file=['config/user_igm_config.v7.ini', 'config/user_igm_config.v6.ini']):
-        super(IGMConfigInShip, self).__init__(config_file, user_config_file)
