@@ -66,6 +66,15 @@ class InGameMsg(object):
         self.bounty_hunting_config(conf)
         self.target_guidance_config(conf)
 
+    def reconfigure(self):
+        if self.layout_type == "spacelegs":
+            self.layout_type = None
+            self.on_foot_layout()
+        else:
+            self.layout_type = None
+            self.in_ship_layout()
+          
+        
     def general_config(self, conf):
         self.cfg["general"] = {
             "large" : {
