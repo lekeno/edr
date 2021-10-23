@@ -59,7 +59,7 @@ class EDRMiningStats(object):
         now = EDTime.py_epoch_now()
         self.start = now
         self.current = now
-        self.last = {"timestamp": now, "raw": None, "materials": None, "minerals_stats": []}
+        self.last = {"timestamp": now, "raw": None, "materials": None, "minerals_stats": [], "proportion": None}
         self.depleted = False
         self.of_interest = { "names": set(), "types": set()}
         self.stats = {}
@@ -84,7 +84,7 @@ class EDRMiningStats(object):
         self.start = now
         self.current = now
         self.refined_nb = 0
-        self.last = {"timestamp": now, "raw": None, "materials": None, "minerals_stats": []}
+        self.last = {"timestamp": now, "raw": None, "materials": None, "minerals_stats": [], "proportion": None}
         self.depleted = False
         self.of_interest = { "names": set(), "types": set()}
         self.stats = {}
@@ -130,7 +130,8 @@ class EDRMiningStats(object):
             "timestamp": now,
             "raw": key,
             "materials": len(materials),
-            "minerals_stats": []
+            "minerals_stats": [],
+            "proportion": None
         }
         
         for material in materials:
@@ -178,7 +179,7 @@ class EDRMiningStats(object):
             cname = self.minerals_types_lut[cinternal_name]
             self.stats[cname].refined()
 
-    def last_max():
+    def last_max(self):
         if not self.last["minerals_stats"]:
             return self.max
         return self.last["mineral_stats"][0].max
@@ -201,7 +202,7 @@ class EDRMiningStats(object):
 
     def __update_efficiency(self):
         now = EDTime.py_epoch_now()
-        efficiency = self.mineral_per_hour()
+        efficiency = self.item_per_hour()
         self.efficiency.append((now, efficiency))
         self.max_efficiency = max(self.max_efficiency, efficiency)
 

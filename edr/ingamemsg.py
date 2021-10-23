@@ -885,15 +885,15 @@ class InGameMsg(object):
             details.append(_(u"AVG %: {:>6.2f}").format(detailed_stats[0].yield_average(mining_stats.prospected_nb)))
         elif mining_stats.depleted:
             details.append(u"")
-            details.append(_(u">>>>  DEPLETED  <<<<"))
+            details.append(_(u">> DEPLETED <<"))
             details.append(u"")
         else:
             details.append(u"")
-            details.append(_(u">>>>  WORTHLESS  <<<<"))
+            details.append(_(u">> WORTHLESS <<"))
             details.append(u"")
         
         
-        details.append(_(u"ITM/H: {:>6.0f} [TGT: {:.0f}]").format(mining_stats.items_per_hour(), mining_stats.max_efficiency))
+        details.append(_(u"ITM/H: {:>6.0f} [TGT: {:.0f}]").format(mining_stats.item_per_hour(), mining_stats.max_efficiency))
         details.append(_(u"ITM #: {:>6}").format(mining_stats.refined_nb))
         self.__msg_header("mining", header)
         self.__msg_body("mining", details)

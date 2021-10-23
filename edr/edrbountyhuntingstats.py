@@ -26,7 +26,7 @@ class EDRBountyHuntingStats(object):
         self.current = now
         edr_config = EDRConfig()
         self.scans_cache = LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
-        self.last = {"timestamp": now, "bounty": None}
+        self.last = {"timestamp": now, "bounty": None, "name": None, "distribution_index": 0}
 
     def reset(self):
 

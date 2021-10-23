@@ -686,7 +686,8 @@ class EDRClient(object):
         if self.visual_feedback:
             self.IN_GAME_MSG.mining_guidance(self.player.mining_stats)
         
-        self.status = _(u"[Yield: {:.2f}%]   [Items: {} ({:.0f}/hour)]".format(self.player.mining_stats.last["proportion"], self.player.mining_stats.refined_nb, self.player.mining_stats.mineral_per_hour()))
+        if len(self.player.mining_stats.last["minerals_stats"]) > 0:
+            self.status = _(u"[Yield: {:.2f}%]   [Items: {} ({:.0f}/hour)]".format(self.player.mining_stats.last["proportion"], self.player.mining_stats.refined_nb, self.player.mining_stats.item_per_hour()))
     
     def bounty_hunting_guidance(self, turn_off=False):
         if self.visual_feedback:
