@@ -76,6 +76,9 @@ class EDRServer(object):
     def auth_token(self):
         return self.REST_firebase.id_token()
 
+    def refresh_auth(self):
+        return self.REST_firebase.force_new_auth()
+
     def __check_response(self, response, service, call="Unknown"):
         if not response:
             return False
@@ -223,7 +226,8 @@ class EDRServer(object):
 
     def system(self, star_system, may_create, coords=None):
         if not self.__preflight("system_id", star_system):
-            EDRLOG.log(u"Preflight failed for system call.", "DEBUG")
+            EDRLOG.log(u"Preflight failed for system call. Forcing a new authentication, just in case.", "DEBUG")
+            self.refresh_auth()
             raise CommsJammedError("system")
 
         params = {"orderBy": '"cname"', "equalTo": json.dumps(star_system.lower()), "limitToFirst": 1, "auth": self.auth_token()}

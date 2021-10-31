@@ -112,6 +112,14 @@ class RESTFirebaseAuth(object):
             return self.authenticate()
         return True
 
+    def force_new_auth(self):
+        if self.api_key == "":
+            return False
+
+        EDRLOG.log(u"Forcing a new authentication.", "INFO")
+        self.clear_authentication()
+        return self.authenticate()
+
     def id_token(self):
         if not self.renew_auth_if_needed():
             return None
