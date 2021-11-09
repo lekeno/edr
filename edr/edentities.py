@@ -310,7 +310,12 @@ class EDPilot(object):
     def vehicle_type(self):
         if self.on_foot:
             return None
-        return self.piloted_vehicle.type or self.mothership.type
+        vec_type = None
+        if self.piloted_vehicle:
+            vec_type = self.piloted_vehicle.type
+        elif self.mothership:
+            vec_type = self.mothership.type
+        return vec_type
 
     def spacesuit_type(self):
         if not self.spacesuit:
