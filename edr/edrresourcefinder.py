@@ -273,21 +273,23 @@ class EDRResourceFinder(object):
         
         to_koli = self.edr_systems.distance(reference_system, "Koli Discii")
         to_hip = self.edr_systems.distance(reference_system, "HIP 16613")
-        to_renet = self.edr_systems.distance(reference_system, "Renet")
+        # Apparently, there is no more conda at Renet
+        # to_renet = self.edr_systems.distance(reference_system, "Renet")
         to_thoth = self.edr_systems.distance(reference_system, "Thoth")
         if resource.lower() in ["antimony", "tellurium", "ruthenium"]:
-            if to_renet < to_hip and to_renet < to_koli and to_renet < to_thoth:
+            #if to_renet < to_hip and to_renet < to_koli and to_renet < to_thoth:
+            #    what = _(u"Break the cargo rack of the crashed Anaconda, repeat.")
+            #    pretty_dist = _(u"{distance:.3g}").format(distance=to_renet) if to_renet < 50.0 else _(u"{distance}").format(distance=int(to_renet))
+            #    copy("Renet")
+            #    return [
+            #        _(u"Renet ({}LY), Planet B 1 (378 LS), 14 | 135").format(pretty_dist),
+            #        _(u"Bring: SRV."),
+            #        what
+            #    ]
+            #elif to_thoth < to_hip and to_thoth < to_koli and to_thoth < to_renet:
+            if to_thoth < to_hip and to_thoth < to_koli:
                 what = _(u"Break the cargo rack of the crashed Anaconda, repeat.")
-                pretty_dist = _(u"{distance:.3g}").format(distance=to_renet) if to_renet < 50.0 else _(u"{distance}").format(distance=int(to_renet))
-                copy("Renet")
-                return [
-                    _(u"Renet ({}LY), Planet B 1 (378 LS), 14 | 135").format(pretty_dist),
-                    _(u"Bring: SRV."),
-                    what
-                ]
-            elif to_thoth < to_hip and to_thoth < to_koli and to_thoth < to_renet:
-                what = _(u"Break the cargo rack of the crashed Anaconda, repeat.")
-                pretty_dist = _(u"{distance:.3g}").format(distance=to_renet) if to_thoth < 50.0 else _(u"{distance}").format(distance=int(to_thoth))
+                pretty_dist = _(u"{distance:.3g}").format(distance=to_thoth) if to_thoth < 50.0 else _(u"{distance}").format(distance=int(to_thoth))
                 copy("Thoth")
                 return [
                     _(u"Thoth ({}LY), Planet 1 A (69 LS), -2.77 | 16.67").format(pretty_dist),
