@@ -505,15 +505,14 @@ class EDRClient(object):
 
     def on_foot(self):
         self.player.in_spacesuit()
-        if not self.visual_feedback:
-            return
-        self.IN_GAME_MSG.on_foot_layout()
+        if self.IN_GAME_MSG:
+            self.IN_GAME_MSG.on_foot_layout()
+        
 
     def in_ship(self):
         self.player.in_spacesuit()
-        if not self.visual_feedback:
-            return
-        self.IN_GAME_MSG.in_ship_layout()
+        if self.IN_GAME_MSG:
+            self.IN_GAME_MSG.in_ship_layout()
 
     def prefs_changed(self):
         set_language(config.get_str("language"))
