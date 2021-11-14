@@ -22,7 +22,7 @@ from config import config
 
 from edrconfig import EDRConfig
 from lrucache import LRUCache
-from edentities import EDFineOrBounty
+from edentities import EDFineOrBounty, pretty_print_number
 from edsitu import EDPlanetaryLocation, EDLocation
 from edrserver import EDRServer, CommsJammedError
 from audiofeedback import AudioFeedback
@@ -1921,6 +1921,19 @@ class EDRClient(object):
             self.status = _(u"Staging station: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
+    def parking_system_near(self, star_system, override_rank = None):
+        if not self.__search_prerequisites(star_system): # TODO verify adquacy
+            return
+
+        try:
+            self.edrsystems.search_parking_system(star_system, self.__parking_found, override_rank=override_rank)
+            self.searching = True
+            self.status = _(u"Parking system: searching...")
+            self.__notify(_(u"EDR Search"), [_(u"Parking system: searching...")], clear_before = True)
+        except ValueError:
+            self.status = _(u"Parking system: failed")
+            self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
+
     def rrr_fc_near(self, star_system, override_radius = None):
         if not self.__search_prerequisites(star_system):
             return
@@ -2014,6 +2027,34 @@ class EDRClient(object):
             if soi_checker.hint:
                 details.append(soi_checker.hint)
         self.__notify(_(u"{} near {}").format(soi_checker.name, reference), details, clear_before = True)
+
+    def __parking_found(self, reference, radius, rank, result):
+        self.searching = False
+        details = []
+        if result:
+            distance = result['distance']
+            pretty_dist = "0LY"
+            if distance > 0:
+                pretty_dist = _(u"{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _(u"{dist}LY").format(dist=int(distance))
+                details.append(_(u"{system}, {dist} from {ref} [#{rank}]").format(system=result['name'], dist=pretty_dist, ref=reference, rank=rank))
+            else:
+                details.append(_(u"{system} [#{rank}]").format(system=result['name'], rank=rank))
+            details.append(_(u"Slots: {}; Occupied: ???").format(result['parking']['slots']))
+            stats = result['parking']['info']['stats']
+            bodyCount = _(u"{nb} bodies").format(nb=result.get('bodyCount', 0)) if result.get('bodyCount', 0) > 0 else _(u"{nb} body").format(nb=result.get('bodyCount', 0))
+            median = pretty_print_number(int(stats['median']))
+            avg = pretty_print_number(int(stats['avg']))
+            max = pretty_print_number(int(stats['max']))
+            details.append(_(u"Distances (LS): median={}, avg={}, max={} ({})").format(median, avg, max, bodyCount))
+            details.append(_(u"If full, try the next one with !parking {} #{}.").format(reference, int(rank+1)))
+            self.status = u"FC Parking: {system}, {dist}".format(system=result['name'], dist=pretty_dist)
+            copy(result["name"])
+        else:
+            self.status = _(u"FC Parking: no #{} system within [{}LY] of {}").format(int(rank), int(radius), reference)
+            details.append(_(u"no #{} system found within [{}LY].").format(int(rank), int(radius)))
+            if rank > 0:
+                details.append(_(u"Try !parking {} #{}. Or try !parking #{} if searching around your current location").format(reference, int(rank-1), int(rank-1)))
+        self.__notify(_(u"FC Parking near {}").format(reference), details, clear_before = True)
 
     def configure_resourcefinder(self, raw_profile):
         canonical_raw_profile = raw_profile.lower()

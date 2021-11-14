@@ -17,11 +17,11 @@ import edrlog
 import lrucache
 import edsmserver
 from edentities import EDFineOrBounty
+from edentities import pretty_print_number
 from edri18n import _, _c, _edr
 import edrservicecheck
 import edrservicefinder
-import edrstatecheck
-import edrstatefinder
+import edrparkingsystemfinder
 import utils2to3
 
 EDRLOG = edrlog.EDRLog()
@@ -452,6 +452,18 @@ class EDRSystems(object):
                 return body
         return None
 
+    def bodies(self, system_name):
+        if not system_name:
+            return None
+
+        bodies = self.edsm_bodies_cache.get(system_name.lower())
+        if not bodies:
+            bodies = self.edsm_server.bodies(system_name)
+            if bodies:
+                self.edsm_bodies_cache.set(system_name.lower(), bodies)
+
+        return bodies
+
     def are_factions_stale(self, star_system):
         if not star_system:
             return False
@@ -740,40 +752,13 @@ class EDRSystems(object):
             return None
         
         zero = {"total": 0, "week": 0, "day": 0}
-        deaths = {s: self.__pretty_print_number(v) for s, v in deaths.get("deaths", zero).items()}
-        traffic = {s: self.__pretty_print_number(v) for s, v in traffic.get("traffic", {}).items()}
+        deaths = {s: pretty_print_number(v) for s, v in deaths.get("deaths", zero).items()}
+        traffic = {s: pretty_print_number(v) for s, v in traffic.get("traffic", {}).items()}
         
         if traffic == {}:
             return None
 
         return "Deaths / Traffic: [Day {}/{}]   [Week {}/{}]  [All {}/{}]".format(deaths.get("day", 0), traffic.get("day"), deaths.get("week", 0), traffic.get("week"), deaths.get("total"), traffic.get("total"))
-
-    @staticmethod
-    def __pretty_print_number(number):
-        #TODO move out and dedup bounty's code.
-        readable = u""
-        if number >= 10000000000:
-            # Translators: this is a short representation for a bounty >= 10 000 000 000 credits (b stands for billion)  
-            readable = _(u"{} b").format(number // 1000000000)
-        elif number >= 1000000000:
-            # Translators: this is a short representation for a bounty >= 1 000 000 000 credits (b stands for billion)
-            readable = _(u"{:.1f} b").format(number / 1000000000.0)
-        elif number >= 10000000:
-            # Translators: this is a short representation for a bounty >= 10 000 000 credits (m stands for million)
-            readable = _(u"{} m").format(number // 1000000)
-        elif number > 1000000:
-            # Translators: this is a short representation for a bounty >= 1 000 000 credits (m stands for million)
-            readable = _(u"{:.1f} m").format(number / 1000000.0)
-        elif number >= 10000:
-            # Translators: this is a short representation for a bounty >= 10 000 credits (k stands for kilo, i.e. thousand)
-            readable = _(u"{} k").format(number // 1000)
-        elif number >= 1000:
-            # Translators: this is a short representation for a bounty >= 1000 credits (k stands for kilo, i.e. thousand)
-            readable = _(u"{:.1f} k").format(number / 1000.0)
-        else:
-            # Translators: this is a short representation for a bounty < 1000 credits (i.e. shows the whole bounty, unabbreviated)
-            readable = _(u"{}").format(number)
-        return readable 
 
     def summarize_recent_activity(self, star_system, powerplay=None):
         #TODO refactor/simplify this mess ;)
@@ -890,6 +875,9 @@ class EDRSystems(object):
         checker = edrservicecheck.EDRStagingCheck(15)
         self.__search_a_service(star_system, callback, checker, with_large_pad = True, with_medium_pad = False, override_radius = 15, override_sc_distance = override_sc_distance, permits = permits, exclude_center = True)
 
+    def search_parking_system(self, star_system, callback, override_rank = None):
+        self.__search_a_parking(star_system, callback, override_radius = 25, override_rank = override_rank, exclude_center = True)
+
     def search_rrr_fc(self, star_system, callback, override_radius = None, permits = []):
         radius = override_radius if override_radius is not None and override_radius >= 0 else 0
         sc_dist = 10000
@@ -941,6 +929,19 @@ class EDRSystems(object):
         finder.shuffling(shuffle_systems, shuffle_stations)
         finder.ignore_center(exclude_center)
         finder.set_dlc(self.dlc_name)
+        finder.start()
+
+    def __search_a_parking(self, star_system, callback, override_radius = None, override_rank = None, shuffle_systems=False, exclude_center=False):
+        rank = override_rank or 0
+        rank = max(0, rank)
+        radius = override_radius if override_radius is not None and override_radius >= 0 else self.reasonable_hs_radius
+        radius = min(100, radius)
+
+        finder = edrparkingsystemfinder.EDRParkingSystemFinder(star_system, self, callback)
+        finder.within_radius(radius)
+        finder.nb_to_pick(rank)
+        finder.shuffling(shuffle_systems)
+        finder.ignore_center(exclude_center)
         finder.start()
 
     def systems_within_radius(self, star_system, override_radius = None):

@@ -1571,6 +1571,16 @@ def handle_bang_commands(cmdr, command, command_parts):
             search_center = parameters[0] or cmdr.star_system
             override_radius = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.rrr_near(search_center, override_radius)
+    elif command == "!parking":
+        # TODO surface a tip when a cmdr is scheduling a fleet carrier jump (if it fails(?) to be aknowledged?)
+        search_center = cmdr.star_system
+        override_rank = None
+        if len(command_parts) >= 2:
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("#", 1)]
+            search_center = parameters[0] or cmdr.star_system
+            override_rank = int(parameters[1]) if len(parameters) > 1 else None
+        EDRLOG.log(u"Looking for a system to park a fleet carrier near {}".format(search_center), "INFO")
+        EDR_CLIENT.parking_system_near(search_center, override_rank)
     elif command in ["!htb", "!humantechbroker"]:
         EDRLOG.log(u"Looking for a human tech broker", "INFO")
         search_center = cmdr.star_system
