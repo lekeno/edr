@@ -467,6 +467,27 @@ class EDRServer(object):
         endpoint = "/v1/crew_reports/{}/".format(crew_id)
         return self.__post_json(endpoint, report, "EDR")
 
+    def report_fc_presence(self, system_id, report):
+        EDRLOG.log(u"Reporting Fleet Carriers in system {}: {}".format(system_id, report), "INFO")
+        report["uid"] = self.uid()
+        endpoint = "/v1/fc_reports/{system_id}/".format(system_id=system_id)
+        return self.__post_json(endpoint, report, "EDR")
+    
+    def fc_presence(self, system_id):
+        if not self.__preflight("fc_presence", system_id):
+            EDRLOG.log(u"Preflight failed for fc_presence call.", "DEBUG")
+            raise CommsJammedError("fc_presence")
+
+        EDRLOG.log(u"Querying Fleet Carriers in system {sid}".format(sid=system_id), "INFO")
+        endpoint = "{server}/v1/fc_presence/{sid}/.json".format(server=self.EDR_SERVER, sid=system_id)        
+        params = {"auth": self.auth_token()}
+        resp = self.__get(endpoint, "EDR", params)
+        EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+        if self.__check_response(resp, "EDR", "FC_Presence"):
+            return json.loads(resp.content)
+        else:
+            return None
+
     def __get_recent(self, path, timespan_seconds, limitToLast=None):
         now_epoch_js = int(1000 * calendar.timegm(time.gmtime()))
         past_epoch_js = int(now_epoch_js - (1000 * timespan_seconds))
@@ -698,6 +719,7 @@ class EDRServer(object):
         json = { "name": self.player_name, "timestamp": {".sv": "timestamp"}, "param": param, "api": api_name, "mode": self.game_mode, "dlc": self.dlc_name, "group": self.private_group }
         EDRLOG.log(u"Preflight request for {} with {}".format(api_name, json), "DEBUG")
         endpoint = "https://us-central1-blistering-inferno-4028.cloudfunctions.net/edr/v1/preflight/{uid}".format(server=self.EDR_SERVER, uid=self.uid())
+        print(endpoint)
         resp = self.__put(endpoint, "EDR", json=json, headers=headers)
         EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
         return self.__check_response(resp, "EDR", "Preflight {}".format(api_name))

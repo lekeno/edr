@@ -1,5 +1,4 @@
 import threading
-from random import shuffle
 from edri18n import _
 from edrlog import EDRLog
 
@@ -15,16 +14,12 @@ class EDRParkingSystemFinder(threading.Thread):
         self.max_trials = 25
         self.edr_systems = edr_systems
         self.callback = callback
-        self.shuffle_systems = False
-        self.exclude_center = True # TODO until we can check if a system is full or not
+        self.exclude_center = False
         self.checked_systems = []
         super(EDRParkingSystemFinder, self).__init__()
 
     def within_radius(self, radius):
         self.radius = radius
-
-    def shuffling(self, shuffle_systems):
-        self.shuffle_systems = shuffle_systems
 
     def ignore_center(self, exclude_center):
         self.exclude_center = exclude_center
@@ -51,22 +46,12 @@ class EDRParkingSystemFinder(threading.Thread):
             the_system["distance"] = 0
             candidates = self.__check_system(the_system, candidates)
             self.checked_systems.append(the_system.get('name', ""))
-               
+        
         systems = self.edr_systems.systems_within_radius(self.star_system, self.radius)
         if not systems:
             return candidates
 
-        if self.shuffle_systems:
-            shuffle(systems)
-
-        # TODO why did it stop with just one, and not the reference system?
         candidates = self.__search(systems, candidates)
-        if not candidates:
-            EDRLOG.log(u"Couldn't find any prime candidate so far. Trying again after a shuffle", "DEBUG")
-            # TODO check colonia commands
-            shuffle(systems)
-            candidates = self.__search(systems, candidates)
-
         return candidates
 
     def __check_system(self, system, candidates):
@@ -77,7 +62,7 @@ class EDRParkingSystemFinder(threading.Thread):
         # TODO see if we can get some insights about how many FC are already there...
         slots = self.__theoretical_parking_slots(system)
         info = self.__parking_info(system)
-        accessible = not system.get('requirePermit', False) # TODO FC are only allowed in systems that don't require a permit
+        accessible = not system.get('requirePermit', False)
         EDRLOG.log(u"System {}: slots {}, info {}, accessible {}".format(system['name'], slots, info, accessible), "DEBUG")
         if accessible and slots > 0:
             system["parking"] = {"slots": slots, "info": info}
@@ -97,27 +82,42 @@ class EDRParkingSystemFinder(threading.Thread):
         bodies = self.edr_systems.bodies(system.get("name", None))
         if not bodies:
             return None
-        stats = {"max": 0, "median": 0, "min": 0, "avg": 0}
-        sum_dist = 0
-        sum_slots = 0
-        sum_bodies = 0
+        stats = {"max": 0, "median": 0, "min": 0, "avg": 0, "count": 0}
+        stars_stats = {"max": 0, "median": 0, "min": 0, "avg": 0, "count": 0}
+        sum_dist = {"all": 0, "stars": 0}
+        sum_slots = {"all": 0, "stars": 0}
+        sum_bodies = {"all": 0, "stars": 0}
         distances = []
+        stars_distances = []
         for body in sorted(bodies, key=lambda b: b['distanceToArrival']):
             distance = body.get("distanceToArrival", None)
             if distance is None:
                 continue
             distances.append(distance)
-            sum_dist += distance
+            sum_dist["all"] += distance
+            sum_slots["all"] += 16
+            sum_bodies["all"] += 1
             stats["max"] = max(stats["max"], distance)
             stats["min"] = min(stats["min"], distance)
-            sum_slots += 16
-            sum_bodies += 1
-            if sum_slots >= 128:
-                sum_slots = 128
+
+            if body.get("type", "").lower() == "star":
+                stars_distances.append(distance)
+                sum_dist["stars"] += distance
+                sum_slots["stars"] += 16
+                sum_bodies["stars"] += 1
+                stars_stats["max"] = max(stats["max"], distance)
+                stars_stats["min"] = min(stats["min"], distance)
+                
+            if sum_slots["all"] >= 128:
+                sum_slots["all"] = 128
                 break
-        stats["avg"] = sum_dist / sum_bodies
+        stats["count"] = sum_bodies["all"]
+        stars_stats["count"] = sum_bodies["stars"]
+        stats["avg"] = sum_dist["all"] / sum_bodies["all"]
+        stars_stats["avg"] = sum_dist["stars"] / sum_bodies["stars"]
         stats["median"] = distances[len(distances)//2]
-        return {"distances": distances, "stats": stats}
+        stars_stats["median"] = stars_distances[len(stars_distances)//2]
+        return {"all": {"distances": distances, "stats": stats}, "stars": {"distances": stars_distances, "stats": stars_stats}}
 
 
     def __search(self, systems, candidates):

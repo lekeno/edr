@@ -43,6 +43,7 @@ class EDRSystems(object):
     EDR_SITREPS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'sitreps.v3.p')
     EDR_TRAFFIC_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'traffic.v2.p')
     EDR_CRIMES_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'crimes.v2.p')
+    EDR_FC_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'fc.v1.p')
     
 
     def __init__(self, server):
@@ -84,6 +85,13 @@ class EDRSystems(object):
         except:
             self.crimes_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                   edr_config.crimes_max_age())
+
+        try:
+            with open(self.EDR_FC_CACHE, 'rb') as handle:
+                self.fc_cache = pickle.load(handle)
+        except:
+            self.fc_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                              edr_config.fc_presence_max_age())
 
         try:
             with open(self.EDR_TRAFFIC_CACHE, 'rb') as handle:
@@ -269,6 +277,9 @@ class EDRSystems(object):
         with open(self.EDR_CRIMES_CACHE, 'wb') as handle:
             pickle.dump(self.crimes_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+        with open(self.EDR_FC_CACHE, 'wb') as handle:
+            pickle.dump(self.fc_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
         with open(self.EDSM_SYSTEMS_CACHE, 'wb') as handle:
             pickle.dump(self.edsm_systems_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
         
@@ -310,6 +321,33 @@ class EDRSystems(object):
             return sqrt((dest_coords["x"] - source_coords["x"])**2 + (dest_coords["y"] - source_coords["y"])**2 + (dest_coords["z"] - source_coords["z"])**2)
         raise ValueError('Unknown system')
 
+    def update_fc_presence(self, fc_report):
+        star_system = fc_report.get("starSystem", None)
+        if star_system is None:
+            return
+        sid = self.system_id(star_system)
+        if not sid:
+            return None
+        if not self.fc_cache.has_key(sid) or (self.fc_cache.has_key(sid) and self.fc_cache.is_stale(sid)):
+            self.server.report_fc_presence(sid, fc_report)
+            self.fc_cache.set(sid, fc_report)
+
+    def fleet_carriers(self, star_system):
+        if star_system is None:
+            return {}
+        sid = self.system_id(star_system)
+        if not sid:
+            return {}
+        if self.fc_cache.has_key(sid) and not self.fc_cache.is_stale(sid):
+            fc_report = self.fc_cache.get(sid)
+            return fc_report or {}
+        if not self.fc_cache.has_key(sid) or (self.fc_cache.has_key(sid) and self.fc_cache.is_stale(sid)):
+            fc_report = self.server.fc_presence(sid)
+            self.fc_cache.set(sid, fc_report)
+            return fc_report or {}
+        return {}
+
+    
     def system(self, name):
         if not name:
             return None
@@ -940,7 +978,6 @@ class EDRSystems(object):
         finder = edrparkingsystemfinder.EDRParkingSystemFinder(star_system, self, callback)
         finder.within_radius(radius)
         finder.nb_to_pick(rank)
-        finder.shuffling(shuffle_systems)
         finder.ignore_center(exclude_center)
         finder.start()
 

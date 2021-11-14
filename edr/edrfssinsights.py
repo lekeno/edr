@@ -4,6 +4,7 @@ from edtime import EDTime
 
 class EDRFSSInsights(object):
     def __init__(self):
+        self.timestamp = None
         # TODO show unreg comms as its own category
         self.signals = {
             # "$MULTIPLAYER_SCENARIO42_TITLE;": {"count": 0, "short_name": _("Nav Beacon") }, # Not super interesting 
@@ -58,12 +59,16 @@ class EDRFSSInsights(object):
         self.stations = set()
         self.fleet_carriers = {}
         self.other_locations = set()
+        self.timestamp = None
         self.resource_extraction_sites = {"available": False, "variants": {"$MULTIPLAYER_SCENARIO14_TITLE;": {"count": 0, "short_name": _c("Standard Res|Std")}, "$MULTIPLAYER_SCENARIO77_TITLE;": {"count": 0, "short_name": _c("Res Low|Low")}, "$MULTIPLAYER_SCENARIO78_TITLE;": {"count": 0, "short_name": _c("Res High|High")}, "$MULTIPLAYER_SCENARIO79_TITLE;": {"count": 0, "short_name": _c("Res Hazardous|Haz")}}, "short_name": _("RES") }
         self.combat_zones = {"available": False, "variants": {"$Warzone_PointRace_Low;":  {"count": 0, "short_name": _c("CZ Low intensity|Low")}, "$Warzone_PointRace_Medium;":  {"count": 0, "short_name": _c("CZ Medium intensity|Med")}, "$Warzone_PointRace_High;":  {"count": 0, "short_name": _c("CZ High intensity|High")}}, "short_name": _("CZ") }
         self.uss = {"available": False, "variants": {"$USS_Type_Salvage;":  {"count": 0, "expiring": [], "short_name": _c("Degraded Emissions|Degraded")}, "$USS_Type_ValuableSalvage;":  {"count": 0, "expiring": [], "short_name": _c("Encoded Emissions|Encoded")}, "$USS_Type_VeryValuableSalvage;": {"count": 0, "expiring": [], "short_name": _c("High Grade Emissions|High Grade")}, "misc": {"count": 0, "expiring": [], "short_name": _c("Misc.")}}, "short_name": _("USS") }
         self.pirates = {"available": False, "variants": {"$FIXED_EVENT_HIGHTHREATSCENARIO_T7;":  {"count": 0, "short_name": _c("Pirates Threat 7|Th7")}, "$FIXED_EVENT_HIGHTHREATSCENARIO_T6;":  {"count": 0, "short_name": _c("Pirates Threat 6|Th6")}, "$FIXED_EVENT_HIGHTHREATSCENARIO_T5;":  {"count": 0, "short_name": _c("Pirates Threat 5|Th5")}}, "short_name": _("Pirates") }
         self.star_system = {"name": None, "address": None}
         self.noteworthy = False
+
+    def related_to(self, current_star_system):
+        return (self.star_system["name"] is None) or current_star_system != self.star_system["name"]
 
     def update(self, current_star_system):
         if current_star_system != self.star_system["name"]:
@@ -86,6 +91,9 @@ class EDRFSSInsights(object):
 
         result = self.__process(fss_event)
         if result:
+            edt = EDTime()
+            edt.from_journal_timestamp(fss_event)
+            self.timestamp = edt
             self.__prune_expired_signals()
         return result
        
@@ -235,6 +243,17 @@ class EDRFSSInsights(object):
             return "-"
         
         return round(min(duration / (40*60), 1) * 5)*"+"
+
+    def fleet_carriers_report(self):
+        if self.star_system["name"] is None or self.timestamp is None:
+            return None
+
+        return {
+            "starSystem": self.star_system,
+            "timestamp": self.timestamp.as_js_epoch(),
+            "fcCount": len(self.fleet_carriers),
+            "fc": self.fleet_carriers
+        }
 
 
     # TODO: dangerous fleet carriers

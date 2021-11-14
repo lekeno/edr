@@ -575,6 +575,15 @@ class EDRClient(object):
             self.__notify(_(u'{} material densities on {}').format(qualifier, scan_event["BodyName"]), facts, clear_before = True)
 
     def noteworthy_about_signal(self, fss_event):
+        if not self.edrfssinsights.related_to(self.player.star_system):
+            # Report Fleet Carriers before the signals get overwritten
+            print("fc reporting")
+            fc_report = self.edrfssinsights.fleet_carriers_report()
+            print(fc_report)
+            if fc_report:
+                fc_report["reportedBy"] = self.player.name
+                print("trying fc reporting")
+                self.edrsystems.update_fc_presence(fc_report)
         self.edrfssinsights.process(fss_event, self.player.star_system)
         facts = self.edrresourcefinder.assess_signal(fss_event, self.player.location, self.player.inventory)
         if facts:
@@ -2039,19 +2048,39 @@ class EDRClient(object):
                 details.append(_(u"{system}, {dist} from {ref} [#{rank}]").format(system=result['name'], dist=pretty_dist, ref=reference, rank=rank))
             else:
                 details.append(_(u"{system} [#{rank}]").format(system=result['name'], rank=rank))
-            details.append(_(u"Slots: {}; Occupied: ???").format(result['parking']['slots']))
-            stats = result['parking']['info']['stats']
-            bodyCount = _(u"{nb} bodies").format(nb=result.get('bodyCount', 0)) if result.get('bodyCount', 0) > 0 else _(u"{nb} body").format(nb=result.get('bodyCount', 0))
-            median = pretty_print_number(int(stats['median']))
-            avg = pretty_print_number(int(stats['avg']))
-            max = pretty_print_number(int(stats['max']))
-            details.append(_(u"Distances (LS): median={}, avg={}, max={} ({})").format(median, avg, max, bodyCount))
+            fc = self.edrsystems.fleet_carriers(result['name'])
+            fc_count = fc.get("fcCount", None)
+            timestamp = fc.get("timestamp", None)
+            if not fc_count is None and fc_count >= 0 and timestamp:
+                remaining = max(0, result['parking']['slots'] - fc_count)
+                tminus = EDTime.t_minus(timestamp, short=True)
+                details.append(_(u"Slots <={}/{} as of {}").format(remaining, result['parking']['slots'], tminus))
+            else:
+                details.append(_(u"Slots: ???/{} (no intel)").format(result['parking']['slots']))
+            stats = result['parking']['info']['all']['stats']
+            stars_stats = result['parking']['info']['stars']['stats']
+            if stats["count"] > 1 and stats["count"] > stars_stats["count"]:
+                bodyCount = _(u"{nb} bodies").format(nb=stats["count"]) if stats["count"] > 0 else _(u"{nb} body").format(nb=stats["count"])
+                median = pretty_print_number(int(stats['median']))
+                avg = pretty_print_number(int(stats['avg']))
+                max_v = pretty_print_number(int(stats['max']))
+                details.append(_(u"{} (LS): median={}, avg={}, max={}").format(bodyCount, median, avg, max_v))
+            
+            starCount = _(u"{nb} stars").format(nb=stars_stats["count"]) if stars_stats["count"] > 0 else _(u"{nb} stars").format(nb=stars_stats["count"])
+            stars_median = pretty_print_number(int(stars_stats['median']))
+            stars_avg = pretty_print_number(int(stars_stats['avg']))
+            stars_max = pretty_print_number(int(stars_stats['max']))
+            if stars_stats["count"] > 1:
+                details.append(_(u"{} (LS): median={}, avg={}, max={}").format(starCount, stars_median, stars_avg, stars_max))
+            elif stars_stats["count"] == 1:
+                details.append(_(u"1 star (no gravity well)"))
+
             details.append(_(u"If full, try the next one with !parking {} #{}.").format(reference, int(rank+1)))
             self.status = u"FC Parking: {system}, {dist}".format(system=result['name'], dist=pretty_dist)
             copy(result["name"])
         else:
             self.status = _(u"FC Parking: no #{} system within [{}LY] of {}").format(int(rank), int(radius), reference)
-            details.append(_(u"no #{} system found within [{}LY].").format(int(rank), int(radius)))
+            details.append(_(u"No #{} system found within [{}LY].").format(int(rank), int(radius)))
             if rank > 0:
                 details.append(_(u"Try !parking {} #{}. Or try !parking #{} if searching around your current location").format(reference, int(rank-1), int(rank-1)))
         self.__notify(_(u"FC Parking near {}").format(reference), details, clear_before = True)
