@@ -59,7 +59,6 @@ class EDRParkingSystemFinder(threading.Thread):
             return candidates
 
         EDRLOG.log(u"System {}".format(system), "DEBUG")
-        # TODO see if we can get some insights about how many FC are already there...
         slots = self.__theoretical_parking_slots(system)
         info = self.__parking_info(system)
         accessible = not system.get('requirePermit', False)

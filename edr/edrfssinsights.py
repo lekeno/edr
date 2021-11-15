@@ -1,5 +1,6 @@
 from edri18n import _, _c
 import re
+import copy
 from edtime import EDTime
 
 class EDRFSSInsights(object):
@@ -68,7 +69,7 @@ class EDRFSSInsights(object):
         self.noteworthy = False
 
     def related_to(self, current_star_system):
-        return (self.star_system["name"] is None) or current_star_system != self.star_system["name"]
+        return (self.star_system["name"] is None) or current_star_system == self.star_system["name"]
 
     def update(self, current_star_system):
         if current_star_system != self.star_system["name"]:
@@ -92,7 +93,7 @@ class EDRFSSInsights(object):
         result = self.__process(fss_event)
         if result:
             edt = EDTime()
-            edt.from_journal_timestamp(fss_event)
+            edt.from_journal_timestamp(fss_event["timestamp"])
             self.timestamp = edt
             self.__prune_expired_signals()
         return result
@@ -249,12 +250,11 @@ class EDRFSSInsights(object):
             return None
 
         return {
-            "starSystem": self.star_system,
+            "starSystem": self.star_system.get("name", ""),
             "timestamp": self.timestamp.as_js_epoch(),
             "fcCount": len(self.fleet_carriers),
-            "fc": self.fleet_carriers
+            "fc": copy.deepcopy(self.fleet_carriers)
         }
 
 
     # TODO: dangerous fleet carriers
-    # TODO: report FC sightings

@@ -467,11 +467,18 @@ class EDRServer(object):
         endpoint = "/v1/crew_reports/{}/".format(crew_id)
         return self.__post_json(endpoint, report, "EDR")
 
-    def report_fc_presence(self, system_id, report):
+    def report_fcs(self, system_id, report):
         EDRLOG.log(u"Reporting Fleet Carriers in system {}: {}".format(system_id, report), "INFO")
         report["uid"] = self.uid()
-        endpoint = "/v1/fc_reports/{system_id}/".format(system_id=system_id)
-        return self.__post_json(endpoint, report, "EDR")
+        params = { "auth": self.auth_token() }
+        endpoint = "{server}/v1/fc_reports/{system_id}/{uid}/.json".format(server=self.EDR_SERVER, system_id=system_id, uid=self.uid())
+        print(report)
+        print(params)
+        print(endpoint)
+        EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
+        resp = self.__put(endpoint, "EDR", params=params, json=report)
+        EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+        return self.__check_response(resp, "EDR", "Put fcs report")
     
     def fc_presence(self, system_id):
         if not self.__preflight("fc_presence", system_id):

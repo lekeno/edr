@@ -574,6 +574,16 @@ class EDRClient(object):
             qualifier = self.edrresourcefinder.raw_profile or _("Noteworthy")
             self.__notify(_(u'{} material densities on {}').format(qualifier, scan_event["BodyName"]), facts, clear_before = True)
 
+    
+    def register_fss_signals(self):
+        print("register fc signals")
+        fc_report = self.edrfssinsights.fleet_carriers_report()
+        print(fc_report)
+        if fc_report:
+            fc_report["reportedBy"] = self.player.name
+            print("trying fc reporting")
+            self.edrsystems.update_fc_presence(fc_report)
+    
     def noteworthy_about_signal(self, fss_event):
         if not self.edrfssinsights.related_to(self.player.star_system):
             # Report Fleet Carriers before the signals get overwritten
@@ -1931,7 +1941,7 @@ class EDRClient(object):
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
     def parking_system_near(self, star_system, override_rank = None):
-        if not self.__search_prerequisites(star_system): # TODO verify adquacy
+        if not self.__search_prerequisites(star_system):
             return
 
         try:

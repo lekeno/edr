@@ -43,7 +43,8 @@ class EDRSystems(object):
     EDR_SITREPS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'sitreps.v3.p')
     EDR_TRAFFIC_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'traffic.v2.p')
     EDR_CRIMES_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'crimes.v2.p')
-    EDR_FC_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'fc.v1.p')
+    EDR_FC_REPORTS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'fc_reports.v1.p')
+    EDR_FC_PRESENCE_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'fc_presence.v1.p')
     
 
     def __init__(self, server):
@@ -87,10 +88,17 @@ class EDRSystems(object):
                                                   edr_config.crimes_max_age())
 
         try:
-            with open(self.EDR_FC_CACHE, 'rb') as handle:
-                self.fc_cache = pickle.load(handle)
+            with open(self.EDR_FC_REPORTS_CACHE, 'rb') as handle:
+                self.fc_reports_cache = pickle.load(handle)
         except:
-            self.fc_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+            self.fc_reports_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                              edr_config.fc_reports_max_age())
+
+        try:
+            with open(self.EDR_FC_PRESENCE_CACHE, 'rb') as handle:
+                self.fc_presence_cache = pickle.load(handle)
+        except:
+            self.fc_presence_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                               edr_config.fc_presence_max_age())
 
         try:
@@ -277,8 +285,11 @@ class EDRSystems(object):
         with open(self.EDR_CRIMES_CACHE, 'wb') as handle:
             pickle.dump(self.crimes_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        with open(self.EDR_FC_CACHE, 'wb') as handle:
-            pickle.dump(self.fc_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        with open(self.EDR_FC_REPORTS_CACHE, 'wb') as handle:
+            pickle.dump(self.fc_reports_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        
+        with open(self.EDR_FC_PRESENCE_CACHE, 'wb') as handle:
+            pickle.dump(self.fc_presence_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         with open(self.EDSM_SYSTEMS_CACHE, 'wb') as handle:
             pickle.dump(self.edsm_systems_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -327,10 +338,30 @@ class EDRSystems(object):
             return
         sid = self.system_id(star_system)
         if not sid:
-            return None
-        if not self.fc_cache.has_key(sid) or (self.fc_cache.has_key(sid) and self.fc_cache.is_stale(sid)):
-            self.server.report_fc_presence(sid, fc_report)
-            self.fc_cache.set(sid, fc_report)
+            return
+        if self.__novel_enough_fc_report(sid, fc_report):
+            success = self.server.report_fcs(sid, fc_report)
+            if success:
+                self.fc_reports_cache.set(sid, fc_report)
+                print("success")
+            else:
+                print("failure")
+
+    def __novel_enough_fc_report(self, sid, fc_report):
+        if not self.fc_reports_cache.has_key(sid):
+            print("no fc report for sid {}".format(sid))
+            return True
+
+        if self.fc_reports_cache.is_stale(sid):
+            print("stale fc report for sid {}".format(sid))
+            return True
+        last_fc_report = self.fc_reports_cache.get(sid)
+        print("new: {}".format(fc_report))
+        print("last: {}".format(last_fc_report))
+        different_count = (fc_report["fcCount"] != last_fc_report["fcCount"])
+        different_fcs = (fc_report["fc"] != last_fc_report["fc"])
+        print("differences: count={}, fcs={}".format(different_count, different_fcs))
+        return different_count or different_fcs
 
     def fleet_carriers(self, star_system):
         if star_system is None:
@@ -338,12 +369,12 @@ class EDRSystems(object):
         sid = self.system_id(star_system)
         if not sid:
             return {}
-        if self.fc_cache.has_key(sid) and not self.fc_cache.is_stale(sid):
-            fc_report = self.fc_cache.get(sid)
+        if self.fc_presence_cache.has_key(sid) and not self.fc_presence_cache.is_stale(sid):
+            fc_report = self.fc_presence_cache.get(sid)
             return fc_report or {}
-        if not self.fc_cache.has_key(sid) or (self.fc_cache.has_key(sid) and self.fc_cache.is_stale(sid)):
+        if not self.fc_presence_cache.has_key(sid) or (self.fc_presence_cache.has_key(sid) and self.fc_presence_cache.is_stale(sid)):
             fc_report = self.server.fc_presence(sid)
-            self.fc_cache.set(sid, fc_report)
+            self.fc_presence_cache.set(sid, fc_report)
             return fc_report or {}
         return {}
 

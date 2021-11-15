@@ -221,6 +221,7 @@ def handle_movement_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_place_if_obsolete(body)
         outcome["reason"] = "Supercruise exit"
         ed_player.to_normal_space()
+        EDR_CLIENT.register_fss_signals()
         EDRLOG.log(u"Body changed: {}".format(body), "INFO")
     elif entry["event"] in ["FSDJump", "CarrierJump"]:
         place = "Supercruise"
@@ -331,6 +332,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
             # { "timestamp":"2018-06-19T13:06:04Z", "event":"QuitACrew", "Captain":"Dummy" }
             # { "timestamp":"2018-06-19T13:06:16Z", "event":"Music", "MusicTrack":"MainMenu" }
             EDR_CLIENT.clear()
+            EDR_CLIENT.edrfssinsights.reset()
             EDR_CLIENT.game_mode(None)
             ed_player.leave_wing()
             ed_player.leave_crew()
@@ -353,7 +355,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
             ed_player.in_danger(False)
             return
         elif entry["MusicTrack"] == "SystemMap":
-            EDR_CLIENT.noteworthy_signals_in_system() # probably annoying
+            EDR_CLIENT.noteworthy_signals_in_system()
             return
         elif entry["MusicTrack"] == "OnFoot":
             ed_player.in_spacesuit()
@@ -361,17 +363,20 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
 
     if entry["event"] == "Shutdown":
         EDRLOG.log(u"Shutting down in-game features...", "INFO")
+        EDR_CLIENT.edrfssinsights.reset()
         EDR_CLIENT.shutdown()
         return
 
     if entry["event"] == "Resurrect":
         EDR_CLIENT.clear()
+        EDR_CLIENT.edrfssinsights.reset()
         ed_player.resurrect(entry["Option"] in ["rebuy", "recover"])
         EDRLOG.log(u"Player has been resurrected.", "DEBUG")
         return
 
     if entry["event"] in ["Fileheader"] and entry["part"] == 1:
         EDR_CLIENT.clear()
+        EDR_CLIENT.edrfssinsights.reset()
         ed_player.inception(genesis=True)
         EDR_CLIENT.status = _(u"initialized.")
         EDRLOG.log(u"Journal player got created: accurate picture of friends/wings.",
@@ -382,6 +387,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
         if ed_player.inventory.stale_or_incorrect():
             ed_player.inventory.initialize_with_edmc(state)
         EDR_CLIENT.clear()
+        EDR_CLIENT.edrfssinsights.reset()
         ed_player.inception(genesis=from_genesis)
         if from_genesis:
             EDRLOG.log(u"Heuristics genesis: probably accurate picture of friends/wings.",
