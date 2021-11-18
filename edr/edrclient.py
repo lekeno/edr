@@ -67,6 +67,9 @@ class EDRClient(object):
         
         self.edr_needs_u_novelty_threshold = edr_config.edr_needs_u_novelty_threshold()
         self.previous_ad = None
+        self.feature_ads = {
+            "parking": { "advertised": False, "ad": [_(u"You may want to give a shot to the !parking command next time."), _(u"It will help you find a parking slot for your Fleet Carrier near busy systems.")]}
+        }
 
         self.searching = False
 
@@ -575,26 +578,22 @@ class EDRClient(object):
             self.__notify(_(u'{} material densities on {}').format(qualifier, scan_event["BodyName"]), facts, clear_before = True)
 
     
-    def register_fss_signals(self):
-        print("register fc signals")
+    def register_fss_signals(self, system_address=None, override_star_system=None):
+        print("register called")
+        self.edrfssinsights.update_system(system_address, override_star_system or self.player.star_system)
         fc_report = self.edrfssinsights.fleet_carriers_report()
-        print(fc_report)
         if fc_report:
+            EDRLOG.log(u"Registering FSS signals; fc_report: {} with sys_address {} and star_system {}".format(fc_report, system_address, override_star_system), "DEBUG")
             fc_report["reportedBy"] = self.player.name
-            print("trying fc reporting")
-            self.edrsystems.update_fc_presence(fc_report)
+            if self.edrsystems.update_fc_presence(fc_report):
+                if fc_report["fcCount"] <= 1:
+                    self.status = _(u"Reported {} fleet carrier in system {}").format(fc_report["fcCount"], fc_report["starSystem"])
+                else:
+                    self.status = _(u"Reported {} fleet carriers in system {}").format(fc_report["fcCount"], fc_report["starSystem"])
+
     
     def noteworthy_about_signal(self, fss_event):
-        if not self.edrfssinsights.related_to(self.player.star_system):
-            # Report Fleet Carriers before the signals get overwritten
-            print("fc reporting")
-            fc_report = self.edrfssinsights.fleet_carriers_report()
-            print(fc_report)
-            if fc_report:
-                fc_report["reportedBy"] = self.player.name
-                print("trying fc reporting")
-                self.edrsystems.update_fc_presence(fc_report)
-        self.edrfssinsights.process(fss_event, self.player.star_system)
+        self.edrfssinsights.process(fss_event)
         facts = self.edrresourcefinder.assess_signal(fss_event, self.player.location, self.player.inventory)
         if facts:
             header = _(u'Signal Insights (potential outcomes)')
@@ -959,8 +958,6 @@ class EDRClient(object):
             if self.player.is_wingmate(target_cmdr["cmdr"]):
                 return False
         except:
-            print(target_cmdr)
-            print(target_cmdr.keys())
             return False
 
         if self.edrcmdrs.is_friend(target_cmdr["cmdr"]):
@@ -1246,7 +1243,6 @@ class EDRClient(object):
                 EDRLOG.log(u"Skipping warning since a warning was recently shown.", "INFO")
 
         if not self.novel_enough_blip(cmdr_id, blip):
-            self.status = u"skipping blip (not novel enough)."
             EDRLOG.log(u"Blip is not novel enough to warrant reporting", "INFO")
             return True
 
@@ -1257,7 +1253,6 @@ class EDRClient(object):
 
         success = self.server.blip(cmdr_id, blip)
         if success:
-            self.status = u"blip reported for {}.".format(cmdr_name)
             self.blips_cache.set(cmdr_id, blip)
 
         return success
@@ -1483,6 +1478,7 @@ class EDRClient(object):
         return False
 
     def fc_jump_requested(self, event):
+        self.advertise_advanced_feature("parking")
         self.player.fleet_carrier.jump_requested(event)
         jump_info = self.player.fleet_carrier.json_jump_schedule()
         if not jump_info:
@@ -1860,6 +1856,14 @@ class EDRClient(object):
         self.previous_ad = now_epoch
         return True
 
+    def advertise_advanced_feature(self, feature_name):
+        if feature_name not in self.feature_ads or self.feature_ads[feature_name]["advertised"]:
+            return False
+
+        self.__notify(_(u"EDR pro-tips"), self.feature_ads[feature_name]["ad"], clear_before=True)
+        self.feature_ads[feature_name]["advertised"] = True
+        return True
+
     def __search_prerequisites(self, star_system):
         if not star_system:
             return False
@@ -1883,6 +1887,7 @@ class EDRClient(object):
             self.status = _(u"I.Factors: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Interstellar Factors: searching...")], clear_before = True)
         except ValueError:
+            self.searching = False
             self.status = _(u"I.Factors: failed")
             self.notify_with_details(_(u"EDR Search"), [_(u"Unknown system")])
 
@@ -1896,6 +1901,7 @@ class EDRClient(object):
             self.status = _(u"Raw mat. trader: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Raw material trader: searching...")], clear_before = True)
         except ValueError:
+            self.searching = False
             self.status = _(u"Raw mat. trader: failed")
             self.notify_with_details(_(u"EDR Search"), [_(u"Unknown system")])
         
@@ -1909,6 +1915,7 @@ class EDRClient(object):
             self.status = _(u"Encoded data trader: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Encoded data trader: searching...")], clear_before = True)
         except ValueError:
+            self.searching = False
             self.status = _(u"Encoded data trader: failed")
             self.notify_with_details(_(u"EDR Search"), [_(u"Unknown system")])
 
@@ -1923,6 +1930,7 @@ class EDRClient(object):
             self.status = _(u"Manufactured mat. trader: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Manufactured material trader: searching...")], clear_before = True)
         except ValueError:
+            self.searching = False
             self.status = _(u"Manufactured mat. trader: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
@@ -1937,12 +1945,16 @@ class EDRClient(object):
             self.status = _(u"Staging station: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Staging station: searching...")], clear_before = True)
         except ValueError:
+            self.searching = False
             self.status = _(u"Staging station: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
     def parking_system_near(self, star_system, override_rank = None):
+        self.feature_ads["parking"]["advertised"] = True # no need to advertise since the user clearly knows about it
         if not self.__search_prerequisites(star_system):
             return
+
+        self.register_fss_signals() # we might as well gets this out in case it's useful
 
         try:
             self.edrsystems.search_parking_system(star_system, self.__parking_found, override_rank=override_rank)
@@ -1950,6 +1962,7 @@ class EDRClient(object):
             self.status = _(u"Parking system: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Parking system: searching...")], clear_before = True)
         except ValueError:
+            self.searching = False
             self.status = _(u"Parking system: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
@@ -1966,6 +1979,7 @@ class EDRClient(object):
                 details = [_(u"RRR Fleet Carrier: searching within {} LY of {}...").format(override_radius, star_system)]
             self.__notify(_(u"EDR Search"), details, clear_before = True)
         except ValueError:
+            self.searching = False
             self.status = _(u"RRR Fleet Carrier: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
@@ -1982,6 +1996,7 @@ class EDRClient(object):
                 details = [_(u"RRR Station: searching within {} LY of {}...").format(override_radius, star_system)]
             self.__notify(_(u"EDR Search"), details, clear_before = True)
         except ValueError:
+            self.searching = False
             self.status = _(u"RRR Station: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
@@ -1995,6 +2010,7 @@ class EDRClient(object):
             self.status = _(u"Human tech broker: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Human tech broker: searching...")], clear_before = True)
         except ValueError:
+            self.searching = False
             self.status = _(u"Human tech broker: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
     
@@ -2008,6 +2024,7 @@ class EDRClient(object):
             self.status = _(u"Guardian tech broker: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Guardian tech broker: searching...")], clear_before = True)
         except ValueError:
+            self.searching = False
             self.status = _(u"Guardian tech broker: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
@@ -2021,6 +2038,7 @@ class EDRClient(object):
             self.status = _(u"Offbeat station: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Offbeat station: searching...")], clear_before = True)
         except ValueError:
+            self.searching = False
             self.status = _(u"Offbeat station: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
@@ -2061,10 +2079,38 @@ class EDRClient(object):
             fc = self.edrsystems.fleet_carriers(result['name'])
             fc_count = fc.get("fcCount", None)
             timestamp = fc.get("timestamp", None)
+            print(fc)
             if not fc_count is None and fc_count >= 0 and timestamp:
                 remaining = max(0, result['parking']['slots'] - fc_count)
+                threshold = 1000*60*60*24
+                plus = 0
+                minus = 0
+                observations = fc.get("observations", {})
+                for o in observations:
+                    if abs(timestamp - observations[o]) > threshold:
+                        continue
+                    count = int(o[1:])
+                    if count > fc_count:
+                        minus = max(minus, count-fc_count)
+                    elif count < fc_count:
+                        plus = max(plus, fc_count-count)
                 tminus = EDTime.t_minus(timestamp, short=True)
-                details.append(_(u"Slots <={}/{} as of {}").format(remaining, result['parking']['slots'], tminus))
+                plusminus = ""
+                if plus == minus and plus > 0:
+                    plusminus = "±{}".format(plus)
+                else:
+                    if plus > 0:
+                        plusminus = "+{}".format(plus)
+                        if minus > 0:
+                            plusminus += " -{}".format(minus)
+                    elif minus > 0:
+                        plusminus = "-{}".format(minus)
+
+                
+                if len(plusminus):
+                    details.append(_(u"Slots ≈ {} ({}) / {} (as of {})").format(remaining, plusminus, result['parking']['slots'], tminus))
+                else:
+                    details.append(_(u"Slots ≈ {} / {} (as of {})").format(remaining, result['parking']['slots'], tminus))
             else:
                 details.append(_(u"Slots: ???/{} (no intel)").format(result['parking']['slots']))
             stats = result['parking']['info']['all']['stats']
@@ -2094,6 +2140,7 @@ class EDRClient(object):
             if rank > 0:
                 details.append(_(u"Try !parking {} #{}. Or try !parking #{} if searching around your current location").format(reference, int(rank-1), int(rank-1)))
         self.__notify(_(u"FC Parking near {}").format(reference), details, clear_before = True)
+        self.searching = False
 
     def configure_resourcefinder(self, raw_profile):
         canonical_raw_profile = raw_profile.lower()
@@ -2146,6 +2193,7 @@ class EDRClient(object):
                 self.status = _(u"{}: found").format(cresource)
                 self.__notify(u"{}".format(cresource), outcome, clear_before = True)
         except ValueError:
+            self.searching = False
             self.status = _(u"{}: failed...").format(cresource)
             self.__notify(_(u"EDR Search"), [_(u"{}: failed...").format(cresource), _(u"To learn how to use the feature, send: !help search")], clear_before = True)
 

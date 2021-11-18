@@ -468,30 +468,30 @@ class EDRServer(object):
         return self.__post_json(endpoint, report, "EDR")
 
     def report_fcs(self, system_id, report):
+        if self.is_anonymous():
+            return False
         EDRLOG.log(u"Reporting Fleet Carriers in system {}: {}".format(system_id, report), "INFO")
         report["uid"] = self.uid()
         params = { "auth": self.auth_token() }
         endpoint = "{server}/v1/fc_reports/{system_id}/{uid}/.json".format(server=self.EDR_SERVER, system_id=system_id, uid=self.uid())
-        print(report)
-        print(params)
-        print(endpoint)
         EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = self.__put(endpoint, "EDR", params=params, json=report)
         EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
         return self.__check_response(resp, "EDR", "Put fcs report")
     
-    def fc_presence(self, system_id):
-        if not self.__preflight("fc_presence", system_id):
+    def fc_presence(self, star_system):
+        if not self.__preflight("fc_presence", star_system):
             EDRLOG.log(u"Preflight failed for fc_presence call.", "DEBUG")
             raise CommsJammedError("fc_presence")
 
-        EDRLOG.log(u"Querying Fleet Carriers in system {sid}".format(sid=system_id), "INFO")
-        endpoint = "{server}/v1/fc_presence/{sid}/.json".format(server=self.EDR_SERVER, sid=system_id)        
-        params = {"auth": self.auth_token()}
-        resp = self.__get(endpoint, "EDR", params)
+        EDRLOG.log(u"Querying Fleet Carriers in system {}".format(star_system), "INFO")
+        params = {"orderBy": '"starSystem"', "equalTo": json.dumps(star_system), "limitToFirst": 1, "auth": self.auth_token()}
+        resp = self.__get("{}/v1/fc_presence.json".format(self.EDR_SERVER), "EDR", params)
         EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
         if self.__check_response(resp, "EDR", "FC_Presence"):
-            return json.loads(resp.content)
+            result = json.loads(resp.content)
+            sid = list(result)[0] if result else None
+            return result[sid] if result else None
         else:
             return None
 
@@ -726,7 +726,6 @@ class EDRServer(object):
         json = { "name": self.player_name, "timestamp": {".sv": "timestamp"}, "param": param, "api": api_name, "mode": self.game_mode, "dlc": self.dlc_name, "group": self.private_group }
         EDRLOG.log(u"Preflight request for {} with {}".format(api_name, json), "DEBUG")
         endpoint = "https://us-central1-blistering-inferno-4028.cloudfunctions.net/edr/v1/preflight/{uid}".format(server=self.EDR_SERVER, uid=self.uid())
-        print(endpoint)
         resp = self.__put(endpoint, "EDR", json=json, headers=headers)
         EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
         return self.__check_response(resp, "EDR", "Preflight {}".format(api_name))

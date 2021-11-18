@@ -1,3 +1,4 @@
+from os import system
 from edri18n import _, _c
 import re
 import copy
@@ -5,10 +6,10 @@ from edtime import EDTime
 
 class EDRFSSInsights(object):
     def __init__(self):
-        self.timestamp = None
+        self.timestamp = EDTime()
         # TODO show unreg comms as its own category
         self.signals = {
-            # "$MULTIPLAYER_SCENARIO42_TITLE;": {"count": 0, "short_name": _("Nav Beacon") }, # Not super interesting 
+            "$MULTIPLAYER_SCENARIO42_TITLE;": {"count": 0, "short_name": _("Nav Beacon") },
             "$MULTIPLAYER_SCENARIO64_TITLE;": {"count": 0, "short_name": _("USS") },
             "$MULTIPLAYER_SCENARIO80_TITLE;": {"count": 0, "short_name": _("Compromised Nav Beacon") },
             "$MULTIPLAYER_SCENARIO81_TITLE;": {"count": 0, "short_name": _("Salvageable Wreckage")},
@@ -50,8 +51,9 @@ class EDRFSSInsights(object):
 
         self.star_system = {"name": None, "address": None}
         self.noteworthy = False
+        self.processed = 0
 
-    def reset(self):
+    def reset(self, override_timestamp=None):
         for signal_name in self.signals:
             self.signals[signal_name]["count"] = 0
             if "expiring" in self.signals[signal_name]:
@@ -60,13 +62,15 @@ class EDRFSSInsights(object):
         self.stations = set()
         self.fleet_carriers = {}
         self.other_locations = set()
-        self.timestamp = None
+        if override_timestamp:
+            self.timestamp.from_journal_timestamp(override_timestamp)
         self.resource_extraction_sites = {"available": False, "variants": {"$MULTIPLAYER_SCENARIO14_TITLE;": {"count": 0, "short_name": _c("Standard Res|Std")}, "$MULTIPLAYER_SCENARIO77_TITLE;": {"count": 0, "short_name": _c("Res Low|Low")}, "$MULTIPLAYER_SCENARIO78_TITLE;": {"count": 0, "short_name": _c("Res High|High")}, "$MULTIPLAYER_SCENARIO79_TITLE;": {"count": 0, "short_name": _c("Res Hazardous|Haz")}}, "short_name": _("RES") }
         self.combat_zones = {"available": False, "variants": {"$Warzone_PointRace_Low;":  {"count": 0, "short_name": _c("CZ Low intensity|Low")}, "$Warzone_PointRace_Medium;":  {"count": 0, "short_name": _c("CZ Medium intensity|Med")}, "$Warzone_PointRace_High;":  {"count": 0, "short_name": _c("CZ High intensity|High")}}, "short_name": _("CZ") }
         self.uss = {"available": False, "variants": {"$USS_Type_Salvage;":  {"count": 0, "expiring": [], "short_name": _c("Degraded Emissions|Degraded")}, "$USS_Type_ValuableSalvage;":  {"count": 0, "expiring": [], "short_name": _c("Encoded Emissions|Encoded")}, "$USS_Type_VeryValuableSalvage;": {"count": 0, "expiring": [], "short_name": _c("High Grade Emissions|High Grade")}, "misc": {"count": 0, "expiring": [], "short_name": _c("Misc.")}}, "short_name": _("USS") }
         self.pirates = {"available": False, "variants": {"$FIXED_EVENT_HIGHTHREATSCENARIO_T7;":  {"count": 0, "short_name": _c("Pirates Threat 7|Th7")}, "$FIXED_EVENT_HIGHTHREATSCENARIO_T6;":  {"count": 0, "short_name": _c("Pirates Threat 6|Th6")}, "$FIXED_EVENT_HIGHTHREATSCENARIO_T5;":  {"count": 0, "short_name": _c("Pirates Threat 5|Th5")}}, "short_name": _("Pirates") }
         self.star_system = {"name": None, "address": None}
         self.noteworthy = False
+        self.processed = 0
 
     def related_to(self, current_star_system):
         return (self.star_system["name"] is None) or current_star_system == self.star_system["name"]
@@ -77,25 +81,29 @@ class EDRFSSInsights(object):
             self.star_system["address"] = None
             self.star_system["name"] = None
 
-    def process(self, fss_event, current_star_system):
-        if current_star_system is None:
-            return False
+    def update_system(self, system_address, system_name):
+        if system_address is not None and self.star_system["address"] is not None and system_address != self.star_system["address"]:
+            self.reset()
+            self.star_system["address"] = system_address
+        if system_name is not None:
+            self.star_system["name"] = system_name
+
+    def process(self, fss_event):
         system_address = fss_event.get("SystemAddress", None)
         if system_address is None:
             self.reset()
             return False
         
-        if system_address != self.star_system["address"] or current_star_system != self.star_system["name"]:
-            self.reset()
+        if system_address != self.star_system["address"]:
+            self.reset(fss_event["timestamp"])
             self.star_system["address"] = system_address
-            self.star_system["name"] = current_star_system
+            self.star_system["name"] = None
 
         result = self.__process(fss_event)
         if result:
-            edt = EDTime()
-            edt.from_journal_timestamp(fss_event["timestamp"])
-            self.timestamp = edt
-            self.__prune_expired_signals()
+            self.processed += 1
+            self.timestamp.from_journal_timestamp(fss_event["timestamp"])
+        self.__prune_expired_signals()
         return result
        
 
@@ -165,7 +173,6 @@ class EDRFSSInsights(object):
             return summary
 
         self.__prune_expired_signals()
-        # TODO maybe loop over each instead of repeating basically the same code?
         if self.uss["available"]:
             counts = []
             for variant in self.uss["variants"]:
@@ -246,15 +253,20 @@ class EDRFSSInsights(object):
         return round(min(duration / (40*60), 1) * 5)*"+"
 
     def fleet_carriers_report(self):
-        if self.star_system["name"] is None or self.timestamp is None:
+        if self.star_system["name"] is None or self.processed == 0:
+            print("no fc report: {}, {}".format(self.star_system, self.processed))
             return None
 
-        return {
-            "starSystem": self.star_system.get("name", ""),
+        report = {
+            "starSystem": self.star_system["name"],
             "timestamp": self.timestamp.as_js_epoch(),
             "fcCount": len(self.fleet_carriers),
-            "fc": copy.deepcopy(self.fleet_carriers)
         }
+
+        if len(self.fleet_carriers):
+            report["fc"] = copy.deepcopy(self.fleet_carriers)
+
+        return report
 
 
     # TODO: dangerous fleet carriers

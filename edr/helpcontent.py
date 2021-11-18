@@ -26,7 +26,7 @@ class HelpContent(object):
                 _(u" - !help sqdrdex: tag other commanders as ally or enemy of your squadron"),
                 _(u" - !help nearby: commands to find services near you or a specific system, e.g. interstellar factors"),
                 _(u" - !help search: find the best spots to obtain specific resources, e.g. adaptive encryptors capture"),
-                _(u" - !help ship: find out where you've parked your ships, evaluate your build"),
+                _(u" - !help ship: find out where you've parked your ships, evaluate your build, find a fleet carrier parking slot"),
                 _(u" - !help config: configuration options"),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
@@ -243,8 +243,9 @@ class HelpContent(object):
                 _(u" - '!ship name_or_type' where name_or_type is either a ship name or type."),
                 _(u" - '!ship fdl' will show where your Fer-de-Lance ships are parked."),
                 _(u" - '!ship In Front of Things' will show where your ship(s) named 'In Front of Things' are."),
-                u"⚶",
                 _(u" - '!eval power' to get an assessment of your power priorities."),
+                u"⚶",
+                _(u" - '!parking', '!parking deciat', '!parking deciat #1' to check for fleet carrier parking slots in the current system, Deciat, or the second closest system to Deciat."),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
             ]

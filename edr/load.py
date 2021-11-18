@@ -222,6 +222,7 @@ def handle_movement_events(ed_player, entry):
         outcome["reason"] = "Supercruise exit"
         ed_player.to_normal_space()
         EDR_CLIENT.register_fss_signals()
+        # TODO probably should be cleared to avoid keeping old FC around?
         EDRLOG.log(u"Body changed: {}".format(body), "INFO")
     elif entry["event"] in ["FSDJump", "CarrierJump"]:
         place = "Supercruise"
@@ -250,6 +251,8 @@ def handle_movement_events(ed_player, entry):
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
         EDR_CLIENT.docking_guidance(entry)
         EDR_CLIENT.check_system(entry["StarSystem"], may_create=True)
+        EDR_CLIENT.register_fss_signals()
+        EDR_CLIENT.edrfssinsights.reset(entry["timestamp"])
     elif entry["event"] in ["ApproachSettlement"]:
         place = entry["Name"]
         body = entry.get("BodyName", None)
@@ -290,6 +293,7 @@ def handle_change_events(ed_player, entry):
         ed_player.location_security(entry.get("SystemSecurity", None))
         ed_player.location.population = entry.get("Population", None)
         ed_player.location.allegiance = entry.get("SystemAllegiance", None)
+        EDR_CLIENT.edrfssinsights.update_system(entry.get("SystemAddress", None), entry.get("StarSystem", None))
         outcome["reason"] = "Location event"
         EDR_CLIENT.check_system(entry["StarSystem"], may_create=True, coords=entry.get("StarPos", None))
 
@@ -326,6 +330,11 @@ def handle_fc_position_related_events(ed_player, entry):
 
 def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
     if entry["event"] == "Music":
+        if entry["MusicTrack"] in ["Supercruise", "NoTrack"]:
+             # music event happens after the chain of FSS signals discovered events on a jump
+            # TODO wrong system...
+            EDR_CLIENT.register_fss_signals()
+
         if entry["MusicTrack"] == "MainMenu" and not ed_player.is_crew_member():
             # Checking for 'is_crew_member' because "MainMenu" shows up when joining a multicrew session
             # Assumption: being a crew member while main menu happens means that a multicrew session is about to start.
@@ -689,6 +698,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["FSSSignalDiscovered"]:
         EDR_CLIENT.noteworthy_about_signal(entry)
 
+    if entry["event"] in ["FSSDiscoveryScan"]:
+        EDR_CLIENT.register_fss_signals()
+
     if entry["event"] in ["NavBeaconScan"] and entry.get("NumBodies", 0):
         EDR_CLIENT.notify_with_details(_(u"System info acquired"), [_(u"Noteworthy material densities will be shown when approaching a planet.")])
 
@@ -781,8 +793,6 @@ def edr_update_cmdr_status(cmdr, reason_for_update, timestamp):
     if not EDR_CLIENT.blip(cmdr.name, report):
         EDR_CLIENT.status = _(u"blip failed.")
         return
-
-    EDR_CLIENT.status = _(u"blip succeeded!")
 
 
 def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):

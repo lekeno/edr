@@ -335,32 +335,28 @@ class EDRSystems(object):
     def update_fc_presence(self, fc_report):
         star_system = fc_report.get("starSystem", None)
         if star_system is None:
-            return
+            return False
         sid = self.system_id(star_system)
         if not sid:
-            return
+            return False
         if self.__novel_enough_fc_report(sid, fc_report):
             success = self.server.report_fcs(sid, fc_report)
             if success:
                 self.fc_reports_cache.set(sid, fc_report)
-                print("success")
-            else:
-                print("failure")
+                print("busting cache")
+                self.fc_presence_cache.evict(sid)
+                return True
+        return False
 
     def __novel_enough_fc_report(self, sid, fc_report):
         if not self.fc_reports_cache.has_key(sid):
-            print("no fc report for sid {}".format(sid))
             return True
 
         if self.fc_reports_cache.is_stale(sid):
-            print("stale fc report for sid {}".format(sid))
             return True
         last_fc_report = self.fc_reports_cache.get(sid)
-        print("new: {}".format(fc_report))
-        print("last: {}".format(last_fc_report))
         different_count = (fc_report["fcCount"] != last_fc_report["fcCount"])
-        different_fcs = (fc_report["fc"] != last_fc_report["fc"])
-        print("differences: count={}, fcs={}".format(different_count, different_fcs))
+        different_fcs = (fc_report.get("fc", None) != last_fc_report.get("fc", None))
         return different_count or different_fcs
 
     def fleet_carriers(self, star_system):
@@ -370,10 +366,12 @@ class EDRSystems(object):
         if not sid:
             return {}
         if self.fc_presence_cache.has_key(sid) and not self.fc_presence_cache.is_stale(sid):
+            print("cached presence")
             fc_report = self.fc_presence_cache.get(sid)
             return fc_report or {}
         if not self.fc_presence_cache.has_key(sid) or (self.fc_presence_cache.has_key(sid) and self.fc_presence_cache.is_stale(sid)):
-            fc_report = self.server.fc_presence(sid)
+            print("fresh presence")
+            fc_report = self.server.fc_presence(star_system)
             self.fc_presence_cache.set(sid, fc_report)
             return fc_report or {}
         return {}
@@ -945,7 +943,7 @@ class EDRSystems(object):
         self.__search_a_service(star_system, callback, checker, with_large_pad = True, with_medium_pad = False, override_radius = 15, override_sc_distance = override_sc_distance, permits = permits, exclude_center = True)
 
     def search_parking_system(self, star_system, callback, override_rank = None):
-        self.__search_a_parking(star_system, callback, override_radius = 25, override_rank = override_rank, exclude_center = True)
+        self.__search_a_parking(star_system, callback, override_radius = 25, override_rank = override_rank)
 
     def search_rrr_fc(self, star_system, callback, override_radius = None, permits = []):
         radius = override_radius if override_radius is not None and override_radius >= 0 else 0
@@ -1000,7 +998,7 @@ class EDRSystems(object):
         finder.set_dlc(self.dlc_name)
         finder.start()
 
-    def __search_a_parking(self, star_system, callback, override_radius = None, override_rank = None, shuffle_systems=False, exclude_center=False):
+    def __search_a_parking(self, star_system, callback, override_radius = None, override_rank = None):
         rank = override_rank or 0
         rank = max(0, rank)
         radius = override_radius if override_radius is not None and override_radius >= 0 else self.reasonable_hs_radius
@@ -1009,7 +1007,6 @@ class EDRSystems(object):
         finder = edrparkingsystemfinder.EDRParkingSystemFinder(star_system, self, callback)
         finder.within_radius(radius)
         finder.nb_to_pick(rank)
-        finder.ignore_center(exclude_center)
         finder.start()
 
     def systems_within_radius(self, star_system, override_radius = None):
