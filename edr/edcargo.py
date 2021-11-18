@@ -1,15 +1,21 @@
 # coding= utf-8
 from __future__ import absolute_import
+from edrlog import EDRLog
+
+EDRLOG = EDRLog()
 
 class EDCargo(object):
     def __init__(self):
         self.inventory = {}
 
     def update(self, cargo_event):
-        ed_inventory = cargo_event.get("Inventory", [])
-        for item in ed_inventory:
-            name = item.get("Name", None)
-            self.inventory[name] = item.get("Count", 0)
+        try:
+            ed_inventory = cargo_event.get("Inventory", [])
+            for item in ed_inventory:
+                name = item.get("Name", None)
+                self.inventory[name] = item.get("Count", 0)
+        except:
+            EDRLOG.log(u"Couldn't process cargo event {}".format(cargo_event), u"WARNING")
 
     def collect(self, collect_event):
         if collect_event.get("event", None) != "CollectCargo":
