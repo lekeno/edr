@@ -254,7 +254,6 @@ class EDRFSSInsights(object):
 
     def fleet_carriers_report(self):
         if self.star_system["name"] is None or self.processed == 0:
-            print("no fc report: {}, {}".format(self.star_system, self.processed))
             return None
 
         report = {

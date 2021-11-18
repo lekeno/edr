@@ -579,7 +579,6 @@ class EDRClient(object):
 
     
     def register_fss_signals(self, system_address=None, override_star_system=None):
-        print("register called")
         self.edrfssinsights.update_system(system_address, override_star_system or self.player.star_system)
         fc_report = self.edrfssinsights.fleet_carriers_report()
         if fc_report:
@@ -2079,7 +2078,6 @@ class EDRClient(object):
             fc = self.edrsystems.fleet_carriers(result['name'])
             fc_count = fc.get("fcCount", None)
             timestamp = fc.get("timestamp", None)
-            print(fc)
             if not fc_count is None and fc_count >= 0 and timestamp:
                 remaining = max(0, result['parking']['slots'] - fc_count)
                 threshold = 1000*60*60*24

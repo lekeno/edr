@@ -343,7 +343,6 @@ class EDRSystems(object):
             success = self.server.report_fcs(sid, fc_report)
             if success:
                 self.fc_reports_cache.set(sid, fc_report)
-                print("busting cache")
                 self.fc_presence_cache.evict(sid)
                 return True
         return False
@@ -366,11 +365,9 @@ class EDRSystems(object):
         if not sid:
             return {}
         if self.fc_presence_cache.has_key(sid) and not self.fc_presence_cache.is_stale(sid):
-            print("cached presence")
             fc_report = self.fc_presence_cache.get(sid)
             return fc_report or {}
         if not self.fc_presence_cache.has_key(sid) or (self.fc_presence_cache.has_key(sid) and self.fc_presence_cache.is_stale(sid)):
-            print("fresh presence")
             fc_report = self.server.fc_presence(star_system)
             self.fc_presence_cache.set(sid, fc_report)
             return fc_report or {}
