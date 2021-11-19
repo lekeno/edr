@@ -210,7 +210,10 @@ def handle_carrier_events(ed_player, entry):
     elif entry["event"] == "CarrierDockingPermission":
         ed_player.fleet_carrier.update_docking_permissions(entry)
     elif entry["event"] == "CarrierJump":
+        EDR_CLIENT.edrfssinsights.reset()
+        EDR_CLIENT.edrfssinsights.update_system(entry.get("SystemAddress", None), entry.get("StarSystem", None))
         ed_player.fleet_carrier.update_from_jump_if_relevant(entry)
+        
 
 def handle_movement_events(ed_player, entry):
     outcome = {"updated": False, "reason": None}
@@ -225,7 +228,7 @@ def handle_movement_events(ed_player, entry):
         # TODO probably should be cleared to avoid keeping old FC around?
         EDRLOG.log(u"Body changed: {}".format(body), "INFO")
     elif entry["event"] in ["FSDJump", "CarrierJump"]:
-        place = "Supercruise"
+        place = "Supercruise" if entry["event"] == "FSDJump" else entry.get("StationName", "Unknown")
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         ed_player.wanted = entry.get("Wanted", False)
         ed_player.mothership.fuel_level = entry.get("FuelLevel", ed_player.mothership.fuel_level)
@@ -234,7 +237,10 @@ def handle_movement_events(ed_player, entry):
         ed_player.location.population = entry.get('Population', 0)
         ed_player.location.allegiance = entry.get('SystemAllegiance', 0)
         outcome["reason"] = entry["event"]
-        ed_player.to_super_space()
+        if entry["event"] == "FSDJump":
+            ed_player.to_super_space()
+        else:
+            ed_player.to_normal_space()
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
     elif entry["event"] in ["SupercruiseEntry"]:
         place = "Supercruise"
@@ -699,7 +705,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         EDR_CLIENT.noteworthy_about_signal(entry)
 
     if entry["event"] in ["FSSDiscoveryScan"]:
-        EDR_CLIENT.register_fss_signals()
+        EDR_CLIENT.register_fss_signals(force_reporting=True) # Takes care of zero pop system with no signals (not even a nav beacon) and no fleet carrier
 
     if entry["event"] in ["NavBeaconScan"] and entry.get("NumBodies", 0):
         EDR_CLIENT.notify_with_details(_(u"System info acquired"), [_(u"Noteworthy material densities will be shown when approaching a planet.")])
