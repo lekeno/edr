@@ -578,9 +578,9 @@ class EDRClient(object):
             self.__notify(_(u'{} material densities on {}').format(qualifier, scan_event["BodyName"]), facts, clear_before = True)
 
     
-    def register_fss_signals(self, system_address=None, override_star_system=None):
+    def register_fss_signals(self, system_address=None, override_star_system=None, force_reporting=False):
         self.edrfssinsights.update_system(system_address, override_star_system or self.player.star_system)
-        fc_report = self.edrfssinsights.fleet_carriers_report()
+        fc_report = self.edrfssinsights.fleet_carriers_report(force_reporting)
         if fc_report:
             EDRLOG.log(u"Registering FSS signals; fc_report: {} with sys_address {} and star_system {}".format(fc_report, system_address, override_star_system), "DEBUG")
             fc_report["reportedBy"] = self.player.name
