@@ -252,8 +252,8 @@ class EDRFSSInsights(object):
         
         return round(min(duration / (40*60), 1) * 5)*"+"
 
-    def fleet_carriers_report(self):
-        if self.star_system["name"] is None or self.processed == 0:
+    def fleet_carriers_report(self, force_reporting=False):
+        if not force_reporting and (self.star_system["name"] is None or self.processed == 0):
             return None
 
         report = {
