@@ -21,7 +21,7 @@ class EDSMServer(object):
 
 
     def system(self, system_name):
-        params = {"systemName": system_name, "showCoordinates": 1, "showInformation":1, "showId": 1}
+        params = {"systemName": system_name, "showCoordinates": 1, "showInformation":1, "showId": 1, "showPermit": 1}
         endpoint = "{}/api-v1/systems".format(self.EDSM_SERVER)
         return self.__get(endpoint, params)
         

@@ -17,11 +17,11 @@ import edrlog
 import lrucache
 import edsmserver
 from edentities import EDFineOrBounty
+from edentities import pretty_print_number
 from edri18n import _, _c, _edr
 import edrservicecheck
 import edrservicefinder
-import edrstatecheck
-import edrstatefinder
+import edrparkingsystemfinder
 import utils2to3
 
 EDRLOG = edrlog.EDRLog()
@@ -43,6 +43,8 @@ class EDRSystems(object):
     EDR_SITREPS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'sitreps.v3.p')
     EDR_TRAFFIC_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'traffic.v2.p')
     EDR_CRIMES_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'crimes.v2.p')
+    EDR_FC_REPORTS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'fc_reports.v1.p')
+    EDR_FC_PRESENCE_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'fc_presence.v1.p')
     
 
     def __init__(self, server):
@@ -84,6 +86,20 @@ class EDRSystems(object):
         except:
             self.crimes_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                   edr_config.crimes_max_age())
+
+        try:
+            with open(self.EDR_FC_REPORTS_CACHE, 'rb') as handle:
+                self.fc_reports_cache = pickle.load(handle)
+        except:
+            self.fc_reports_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                              edr_config.fc_reports_max_age())
+
+        try:
+            with open(self.EDR_FC_PRESENCE_CACHE, 'rb') as handle:
+                self.fc_presence_cache = pickle.load(handle)
+        except:
+            self.fc_presence_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                              edr_config.fc_presence_max_age())
 
         try:
             with open(self.EDR_TRAFFIC_CACHE, 'rb') as handle:
@@ -269,6 +285,12 @@ class EDRSystems(object):
         with open(self.EDR_CRIMES_CACHE, 'wb') as handle:
             pickle.dump(self.crimes_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+        with open(self.EDR_FC_REPORTS_CACHE, 'wb') as handle:
+            pickle.dump(self.fc_reports_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        
+        with open(self.EDR_FC_PRESENCE_CACHE, 'wb') as handle:
+            pickle.dump(self.fc_presence_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
         with open(self.EDSM_SYSTEMS_CACHE, 'wb') as handle:
             pickle.dump(self.edsm_systems_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
         
@@ -310,6 +332,48 @@ class EDRSystems(object):
             return sqrt((dest_coords["x"] - source_coords["x"])**2 + (dest_coords["y"] - source_coords["y"])**2 + (dest_coords["z"] - source_coords["z"])**2)
         raise ValueError('Unknown system')
 
+    def update_fc_presence(self, fc_report):
+        star_system = fc_report.get("starSystem", None)
+        if star_system is None:
+            return False
+        sid = self.system_id(star_system)
+        if not sid:
+            return False
+        if self.__novel_enough_fc_report(sid, fc_report):
+            success = self.server.report_fcs(sid, fc_report)
+            if success:
+                self.fc_reports_cache.set(sid, fc_report)
+                self.fc_presence_cache.evict(sid)
+                return True
+        return False
+
+    def __novel_enough_fc_report(self, sid, fc_report):
+        if not self.fc_reports_cache.has_key(sid):
+            return True
+
+        if self.fc_reports_cache.is_stale(sid):
+            return True
+        last_fc_report = self.fc_reports_cache.get(sid)
+        different_count = (fc_report["fcCount"] != last_fc_report["fcCount"])
+        different_fcs = (fc_report.get("fc", None) != last_fc_report.get("fc", None))
+        return different_count or different_fcs
+
+    def fleet_carriers(self, star_system):
+        if star_system is None:
+            return {}
+        sid = self.system_id(star_system)
+        if not sid:
+            return {}
+        if self.fc_presence_cache.has_key(sid) and not self.fc_presence_cache.is_stale(sid):
+            fc_report = self.fc_presence_cache.get(sid)
+            return fc_report or {}
+        if not self.fc_presence_cache.has_key(sid) or (self.fc_presence_cache.has_key(sid) and self.fc_presence_cache.is_stale(sid)):
+            fc_report = self.server.fc_presence(star_system)
+            self.fc_presence_cache.set(sid, fc_report)
+            return fc_report or {}
+        return {}
+
+    
     def system(self, name):
         if not name:
             return None
@@ -451,6 +515,18 @@ class EDRSystems(object):
             if body.get("name", "").lower() == body_name.lower():
                 return body
         return None
+
+    def bodies(self, system_name):
+        if not system_name:
+            return None
+
+        bodies = self.edsm_bodies_cache.get(system_name.lower())
+        if not bodies:
+            bodies = self.edsm_server.bodies(system_name)
+            if bodies:
+                self.edsm_bodies_cache.set(system_name.lower(), bodies)
+
+        return bodies
 
     def are_factions_stale(self, star_system):
         if not star_system:
@@ -740,40 +816,13 @@ class EDRSystems(object):
             return None
         
         zero = {"total": 0, "week": 0, "day": 0}
-        deaths = {s: self.__pretty_print_number(v) for s, v in deaths.get("deaths", zero).items()}
-        traffic = {s: self.__pretty_print_number(v) for s, v in traffic.get("traffic", {}).items()}
+        deaths = {s: pretty_print_number(v) for s, v in deaths.get("deaths", zero).items()}
+        traffic = {s: pretty_print_number(v) for s, v in traffic.get("traffic", {}).items()}
         
         if traffic == {}:
             return None
 
         return "Deaths / Traffic: [Day {}/{}]   [Week {}/{}]  [All {}/{}]".format(deaths.get("day", 0), traffic.get("day"), deaths.get("week", 0), traffic.get("week"), deaths.get("total"), traffic.get("total"))
-
-    @staticmethod
-    def __pretty_print_number(number):
-        #TODO move out and dedup bounty's code.
-        readable = u""
-        if number >= 10000000000:
-            # Translators: this is a short representation for a bounty >= 10 000 000 000 credits (b stands for billion)  
-            readable = _(u"{} b").format(number // 1000000000)
-        elif number >= 1000000000:
-            # Translators: this is a short representation for a bounty >= 1 000 000 000 credits (b stands for billion)
-            readable = _(u"{:.1f} b").format(number / 1000000000.0)
-        elif number >= 10000000:
-            # Translators: this is a short representation for a bounty >= 10 000 000 credits (m stands for million)
-            readable = _(u"{} m").format(number // 1000000)
-        elif number > 1000000:
-            # Translators: this is a short representation for a bounty >= 1 000 000 credits (m stands for million)
-            readable = _(u"{:.1f} m").format(number / 1000000.0)
-        elif number >= 10000:
-            # Translators: this is a short representation for a bounty >= 10 000 credits (k stands for kilo, i.e. thousand)
-            readable = _(u"{} k").format(number // 1000)
-        elif number >= 1000:
-            # Translators: this is a short representation for a bounty >= 1000 credits (k stands for kilo, i.e. thousand)
-            readable = _(u"{:.1f} k").format(number / 1000.0)
-        else:
-            # Translators: this is a short representation for a bounty < 1000 credits (i.e. shows the whole bounty, unabbreviated)
-            readable = _(u"{}").format(number)
-        return readable 
 
     def summarize_recent_activity(self, star_system, powerplay=None):
         #TODO refactor/simplify this mess ;)
@@ -890,6 +939,9 @@ class EDRSystems(object):
         checker = edrservicecheck.EDRStagingCheck(15)
         self.__search_a_service(star_system, callback, checker, with_large_pad = True, with_medium_pad = False, override_radius = 15, override_sc_distance = override_sc_distance, permits = permits, exclude_center = True)
 
+    def search_parking_system(self, star_system, callback, override_rank = None):
+        self.__search_a_parking(star_system, callback, override_radius = 25, override_rank = override_rank)
+
     def search_rrr_fc(self, star_system, callback, override_radius = None, permits = []):
         radius = override_radius if override_radius is not None and override_radius >= 0 else 0
         sc_dist = 10000
@@ -941,6 +993,17 @@ class EDRSystems(object):
         finder.shuffling(shuffle_systems, shuffle_stations)
         finder.ignore_center(exclude_center)
         finder.set_dlc(self.dlc_name)
+        finder.start()
+
+    def __search_a_parking(self, star_system, callback, override_radius = None, override_rank = None):
+        rank = override_rank or 0
+        rank = max(0, rank)
+        radius = override_radius if override_radius is not None and override_radius >= 0 else self.reasonable_hs_radius
+        radius = min(100, radius)
+
+        finder = edrparkingsystemfinder.EDRParkingSystemFinder(star_system, self, callback)
+        finder.within_radius(radius)
+        finder.nb_to_pick(rank)
         finder.start()
 
     def systems_within_radius(self, star_system, override_radius = None):

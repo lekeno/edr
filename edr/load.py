@@ -210,7 +210,10 @@ def handle_carrier_events(ed_player, entry):
     elif entry["event"] == "CarrierDockingPermission":
         ed_player.fleet_carrier.update_docking_permissions(entry)
     elif entry["event"] == "CarrierJump":
+        EDR_CLIENT.edrfssinsights.reset()
+        EDR_CLIENT.edrfssinsights.update_system(entry.get("SystemAddress", None), entry.get("StarSystem", None))
         ed_player.fleet_carrier.update_from_jump_if_relevant(entry)
+        
 
 def handle_movement_events(ed_player, entry):
     outcome = {"updated": False, "reason": None}
@@ -221,9 +224,11 @@ def handle_movement_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_place_if_obsolete(body)
         outcome["reason"] = "Supercruise exit"
         ed_player.to_normal_space()
+        EDR_CLIENT.register_fss_signals()
+        # TODO probably should be cleared to avoid keeping old FC around?
         EDRLOG.log(u"Body changed: {}".format(body), "INFO")
     elif entry["event"] in ["FSDJump", "CarrierJump"]:
-        place = "Supercruise"
+        place = "Supercruise" if entry["event"] == "FSDJump" else entry.get("StationName", "Unknown")
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         ed_player.wanted = entry.get("Wanted", False)
         ed_player.mothership.fuel_level = entry.get("FuelLevel", ed_player.mothership.fuel_level)
@@ -232,7 +237,10 @@ def handle_movement_events(ed_player, entry):
         ed_player.location.population = entry.get('Population', 0)
         ed_player.location.allegiance = entry.get('SystemAllegiance', 0)
         outcome["reason"] = entry["event"]
-        ed_player.to_super_space()
+        if entry["event"] == "FSDJump":
+            ed_player.to_super_space()
+        else:
+            ed_player.to_normal_space()
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
     elif entry["event"] in ["SupercruiseEntry"]:
         place = "Supercruise"
@@ -249,6 +257,8 @@ def handle_movement_events(ed_player, entry):
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
         EDR_CLIENT.docking_guidance(entry)
         EDR_CLIENT.check_system(entry["StarSystem"], may_create=True)
+        EDR_CLIENT.register_fss_signals()
+        EDR_CLIENT.edrfssinsights.reset(entry["timestamp"])
     elif entry["event"] in ["ApproachSettlement"]:
         place = entry["Name"]
         body = entry.get("BodyName", None)
@@ -289,6 +299,7 @@ def handle_change_events(ed_player, entry):
         ed_player.location_security(entry.get("SystemSecurity", None))
         ed_player.location.population = entry.get("Population", None)
         ed_player.location.allegiance = entry.get("SystemAllegiance", None)
+        EDR_CLIENT.edrfssinsights.update_system(entry.get("SystemAddress", None), entry.get("StarSystem", None))
         outcome["reason"] = "Location event"
         EDR_CLIENT.check_system(entry["StarSystem"], may_create=True, coords=entry.get("StarPos", None))
 
@@ -325,12 +336,18 @@ def handle_fc_position_related_events(ed_player, entry):
 
 def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
     if entry["event"] == "Music":
+        if entry["MusicTrack"] in ["Supercruise", "NoTrack"]:
+             # music event happens after the chain of FSS signals discovered events on a jump
+            # TODO wrong system...
+            EDR_CLIENT.register_fss_signals()
+
         if entry["MusicTrack"] == "MainMenu" and not ed_player.is_crew_member():
             # Checking for 'is_crew_member' because "MainMenu" shows up when joining a multicrew session
             # Assumption: being a crew member while main menu happens means that a multicrew session is about to start.
             # { "timestamp":"2018-06-19T13:06:04Z", "event":"QuitACrew", "Captain":"Dummy" }
             # { "timestamp":"2018-06-19T13:06:16Z", "event":"Music", "MusicTrack":"MainMenu" }
             EDR_CLIENT.clear()
+            EDR_CLIENT.edrfssinsights.reset()
             EDR_CLIENT.game_mode(None)
             ed_player.leave_wing()
             ed_player.leave_crew()
@@ -353,7 +370,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
             ed_player.in_danger(False)
             return
         elif entry["MusicTrack"] == "SystemMap":
-            EDR_CLIENT.noteworthy_signals_in_system() # probably annoying
+            EDR_CLIENT.noteworthy_signals_in_system()
             return
         elif entry["MusicTrack"] == "OnFoot":
             ed_player.in_spacesuit()
@@ -361,17 +378,20 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
 
     if entry["event"] == "Shutdown":
         EDRLOG.log(u"Shutting down in-game features...", "INFO")
+        EDR_CLIENT.edrfssinsights.reset()
         EDR_CLIENT.shutdown()
         return
 
     if entry["event"] == "Resurrect":
         EDR_CLIENT.clear()
+        EDR_CLIENT.edrfssinsights.reset()
         ed_player.resurrect(entry["Option"] in ["rebuy", "recover"])
         EDRLOG.log(u"Player has been resurrected.", "DEBUG")
         return
 
     if entry["event"] in ["Fileheader"] and entry["part"] == 1:
         EDR_CLIENT.clear()
+        EDR_CLIENT.edrfssinsights.reset()
         ed_player.inception(genesis=True)
         EDR_CLIENT.status = _(u"initialized.")
         EDRLOG.log(u"Journal player got created: accurate picture of friends/wings.",
@@ -382,6 +402,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
         if ed_player.inventory.stale_or_incorrect():
             ed_player.inventory.initialize_with_edmc(state)
         EDR_CLIENT.clear()
+        EDR_CLIENT.edrfssinsights.reset()
         ed_player.inception(genesis=from_genesis)
         if from_genesis:
             EDRLOG.log(u"Heuristics genesis: probably accurate picture of friends/wings.",
@@ -683,6 +704,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["FSSSignalDiscovered"]:
         EDR_CLIENT.noteworthy_about_signal(entry)
 
+    if entry["event"] in ["FSSDiscoveryScan"]:
+        EDR_CLIENT.register_fss_signals(force_reporting=True) # Takes care of zero pop system with no signals (not even a nav beacon) and no fleet carrier
+
     if entry["event"] in ["NavBeaconScan"] and entry.get("NumBodies", 0):
         EDR_CLIENT.notify_with_details(_(u"System info acquired"), [_(u"Noteworthy material densities will be shown when approaching a planet.")])
 
@@ -775,8 +799,6 @@ def edr_update_cmdr_status(cmdr, reason_for_update, timestamp):
     if not EDR_CLIENT.blip(cmdr.name, report):
         EDR_CLIENT.status = _(u"blip failed.")
         return
-
-    EDR_CLIENT.status = _(u"blip succeeded!")
 
 
 def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
@@ -1571,6 +1593,16 @@ def handle_bang_commands(cmdr, command, command_parts):
             search_center = parameters[0] or cmdr.star_system
             override_radius = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.rrr_near(search_center, override_radius)
+    elif command == "!parking":
+        # TODO surface a tip when a cmdr is scheduling a fleet carrier jump (if it fails(?) to be aknowledged?)
+        search_center = cmdr.star_system
+        override_rank = None
+        if len(command_parts) >= 2:
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("#", 1)]
+            search_center = parameters[0] or cmdr.star_system
+            override_rank = int(parameters[1]) if len(parameters) > 1 else None
+        EDRLOG.log(u"Looking for a system to park a fleet carrier near {}".format(search_center), "INFO")
+        EDR_CLIENT.parking_system_near(search_center, override_rank)
     elif command in ["!htb", "!humantechbroker"]:
         EDRLOG.log(u"Looking for a human tech broker", "INFO")
         search_center = cmdr.star_system
