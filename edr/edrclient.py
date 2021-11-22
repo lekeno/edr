@@ -581,7 +581,7 @@ class EDRClient(object):
     def register_fss_signals(self, system_address=None, override_star_system=None, force_reporting=False):
         self.edrfssinsights.update_system(system_address, override_star_system or self.player.star_system)
         fc_report = self.edrfssinsights.fleet_carriers_report(force_reporting)
-        if fc_report:
+        if fc_report is not None:
             EDRLOG.log(u"Registering FSS signals; fc_report: {} with sys_address {} and star_system {}".format(fc_report, system_address, override_star_system), "DEBUG")
             fc_report["reportedBy"] = self.player.name
             if self.edrsystems.update_fc_presence(fc_report):

@@ -27,7 +27,7 @@ import utils2to3
 EDRLOG = edrlog.EDRLog()
 
 class EDRSystems(object):
-    EDR_SYSTEMS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'systems.v4.p')
+    EDR_SYSTEMS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'systems.v5.p')
     EDR_RAW_MATERIALS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'raw_materials.v1.p')
     EDSM_BODIES_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_bodies.v1.p')
     EDSM_SYSTEMS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_systems.v3.p')
@@ -336,7 +336,7 @@ class EDRSystems(object):
         star_system = fc_report.get("starSystem", None)
         if star_system is None:
             return False
-        sid = self.system_id(star_system)
+        sid = self.system_id(star_system, may_create=True)
         if not sid:
             return False
         if self.__novel_enough_fc_report(sid, fc_report):

@@ -705,7 +705,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         EDR_CLIENT.noteworthy_about_signal(entry)
 
     if entry["event"] in ["FSSDiscoveryScan"]:
-        EDR_CLIENT.register_fss_signals(force_reporting=True) # Takes care of zero pop system with no signals (not even a nav beacon) and no fleet carrier
+        EDR_CLIENT.register_fss_signals(override_star_system=entry.get("SystemName", None), force_reporting=True) # Takes care of zero pop system with no signals (not even a nav beacon) and no fleet carrier
 
     if entry["event"] in ["NavBeaconScan"] and entry.get("NumBodies", 0):
         EDR_CLIENT.notify_with_details(_(u"System info acquired"), [_(u"Noteworthy material densities will be shown when approaching a planet.")])
