@@ -52,6 +52,7 @@ class EDRFSSInsights(object):
         self.star_system = {"name": None, "address": None}
         self.noteworthy = False
         self.processed = 0
+        self.reported = False
 
     def reset(self, override_timestamp=None):
         for signal_name in self.signals:
@@ -71,6 +72,7 @@ class EDRFSSInsights(object):
         self.star_system = {"name": None, "address": None}
         self.noteworthy = False
         self.processed = 0
+        self.reported = False
 
     def related_to(self, current_star_system):
         return (self.star_system["name"] is None) or current_star_system == self.star_system["name"]
