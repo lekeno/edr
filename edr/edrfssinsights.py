@@ -35,6 +35,7 @@ class EDRFSSInsights(object):
         }
         self.stations = set()
         self.fleet_carriers = {}
+        self.recent_fleet_carriers = {}
         self.other_locations = set()
         self.resource_extraction_sites = {"available": False, "variants": {"$MULTIPLAYER_SCENARIO14_TITLE;": {"count": 0, "short_name": _c("Standard Res|Std")}, "$MULTIPLAYER_SCENARIO77_TITLE;": {"count": 0, "short_name": _c("Res Low|Low")}, "$MULTIPLAYER_SCENARIO78_TITLE;": {"count": 0, "short_name": _c("Res High|High")}, "$MULTIPLAYER_SCENARIO79_TITLE;": {"count": 0, "short_name": _c("Res Hazardous|Haz")}}, "short_name": _("RES") }
         self.combat_zones = {"available": False, "variants": {"$Warzone_PointRace_Low;":  {"count": 0, "short_name": _c("CZ Low intensity|Low")}, "$Warzone_PointRace_Medium;":  {"count": 0, "short_name": _c("CZ Medium intensity|Med")}, "$Warzone_PointRace_High;":  {"count": 0, "short_name": _c("CZ High intensity|High")}}, "short_name": _("CZ") }
@@ -62,6 +63,7 @@ class EDRFSSInsights(object):
 
         self.stations = set()
         self.fleet_carriers = {}
+        self.recent_fleet_carriers
         self.other_locations = set()
         if override_timestamp:
             self.timestamp.from_journal_timestamp(override_timestamp)
@@ -166,6 +168,7 @@ class EDRFSSInsights(object):
             carrier_name = m.group(1)
             callsign = m.group(2)
             self.fleet_carriers[callsign] = carrier_name
+            self.recent_fleet_carriers[callsign] = carrier_name
         else:
             self.stations.add(location_name)
 
@@ -268,6 +271,11 @@ class EDRFSSInsights(object):
             report["fc"] = copy.deepcopy(self.fleet_carriers)
 
         return report
+
+    def newly_found_fleet_carriers(self):
+        result = copy.deepcopy(self.recent_fleet_carriers)
+        self.recent_fleet_carriers = {}
+        return result
 
 
     # TODO: dangerous fleet carriers
