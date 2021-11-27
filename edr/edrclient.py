@@ -7,6 +7,7 @@ from sys import float_repr_style
 import time
 import random
 import math
+import re
 
 try:
     # for Python2
@@ -580,24 +581,20 @@ class EDRClient(object):
     
     def register_fss_signals(self, system_address=None, override_star_system=None, force_reporting=False):
         self.edrfssinsights.update_system(system_address, override_star_system or self.player.star_system)
-        fc_report = self.edrfssinsights.fleet_carriers_report(force_reporting)
-        if fc_report is None:
-            return
-
         if self.edrfssinsights.reported:
-            if force_reporting:
-                # Skipping further FSS signals because the signals are additive only (no events for FC signals that are no longer relevant...)
-                self.status = _(u"Skipped FC report for consistency reasons (fix: leave and come back)")
+            # Skipping further FSS signals because the signals are additive only (no events for FC signals that are no longer relevant...)
+            self.status = _(u"Skipped FC report for consistency reasons")
             return
-        
-        EDRLOG.log(u"Registering FSS signals; fc_report: {} with sys_address {} and star_system {}".format(fc_report, system_address, override_star_system), "DEBUG")
-        fc_report["reportedBy"] = self.player.name
-        if self.edrsystems.update_fc_presence(fc_report):
-            self.edrfssinsights.reported = True
-            if fc_report["fcCount"] <= 1:
-                self.status = _(u"Reported {} fleet carrier in system {}").format(fc_report["fcCount"], fc_report["starSystem"])
-            else:
-                self.status = _(u"Reported {} fleet carriers in system {}").format(fc_report["fcCount"], fc_report["starSystem"])
+        fc_report = self.edrfssinsights.fleet_carriers_report(force_reporting)
+        if fc_report is not None:
+            EDRLOG.log(u"Registering FSS signals; fc_report: {} with sys_address {} and star_system {}".format(fc_report, system_address, override_star_system), "DEBUG")
+            fc_report["reportedBy"] = self.player.name
+            if self.edrsystems.update_fc_presence(fc_report):
+                self.edrfssinsights.reported = True
+                if fc_report["fcCount"] <= 1:
+                    self.status = _(u"Reported {} fleet carrier in system {}").format(fc_report["fcCount"], fc_report["starSystem"])
+                else:
+                    self.status = _(u"Reported {} fleet carriers in system {}").format(fc_report["fcCount"], fc_report["starSystem"])
 
     
     def noteworthy_about_signal(self, fss_event):
@@ -1741,7 +1738,7 @@ class EDRClient(object):
         success = self.edrcmdrs.remove_contract(cmdr_name)
         instructions = _(u"Send '!contract {cmdr} $$$ 10' in chat to set a reward of 10 million credits on Cmdr '{cmdr}'")
         if success:
-            self.__notify(_(u"Kill Rewards"),[_(u"Removed reward for a kill on Cmdr {}").format(cmdr_name), intrusctions.format(cmdr=cmdr_name)], clear_before = True)
+            self.__notify(_(u"Kill Rewards"),[_(u"Removed reward for a kill on Cmdr {}").format(cmdr_name), instructions.format(cmdr=cmdr_name)], clear_before = True)
             return True
         
         self.__notify(_(u"Kill Rewards"),[_(u"Failed to remove reward for a kill on Cmdr {} (not even set?)").format(cmdr_name), instructions.format(cmdr=cmdr_name)], clear_before = True)
@@ -2007,6 +2004,45 @@ class EDRClient(object):
             self.searching = False
             self.status = _(u"RRR Station: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
+
+    def fc_in_current_system(self, callsign_or_name):
+        fcs = self.edrfssinsights.fuzzy_match_fleet_carriers(callsign_or_name)
+        callsign = callsign_or_name
+        fc_name = "Fleet Carrier"
+        if len(fcs) == 1:
+            callsign = next(iter(fcs))
+            fc_name = fcs[callsign]
+        elif len(fcs) > 1:
+            self.notify_with_details(_(u"EDR Fleet Carrier Local Search"), [_("{} fleet carriers have {} in their callsign or name").format(len(fcs), callsign_or_name), _("Try something more specific, or the full callsign.")])
+            return
+        
+        fc_regexp = r"^([A-Z0-9]{3}-[A-Z0-9]{3})$"
+        if not re.match(fc_regexp, callsign):
+            self.notify_with_details(_(u"EDR Fleet Carrier Local Search"), [_("Couldn't find a fleet carrier with {} in its callsign or name").format(callsign_or_name), _("{} is not a valid callsign").format(callsign), _(u"Try a more specific term, the full callsign, or honk your discovery scanner first.")])
+            return
+
+        fc = self.edrsystems.fleet_carrier(self.player.star_system, callsign)
+        if fc is None:
+            self.notify_with_details(_(u"EDR Fleet Carrier Local Search"), [_("No info on fleet carrier with {} callsign").format(callsign)])
+            return
+        
+        header = u"{} ({})".format(fc_name, fc["name"])
+        fc_other_services = (fc.get("otherServices", []) or []) 
+        details = []
+        a = u"●" if fc.get("haveOutfitting", False) else u"◌"
+        b = u"●" if fc.get("haveShipyard", False) else u"◌"
+        details.append(_(u"Outfit:{}   Shipyard:{}").format(a,b))
+        a = u"●" if "Refuel" in fc_other_services else u"◌"
+        b = u"●" if "Repair" in fc_other_services else u"◌"
+        c = u"●" if "Restock" in fc_other_services else u"◌"
+        details.append(_(u"Refuel:{}   Repair:{}   Restock:{}").format(a,b,c))
+        a = u"●" if fc.get("haveMarket", False) else u"◌"
+        b = u"●" if "Black Market" in fc_other_services else u"◌"
+        details.append(_(u"Market:{}   B.Market:{}").format(a,b))
+        a = u"●" if "Interstellar Factors Contact" in fc_other_services else u"◌"
+        details.append(_(u"I.Factor:{}").format(a))
+        details.append(_(u"as of {date}").format(date=fc['updateTime']['information']))
+        self.notify_with_details(header, details)
 
     def human_tech_broker_near(self, star_system, override_sc_distance = None):
         if not self.__search_prerequisites(star_system):
