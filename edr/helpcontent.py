@@ -205,7 +205,7 @@ class HelpContent(object):
             ]
         },
         "nearby": {
-            "header": _(u"Finding things around you or a specified system"),
+            "header": _(u"Finding things around you or a specified system Ⅰ"),
             "details": [
                 _(u" - '!if' or '!if Lave' to find an Interstellar Factors near your position or Lave."),
                 _(u" - '!raw' or '!raw Lave' to find a Raw Material Trader near your position or Lave"),
@@ -216,8 +216,17 @@ class HelpContent(object):
                 _(u" - '!gtb', '!guardiantechbroker' or '!gtb Lave' to find a Guardian Tech Broker near your position or Lave"),
                 _(u" - '!nav 12.3 -4.5', '!nav set' or '!nav off' to obtain planetary guidance for getting to a specific location"),
                 _(u" - '!offbeat', '!offbeat Lave' to find a station that hasn't been recently visited near your position or Lave"),
+                u"⚶",
+                _(u"Send !help nearby2 to see other nearby features. Send !clear in chat to clear everything on the overlay.")
+            ]
+        },
+        "nearby2": {
+            "header": _(u"Finding things around you or a specified system Ⅱ"),
+            "details": [
                 _(u" - '!rrrfc', '!rrrfc Lave < 10' to find a fleet carrier with repair/rearm/refuel near your position or within 10 LY of Lave"),
                 _(u" - '!rrr', '!rrr Lave < 10' to find a station with repair/rearm/refuel near your position or within 10 LY of Lave"),
+                _(u" - '!fc J6B', '!fc Recon' to display information about a local fleet carrier with a callsign or name that contains J6B or Recon"),
+                _(u" - '!station Jameson' to display information about a local station/outpost/... with a name that contains Jameson"),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
             ]
