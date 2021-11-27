@@ -6,6 +6,7 @@ import pickle
 from math import sqrt, ceil
 
 import datetime
+from re import S
 import sys
 import time
 import collections
@@ -246,6 +247,9 @@ class EDRSystems(object):
                     return station
         
         return None
+
+    def fleet_carrier(self, star_system, callsign):
+        return self.station(star_system, callsign, "FleetCarrier")
 
     def stations_in_system(self, star_system):
         if not star_system:

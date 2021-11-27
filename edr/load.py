@@ -1575,6 +1575,12 @@ def handle_bang_commands(cmdr, command, command_parts):
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.staging_station_near(search_center, override_sc_dist)
+    elif command == "!fc":
+        if len(command_parts) < 2:
+            return
+        callsign_or_name = " ".join(command_parts[1:]).upper()
+        EDRLOG.log(u"Looking for a Fleet Carrier in current system with {} in callsign or name".format(callsign_or_name), "INFO")
+        EDR_CLIENT.fc_in_current_system(callsign_or_name)
     elif command == "!rrrfc":
         EDRLOG.log(u"Looking for a RRR Fleet Carrier", "INFO")
         search_center = cmdr.star_system

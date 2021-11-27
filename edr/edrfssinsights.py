@@ -269,5 +269,12 @@ class EDRFSSInsights(object):
 
         return report
 
+    def fuzzy_match_fleet_carriers(self, callsign_or_name):
+        if callsign_or_name is None:
+            return {}
+        
+        return {c: self.fleet_carriers[c] for c in self.fleet_carriers if (callsign_or_name.lower() in c.lower() or callsign_or_name.lower() in self.fleet_carriers[c].lower())}
+
+
 
     # TODO: dangerous fleet carriers
