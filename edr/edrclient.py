@@ -2027,21 +2027,24 @@ class EDRClient(object):
             return
         
         header = u"{} ({})".format(fc_name, fc["name"])
-        fc_other_services = (fc.get("otherServices", []) or []) 
-        details = []
-        a = u"●" if fc.get("haveOutfitting", False) else u"◌"
-        b = u"●" if fc.get("haveShipyard", False) else u"◌"
-        details.append(_(u"Outfit:{}   Shipyard:{}").format(a,b))
-        a = u"●" if "Refuel" in fc_other_services else u"◌"
-        b = u"●" if "Repair" in fc_other_services else u"◌"
-        c = u"●" if "Restock" in fc_other_services else u"◌"
-        details.append(_(u"Refuel:{}   Repair:{}   Restock:{}").format(a,b,c))
-        a = u"●" if fc.get("haveMarket", False) else u"◌"
-        b = u"●" if "Black Market" in fc_other_services else u"◌"
-        details.append(_(u"Market:{}   B.Market:{}").format(a,b))
-        a = u"●" if "Interstellar Factors Contact" in fc_other_services else u"◌"
-        details.append(_(u"I.Factor:{}").format(a))
-        details.append(_(u"as of {date}").format(date=fc['updateTime']['information']))
+        details = self.IN_GAME_MSG.describe_fleet_carrier(fc)
+        self.notify_with_details(header, details)
+
+    def station_in_current_system(self, station_name):
+        stations = self.edrsystems.fuzzy_stations(self.player.star_system, station_name)
+        if stations is None:
+            self.notify_with_details(_(u"EDR Station Local Search"), [_("No info on Station with {} in its name").format(station_name)])
+            return
+
+        if len(stations) > 1:
+            self.notify_with_details(_(u"EDR Station Local Search"), [_("{} stations have {} in their name").format(len(stations), station_name), _("Try something more specific, or the full name.")])
+            return
+        
+        station = stations[0]
+                
+        economy = u"{}/{}".format(station["economy"], station["secondEconomy"]) if station["secondEconomy"] else station["economy"]
+        header = u"{} ({})".format(station["name"], economy)
+        details = self.IN_GAME_MSG.describe_station(station)
         self.notify_with_details(header, details)
 
     def human_tech_broker_near(self, star_system, override_sc_distance = None):

@@ -1581,6 +1581,12 @@ def handle_bang_commands(cmdr, command, command_parts):
         callsign_or_name = " ".join(command_parts[1:]).upper()
         EDRLOG.log(u"Looking for a Fleet Carrier in current system with {} in callsign or name".format(callsign_or_name), "INFO")
         EDR_CLIENT.fc_in_current_system(callsign_or_name)
+    elif command == "!station":
+        if len(command_parts) < 2:
+            return
+        station_name = " ".join(command_parts[1:]).upper()
+        EDRLOG.log(u"Looking for a Station in current system with {} in its name".format(station_name), "INFO")
+        EDR_CLIENT.station_in_current_system(station_name)
     elif command == "!rrrfc":
         EDRLOG.log(u"Looking for a RRR Fleet Carrier", "INFO")
         search_center = cmdr.star_system

@@ -248,6 +248,17 @@ class EDRSystems(object):
         
         return None
 
+    def fuzzy_stations(self, star_system, station_name):
+        if station_name is None or station_name == "":
+            return []
+
+        stations = self.stations_in_system(star_system)
+        if not stations:
+            return []
+        
+        return [station for station in stations if (station_name.lower() in station["name"].lower())]
+        
+
     def fleet_carrier(self, star_system, callsign):
         return self.station(star_system, callsign, "FleetCarrier")
 
