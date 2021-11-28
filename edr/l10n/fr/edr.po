@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2021-11-28 08:40+0900\n"
-"PO-Revision-Date: 2021-11-28 08:48+0900\n"
+"POT-Creation-Date: 2021-11-28 10:58+0900\n"
+"PO-Revision-Date: 2021-11-28 11:00+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -1147,18 +1147,18 @@ msgstr "EDR conseils de pro"
 #: edrclient.py:1907 edrclient.py:1911 edrclient.py:1921 edrclient.py:1925
 #: edrclient.py:1936 edrclient.py:1940 edrclient.py:1951 edrclient.py:1955
 #: edrclient.py:1968 edrclient.py:1972 edrclient.py:1985 edrclient.py:1989
-#: edrclient.py:2002 edrclient.py:2006 edrclient.py:2058 edrclient.py:2062
-#: edrclient.py:2072 edrclient.py:2076 edrclient.py:2086 edrclient.py:2090
-#: edrclient.py:2216 edrclient.py:2220 edrclient.py:2226 edrclient.py:2234
-#: edrclient.py:2237 edrclient.py:2244
+#: edrclient.py:2002 edrclient.py:2006 edrclient.py:2061 edrclient.py:2065
+#: edrclient.py:2075 edrclient.py:2079 edrclient.py:2089 edrclient.py:2093
+#: edrclient.py:2226 edrclient.py:2230 edrclient.py:2236 edrclient.py:2244
+#: edrclient.py:2247 edrclient.py:2254
 msgid "EDR Search"
 msgstr "Recherche EDR"
 
-#: edrclient.py:1877 edrclient.py:2216
+#: edrclient.py:1877 edrclient.py:2226
 msgid "Already searching for something, please wait..."
 msgstr "Recherche en cours, veuillez patienter..."
 
-#: edrclient.py:1881 edrclient.py:2220
+#: edrclient.py:1881 edrclient.py:2230
 msgid "Search features only work in the bubble or Colonia."
 msgstr ""
 "Désolé, cette fonctionnalité ne fonctionne que dans la bulle ou à Colonia."
@@ -1177,7 +1177,7 @@ msgstr "I. Factors: échec"
 
 #: edrclient.py:1897 edrclient.py:1911 edrclient.py:1925 edrclient.py:1940
 #: edrclient.py:1955 edrclient.py:1972 edrclient.py:1989 edrclient.py:2006
-#: edrclient.py:2062 edrclient.py:2076 edrclient.py:2090
+#: edrclient.py:2065 edrclient.py:2079 edrclient.py:2093
 msgid "Unknown system"
 msgstr "Système inconnu"
 
@@ -1305,7 +1305,7 @@ msgstr ""
 msgid "No info on fleet carrier with {} callsign"
 msgstr "Aucune information sur le porte-vaisseaux avec indicatif d’appel {}"
 
-#: edrclient.py:2036 edrclient.py:2040
+#: edrclient.py:2036 edrclient.py:2040 edrclient.py:2043
 msgid "EDR Station Local Search"
 msgstr "EDR recherche locale de Station"
 
@@ -1321,221 +1321,230 @@ msgstr "{} stations ont {} dans leur nom"
 msgid "Try something more specific, or the full name."
 msgstr "Essayez quelque chose de plus spécifique, ou le nom complet."
 
-#: edrclient.py:2057 edrclient.py:2058
+#: edrclient.py:2043
+msgid "No Station with {} in their name"
+msgstr "Pas d’info à propos d'une Station avec {} dans son nom"
+
+#: edrclient.py:2060 edrclient.py:2061
 msgid "Human tech broker: searching..."
 msgstr "Courtier en technologie humaine: recherche en cours..."
 
-#: edrclient.py:2061
+#: edrclient.py:2064
 msgid "Human tech broker: failed"
 msgstr "Courtier en technologie humaine: échec"
 
-#: edrclient.py:2071 edrclient.py:2072
+#: edrclient.py:2074 edrclient.py:2075
 msgid "Guardian tech broker: searching..."
 msgstr "Courtier en technologie Gardien: recherche en cours..."
 
-#: edrclient.py:2075
+#: edrclient.py:2078
 msgid "Guardian tech broker: failed"
 msgstr "Courtier en technologie gardien: échec"
 
-#: edrclient.py:2085 edrclient.py:2086
+#: edrclient.py:2088 edrclient.py:2089
 msgid "Offbeat station: searching..."
 msgstr "Spatioport pas visité récemment: recherche en cours..."
 
-#: edrclient.py:2089
+#: edrclient.py:2092
 msgid "Offbeat station: failed"
 msgstr "Spatioport pas visité récemment: échec"
 
-#: edrclient.py:2098 edrclient.py:2122
+#: edrclient.py:2101 edrclient.py:2125
 #, python-brace-format
 msgid "{dist:.3g}LY"
 msgstr "{dist:.3g}AL"
 
-#: edrclient.py:2098 edrclient.py:2122
+#: edrclient.py:2101 edrclient.py:2125
 #, python-brace-format
 msgid "{dist}LY"
 msgstr "{dist}AL"
 
-#: edrclient.py:2099
+#: edrclient.py:2102
 #, python-brace-format
 msgid "{dist}LS"
 msgstr "{dist}LS"
 
-#: edrclient.py:2100
+#: edrclient.py:2103
 #, python-brace-format
 msgid "{system}, {dist}"
 msgstr "{system}, {dist}"
 
-#: edrclient.py:2101
+#: edrclient.py:2104
 #, python-brace-format
 msgid "{station} ({type}), {sc_dist}"
 msgstr "{station} ({type}), {sc_dist}"
 
-#: edrclient.py:2102
+#: edrclient.py:2105
 #, python-brace-format
 msgid "as of {date} {ci}"
 msgstr "date des infos: {date} {ci}"
 
-#: edrclient.py:2106
+#: edrclient.py:2109
 msgid "{}: nothing within [{}LY, {}LS] of {}"
 msgstr "{}: rien dans un rayon de [{}LY, {}LS] autour de {}"
 
-#: edrclient.py:2107 edrclient.py:2263 edrclient.py:2265
+#: edrclient.py:2110 edrclient.py:2273 edrclient.py:2275
 msgid "checked {} systems"
 msgstr "{} systèmes dans la recherche"
 
-#: edrclient.py:2109
+#: edrclient.py:2112
 msgid "checked {} systems and {} stations"
 msgstr "{} systèmes et {} statioports dans la recherche"
 
-#: edrclient.py:2110
+#: edrclient.py:2113
 msgid "nothing found within [{}LY, {}LS], {}."
 msgstr "rien dans un rayon de [{}LY, {}LS], {}."
 
-#: edrclient.py:2113 edrclient.py:2269
+#: edrclient.py:2116 edrclient.py:2279
 msgid "{} near {}"
 msgstr "{} proche de {}"
 
-#: edrclient.py:2123
+#: edrclient.py:2126
 #, python-brace-format
 msgid "{system}, {dist} from {ref} [#{rank}]"
 msgstr "{system}, {dist} de {ref} [#{rank}]"
 
-#: edrclient.py:2125
+#: edrclient.py:2128
 #, python-brace-format
 msgid "{system} [#{rank}]"
 msgstr "{system} [#{rank}]"
 
-#: edrclient.py:2157
+#: edrclient.py:2160
 msgid "Slots ≈ {} ({}) / {} (as of {})"
 msgstr "Places ≈ {} ({}) / {} (date {})"
 
-#: edrclient.py:2159
+#: edrclient.py:2162
 msgid "Slots ≈ {} / {} (as of {})"
 msgstr "Places ≈ {} / {} (date {})"
 
-#: edrclient.py:2161
+#: edrclient.py:2164
 msgid "Slots: ???/{} (no intel)"
 msgstr "Places ???/{} (pas d'info)"
 
-#: edrclient.py:2165
+#: edrclient.py:2168
 #, python-brace-format
 msgid "{nb} bodies"
 msgstr "{nb} corps céleste"
 
-#: edrclient.py:2165
+#: edrclient.py:2168
 #, python-brace-format
 msgid "{nb} body"
 msgstr "{nb} corp céleste"
 
-#: edrclient.py:2169 edrclient.py:2176
+#: edrclient.py:2172 edrclient.py:2179
 msgid "{} (LS): median={}, avg={}, max={}"
 msgstr "{} (AL): médiane={}, moy={}, max={}"
 
-#: edrclient.py:2171
+#: edrclient.py:2174
 #, python-brace-format
 msgid "{nb} stars"
 msgstr "{nb} étoiles"
 
-#: edrclient.py:2178
+#: edrclient.py:2181
 msgid "1 star (no gravity well)"
 msgstr "1 étoile (sans puit de gravité)"
 
-#: edrclient.py:2180
+#: edrclient.py:2184
+msgid "If full, try the next one with !parking #{}."
+msgstr ""
+"S'il n'y a plus de place, essayez le prochain système avec !parking #{}."
+
+#: edrclient.py:2186
 msgid "If full, try the next one with !parking {} #{}."
 msgstr ""
 "S'il n'y a plus de place, essayez le prochain système avec !parking {} #{}."
 
-#: edrclient.py:2184
+#: edrclient.py:2191
 msgid "FC Parking: no #{} system within [{}LY] of {}"
 msgstr "Parking FC: pas de système #{} dans un rayon de [{}LY] autour de {}"
 
-#: edrclient.py:2185
+#: edrclient.py:2192
 msgid "No #{} system found within [{}LY]."
 msgstr "Pas de système #{} dans un rayon de [{}LY]."
 
-#: edrclient.py:2187
-msgid ""
-"Try !parking {} #{}. Or try !parking #{} if searching around your current "
-"location"
-msgstr ""
-"Essayez !parking {} #{}. Ou !parking #{} pour chercher autour de votre "
-"position"
+#: edrclient.py:2195
+msgid "Try !parking #{}"
+msgstr "Essayez !parking #{}"
 
-#: edrclient.py:2188
+#: edrclient.py:2197
+msgid "Try !parking {} #{}"
+msgstr "Essayez !parking {} #{}"
+
+#: edrclient.py:2198
 msgid "FC Parking near {}"
 msgstr "Parking porte-vaisseaux autour de {}"
 
-#: edrclient.py:2196
+#: edrclient.py:2206
 msgid "Unrecognized materials profile"
 msgstr "Profile matériaux non reconnu"
 
-#: edrclient.py:2196
+#: edrclient.py:2206
 msgid "To see a list of profiles, send: !materials"
 msgstr "Envoyez !materials pour voir la liste des profiles"
 
-#: edrclient.py:2200
+#: edrclient.py:2210
 msgid "Using materials profile '{}'"
 msgstr "Profile {} utilisé"
 
-#: edrclient.py:2200
+#: edrclient.py:2210
 msgid "Revert to default profile by sending: !materials default"
 msgstr "Pour revenir au profile de base, envoyez: !materials default"
 
-#: edrclient.py:2202
+#: edrclient.py:2212
 msgid "Using default materials profile"
 msgstr "Utilisation du profile de base"
 
-#: edrclient.py:2202
+#: edrclient.py:2212
 msgid "See the list of profiles by sending: !materials"
 msgstr "Pour voir la liste des profiles, envoyez: !materials"
 
-#: edrclient.py:2209
+#: edrclient.py:2219
 msgid "Available materials profiles"
 msgstr "Liste des profiles disponibles"
 
-#: edrclient.py:2225 edrclient.py:2226
+#: edrclient.py:2235 edrclient.py:2236
 msgid "{}: not supported."
 msgstr "{}: non disponible."
 
-#: edrclient.py:2226 edrclient.py:2237 edrclient.py:2244
+#: edrclient.py:2236 edrclient.py:2247 edrclient.py:2254
 msgid "To learn how to use the feature, send: !help search"
 msgstr "Pour afficher l'aide, envoyez: !help search"
 
-#: edrclient.py:2233 edrclient.py:2234
+#: edrclient.py:2243 edrclient.py:2244
 msgid "{}: searching..."
 msgstr "{}: recherche en cours..."
 
-#: edrclient.py:2236 edrclient.py:2237 edrclient.py:2243 edrclient.py:2244
+#: edrclient.py:2246 edrclient.py:2247 edrclient.py:2253 edrclient.py:2254
 msgid "{}: failed..."
 msgstr "{}: échec..."
 
-#: edrclient.py:2239
+#: edrclient.py:2249
 msgid "{}: found"
 msgstr "{}: succès"
 
-#: edrclient.py:2251
+#: edrclient.py:2261
 #, python-brace-format
 msgid "{dist:.3g}"
 msgstr "{dist:.3g}"
 
-#: edrclient.py:2251
+#: edrclient.py:2261
 #, python-brace-format
 msgid "{dist}"
 msgstr "{dist}"
 
-#: edrclient.py:2252
+#: edrclient.py:2262
 msgid "{} ({}LY, {})"
 msgstr "{} ({}AL, {})"
 
-#: edrclient.py:2256
+#: edrclient.py:2266
 msgid "as of {}"
 msgstr "date des infos: {}"
 
-#: edrclient.py:2262
+#: edrclient.py:2272
 msgid "{}: nothing within [{}LY] of {}"
 msgstr "{}: rien dans un rayon de [{}LY] autour de {}"
 
-#: edrclient.py:2266
+#: edrclient.py:2276
 msgid "nothing found within {}LY, {}."
 msgstr "rien dans un rayon de {}LY, {}."
 
@@ -6557,6 +6566,13 @@ msgid ""
 msgstr ""
 "[Minage] Maintenez votre cargo (e.g. LTD) en dessous de 10% de la demande "
 "d'un marché afin de bénéficier du meilleur prix."
+
+#~ msgid ""
+#~ "Try !parking {} #{}. Or try !parking #{} if searching around your current "
+#~ "location"
+#~ msgstr ""
+#~ "Essayez !parking {} #{}. Ou !parking #{} pour chercher autour de votre "
+#~ "position"
 
 #~ msgid "Slots = 0/{} (as of {})"
 #~ msgstr "Places = 0/{} (date {})"

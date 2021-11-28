@@ -2013,31 +2013,34 @@ class EDRClient(object):
             callsign = next(iter(fcs))
             fc_name = fcs[callsign]
         elif len(fcs) > 1:
-            self.notify_with_details(_(u"EDR Fleet Carrier Local Search"), [_("{} fleet carriers have {} in their callsign or name").format(len(fcs), callsign_or_name), _("Try something more specific, or the full callsign.")])
+            self.__notify(_(u"EDR Fleet Carrier Local Search"), [_("{} fleet carriers have {} in their callsign or name").format(len(fcs), callsign_or_name), _("Try something more specific, or the full callsign.")], clear_before=True)
             return
         
         fc_regexp = r"^([A-Z0-9]{3}-[A-Z0-9]{3})$"
         if not re.match(fc_regexp, callsign):
-            self.notify_with_details(_(u"EDR Fleet Carrier Local Search"), [_("Couldn't find a fleet carrier with {} in its callsign or name").format(callsign_or_name), _("{} is not a valid callsign").format(callsign), _(u"Try a more specific term, the full callsign, or honk your discovery scanner first.")])
+            self.__notify(_(u"EDR Fleet Carrier Local Search"), [_("Couldn't find a fleet carrier with {} in its callsign or name").format(callsign_or_name), _("{} is not a valid callsign").format(callsign), _(u"Try a more specific term, the full callsign, or honk your discovery scanner first.")], clear_before=True)
             return
 
         fc = self.edrsystems.fleet_carrier(self.player.star_system, callsign)
         if fc is None:
-            self.notify_with_details(_(u"EDR Fleet Carrier Local Search"), [_("No info on fleet carrier with {} callsign").format(callsign)])
+            self.__notify(_(u"EDR Fleet Carrier Local Search"), [_("No info on fleet carrier with {} callsign").format(callsign)], clear_before=True)
             return
         
         header = u"{} ({})".format(fc_name, fc["name"])
         details = self.IN_GAME_MSG.describe_fleet_carrier(fc)
-        self.notify_with_details(header, details)
+        self.__notify(header, details, clear_before=True)
 
     def station_in_current_system(self, station_name):
         stations = self.edrsystems.fuzzy_stations(self.player.star_system, station_name)
         if stations is None:
-            self.notify_with_details(_(u"EDR Station Local Search"), [_("No info on Station with {} in its name").format(station_name)])
+            self.__notify(_(u"EDR Station Local Search"), [_("No info on Station with {} in its name").format(station_name)], clear_before=True)
             return
 
         if len(stations) > 1:
-            self.notify_with_details(_(u"EDR Station Local Search"), [_("{} stations have {} in their name").format(len(stations), station_name), _("Try something more specific, or the full name.")])
+            self.__notify(_(u"EDR Station Local Search"), [_("{} stations have {} in their name").format(len(stations), station_name), _("Try something more specific, or the full name.")], clear_before=True)
+            return
+        elif len(stations) == 0:
+            self.__notify(_(u"EDR Station Local Search"), [_("No Station with {} in their name").format(station_name)], clear_before=True)
             return
         
         station = stations[0]
@@ -2045,7 +2048,7 @@ class EDRClient(object):
         economy = u"{}/{}".format(station["economy"], station["secondEconomy"]) if station["secondEconomy"] else station["economy"]
         header = u"{} ({})".format(station["name"], economy)
         details = self.IN_GAME_MSG.describe_station(station)
-        self.notify_with_details(header, details)
+        self.__notify(header, details, clear_before=True)
 
     def human_tech_broker_near(self, star_system, override_sc_distance = None):
         if not self.__search_prerequisites(star_system):
@@ -2177,14 +2180,21 @@ class EDRClient(object):
             elif stars_stats["count"] == 1:
                 details.append(_(u"1 star (no gravity well)"))
 
-            details.append(_(u"If full, try the next one with !parking {} #{}.").format(reference, int(rank+1)))
+            if reference == self.player.star_system:
+                details.append(_(u"If full, try the next one with !parking #{}.").format(int(rank+1)))
+            else:
+                details.append(_(u"If full, try the next one with !parking {} #{}.").format(reference, int(rank+1)))
+            
             self.status = u"FC Parking: {system}, {dist}".format(system=result['name'], dist=pretty_dist)
             copy(result["name"])
         else:
             self.status = _(u"FC Parking: no #{} system within [{}LY] of {}").format(int(rank), int(radius), reference)
             details.append(_(u"No #{} system found within [{}LY].").format(int(rank), int(radius)))
             if rank > 0:
-                details.append(_(u"Try !parking {} #{}. Or try !parking #{} if searching around your current location").format(reference, int(rank-1), int(rank-1)))
+                if reference == self.player.star_system:
+                    details.append(_(u"Try !parking #{}").format(int(rank-1)))
+                else:
+                    details.append(_(u"Try !parking {} #{}").format(reference, int(rank-1), int(rank-1)))
         self.__notify(_(u"FC Parking near {}").format(reference), details, clear_before = True)
         self.searching = False
 
