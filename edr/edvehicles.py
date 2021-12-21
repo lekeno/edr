@@ -884,10 +884,17 @@ class EDSurfaceVehicle(EDVehicle):
     def supports_srv(self):
         return False
 
-class EDSRV(EDSurfaceVehicle):
+class EDSRVScorpion(EDSurfaceVehicle):
     def __init__(self):
-        super(EDSRV, self).__init__()
-        self.type = u'SRV'
+        super(EDSRVScorpion, self).__init__()
+        self.type = u'SRV Scorpion'
+        self.size = EDVehicleSize.UNKNOWN
+        self.seats = 2
+
+class EDSRVScarab(EDSurfaceVehicle):
+    def __init__(self):
+        super(EDSRVScarab, self).__init__()
+        self.type = u'SRV Scarab'
         self.size = EDVehicleSize.UNKNOWN
 
 class EDUnknownVehicle(EDVehicle):
@@ -956,7 +963,8 @@ class EDVehicleFactory(object):
         "gdn_hybrid_fighter_v1": EDTrident,
         "gdn_hybrid_fighter_v2": EDJavelin,
         "gdn_hybrid_fighter_v3": EDLance,
-        "testbuggy": EDSRV,
+        "testbuggy": EDSRVScarab,
+        "combat_multicrew_srv_01": EDSRVScorpion,
         "unknown": EDUnknownVehicle,
         "unknown (taxi)": EDTaxi,
         "unknown (crew)": EDCrewUnknownVehicle,
@@ -1139,7 +1147,7 @@ class EDVehicleFactory(object):
 
     @staticmethod
     def default_srv():
-        return EDSRV()
+        return EDSRVScarab()
 
     @staticmethod
     def unknown_slf():

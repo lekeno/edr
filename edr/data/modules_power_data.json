@@ -1443,6 +1443,46 @@
         "powergen": 0,
         "powerdraw": 0.98
     },
+    "int_multidronecontrol_mining_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0.50
+    },
+    "int_multidronecontrol_mining_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 0.35
+    },
+    "int_multidronecontrol_operations_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 0.35
+    },
+    "int_multidronecontrol_operations_size3_class4": {
+        "powergen": 0,
+        "powerdraw": 0.30
+    },
+    "int_multidronecontrol_rescue_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 0.40
+    },
+    "int_multidronecontrol_rescue_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 0.35
+    },
+    "int_multidronecontrol_xeno_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 0.35
+    },
+    "int_multidronecontrol_xeno_size3_class4": {
+        "powergen": 0,
+        "powerdraw": 0.30
+    },
+    "int_multidronecontrol_universal_size7_class3": {
+        "powergen": 0,
+        "powerdraw": 0.80
+    },
+    "int_multidronecontrol_universal_size7_class5": {
+        "powergen": 0,
+        "powerdraw": 1.10
+    },
     "hpt_heatsinklauncher_turret_tiny": {
         "powergen": 0,
         "powerdraw": 0.2
