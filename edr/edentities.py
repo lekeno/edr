@@ -3,7 +3,7 @@ from __future__ import division
 #from builtins import round
 
 import pickle
-from edsitu import EDLocation, EDAttitude, EDSpaceDimension 
+from edsitu import EDLocation, EDAttitude, EDSpaceDimension, EDDestination
 
 from edspacesuits import EDSpaceSuit
 from edtime import EDTime
@@ -890,6 +890,7 @@ class EDPlayerOne(EDPlayer):
         self.mining_stats = edrminingstats.EDRMiningStats()
         self.bounty_hunting_stats = edrbountyhuntingstats.EDRBountyHuntingStats()
         self.engineers = edengineers.EDEngineers()
+        self.destination = EDDestination()
 
     def __repr__(self):
         return str(self.__dict__)
@@ -937,6 +938,12 @@ class EDPlayerOne(EDPlayer):
             self._target._touch()
         self._target = None
         self._touch()
+
+    def set_destination(self, destination):
+        return self.destination.update(destination)
+
+    def has_destination(self):
+        return self.destination.is_valid()
 
     def lowish_fuel(self):
         if self.mothership.fuel_level is None or self.mothership.fuel_capacity is None:

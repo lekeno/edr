@@ -404,6 +404,90 @@ class EDRSystems(object):
         
         return None
 
+    def describe_system(self, name):
+        # stimated value?
+        the_system = self.system(name)
+        if not the_system:
+            return None
+        the_system = the_system[0]
+        details = []
+        if "primaryStar" in the_system:
+            type_lut = {
+                "o (blue-white) star": "O",
+                "b (blue-white) star": "B",
+                "b (blue-white super giant) star": "B+",
+                "a (blue-white) star": "A",
+                "a (blue-white super giant)": "A+",
+                "f (white) star": "F",
+                "f (white super giant) star": "F+",
+                "g (white-yellow) star": "G",
+                "g (white-yellow super giant) star": "G+",
+                "k (yellow-orange) star": "K",
+                "k (yellow-orange giant) star": "K+",
+                "m (red dwarf) star": "M",
+                "m (red giant) star": "M",
+                "m (red super giant) star": "M+",
+                "l (brown dwarf) star": "Brown Dwarf (L)",
+                "t (brown dwarf) star": "Brown Dwarf (T)",
+                "y (brown dwarf) star": "Brown Dwarf (Y)",
+                "t tauri star": "T Tauri",
+                "herbig ae/be star": "Herbig Ae/Be",
+                "wolf-rayet star": "Wolf-Rayet",
+                "wolf-rayet n star": "Wolf-Rayet N",
+                "wolf-rayet nc star": "Wolf-Rayet NC",
+                "wolf-rayet c star": "Wolf-Rayet C",
+                "wolf-rayet o star": "Wolf-Rayet O",
+                "c star": "C",
+                "cn star": "CN",
+                "cj star": "CJ",
+                "ms-type star": "MS",
+                "s-type star": "S",
+                "white dwarf (d) star": "White Dwarf (D)",
+                "white dwarf (da) star": "White Dwarf (DA)",
+                "white dwarf (dab) star": "White Dwarf (DAB)",
+                "white dwarf (daz) star": "White Dwarf (DAZ)",
+                "white dwarf (dav) star": "White Dwarf (DAV)",
+                "white dwarf (db) star": "White Dwarf (DB)",
+                "white dwarf (dbz) star": "White Dwarf (DBZ)",
+                "white dwarf (dbv) star": "White Dwarf (DBV)",
+                "white dwarf (dq) star": "White Dwarf (DQ)",
+                "white dwarf (dc) star": "White Dwarf (DC)",
+                "white dwarf (dcv) star": "White Dwarf (DCV)",
+                "neutron star": "Neutron",
+                "black hole": "Black Hole",
+                "supermassive black hole": "Supermassive Black Hole",
+            }
+            raw_type = the_system["primaryStar"].get("type", "???")
+            star_type = type_lut.get(raw_type.lower(), raw_type)
+            star_info = _("Star: {} [Fuel]").format(star_type) if the_system["primaryStar"].get("isScoopable", False) else _("Star: {}").format(star_type)
+            details.append(star_info)
+
+        if "information" in the_system:
+            gvt = the_system["information"].get("government", "???")
+            allegiance = the_system["information"].get("allegiance", "???")
+            population = the_system["information"].get("population", "???")
+            if population != "???":
+                population = pretty_print_number(population)
+            details.append(_("Gvt.: {}; Allegiance: {}; Pop.: {}").format(gvt, allegiance, population))
+            
+            security = the_system["information"].get("security", "???")
+            economy = the_system["information"].get("economy", "???")
+            second_economy = the_system["information"].get("secondEconomy", None)
+            reserve = the_system["information"].get("reserve", None)
+            if second_economy:
+                economy = "{}/{}".format(economy,second_economy)
+            
+            if reserve:
+                details.append(_("Sec.: {}; Eco.: {}; Reserve:{}").format(security, economy, reserve))
+            else:
+                details.append(_("Sec.: {}; Eco.: {}").format(security, economy))
+            
+            state = the_system["information"].get("factionState", "???")
+            faction = the_system["information"].get("faction", "???")
+            details.append(_("State: {}; Faction: {}").format(state, faction))        
+
+        return details
+
     def station(self, star_system, station_name, station_type):
         stations = self.stations_in_system(star_system)
         if not stations:
@@ -502,6 +586,14 @@ class EDRSystems(object):
             return None
 
         self.materials_cache.set(u"{}:{}".format(system_name.lower(), body_name.lower()), info)
+
+    def describe_body(self, system_name, body_name):
+        # TODO describe_body
+        # body info
+        # materials from materials_on
+        # exploration value?
+        pass
+    
 
     def materials_on(self, system_name, body_name):
         if not system_name or not body_name:

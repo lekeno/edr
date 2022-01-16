@@ -491,6 +491,9 @@ def dashboard_entry(cmdr, is_beta, entry):
     if not prerequisites(EDR_CLIENT, is_beta):
         return
 
+    if 'Destination' in entry:
+        EDR_CLIENT.destination_guidance(entry["Destination"])    
+
     if not 'Flags' in entry:
         return
 

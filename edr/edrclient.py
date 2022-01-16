@@ -649,6 +649,49 @@ class EDRClient(object):
         else:
             self.IN_GAME_MSG.clear_docking()
 
+    def destination_guidance(self, destination):
+        print(destination)
+        if not self.player.set_destination(destination):
+            return
+
+        print("destination updated")
+        if not self.player.has_destination():
+            return
+
+        print("destination!")
+        dst = self.player.destination
+        name = dst.name
+        # if fleet carrier then same as !fc
+        if dst.is_fleet_carrier():
+            print("destination is FC")
+            fc_regexp = r"^[ -`{}~]+ ([A-Z0-9]{3}-[A-Z0-9]{3})$"
+            m = re.match(fc_regexp, name)
+            callsign = m.group(1)
+            self.fc_in_current_system(callsign)
+            return
+
+        # if station then same as !station
+        if self.station_in_current_system(name, passive=True):
+            return
+
+        print("station failed")
+
+        # if planet then ???
+        
+        
+        # if system then ???
+        if self.system_guidance(name):
+            return
+        
+        print("system failed")
+
+        
+        # if ???
+
+        # other signals?
+
+        
+
     def show_navigation(self):
         current = self.player.attitude
         destination = self.player.planetary_destination
@@ -2030,18 +2073,22 @@ class EDRClient(object):
         details = self.IN_GAME_MSG.describe_fleet_carrier(fc)
         self.__notify(header, details, clear_before=True)
 
-    def station_in_current_system(self, station_name):
+    def station_in_current_system(self, station_name, passive=False):
         stations = self.edrsystems.fuzzy_stations(self.player.star_system, station_name)
         if stations is None:
-            self.__notify(_(u"EDR Station Local Search"), [_("No info on Station with {} in its name").format(station_name)], clear_before=True)
-            return
+            if not passive:
+                self.__notify(_(u"EDR Station Local Search"), [_("No info on Station with {} in its name").format(station_name)], clear_before=True)
+            return False
 
         if len(stations) > 1:
+            if passive:
+                return False
             self.__notify(_(u"EDR Station Local Search"), [_("{} stations have {} in their name").format(len(stations), station_name), _("Try something more specific, or the full name.")], clear_before=True)
-            return
+            return True
         elif len(stations) == 0:
-            self.__notify(_(u"EDR Station Local Search"), [_("No Station with {} in their name").format(station_name)], clear_before=True)
-            return
+            if not passive:
+                self.__notify(_(u"EDR Station Local Search"), [_("No Station with {} in their name").format(station_name)], clear_before=True)
+            return False
         
         station = stations[0]
                 
@@ -2049,7 +2096,19 @@ class EDRClient(object):
         header = u"{} ({})".format(station["name"], economy)
         details = self.IN_GAME_MSG.describe_station(station)
         self.__notify(header, details, clear_before=True)
+        return True
 
+    def system_guidance(self, system_name, passive=False):
+        description = self.edrsystems.describe_system(system_name)
+        if not description:
+            if not passive:
+                self.__notify(_(u"EDR System Search"), [_("No info on System called {}").format(system_name)], clear_before=True)
+            return False
+
+        header = u"{}".format(system_name)
+        self.__notify(header, description, clear_before=True)
+        return True
+        
     def human_tech_broker_near(self, star_system, override_sc_distance = None):
         if not self.__search_prerequisites(star_system):
             return
