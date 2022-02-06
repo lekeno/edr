@@ -406,6 +406,8 @@ class EDRSystems(object):
 
     def describe_system(self, name):
         # stimated value?
+        # TODO system with None state, etc. should not show ???
+        # TODO anarchy shows as security ??? (e.g. ltt 9494)  => "information":{}
         the_system = self.system(name)
         if not the_system:
             return None
@@ -588,11 +590,17 @@ class EDRSystems(object):
         self.materials_cache.set(u"{}:{}".format(system_name.lower(), body_name.lower()), info)
 
     def describe_body(self, system_name, body_name):
-        # TODO describe_body
+        the_body = self.body(system_name, body_name)
+        if not the_body:
+            return None
+        print(the_body)
+        details = []
+        body_type = "{}/{}".format(the_body.get("type", "???"), the_body["subType"]) if "subType" in the_body else the_body.get("type", "???")
+        details.append("Type: {}".format(body_type))
         # body info
         # materials from materials_on
         # exploration value?
-        pass
+        return details
     
 
     def materials_on(self, system_name, body_name):
