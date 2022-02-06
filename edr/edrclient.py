@@ -580,7 +580,8 @@ class EDRClient(object):
 
     
     def register_fss_signals(self, system_address=None, override_star_system=None, force_reporting=False):
-        self.edrfssinsights.update_system(system_address, override_star_system or self.player.star_system)
+        print("update system from register fss signals with {}, {} or {}".format(system_address, override_star_system, self.player.star_system))
+        self.edrfssinsights.update_system(system_address or self.player.star_system_address, override_star_system or self.player.star_system)
         if self.edrfssinsights.reported:
             # Skipping further FSS signals because the signals are additive only (no events for FC signals that are no longer relevant...)
             self.status = _(u"Skipped FC report for consistency reasons")
@@ -650,6 +651,7 @@ class EDRClient(object):
             self.IN_GAME_MSG.clear_docking()
 
     def destination_guidance(self, destination):
+        # TODO don't show if not in-game
         print(destination)
         if not self.player.set_destination(destination):
             return
@@ -660,37 +662,72 @@ class EDRClient(object):
 
         print("destination!")
         dst = self.player.destination
+        body_id = dst.body
         name = dst.name
-        # if fleet carrier then same as !fc
-        if dst.is_fleet_carrier():
-            print("destination is FC")
-            fc_regexp = r"^[ -`{}~]+ ([A-Z0-9]{3}-[A-Z0-9]{3})$"
-            m = re.match(fc_regexp, name)
-            callsign = m.group(1)
-            self.fc_in_current_system(callsign)
+        system_address = dst.system
+        print("system address: {}".format(system_address))
+
+        if not self.edrfssinsights.same_system(system_address) and body_id == 0:
+            print("other system")
+            if self.system_guidance(name, passive=True):
+                return
+            print("system failed")
+        
+        print("same system")
+        # TODO don't show system info when in gal map since it's redundant
+        
+        if self.edrfssinsights.is_signal(name):
+            print("signal seen {}".format(name))
+            if self.edrfssinsights.is_scenario_signal(name):
+                print("signal guidance")
+                return
+            if self.edrfssinsights.is_station(name):
+                print("station")
+                self.station_in_current_system(name, passive=True)
+                return
+        
+            if dst.is_fleet_carrier():
+                fc_regexp = r"^(?:.+ )?([A-Z0-9]{3}-[A-Z0-9]{3})$"
+                m = re.match(fc_regexp, name)
+                callsign = m.group(1)
+                print("fc: {}".format(callsign))
+                self.fc_in_current_system(callsign)
+                return
+
+            print("not found in signals")
+            return
+        
+        # check if body > 0 ?
+        print("body?")
+        if self.body_guidance(self.player.star_system, name, passive=True):
             return
 
-        # if station then same as !station
+        ## for the outpost/... cases that aren't marked as stations
         if self.station_in_current_system(name, passive=True):
             return
 
-        print("station failed")
+        # last resort?
+        if self.edrfssinsights.no_signals():
+            print("no signals")
+            if self.edrfssinsights.is_scenario_signal(name):
+                print("signal guidance")
+                return
+            if self.edrfssinsights.is_station(name):
+                print("station")
+                self.station_in_current_system(name, passive=True)
+                return
+        
+            if dst.is_fleet_carrier():
+                # TODO accents? russian letters? e.g. TANNHA(2 dots)USER'S GATE K0Z-61L"
+                fc_regexp = r"^(?:.+ )?([A-Z0-9]{3}-[A-Z0-9]{3})$"
+                m = re.match(fc_regexp, name)
+                callsign = m.group(1)
+                print("fc: {}".format(callsign))
+                self.fc_in_current_system(callsign)
+                return
 
-        # if planet then ???
-        
-        
-        # if system then ???
-        if self.system_guidance(name):
-            return
-        
-        print("system failed")
-
-        
-        # if ???
-
-        # other signals?
-
-        
+        print("not found")
+                
 
     def show_navigation(self):
         current = self.player.attitude
@@ -782,7 +819,6 @@ class EDRClient(object):
         if "Subsystem" in target_event:
             meaningful = True # Class and Rank of submodule can be interesting info to show
             subsys_details = tgt.subsystem_details(target_event["Subsystem"])
-            EDRLOG.log("subsys details {}".format(subsys_details), "DEBUG")
 
         if not meaningful:
             EDRLOG.log("Target info is not that interesting, skipping", "DEBUG")
@@ -1281,7 +1317,8 @@ class EDRClient(object):
                 details = [profile.short_profile(self.player.powerplay)]
                 if legal:
                     details.append(legal["overview"])
-                self.__warning(_(u"[Caution!] Intel about {}").format(cmdr_name), details, clear_before=True, legal=legal)
+                header = _(u"[Caution!] Intel about {}").format(cmdr_name)
+                self.__warning(header, details, clear_before=True, legal=legal)
                 self.cognitive_blips_cache.set(cmdr_id, blip)
                 if self.player.in_open() and self.is_anonymous() and profile.is_dangerous(self.player.powerplay):
                     self.advertise_full_account(_("You could have helped other EDR users by reporting this outlaw."))
@@ -1338,7 +1375,8 @@ class EDRClient(object):
                         details.append(status)
                     if legal:
                         details.append(legal["overview"])
-                    self.__warning(_(u"[Caution!] Intel about {}").format(cmdr_name), details, clear_before=True, legal=legal)
+                    header = _(u"[Caution!] Intel about {}").format(cmdr_name)
+                    self.__warning(header, details, clear_before=True, legal=legal)
                 elif self.intel_even_if_clean or (scan["wanted"] and bounty.is_significant()):
                     self.status = _(u"Intel for cmdr {}.").format(cmdr_name)
                     details = [profile.short_profile(self.player.powerplay)]
@@ -2106,6 +2144,21 @@ class EDRClient(object):
             return False
 
         header = u"{}".format(system_name)
+        self.__notify(header, description, clear_before=True)
+        return True
+
+    def body_guidance(self, system_name, body_name, passive=False):
+        # TODO belts are within a given body's bag of stuff under "belts", also "rings" for planets
+        # TODO materials
+        # TODO type = Star >>> isscoopable
+        # TODO type = Planet  >>>> islandable, gravity, atmosphere+temp for on-foot, 
+        description = self.edrsystems.describe_body(system_name, body_name)
+        if not description:
+            if not passive:
+                self.__notify(_(u"EDR System Search"), [_("No info on Body called {}").format(body_name)], clear_before=True)
+            return False
+
+        header = u"{}".format(body_name)
         self.__notify(header, description, clear_before=True)
         return True
         
