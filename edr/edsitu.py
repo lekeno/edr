@@ -194,5 +194,5 @@ class EDDestination(object):
         if self.body == 0: # TODO do FC near the sun have body set to 1?
             return False
         
-        fc_regexp = r"^([ -`{}~]+) ([A-Z0-9]{3}-[A-Z0-9]{3})$"
+        fc_regexp = r"^(?:.+ )?([A-Z0-9]{3}-[A-Z0-9]{3})$"
         return bool(re.match(fc_regexp, self.name))
