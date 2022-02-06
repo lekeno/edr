@@ -651,38 +651,29 @@ class EDRClient(object):
             self.IN_GAME_MSG.clear_docking()
 
     def destination_guidance(self, destination):
-        # TODO don't show if not in-game
         print(destination)
         if not self.player.set_destination(destination):
             return
 
-        print("destination updated")
         if not self.player.has_destination():
             return
 
-        print("destination!")
+        if not self.player.in_game:
+            return
+        
         dst = self.player.destination
         body_id = dst.body
         name = dst.name
         system_address = dst.system
-        print("system address: {}".format(system_address))
-
+        
         if not self.edrfssinsights.same_system(system_address) and body_id == 0:
-            print("other system")
             if self.system_guidance(name, passive=True):
                 return
-            print("system failed")
-        
-        print("same system")
-        # TODO don't show system info when in gal map since it's redundant
-        
+            
         if self.edrfssinsights.is_signal(name):
-            print("signal seen {}".format(name))
             if self.edrfssinsights.is_scenario_signal(name):
-                print("signal guidance")
                 return
             if self.edrfssinsights.is_station(name):
-                print("station")
                 self.station_in_current_system(name, passive=True)
                 return
         
@@ -690,15 +681,12 @@ class EDRClient(object):
                 fc_regexp = r"^(?:.+ )?([A-Z0-9]{3}-[A-Z0-9]{3})$"
                 m = re.match(fc_regexp, name)
                 callsign = m.group(1)
-                print("fc: {}".format(callsign))
                 self.fc_in_current_system(callsign)
                 return
 
-            print("not found in signals")
             return
         
         # check if body > 0 ?
-        print("body?")
         if self.body_guidance(self.player.star_system, name, passive=True):
             return
 
@@ -708,25 +696,18 @@ class EDRClient(object):
 
         # last resort?
         if self.edrfssinsights.no_signals():
-            print("no signals")
             if self.edrfssinsights.is_scenario_signal(name):
-                print("signal guidance")
                 return
             if self.edrfssinsights.is_station(name):
-                print("station")
                 self.station_in_current_system(name, passive=True)
                 return
         
             if dst.is_fleet_carrier():
-                # TODO accents? russian letters? e.g. TANNHA(2 dots)USER'S GATE K0Z-61L"
                 fc_regexp = r"^(?:.+ )?([A-Z0-9]{3}-[A-Z0-9]{3})$"
                 m = re.match(fc_regexp, name)
                 callsign = m.group(1)
-                print("fc: {}".format(callsign))
                 self.fc_in_current_system(callsign)
                 return
-
-        print("not found")
                 
 
     def show_navigation(self):
