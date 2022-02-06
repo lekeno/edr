@@ -414,55 +414,7 @@ class EDRSystems(object):
         the_system = the_system[0]
         details = []
         if "primaryStar" in the_system:
-            type_lut = {
-                "o (blue-white) star": "O",
-                "b (blue-white) star": "B",
-                "b (blue-white super giant) star": "B+",
-                "a (blue-white) star": "A",
-                "a (blue-white super giant)": "A+",
-                "f (white) star": "F",
-                "f (white super giant) star": "F+",
-                "g (white-yellow) star": "G",
-                "g (white-yellow super giant) star": "G+",
-                "k (yellow-orange) star": "K",
-                "k (yellow-orange giant) star": "K+",
-                "m (red dwarf) star": "M",
-                "m (red giant) star": "M",
-                "m (red super giant) star": "M+",
-                "l (brown dwarf) star": "Brown Dwarf (L)",
-                "t (brown dwarf) star": "Brown Dwarf (T)",
-                "y (brown dwarf) star": "Brown Dwarf (Y)",
-                "t tauri star": "T Tauri",
-                "herbig ae/be star": "Herbig Ae/Be",
-                "wolf-rayet star": "Wolf-Rayet",
-                "wolf-rayet n star": "Wolf-Rayet N",
-                "wolf-rayet nc star": "Wolf-Rayet NC",
-                "wolf-rayet c star": "Wolf-Rayet C",
-                "wolf-rayet o star": "Wolf-Rayet O",
-                "c star": "C",
-                "cn star": "CN",
-                "cj star": "CJ",
-                "ms-type star": "MS",
-                "s-type star": "S",
-                "white dwarf (d) star": "White Dwarf (D)",
-                "white dwarf (da) star": "White Dwarf (DA)",
-                "white dwarf (dab) star": "White Dwarf (DAB)",
-                "white dwarf (daz) star": "White Dwarf (DAZ)",
-                "white dwarf (dav) star": "White Dwarf (DAV)",
-                "white dwarf (db) star": "White Dwarf (DB)",
-                "white dwarf (dbz) star": "White Dwarf (DBZ)",
-                "white dwarf (dbv) star": "White Dwarf (DBV)",
-                "white dwarf (dq) star": "White Dwarf (DQ)",
-                "white dwarf (dc) star": "White Dwarf (DC)",
-                "white dwarf (dcv) star": "White Dwarf (DCV)",
-                "neutron star": "Neutron",
-                "black hole": "Black Hole",
-                "supermassive black hole": "Supermassive Black Hole",
-            }
-            raw_type = the_system["primaryStar"].get("type", "???")
-            star_type = type_lut.get(raw_type.lower(), raw_type)
-            star_info = _("Star: {} [Fuel]").format(star_type) if the_system["primaryStar"].get("isScoopable", False) else _("Star: {}").format(star_type)
-            details.append(star_info)
+            details.append(self.__describe_star(the_system["primaryStar"]))
 
         if "information" in the_system:
             gvt = the_system["information"].get("government", "???")
@@ -489,6 +441,58 @@ class EDRSystems(object):
             details.append(_("State: {}; Faction: {}").format(state, faction))        
 
         return details
+
+    def __describe_star(self, star):
+        type_lut = {
+            "o (blue-white) star": "O",
+            "b (blue-white) star": "B",
+            "b (blue-white super giant) star": "B+",
+            "a (blue-white) star": "A",
+            "a (blue-white super giant)": "A+",
+            "f (white) star": "F",
+            "f (white super giant) star": "F+",
+            "g (white-yellow) star": "G",
+            "g (white-yellow super giant) star": "G+",
+            "k (yellow-orange) star": "K",
+            "k (yellow-orange giant) star": "K+",
+            "m (red dwarf) star": "M",
+            "m (red giant) star": "M",
+            "m (red super giant) star": "M+",
+            "l (brown dwarf) star": "Brown Dwarf (L)",
+            "t (brown dwarf) star": "Brown Dwarf (T)",
+            "y (brown dwarf) star": "Brown Dwarf (Y)",
+            "t tauri star": "T Tauri",
+            "herbig ae/be star": "Herbig Ae/Be",
+            "wolf-rayet star": "Wolf-Rayet",
+            "wolf-rayet n star": "Wolf-Rayet N",
+            "wolf-rayet nc star": "Wolf-Rayet NC",
+            "wolf-rayet c star": "Wolf-Rayet C",
+            "wolf-rayet o star": "Wolf-Rayet O",
+            "c star": "C",
+            "cn star": "CN",
+            "cj star": "CJ",
+            "ms-type star": "MS",
+            "s-type star": "S",
+            "white dwarf (d) star": "White Dwarf (D)",
+            "white dwarf (da) star": "White Dwarf (DA)",
+            "white dwarf (dab) star": "White Dwarf (DAB)",
+            "white dwarf (daz) star": "White Dwarf (DAZ)",
+            "white dwarf (dav) star": "White Dwarf (DAV)",
+            "white dwarf (db) star": "White Dwarf (DB)",
+            "white dwarf (dbz) star": "White Dwarf (DBZ)",
+            "white dwarf (dbv) star": "White Dwarf (DBV)",
+            "white dwarf (dq) star": "White Dwarf (DQ)",
+            "white dwarf (dc) star": "White Dwarf (DC)",
+            "white dwarf (dcv) star": "White Dwarf (DCV)",
+            "neutron star": "Neutron",
+            "black hole": "Black Hole",
+            "supermassive black hole": "Supermassive Black Hole",
+        }
+        
+        raw_type = star.get("type", "???")
+        star_type = type_lut.get(raw_type.lower(), raw_type)
+        star_info = _("Star: {} [Fuel]").format(star_type) if star.get("isScoopable", False) else _("Star: {}").format(star_type)
+        return star_info
 
     def station(self, star_system, station_name, station_type):
         stations = self.stations_in_system(star_system)
@@ -590,18 +594,35 @@ class EDRSystems(object):
         self.materials_cache.set(u"{}:{}".format(system_name.lower(), body_name.lower()), info)
 
     def describe_body(self, system_name, body_name):
+        # TODO there is a "materials" bag in the body of planets
         the_body = self.body(system_name, body_name)
         if not the_body:
             return None
         print(the_body)
         details = []
-        body_type = "{}/{}".format(the_body.get("type", "???"), the_body["subType"]) if "subType" in the_body else the_body.get("type", "???")
-        details.append("Type: {}".format(body_type))
+        body_type = the_body.get("type", "")
+        if body_type == "Star":
+            details.append(self.__describe_star(the_body))
+        elif body_type == "Planet":
+            details.append(self.__describe_planet(the_body))
+        else:
+            pass
+        
         # body info
-        # materials from materials_on
-        # exploration value?
+        # TODO exploration value?
+        # TODO belts are within a given body's bag of stuff under "belts", also "rings" for planets
+        # TODO type = Planet  >>>> islandable, gravity, atmosphere+temp for on-foot
         return details
     
+    def __describe_planet(self, planet):
+        body_type = "{}/{}".format(planet.get("type", "???"), planet["subType"]) if "subType" in planet else planet.get("type", "???")
+        caps = ""
+        if planet.get("isLandable", False):
+             caps = _("[LAND]")
+             # TODO verify
+             if planet.get("surfaceTemperature", 1000) < 800 and planet.get("gravity", 3) < 2.7 and (planet.get("surfacePressure", None) and planet.get("surfacePressure", 1) < 0.1):
+                caps = _("[WALK]")
+        return _("Type: {}{}").format(body_type, caps)
 
     def materials_on(self, system_name, body_name):
         if not system_name or not body_name:
@@ -609,8 +630,16 @@ class EDRSystems(object):
 
         materials = self.materials_cache.get(u"{}:{}".format(system_name.lower(), body_name.lower()))
         if not materials:
-            # TODO it would be nice to obtain data from other cmdrs...
-            return None
+            the_body = self.get(system_name, body_name)
+            if not the_body:
+                return None
+            raw_materials = the_body.get("materials", None)
+            if raw_materials:
+                materials = [{"Name": key, "Percent": value} for key,value in raw_materials.items()]
+                self.materials_info(system_name, body_name, materials)
+            else:
+                return None
+            
         return materials
 
     def body(self, system_name, body_name):

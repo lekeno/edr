@@ -2129,16 +2129,16 @@ class EDRClient(object):
         return True
 
     def body_guidance(self, system_name, body_name, passive=False):
-        # TODO belts are within a given body's bag of stuff under "belts", also "rings" for planets
-        # TODO materials
-        # TODO type = Star >>> isscoopable
-        # TODO type = Planet  >>>> islandable, gravity, atmosphere+temp for on-foot, 
         description = self.edrsystems.describe_body(system_name, body_name)
         if not description:
             if not passive:
                 self.__notify(_(u"EDR System Search"), [_("No info on Body called {}").format(body_name)], clear_before=True)
             return False
 
+        materials_info = self.edrsystems.materials_on(system_name, body_name)
+        facts = self.edrresourcefinder.assess_materials_density(materials_info, self.player.inventory)
+        if facts:
+            description.append(facts)
         header = u"{}".format(body_name)
         self.__notify(header, description, clear_before=True)
         return True
