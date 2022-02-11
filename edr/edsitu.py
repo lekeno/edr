@@ -1,4 +1,5 @@
 import math
+import re
 
 class EDSpaceDimension(object):
     UNKNOWN = 0
@@ -149,3 +150,49 @@ class EDAttitude(object):
 
     def __repr__(self):
         return str(self.__dict__)
+
+class EDDestination(object):
+    def __init__(self):
+        self.system = None
+        self.body = None
+        self.name = None
+
+    def update(self, destination):
+        updated = False
+        if self.system != destination.get("System", self.system):
+            self.system = destination["System"]
+            updated = True
+
+        if self.body != destination.get("Body", self.body):
+            self.body = destination["Body"]
+            updated = True
+
+        if self.name != destination.get("Name", self.name):
+            self.name = destination["Name"]
+            updated = True
+
+        return updated
+
+    def is_valid(self):
+        if self.system is None:
+            return False
+
+        if self.body is None:
+            return False
+
+        if self.name is None:
+            return False
+        return True
+
+    def is_system(self):
+        return self.system != None and self.body == 0
+
+    def is_fleet_carrier(self):
+        if not self.is_valid():
+            return False
+            
+        if self.body == 0: # TODO do FC near the sun have body set to 1?
+            return False
+        
+        fc_regexp = r"^(?:.+ )?([A-Z0-9]{3}-[A-Z0-9]{3})$"
+        return bool(re.match(fc_regexp, self.name))
