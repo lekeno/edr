@@ -360,9 +360,12 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
             ed_player.leave_wing()
             ed_player.leave_crew()
             ed_player.leave_vehicle()
+            ed_player.in_game = False
             EDRLOG.log(u"Player is on the main menu.", "DEBUG")
             return
-        elif entry["MusicTrack"] == "Combat_Dogfight":
+        
+        ed_player.in_game = True
+        if entry["MusicTrack"] == "Combat_Dogfight":
             if ed_player.mothership:
                 ed_player.mothership.skirmish() # TODO check music event for on foot combat
             return
@@ -499,8 +502,15 @@ def dashboard_entry(cmdr, is_beta, entry):
     if not prerequisites(EDR_CLIENT, is_beta):
         return
 
-    if 'Destination' in entry and ed_player.in_game:
-        EDR_CLIENT.destination_guidance(entry["Destination"])    
+    if entry.get("GuiFocus", 0) > 0:
+        # can only happen if in game
+        ed_player.in_game = True
+
+    if 'Destination' in entry:
+        if ed_player.in_game:
+            EDR_CLIENT.destination_guidance(entry["Destination"])    
+        else:
+            print("not in game")
 
     if not 'Flags' in entry:
         return

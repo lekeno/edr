@@ -175,7 +175,7 @@ class EDRFSSInsights(object):
             self.other_locations.add(location_name)
             return
         
-        fc_regexp = r"^(?:.+ )?([A-Z0-9]{3}-[A-Z0-9]{3})$"
+        fc_regexp = r"^(.+ )?([A-Z0-9]{3}-[A-Z0-9]{3})$"
         m = re.match(fc_regexp, location_name)
         if m:
             carrier_name = m.group(1)
