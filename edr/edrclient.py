@@ -580,7 +580,6 @@ class EDRClient(object):
 
     
     def register_fss_signals(self, system_address=None, override_star_system=None, force_reporting=False):
-        print("update system from register fss signals with {}, {} or {}".format(system_address, override_star_system, self.player.star_system))
         self.edrfssinsights.update_system(system_address or self.player.star_system_address, override_star_system or self.player.star_system)
         if self.edrfssinsights.reported:
             # Skipping further FSS signals because the signals are additive only (no events for FC signals that are no longer relevant...)
@@ -619,6 +618,7 @@ class EDRClient(object):
         return True
 
     def process_scan(self, scan_event):
+        self.edrsystems.reflect_scan(self.player.star_system, scan_event["BodyName"], scan_event)
         if "Materials" not in scan_event:
             return False
         self.edrsystems.materials_info(self.player.star_system, scan_event["BodyName"], scan_event["Materials"])
@@ -651,7 +651,6 @@ class EDRClient(object):
             self.IN_GAME_MSG.clear_docking()
 
     def destination_guidance(self, destination):
-        print(destination)
         if not self.player.set_destination(destination):
             return
 
@@ -669,7 +668,7 @@ class EDRClient(object):
         if not self.edrfssinsights.same_system(system_address) and body_id == 0:
             if self.system_guidance(name, passive=True):
                 return
-            
+        
         if self.edrfssinsights.is_signal(name):
             if self.edrfssinsights.is_scenario_signal(name):
                 return
@@ -683,7 +682,6 @@ class EDRClient(object):
                 callsign = m.group(1)
                 self.fc_in_current_system(callsign)
                 return
-
             return
         
         # check if body > 0 ?
@@ -2138,7 +2136,7 @@ class EDRClient(object):
         materials_info = self.edrsystems.materials_on(system_name, body_name)
         facts = self.edrresourcefinder.assess_materials_density(materials_info, self.player.inventory)
         if facts:
-            description.append(facts)
+            description.extend(facts)
         header = u"{}".format(body_name)
         self.__notify(header, description, clear_before=True)
         return True
