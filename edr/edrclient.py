@@ -589,7 +589,7 @@ class EDRClient(object):
                 if new_fc:
                     # Report new FC to help with CG (e.g. unloading/loading commodities from newly arrived FC)
                     self.notify_with_details(_(u"{} newly arrived fleet carriers").format(len(new_fc)), ["{} : {}".format(callsign, new_fc[callsign]) for callsign in new_fc])
-            return
+                    return
         fc_report = self.edrfssinsights.fleet_carriers_report(force_reporting)
         if fc_report is not None:
             EDRLOG.log(u"Registering FSS signals; fc_report: {} with sys_address {} and star_system {}".format(fc_report, system_address, override_star_system), "DEBUG")
