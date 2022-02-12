@@ -547,7 +547,7 @@ class EDRClient(object):
             header = _('Noteworthy stellar bodies in {}').format(fsdjump_event['StarSystem'])
         
         if not facts:
-            if self.player.in_bad_neighborhood():
+            if self.player.in_bad_neighborhood() and (self.edrsystems.in_bubble(self.player.star_system) or self.edrsystems.in_colonia(self.player.star_system)):
                 header = _(u"Anarchy system")
                 facts = [_(u"Crimes will not be reported.")]
             else:
@@ -1745,7 +1745,7 @@ class EDRClient(object):
         success = self.edrcmdrs.remove_contract(cmdr_name)
         instructions = _(u"Send '!contract {cmdr} $$$ 10' in chat to set a reward of 10 million credits on Cmdr '{cmdr}'")
         if success:
-            self.__notify(_(u"Kill Rewards"),[_(u"Removed reward for a kill on Cmdr {}").format(cmdr_name), intrusctions.format(cmdr=cmdr_name)], clear_before = True)
+            self.__notify(_(u"Kill Rewards"),[_(u"Removed reward for a kill on Cmdr {}").format(cmdr_name), instructions.format(cmdr=cmdr_name)], clear_before = True)
             return True
         
         self.__notify(_(u"Kill Rewards"),[_(u"Failed to remove reward for a kill on Cmdr {} (not even set?)").format(cmdr_name), instructions.format(cmdr=cmdr_name)], clear_before = True)
