@@ -3,7 +3,7 @@ from __future__ import division
 #from builtins import round
 
 import pickle
-from edsitu import EDLocation, EDAttitude, EDSpaceDimension 
+from edsitu import EDLocation, EDAttitude, EDSpaceDimension, EDDestination
 
 from edspacesuits import EDSpaceSuit
 from edtime import EDTime
@@ -337,6 +337,15 @@ class EDPilot(object):
     def star_system(self, star_system):
         self._touch()
         self.location.star_system = star_system
+
+    @property
+    def star_system_address(self):
+        return self.location.star_system_address
+
+    @star_system_address.setter
+    def star_system_address(self, star_system_address):
+        self._touch()
+        self.location.star_system_address = star_system_address
 
     @property
     def place(self):
@@ -719,8 +728,10 @@ class EDPilot(object):
             return True
         return False
 
-    def update_star_system_if_obsolete(self, star_system):
+    def update_star_system_if_obsolete(self, star_system, system_address=None):
         self._touch()
+        if system_address:
+            self.location.star_system_address = system_address
         if star_system and (self.location.star_system is None or self.location.star_system != star_system):
             EDRLOG.log(u"Updating system info (was missing or obsolete). {old} vs. {system}".format(old=self.location.star_system, system=star_system), u"INFO")
             self.location.star_system = star_system
@@ -869,6 +880,7 @@ class EDPlayerOne(EDPlayer):
         self.game_mode = None
         self.dlc_name = None
         self.private_group = None
+        self.in_game = False
         self.previous_mode = None
         self.previous_private_group = None
         self.previous_wing = set()
@@ -890,6 +902,7 @@ class EDPlayerOne(EDPlayer):
         self.mining_stats = edrminingstats.EDRMiningStats()
         self.bounty_hunting_stats = edrbountyhuntingstats.EDRBountyHuntingStats()
         self.engineers = edengineers.EDEngineers()
+        self.destination = EDDestination()
 
     def __repr__(self):
         return str(self.__dict__)
@@ -937,6 +950,12 @@ class EDPlayerOne(EDPlayer):
             self._target._touch()
         self._target = None
         self._touch()
+
+    def set_destination(self, destination):
+        return self.destination.update(destination)
+
+    def has_destination(self):
+        return self.destination.is_valid()
 
     def lowish_fuel(self):
         if self.mothership.fuel_level is None or self.mothership.fuel_capacity is None:
@@ -993,6 +1012,7 @@ class EDPlayerOne(EDPlayer):
     def inception(self, genesis=False):
         if genesis:
             self.from_genesis = True
+        self.in_game = True
         self.previous_mode = None
         self.previous_wing = set()
         self.wing = EDWing()
@@ -1015,6 +1035,7 @@ class EDPlayerOne(EDPlayer):
 
     def killed(self):
         super(EDPlayerOne, self).killed()
+        self.in_game = False
         self.previous_mode = self.game_mode
         self.previous_private_group = self.private_group
         self.previous_wing = self.wing.wingmates.copy()
@@ -1029,6 +1050,7 @@ class EDPlayerOne(EDPlayer):
         self._touch()
 
     def resurrect(self, rebought=True):
+        self.in_game = True
         self.game_mode = self.previous_mode
         self.private_group = self.previous_private_group
         self.wing = EDWing(self.previous_wing)

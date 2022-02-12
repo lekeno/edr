@@ -211,7 +211,8 @@ def handle_carrier_events(ed_player, entry):
         ed_player.fleet_carrier.update_docking_permissions(entry)
     elif entry["event"] == "CarrierJump":
         EDR_CLIENT.edrfssinsights.reset()
-        EDR_CLIENT.edrfssinsights.update_system(entry.get("SystemAddress", None), entry.get("StarSystem", None))
+        EDR_CLIENT.edrfssinsights.update_system(entry.get("SystemAddress", None), entry["StarSystem"])
+        ed_player.update_star_system_if_obsolete(entry["StarSystem"], entry.get("SystemAddress", None))
         ed_player.fleet_carrier.update_from_jump_if_relevant(entry)
         
 
@@ -224,7 +225,9 @@ def handle_movement_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_place_if_obsolete(body)
         outcome["reason"] = "Supercruise exit"
         ed_player.to_normal_space()
-        EDR_CLIENT.register_fss_signals()
+        if "SystemAddress" in entry:
+            ed_player.star_system_address = entry["SystemAddress"]
+        EDR_CLIENT.register_fss_signals(entry.get("SystemAddress", None), entry.get("StarSystem", None))
         # TODO probably should be cleared to avoid keeping old FC around?
         EDRLOG.log(u"Body changed: {}".format(body), "INFO")
     elif entry["event"] in ["FSDJump", "CarrierJump"]:
@@ -243,6 +246,8 @@ def handle_movement_events(ed_player, entry):
             ed_player.to_normal_space()
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
     elif entry["event"] in ["SupercruiseEntry"]:
+        if "SystemAddress" in entry:
+            ed_player.star_system_address = entry["SystemAddress"]
         place = "Supercruise"
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         outcome["reason"] = "Jump events"
@@ -299,6 +304,9 @@ def handle_change_events(ed_player, entry):
         ed_player.location_security(entry.get("SystemSecurity", None))
         ed_player.location.population = entry.get("Population", None)
         ed_player.location.allegiance = entry.get("SystemAllegiance", None)
+        if "StarSystem" in entry:
+            ed_player.update_star_system_if_obsolete(entry["StarSystem"], entry.get("SystemAddress", None))
+        print("update system from handle change events with {} and {}".format(entry.get("SystemAddress", None), entry.get("StarSystem", None)))
         EDR_CLIENT.edrfssinsights.update_system(entry.get("SystemAddress", None), entry.get("StarSystem", None))
         outcome["reason"] = "Location event"
         EDR_CLIENT.check_system(entry["StarSystem"], may_create=True, coords=entry.get("StarPos", None))
@@ -337,7 +345,7 @@ def handle_fc_position_related_events(ed_player, entry):
 def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
     if entry["event"] == "Music":
         if entry["MusicTrack"] in ["Supercruise", "NoTrack"]:
-             # music event happens after the chain of FSS signals discovered events on a jump
+            # music event happens after the chain of FSS signals discovered events on a jump
             # TODO wrong system...
             EDR_CLIENT.register_fss_signals()
 
@@ -352,9 +360,12 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
             ed_player.leave_wing()
             ed_player.leave_crew()
             ed_player.leave_vehicle()
+            ed_player.in_game = False
             EDRLOG.log(u"Player is on the main menu.", "DEBUG")
             return
-        elif entry["MusicTrack"] == "Combat_Dogfight":
+        
+        ed_player.in_game = True
+        if entry["MusicTrack"] == "Combat_Dogfight":
             if ed_player.mothership:
                 ed_player.mothership.skirmish() # TODO check music event for on foot combat
             return
@@ -490,6 +501,16 @@ def dashboard_entry(cmdr, is_beta, entry):
     
     if not prerequisites(EDR_CLIENT, is_beta):
         return
+
+    if entry.get("GuiFocus", 0) > 0:
+        # can only happen if in game
+        ed_player.in_game = True
+
+    if 'Destination' in entry:
+        if ed_player.in_game:
+            EDR_CLIENT.destination_guidance(entry["Destination"])    
+        else:
+            print("not in game")
 
     if not 'Flags' in entry:
         return
@@ -705,9 +726,14 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         EDR_CLIENT.noteworthy_about_signal(entry)
 
     if entry["event"] in ["FSSDiscoveryScan"]:
-        EDR_CLIENT.register_fss_signals(override_star_system=entry.get("SystemName", None), force_reporting=True) # Takes care of zero pop system with no signals (not even a nav beacon) and no fleet carrier
+        if "SystemName" in entry:
+            ed_player.update_star_system_if_obsolete(entry["SystemName"], entry.get("SystemAddress", None))
+        EDR_CLIENT.register_fss_signals(entry.get("SystemAddress", None), entry.get("SystemName", None), force_reporting=True) # Takes care of zero pop system with no signals (not even a nav beacon) and no fleet carrier
 
     if entry["event"] in ["NavBeaconScan"] and entry.get("NumBodies", 0):
+        if "SystemAddress" in entry:
+            ed_player.star_system_address = entry["SystemAddress"]
+        # TODO new events: ScanBaryCentre, "scan" with scantype:"NavBeaconDetail"
         EDR_CLIENT.notify_with_details(_(u"System info acquired"), [_(u"Noteworthy material densities will be shown when approaching a planet.")])
 
     if entry["event"] in ["Scan"]:
@@ -1575,6 +1601,18 @@ def handle_bang_commands(cmdr, command, command_parts):
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.staging_station_near(search_center, override_sc_dist)
+    elif command == "!fc":
+        if len(command_parts) < 2:
+            return
+        callsign_or_name = " ".join(command_parts[1:]).upper()
+        EDRLOG.log(u"Looking for a Fleet Carrier in current system with {} in callsign or name".format(callsign_or_name), "INFO")
+        EDR_CLIENT.fc_in_current_system(callsign_or_name)
+    elif command == "!station":
+        if len(command_parts) < 2:
+            return
+        station_name = " ".join(command_parts[1:]).upper()
+        EDRLOG.log(u"Looking for a Station in current system with {} in its name".format(station_name), "INFO")
+        EDR_CLIENT.station_in_current_system(station_name)
     elif command == "!rrrfc":
         EDRLOG.log(u"Looking for a RRR Fleet Carrier", "INFO")
         search_center = cmdr.star_system

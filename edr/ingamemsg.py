@@ -417,19 +417,7 @@ class InGameMsg(object):
         self.__msg_header("navigation", header)
         self.__msg_body("navigation", details)
 
-    def docking(self, system, station, pad):
-        if not self.cfg["docking"].get("enabled", None):
-            return
-
-        self.clear_docking()
-        if not station:
-            return
-        if "panel" in self.cfg["docking"]:
-            self.__shape("docking", self.cfg["docking"]["panel"])
-        if "panel" in self.cfg["docking-station"] and self.cfg["docking-station"].get("enabled", False):
-            self.__shape("docking-station", self.cfg["docking-station"]["panel"])
-        economy = u"{}/{}".format(station["economy"], station["secondEconomy"]) if station["secondEconomy"] else station["economy"]
-        header = u"{} ({})".format(station["name"], economy)
+    def describe_station(self, station):
         station_type = (station.get("type","N/A") or "N/A").lower()
         station_other_services = (station.get("otherServices", []) or []) 
         station_economy = (station.get('economy', "") or "").lower()
@@ -485,10 +473,47 @@ class InGameMsg(object):
                 if not station["secondEconomy"]:
                     t = _c(u"human tech|HT.") 
                 elif station_second_economy == "high tech":
-                    t = _c(u"ambiguous tech|T.") 
+                    t = _c(u"ambiguous tech|T.")
 
         details.append(_(u"I.Factor:{}   {} Broker:{}").format(a,t,b))
         details.append(_(u"as of {date}").format(date=station['updateTime']['information']))
+        return details
+
+    def describe_fleet_carrier(self, fc):
+        fc_other_services = (fc.get("otherServices", []) or []) 
+        details = []
+        a = u"●" if fc.get("haveOutfitting", False) else u"◌"
+        b = u"●" if fc.get("haveShipyard", False) else u"◌"
+        details.append(_(u"Outfit:{}   Shipyard:{}").format(a,b))
+        a = u"●" if "Refuel" in fc_other_services else u"◌"
+        b = u"●" if "Repair" in fc_other_services else u"◌"
+        c = u"●" if "Restock" in fc_other_services else u"◌"
+        details.append(_(u"Refuel:{}   Repair:{}   Restock:{}").format(a,b,c))
+        a = u"●" if fc.get("haveMarket", False) else u"◌"
+        b = u"●" if "Black Market" in fc_other_services else u"◌"
+        details.append(_(u"Market:{}   B.Market:{}").format(a,b))
+        a = u"●" if "Interstellar Factors Contact" in fc_other_services else u"◌"
+        details.append(_(u"I.Factor:{}").format(a))
+        details.append(_(u"as of {date}").format(date=fc['updateTime']['information']))
+        return details
+
+    def docking(self, system, station, pad):
+        if not self.cfg["docking"].get("enabled", None):
+            return
+
+        self.clear_docking()
+        if not station:
+            return
+        if "panel" in self.cfg["docking"]:
+            self.__shape("docking", self.cfg["docking"]["panel"])
+        if "panel" in self.cfg["docking-station"] and self.cfg["docking-station"].get("enabled", False):
+            self.__shape("docking-station", self.cfg["docking-station"]["panel"])
+        
+        economy = u"{}/{}".format(station["economy"], station["secondEconomy"]) if station["secondEconomy"] else station["economy"]
+        station_type = (station.get("type","N/A") or "N/A").lower()
+
+        header = u"{} ({})".format(station["name"], economy)
+        details = self.describe_station(station)
         self.__msg_header("docking", header)
         self.__msg_body("docking", details)
 

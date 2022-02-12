@@ -7,6 +7,7 @@ from sys import float_repr_style
 import time
 import random
 import math
+import re
 
 try:
     # for Python2
@@ -579,13 +580,9 @@ class EDRClient(object):
 
     
     def register_fss_signals(self, system_address=None, override_star_system=None, force_reporting=False):
-        self.edrfssinsights.update_system(system_address, override_star_system or self.player.star_system)
-        fc_report = self.edrfssinsights.fleet_carriers_report(force_reporting)
-        if fc_report is None:
-            return
-
+        self.edrfssinsights.update_system(system_address or self.player.star_system_address, override_star_system or self.player.star_system)
         if self.edrfssinsights.reported:
-            if force_reporting:
+          if force_reporting:
                 # Skipping further FSS signals because the signals are additive only (no events for FC signals that are no longer relevant...)
                 self.status = _(u"Skipped FC report for consistency reasons (fix: leave and come back)")
                 new_fc = self.edrfssinsights.newly_found_fleet_carriers()
@@ -593,15 +590,16 @@ class EDRClient(object):
                     # Report new FC to help with CG (e.g. unloading/loading commodities from newly arrived FC)
                     self.notify_with_details(_(u"{} newly arrived fleet carriers").format(len(new_fc)), ["{} : {}".format(callsign, new_fc[callsign]) for callsign in new_fc])
             return
-        
-        EDRLOG.log(u"Registering FSS signals; fc_report: {} with sys_address {} and star_system {}".format(fc_report, system_address, override_star_system), "DEBUG")
-        fc_report["reportedBy"] = self.player.name
-        if self.edrsystems.update_fc_presence(fc_report):
-            self.edrfssinsights.reported = True
-            if fc_report["fcCount"] <= 1:
-                self.status = _(u"Reported {} fleet carrier in system {}").format(fc_report["fcCount"], fc_report["starSystem"])
-            else:
-                self.status = _(u"Reported {} fleet carriers in system {}").format(fc_report["fcCount"], fc_report["starSystem"])
+        fc_report = self.edrfssinsights.fleet_carriers_report(force_reporting)
+        if fc_report is not None:
+            EDRLOG.log(u"Registering FSS signals; fc_report: {} with sys_address {} and star_system {}".format(fc_report, system_address, override_star_system), "DEBUG")
+            fc_report["reportedBy"] = self.player.name
+            if self.edrsystems.update_fc_presence(fc_report):
+                self.edrfssinsights.reported = True
+                if fc_report["fcCount"] <= 1:
+                    self.status = _(u"Reported {} fleet carrier in system {}").format(fc_report["fcCount"], fc_report["starSystem"])
+                else:
+                    self.status = _(u"Reported {} fleet carriers in system {}").format(fc_report["fcCount"], fc_report["starSystem"])
 
     
     def noteworthy_about_signal(self, fss_event):
@@ -625,6 +623,7 @@ class EDRClient(object):
         return True
 
     def process_scan(self, scan_event):
+        self.edrsystems.reflect_scan(self.player.star_system, scan_event["BodyName"], scan_event)
         if "Materials" not in scan_event:
             return False
         self.edrsystems.materials_info(self.player.star_system, scan_event["BodyName"], scan_event["Materials"])
@@ -655,6 +654,64 @@ class EDRClient(object):
                 self.ui.notify(summary["header"], summary["body"])
         else:
             self.IN_GAME_MSG.clear_docking()
+
+    def destination_guidance(self, destination):
+        if not self.player.set_destination(destination):
+            return
+
+        if not self.player.has_destination():
+            return
+
+        if not self.player.in_game:
+            return
+        
+        dst = self.player.destination
+        body_id = dst.body
+        name = dst.name
+        system_address = dst.system
+        
+        if not self.edrfssinsights.same_system(system_address) and body_id == 0:
+            if self.system_guidance(name, passive=True):
+                return
+        
+        if self.edrfssinsights.is_signal(name):
+            if self.edrfssinsights.is_scenario_signal(name):
+                return
+            if self.edrfssinsights.is_station(name):
+                self.station_in_current_system(name, passive=True)
+                return
+        
+            if dst.is_fleet_carrier():
+                fc_regexp = r"^(?:.+ )?([A-Z0-9]{3}-[A-Z0-9]{3})$"
+                m = re.match(fc_regexp, name)
+                callsign = m.group(1)
+                self.fc_in_current_system(callsign)
+                return
+            return
+        
+        # check if body > 0 ?
+        if self.body_guidance(self.player.star_system, name, passive=True):
+            return
+
+        ## for the outpost/... cases that aren't marked as stations
+        if self.station_in_current_system(name, passive=True):
+            return
+
+        # last resort?
+        if self.edrfssinsights.no_signals():
+            if self.edrfssinsights.is_scenario_signal(name):
+                return
+            if self.edrfssinsights.is_station(name):
+                self.station_in_current_system(name, passive=True)
+                return
+        
+            if dst.is_fleet_carrier():
+                fc_regexp = r"^(?:.+ )?([A-Z0-9]{3}-[A-Z0-9]{3})$"
+                m = re.match(fc_regexp, name)
+                callsign = m.group(1)
+                self.fc_in_current_system(callsign)
+                return
+                
 
     def show_navigation(self):
         current = self.player.attitude
@@ -746,7 +803,6 @@ class EDRClient(object):
         if "Subsystem" in target_event:
             meaningful = True # Class and Rank of submodule can be interesting info to show
             subsys_details = tgt.subsystem_details(target_event["Subsystem"])
-            EDRLOG.log("subsys details {}".format(subsys_details), "DEBUG")
 
         if not meaningful:
             EDRLOG.log("Target info is not that interesting, skipping", "DEBUG")
@@ -1245,7 +1301,8 @@ class EDRClient(object):
                 details = [profile.short_profile(self.player.powerplay)]
                 if legal:
                     details.append(legal["overview"])
-                self.__warning(_(u"[Caution!] Intel about {}").format(cmdr_name), details, clear_before=True, legal=legal)
+                header = _(u"[Caution!] Intel about {}").format(cmdr_name)
+                self.__warning(header, details, clear_before=True, legal=legal)
                 self.cognitive_blips_cache.set(cmdr_id, blip)
                 if self.player.in_open() and self.is_anonymous() and profile.is_dangerous(self.player.powerplay):
                     self.advertise_full_account(_("You could have helped other EDR users by reporting this outlaw."))
@@ -1302,7 +1359,8 @@ class EDRClient(object):
                         details.append(status)
                     if legal:
                         details.append(legal["overview"])
-                    self.__warning(_(u"[Caution!] Intel about {}").format(cmdr_name), details, clear_before=True, legal=legal)
+                    header = _(u"[Caution!] Intel about {}").format(cmdr_name)
+                    self.__warning(header, details, clear_before=True, legal=legal)
                 elif self.intel_even_if_clean or (scan["wanted"] and bounty.is_significant()):
                     self.status = _(u"Intel for cmdr {}.").format(cmdr_name)
                     details = [profile.short_profile(self.player.powerplay)]
@@ -2012,6 +2070,82 @@ class EDRClient(object):
             self.status = _(u"RRR Station: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
+    def fc_in_current_system(self, callsign_or_name):
+        fcs = self.edrfssinsights.fuzzy_match_fleet_carriers(callsign_or_name)
+        callsign = callsign_or_name
+        fc_name = "Fleet Carrier"
+        if len(fcs) == 1:
+            callsign = next(iter(fcs))
+            fc_name = fcs[callsign]
+        elif len(fcs) > 1:
+            self.__notify(_(u"EDR Fleet Carrier Local Search"), [_("{} fleet carriers have {} in their callsign or name").format(len(fcs), callsign_or_name), _("Try something more specific, or the full callsign.")], clear_before=True)
+            return
+        
+        fc_regexp = r"^([A-Z0-9]{3}-[A-Z0-9]{3})$"
+        if not re.match(fc_regexp, callsign):
+            self.__notify(_(u"EDR Fleet Carrier Local Search"), [_("Couldn't find a fleet carrier with {} in its callsign or name").format(callsign_or_name), _("{} is not a valid callsign").format(callsign), _(u"Try a more specific term, the full callsign, or honk your discovery scanner first.")], clear_before=True)
+            return
+
+        fc = self.edrsystems.fleet_carrier(self.player.star_system, callsign)
+        if fc is None:
+            self.__notify(_(u"EDR Fleet Carrier Local Search"), [_("No info on fleet carrier with {} callsign").format(callsign)], clear_before=True)
+            return
+        
+        header = u"{} ({})".format(fc_name, fc["name"])
+        details = self.IN_GAME_MSG.describe_fleet_carrier(fc)
+        self.__notify(header, details, clear_before=True)
+
+    def station_in_current_system(self, station_name, passive=False):
+        stations = self.edrsystems.fuzzy_stations(self.player.star_system, station_name)
+        if stations is None:
+            if not passive:
+                self.__notify(_(u"EDR Station Local Search"), [_("No info on Station with {} in its name").format(station_name)], clear_before=True)
+            return False
+
+        if len(stations) > 1:
+            if passive:
+                return False
+            self.__notify(_(u"EDR Station Local Search"), [_("{} stations have {} in their name").format(len(stations), station_name), _("Try something more specific, or the full name.")], clear_before=True)
+            return True
+        elif len(stations) == 0:
+            if not passive:
+                self.__notify(_(u"EDR Station Local Search"), [_("No Station with {} in their name").format(station_name)], clear_before=True)
+            return False
+        
+        station = stations[0]
+                
+        economy = u"{}/{}".format(station["economy"], station["secondEconomy"]) if station["secondEconomy"] else station["economy"]
+        header = u"{} ({})".format(station["name"], economy)
+        details = self.IN_GAME_MSG.describe_station(station)
+        self.__notify(header, details, clear_before=True)
+        return True
+
+    def system_guidance(self, system_name, passive=False):
+        description = self.edrsystems.describe_system(system_name)
+        if not description:
+            if not passive:
+                self.__notify(_(u"EDR System Search"), [_("No info on System called {}").format(system_name)], clear_before=True)
+            return False
+
+        header = u"{}".format(system_name)
+        self.__notify(header, description, clear_before=True)
+        return True
+
+    def body_guidance(self, system_name, body_name, passive=False):
+        description = self.edrsystems.describe_body(system_name, body_name)
+        if not description:
+            if not passive:
+                self.__notify(_(u"EDR System Search"), [_("No info on Body called {}").format(body_name)], clear_before=True)
+            return False
+
+        materials_info = self.edrsystems.materials_on(system_name, body_name)
+        facts = self.edrresourcefinder.assess_materials_density(materials_info, self.player.inventory)
+        if facts:
+            description.extend(facts)
+        header = u"{}".format(body_name)
+        self.__notify(header, description, clear_before=True)
+        return True
+        
     def human_tech_broker_near(self, star_system, override_sc_distance = None):
         if not self.__search_prerequisites(star_system):
             return
@@ -2142,14 +2276,21 @@ class EDRClient(object):
             elif stars_stats["count"] == 1:
                 details.append(_(u"1 star (no gravity well)"))
 
-            details.append(_(u"If full, try the next one with !parking {} #{}.").format(reference, int(rank+1)))
+            if reference == self.player.star_system:
+                details.append(_(u"If full, try the next one with !parking #{}.").format(int(rank+1)))
+            else:
+                details.append(_(u"If full, try the next one with !parking {} #{}.").format(reference, int(rank+1)))
+            
             self.status = u"FC Parking: {system}, {dist}".format(system=result['name'], dist=pretty_dist)
             copy(result["name"])
         else:
             self.status = _(u"FC Parking: no #{} system within [{}LY] of {}").format(int(rank), int(radius), reference)
             details.append(_(u"No #{} system found within [{}LY].").format(int(rank), int(radius)))
             if rank > 0:
-                details.append(_(u"Try !parking {} #{}. Or try !parking #{} if searching around your current location").format(reference, int(rank-1), int(rank-1)))
+                if reference == self.player.star_system:
+                    details.append(_(u"Try !parking #{}").format(int(rank-1)))
+                else:
+                    details.append(_(u"Try !parking {} #{}").format(reference, int(rank-1), int(rank-1)))
         self.__notify(_(u"FC Parking near {}").format(reference), details, clear_before = True)
         self.searching = False
 

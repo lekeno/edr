@@ -3,9 +3,11 @@
 
 import os
 import pickle
+import re
 from math import sqrt, ceil
 
 import datetime
+from re import S
 import sys
 import time
 import collections
@@ -247,6 +249,20 @@ class EDRSystems(object):
         
         return None
 
+    def fuzzy_stations(self, star_system, station_name):
+        if station_name is None or station_name == "":
+            return []
+
+        stations = self.stations_in_system(star_system)
+        if not stations:
+            return []
+        
+        return [station for station in stations if (station_name.lower() in station["name"].lower())]
+        
+
+    def fleet_carrier(self, star_system, callsign):
+        return self.station(star_system, callsign, "FleetCarrier")
+
     def stations_in_system(self, star_system):
         if not star_system:
             return None
@@ -375,6 +391,7 @@ class EDRSystems(object):
 
     
     def system(self, name):
+        # TODO clear cache if just discovered?
         if not name:
             return None
 
@@ -388,6 +405,119 @@ class EDRSystems(object):
             return the_system
         
         return None
+
+    def describe_system(self, name):
+        # stimated value?
+        # TODO system with None state, etc. should not show ???
+        # TODO anarchy shows as security ??? (e.g. ltt 9494)  => "information":{}
+        the_system = self.system(name)
+        if not the_system:
+            return None
+        the_system = the_system[0]
+        details = []
+        if "primaryStar" in the_system:
+            details.extend(self.__describe_primary_star(the_system["primaryStar"]))
+
+        if "information" in the_system:
+            info = ""
+            info += _("Gvt: {}  ").format(the_system["information"]["government"]) if the_system["information"].get("government", None) else ""
+            info += _("Alg: {}  ").format(the_system["information"]["allegiance"]) if the_system["information"].get("allegiance", None) else ""
+            population = the_system["information"].get("population", None)
+            if population != None:
+                population = pretty_print_number(population)
+                info += _("Pop: {}  ").format(population)
+    
+            if info:
+                details.append(info)
+            
+            info = ""
+            info += _("Sec: {}  ").format(the_system["information"]["security"]) if the_system["information"].get("security", None) else ""
+            
+            economy = the_system["information"].get("economy", None)
+            second_economy = the_system["information"].get("secondEconomy", None)
+            if second_economy:
+                if economy:
+                    info += _("Eco: {}/{}  ").format(economy, second_economy)
+                else:
+                    info += _("Eco: -/{}  ").format(second_economy)
+            elif economy:
+                info += _("Eco: {}  ").format(economy)
+                
+            
+            info += _("Res: {}  ").format(the_system["information"]["reserve"]) if the_system["information"].get("reserve", None) else ""
+            
+            if info:
+                details.append(info)
+            
+            info = ""
+            info += _("Sta: {}  ").format(the_system["information"]["factionState"]) if the_system["information"].get("factionState", None) else ""
+            info += _("Fac: {}  ").format(the_system["information"]["faction"]) if the_system["information"].get("faction", None) else ""
+            if info:
+                details.append(info)
+
+        return details
+
+    def __describe_star(self, star):
+        raw_type = star.get("subType", "???")
+        star_type = self.__star_type_lut(raw_type)
+        star_info = _("Star: {} [Fuel]").format(star_type) if star.get("isScoopable", False) else _("Star: {}").format(star_type)
+        return [star_info]
+
+    def __star_type_lut(self, star_type):
+        type_lut = {
+            "o (blue-white) star": "O",
+            "b (blue-white) star": "B",
+            "b (blue-white super giant) star": "B+",
+            "a (blue-white) star": "A",
+            "a (blue-white super giant)": "A+",
+            "f (white) star": "F",
+            "f (white super giant) star": "F+",
+            "g (white-yellow) star": "G",
+            "g (white-yellow super giant) star": "G+",
+            "k (yellow-orange) star": "K",
+            "k (yellow-orange giant) star": "K+",
+            "m (red dwarf) star": "M",
+            "m (red giant) star": "M",
+            "m (red super giant) star": "M+",
+            "l (brown dwarf) star": "Brown Dwarf (L)",
+            "t (brown dwarf) star": "Brown Dwarf (T)",
+            "y (brown dwarf) star": "Brown Dwarf (Y)",
+            "t tauri star": "T Tauri",
+            "herbig ae/be star": "Herbig Ae/Be",
+            "wolf-rayet star": "Wolf-Rayet",
+            "wolf-rayet n star": "Wolf-Rayet N",
+            "wolf-rayet nc star": "Wolf-Rayet NC",
+            "wolf-rayet c star": "Wolf-Rayet C",
+            "wolf-rayet o star": "Wolf-Rayet O",
+            "c star": "C",
+            "cn star": "CN",
+            "cj star": "CJ",
+            "ms-type star": "MS",
+            "s-type star": "S",
+            "white dwarf (d) star": "White Dwarf (D)",
+            "white dwarf (da) star": "White Dwarf (DA)",
+            "white dwarf (dab) star": "White Dwarf (DAB)",
+            "white dwarf (daz) star": "White Dwarf (DAZ)",
+            "white dwarf (dav) star": "White Dwarf (DAV)",
+            "white dwarf (db) star": "White Dwarf (DB)",
+            "white dwarf (dbz) star": "White Dwarf (DBZ)",
+            "white dwarf (dbv) star": "White Dwarf (DBV)",
+            "white dwarf (dq) star": "White Dwarf (DQ)",
+            "white dwarf (dc) star": "White Dwarf (DC)",
+            "white dwarf (dcv) star": "White Dwarf (DCV)",
+            "neutron star": "Neutron",
+            "black hole": "Black Hole",
+            "supermassive black hole": "Supermassive Black Hole",
+        }
+        
+        return type_lut.get(star_type.lower(), star_type)
+        
+
+    def __describe_primary_star(self, star):
+        raw_type = star.get("type", "???")
+        star_type = self.__star_type_lut(raw_type)
+        star_info = _("Star: {} [Fuel]").format(star_type) if star.get("isScoopable", False) else _("Star: {}").format(star_type)
+        return [star_info]
 
     def station(self, star_system, station_name, station_type):
         stations = self.stations_in_system(star_system)
@@ -488,16 +618,197 @@ class EDRSystems(object):
 
         self.materials_cache.set(u"{}:{}".format(system_name.lower(), body_name.lower()), info)
 
+    def describe_body(self, system_name, body_name):
+        # belt = body_name.endswith("Belt") # TODO add support for "Belt Cluster 3", etc.
+        belt = bool(re.match(r"^(.*) \S+ (?:Belt Cluster [0-9]+)$", body_name))
+        ring = body_name.endswith("Ring") # TODO check if this one also has "Ring Cluster/something number"
+        adj_body_name = body_name
+        if belt or ring:
+            m = re.match(r"^(.*) \S+ (?:Belt Cluster [0-9]+|Ring)$", body_name)
+            adj_body_name = m.group(1) if m else body_name
+
+        the_body = self.body(system_name, adj_body_name)
+        if not the_body:
+            return None
+        details = []
+        body_type = the_body.get("type", "")
+        if belt and "belts" in the_body:
+            details.extend(self.__describe_belt(the_body, body_name))
+        elif ring and "rings" in the_body:
+            details.extend(self.__describe_ring(the_body, body_name))
+        elif body_type == "Star":
+            details.extend(self.__describe_star(the_body))
+        elif body_type == "Planet":
+            details.extend(self.__describe_planet(the_body))            
+        else:
+            pass
+
+        if "updateTime" in the_body:
+            details.append(_("as of {}  ").format(the_body["updateTime"]))
+        
+        # TODO exploration value?
+        # TODO belts are within a given body's bag of stuff under "belts", also "rings" for planets
+        return details
+    
+    def __describe_planet(self, planet):
+        details = []
+        info = ""
+        body_type = planet.get("type", None)
+        sub_type = planet.get("subType", None)
+        if sub_type:
+            if body_type:
+                info += _("{}/{}  ").format(body_type, sub_type)
+            else:
+                info += _("-/{}  ").format(sub_type)
+        elif body_type:
+            info += _("{}  ").format(body_type)
+
+        if planet.get("isLandable", False):
+            gravity = "{:0.2f}".format(planet["gravity"]) if "gravity" in planet else "-" #TODO not really G? but earth G? verify other field for conversions too
+            temperature = "{:0.0f}".format(planet["surfaceTemperature"]) if "surfaceTemperature" in planet else "-"
+            land_or_walk =  _("[LAND: {}G; {}K]").format(gravity, temperature)
+            # TODO verify
+            if planet.get("surfaceTemperature", 1000) < 800 and planet.get("gravity", 3) < 2.7 and (planet.get("surfacePressure", None) and planet.get("surfacePressure", 1) < 0.1):
+                land_or_walk = _("[WALK: {}G; {}K]").format(gravity, temperature)
+            info += land_or_walk
+
+        if info:
+            details.append(info)
+
+        info = ""
+        if planet.get("atmosphereType", "No atmosphere") != "No atmosphere":
+            atm = " @{:0.1f}".format(planet["atmospherePressure"]) if "atmospherePressure" in planet else ""
+            info += "Atm: {}{}  ".format(planet["atmosphereType"], atm)
+        
+        if planet.get("volcanismType", "No volcanism") != "No volcanism":
+            info += _("[{}]").format(planet["volcanismType"])
+        
+        if info:
+            details.append(info)
+
+        return details
+
+    def __describe_belt(self, body, belt_full_name):
+        belts = body.get("belts", [])
+        the_belt = None
+        for b in belts:
+            if b.get("name", "").lower().endswith("belt"):
+                if belt_full_name.startswith(b.get("name", "NO NAME FOR THAT BELT")):
+                    the_belt = b
+                    break
+            else:
+                if b.get("name", None) == belt_full_name:
+                    the_belt = b
+                    break
+            
+        if not the_belt:
+            return [_("Unknown belt")]
+        return [_("Type: {}").format(the_belt.get("type", "???"))]
+
+    def __describe_ring(self, body, ring_full_name):
+        # TODO not really working yet
+        rings = body.get("rings", [])
+        the_ring = None
+        for r in rings:
+            if rings[r].get("name", None) == ring_full_name:
+                the_ring = rings[r]
+                break
+        if not the_ring:
+            return [_("Unknown ring")]
+        return [_("Type: {} {}").format(the_ring.get("type", "???"), the_ring.get("reserveLevel", ""))]
+
+
     def materials_on(self, system_name, body_name):
         if not system_name or not body_name:
             return None
 
         materials = self.materials_cache.get(u"{}:{}".format(system_name.lower(), body_name.lower()))
         if not materials:
-            # TODO it would be nice to obtain data from other cmdrs...
-            return None
+            the_body = self.body(system_name, body_name)
+            if not the_body:
+                return None
+            raw_materials = the_body.get("materials", None)
+            if raw_materials:
+                materials = [{"Name": key, "Percent": value} for key,value in raw_materials.items()]
+                self.materials_info(system_name, body_name, materials)
+            else:
+                return None
+            
         return materials
 
+    def reflect_scan(self, system_name, body_name, scan):
+        # TODO ignore Belt Cluster 
+        # TODO differtent approach for autoscan and other type of scans
+        bodies = self.bodies(system_name)
+        if not bodies:
+            bodies = []
+        
+        the_body = None
+        for b in bodies:
+            if b.get("name", "").lower() == body_name.lower():
+                the_body = b
+                break
+        
+        new_body = the_body is None
+        if new_body:
+            the_body = {}
+        
+        kv_lut = {
+            "DistanceFromArrivalLS": {"k": "distanceToArrival", "v": lambda v: v},
+            "timestamp": {"k": "updateTime", "v": lambda v: v.replace("T", " ").replace("Z", "") if v else ""},
+            "event": None,
+            "ScanType": None,
+            "BodyName": {"k": "name", "v": lambda v: v},
+            "BodyID": {"k": "bodyId", "v": lambda v: v},
+            "StarSystem": None,
+            "SystemAddress": None,
+            "StarType": {"k": "type", "v": lambda v: v}, # TODO expand from letter to full name (subclass important?), and add "type": Star or planet...
+            "StellarMass": {"k": "solarMasses", "v": lambda v: v},
+            "Age_MY": {"k": "age", "v": lambda v: v},
+            "Luminosity": None,
+            "SemiMajorAxis": {"k": "semiMajorAxis", "v": lambda v: v/149597870700},
+            "Eccentricity": {"k": "orbitalEccentricity", "v": lambda v: v},
+            "Periapsis": {"k": "argOfPeriapsis", "v": lambda v: v},
+            "OrbitalPeriod": {"k": "orbitalPeriod", "v": lambda v: v/86400},
+            "RotationPeriod": {"k": "rotationalPeriod", "v": lambda v: v/86400},
+            "WasDiscovered": None, # ignoring
+            "WasMapped": None, # ignoring
+            "Landable": {"k": "isLandable", "v": lambda v: v},
+            "Materials": {"k": "materials", "v": lambda v: {np["Name"]: np["Percent"] for np in v}},
+            "AtmosphereComposition": {"k": "atmosphereComposition", "v": lambda v: {np["Name"]: np["Percent"] for np in v}},
+            "SurfaceGravity": {"k": "gravity", "v": lambda v: v/9.79761064137},
+            "MassEM":  {"k": "earthMasses", "v": lambda v: v},
+            "TidalLock":  {"k": "rotationalPeriodTidallyLocked", "v": lambda v: v},
+            "TerraformState": {"k": "terraformingState", "v": lambda v: v if v else "Not terraformable"}, # if empty =>> Not terraformable
+            "Volcanism": {"k": "volcanismType", "v": lambda v: v if v else "No volcanism"},
+            "AtmosphereType": {"k": "atmosphereType", "v": lambda v: v if v and v != "None" else "No atmosphere"},
+            "Composition": {"k": "solidComposition", "v": lambda v: {m:p*100 for m,p in v.items()} if v else None},
+            "PlanetClass": {"k": "subType", "v": lambda v: v},
+            "StarType": {"k": "subType", "v": lambda v: v},
+            "SurfacePressure": {"k": "surfacePressure", "v": lambda v: v/101325},
+        }
+        # TODO rings
+        adj_kv = lambda k: kv_lut[k] if k in kv_lut else ({"k": k[:1].lower() + k[1:], "v": lambda v: v} if k else None)
+        
+        for key in scan:
+            new_kv = adj_kv(key)
+            if new_kv:
+                the_body[new_kv["k"]] = new_kv["v"](scan[key])
+
+        if "PlanetClass" in scan:
+            the_body["type"] = "Planet"
+            the_body["radius"] = scan["Radius"]/1000 if scan.get("Radius", None) else None
+        elif "StarType" in scan:
+            the_body["type"] = "Star"
+            the_body["isScoopable"] = the_body.get("subType", "") in ["O","B","A", "F", "G", "K", "M"]
+            the_body["solarRadius"] = scan["Radius"]/695500000 if scan.get("Radius", None) else None
+        if new_body:
+            bodies.append(the_body)
+        else:
+            pass
+        
+        self.edsm_bodies_cache.set(system_name.lower(), bodies)     
+    
     def body(self, system_name, body_name):
         if not system_name or not body_name:
             return None
@@ -508,7 +819,7 @@ class EDRSystems(object):
             if bodies:
                 self.edsm_bodies_cache.set(system_name.lower(), bodies)
 
-        if not bodies:            
+        if not bodies:
             return None
 
         for body in bodies:
