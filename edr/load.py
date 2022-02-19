@@ -722,13 +722,26 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         depletables = EDRRawDepletables()
         depletables.visit(entry["NearestDestination"])
         
+
+    if entry["event"] == "SAAScanComplete":
+        EDR_CLIENT.saa_scan_complete(entry)
+    
     if entry["event"] in ["FSSSignalDiscovered"]:
         EDR_CLIENT.noteworthy_about_signal(entry)
 
     if entry["event"] in ["FSSDiscoveryScan"]:
         if "SystemName" in entry:
             ed_player.update_star_system_if_obsolete(entry["SystemName"], entry.get("SystemAddress", None))
+            # TODO progress not reflected from individual scans
+            EDR_CLIENT.reflect_fss_discovery_scan(entry)
+            EDR_CLIENT.system_value(entry["SystemName"])
         EDR_CLIENT.register_fss_signals(entry.get("SystemAddress", None), entry.get("SystemName", None), force_reporting=True) # Takes care of zero pop system with no signals (not even a nav beacon) and no fleet carrier
+
+    if entry["event"] in ["FSSAllBodiesFound"]:
+        if "SystemName" in entry:
+            ed_player.update_star_system_if_obsolete(entry["SystemName"], entry.get("SystemAddress", None))
+            EDR_CLIENT.reflect_fss_discovery_scan(entry)
+            EDR_CLIENT.system_value(entry["SystemName"])
 
     if entry["event"] in ["NavBeaconScan"] and entry.get("NumBodies", 0):
         if "SystemAddress" in entry:
@@ -740,7 +753,8 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         EDR_CLIENT.process_scan(entry)
         if entry["ScanType"] == "Detailed":
             EDR_CLIENT.noteworthy_about_scan(entry)
-
+		# TODO add support for autoscan as well
+        
     if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PVPKill", "CrimeVictim", "CommitCrime"]:
         report_crime(ed_player, entry)
 
@@ -1512,6 +1526,10 @@ def handle_bang_commands(cmdr, command, command_parts):
     elif command == "!signals":
         EDRLOG.log(u"Signals command", "INFO")
         EDR_CLIENT.noteworthy_signals_in_system()
+    elif command == "!value":
+        # TODO TEMPORARY
+        EDRLOG.log(u"Value command", "INFO")
+        EDR_CLIENT.system_value()
     elif command == "!notams":
         EDRLOG.log(u"Notams command", "INFO")
         EDR_CLIENT.notams()

@@ -47,6 +47,16 @@ class EDSMServer(object):
         sorted_results = sorted(results, key=lambda t: t["distance"])
         return sorted_results
 
+    def system_value(self, system_name):
+        params = {"systemName": system_name}
+        endpoint = "{}/api-system-v1/estimated-value".format(self.EDSM_SERVER)
+        system_value = self.__get(endpoint, params)
+        
+        if not system_value:
+            return None
+        return system_value
+        
+
     def stations_in_system(self, system_name):
         params = {"systemName": system_name}
         endpoint = "{}/api-system-v1/stations".format(self.EDSM_SERVER)

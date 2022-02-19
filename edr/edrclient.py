@@ -4,6 +4,7 @@ from __future__ import absolute_import
 
 import datetime
 from sys import float_repr_style
+import sys
 import time
 import random
 import math
@@ -571,12 +572,35 @@ class EDRClient(object):
     def noteworthy_about_scan(self, scan_event):
         if scan_event["event"] != "Scan" or scan_event["ScanType"] != "Detailed":
             return
-        if "Materials" not in scan_event or "BodyName" not in scan_event:
+        
+        if "BodyName" not in scan_event:
             return
-        facts = self.edrresourcefinder.assess_materials_density(scan_event["Materials"], self.player.inventory)
+        
+        header = _(u'Noteworthy about {}').format(scan_event["BodyName"])
+        facts = []
+        if scan_event["BodyName"]:
+            star_system = scan_event.get("StarSystem", self.player.star_system)
+            value = self.edrsystems.body_value(star_system, scan_event["BodyName"])
+            if value:
+                adjBodyName = value["bodyName"].replace(star_system, "") if value.get("bodyName", None) else "?"
+                scanned = ""
+                mapped = ""
+                if "wasDiscovered" in value:
+                    scanned = u"Scanned:●" if value["wasDiscovered"] else u"Scanned:◌"
+                if "wasMapped" in value:
+                    mapped = u"Mapped:●" if value["wasDiscovered"] else u"Mapped:◌"
+                facts.append(_("Max value: {} cr @ {} LS; {} {}").format(pretty_print_number(value["valueMax"]), pretty_print_number(value["distance"]), scanned, mapped))
+                    
+        if "Materials" in scan_event:
+            mats_assessment = self.edrresourcefinder.assess_materials_density(scan_event["Materials"], self.player.inventory)
+            if mats_assessment:
+                facts.extend(mats_assessment)
+                qualifier = self.edrresourcefinder.raw_profile
+                if qualifier:
+                    header = _(u'Noteworthy about {} ({} mats)').format(scan_event["BodyName"], qualifier)
+        
         if facts:
-            qualifier = self.edrresourcefinder.raw_profile or _("Noteworthy")
-            self.__notify(_(u'{} material densities on {}').format(qualifier, scan_event["BodyName"]), facts, clear_before = True)
+            self.__notify(header, facts, clear_before = True)
 
     
     def register_fss_signals(self, system_address=None, override_star_system=None, force_reporting=False):
@@ -711,7 +735,36 @@ class EDRClient(object):
                 callsign = m.group(1)
                 self.fc_in_current_system(callsign)
                 return
-                
+
+    def system_value(self, star_system=None):
+        if star_system is None:
+            star_system = self.player.star_system
+        sys_value = self.edrsystems.system_value(star_system)
+        if sys_value:
+            details = []
+            estimatedValue = pretty_print_number(sys_value["estimatedValue"]) if "estimatedValue" in sys_value else "?"
+            estimatedValueMapped = pretty_print_number(sys_value["estimatedValueMapped"]) if "estimatedValueMapped" in sys_value else "?"
+            details.append("Scanned: {}, Mapped: {}".format(estimatedValue, estimatedValueMapped))
+            if "progress" in sys_value and sys_value["progress"] < 1.0 and sys_value.get("bodyCount", None):
+                body_count = sys_value["bodyCount"]
+                scanned_body_count = round(body_count * sys_value["progress"])
+                progress = sys_value["progress"]*100.0
+                details.append("Discovered {}/{} {:0.1f}%".format(scanned_body_count, body_count, progress))
+            
+            valuableBodies = sorted(sys_value.get("valuableBodies", []), key=lambda b: b['valueMax'], reverse=True)
+            for body in valuableBodies[:5]:
+                adjBodyName = body.get("bodyName", "?").replace(star_system, "") or body.get("bodyName", "?")                    
+                details.append("{}: {} @ {} LS".format(adjBodyName, pretty_print_number(body["valueMax"]), pretty_print_number(body["distance"])))
+            self.__notify("Estimated value of {}".format(star_system), details, clear_before= True)
+            # TODO add mention of the command to show this on demand ?
+
+    def saa_scan_complete(self, entry):
+        self.edrsystems.saa_scan_complete(self.player.star_system, entry)
+
+    def reflect_fss_discovery_scan(self, entry):
+        self.edrsystems.fss_discovery_scan_update(entry)
+        
+            
 
     def show_navigation(self):
         current = self.player.attitude
@@ -734,7 +787,7 @@ class EDRClient(object):
             EDRLOG.log(u"No distance info out of System:{}, Body:{}, Place: {}, Radius:{}".format(location.star_system, location.body, location.place, radius), "DEBUG")
             return
         
-        threshold = 1.0
+        threshold = 0.25
         if self.player.piloted_vehicle is None:
             threshold = 0.001
         elif EDVehicleFactory.is_surface_vehicle(self.player.piloted_vehicle):
