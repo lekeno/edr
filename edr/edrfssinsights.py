@@ -65,7 +65,7 @@ class EDRFSSInsights(object):
 
         self.stations = set()
         self.fleet_carriers = {}
-        self.recent_fleet_carriers
+        self.recent_fleet_carriers = {}
         self.other_locations = set()
         if override_timestamp:
             self.timestamp.from_journal_timestamp(override_timestamp)
