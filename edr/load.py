@@ -1526,10 +1526,6 @@ def handle_bang_commands(cmdr, command, command_parts):
     elif command == "!signals":
         EDRLOG.log(u"Signals command", "INFO")
         EDR_CLIENT.noteworthy_signals_in_system()
-    elif command == "!value":
-        # TODO TEMPORARY
-        EDRLOG.log(u"Value command", "INFO")
-        EDR_CLIENT.system_value()
     elif command == "!notams":
         EDRLOG.log(u"Notams command", "INFO")
         EDR_CLIENT.notams()

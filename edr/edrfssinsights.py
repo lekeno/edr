@@ -54,7 +54,6 @@ class EDRFSSInsights(object):
         self.noteworthy = False
         self.processed = 0
         self.reported = False
-        print("init fss insights")
         self.signals_seen = []
 
     def reset(self, override_timestamp=None):
@@ -77,7 +76,6 @@ class EDRFSSInsights(object):
         self.noteworthy = False
         self.processed = 0
         self.reported = False
-        print("reset fss insights")
         self.signals_seen = []
 
     def related_to(self, current_star_system):
@@ -85,14 +83,12 @@ class EDRFSSInsights(object):
 
     def update(self, current_star_system):
         if current_star_system != self.star_system["name"]:
-            print("update")
             self.reset()
             self.star_system["address"] = None
             self.star_system["name"] = None
 
     def update_system(self, system_address, system_name):
         if not self.same_system(system_address):
-            print("not same system")
             self.reset()
             self.star_system["address"] = system_address
         if system_name is not None:
@@ -105,12 +101,10 @@ class EDRFSSInsights(object):
     def process(self, fss_event):
         system_address = fss_event.get("SystemAddress", None)
         if system_address is None:
-            print("system address is none")
             self.reset()
             return False
         
         if system_address != self.star_system["address"]:
-            print("system address is different {} vs {}".format(system_address, self.star_system["address"]))
             self.reset(fss_event["timestamp"])
             self.star_system["address"] = system_address
             self.star_system["name"] = None
@@ -132,8 +126,7 @@ class EDRFSSInsights(object):
             return False
         
         self.signals_seen.append(signal_name)
-        print(self.signals_seen)
-
+        
         if fss_event.get("SignalName_Localised", None) is None:
             self.__process_locations_fss(fss_event)
             self.noteworthy = True
@@ -294,8 +287,6 @@ class EDRFSSInsights(object):
         return {c: self.fleet_carriers[c] for c in self.fleet_carriers if (callsign_or_name.lower() in c.lower() or callsign_or_name.lower() in self.fleet_carriers[c].lower())}
 
     def is_signal(self, name):
-        print("signals seen")
-        print(self.signals_seen)
         return (name in self.signals_seen) or self.is_scenario_signal(name)
 
     def no_signals(self):
@@ -305,10 +296,6 @@ class EDRFSSInsights(object):
         return bool(re.search('^\$[ -~]+;$', name))
 
     def is_station(self, name):
-        print("is station?")
-        print(name)
-        print(self.stations)
-        # TODO some stations are not marked as IStation=True :/ (e.g outpost? and planetary things are not in the FSS stuff)
         return name in self.stations
 
     def is_main_star(self, name):
