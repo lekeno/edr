@@ -401,7 +401,6 @@ class EDRSystems(object):
 
     
     def system(self, name):
-        # TODO clear cache if just discovered?
         if not name:
             return None
 
@@ -417,9 +416,6 @@ class EDRSystems(object):
         return None
 
     def describe_system(self, name):
-        # stimated value?
-        # TODO system with None state, etc. should not show ???
-        # TODO anarchy shows as security ??? (e.g. ltt 9494)  => "information":{}
         the_system = self.system(name)
         if not the_system:
             return None
@@ -637,7 +633,6 @@ class EDRSystems(object):
         self.materials_cache.set(u"{}:{}".format(system_name.lower(), body_name.lower()), info)
 
     def describe_body(self, system_name, body_name):
-        # belt = body_name.endswith("Belt") # TODO add support for "Belt Cluster 3", etc.
         belt = bool(re.match(r"^(.*) \S+ (?:Belt Cluster [0-9]+)$", body_name))
         ring = body_name.endswith("Ring") # TODO check if this one also has "Ring Cluster/something number"
         adj_body_name = body_name
@@ -664,8 +659,6 @@ class EDRSystems(object):
         if "updateTime" in the_body:
             details.append(_("as of {}  ").format(the_body["updateTime"]))
         
-        # TODO exploration value?
-        # TODO belts are within a given body's bag of stuff under "belts", also "rings" for planets
         return details
     
     def __describe_planet(self, planet, system_name):
@@ -685,7 +678,6 @@ class EDRSystems(object):
             gravity = "{:0.2f}".format(planet["gravity"]) if "gravity" in planet else "-" #TODO not really G? but earth G? verify other field for conversions too
             temperature = "{:0.0f}".format(planet["surfaceTemperature"]) if "surfaceTemperature" in planet else "-"
             land_or_walk =  _("[LAND: {}G; {}K]").format(gravity, temperature)
-            # TODO verify
             if planet.get("surfaceTemperature", 1000) < 800 and planet.get("gravity", 3) < 2.7 and (planet.get("surfacePressure", None) and planet.get("surfacePressure", 1) < 0.1):
                 land_or_walk = _("[WALK: {}G; {}K]").format(gravity, temperature)
             info += land_or_walk
@@ -711,6 +703,8 @@ class EDRSystems(object):
         return details
 
     def __describe_belt(self, body, belt_full_name):
+        # TODO not really working yet
+        # TODO rings are within a given body's bag of stuff under "belts"
         belts = body.get("belts", [])
         the_belt = None
         for b in belts:
@@ -728,7 +722,8 @@ class EDRSystems(object):
         return [_("Type: {}").format(the_belt.get("type", "???"))]
 
     def __describe_ring(self, body, ring_full_name):
-        # TODO not really working yet
+        # TODO not really working yet, that said it doesn't look possible to target a ring...
+        # TODO rings are within a given body's bag of stuff under "rings"        
         rings = body.get("rings", [])
         the_ring = None
         for r in rings:
@@ -785,7 +780,7 @@ class EDRSystems(object):
             "BodyID": {"k": "bodyId", "v": lambda v: v},
             "StarSystem": None,
             "SystemAddress": None,
-            "StarType": {"k": "type", "v": lambda v: v}, # TODO expand from letter to full name (subclass important?), and add "type": Star or planet...
+            "StarType": {"k": "type", "v": lambda v: v},
             "StellarMass": {"k": "solarMasses", "v": lambda v: v},
             "Age_MY": {"k": "age", "v": lambda v: v},
             "Luminosity": None,
@@ -800,7 +795,7 @@ class EDRSystems(object):
             "SurfaceGravity": {"k": "gravity", "v": lambda v: v/9.79761064137},
             "MassEM":  {"k": "earthMasses", "v": lambda v: v},
             "TidalLock":  {"k": "rotationalPeriodTidallyLocked", "v": lambda v: v},
-            "TerraformState": {"k": "terraformingState", "v": lambda v: v if v else "Not terraformable"}, # if empty =>> Not terraformable
+            "TerraformState": {"k": "terraformingState", "v": lambda v: v if v else "Not terraformable"},
             "Volcanism": {"k": "volcanismType", "v": lambda v: v if v else "No volcanism"},
             "AtmosphereType": {"k": "atmosphereType", "v": lambda v: v if v and v != "None" else "No atmosphere"},
             "Composition": {"k": "solidComposition", "v": lambda v: {m:p*100 for m,p in v.items()} if v else None},
@@ -996,7 +991,7 @@ class EDRSystems(object):
         totalMappedValue = 0
         totalHonkValue = 0
         for body in bodies:
-            valueMapped = self.__body_value(body, False) # TODO adjust the bool
+            valueMapped = self.__body_value(body)
             body_name = body.get("name", None)
             if body_name and valueMapped is not None:
                 if body_name in body_values:
@@ -1009,7 +1004,7 @@ class EDRSystems(object):
                         "valueMax": valueMapped
                     }
                 totalMappedValue += valueMapped
-            valueHonk = self.__body_value(body, False, False) # TODO adjust the bool
+            valueHonk = self.__body_value(body)
             if valueHonk is not None:
                 totalHonkValue += valueHonk
 
@@ -1097,15 +1092,14 @@ class EDRSystems(object):
             honk_bonus_value *= 2.6 if first_discoverer else 1
         return (k + (mass * k / 66.25)) + honk_bonus_value
 
-    @staticmethod
-    def __body_value(the_body, odyssey, override_mapped=True):
+    def __body_value(self, the_body, override_mapped=True):
         type = the_body.get("subType", "")
         mass = the_body.get("earthMasses", 0)
         terraformability = 1.0 if the_body.get("terraformingState", "") == "Terraformed" else 0.0
-        first_discoverer = the_body.get("wasDiscovered", True) # TODO maybe not the right meaning for wasdiscovered
+        first_discoverer = not the_body.get("wasDiscovered", False)
         mapped = override_mapped
-        first_mapped = the_body.get("wasMapped", override_mapped) # TODO maybe not the right meaning for wasmapped
-        efficiency_bonus = the_body.get("wasEfficient", override_mapped)
+        first_mapped = not the_body.get("wasMapped", False)
+        efficiency_bonus = the_body.get("wasEfficient", True)
         k_lut = {
                 "metal-rich body": 21790,
                 "metal rich body": 21790,
@@ -1133,7 +1127,7 @@ class EDRSystems(object):
                 mapping_multiplier = 3.3333333333
         value = (k + k * q * pow(mass,0.2)) * mapping_multiplier
         if mapped:
-            if odyssey:
+            if self.dlc_name and self.dlc_name.lower()  == "odyssey":
                 value += max(value * 0.3, 555)
             
             if efficiency_bonus:

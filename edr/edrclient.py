@@ -582,14 +582,17 @@ class EDRClient(object):
             star_system = scan_event.get("StarSystem", self.player.star_system)
             value = self.edrsystems.body_value(star_system, scan_event["BodyName"])
             if value:
-                adjBodyName = value["bodyName"].replace(star_system, "") if value.get("bodyName", None) else "?"
                 scanned = ""
                 mapped = ""
                 if "wasDiscovered" in value:
-                    scanned = u"Scanned:●" if value["wasDiscovered"] else u"Scanned:◌"
+                    scanned = _(u"Scanned: ●") if value["wasDiscovered"] else _(u"Discovered: ●")
+                else:
+                    scanned = _(u"Scanned: ◌")
                 if "wasMapped" in value:
-                    mapped = u"Mapped:●" if value["wasDiscovered"] else u"Mapped:◌"
-                facts.append(_("Max value: {} cr @ {} LS; {} {}").format(pretty_print_number(value["valueMax"]), pretty_print_number(value["distance"]), scanned, mapped))
+                    scanned = _(u"Mapped: ●") if value["wasMapped"] else _(u"Charted: ●")
+                else:
+                    mapped = _(u"Mapped: ◌")
+                facts.append(_("Estimated value: {} cr @ {} LS; {} {}").format(pretty_print_number(value["valueMax"]), pretty_print_number(value["distance"]), scanned, mapped))
                     
         if "Materials" in scan_event:
             mats_assessment = self.edrresourcefinder.assess_materials_density(scan_event["Materials"], self.player.inventory)
@@ -753,10 +756,9 @@ class EDRClient(object):
             
             valuableBodies = sorted(sys_value.get("valuableBodies", []), key=lambda b: b['valueMax'], reverse=True)
             for body in valuableBodies[:5]:
-                adjBodyName = body.get("bodyName", "?").replace(star_system, "") or body.get("bodyName", "?")                    
+                adjBodyName = EDRBodiesOfInterest.simplified_body_name(body.get("bodyName", "?"), star_system, " 0")
                 details.append("{}: {} @ {} LS".format(adjBodyName, pretty_print_number(body["valueMax"]), pretty_print_number(body["distance"])))
             self.__notify("Estimated value of {}".format(star_system), details, clear_before= True)
-            # TODO add mention of the command to show this on demand ?
 
     def saa_scan_complete(self, entry):
         self.edrsystems.saa_scan_complete(self.player.star_system, entry)
@@ -2363,7 +2365,7 @@ class EDRClient(object):
 
     def show_material_profiles(self):
         # TODO clear before, also on the other material profile things
-        # TODO fsd profiles for instnace returns a ton of stuff...
+        # TODO fsd profiles for instance returns a ton of stuff...
         profiles = self.edrresourcefinder.profiles()
         self.__notify(_(u"Available materials profiles"), [" ;; ".join(profiles)])
 
