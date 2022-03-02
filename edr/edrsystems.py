@@ -415,14 +415,14 @@ class EDRSystems(object):
         
         return None
 
-    def describe_system(self, name):
+    def describe_system(self, name, current_system=True):
         the_system = self.system(name)
         if not the_system:
             return None
         the_system = the_system[0]
         details = []
         if "primaryStar" in the_system:
-            details.extend(self.__describe_primary_star(the_system["primaryStar"], name))
+            details.extend(self.__describe_primary_star(the_system["primaryStar"], name, current_system))
 
         if "information" in the_system:
             info = ""
@@ -523,14 +523,30 @@ class EDRSystems(object):
         return type_lut.get(star_type.lower(), star_type)
         
 
-    def __describe_primary_star(self, star, system_name):
+    def __describe_primary_star(self, star, system_name, current_system=True):
         raw_type = star.get("type", "???")
         star_type = self.__star_type_lut(raw_type)
         star_info = []
         star_info.append(_("Star: {} [Fuel]").format(star_type) if star.get("isScoopable", False) else _("Star: {}").format(star_type))
-        value = self.body_value(system_name, star.get("name", ""))
-        if value:
-            star_info.append(_("Max value: {} cr @ {} LS").format(pretty_print_number(value["valueMax"]), pretty_print_number(value["distance"])))
+        value = None
+        if current_system:
+            value = self.body_value(system_name, star.get("name", ""))
+            if value:
+                star_info.append(_("Max value: {} cr @ {} LS").format(pretty_print_number(value["valueMax"]), pretty_print_number(value["distance"])))
+        else:
+            value = self.system_value(system_name)
+            if value:
+                estimatedValue = pretty_print_number(value["estimatedValue"]) if "estimatedValue" in value else "?"
+                estimatedValueMapped = pretty_print_number(value["estimatedValueMapped"]) if "estimatedValueMapped" in value else "?"
+                if estimatedValueMapped != estimatedValue:
+                    star_info.append("Scanned: {}, Mapped: {}".format(estimatedValue, estimatedValueMapped))
+                else:
+                    star_info.append("Scanned: {}".format(estimatedValue))
+                if "progress" in value and value["progress"] < 1.0 and value.get("bodyCount", None):
+                    body_count = value["bodyCount"]
+                    scanned_body_count = round(body_count * value["progress"])
+                    progress = int(value["progress"]*100.0)
+                    star_info.append("Discovered {}/{} {}%".format(scanned_body_count, body_count, progress))
         return star_info
 
     def station(self, star_system, station_name, station_type):
@@ -632,7 +648,7 @@ class EDRSystems(object):
 
         self.materials_cache.set(u"{}:{}".format(system_name.lower(), body_name.lower()), info)
 
-    def describe_body(self, system_name, body_name):
+    def describe_body(self, system_name, body_name, current_system=True):
         belt = bool(re.match(r"^(.*) \S+ (?:Belt Cluster [0-9]+)$", body_name))
         ring = body_name.endswith("Ring") # TODO check if this one also has "Ring Cluster/something number"
         adj_body_name = body_name
@@ -650,7 +666,10 @@ class EDRSystems(object):
         elif ring and "rings" in the_body:
             details.extend(self.__describe_ring(the_body, body_name))
         elif body_type == "Star":
-            details.extend(self.__describe_star(the_body, system_name))
+            if current_system:
+                details.extend(self.__describe_star(the_body, system_name))
+            else:
+                details.extend(self.describe_system(system_name, current_system))
         elif body_type == "Planet":
             details.extend(self.__describe_planet(the_body, system_name))
         else:
@@ -754,8 +773,9 @@ class EDRSystems(object):
         return materials
 
     def reflect_scan(self, system_name, body_name, scan):
-        # TODO ignore Belt Cluster 
-        # TODO differtent approach for autoscan and other type of scans
+        if "belt cluster" in body_name.lower():
+            return
+        
         bodies = self.bodies(system_name)
         if not bodies:
             bodies = []
@@ -769,7 +789,6 @@ class EDRSystems(object):
         new_body = the_body is None
         if new_body:
             the_body = {}
-            bodies[0][""]
         
         kv_lut = {
             "DistanceFromArrivalLS": {"k": "distanceToArrival", "v": lambda v: v},
@@ -802,6 +821,8 @@ class EDRSystems(object):
             "PlanetClass": {"k": "subType", "v": lambda v: v},
             "StarType": {"k": "subType", "v": lambda v: v},
             "SurfacePressure": {"k": "surfacePressure", "v": lambda v: v/101325},
+            "WasDiscovered": {"k": "wasDiscovered", "v": lambda v: v},
+            "WasMapped": {"k": "wasMapped", "v": lambda v: v},
         }
         # TODO rings
         adj_kv = lambda k: kv_lut[k] if k in kv_lut else ({"k": k[:1].lower() + k[1:], "v": lambda v: v} if k else None)
@@ -810,6 +831,8 @@ class EDRSystems(object):
             new_kv = adj_kv(key)
             if new_kv:
                 the_body[new_kv["k"]] = new_kv["v"](scan[key])
+
+        the_body["scanned"] = True
 
         if "PlanetClass" in scan:
             the_body["type"] = "Planet"
@@ -856,6 +879,7 @@ class EDRSystems(object):
         return bodies
 
     def fss_discovery_scan_update(self, scan):
+        # TODO progress wrong??
         system_name = scan["SystemName"]
         bodies = self.bodies(system_name)
         if not bodies:
@@ -875,16 +899,15 @@ class EDRSystems(object):
         
         for key in scan:
             new_kv = adj_kv(key)
-            print("for key {}, new kv: {}".format(key, new_kv))
             if new_kv:
-                print("bodies: {}".format(bodies))
-                print("new_kv[k]: {}".format(new_kv["k"]))
-                print("scan[key]: {}".format(scan[key]))
-                print("new_kv[v]: {}".format(new_kv["v"](scan[key])))
                 bodies[0][new_kv["k"]] = new_kv["v"](scan[key])
 
+        print("Bodies[0]: {}".format(bodies[0]))
         if scan["event"] == "FSSAllBodiesFound":
             bodies[0]["progress"] = 1.0
+            bodies[0]["bodyCount"] = scan["Count"]
+            print("100%")
+
         self.edsm_bodies_cache.set(system_name.lower(), bodies)
         
     def saa_scan_complete(self, system_name, scan):
@@ -911,7 +934,6 @@ class EDRSystems(object):
             "BodyName": {"k": "name", "v": lambda v: v},
             "BodyID": {"k": "bodyId", "v": lambda v: v},
             "SystemAddress": None,
-            "wasMapped": {"k": "wasMapped", "v": True},
         }
         
         adj_kv = lambda k: kv_lut[k] if k in kv_lut else ({"k": k[:1].lower() + k[1:], "v": lambda v: v} if k else None)
@@ -922,9 +944,24 @@ class EDRSystems(object):
                 the_body[new_kv["k"]] = new_kv["v"](scan[key])
 
         the_body["wasEfficient"] = scan["ProbesUsed"] <= scan["EfficiencyTarget"]
+        the_body["mapped"] = True
         
         if new_body:
             bodies.append(the_body)
+            progress = None
+            if "bodyCount" in bodies[0]:
+                print("recorded body count: {}".format(bodies[0]["bodyCount"]))
+                print("known body count: {}".format(len(bodies))) # TODO seems way off, maybe because I was measuring the wrong thing
+                print("known bodies: {}".format(bodies))
+                progress = bodies[0]["bodyCount"] / len(bodies) if len(bodies) else bodies[0].get("progress", None)
+        
+            if progress is not None:
+                print("synthetic progress: {}".format(progress))
+                bodies[0]["progress"] = progress
+
+            if "progress" in bodies[0]:
+                # TODO remove, just for debugging purpose.
+                print("recorded progress: {}".format(bodies[0]["progress"]))
         else:
             pass
         
@@ -991,22 +1028,33 @@ class EDRSystems(object):
         totalMappedValue = 0
         totalHonkValue = 0
         for body in bodies:
-            valueMapped = self.__body_value(body)
+            valueMax = None
+            valueScanned = None
+            if body.get("type", "").lower() == "star":
+                valueMax = self.__star_value(body)
+                valueScanned = valueMax
+            else:
+                valueMax = self.__body_value(body)
+                valueScanned = self.__body_value(body, False)
             body_name = body.get("name", None)
-            if body_name and valueMapped is not None:
+            if body_name and valueMax is not None:
                 if body_name in body_values:
-                    body_values[body_name]["valueMax"] = valueMapped
+                    body_values[body_name]["valueMax"] = valueMax
+                    body_values[body_name]["valueScanned"] = valueScanned
                 else:
                     body_values[body_name] = {
                         "bodyId":body.get("bodyId", None),
                         "bodyName": body_name,
                         "distance": round(body.get("distanceToArrival", None)),
-                        "valueMax": valueMapped
+                        "valueMax": valueMax,
+                        "valueScanned": valueScanned,
                     }
-                totalMappedValue += valueMapped
-            valueHonk = self.__body_value(body)
-            if valueHonk is not None:
-                totalHonkValue += valueHonk
+                flags = {key: value for key, value in body.items() if key in ["wasDiscovered", "wasMapped", "mapped", "scanned"]}
+                body_values[body_name].update(flags)
+                totalMappedValue += valueMax
+            
+            if valueScanned is not None:
+                totalHonkValue += valueScanned
 
         valuable_bodies = sorted(body_values.values(), key=lambda s: s['valueMax'], reverse=True)
         if value:
@@ -1024,10 +1072,10 @@ class EDRSystems(object):
         progress = None
         if "bodyCount" in bodies[0]:
             print("recorded body count: {}".format(bodies[0]["bodyCount"]))
-            print("known body count: {}".format(len(bodies))) # TODO seems way off, maybe because I was measuring the wrong thing
+            print("known body count: {}".format(len(bodies)))
             print("known bodies: {}".format(bodies))
-            value["bodyCount"] = max(bodies[0]["bodyCount"], len(bodies[0]))
-            progress = bodies[0]["bodyCount"] / len(bodies[0]) if len(bodies[0]) else bodies[0].get("progress", None)
+            value["bodyCount"] = max(bodies[0]["bodyCount"], len(bodies))
+            progress = bodies[0]["bodyCount"] / len(bodies) if len(bodies) else bodies[0].get("progress", None)
         
         if progress is not None:
             print("synthetic progress: {}".format(progress))
@@ -1050,30 +1098,37 @@ class EDRSystems(object):
             if body.get("bodyName", None) == body_name:
                 value = body
 
-        if value:
-            return value
-    
+        if value is None:
+            value={}
+        
         the_body = self.body(system_name, body_name)
         if the_body:
-            is_planet = the_body.get("type", "") == "Planet"
             valueMax = "?"
-            if is_planet:
-                valueMax = self.__body_value(the_body, False) # TODO adjust the bool
+            if the_body.get("type", "").lower() == "star":
+                valueMax = self.__star_value(the_body)
+                value["valueScanned"] = valueMax
             else:
-                valueMax = self.__star_value(the_body, True) # TODO adjust the bool
-            value = {
-                "bodyId":the_body.get("bodyId", None),
-                "bodyName": body_name,
-                "distance": round(the_body.get("distanceToArrival", None)),
-                "valueMax": valueMax
-            }
+                valueMax = self.__body_value(the_body)
+                value["valueScanned"] = self.__body_value(the_body, False)
+            
+            
+            value["bodyId"] = the_body.get("bodyId", None)
+            value["bodyName"] = body_name
+            value["distance"] = round(the_body.get("distanceToArrival", None))
+            value["valueMax"] = valueMax
+
+            if "wasDiscovered" in the_body:
+                value["wasDiscovered"] = the_body["wasDiscovered"]
+
+            if "wasMapped" in the_body:
+                value["wasMapped"] = the_body["wasMapped"]
         return value
         
     @staticmethod
-    def __star_value(the_body, bonus):
+    def __star_value(the_body, bonus=True):
         type = the_body.get("subType", "")
         mass = the_body.get("solarMasses", 0)
-        first_discoverer = the_body.get("wasDiscovered", True) # TODO maybe not the right meaning for wasdiscovered
+        first_discoverer = not the_body.get("wasDiscovered", False)
         
         if not type:
             return None
@@ -1090,16 +1145,18 @@ class EDRSystems(object):
             q = 0.56591828
             honk_bonus_value = max(500,(k + k * q * pow(mass,0.2)) / 3 )
             honk_bonus_value *= 2.6 if first_discoverer else 1
-        return (k + (mass * k / 66.25)) + honk_bonus_value
+        value = round((k + (mass * k / 66.25)) + honk_bonus_value)
+        return value
 
     def __body_value(self, the_body, override_mapped=True):
         type = the_body.get("subType", "")
         mass = the_body.get("earthMasses", 0)
         terraformability = 1.0 if the_body.get("terraformingState", "") == "Terraformed" else 0.0
         first_discoverer = not the_body.get("wasDiscovered", False)
+        
         mapped = override_mapped
-        first_mapped = not the_body.get("wasMapped", False)
-        efficiency_bonus = the_body.get("wasEfficient", True)
+        first_mapped = not the_body.get("wasMapped", False) if mapped else False
+        efficiency_bonus = the_body.get("wasEfficient", True) if mapped else False
         k_lut = {
                 "metal-rich body": 21790,
                 "metal rich body": 21790,
@@ -1126,16 +1183,21 @@ class EDRSystems(object):
             else:
                 mapping_multiplier = 3.3333333333
         value = (k + k * q * pow(mass,0.2)) * mapping_multiplier
+        
         if mapped:
             if self.dlc_name and self.dlc_name.lower()  == "odyssey":
                 value += max(value * 0.3, 555)
+                
             
             if efficiency_bonus:
                 value *= 1.25
+                
         value = max(500, value)
         if first_discoverer:
             value *= 2.6
-        return round(value)
+            
+        value = round(value)
+        return value
 
 
     def system_allegiance(self, star_system):

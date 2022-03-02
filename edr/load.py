@@ -306,7 +306,6 @@ def handle_change_events(ed_player, entry):
         ed_player.location.allegiance = entry.get("SystemAllegiance", None)
         if "StarSystem" in entry:
             ed_player.update_star_system_if_obsolete(entry["StarSystem"], entry.get("SystemAddress", None))
-        print("update system from handle change events with {} and {}".format(entry.get("SystemAddress", None), entry.get("StarSystem", None)))
         EDR_CLIENT.edrfssinsights.update_system(entry.get("SystemAddress", None), entry.get("StarSystem", None))
         outcome["reason"] = "Location event"
         EDR_CLIENT.check_system(entry["StarSystem"], may_create=True, coords=entry.get("StarPos", None))
@@ -508,9 +507,7 @@ def dashboard_entry(cmdr, is_beta, entry):
 
     if 'Destination' in entry:
         if ed_player.in_game:
-            EDR_CLIENT.destination_guidance(entry["Destination"])    
-        else:
-            print("not in game")
+            EDR_CLIENT.destination_guidance(entry["Destination"])
 
     if not 'Flags' in entry:
         return
@@ -751,9 +748,8 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     if entry["event"] in ["Scan"]:
         EDR_CLIENT.process_scan(entry)
-        if entry["ScanType"] == "Detailed":
+        if entry["ScanType"] in ["Detailed", "Basic"]: # removed AutoScan because spammy
             EDR_CLIENT.noteworthy_about_scan(entry)
-		# TODO add support for autoscan as well
         
     if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PVPKill", "CrimeVictim", "CommitCrime"]:
         report_crime(ed_player, entry)
@@ -1373,10 +1369,11 @@ def handle_scan_events(player, entry):
         EDR_CLIENT.bounty_hunting_guidance(turn_off=True)
 
     target = None
+    pilotrank = entry.get("PilotRank", "Unknown")
     if npc:
-        target = player.instanced_npc(target_name, entry["PilotRank"], entry["Ship"], piloted)
+        target = player.instanced_npc(target_name, entry["Ship"], piloted)
     else:
-        target = player.instanced_player(target_name, rank=entry["PilotRank"], ship_internal_name=entry["Ship"], piloted=piloted)
+        target = player.instanced_player(target_name, rank=pilotrank, ship_internal_name=entry["Ship"], piloted=piloted)
 
     target.sqid = entry.get("SquadronID", None)
     nodotpower = entry["Power"].replace(".", "") if "Power" in entry else None
