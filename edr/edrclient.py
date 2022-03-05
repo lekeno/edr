@@ -4,6 +4,7 @@ from __future__ import absolute_import
 
 import datetime
 from sys import float_repr_style
+import sys
 import time
 import random
 import math
@@ -548,7 +549,7 @@ class EDRClient(object):
             header = _('Noteworthy stellar bodies in {}').format(fsdjump_event['StarSystem'])
         
         if not facts:
-            if self.player.in_bad_neighborhood() and (self.edrsystems.in_bubble(self.player.star_system) or self.edrsystems.in_colonia(self.player.star_system)):
+            if self.player.in_bad_neighborhood() and (self.edrsystems.in_bubble(self.player.star_system, 700) or self.edrsystems.in_colonia(self.player.star_system, 350)):
                 header = _(u"Anarchy system")
                 facts = [_(u"Crimes will not be reported.")]
             else:
@@ -569,14 +570,44 @@ class EDRClient(object):
             self.__notify(_(u'{} material densities on {}').format(qualifier, body_name), facts, clear_before = True)
 
     def noteworthy_about_scan(self, scan_event):
-        if scan_event["event"] != "Scan" or scan_event["ScanType"] != "Detailed":
+        if scan_event["event"] != "Scan" or not scan_event["ScanType"] in ["Detailed", "Basic", "AutoScan"]:
             return
-        if "Materials" not in scan_event or "BodyName" not in scan_event:
+        
+        if "BodyName" not in scan_event:
             return
-        facts = self.edrresourcefinder.assess_materials_density(scan_event["Materials"], self.player.inventory)
+        
+        header = _(u'Noteworthy about {}').format(scan_event["BodyName"])
+        facts = []
+        if scan_event["BodyName"]:
+            star_system = scan_event.get("StarSystem", self.player.star_system)
+            value = self.edrsystems.body_value(star_system, scan_event["BodyName"])
+            if value:
+                flags = [] 
+                if "wasDiscovered" in value:
+                    flags.append(_(u"[KNOWN]") if value["wasDiscovered"] else _(u"[FIRST DISCOVERED]"))
+                
+                if "wasMapped" in value and "PlanetClass" in scan_event:
+                    flags.append(_(u"[CHARTED]") if value["wasMapped"] else _(u"[UNCHARTED]"))
+
+                if value.get("wasEfficient", False):
+                    flags.append(_(u"[EFF. BONUS]"))
+
+                flags = " ".join(flags)
+                if pretty_print_number(value["valueMax"]) != pretty_print_number(value["valueScanned"]):
+                    facts.append(_("Estimated value: {} cr (mapped: {}) @ {} LS; {}").format(pretty_print_number(value["valueScanned"]), pretty_print_number(value["valueMax"]), pretty_print_number(value["distance"]), flags))
+                else:
+                    facts.append(_("Estimated value: {} cr @ {} LS; {}").format(pretty_print_number(value["valueMax"]), pretty_print_number(value["distance"]), flags))
+                    
+        if "Materials" in scan_event:
+            mats_assessment = self.edrresourcefinder.assess_materials_density(scan_event["Materials"], self.player.inventory)
+            if mats_assessment:
+                facts.extend(mats_assessment)
+                qualifier = self.edrresourcefinder.raw_profile
+                if qualifier:
+                    header = _(u'Noteworthy about {} ({} mats)').format(scan_event["BodyName"], qualifier)
+        
         if facts:
-            qualifier = self.edrresourcefinder.raw_profile or _("Noteworthy")
-            self.__notify(_(u'{} material densities on {}').format(qualifier, scan_event["BodyName"]), facts, clear_before = True)
+            self.__notify(header, facts, clear_before = True)
 
     
     def register_fss_signals(self, system_address=None, override_star_system=None, force_reporting=False):
@@ -588,7 +619,9 @@ class EDRClient(object):
                 new_fc = self.edrfssinsights.newly_found_fleet_carriers()
                 if new_fc:
                     # Report new FC to help with CG (e.g. unloading/loading commodities from newly arrived FC)
-                    self.notify_with_details(_(u"{} newly arrived fleet carriers").format(len(new_fc)), ["{} : {}".format(callsign, new_fc[callsign]) for callsign in new_fc])
+                    # TODO this one gets in the way of the system value notification...
+                    # self.notify_with_details(_(u"Discovered {} fleet carriers").format(len(new_fc)), ["{} : {}".format(callsign, new_fc[callsign]) for callsign in new_fc])
+                    pass
             return
         fc_report = self.edrfssinsights.fleet_carriers_report(force_reporting)
         if fc_report is not None:
@@ -690,6 +723,7 @@ class EDRClient(object):
             return
         
         # check if body > 0 ?
+        # TODO value of system if different system
         if self.body_guidance(self.player.star_system, name, passive=True):
             return
 
@@ -711,7 +745,77 @@ class EDRClient(object):
                 callsign = m.group(1)
                 self.fc_in_current_system(callsign)
                 return
+
+    def system_value(self, star_system=None):
+        # avoid belts since it's noisy and worthless
+        if star_system is None:
+            star_system = self.player.star_system
+        sys_value = self.edrsystems.system_value(star_system)
+        if sys_value:
+            details = []
+            estimatedValue = pretty_print_number(sys_value["estimatedValue"]) if "estimatedValue" in sys_value else "?"
+            estimatedValueMapped = pretty_print_number(sys_value["estimatedValueMapped"]) if "estimatedValueMapped" in sys_value else "?"
+            if estimatedValueMapped != estimatedValue:
+                details.append(_("Scanned: {}, Mapped: {}").format(estimatedValue, estimatedValueMapped))
+            else:
+                details.append(_("Scanned: {}").format(estimatedValue))
+            
+            valuableBodies = sorted(sys_value.get("valuableBodies", []), key=lambda b: b['valueMax'], reverse=True)
+
+            first_disco = 0
+            first_map = 0
+            top = 5
+            extra_details = []
+            for body in valuableBodies:
+                adjBodyName = EDRBodiesOfInterest.simplified_body_name(star_system, body.get("bodyName", "?"), " 0")
+                flags = []
+                if "wasDiscovered" in body and body["wasDiscovered"] == False:
+                    first_disco += 1
+                    if top:
+                        flags.append(_(u"[FIRST SCAN]") if body.get("scanned", False) else _(u"[UNKNOWN]"))
+
+                if "wasMapped" in body and body["wasMapped"] == False and body.get("type", "") == "planet":
+                    first_map += 1
+                    if top:
+                        flags.append(_(u"[FIRST MAP]") if body.get("mapped", False) else _(u"[UNCHARTED]"))
+
+                if top <= 0:
+                    continue
                 
+                flags = " ".join(flags)
+                if pretty_print_number(body["valueMax"]) != pretty_print_number(body["valueScanned"]):
+                    extra_details.append(_("{}: {} (mapped: {}) @ {} LS    {}").format(adjBodyName, pretty_print_number(body["valueScanned"]), pretty_print_number(body["valueMax"]), pretty_print_number(body["distance"]), flags))
+                else:
+                    extra_details.append(_("{}: {} @ {} LS    {}").format(adjBodyName, pretty_print_number(body["valueScanned"]), pretty_print_number(body["distance"]), flags))   
+                top -= 1
+            
+            # TODO l10n
+            firsts = ""
+            if first_disco or first_map:
+                if first_disco and first_map:
+                    firsts = _("Unknown: {}, Uncharted: {}").format(first_disco, first_map)
+                elif first_disco:
+                    firsts = _("Unknown: {}").format(first_disco)
+                else:
+                    firsts = _("Uncharted: {}").format(first_map)
+            if "progress" in sys_value and sys_value["progress"] < 1.0 and sys_value.get("bodyCount", None):
+                body_count = sys_value["bodyCount"]
+                scanned_body_count = round(body_count * sys_value["progress"])
+                progress = int(sys_value["progress"]*100.0)
+                details.append(_("Discovered {}/{} {}%    {}").format(scanned_body_count, body_count, progress, firsts))
+            elif first_disco or first_map:
+                details.append(firsts)
+            
+            details.extend(extra_details)
+            self.__notify(_("Estimated value of {}").format(star_system), details, clear_before= True)
+
+    def saa_scan_complete(self, entry):
+        self.edrsystems.saa_scan_complete(self.player.star_system, entry)
+
+    def reflect_fss_discovery_scan(self, entry):
+        self.edrsystems.fss_discovery_scan_update(entry)
+        
+            
 
     def show_navigation(self):
         current = self.player.attitude
@@ -734,7 +838,7 @@ class EDRClient(object):
             EDRLOG.log(u"No distance info out of System:{}, Body:{}, Place: {}, Radius:{}".format(location.star_system, location.body, location.place, radius), "DEBUG")
             return
         
-        threshold = 1.0
+        threshold = 0.25
         if self.player.piloted_vehicle is None:
             threshold = 0.001
         elif EDVehicleFactory.is_surface_vehicle(self.player.piloted_vehicle):
@@ -923,7 +1027,7 @@ class EDRClient(object):
         if micro_resources:
             details = self.__eval_micro_resources(micro_resources, from_backpack=True)
             if details:
-                self.__notify("Backpack assessment", details, clear_before=True)
+                self.__notify(_("Backpack assessment"), details, clear_before=True)
             elif not passive:
                 self.__notify(_("Backpack assessment"), [_(u"Nothing superfluous")], clear_before = True)
         elif not passive:
@@ -1278,7 +1382,7 @@ class EDRClient(object):
         else:
             self.status = _(u"distance failed")
             details.append(_(u"Couldn't calculate a distance. Invalid or unknown system names?"))
-        self.__notify("Distance", details, clear_before = True)
+        self.__notify(_("Distance"), details, clear_before = True)
 
 
     def blip(self, cmdr_name, blip):
@@ -2121,7 +2225,7 @@ class EDRClient(object):
         return True
 
     def system_guidance(self, system_name, passive=False):
-        description = self.edrsystems.describe_system(system_name)
+        description = self.edrsystems.describe_system(system_name, self.player.star_system == system_name)
         if not description:
             if not passive:
                 self.__notify(_(u"EDR System Search"), [_("No info on System called {}").format(system_name)], clear_before=True)
@@ -2132,7 +2236,7 @@ class EDRClient(object):
         return True
 
     def body_guidance(self, system_name, body_name, passive=False):
-        description = self.edrsystems.describe_body(system_name, body_name)
+        description = self.edrsystems.describe_body(system_name, body_name, self.player.star_system == system_name)
         if not description:
             if not passive:
                 self.__notify(_(u"EDR System Search"), [_("No info on Body called {}").format(body_name)], clear_before=True)
@@ -2309,10 +2413,9 @@ class EDRClient(object):
         return result
 
     def show_material_profiles(self):
-        # TODO clear before, also on the other material profile things
-        # TODO fsd profiles for instnace returns a ton of stuff...
+        # TODO verify clear before
         profiles = self.edrresourcefinder.profiles()
-        self.__notify(_(u"Available materials profiles"), [" ;; ".join(profiles)])
+        self.__notify(_(u"Available materials profiles"), [" ;; ".join(profiles)], clear_before=True)
 
     def search_resource(self, resource, star_system):
         if not star_system:

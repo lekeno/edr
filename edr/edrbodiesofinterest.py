@@ -21,7 +21,7 @@ class EDRBodiesOfInterest(object):
         if not star_system or not body_name:
             return None
         c_star_system = star_system.lower()
-        c_body_name = EDRBodiesOfInterest.__simplified_body_name(star_system, body_name)
+        c_body_name = EDRBodiesOfInterest.simplified_body_name(star_system, body_name)
         return EDRBodiesOfInterest.BOI.get(c_star_system, {}).get(c_body_name, None)
 
     @staticmethod
@@ -42,9 +42,9 @@ class EDRBodiesOfInterest(object):
 
 
     @staticmethod
-    def __simplified_body_name(star_system, body_name):
+    def simplified_body_name(star_system, body_name, empty_name_overrider=None):
         if body_name.lower().startswith(star_system.lower()):
             # Example: Pleione A 1 A => a 1 a
             # Remove prefix + space
-            return body_name[len(star_system)+1:].lower()
+            return body_name[len(star_system)+1:].lower() or (empty_name_overrider if empty_name_overrider else body_name)
         return body_name.lower()

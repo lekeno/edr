@@ -82,7 +82,6 @@ class EDRServiceFinder(threading.Thread):
         candidates = self.__search(systems, candidates)
         if not (candidates and candidates.get('prime', None)):
             EDRLOG.log(u"Couldn't find any prime candidate so far. Trying again after a shuffle", "DEBUG")
-            # TODO check colonia commands
             shuffle(systems)
             candidates = self.__search(systems, candidates)
 

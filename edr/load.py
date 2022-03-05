@@ -306,7 +306,6 @@ def handle_change_events(ed_player, entry):
         ed_player.location.allegiance = entry.get("SystemAllegiance", None)
         if "StarSystem" in entry:
             ed_player.update_star_system_if_obsolete(entry["StarSystem"], entry.get("SystemAddress", None))
-        print("update system from handle change events with {} and {}".format(entry.get("SystemAddress", None), entry.get("StarSystem", None)))
         EDR_CLIENT.edrfssinsights.update_system(entry.get("SystemAddress", None), entry.get("StarSystem", None))
         outcome["reason"] = "Location event"
         EDR_CLIENT.check_system(entry["StarSystem"], may_create=True, coords=entry.get("StarPos", None))
@@ -508,9 +507,7 @@ def dashboard_entry(cmdr, is_beta, entry):
 
     if 'Destination' in entry:
         if ed_player.in_game:
-            EDR_CLIENT.destination_guidance(entry["Destination"])    
-        else:
-            print("not in game")
+            EDR_CLIENT.destination_guidance(entry["Destination"])
 
     if not 'Flags' in entry:
         return
@@ -722,13 +719,26 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         depletables = EDRRawDepletables()
         depletables.visit(entry["NearestDestination"])
         
+
+    if entry["event"] == "SAAScanComplete":
+        EDR_CLIENT.saa_scan_complete(entry)
+    
     if entry["event"] in ["FSSSignalDiscovered"]:
         EDR_CLIENT.noteworthy_about_signal(entry)
 
     if entry["event"] in ["FSSDiscoveryScan"]:
         if "SystemName" in entry:
             ed_player.update_star_system_if_obsolete(entry["SystemName"], entry.get("SystemAddress", None))
+            # TODO progress not reflected from individual scans
+            EDR_CLIENT.reflect_fss_discovery_scan(entry)
+            EDR_CLIENT.system_value(entry["SystemName"])
         EDR_CLIENT.register_fss_signals(entry.get("SystemAddress", None), entry.get("SystemName", None), force_reporting=True) # Takes care of zero pop system with no signals (not even a nav beacon) and no fleet carrier
+
+    if entry["event"] in ["FSSAllBodiesFound"]:
+        if "SystemName" in entry:
+            ed_player.update_star_system_if_obsolete(entry["SystemName"], entry.get("SystemAddress", None))
+            EDR_CLIENT.reflect_fss_discovery_scan(entry)
+            EDR_CLIENT.system_value(entry["SystemName"])
 
     if entry["event"] in ["NavBeaconScan"] and entry.get("NumBodies", 0):
         if "SystemAddress" in entry:
@@ -738,9 +748,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     if entry["event"] in ["Scan"]:
         EDR_CLIENT.process_scan(entry)
-        if entry["ScanType"] == "Detailed":
+        if entry["ScanType"] in ["Detailed", "Basic"]: # removed AutoScan because spammy
             EDR_CLIENT.noteworthy_about_scan(entry)
-
+        
     if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PVPKill", "CrimeVictim", "CommitCrime"]:
         report_crime(ed_player, entry)
 
@@ -1359,10 +1369,11 @@ def handle_scan_events(player, entry):
         EDR_CLIENT.bounty_hunting_guidance(turn_off=True)
 
     target = None
+    pilotrank = entry.get("PilotRank", "Unknown")
     if npc:
-        target = player.instanced_npc(target_name, entry["PilotRank"], entry["Ship"], piloted)
+        target = player.instanced_npc(target_name, rank=pilotrank, ship_internal_name=entry["Ship"], piloted=piloted)
     else:
-        target = player.instanced_player(target_name, rank=entry["PilotRank"], ship_internal_name=entry["Ship"], piloted=piloted)
+        target = player.instanced_player(target_name, rank=pilotrank, ship_internal_name=entry["Ship"], piloted=piloted)
 
     target.sqid = entry.get("SquadronID", None)
     nodotpower = entry["Power"].replace(".", "") if "Power" in entry else None
@@ -1888,7 +1899,7 @@ def overlay_command(param):
         random.seed()
         r = random.random()
         if r < 0.5:
-            EDR_CLIENT.who(codecs.decode(random.choice(['yrxrab', 'E R C Y V P N A G', 'Nxhzn Grobev']), 'rot_13'))
+            EDR_CLIENT.who(codecs.decode(random.choice(['yrxrab', 'Fgrs']), 'rot_13'))
         else:
             EDR_CLIENT.who(codecs.decode(random.choice(['Qnatrebhf.pbz', 'Yrzna Ehff IV', 'qvrtb anpxl', 'Ahzvqn', 'Nyovab Fnapurm']), 'rot_13')) # top 5 for self reported kills in 2021
         EDR_CLIENT.noteworthy_about_system({ "timestamp":"2021-10-22T12:34:56Z", "event":"FSDJump", "Taxi":False, "Multicrew":False, "StarSystem":"Deciat", "SystemAddress":6681123623626, "StarPos":[122.62500,-0.81250,-47.28125], "SystemAllegiance":"Independent", "SystemEconomy":"$economy_Industrial;", "SystemEconomy_Localised":"Industrial", "SystemSecondEconomy":"$economy_Refinery;", "SystemSecondEconomy_Localised":"Refinery", "SystemGovernment":"$government_Feudal;", "SystemGovernment_Localised":"Feudal", "SystemSecurity":"$SYSTEM_SECURITY_high;", "SystemSecurity_Localised":"High Security", "Population":31778844, "Body":"Deciat", "BodyID":0, "BodyType":"Star", "Powers":[ "A. Lavigny-Duval" ], "PowerplayState":"Exploited", "JumpDist":5.973, "FuelUsed":0.111415, "FuelLevel":8.000000, "Factions":[ { "Name":"Independent Deciat Green Party", "FactionState":"War", "Government":"Democracy", "Influence":0.109109, "Allegiance":"Federation", "Happiness":"$Faction_HappinessBand3;", "Happiness_Localised":"Discontented", "MyReputation":57.083599, "ActiveStates":[ { "State":"InfrastructureFailure" }, { "State":"War" } ] }, { "Name":"Kremata Incorporated", "FactionState":"Election", "Government":"Corporate", "Influence":0.105105, "Allegiance":"Federation", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":-6.000000, "ActiveStates":[ { "State":"Election" } ] }, { "Name":"Windri & Co", "FactionState":"War", "Government":"Corporate", "Influence":0.151151, "Allegiance":"Federation", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":-11.800000, "ActiveStates":[ { "State":"Boom" }, { "State":"War" } ] }, { "Name":"Deciat Flag", "FactionState":"None", "Government":"Dictatorship", "Influence":0.100100, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":0.000000 }, { "Name":"Deciat Corp.", "FactionState":"Election", "Government":"Corporate", "Influence":0.105105, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":-1.200000, "ActiveStates":[ { "State":"Election" } ] }, { "Name":"Deciat Blue Dragons", "FactionState":"None", "Government":"Anarchy", "Influence":0.010010, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":3.300000 }, { "Name":"Ryders of the Void", "FactionState":"Boom", "Government":"Feudal", "Influence":0.419419, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":93.099998, "PendingStates":[ { "State":"Expansion", "Trend":0 } ], "RecoveringStates":[ { "State":"CivilUnrest", "Trend":0 }, { "State":"PirateAttack", "Trend":0 } ], "ActiveStates":[ { "State":"Boom" } ] } ], "SystemFaction":{ "Name":"Ryders of the Void", "FactionState":"Boom" }, "Conflicts":[ { "WarType":"war", "Status":"active", "Faction1":{ "Name":"Independent Deciat Green Party", "Stake":"Carson Hub", "WonDays":2 }, "Faction2":{ "Name":"Windri & Co", "Stake":"Alonso Cultivation Estate", "WonDays":1 } }, { "WarType":"election", "Status":"active", "Faction1":{ "Name":"Kremata Incorporated", "Stake":"Folorunsho Military Enterprise", "WonDays":2 }, "Faction2":{ "Name":"Deciat Corp.", "Stake":"Amos Synthetics Moulding", "WonDays":1 } } ] })

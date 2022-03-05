@@ -138,7 +138,7 @@ class EDRServer(object):
                 return EDRServer.SESSION.get(endpoint, params=params, headers=headers)
             except requests.exceptions.RequestException as e:
                 last_connection_exception = e
-                EDRLOG.log(u"ConnectionException {} for GET EDR: attempts={}}".format(e, attempts), u"WARNING")
+                EDRLOG.log(u"ConnectionException {} for GET EDR: attempts={}".format(e, attempts), u"WARNING")
         raise last_connection_exception
 
     def __put(self, endpoint, service, json, params=None, headers=None, attempts=3):

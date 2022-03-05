@@ -41,6 +41,7 @@ class EDRSystems(object):
     EDSM_MARKETS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_markets.v1.p')
     EDSM_SHIPYARDS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_shipyards.v1.p')
     EDSM_OUTFITTING_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_outfitting.v1.p')
+    EDSM_SYSTEM_VALUES_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_system_values.v1.p')
     EDR_NOTAMS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'notams.v2.p')
     EDR_SITREPS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'sitreps.v3.p')
     EDR_TRAFFIC_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'traffic.v2.p')
@@ -173,6 +174,12 @@ class EDRSystems(object):
             self.edsm_outfitting_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                                   edr_config.edsm_outfitting_max_age())
 
+        try:
+            with open(self.EDSM_SYSTEM_VALUES_CACHE, 'rb') as handle:
+                self.edsm_system_values_cache = pickle.load(handle)
+        except:
+            self.edsm_system_values_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                                  edr_config.edsm_bodies_max_age()) # TODO proper max age value
         
         try:
             with open(self.EDSM_DEATHS_CACHE, 'rb') as handle:
@@ -312,6 +319,9 @@ class EDRSystems(object):
         
         with open(self.EDSM_BODIES_CACHE, 'wb') as handle:
             pickle.dump(self.edsm_bodies_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        
+        with open(self.EDSM_SYSTEM_VALUES_CACHE, 'wb') as handle:
+            pickle.dump(self.edsm_system_values_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         with open(self.EDSM_STATIONS_CACHE, 'wb') as handle:
             pickle.dump(self.edsm_stations_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -391,7 +401,6 @@ class EDRSystems(object):
 
     
     def system(self, name):
-        # TODO clear cache if just discovered?
         if not name:
             return None
 
@@ -406,17 +415,14 @@ class EDRSystems(object):
         
         return None
 
-    def describe_system(self, name):
-        # stimated value?
-        # TODO system with None state, etc. should not show ???
-        # TODO anarchy shows as security ??? (e.g. ltt 9494)  => "information":{}
+    def describe_system(self, name, current_system=True):
         the_system = self.system(name)
         if not the_system:
             return None
         the_system = the_system[0]
         details = []
         if "primaryStar" in the_system:
-            details.extend(self.__describe_primary_star(the_system["primaryStar"]))
+            details.extend(self.__describe_primary_star(the_system["primaryStar"], name, current_system))
 
         if "information" in the_system:
             info = ""
@@ -457,11 +463,15 @@ class EDRSystems(object):
 
         return details
 
-    def __describe_star(self, star):
+    def __describe_star(self, star, system_name):
         raw_type = star.get("subType", "???")
         star_type = self.__star_type_lut(raw_type)
-        star_info = _("Star: {} [Fuel]").format(star_type) if star.get("isScoopable", False) else _("Star: {}").format(star_type)
-        return [star_info]
+        star_info = []
+        star_info.append(_("Star: {} [Fuel]").format(star_type) if star.get("isScoopable", False) else _("Star: {}").format(star_type))
+        value = self.body_value(system_name, star.get("name", ""))
+        if value:
+            star_info.append(_("Max value: {} cr @ {} LS").format(pretty_print_number(value["valueMax"]), pretty_print_number(value["distance"])))
+        return star_info
 
     def __star_type_lut(self, star_type):
         type_lut = {
@@ -513,11 +523,31 @@ class EDRSystems(object):
         return type_lut.get(star_type.lower(), star_type)
         
 
-    def __describe_primary_star(self, star):
+    def __describe_primary_star(self, star, system_name, current_system=True):
         raw_type = star.get("type", "???")
         star_type = self.__star_type_lut(raw_type)
-        star_info = _("Star: {} [Fuel]").format(star_type) if star.get("isScoopable", False) else _("Star: {}").format(star_type)
-        return [star_info]
+        star_info = []
+        star_info.append(_("Star: {} [Fuel]").format(star_type) if star.get("isScoopable", False) else _("Star: {}").format(star_type))
+        value = None
+        if current_system:
+            value = self.body_value(system_name, star.get("name", ""))
+            if value:
+                star_info.append(_("Max value: {} cr @ {} LS").format(pretty_print_number(value["valueMax"]), pretty_print_number(value["distance"])))
+        else:
+            value = self.system_value(system_name)
+            if value:
+                estimatedValue = pretty_print_number(value["estimatedValue"]) if "estimatedValue" in value else "?"
+                estimatedValueMapped = pretty_print_number(value["estimatedValueMapped"]) if "estimatedValueMapped" in value else "?"
+                if estimatedValueMapped != estimatedValue:
+                    star_info.append(_("Scanned: {}, Mapped: {}").format(estimatedValue, estimatedValueMapped))
+                else:
+                    star_info.append(_("Scanned: {}").format(estimatedValue))
+                if "progress" in value and value["progress"] < 1.0 and value.get("bodyCount", None):
+                    body_count = value["bodyCount"]
+                    scanned_body_count = round(body_count * value["progress"])
+                    progress = int(value["progress"]*100.0)
+                    star_info.append(_("Discovered {}/{} {}%").format(scanned_body_count, body_count, progress))
+        return star_info
 
     def station(self, star_system, station_name, station_type):
         stations = self.stations_in_system(star_system)
@@ -618,8 +648,7 @@ class EDRSystems(object):
 
         self.materials_cache.set(u"{}:{}".format(system_name.lower(), body_name.lower()), info)
 
-    def describe_body(self, system_name, body_name):
-        # belt = body_name.endswith("Belt") # TODO add support for "Belt Cluster 3", etc.
+    def describe_body(self, system_name, body_name, current_system=True):
         belt = bool(re.match(r"^(.*) \S+ (?:Belt Cluster [0-9]+)$", body_name))
         ring = body_name.endswith("Ring") # TODO check if this one also has "Ring Cluster/something number"
         adj_body_name = body_name
@@ -637,20 +666,21 @@ class EDRSystems(object):
         elif ring and "rings" in the_body:
             details.extend(self.__describe_ring(the_body, body_name))
         elif body_type == "Star":
-            details.extend(self.__describe_star(the_body))
+            if current_system:
+                details.extend(self.__describe_star(the_body, system_name))
+            else:
+                details.extend(self.describe_system(system_name, current_system))
         elif body_type == "Planet":
-            details.extend(self.__describe_planet(the_body))            
+            details.extend(self.__describe_planet(the_body, system_name))
         else:
             pass
 
         if "updateTime" in the_body:
             details.append(_("as of {}  ").format(the_body["updateTime"]))
         
-        # TODO exploration value?
-        # TODO belts are within a given body's bag of stuff under "belts", also "rings" for planets
         return details
     
-    def __describe_planet(self, planet):
+    def __describe_planet(self, planet, system_name):
         details = []
         info = ""
         body_type = planet.get("type", None)
@@ -667,7 +697,6 @@ class EDRSystems(object):
             gravity = "{:0.2f}".format(planet["gravity"]) if "gravity" in planet else "-" #TODO not really G? but earth G? verify other field for conversions too
             temperature = "{:0.0f}".format(planet["surfaceTemperature"]) if "surfaceTemperature" in planet else "-"
             land_or_walk =  _("[LAND: {}G; {}K]").format(gravity, temperature)
-            # TODO verify
             if planet.get("surfaceTemperature", 1000) < 800 and planet.get("gravity", 3) < 2.7 and (planet.get("surfacePressure", None) and planet.get("surfacePressure", 1) < 0.1):
                 land_or_walk = _("[WALK: {}G; {}K]").format(gravity, temperature)
             info += land_or_walk
@@ -686,9 +715,15 @@ class EDRSystems(object):
         if info:
             details.append(info)
 
+        value = self.body_value(system_name, planet.get("name", ""))
+        if value:
+            details.append(_("Max value: {} cr @ {} LS").format(pretty_print_number(value["valueMax"]), pretty_print_number(value["distance"])))
+
         return details
 
     def __describe_belt(self, body, belt_full_name):
+        # TODO not really working yet
+        # TODO rings are within a given body's bag of stuff under "belts"
         belts = body.get("belts", [])
         the_belt = None
         for b in belts:
@@ -706,7 +741,8 @@ class EDRSystems(object):
         return [_("Type: {}").format(the_belt.get("type", "???"))]
 
     def __describe_ring(self, body, ring_full_name):
-        # TODO not really working yet
+        # TODO not really working yet, that said it doesn't look possible to target a ring...
+        # TODO rings are within a given body's bag of stuff under "rings"        
         rings = body.get("rings", [])
         the_ring = None
         for r in rings:
@@ -737,8 +773,9 @@ class EDRSystems(object):
         return materials
 
     def reflect_scan(self, system_name, body_name, scan):
-        # TODO ignore Belt Cluster 
-        # TODO differtent approach for autoscan and other type of scans
+        if "belt cluster" in body_name.lower():
+            return
+        
         bodies = self.bodies(system_name)
         if not bodies:
             bodies = []
@@ -748,7 +785,7 @@ class EDRSystems(object):
             if b.get("name", "").lower() == body_name.lower():
                 the_body = b
                 break
-        
+                
         new_body = the_body is None
         if new_body:
             the_body = {}
@@ -762,7 +799,7 @@ class EDRSystems(object):
             "BodyID": {"k": "bodyId", "v": lambda v: v},
             "StarSystem": None,
             "SystemAddress": None,
-            "StarType": {"k": "type", "v": lambda v: v}, # TODO expand from letter to full name (subclass important?), and add "type": Star or planet...
+            "StarType": {"k": "type", "v": lambda v: v},
             "StellarMass": {"k": "solarMasses", "v": lambda v: v},
             "Age_MY": {"k": "age", "v": lambda v: v},
             "Luminosity": None,
@@ -771,21 +808,21 @@ class EDRSystems(object):
             "Periapsis": {"k": "argOfPeriapsis", "v": lambda v: v},
             "OrbitalPeriod": {"k": "orbitalPeriod", "v": lambda v: v/86400},
             "RotationPeriod": {"k": "rotationalPeriod", "v": lambda v: v/86400},
-            "WasDiscovered": None, # ignoring
-            "WasMapped": None, # ignoring
             "Landable": {"k": "isLandable", "v": lambda v: v},
             "Materials": {"k": "materials", "v": lambda v: {np["Name"]: np["Percent"] for np in v}},
             "AtmosphereComposition": {"k": "atmosphereComposition", "v": lambda v: {np["Name"]: np["Percent"] for np in v}},
             "SurfaceGravity": {"k": "gravity", "v": lambda v: v/9.79761064137},
             "MassEM":  {"k": "earthMasses", "v": lambda v: v},
             "TidalLock":  {"k": "rotationalPeriodTidallyLocked", "v": lambda v: v},
-            "TerraformState": {"k": "terraformingState", "v": lambda v: v if v else "Not terraformable"}, # if empty =>> Not terraformable
+            "TerraformState": {"k": "terraformingState", "v": lambda v: v if v else "Not terraformable"},
             "Volcanism": {"k": "volcanismType", "v": lambda v: v if v else "No volcanism"},
             "AtmosphereType": {"k": "atmosphereType", "v": lambda v: v if v and v != "None" else "No atmosphere"},
             "Composition": {"k": "solidComposition", "v": lambda v: {m:p*100 for m,p in v.items()} if v else None},
             "PlanetClass": {"k": "subType", "v": lambda v: v},
             "StarType": {"k": "subType", "v": lambda v: v},
             "SurfacePressure": {"k": "surfacePressure", "v": lambda v: v/101325},
+            "WasDiscovered": {"k": "wasDiscovered", "v": lambda v: v},
+            "WasMapped": {"k": "wasMapped", "v": lambda v: v},
         }
         # TODO rings
         adj_kv = lambda k: kv_lut[k] if k in kv_lut else ({"k": k[:1].lower() + k[1:], "v": lambda v: v} if k else None)
@@ -794,6 +831,8 @@ class EDRSystems(object):
             new_kv = adj_kv(key)
             if new_kv:
                 the_body[new_kv["k"]] = new_kv["v"](scan[key])
+
+        the_body["scanned"] = True
 
         if "PlanetClass" in scan:
             the_body["type"] = "Planet"
@@ -838,6 +877,79 @@ class EDRSystems(object):
                 self.edsm_bodies_cache.set(system_name.lower(), bodies)
 
         return bodies
+
+    def fss_discovery_scan_update(self, scan):
+        system_name = scan["SystemName"]
+        bodies = self.bodies(system_name)
+        if not bodies:
+            bodies = [{}]
+        
+        kv_lut = {
+            "timestamp": {"k": "updateTime", "v": lambda v: v.replace("T", " ").replace("Z", "") if v else ""},
+            "event": None,
+            "Progress": {"k": "progress", "v": lambda v: v},
+            "BodyCount": {"k": "bodyCount", "v": lambda v: v},
+            "NonBodyCount": {"k": "nonBodyCount", "v": lambda v: v},
+            "SystemName": None,
+            "SystemAddress": None,
+            "Count": {"k": "bodyCount", "v": lambda v: v},
+        }
+        adj_kv = lambda k: kv_lut[k] if k in kv_lut else ({"k": k[:1].lower() + k[1:], "v": lambda v: v} if k else None)
+        
+        for key in scan:
+            new_kv = adj_kv(key)
+            if new_kv:
+                bodies[0][new_kv["k"]] = new_kv["v"](scan[key])
+
+        print("Bodies[0]: {}".format(bodies[0]))
+        if scan["event"] == "FSSAllBodiesFound":
+            bodies[0]["progress"] = 1.0
+            bodies[0]["bodyCount"] = scan["Count"]
+            print("100%")
+
+        self.edsm_bodies_cache.set(system_name.lower(), bodies)
+        
+    def saa_scan_complete(self, system_name, scan):
+        body_name = scan.get("BodyName", None)
+        if not body_name:
+            return
+        bodies = self.bodies(system_name)
+        if not bodies:
+            bodies = []
+        
+        the_body = None
+        for b in bodies:
+            if b.get("name", "").lower() == body_name.lower():
+                the_body = b
+                break
+                
+        new_body = the_body is None
+        if new_body:
+            the_body = {}
+        
+        kv_lut = {
+            "timestamp": {"k": "updateTime", "v": lambda v: v.replace("T", " ").replace("Z", "") if v else ""},
+            "event": None,
+            "BodyName": {"k": "name", "v": lambda v: v},
+            "BodyID": {"k": "bodyId", "v": lambda v: v},
+            "SystemAddress": None,
+        }
+        
+        adj_kv = lambda k: kv_lut[k] if k in kv_lut else ({"k": k[:1].lower() + k[1:], "v": lambda v: v} if k else None)
+        
+        for key in scan:
+            new_kv = adj_kv(key)
+            if new_kv:
+                the_body[new_kv["k"]] = new_kv["v"](scan[key])
+
+        the_body["wasEfficient"] = scan["ProbesUsed"] <= scan["EfficiencyTarget"]
+        the_body["mapped"] = True
+        
+        if new_body:
+            bodies.append(the_body)
+        
+        self.edsm_bodies_cache.set(system_name.lower(), bodies)
+
 
     def are_factions_stale(self, star_system):
         if not star_system:
@@ -884,6 +996,183 @@ class EDRSystems(object):
                 break
 
         return (state, updated)
+
+    def system_value(self, system_name):
+        value = self.edsm_system_values_cache.get(system_name.lower())
+        if not value:
+            value = self.edsm_server.system_value(system_name)
+            if value:
+                self.edsm_system_values_cache.set(system_name.lower(), value)
+        bodies = self.bodies(system_name)
+        if not bodies:
+            bodies = [{}]
+        
+        body_values = {b["bodyName"]: b for b in value.get("valuableBodies", [])}
+        totalMappedValue = 0
+        totalHonkValue = 0
+        for body in bodies:
+            valueMax = None
+            valueScanned = None
+            if body.get("type", "").lower() == "star":
+                valueMax = self.__star_value(body)
+                valueScanned = valueMax
+            else:
+                valueMax = self.__body_value(body)
+                valueScanned = self.__body_value(body, False)
+            body_name = body.get("name", None)
+            if body_name and valueMax is not None:
+                if body_name in body_values:
+                    body_values[body_name]["valueMax"] = valueMax
+                    body_values[body_name]["valueScanned"] = valueScanned
+                else:
+                    body_values[body_name] = {
+                        "bodyId":body.get("bodyId", None),
+                        "bodyName": body_name,
+                        "distance": round(body.get("distanceToArrival", None)),
+                        "valueMax": valueMax,
+                        "valueScanned": valueScanned,
+                    }
+                flags = {key: value for key, value in body.items() if key in ["wasDiscovered", "wasMapped", "mapped", "scanned"]}
+                body_values[body_name].update(flags)
+                totalMappedValue += valueMax
+            
+            if valueScanned is not None:
+                totalHonkValue += valueScanned
+
+        valuable_bodies = sorted(body_values.values(), key=lambda s: s['valueMax'], reverse=True)
+        if value:
+            value["estimatedValue"] = max(value["estimatedValue"], totalHonkValue)
+            value["estimatedValueMapped"] = max(value["estimatedValueMapped"], totalMappedValue)
+            value["valuableBodies"] = valuable_bodies
+        else:
+            value = {
+                "name": system_name,
+                "estimatedValue": totalHonkValue,
+                "estimatedValue": totalMappedValue,
+                "valuableBodies": valuable_bodies,
+            }
+
+        if "bodyCount" in bodies[0]:
+            value["bodyCount"] = max(bodies[0]["bodyCount"], len(bodies))
+            if "progress" in bodies[0]:
+                value["progress"] = bodies[0]["progress"]
+
+        return value
+
+    def body_value(self, system_name, body_name):
+        system_value = self.system_value(system_name)
+        if not system_value:
+            return None
+        
+        value = None
+        for body in system_value.get("valuableBodies", []):
+            if body.get("bodyName", None) == body_name:
+                value = body
+
+        if value is None:
+            value={}
+        
+        the_body = self.body(system_name, body_name)
+        if the_body:
+            valueMax = "?"
+            if the_body.get("type", "").lower() == "star":
+                valueMax = self.__star_value(the_body)
+                value["valueScanned"] = valueMax
+            else:
+                valueMax = self.__body_value(the_body)
+                value["valueScanned"] = self.__body_value(the_body, False)
+            
+            
+            value["bodyId"] = the_body.get("bodyId", None)
+            value["bodyName"] = body_name
+            value["distance"] = round(the_body.get("distanceToArrival", None))
+            value["valueMax"] = valueMax
+
+            if "wasDiscovered" in the_body:
+                value["wasDiscovered"] = the_body["wasDiscovered"]
+
+            if "wasMapped" in the_body:
+                value["wasMapped"] = the_body["wasMapped"]
+
+            if "wasEfficient" in the_body:
+                value["wasEfficient"] = the_body["wasEfficient"]
+        return value
+        
+    @staticmethod
+    def __star_value(the_body, bonus=True):
+        type = the_body.get("subType", "")
+        mass = the_body.get("solarMasses", 0)
+        first_discoverer = not the_body.get("wasDiscovered", False)
+        
+        if not type:
+            return None
+        if "white dwarf" in type.lower() or type.lower in ["d", "da", "dab", "dao", "daz", "dav", "db", "dbz", "dbv", "do", "dov", "dq", "dc", "dcv", "dx"]:
+            type = "white dwarf"
+        elif type.lower() == "n":
+            type = "neutron star"
+        elif type.lower() == "h" or type.lower() == "supermassiveblackhole":
+            type = "black hole"
+        k_lut = {"black hole": 22628, "neutron star": 22628, "white dwarf": 14057}
+        k = k_lut.get(type.lower(), 1200)
+        honk_bonus_value = 0
+        if bonus:
+            q = 0.56591828
+            honk_bonus_value = max(500,(k + k * q * pow(mass,0.2)) / 3 )
+            honk_bonus_value *= 2.6 if first_discoverer else 1
+        value = round((k + (mass * k / 66.25)) + honk_bonus_value)
+        return value
+
+    def __body_value(self, the_body, override_mapped=True):
+        type = the_body.get("subType", "")
+        mass = the_body.get("earthMasses", 0)
+        terraformability = 1.0 if the_body.get("terraformingState", "") == "Terraformed" else 0.0
+        first_discoverer = not the_body.get("wasDiscovered", False)
+        
+        mapped = override_mapped
+        first_mapped = not the_body.get("wasMapped", False) if mapped else False
+        efficiency_bonus = the_body.get("wasEfficient", True) if mapped else False
+        k_lut = {
+                "metal-rich body": 21790,
+                "metal rich body": 21790,
+                "ammonia world": 96932,
+                "sudarsky class i gas giant": 1656,
+                "sudarsky class ii gas giant": 9654 + terraformability * 100677,
+                "class i gas giant": 1656,
+                "class ii gas giant": 9654 + terraformability * 100677,
+                "high metal content world":  9654 + terraformability * 100677,
+                "high metal content body":  9654 + terraformability * 100677,
+                "water world": 64831 + terraformability * 116295,
+                "earth-like world": 64831 + terraformability * 116295,
+                "earthlike body": 64831 + terraformability * 116295
+        }
+        k = 300 + terraformability * 93328
+        k = k_lut.get(type.lower(), k)
+        q = 0.56591828
+        mapping_multiplier = 1
+        if mapped:
+            if first_discoverer and first_mapped:
+                mapping_multiplier = 3.699622554
+            elif first_mapped:
+                mapping_multiplier = 8.0956
+            else:
+                mapping_multiplier = 3.3333333333
+        value = (k + k * q * pow(mass,0.2)) * mapping_multiplier
+        
+        if mapped:
+            if self.dlc_name and self.dlc_name.lower()  == "odyssey":
+                value += max(value * 0.3, 555)
+                
+            
+            if efficiency_bonus:
+                value *= 1.25
+                
+        value = max(500, value)
+        if first_discoverer:
+            value *= 2.6
+            
+        value = round(value)
+        return value
+
 
     def system_allegiance(self, star_system):
         factions = self.__factions(star_system)
@@ -1423,14 +1712,14 @@ class EDRSystems(object):
 
         return sysAndSta1 if sysAndSta1['distance'] < sysAndSta2['distance'] else sysAndSta2
 
-    def in_bubble(self, system_name):
+    def in_bubble(self, system_name, max_dist=1800):
         try:
-            return self.distance(system_name, 'Sol') <= 1800
+            return self.distance(system_name, 'Sol') <= max_dist
         except ValueError:
             return False
-    
-    def in_colonia(self, system_name):
+
+    def in_colonia(self, system_name, max_dist=500):
         try:
-            return self.distance(system_name, 'Colonia') <= 500
+            return self.distance(system_name, 'Colonia') <= max_dist
         except ValueError:
             return False
