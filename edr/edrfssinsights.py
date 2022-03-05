@@ -233,16 +233,16 @@ class EDRFSSInsights(object):
 
         landables = []
         if self.stations:
-            landables.append("Stations: {}".format(len(self.stations)))
+            landables.append(_("Stations: {}").format(len(self.stations)))
 
         if self.fleet_carriers:
-            landables.append("FC: {}".format(len(self.fleet_carriers)))
+            landables.append(_("FC: {}").format(len(self.fleet_carriers)))
 
         if landables:
             summary.append("; ".join(landables))
 
         if self.other_locations:
-            summary.append("Misc.: {}".format(len(self.other_locations)))
+            summary.append(_("Misc.: {}").format(len(self.other_locations)))
 
         return summary
     

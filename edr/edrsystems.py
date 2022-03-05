@@ -539,14 +539,14 @@ class EDRSystems(object):
                 estimatedValue = pretty_print_number(value["estimatedValue"]) if "estimatedValue" in value else "?"
                 estimatedValueMapped = pretty_print_number(value["estimatedValueMapped"]) if "estimatedValueMapped" in value else "?"
                 if estimatedValueMapped != estimatedValue:
-                    star_info.append("Scanned: {}, Mapped: {}".format(estimatedValue, estimatedValueMapped))
+                    star_info.append(_("Scanned: {}, Mapped: {}").format(estimatedValue, estimatedValueMapped))
                 else:
-                    star_info.append("Scanned: {}".format(estimatedValue))
+                    star_info.append(_("Scanned: {}").format(estimatedValue))
                 if "progress" in value and value["progress"] < 1.0 and value.get("bodyCount", None):
                     body_count = value["bodyCount"]
                     scanned_body_count = round(body_count * value["progress"])
                     progress = int(value["progress"]*100.0)
-                    star_info.append("Discovered {}/{} {}%".format(scanned_body_count, body_count, progress))
+                    star_info.append(_("Discovered {}/{} {}%").format(scanned_body_count, body_count, progress))
         return star_info
 
     def station(self, star_system, station_name, station_type):
@@ -879,7 +879,6 @@ class EDRSystems(object):
         return bodies
 
     def fss_discovery_scan_update(self, scan):
-        # TODO progress wrong??
         system_name = scan["SystemName"]
         bodies = self.bodies(system_name)
         if not bodies:
@@ -948,22 +947,6 @@ class EDRSystems(object):
         
         if new_body:
             bodies.append(the_body)
-            progress = None
-            if "bodyCount" in bodies[0]:
-                print("recorded body count: {}".format(bodies[0]["bodyCount"]))
-                print("known body count: {}".format(len(bodies))) # TODO seems way off, maybe because I was measuring the wrong thing
-                print("known bodies: {}".format(bodies))
-                progress = bodies[0]["bodyCount"] / len(bodies) if len(bodies) else bodies[0].get("progress", None)
-        
-            if progress is not None:
-                print("synthetic progress: {}".format(progress))
-                bodies[0]["progress"] = progress
-
-            if "progress" in bodies[0]:
-                # TODO remove, just for debugging purpose.
-                print("recorded progress: {}".format(bodies[0]["progress"]))
-        else:
-            pass
         
         self.edsm_bodies_cache.set(system_name.lower(), bodies)
 
@@ -1069,22 +1052,10 @@ class EDRSystems(object):
                 "valuableBodies": valuable_bodies,
             }
 
-        progress = None
         if "bodyCount" in bodies[0]:
-            print("recorded body count: {}".format(bodies[0]["bodyCount"]))
-            print("known body count: {}".format(len(bodies)))
-            print("known bodies: {}".format(bodies))
             value["bodyCount"] = max(bodies[0]["bodyCount"], len(bodies))
-            progress = bodies[0]["bodyCount"] / len(bodies) if len(bodies) else bodies[0].get("progress", None)
-        
-        if progress is not None:
-            print("synthetic progress: {}".format(progress))
-            value["progress"] = progress
-            bodies[0]["progress"] = progress
-
-        if "progress" in bodies[0]:
-            # TODO remove, just for debugging purpose.
-            print("recorded progress: {}".format(bodies[0]["progress"]))
+            if "progress" in bodies[0]:
+                value["progress"] = bodies[0]["progress"]
 
         return value
 
@@ -1122,6 +1093,9 @@ class EDRSystems(object):
 
             if "wasMapped" in the_body:
                 value["wasMapped"] = the_body["wasMapped"]
+
+            if "wasEfficient" in the_body:
+                value["wasEfficient"] = the_body["wasEfficient"]
         return value
         
     @staticmethod
@@ -1738,14 +1712,14 @@ class EDRSystems(object):
 
         return sysAndSta1 if sysAndSta1['distance'] < sysAndSta2['distance'] else sysAndSta2
 
-    def in_bubble(self, system_name):
+    def in_bubble(self, system_name, max_dist=1800):
         try:
-            return self.distance(system_name, 'Sol') <= 1800
+            return self.distance(system_name, 'Sol') <= max_dist
         except ValueError:
             return False
-    
-    def in_colonia(self, system_name):
+
+    def in_colonia(self, system_name, max_dist=500):
         try:
-            return self.distance(system_name, 'Colonia') <= 500
+            return self.distance(system_name, 'Colonia') <= max_dist
         except ValueError:
             return False
