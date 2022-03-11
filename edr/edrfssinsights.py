@@ -1,12 +1,15 @@
+from os import system
 from edri18n import _, _c
 import re
+import copy
 from edtime import EDTime
 
 class EDRFSSInsights(object):
     def __init__(self):
+        self.timestamp = EDTime()
         # TODO show unreg comms as its own category
         self.signals = {
-            # "$MULTIPLAYER_SCENARIO42_TITLE;": {"count": 0, "short_name": _("Nav Beacon") }, # Not super interesting 
+            "$MULTIPLAYER_SCENARIO42_TITLE;": {"count": 0, "short_name": _("Nav Beacon") },
             "$MULTIPLAYER_SCENARIO64_TITLE;": {"count": 0, "short_name": _("USS") },
             "$MULTIPLAYER_SCENARIO80_TITLE;": {"count": 0, "short_name": _("Compromised Nav Beacon") },
             "$MULTIPLAYER_SCENARIO81_TITLE;": {"count": 0, "short_name": _("Salvageable Wreckage")},
@@ -32,6 +35,7 @@ class EDRFSSInsights(object):
         }
         self.stations = set()
         self.fleet_carriers = {}
+        self.recent_fleet_carriers = {}
         self.other_locations = set()
         self.resource_extraction_sites = {"available": False, "variants": {"$MULTIPLAYER_SCENARIO14_TITLE;": {"count": 0, "short_name": _c("Standard Res|Std")}, "$MULTIPLAYER_SCENARIO77_TITLE;": {"count": 0, "short_name": _c("Res Low|Low")}, "$MULTIPLAYER_SCENARIO78_TITLE;": {"count": 0, "short_name": _c("Res High|High")}, "$MULTIPLAYER_SCENARIO79_TITLE;": {"count": 0, "short_name": _c("Res Hazardous|Haz")}}, "short_name": _("RES") }
         self.combat_zones = {"available": False, "variants": {"$Warzone_PointRace_Low;":  {"count": 0, "short_name": _c("CZ Low intensity|Low")}, "$Warzone_PointRace_Medium;":  {"count": 0, "short_name": _c("CZ Medium intensity|Med")}, "$Warzone_PointRace_High;":  {"count": 0, "short_name": _c("CZ High intensity|High")}}, "short_name": _("CZ") }
@@ -48,8 +52,11 @@ class EDRFSSInsights(object):
 
         self.star_system = {"name": None, "address": None}
         self.noteworthy = False
+        self.processed = 0
+        self.reported = False
+        self.signals_seen = []
 
-    def reset(self):
+    def reset(self, override_timestamp=None):
         for signal_name in self.signals:
             self.signals[signal_name]["count"] = 0
             if "expiring" in self.signals[signal_name]:
@@ -57,13 +64,22 @@ class EDRFSSInsights(object):
 
         self.stations = set()
         self.fleet_carriers = {}
+        self.recent_fleet_carriers = {}
         self.other_locations = set()
+        if override_timestamp:
+            self.timestamp.from_journal_timestamp(override_timestamp)
         self.resource_extraction_sites = {"available": False, "variants": {"$MULTIPLAYER_SCENARIO14_TITLE;": {"count": 0, "short_name": _c("Standard Res|Std")}, "$MULTIPLAYER_SCENARIO77_TITLE;": {"count": 0, "short_name": _c("Res Low|Low")}, "$MULTIPLAYER_SCENARIO78_TITLE;": {"count": 0, "short_name": _c("Res High|High")}, "$MULTIPLAYER_SCENARIO79_TITLE;": {"count": 0, "short_name": _c("Res Hazardous|Haz")}}, "short_name": _("RES") }
         self.combat_zones = {"available": False, "variants": {"$Warzone_PointRace_Low;":  {"count": 0, "short_name": _c("CZ Low intensity|Low")}, "$Warzone_PointRace_Medium;":  {"count": 0, "short_name": _c("CZ Medium intensity|Med")}, "$Warzone_PointRace_High;":  {"count": 0, "short_name": _c("CZ High intensity|High")}}, "short_name": _("CZ") }
         self.uss = {"available": False, "variants": {"$USS_Type_Salvage;":  {"count": 0, "expiring": [], "short_name": _c("Degraded Emissions|Degraded")}, "$USS_Type_ValuableSalvage;":  {"count": 0, "expiring": [], "short_name": _c("Encoded Emissions|Encoded")}, "$USS_Type_VeryValuableSalvage;": {"count": 0, "expiring": [], "short_name": _c("High Grade Emissions|High Grade")}, "misc": {"count": 0, "expiring": [], "short_name": _c("Misc.")}}, "short_name": _("USS") }
         self.pirates = {"available": False, "variants": {"$FIXED_EVENT_HIGHTHREATSCENARIO_T7;":  {"count": 0, "short_name": _c("Pirates Threat 7|Th7")}, "$FIXED_EVENT_HIGHTHREATSCENARIO_T6;":  {"count": 0, "short_name": _c("Pirates Threat 6|Th6")}, "$FIXED_EVENT_HIGHTHREATSCENARIO_T5;":  {"count": 0, "short_name": _c("Pirates Threat 5|Th5")}}, "short_name": _("Pirates") }
         self.star_system = {"name": None, "address": None}
         self.noteworthy = False
+        self.processed = 0
+        self.reported = False
+        self.signals_seen = []
+
+    def related_to(self, current_star_system):
+        return (self.star_system["name"] is None) or current_star_system == self.star_system["name"]
 
     def update(self, current_star_system):
         if current_star_system != self.star_system["name"]:
@@ -71,22 +87,33 @@ class EDRFSSInsights(object):
             self.star_system["address"] = None
             self.star_system["name"] = None
 
-    def process(self, fss_event, current_star_system):
-        if current_star_system is None:
-            return False
+    def update_system(self, system_address, system_name):
+        if not self.same_system(system_address):
+            self.reset()
+            self.star_system["address"] = system_address
+        if system_name is not None:
+            self.star_system["name"] = system_name
+
+    def same_system(self, system_address):
+        return (system_address is not None and self.star_system["address"] is not None) and system_address == self.star_system["address"]
+
+
+    def process(self, fss_event):
         system_address = fss_event.get("SystemAddress", None)
         if system_address is None:
             self.reset()
             return False
         
-        if system_address != self.star_system["address"] or current_star_system != self.star_system["name"]:
-            self.reset()
+        if system_address != self.star_system["address"]:
+            self.reset(fss_event["timestamp"])
             self.star_system["address"] = system_address
-            self.star_system["name"] = current_star_system
+            self.star_system["name"] = None
 
         result = self.__process(fss_event)
         if result:
-            self.__prune_expired_signals()
+            self.processed += 1
+            self.timestamp.from_journal_timestamp(fss_event["timestamp"])
+        self.__prune_expired_signals()
         return result
        
 
@@ -97,7 +124,9 @@ class EDRFSSInsights(object):
         signal_name = fss_event.get("SignalName", None)
         if signal_name is None:
             return False
-
+        
+        self.signals_seen.append(signal_name)
+        
         if fss_event.get("SignalName_Localised", None) is None:
             self.__process_locations_fss(fss_event)
             self.noteworthy = True
@@ -141,12 +170,13 @@ class EDRFSSInsights(object):
             self.other_locations.add(location_name)
             return
         
-        fc_regexp = r"^([ -`{}~]+) ([A-Z0-9]{3}-[A-Z0-9]{3})$"
+        fc_regexp = r"^(.+ )?([A-Z0-9]{3}-[A-Z0-9]{3})$"
         m = re.match(fc_regexp, location_name)
         if m:
             carrier_name = m.group(1)
             callsign = m.group(2)
             self.fleet_carriers[callsign] = carrier_name
+            self.recent_fleet_carriers[callsign] = carrier_name
         else:
             self.stations.add(location_name)
 
@@ -156,7 +186,6 @@ class EDRFSSInsights(object):
             return summary
 
         self.__prune_expired_signals()
-        # TODO maybe loop over each instead of repeating basically the same code?
         if self.uss["available"]:
             counts = []
             for variant in self.uss["variants"]:
@@ -204,16 +233,16 @@ class EDRFSSInsights(object):
 
         landables = []
         if self.stations:
-            landables.append("Stations: {}".format(len(self.stations)))
+            landables.append(_("Stations: {}").format(len(self.stations)))
 
         if self.fleet_carriers:
-            landables.append("FC: {}".format(len(self.fleet_carriers)))
+            landables.append(_("FC: {}").format(len(self.fleet_carriers)))
 
         if landables:
             summary.append("; ".join(landables))
 
         if self.other_locations:
-            summary.append("Misc.: {}".format(len(self.other_locations)))
+            summary.append(_("Misc.: {}").format(len(self.other_locations)))
 
         return summary
     
@@ -236,6 +265,45 @@ class EDRFSSInsights(object):
         
         return round(min(duration / (40*60), 1) * 5)*"+"
 
+    def fleet_carriers_report(self, force_reporting=False):
+        if not force_reporting and (self.star_system["name"] is None or self.processed == 0):
+            return None
+
+        report = {
+            "starSystem": self.star_system["name"],
+            "timestamp": self.timestamp.as_js_epoch(),
+            "fcCount": len(self.fleet_carriers),
+        }
+
+        if len(self.fleet_carriers):
+            report["fc"] = copy.deepcopy(self.fleet_carriers)
+
+        return report
+
+    def fuzzy_match_fleet_carriers(self, callsign_or_name):
+        if callsign_or_name is None:
+            return {}
+        
+        return {c: self.fleet_carriers[c] for c in self.fleet_carriers if (callsign_or_name.lower() in c.lower() or callsign_or_name.lower() in self.fleet_carriers[c].lower())}
+
+    def is_signal(self, name):
+        return (name in self.signals_seen) or self.is_scenario_signal(name)
+
+    def no_signals(self):
+        return len(self.signals_seen) == 0
+
+    def is_scenario_signal(self, name):
+        return bool(re.search('^\$[ -~]+;$', name))
+
+    def is_station(self, name):
+        return name in self.stations
+
+    def is_main_star(self, name):
+        return name == self.star_system.get("name", None)
+
+    def newly_found_fleet_carriers(self):
+        result = copy.deepcopy(self.recent_fleet_carriers)
+        self.recent_fleet_carriers = {}
+        return result
 
     # TODO: dangerous fleet carriers
-    # TODO: report FC sightings

@@ -209,6 +209,12 @@ class EDRConfig(object):
     def traffic_recent_threshold(self):
         return int(self.config.get('sitreps', 'traffic_recent_threshold'))
 
+    def fc_reports_max_age(self):
+        return int(self.config.get('fc', 'fc_reports_max_age'))
+
+    def fc_presence_max_age(self):
+        return int(self.config.get('fc', 'fc_presence_max_age'))
+
     def instance_fight_staleness_threshold(self):
         return int(self.config.get('instance', 'fight_staleness_threshold'))
 

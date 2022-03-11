@@ -26,7 +26,7 @@ class HelpContent(object):
                 _(u" - !help sqdrdex: tag other commanders as ally or enemy of your squadron"),
                 _(u" - !help nearby: commands to find services near you or a specific system, e.g. interstellar factors"),
                 _(u" - !help search: find the best spots to obtain specific resources, e.g. adaptive encryptors capture"),
-                _(u" - !help ship: find out where you've parked your ships, evaluate your build"),
+                _(u" - !help ship: find out where you've parked your ships, evaluate your build, find a fleet carrier parking slot"),
                 _(u" - !help config: configuration options"),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
@@ -205,7 +205,7 @@ class HelpContent(object):
             ]
         },
         "nearby": {
-            "header": _(u"Finding things around you or a specified system"),
+            "header": _(u"Finding things around you or a specified system Ⅰ"),
             "details": [
                 _(u" - '!if' or '!if Lave' to find an Interstellar Factors near your position or Lave."),
                 _(u" - '!raw' or '!raw Lave' to find a Raw Material Trader near your position or Lave"),
@@ -216,8 +216,17 @@ class HelpContent(object):
                 _(u" - '!gtb', '!guardiantechbroker' or '!gtb Lave' to find a Guardian Tech Broker near your position or Lave"),
                 _(u" - '!nav 12.3 -4.5', '!nav set' or '!nav off' to obtain planetary guidance for getting to a specific location"),
                 _(u" - '!offbeat', '!offbeat Lave' to find a station that hasn't been recently visited near your position or Lave"),
+                u"⚶",
+                _(u"Send !help nearby2 to see other nearby features. Send !clear in chat to clear everything on the overlay.")
+            ]
+        },
+        "nearby2": {
+            "header": _(u"Finding things around you or a specified system Ⅱ"),
+            "details": [
                 _(u" - '!rrrfc', '!rrrfc Lave < 10' to find a fleet carrier with repair/rearm/refuel near your position or within 10 LY of Lave"),
                 _(u" - '!rrr', '!rrr Lave < 10' to find a station with repair/rearm/refuel near your position or within 10 LY of Lave"),
+                _(u" - '!fc J6B', '!fc Recon' to display information about a local fleet carrier with a callsign or name that contains J6B or Recon"),
+                _(u" - '!station Jameson' to display information about a local station/outpost/... with a name that contains Jameson"),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
             ]
@@ -243,8 +252,9 @@ class HelpContent(object):
                 _(u" - '!ship name_or_type' where name_or_type is either a ship name or type."),
                 _(u" - '!ship fdl' will show where your Fer-de-Lance ships are parked."),
                 _(u" - '!ship In Front of Things' will show where your ship(s) named 'In Front of Things' are."),
-                u"⚶",
                 _(u" - '!eval power' to get an assessment of your power priorities."),
+                u"⚶",
+                _(u" - '!parking', '!parking deciat', '!parking deciat #1' to check for fleet carrier parking slots in the current system, Deciat, or the second closest system to Deciat."),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
             ]

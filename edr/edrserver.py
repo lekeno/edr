@@ -76,6 +76,9 @@ class EDRServer(object):
     def auth_token(self):
         return self.REST_firebase.id_token()
 
+    def refresh_auth(self):
+        return self.REST_firebase.force_new_auth()
+
     def __check_response(self, response, service, call="Unknown"):
         if not response:
             return False
@@ -135,7 +138,7 @@ class EDRServer(object):
                 return EDRServer.SESSION.get(endpoint, params=params, headers=headers)
             except requests.exceptions.RequestException as e:
                 last_connection_exception = e
-                EDRLOG.log(u"ConnectionException {} for GET EDR: attempts={}}".format(e, attempts), u"WARNING")
+                EDRLOG.log(u"ConnectionException {} for GET EDR: attempts={}".format(e, attempts), u"WARNING")
         raise last_connection_exception
 
     def __put(self, endpoint, service, json, params=None, headers=None, attempts=3):
@@ -223,7 +226,8 @@ class EDRServer(object):
 
     def system(self, star_system, may_create, coords=None):
         if not self.__preflight("system_id", star_system):
-            EDRLOG.log(u"Preflight failed for system call.", "DEBUG")
+            EDRLOG.log(u"Preflight failed for system call. Forcing a new authentication, just in case.", "DEBUG")
+            self.refresh_auth()
             raise CommsJammedError("system")
 
         params = {"orderBy": '"cname"', "equalTo": json.dumps(star_system.lower()), "limitToFirst": 1, "auth": self.auth_token()}
@@ -462,6 +466,34 @@ class EDRServer(object):
         EDRLOG.log(u"Multicrew session report: {}".format(report), "INFO")
         endpoint = "/v1/crew_reports/{}/".format(crew_id)
         return self.__post_json(endpoint, report, "EDR")
+
+    def report_fcs(self, system_id, report):
+        if self.is_anonymous():
+            return False
+        EDRLOG.log(u"Reporting Fleet Carriers in system {}: {}".format(system_id, report), "INFO")
+        report["uid"] = self.uid()
+        params = { "auth": self.auth_token() }
+        endpoint = "{server}/v1/fc_reports/{system_id}/{uid}/.json".format(server=self.EDR_SERVER, system_id=system_id, uid=self.uid())
+        EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
+        resp = self.__put(endpoint, "EDR", params=params, json=report)
+        EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+        return self.__check_response(resp, "EDR", "Put fcs report")
+    
+    def fc_presence(self, star_system):
+        if not self.__preflight("fc_presence", star_system):
+            EDRLOG.log(u"Preflight failed for fc_presence call.", "DEBUG")
+            raise CommsJammedError("fc_presence")
+
+        EDRLOG.log(u"Querying Fleet Carriers in system {}".format(star_system), "INFO")
+        params = {"orderBy": '"starSystem"', "equalTo": json.dumps(star_system), "limitToFirst": 1, "auth": self.auth_token()}
+        resp = self.__get("{}/v1/fc_presence.json".format(self.EDR_SERVER), "EDR", params)
+        EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+        if self.__check_response(resp, "EDR", "FC_Presence"):
+            result = json.loads(resp.content)
+            sid = list(result)[0] if result else None
+            return result[sid] if result else None
+        else:
+            return None
 
     def __get_recent(self, path, timespan_seconds, limitToLast=None):
         now_epoch_js = int(1000 * calendar.timegm(time.gmtime()))

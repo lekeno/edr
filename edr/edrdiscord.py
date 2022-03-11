@@ -40,7 +40,6 @@ class EDRDiscordMessage(object):
     def json(self):
         base = self.__dict__
         base["embeds"] = [ embed.json() for embed in self.embeds]
-        # TODO files
         return base
 
     def valid(self):

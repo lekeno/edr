@@ -35,20 +35,47 @@ class InGameMsg(object):
     def __init__(self):
         self._overlay = edmcoverlay.Overlay()
         self.cfg = {}
-        self.general_config()
+        self.layout_type = None
         self.must_clear = False
-        for kind in self.MESSAGE_KINDS:
-            self.message_config(kind)
-        for kind in self.LEGAL_KINDS:
-            self.legal_config(kind)
-        self.docking_config()
-        self.mining_config()
-        self.bounty_hunting_config()
-        self.target_guidance_config()
         self.msg_ids = lrucache.LRUCache(1000, 60*15)
+        self.in_ship_layout()
 
-    def general_config(self):
-        conf = igmconfig.IGMConfig()
+    def in_ship_layout(self):
+        if self.layout_type != "ship":
+            self.clear()
+            conf = igmconfig.IGMConfigInShip()
+            self.configure_layout(conf)
+            self.layout_type = "ship"
+    
+    def on_foot_layout(self):
+        if self.layout_type != "spacelegs":
+            self.clear()
+            conf = igmconfig.IGMConfigOnFoot()
+            self.configure_layout(conf)
+            self.layout_type = "spacelegs"
+
+    def configure_layout(self, conf):
+        self.cfg = {}
+        self.general_config(conf)
+        for kind in self.MESSAGE_KINDS:
+            self.message_config(kind, conf)
+        for kind in self.LEGAL_KINDS:
+            self.legal_config(kind, conf)
+        self.docking_config(conf)
+        self.mining_config(conf)
+        self.bounty_hunting_config(conf)
+        self.target_guidance_config(conf)
+
+    def reconfigure(self):
+        if self.layout_type == "spacelegs":
+            self.layout_type = None
+            self.on_foot_layout()
+        else:
+            self.layout_type = None
+            self.in_ship_layout()
+          
+        
+    def general_config(self, conf):
         self.cfg["general"] = {
             "large" : {
                 "h": conf.large_height(),
@@ -60,8 +87,7 @@ class InGameMsg(object):
             }
         }
 
-    def message_config(self, kind):
-        conf = igmconfig.IGMConfig() 
+    def message_config(self, kind, conf):
         self.cfg[kind] = {
             "enabled": conf._getboolean(kind, "enabled"),
             "h": {
@@ -98,8 +124,7 @@ class InGameMsg(object):
             "fill": conf.fill(kind, "panel")
         }
 
-    def legal_config(self, kind):
-        conf = igmconfig.IGMConfig() 
+    def legal_config(self, kind, conf):
         kind = u"{}-legal".format(kind)
         self.cfg[kind] = {
             "enabled": conf._getboolean(kind, "enabled"),
@@ -146,8 +171,7 @@ class InGameMsg(object):
             "fill": conf.fill(kind, "panel")
         }
 
-    def docking_config(self):
-        conf = igmconfig.IGMConfig()
+    def docking_config(self, conf):
         kind = "docking-station"
         self.cfg[kind] = {
             "enabled": conf._getboolean(kind, "enabled"),
@@ -173,8 +197,7 @@ class InGameMsg(object):
             "fill": conf.fill(kind, "panel")
         }
 
-    def mining_config(self):
-        conf = igmconfig.IGMConfig()
+    def mining_config(self, conf):
         kind = "mining-graphs" 
         self.cfg[kind] = {
             "enabled": conf._getboolean(kind, "enabled"),
@@ -221,8 +244,7 @@ class InGameMsg(object):
             "fill": conf.fill(kind, "panel")
         }
 
-    def bounty_hunting_config(self):
-        conf = igmconfig.IGMConfig()
+    def bounty_hunting_config(self, conf):
         kind = "bounty-hunting-graphs" 
         self.cfg[kind] = {
             "enabled": conf._getboolean(kind, "enabled"),
@@ -269,8 +291,7 @@ class InGameMsg(object):
             "fill": conf.fill(kind, "panel")
         }
 
-    def target_guidance_config(self):
-        conf = igmconfig.IGMConfig()
+    def target_guidance_config(self, conf):
         kind = "target-guidance-graphs" 
         self.cfg[kind] = {
             "enabled": conf._getboolean(kind, "enabled"),
@@ -396,19 +417,7 @@ class InGameMsg(object):
         self.__msg_header("navigation", header)
         self.__msg_body("navigation", details)
 
-    def docking(self, system, station, pad):
-        if not self.cfg["docking"].get("enabled", None):
-            return
-
-        self.clear_docking()
-        if not station:
-            return
-        if "panel" in self.cfg["docking"]:
-            self.__shape("docking", self.cfg["docking"]["panel"])
-        if "panel" in self.cfg["docking-station"] and self.cfg["docking-station"].get("enabled", False):
-            self.__shape("docking-station", self.cfg["docking-station"]["panel"])
-        economy = u"{}/{}".format(station["economy"], station["secondEconomy"]) if station["secondEconomy"] else station["economy"]
-        header = u"{} ({})".format(station["name"], economy)
+    def describe_station(self, station):
         station_type = (station.get("type","N/A") or "N/A").lower()
         station_other_services = (station.get("otherServices", []) or []) 
         station_economy = (station.get('economy', "") or "").lower()
@@ -464,10 +473,47 @@ class InGameMsg(object):
                 if not station["secondEconomy"]:
                     t = _c(u"human tech|HT.") 
                 elif station_second_economy == "high tech":
-                    t = _c(u"ambiguous tech|T.") 
+                    t = _c(u"ambiguous tech|T.")
 
         details.append(_(u"I.Factor:{}   {} Broker:{}").format(a,t,b))
         details.append(_(u"as of {date}").format(date=station['updateTime']['information']))
+        return details
+
+    def describe_fleet_carrier(self, fc):
+        fc_other_services = (fc.get("otherServices", []) or []) 
+        details = []
+        a = u"●" if fc.get("haveOutfitting", False) else u"◌"
+        b = u"●" if fc.get("haveShipyard", False) else u"◌"
+        details.append(_(u"Outfit:{}   Shipyard:{}").format(a,b))
+        a = u"●" if "Refuel" in fc_other_services else u"◌"
+        b = u"●" if "Repair" in fc_other_services else u"◌"
+        c = u"●" if "Restock" in fc_other_services else u"◌"
+        details.append(_(u"Refuel:{}   Repair:{}   Restock:{}").format(a,b,c))
+        a = u"●" if fc.get("haveMarket", False) else u"◌"
+        b = u"●" if "Black Market" in fc_other_services else u"◌"
+        details.append(_(u"Market:{}   B.Market:{}").format(a,b))
+        a = u"●" if "Interstellar Factors Contact" in fc_other_services else u"◌"
+        details.append(_(u"I.Factor:{}").format(a))
+        details.append(_(u"as of {date}").format(date=fc['updateTime']['information']))
+        return details
+
+    def docking(self, system, station, pad):
+        if not self.cfg["docking"].get("enabled", None):
+            return
+
+        self.clear_docking()
+        if not station:
+            return
+        if "panel" in self.cfg["docking"]:
+            self.__shape("docking", self.cfg["docking"]["panel"])
+        if "panel" in self.cfg["docking-station"] and self.cfg["docking-station"].get("enabled", False):
+            self.__shape("docking-station", self.cfg["docking-station"]["panel"])
+        
+        economy = u"{}/{}".format(station["economy"], station["secondEconomy"]) if station["secondEconomy"] else station["economy"]
+        station_type = (station.get("type","N/A") or "N/A").lower()
+
+        header = u"{} ({})".format(station["name"], economy)
+        details = self.describe_station(station)
         self.__msg_header("docking", header)
         self.__msg_body("docking", details)
 
@@ -864,15 +910,15 @@ class InGameMsg(object):
             details.append(_(u"AVG %: {:>6.2f}").format(detailed_stats[0].yield_average(mining_stats.prospected_nb)))
         elif mining_stats.depleted:
             details.append(u"")
-            details.append(_(u">>>>  DEPLETED  <<<<"))
+            details.append(_(u">> DEPLETED <<"))
             details.append(u"")
         else:
             details.append(u"")
-            details.append(_(u">>>>  WORTHLESS  <<<<"))
+            details.append(_(u">> WORTHLESS <<"))
             details.append(u"")
         
         
-        details.append(_(u"ITM/H: {:>6.0f} [TGT: {:.0f}]").format(mining_stats.items_per_hour(), mining_stats.max_efficiency))
+        details.append(_(u"ITM/H: {:>6.0f} [TGT: {:.0f}]").format(mining_stats.item_per_hour(), mining_stats.max_efficiency))
         details.append(_(u"ITM #: {:>6}").format(mining_stats.refined_nb))
         self.__msg_header("mining", header)
         self.__msg_body("mining", details)

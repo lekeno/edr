@@ -21,7 +21,7 @@ class EDSMServer(object):
 
 
     def system(self, system_name):
-        params = {"systemName": system_name, "showCoordinates": 1, "showInformation":1, "showId": 1}
+        params = {"systemName": system_name, "showCoordinates": 1, "showInformation":1, "showId": 1, "showPermit": 1, "showPrimaryStar": 1}
         endpoint = "{}/api-v1/systems".format(self.EDSM_SERVER)
         return self.__get(endpoint, params)
         
@@ -46,6 +46,16 @@ class EDSMServer(object):
             return []
         sorted_results = sorted(results, key=lambda t: t["distance"])
         return sorted_results
+
+    def system_value(self, system_name):
+        params = {"systemName": system_name}
+        endpoint = "{}/api-system-v1/estimated-value".format(self.EDSM_SERVER)
+        system_value = self.__get(endpoint, params)
+        
+        if not system_value:
+            return None
+        return system_value
+        
 
     def stations_in_system(self, system_name):
         params = {"systemName": system_name}

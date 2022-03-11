@@ -13,10 +13,10 @@ class EDTime(comparable.ComparableMixin):
     def py_epoch_now():
         return calendar.timegm(time.gmtime())
 
+    @staticmethod
     def ms_epoch_now():
         return int(round(time.time() * 1000))
 
-    
     @staticmethod
     def immersive_delta():
         return 1286 # Elite Dangerous is set 1286 years in the future
@@ -153,5 +153,11 @@ class EDTime(comparable.ComparableMixin):
 
     def __str__(self):
         return str(self.as_journal_timestamp())
+
+    def advance(self, seconds):
+        self._datetime += datetime.timedelta(seconds=seconds)
+
+    def rewind(self, seconds):
+        self._datetime -= datetime.timedelta(seconds=seconds)
 
     __repr__ = __str__ 

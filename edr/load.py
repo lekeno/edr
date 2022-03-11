@@ -4,6 +4,8 @@ Plugin for "EDR"
 from edspacesuits import EDSpaceSuit
 import sys
 import re
+import random
+import codecs
 
 try:
     import edmc_data
@@ -24,6 +26,7 @@ from edri18n import _, _c
 EDR_CLIENT = EDRClient()
 EDRLOG = EDRLog()
 LAST_KNOWN_SHIP_NAME = ""
+OVERLAY_DUMMY_COUNTER = 0
 
 def plugin_start3(plugin_dir):
     return plugin_start()
@@ -207,7 +210,11 @@ def handle_carrier_events(ed_player, entry):
     elif entry["event"] == "CarrierDockingPermission":
         ed_player.fleet_carrier.update_docking_permissions(entry)
     elif entry["event"] == "CarrierJump":
+        EDR_CLIENT.edrfssinsights.reset()
+        EDR_CLIENT.edrfssinsights.update_system(entry.get("SystemAddress", None), entry["StarSystem"])
+        ed_player.update_star_system_if_obsolete(entry["StarSystem"], entry.get("SystemAddress", None))
         ed_player.fleet_carrier.update_from_jump_if_relevant(entry)
+        
 
 def handle_movement_events(ed_player, entry):
     outcome = {"updated": False, "reason": None}
@@ -218,9 +225,13 @@ def handle_movement_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_place_if_obsolete(body)
         outcome["reason"] = "Supercruise exit"
         ed_player.to_normal_space()
+        if "SystemAddress" in entry:
+            ed_player.star_system_address = entry["SystemAddress"]
+        EDR_CLIENT.register_fss_signals(entry.get("SystemAddress", None), entry.get("StarSystem", None))
+        # TODO probably should be cleared to avoid keeping old FC around?
         EDRLOG.log(u"Body changed: {}".format(body), "INFO")
     elif entry["event"] in ["FSDJump", "CarrierJump"]:
-        place = "Supercruise"
+        place = "Supercruise" if entry["event"] == "FSDJump" else entry.get("StationName", "Unknown")
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         ed_player.wanted = entry.get("Wanted", False)
         ed_player.mothership.fuel_level = entry.get("FuelLevel", ed_player.mothership.fuel_level)
@@ -229,9 +240,14 @@ def handle_movement_events(ed_player, entry):
         ed_player.location.population = entry.get('Population', 0)
         ed_player.location.allegiance = entry.get('SystemAllegiance', 0)
         outcome["reason"] = entry["event"]
-        ed_player.to_super_space()
+        if entry["event"] == "FSDJump":
+            ed_player.to_super_space()
+        else:
+            ed_player.to_normal_space()
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
     elif entry["event"] in ["SupercruiseEntry"]:
+        if "SystemAddress" in entry:
+            ed_player.star_system_address = entry["SystemAddress"]
         place = "Supercruise"
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         outcome["reason"] = "Jump events"
@@ -246,6 +262,8 @@ def handle_movement_events(ed_player, entry):
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
         EDR_CLIENT.docking_guidance(entry)
         EDR_CLIENT.check_system(entry["StarSystem"], may_create=True)
+        EDR_CLIENT.register_fss_signals()
+        EDR_CLIENT.edrfssinsights.reset(entry["timestamp"])
     elif entry["event"] in ["ApproachSettlement"]:
         place = entry["Name"]
         body = entry.get("BodyName", None)
@@ -286,6 +304,9 @@ def handle_change_events(ed_player, entry):
         ed_player.location_security(entry.get("SystemSecurity", None))
         ed_player.location.population = entry.get("Population", None)
         ed_player.location.allegiance = entry.get("SystemAllegiance", None)
+        if "StarSystem" in entry:
+            ed_player.update_star_system_if_obsolete(entry["StarSystem"], entry.get("SystemAddress", None))
+        EDR_CLIENT.edrfssinsights.update_system(entry.get("SystemAddress", None), entry.get("StarSystem", None))
         outcome["reason"] = "Location event"
         EDR_CLIENT.check_system(entry["StarSystem"], may_create=True, coords=entry.get("StarPos", None))
 
@@ -322,19 +343,28 @@ def handle_fc_position_related_events(ed_player, entry):
 
 def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
     if entry["event"] == "Music":
+        if entry["MusicTrack"] in ["Supercruise", "NoTrack"]:
+            # music event happens after the chain of FSS signals discovered events on a jump
+            # TODO wrong system...
+            EDR_CLIENT.register_fss_signals()
+
         if entry["MusicTrack"] == "MainMenu" and not ed_player.is_crew_member():
             # Checking for 'is_crew_member' because "MainMenu" shows up when joining a multicrew session
             # Assumption: being a crew member while main menu happens means that a multicrew session is about to start.
             # { "timestamp":"2018-06-19T13:06:04Z", "event":"QuitACrew", "Captain":"Dummy" }
             # { "timestamp":"2018-06-19T13:06:16Z", "event":"Music", "MusicTrack":"MainMenu" }
             EDR_CLIENT.clear()
+            EDR_CLIENT.edrfssinsights.reset()
             EDR_CLIENT.game_mode(None)
             ed_player.leave_wing()
             ed_player.leave_crew()
             ed_player.leave_vehicle()
+            ed_player.in_game = False
             EDRLOG.log(u"Player is on the main menu.", "DEBUG")
             return
-        elif entry["MusicTrack"] == "Combat_Dogfight":
+        
+        ed_player.in_game = True
+        if entry["MusicTrack"] == "Combat_Dogfight":
             if ed_player.mothership:
                 ed_player.mothership.skirmish() # TODO check music event for on foot combat
             return
@@ -350,7 +380,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
             ed_player.in_danger(False)
             return
         elif entry["MusicTrack"] == "SystemMap":
-            EDR_CLIENT.noteworthy_signals_in_system() # probably annoying
+            EDR_CLIENT.noteworthy_signals_in_system()
             return
         elif entry["MusicTrack"] == "OnFoot":
             ed_player.in_spacesuit()
@@ -358,17 +388,20 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
 
     if entry["event"] == "Shutdown":
         EDRLOG.log(u"Shutting down in-game features...", "INFO")
+        EDR_CLIENT.edrfssinsights.reset()
         EDR_CLIENT.shutdown()
         return
 
     if entry["event"] == "Resurrect":
         EDR_CLIENT.clear()
+        EDR_CLIENT.edrfssinsights.reset()
         ed_player.resurrect(entry["Option"] in ["rebuy", "recover"])
         EDRLOG.log(u"Player has been resurrected.", "DEBUG")
         return
 
     if entry["event"] in ["Fileheader"] and entry["part"] == 1:
         EDR_CLIENT.clear()
+        EDR_CLIENT.edrfssinsights.reset()
         ed_player.inception(genesis=True)
         EDR_CLIENT.status = _(u"initialized.")
         EDRLOG.log(u"Journal player got created: accurate picture of friends/wings.",
@@ -379,6 +412,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
         if ed_player.inventory.stale_or_incorrect():
             ed_player.inventory.initialize_with_edmc(state)
         EDR_CLIENT.clear()
+        EDR_CLIENT.edrfssinsights.reset()
         ed_player.inception(genesis=from_genesis)
         if from_genesis:
             EDRLOG.log(u"Heuristics genesis: probably accurate picture of friends/wings.",
@@ -467,28 +501,38 @@ def dashboard_entry(cmdr, is_beta, entry):
     if not prerequisites(EDR_CLIENT, is_beta):
         return
 
+    if entry.get("GuiFocus", 0) > 0:
+        # can only happen if in game
+        ed_player.in_game = True
+
+    if 'Destination' in entry:
+        if ed_player.in_game:
+            EDR_CLIENT.destination_guidance(entry["Destination"])
+
     if not 'Flags' in entry:
         return
 
     flags = entry.get('Flags', 0)
     flags2 = entry.get('Flags2', 0)
 
-    if (flags & edmc_data.FlagsInMainShip) and not (flags2 & edmc_data.Flags2InTaxi):
-        ed_player.in_mothership()
+    # TODO in multicrew
     
-    if (flags & edmc_data.FlagsInFighter):
-        ed_player.in_slf()
-
-    if (flags & edmc_data.FlagsInSRV):
-        ed_player.in_srv()
-    
-    
-
     if (flags2 & (edmc_data.Flags2OnFoot | edmc_data.Flags2OnFootInStation | edmc_data.Flags2OnFootOnPlanet | edmc_data.Flags2OnFootInHangar | edmc_data.Flags2OnFootSocialSpace | edmc_data.Flags2OnFootExterior)):
         ed_player.in_spacesuit()
-    if (flags2 & edmc_data.Flags2InTaxi):
-        ed_player.in_taxi()
-    # TODO in multicrew
+        EDR_CLIENT.on_foot()
+    else:
+        EDR_CLIENT.in_ship()
+        if (flags & edmc_data.FlagsInMainShip) and not (flags2 & edmc_data.Flags2InTaxi):
+            ed_player.in_mothership()
+        
+        if (flags & edmc_data.FlagsInFighter):
+            ed_player.in_slf()
+
+        if (flags & edmc_data.FlagsInSRV):
+            ed_player.in_srv()
+        
+        if (flags2 & edmc_data.Flags2InTaxi):
+            ed_player.in_taxi()
     
     ed_player.spacesuit.low_health = flags2 & edmc_data.Flags2LowHealth
     ed_player.spacesuit.low_oxygen = flags2 & edmc_data.Flags2LowOxygen
@@ -675,17 +719,38 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         depletables = EDRRawDepletables()
         depletables.visit(entry["NearestDestination"])
         
+
+    if entry["event"] == "SAAScanComplete":
+        EDR_CLIENT.saa_scan_complete(entry)
+    
     if entry["event"] in ["FSSSignalDiscovered"]:
         EDR_CLIENT.noteworthy_about_signal(entry)
 
+    if entry["event"] in ["FSSDiscoveryScan"]:
+        if "SystemName" in entry:
+            ed_player.update_star_system_if_obsolete(entry["SystemName"], entry.get("SystemAddress", None))
+            # TODO progress not reflected from individual scans
+            EDR_CLIENT.reflect_fss_discovery_scan(entry)
+            EDR_CLIENT.system_value(entry["SystemName"])
+        EDR_CLIENT.register_fss_signals(entry.get("SystemAddress", None), entry.get("SystemName", None), force_reporting=True) # Takes care of zero pop system with no signals (not even a nav beacon) and no fleet carrier
+
+    if entry["event"] in ["FSSAllBodiesFound"]:
+        if "SystemName" in entry:
+            ed_player.update_star_system_if_obsolete(entry["SystemName"], entry.get("SystemAddress", None))
+            EDR_CLIENT.reflect_fss_discovery_scan(entry)
+            EDR_CLIENT.system_value(entry["SystemName"])
+
     if entry["event"] in ["NavBeaconScan"] and entry.get("NumBodies", 0):
+        if "SystemAddress" in entry:
+            ed_player.star_system_address = entry["SystemAddress"]
+        # TODO new events: ScanBaryCentre, "scan" with scantype:"NavBeaconDetail"
         EDR_CLIENT.notify_with_details(_(u"System info acquired"), [_(u"Noteworthy material densities will be shown when approaching a planet.")])
 
     if entry["event"] in ["Scan"]:
         EDR_CLIENT.process_scan(entry)
-        if entry["ScanType"] == "Detailed":
+        if entry["ScanType"] in ["Detailed", "Basic"]: # removed AutoScan because spammy
             EDR_CLIENT.noteworthy_about_scan(entry)
-
+        
     if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PVPKill", "CrimeVictim", "CommitCrime"]:
         report_crime(ed_player, entry)
 
@@ -770,8 +835,6 @@ def edr_update_cmdr_status(cmdr, reason_for_update, timestamp):
     if not EDR_CLIENT.blip(cmdr.name, report):
         EDR_CLIENT.status = _(u"blip failed.")
         return
-
-    EDR_CLIENT.status = _(u"blip succeeded!")
 
 
 def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
@@ -1306,10 +1369,11 @@ def handle_scan_events(player, entry):
         EDR_CLIENT.bounty_hunting_guidance(turn_off=True)
 
     target = None
+    pilotrank = entry.get("PilotRank", "Unknown")
     if npc:
-        target = player.instanced_npc(target_name, entry["PilotRank"], entry["Ship"], piloted)
+        target = player.instanced_npc(target_name, rank=pilotrank, ship_internal_name=entry["Ship"], piloted=piloted)
     else:
-        target = player.instanced_player(target_name, rank=entry["PilotRank"], ship_internal_name=entry["Ship"], piloted=piloted)
+        target = player.instanced_player(target_name, rank=pilotrank, ship_internal_name=entry["Ship"], piloted=piloted)
 
     target.sqid = entry.get("SquadronID", None)
     nodotpower = entry["Power"].replace(".", "") if "Power" in entry else None
@@ -1548,6 +1612,18 @@ def handle_bang_commands(cmdr, command, command_parts):
             search_center = parameters[0] or cmdr.star_system
             override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.staging_station_near(search_center, override_sc_dist)
+    elif command == "!fc":
+        if len(command_parts) < 2:
+            return
+        callsign_or_name = " ".join(command_parts[1:]).upper()
+        EDRLOG.log(u"Looking for a Fleet Carrier in current system with {} in callsign or name".format(callsign_or_name), "INFO")
+        EDR_CLIENT.fc_in_current_system(callsign_or_name)
+    elif command == "!station":
+        if len(command_parts) < 2:
+            return
+        station_name = " ".join(command_parts[1:]).upper()
+        EDRLOG.log(u"Looking for a Station in current system with {} in its name".format(station_name), "INFO")
+        EDR_CLIENT.station_in_current_system(station_name)
     elif command == "!rrrfc":
         EDRLOG.log(u"Looking for a RRR Fleet Carrier", "INFO")
         search_center = cmdr.star_system
@@ -1566,6 +1642,16 @@ def handle_bang_commands(cmdr, command, command_parts):
             search_center = parameters[0] or cmdr.star_system
             override_radius = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.rrr_near(search_center, override_radius)
+    elif command == "!parking":
+        # TODO surface a tip when a cmdr is scheduling a fleet carrier jump (if it fails(?) to be aknowledged?)
+        search_center = cmdr.star_system
+        override_rank = None
+        if len(command_parts) >= 2:
+            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("#", 1)]
+            search_center = parameters[0] or cmdr.star_system
+            override_rank = int(parameters[1]) if len(parameters) > 1 else None
+        EDRLOG.log(u"Looking for a system to park a fleet carrier near {}".format(search_center), "INFO")
+        EDR_CLIENT.parking_system_near(search_center, override_rank)
     elif command in ["!htb", "!humantechbroker"]:
         EDRLOG.log(u"Looking for a human tech broker", "INFO")
         search_center = cmdr.star_system
@@ -1809,8 +1895,30 @@ def overlay_command(param):
     if param == "":
         EDRLOG.log(u"Visual feedback is {}".format("enabled." if EDR_CLIENT.visual_feedback
                                                    else "disabled."), "INFO")
-        EDR_CLIENT.notify_with_details("Test Notice", ["notice info 1", "notice info 2"])
-        EDR_CLIENT.warn_with_details("Test Warning", ["warning info 1", "warning info 2"])
+        EDR_CLIENT.IN_GAME_MSG.reconfigure()
+        random.seed()
+        r = random.random()
+        if r < 0.5:
+            EDR_CLIENT.who(codecs.decode(random.choice(['yrxrab', 'Fgrs']), 'rot_13'))
+        else:
+            EDR_CLIENT.who(codecs.decode(random.choice(['Qnatrebhf.pbz', 'Yrzna Ehff IV', 'qvrtb anpxl', 'Ahzvqn', 'Nyovab Fnapurm']), 'rot_13')) # top 5 for self reported kills in 2021
+        EDR_CLIENT.noteworthy_about_system({ "timestamp":"2021-10-22T12:34:56Z", "event":"FSDJump", "Taxi":False, "Multicrew":False, "StarSystem":"Deciat", "SystemAddress":6681123623626, "StarPos":[122.62500,-0.81250,-47.28125], "SystemAllegiance":"Independent", "SystemEconomy":"$economy_Industrial;", "SystemEconomy_Localised":"Industrial", "SystemSecondEconomy":"$economy_Refinery;", "SystemSecondEconomy_Localised":"Refinery", "SystemGovernment":"$government_Feudal;", "SystemGovernment_Localised":"Feudal", "SystemSecurity":"$SYSTEM_SECURITY_high;", "SystemSecurity_Localised":"High Security", "Population":31778844, "Body":"Deciat", "BodyID":0, "BodyType":"Star", "Powers":[ "A. Lavigny-Duval" ], "PowerplayState":"Exploited", "JumpDist":5.973, "FuelUsed":0.111415, "FuelLevel":8.000000, "Factions":[ { "Name":"Independent Deciat Green Party", "FactionState":"War", "Government":"Democracy", "Influence":0.109109, "Allegiance":"Federation", "Happiness":"$Faction_HappinessBand3;", "Happiness_Localised":"Discontented", "MyReputation":57.083599, "ActiveStates":[ { "State":"InfrastructureFailure" }, { "State":"War" } ] }, { "Name":"Kremata Incorporated", "FactionState":"Election", "Government":"Corporate", "Influence":0.105105, "Allegiance":"Federation", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":-6.000000, "ActiveStates":[ { "State":"Election" } ] }, { "Name":"Windri & Co", "FactionState":"War", "Government":"Corporate", "Influence":0.151151, "Allegiance":"Federation", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":-11.800000, "ActiveStates":[ { "State":"Boom" }, { "State":"War" } ] }, { "Name":"Deciat Flag", "FactionState":"None", "Government":"Dictatorship", "Influence":0.100100, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":0.000000 }, { "Name":"Deciat Corp.", "FactionState":"Election", "Government":"Corporate", "Influence":0.105105, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":-1.200000, "ActiveStates":[ { "State":"Election" } ] }, { "Name":"Deciat Blue Dragons", "FactionState":"None", "Government":"Anarchy", "Influence":0.010010, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":3.300000 }, { "Name":"Ryders of the Void", "FactionState":"Boom", "Government":"Feudal", "Influence":0.419419, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":93.099998, "PendingStates":[ { "State":"Expansion", "Trend":0 } ], "RecoveringStates":[ { "State":"CivilUnrest", "Trend":0 }, { "State":"PirateAttack", "Trend":0 } ], "ActiveStates":[ { "State":"Boom" } ] } ], "SystemFaction":{ "Name":"Ryders of the Void", "FactionState":"Boom" }, "Conflicts":[ { "WarType":"war", "Status":"active", "Faction1":{ "Name":"Independent Deciat Green Party", "Stake":"Carson Hub", "WonDays":2 }, "Faction2":{ "Name":"Windri & Co", "Stake":"Alonso Cultivation Estate", "WonDays":1 } }, { "WarType":"election", "Status":"active", "Faction1":{ "Name":"Kremata Incorporated", "Stake":"Folorunsho Military Enterprise", "WonDays":2 }, "Faction2":{ "Name":"Deciat Corp.", "Stake":"Amos Synthetics Moulding", "WonDays":1 } } ] })
+        EDR_CLIENT.check_system("Deciat")
+        global OVERLAY_DUMMY_COUNTER
+        OVERLAY_DUMMY_COUNTER = (OVERLAY_DUMMY_COUNTER + 1) % 3
+        if OVERLAY_DUMMY_COUNTER == 0:
+            real_star_system = EDR_CLIENT.player.star_system
+            EDR_CLIENT.player.star_system = "Deciat"
+            EDR_CLIENT.docking_guidance({ "timestamp":"2021-10-22T12:34:56Z", "event":"DockingGranted", "LandingPad":7, "MarketID":3229756160, "StationName":"Garay Terminal", "StationType":"Coriolis" })
+            EDR_CLIENT.player.star_system = real_star_system
+        elif OVERLAY_DUMMY_COUNTER == 1:
+            EDR_CLIENT.player.mining_stats.dummify()
+            EDR_CLIENT.mining_guidance()
+            EDR_CLIENT.player.mining_stats.reset()
+        else:
+            EDR_CLIENT.player.bounty_hunting_stats.dummify() # TODO
+            EDR_CLIENT.bounty_hunting_guidance() 
+            EDR_CLIENT.player.bounty_hunting_stats.reset()
     elif param == "on":
         EDRLOG.log(u"Enabling visual feedback", "INFO")
         EDR_CLIENT.visual_feedback = True

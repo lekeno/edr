@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 from collections import deque
+from time import time
 from edtime import EDTime
 from edri18n import _
 import json
@@ -24,7 +25,7 @@ class EDRMineralStats(object):
         now = EDTime.py_epoch_now()
         self.last = {"timestamp": now, "proportion": None}
 
-    def prospected(self, proportion):
+    def prospected(self, proportion, now):
         if proportion:
             self.sum += proportion / 100.0
             self.previous_max = self.max
@@ -35,12 +36,10 @@ class EDRMineralStats(object):
         index = int(round(proportion/100.0 * (len(self.distribution["bins"])-1), 0))
         self.distribution["last_index"] = index
         self.distribution["bins"][index] += 1
-        now = EDTime.py_epoch_now()
         self.prospectements.append((now, proportion))
 
-    def refined(self):
+    def refined(self, now):
         self.refined_nb += 1
-        now = EDTime.py_epoch_now()
         self.refinements.append((now, 1))
 
     def yield_average(self, overall_prospected_nb):
@@ -59,7 +58,7 @@ class EDRMiningStats(object):
         now = EDTime.py_epoch_now()
         self.start = now
         self.current = now
-        self.last = {"timestamp": now, "raw": None, "materials": None, "minerals_stats": []}
+        self.last = {"timestamp": now, "raw": None, "materials": None, "minerals_stats": [], "proportion": None}
         self.depleted = False
         self.of_interest = { "names": set(), "types": set()}
         self.stats = {}
@@ -84,7 +83,7 @@ class EDRMiningStats(object):
         self.start = now
         self.current = now
         self.refined_nb = 0
-        self.last = {"timestamp": now, "raw": None, "materials": None, "minerals_stats": []}
+        self.last = {"timestamp": now, "raw": None, "materials": None, "minerals_stats": [], "proportion": None}
         self.depleted = False
         self.of_interest = { "names": set(), "types": set()}
         self.stats = {}
@@ -99,6 +98,52 @@ class EDRMiningStats(object):
             self.of_interest["types"].add(internal_name)
             self.stats[mineral] = EDRMineralStats(name, internal_name, symbol)
 
+    def dummify(self):
+        self.reset()
+        
+        events = [
+            { "delta":0, "event":"ProspectedAsteroid", "Materials":[ { "Name":"Gallite", "Proportion":32.171711 }, { "Name":"Indite", "Proportion":3.015685 }, { "Name":"Silver", "Proportion":7.020900 } ], "Content":"$AsteroidMaterialContent_Medium;", "Content_Localised":"Material Content: Medium", "Remaining":100.000000 },
+            { "delta":5, "event":"ProspectedAsteroid", "Materials":[ { "Name":"Gallite", "Proportion":22.635149 }, { "Name":"Indite", "Proportion":12.600220 }, { "Name":"Painite", "Proportion":12.419773 } ], "Content":"$AsteroidMaterialContent_Medium;", "Content_Localised":"Material Content: Medium", "Remaining":100.000000 },
+            { "delta":26, "event":"ProspectedAsteroid", "Materials":[ { "Name":"Gallite", "Proportion":26.404419 }, { "Name":"Samarium", "Proportion":17.613367 }, { "Name":"Praseodymium", "Proportion":7.239036 } ], "Content":"$AsteroidMaterialContent_Medium;", "Content_Localised":"Material Content: Medium", "Remaining":100.000000 },
+            { "delta":22, "event":"ProspectedAsteroid", "Materials":[ { "Name":"Bertrandite", "Proportion":30.968697 }, { "Name":"Painite", "Proportion":7.976030 }, { "Name":"Samarium", "Proportion":3.769541 } ], "Content":"$AsteroidMaterialContent_Low;", "Content_Localised":"Material Content: Low", "Remaining":100.000000 },
+            { "delta":28, "event":"ProspectedAsteroid", "Materials":[ { "Name":"Painite", "Proportion":34.572594 }, { "Name":"Bertrandite", "Proportion":12.292540 }, { "Name":"Indite", "Proportion":8.305000 } ], "Content":"$AsteroidMaterialContent_Low;", "Content_Localised":"Material Content: Low", "Remaining":100.000000 },
+            { "delta":46, "event":"MiningRefined", "Type":"$painite_name;", "Type_Localised":"Painite" },
+            { "delta":6, "event":"MiningRefined", "Type":"$painite_name;", "Type_Localised":"Painite" },
+            { "delta":5, "event":"MiningRefined", "Type":"$painite_name;", "Type_Localised":"Painite" },
+            { "delta":6, "event":"MiningRefined", "Type":"$painite_name;", "Type_Localised":"Painite" },
+            { "delta":5, "event":"MiningRefined", "Type":"$painite_name;", "Type_Localised":"Painite" },
+            { "delta":5, "event":"MiningRefined", "Type":"$painite_name;", "Type_Localised":"Painite" },
+            { "delta":5, "event":"MiningRefined", "Type":"$painite_name;", "Type_Localised":"Painite" },
+            { "delta":60, "event":"ProspectedAsteroid", "Materials":[ { "Name":"Praseodymium", "Proportion":35.965885 }, { "Name":"Painite", "Proportion":9.763608 }, { "Name":"Indite", "Proportion":6.561393 } ], "Content":"$AsteroidMaterialContent_Low;", "Content_Localised":"Material Content: Low", "Remaining":100.000000 },
+            { "delta":26, "event":"ProspectedAsteroid", "Materials":[ { "Name":"Indite", "Proportion":28.778957 }, { "Name":"Gold", "Proportion":14.339796 }, { "Name":"Praseodymium", "Proportion":5.365635 } ], "Content":"$AsteroidMaterialContent_Low;", "Content_Localised":"Material Content: Low", "Remaining":100.000000 },
+            { "delta":5, "event":"ProspectedAsteroid", "Materials":[ { "Name":"Gallite", "Proportion":30.249086 }, { "Name":"Indite", "Proportion":10.113951 }, { "Name":"Silver", "Proportion":11.140014 } ], "Content":"$AsteroidMaterialContent_High;", "Content_Localised":"Material Content: High", "Remaining":100.000000 },
+            { "delta":18, "event":"ProspectedAsteroid", "Materials":[ { "Name":"Gallite", "Proportion":31.419930 } ], "Content":"$AsteroidMaterialContent_Medium;", "Content_Localised":"Material Content: Medium", "Remaining":100.000000 },
+            { "delta":22, "event":"ProspectedAsteroid", "Materials":[ { "Name":"Palladium", "Proportion":25.370291 }, { "Name":"Praseodymium", "Proportion":24.505444 }, { "Name":"Indite", "Proportion":4.841553 } ], "Content":"$AsteroidMaterialContent_Medium;", "Content_Localised":"Material Content: Medium", "Remaining":100.000000 },
+            { "delta":16, "event":"ProspectedAsteroid", "Materials":[ { "Name":"Gallite", "Proportion":20.945780 }, { "Name":"Painite", "Proportion":15.845593 }, { "Name":"Indite", "Proportion":8.426105 } ], "Content":"$AsteroidMaterialContent_Low;", "Content_Localised":"Material Content: Low", "Remaining":100.000000 },
+            { "delta":18, "event":"ProspectedAsteroid", "Materials":[ { "Name":"Gallite", "Proportion":33.340839 }, { "Name":"Palladium", "Proportion":20.186563 }, { "Name":"Samarium", "Proportion":5.996222 } ], "Content":"$AsteroidMaterialContent_Medium;", "Content_Localised":"Material Content: Medium", "Remaining":100.000000 },
+            { "delta":27, "event":"ProspectedAsteroid", "Materials":[ { "Name":"Painite", "Proportion":40.854160 }, { "Name":"Indite", "Proportion":10.070118 } ], "Content":"$AsteroidMaterialContent_Low;", "Content_Localised":"Material Content: Low", "Remaining":100.000000 },
+            { "delta":17, "event":"ProspectedAsteroid", "Materials":[ { "Name":"Gallite", "Proportion":22.635149 }, { "Name":"Indite", "Proportion":12.600220 }, { "Name":"Painite", "Proportion":12.419773 } ], "Content":"$AsteroidMaterialContent_Medium;", "Content_Localised":"Material Content: Medium", "Remaining":100.000000 },
+            { "delta":19, "event":"MiningRefined", "Type":"$painite_name;", "Type_Localised":"Painite" },
+            { "delta":4, "event":"MiningRefined", "Type":"$painite_name;", "Type_Localised":"Painite" },
+            { "delta":5, "event":"MiningRefined", "Type":"$painite_name;", "Type_Localised":"Painite" },
+            { "delta":28, "event":"MiningRefined", "Type":"$painite_name;", "Type_Localised":"Painite" },
+            { "delta":11, "event":"MiningRefined", "Type":"$painite_name;", "Type_Localised":"Painite" },
+            { "delta":4, "event":"MiningRefined", "Type":"$painite_name;", "Type_Localised":"Painite" },
+            { "delta":4, "event":"MiningRefined", "Type":"$painite_name;", "Type_Localised":"Painite" },
+            { "delta":9, "event":"MiningRefined", "Type":"$painite_name;", "Type_Localised":"Painite" }
+        ]
+
+        faketime = EDTime()
+        faketime.rewind(8*60)
+        self.start -= 8*60
+        for entry in events:
+            faketime.advance(entry["delta"])
+            entry["timestamp"] = faketime.as_journal_timestamp()
+            if entry.get("event", None) == "ProspectedAsteroid":
+                self.prospected(entry)
+            elif entry.get("event", None) == "MiningRefined":
+                self.refined(entry)
+
     def prospected(self, entry):
         if entry.get("event", None) != "ProspectedAsteroid":
             return False
@@ -111,7 +156,9 @@ class EDRMiningStats(object):
             return False
         
         self.prospected_raw_history.append(entry)
-        now = EDTime.py_epoch_now()
+        timestamp = EDTime()
+        timestamp.from_journal_timestamp(entry["timestamp"])
+        now = timestamp.as_py_epoch()
         self.current = now
         self.prospected_nb += 1
         self.__update_efficiency()
@@ -130,14 +177,15 @@ class EDRMiningStats(object):
             "timestamp": now,
             "raw": key,
             "materials": len(materials),
-            "minerals_stats": []
+            "minerals_stats": [],
+            "proportion": None
         }
         
         for material in materials:
             cname = material.get("Name", "").lower()
             if cname in self.of_interest["names"]:
                 proportion = material.get("Proportion", 0.0)
-                self.stats[cname].prospected(proportion)
+                self.stats[cname].prospected(proportion, now)
                 self.last["minerals_stats"].append(self.stats[cname])
                 
 
@@ -166,7 +214,9 @@ class EDRMiningStats(object):
     def refined(self, entry):
         if entry.get("event", None) != "MiningRefined":
             return
-        now = EDTime.py_epoch_now()
+        timestamp = EDTime()
+        timestamp.from_journal_timestamp(entry["timestamp"])
+        now = timestamp.as_py_epoch()
         self.current = now
         if entry.get("Type", "").lower() not in self.of_interest["types"]:
             return
@@ -175,10 +225,10 @@ class EDRMiningStats(object):
         self.__update_efficiency()
         cinternal_name = entry.get("Type", "").lower()
         if cinternal_name in self.of_interest["types"]:
-            cname = self.minerals_types_lut[cinternal_name]
-            self.stats[cname].refined()
+            cname = self.mineral_types_lut[cinternal_name]
+            self.stats[cname].refined(now)
 
-    def last_max():
+    def last_max(self):
         if not self.last["minerals_stats"]:
             return self.max
         return self.last["mineral_stats"][0].max
@@ -201,7 +251,7 @@ class EDRMiningStats(object):
 
     def __update_efficiency(self):
         now = EDTime.py_epoch_now()
-        efficiency = self.mineral_per_hour()
+        efficiency = self.item_per_hour()
         self.efficiency.append((now, efficiency))
         self.max_efficiency = max(self.max_efficiency, efficiency)
 

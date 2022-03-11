@@ -135,7 +135,7 @@ class EDRImperialShieldingCheck(EDRBasicStateCheck):
         return [_(u'USS (high grade)'), _(u'Mission reward')]
     
     def hint(self):
-        return _(u"Found in Empire systems with no state or an 'Election' state. Lower chance with 'Boom', 'War', 'Civic War' and 'Outbreak'.")
+        return _(u"Found in Empire systems with no state or an 'Election' state. Lower chance with 'Boom', 'War', 'Civil War' and 'Outbreak'.")
 
 class EDRCoreDynamicsCompositesCheck(EDRBasicStateCheck):
 
@@ -150,7 +150,7 @@ class EDRCoreDynamicsCompositesCheck(EDRBasicStateCheck):
         return [_(u'USS (high grade)'), _(u'Combat ships salvage')]
 
     def hint(self):
-        return _(u"Found in Federal systems with no state or an 'Election' state. Lower chance with 'Boom', 'War', 'Civic War' and 'Outbreak'.")
+        return _(u"Found in Federal systems with no state or an 'Election' state. Lower chance with 'Boom', 'War', 'Civil War' and 'Outbreak'.")
 
 class EDRProtoLightAlloysCheck(EDRBasicStateCheck):
 
@@ -213,7 +213,7 @@ class EDRImprovisedComponentsCheck(EDRBasicStateCheck):
         return [_(u'USS (high grade)'), _(u'Mission reward')]
 
     def hint(self):
-        return _(u"Found in system with a 'Civic unrest' state. Greater chance in Independent or Alliance systems.")
+        return _(u"Found in system with a 'Civil unrest' state. Greater chance in Independent or Alliance systems.")
 
 class EDRMilitaryGradeAlloysCheck(EDRBasicStateCheck):
 
@@ -230,7 +230,7 @@ class EDRMilitaryGradeAlloysCheck(EDRBasicStateCheck):
         return [_(u'USS (high grade)'), _(u'Mission reward')]
     
     def hint(self):
-        return _(u"Found in systems at 'War' or 'Civic War'. Greater chance in Independent, Alliance or Anarchy systems.")
+        return _(u"Found in systems at 'War' or 'Civil War'. Greater chance in Independent, Alliance or Anarchy systems.")
 
 class EDRMilitarySupercapacitorsCheck(EDRBasicStateCheck):
 
@@ -247,7 +247,7 @@ class EDRMilitarySupercapacitorsCheck(EDRBasicStateCheck):
         return [_(u'USS (high grade)'), _(u'Mission reward')]
     
     def hint(self):
-        return _(u"Found in systems at 'War' or 'Civic War'. Greater chance in Independent, Alliance or Anarchy systems.")
+        return _(u"Found in systems at 'War' or 'Civil War'. Greater chance in Independent, Alliance or Anarchy systems.")
 
 class EDRExquisiteFocusCrystalsCheck(EDRBasicStateCheck):
 
@@ -296,24 +296,24 @@ class EDRPolymerCapacitorsCheck(EDRBasicStateCheck):
         super(EDRPolymerCapacitorsCheck, self).__init__()
         self.name = 'Polymer Capacitors'
         self.optional_state('war')
-        self.optional_state('civic war')
+        self.optional_state('civil war')
         self.mandatory_security('anarchy')
 
     def locations(self):
         return [_(u'USS (encoded emissions)'), _(u'Conflict Zone (military/authority)')]
     
     def hint(self):
-        return _(u"Found in USS (encoded emissions) at Anarchy systems. Greater chances with systems at 'War' or 'Civic war'. Destroy military/authority ships in Combat Zone.")
+        return _(u"Found in USS (encoded emissions) at Anarchy systems. Greater chances with systems at 'War' or 'Civil war'. Destroy military/authority ships in Combat Zone.")
 
 class EDRThermicAlloysCheck(EDRBasicStateCheck):
     def __init__(self):
         super(EDRThermicAlloysCheck, self).__init__()
         self.name = 'Thermic Alloys'
         self.mandatory_state('war')
-        self.mandatory_state('civic war')
+        self.mandatory_state('civil war')
 
     def locations(self):
         return [_(u'Conflict Zone (military/authority)'), _(u'Mission reward')]
     
     def hint(self):
-        return _(u"Destroy military/authority ships in Combat Zone. Also a Mission Reward. Greater chances with systems at 'War' or 'Civic war'.")
+        return _(u"Destroy military/authority ships in Combat Zone. Also a Mission Reward. Greater chances with systems at 'War' or 'Civil war'.")
