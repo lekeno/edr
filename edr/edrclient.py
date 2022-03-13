@@ -27,7 +27,7 @@ from lrucache import LRUCache
 from edentities import EDFineOrBounty, pretty_print_number
 from edsitu import EDPlanetaryLocation, EDLocation
 from edrserver import EDRServer, CommsJammedError
-from audiofeedback import AudioFeedback
+from audiofeedback import EDRSoundEffects
 from edrlog import EDRLog
 from ingamemsg import InGameMsg
 from edrtogglingpanel import EDRTogglingPanel
@@ -51,7 +51,7 @@ from edrfssinsights import EDRFSSInsights
 EDRLOG = EDRLog()
 
 class EDRClient(object):
-    AUDIO_FEEDBACK = AudioFeedback()
+    SFX = EDRSoundEffects()
 
     def __init__(self):
         edr_config = EDRConfig()
@@ -166,13 +166,13 @@ class EDRClient(object):
     
     def loud_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "loud")
-        self.AUDIO_FEEDBACK.loud()
+        self.SFX.loud()
         # Translators: this is shown on EDMC's status bar when a user enables loud audio cues
         self.status = _(u"loud audio cues.")
 
     def soft_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "soft")
-        self.AUDIO_FEEDBACK.soft()
+        self.SFX.soft()
         # Translators: this is shown on EDMC's status bar when a user enables soft audio cues
         self.status = _(u"soft audio cues.")
 
@@ -397,6 +397,8 @@ class EDRClient(object):
         details.append(self.tips.tip())
         # Translators: this is shown when EDR warms-up via the overlay
         self.__notify(_(u"EDR v{} by LeKeno").format(self.edr_version), details, clear_before=True)
+        if self.audio_feedback:
+            self.SFX.startup()
 
     def shutdown(self, everything=False):
         self.edrcmdrs.persist()
@@ -685,6 +687,8 @@ class EDRClient(object):
             summary = self.IN_GAME_MSG.docking(self.player.star_system, station, entry["LandingPad"])
             if summary:
                 self.ui.notify(summary["header"], summary["body"])
+                if self.audio_feedback:
+                    self.SFX.docking()
         else:
             self.IN_GAME_MSG.clear_docking()
 
@@ -789,7 +793,6 @@ class EDRClient(object):
                     extra_details.append(_("{}: {} @ {} LS    {}").format(adjBodyName, pretty_print_number(body["valueScanned"]), pretty_print_number(body["distance"]), flags))   
                 top -= 1
             
-            # TODO l10n
             firsts = ""
             if first_disco or first_map:
                 if first_disco and first_map:
@@ -849,6 +852,8 @@ class EDRClient(object):
         
         if self.visual_feedback:
             self.IN_GAME_MSG.navigation(bearing, destination, distance, pitch)
+            if self.audio_feedback:
+                    self.SFX.navigation()
         self.status = _(u"> {:03} < for Lat:{:.4f} Lon:{:.4f}").format(bearing, destination.latitude, destination.longitude)
 
     def check_system(self, star_system, may_create=False, coords=None):
@@ -879,6 +884,8 @@ class EDRClient(object):
     def mining_guidance(self):
         if self.visual_feedback:
             self.IN_GAME_MSG.mining_guidance(self.player.mining_stats)
+            if self.audio_feedback:
+                self.SFX.mining()
         
         if len(self.player.mining_stats.last["minerals_stats"]) > 0 and self.player.mining_stats.last["proportion"]:
             self.status = _(u"[Yield: {:.2f}%]   [Items: {} ({:.0f}/hour)]".format(self.player.mining_stats.last["proportion"], self.player.mining_stats.refined_nb, self.player.mining_stats.item_per_hour()))
@@ -889,6 +896,8 @@ class EDRClient(object):
                 self.IN_GAME_MSG.clear_bounty_hunting_guidance()
                 return
             self.IN_GAME_MSG.bounty_hunting_guidance(self.player.bounty_hunting_stats)
+            if self.audio_feedback:
+                self.SFX.bounty_hunting()
         
         bounty = EDFineOrBounty(self.player.bounty_hunting_stats.last["bounty"])
         credits_per_hour = EDFineOrBounty(int(self.player.bounty_hunting_stats.credits_per_hour()))
@@ -922,6 +931,8 @@ class EDRClient(object):
         
         if self.visual_feedback:
             self.IN_GAME_MSG.target_guidance(self.player.target_pilot(), subsys_details)
+            if self.audio_feedback:
+                self.SFX.target()
 
     def notams(self):
         summary = self.edrsystems.systems_with_active_notams()
@@ -1710,7 +1721,9 @@ class EDRClient(object):
         throttling = self.__throttling_duration()
         if throttling:
             self.status = _(u"Message not sent. Try again in {duration}.").format(duration=EDTime.pretty_print_timespan(throttling))
-            self.__notify(_(u"EDR central"), [self.status], clear_before = True)
+            self.__notify(_(u"EDR central"), [self.status], clear_before = True, sfx=False)
+            if self.audio_feedback:
+                self.SFX.jammed()
             return False
 
         star_system = info["starSystem"]
@@ -1764,7 +1777,9 @@ class EDRClient(object):
         if success:
             self.__notify(dex_name, [_(u"Successfully tagged cmdr {name} with {tag}").format(name=cmdr_name, tag=tag)], clear_before = True)
         else:
-            self.__notify(dex_name, [_(u"Could not tag cmdr {name} with {tag}").format(name=cmdr_name, tag=tag)], clear_before = True)
+            self.__notify(dex_name, [_(u"Could not tag cmdr {name} with {tag}").format(name=cmdr_name, tag=tag)], clear_before = True, sfx=False)
+            if self.audio_feedback:
+                self.SFX.failed()
         return success
     
     def memo_cmdr(self, cmdr_name, memo):
@@ -1777,7 +1792,9 @@ class EDRClient(object):
         if success:
             self.__notify(_(u"Cmdr Dex"), [_(u"Successfully attached a memo to cmdr {}").format(cmdr_name)], clear_before = True)
         else:
-            self.__notify(_(u"Cmdr Dex"), [_(u"Failed to attach a memo to cmdr {}").format(cmdr_name)], clear_before = True)
+            self.__notify(_(u"Cmdr Dex"), [_(u"Failed to attach a memo to cmdr {}").format(cmdr_name)], clear_before = True, sfx=False)
+            if self.audio_feedback:
+                self.SFX.failed()
         return success
 
     def clear_memo_cmdr(self, cmdr_name):
@@ -1790,7 +1807,9 @@ class EDRClient(object):
         if success:
             self.__notify(_(u"Cmdr Dex"),[_(u"Successfully removed memo from cmdr {}").format(cmdr_name)], clear_before = True)
         else:
-            self.__notify(_(u"Cmdr Dex"), [_(u"Failed to remove memo from cmdr {}").format(cmdr_name)], clear_before = True)
+            self.__notify(_(u"Cmdr Dex"), [_(u"Failed to remove memo from cmdr {}").format(cmdr_name)], clear_before = True, sfx=False)
+            if self.audio_feedback:
+                self.SFX.failed()
         return success
 
     def untag_cmdr(self, cmdr_name, tag):
@@ -1817,7 +1836,9 @@ class EDRClient(object):
             else:
                 self.__notify(dex_name, [_(u"Successfully removed tag {} from cmdr {}").format(tag, cmdr_name)], clear_before = True)
         else:
-            self.__notify(dex_name, [_(u"Could not remove tag(s) from cmdr {}").format(cmdr_name)], clear_before = True)
+            self.__notify(dex_name, [_(u"Could not remove tag(s) from cmdr {}").format(cmdr_name)], clear_before = True, sfx=False)
+            if self.audio_feedback:
+                self.SFX.failed()
         return success
 
     def where(self, cmdr_name):
@@ -1861,9 +1882,13 @@ class EDRClient(object):
                     in_clipboard = True
             self.__notify(_(u"Ship locator"), hits, clear_before = True)
         elif results == False:
-            self.__notify(_(u"Ship locator"), [_(u"No info about your fleet."), _(u"Visit a shipyard to update your fleet info.")], clear_before = True)
+            self.__notify(_(u"Ship locator"), [_(u"No info about your fleet."), _(u"Visit a shipyard to update your fleet info.")], clear_before = True, sfx=False)
+            if self.audio_feedback:
+                self.SFX.failed()
         else:
-            self.__notify(_(u"Ship locator"), [_(u"Couldn't find anything")], clear_before = True)
+            self.__notify(_(u"Ship locator"), [_(u"Couldn't find anything")], clear_before = True, sfx=False)
+            if self.audio_feedback:
+                self.SFX.failed()
 
     def contracts(self):
         if self.is_anonymous():
@@ -1935,7 +1960,9 @@ class EDRClient(object):
                 return False
             elif not self.player.power:
                 EDRLOG.log(u"Not pledged to any power, can't have enemies.", "INFO")
-                self.__notify(_(u"Recently Sighted {kind}").format(kind=_(kind)), [_(u"You need to be pledged to a power.")], clear_before = True)
+                self.__notify(_(u"Recently Sighted {kind}").format(kind=_(kind)), [_(u"You need to be pledged to a power.")], clear_before = True, sfx=False)
+                if self.audio_feedback:
+                    self.SFX.failed()
                 return False
         opponents_report = self.edropponents[kind].recent_sightings()
         if not opponents_report:
@@ -1957,6 +1984,8 @@ class EDRClient(object):
         if self.visual_feedback:
             EDRLOG.log(u"Show help for {} with header: {} and details: {}".format(section, content["header"], content["details"][0]), "DEBUG")
             self.IN_GAME_MSG.help(content["header"], content["details"])
+            if self.audio_feedback:
+                self.SFX.help()
         EDRLOG.log(u"[Alt] Show help for {} with header: {} and details: {}".format(section, content["header"], content["details"][0]), "DEBUG")
         self.ui.help(_(content["header"]), _(content["details"]))
         return True
@@ -1969,7 +1998,7 @@ class EDRClient(object):
 
     def __sitrep(self, header, details):
         if self.audio_feedback:
-            self.AUDIO_FEEDBACK.notify()
+            self.SFX.sitrep()
         if self.visual_feedback:
             EDRLOG.log(u"sitrep with header: {}; details: {}".format(header, details[0]), "DEBUG")
             self.IN_GAME_MSG.clear_sitrep()
@@ -1979,7 +2008,7 @@ class EDRClient(object):
 
     def __intel(self, header, details, clear_before=False, legal=None):
         if self.audio_feedback:
-            self.AUDIO_FEEDBACK.notify()
+            self.SFX.intel()
         if self.visual_feedback:
             EDRLOG.log(u"Intel; details: {}".format(details[0]), "DEBUG")
             if clear_before:
@@ -1990,7 +2019,7 @@ class EDRClient(object):
 
     def __warning(self, header, details, clear_before=False, legal=None):
         if self.audio_feedback:
-            self.AUDIO_FEEDBACK.warn()
+            self.SFX.warning()
         if self.visual_feedback:
             EDRLOG.log(u"Warning; details: {}".format(details[0]), "DEBUG")
             if clear_before:
@@ -1999,9 +2028,9 @@ class EDRClient(object):
         EDRLOG.log(u"[Alt] Warning; details: {}".format(details[0]), "DEBUG")
         self.ui.warning(header, details)
     
-    def __notify(self, header, details, clear_before=False):
-        if self.audio_feedback:
-            self.AUDIO_FEEDBACK.notify()
+    def __notify(self, header, details, clear_before=False, sfx=True):
+        if sfx and self.audio_feedback:
+            self.SFX.notify()
         if self.visual_feedback:
             EDRLOG.log(u"Notify about {}; details: {}".format(header, details[0]), "DEBUG")
             if clear_before:
@@ -2011,7 +2040,9 @@ class EDRClient(object):
         self.ui.notify(header, details)
 
     def __commsjammed(self):
-        self.__notify(_(u"Comms Link Error"), [_(u"EDR Central can't be reached at the moment"), _(u"Try again later. Join https://edrecon.com/discord or contact Cmdr LeKeno if it keeps failing")])
+        self.__notify(_(u"Comms Link Error"), [_(u"EDR Central can't be reached at the moment"), _(u"Try again later. Join https://edrecon.com/discord or contact Cmdr LeKeno if it keeps failing")], sfx=False)
+        if self.audio_feedback:
+            self.SFX.jammed()
 
     def notify_with_details(self, notice, details):
         self.__notify(notice, details)
@@ -2043,11 +2074,15 @@ class EDRClient(object):
             return False
 
         if self.searching:
-            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True)
+            self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True, sfx=False)
+            if self.audio_feedback:
+                self.SFX.searching()
             return False
         
         if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
-            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")], clear_before = True)
+            self.__notify(_(u"EDR Search"), [_(u"Search features only work in the bubble or Colonia.")], clear_before = True, sfx=False)
+            if self.audio_feedback:
+                self.SFX.failed()
             return False
         return True
 
@@ -2059,7 +2094,9 @@ class EDRClient(object):
             self.edrsystems.search_interstellar_factors(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"I.Factors: searching...")
-            self.__notify(_(u"EDR Search"), [_(u"Interstellar Factors: searching...")], clear_before = True)
+            self.__notify(_(u"EDR Search"), [_(u"Interstellar Factors: searching...")], clear_before = True, sfx=False)
+            if self.audio_feedback:
+                self.SFX.searching()
         except ValueError:
             self.searching = False
             self.status = _(u"I.Factors: failed")
@@ -2073,7 +2110,9 @@ class EDRClient(object):
             self.edrsystems.search_raw_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"Raw mat. trader: searching...")
-            self.__notify(_(u"EDR Search"), [_(u"Raw material trader: searching...")], clear_before = True)
+            self.__notify(_(u"EDR Search"), [_(u"Raw material trader: searching...")], clear_before = True, sfx=False)
+            if self.audio_feedback:
+                self.SFX.searching()
         except ValueError:
             self.searching = False
             self.status = _(u"Raw mat. trader: failed")
@@ -2087,7 +2126,9 @@ class EDRClient(object):
             self.edrsystems.search_encoded_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"Encoded data trader: searching...")
-            self.__notify(_(u"EDR Search"), [_(u"Encoded data trader: searching...")], clear_before = True)
+            self.__notify(_(u"EDR Search"), [_(u"Encoded data trader: searching...")], clear_before = True, sfx=False)
+            if self.audio_feedback:
+                self.SFX.searching()
         except ValueError:
             self.searching = False
             self.status = _(u"Encoded data trader: failed")
@@ -2102,7 +2143,9 @@ class EDRClient(object):
             self.edrsystems.search_manufactured_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"Manufactured mat. trader: searching...")
-            self.__notify(_(u"EDR Search"), [_(u"Manufactured material trader: searching...")], clear_before = True)
+            self.__notify(_(u"EDR Search"), [_(u"Manufactured material trader: searching...")], clear_before = True, sfx=False)
+            if self.audio_feedback:
+                self.SFX.searching()
         except ValueError:
             self.searching = False
             self.status = _(u"Manufactured mat. trader: failed")
@@ -2117,7 +2160,9 @@ class EDRClient(object):
             self.edrsystems.search_staging_station(star_system, self.__staoi_found, override_sc_distance=override_sc_distance)
             self.searching = True
             self.status = _(u"Staging station: searching...")
-            self.__notify(_(u"EDR Search"), [_(u"Staging station: searching...")], clear_before = True)
+            self.__notify(_(u"EDR Search"), [_(u"Staging station: searching...")], clear_before = True, sfx=False)
+            if self.audio_feedback:
+                self.SFX.searching()
         except ValueError:
             self.searching = False
             self.status = _(u"Staging station: failed")
@@ -2134,7 +2179,9 @@ class EDRClient(object):
             self.edrsystems.search_parking_system(star_system, self.__parking_found, override_rank=override_rank)
             self.searching = True
             self.status = _(u"Parking system: searching...")
-            self.__notify(_(u"EDR Search"), [_(u"Parking system: searching...")], clear_before = True)
+            self.__notify(_(u"EDR Search"), [_(u"Parking system: searching...")], clear_before = True, sfx=False)
+            if self.audio_feedback:
+                self.SFX.searching()
         except ValueError:
             self.searching = False
             self.status = _(u"Parking system: failed")
@@ -2151,7 +2198,9 @@ class EDRClient(object):
             details = [_(u"RRR Fleet Carrier: searching in {}...").format(star_system), _(u"If there are no results, try: !rrrfc {} < 15").format(star_system)]
             if override_radius:
                 details = [_(u"RRR Fleet Carrier: searching within {} LY of {}...").format(override_radius, star_system)]
-            self.__notify(_(u"EDR Search"), details, clear_before = True)
+            self.__notify(_(u"EDR Search"), details, clear_before = True, sfx=False)
+            if self.audio_feedback:
+                self.SFX.searching()
         except ValueError:
             self.searching = False
             self.status = _(u"RRR Fleet Carrier: failed")
@@ -2168,7 +2217,9 @@ class EDRClient(object):
             details = [_(u"RRR Station: searching in {}...").format(star_system), _(u"If there are no results, try: !rrr {} < 15").format(star_system)]
             if override_radius:
                 details = [_(u"RRR Station: searching within {} LY of {}...").format(override_radius, star_system)]
-            self.__notify(_(u"EDR Search"), details, clear_before = True)
+            self.__notify(_(u"EDR Search"), details, clear_before = True, sfx=False)
+            if self.audio_feedback:
+                self.SFX.searching()
         except ValueError:
             self.searching = False
             self.status = _(u"RRR Station: failed")
@@ -2258,7 +2309,9 @@ class EDRClient(object):
             self.edrsystems.search_human_tech_broker(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"Human tech broker: searching...")
-            self.__notify(_(u"EDR Search"), [_(u"Human tech broker: searching...")], clear_before = True)
+            self.__notify(_(u"EDR Search"), [_(u"Human tech broker: searching...")], clear_before = True, sfx=False)
+            if self.audio_feedback:
+                self.SFX.searching()
         except ValueError:
             self.searching = False
             self.status = _(u"Human tech broker: failed")
@@ -2272,7 +2325,9 @@ class EDRClient(object):
             self.edrsystems.search_guardian_tech_broker(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"Guardian tech broker: searching...")
-            self.__notify(_(u"EDR Search"), [_(u"Guardian tech broker: searching...")], clear_before = True)
+            self.__notify(_(u"EDR Search"), [_(u"Guardian tech broker: searching...")], clear_before = True, sfx=False)
+            if self.audio_feedback:
+                self.SFX.searching()
         except ValueError:
             self.searching = False
             self.status = _(u"Guardian tech broker: failed")
@@ -2286,7 +2341,9 @@ class EDRClient(object):
             self.edrsystems.search_offbeat_station(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
             self.searching = True
             self.status = _(u"Offbeat station: searching...")
-            self.__notify(_(u"EDR Search"), [_(u"Offbeat station: searching...")], clear_before = True)
+            self.__notify(_(u"EDR Search"), [_(u"Offbeat station: searching...")], clear_before = True, sfx=False)
+            if self.audio_feedback:
+                self.SFX.searching()
         except ValueError:
             self.searching = False
             self.status = _(u"Offbeat station: failed")
@@ -2440,7 +2497,9 @@ class EDRClient(object):
             if outcome == True:
                 self.searching = True
                 self.status = _(u"{}: searching...").format(cresource)
-                self.__notify(_(u"EDR Search"), [_(u"{}: searching...").format(cresource)], clear_before = True)
+                self.__notify(_(u"EDR Search"), [_(u"{}: searching...").format(cresource)], clear_before = True, sfx=False)
+                if self.audio_feedback:
+                    self.SFX.searching()
             elif outcome == False or outcome == None:
                 self.status = _(u"{}: failed...").format(cresource)
                 self.__notify(_(u"EDR Search"), [_(u"{}: failed...").format(cresource), _(u"To learn how to use the feature, send: !help search")], clear_before = True)
