@@ -421,7 +421,15 @@ class EDRClient(object):
     def app_ui(self, parent):
         if self.ui is None:
             self.ui = EDRTogglingPanel(self._status, self._visual_alt_feedback, parent=parent)
-            self.ui.notify(_(u"Troubleshooting"), [_(u"If the overlay doesn't show up, try one of the following:"), _(u" - In Elite: go to graphics options, and select Borderless or Windowed."), _(" - With Elite and EDR launched, check that EDMCOverlay.exe is running in the task manager"), _(u"If the overlay hurts your FPS, try turning VSYNC off in Elite's graphics options."), u"----", _("Join https://edrecon.com/discord for further technical support.")])
+            self.ui.notify(_(u"Troubleshooting"), [
+                _(u"If the overlay doesn't show up, try one of the following:"),
+                _(u" - In E:D Market Connector: click on the File menu, then Settings, EDR, and select the Overlay checkbox."),
+                _(u" - In Elite: go to graphics options, and select Borderless or Windowed."),
+                _(u" - With Elite and EDR launched, check that EDMCOverlay.exe is running in the task manager."), 
+                _(u"   If it's not running, then you may have to manually run it once (look in the plugins folder for 'EDMCOverlay.exe'."),
+                _(u"If the overlay hurts your FPS, try turning VSYNC off in Elite's graphics options."),
+                u"----",
+                _("Join https://edrecon.com/discord for further technical support.")])
         self.check_version()
         return self.ui
 
@@ -712,6 +720,12 @@ class EDRClient(object):
                 return
         
         if self.edrfssinsights.is_signal(name):
+            if self.edrfssinsights.is_uss(name):
+                # TODO show materials for uss? Possible?
+                return
+            if self.edrfssinsights.is_nav_beacon(name):
+                # TODO show materials for system? Possible?
+                return
             if self.edrfssinsights.is_scenario_signal(name):
                 return
             if self.edrfssinsights.is_station(name):
