@@ -16,66 +16,82 @@ class EDRSoundEffects(object):
         self.sounds = {}
         for kind in self.kinds:
             audio_filename = self.sfx_config.snd(kind, loud)
-            self.sounds["kind"] = AudioFeedback(audio_filename)
+            self.sounds[kind] = AudioFeedback(audio_filename)
     
     def loud(self):
         self.sounds = {}
         for kind in self.kinds:
             audio_filename = self.sfx_config.snd(kind, loud=True)
-            self.sounds["kind"] = AudioFeedback(audio_filename)
+            self.sounds[kind] = AudioFeedback(audio_filename)
 
     def soft(self):
         self.sounds = {}
         for kind in self.kinds:
             audio_filename = self.sfx_config.snd(kind, loud=True)
-            self.sounds["kind"] = AudioFeedback(audio_filename)
+            self.sounds[kind] = AudioFeedback(audio_filename)
 
     def startup(self):
+        print("startup sound")
         self.__sfx("startup")
 
     def intel(self):
+        print("intel sound")
         self.__sfx("intel")
 
     def warning(self):
+        print("warning sound")
         self.__sfx("warning")
 
     def sitrep(self):
+        print("sitrep sound")
         self.__sfx("sitrep")
 
     def notify(self):
+        print("notify sound")
         self.__sfx("notify")
 
     def help(self):
+        print("help sound")
         self.__sfx("help")
 
     def navigation(self):
+        print("nav sound")
         self.__sfx("navigation")
 
     def docking(self):
+        print("dock sound")
         self.__sfx("docking")
 
     def mining(self):
+        print("mining sound")
         self.__sfx("mining")
 
     def bounty_hunting(self):
+        print("bh sound")
         self.__sfx("bounty-hunting")
 
     def target(self):
+        print("target sound")
         self.__sfx("target")
 
     def failed(self):
+        print("failed sound")
         self.__sfx("failed")
 
     def jammed(self):
+        print("jammed sound")
         self.__sfx("jammed")
 
     def searching(self):
+        print("searching sound")
         self.__sfx("searching")
 
     def __sfx(self, kind):
         sound = self.sounds.get(kind, None)
         if sound:
             sound.play()
+        else:
+            print("no sound for {} in {}".format(kind, self.sounds))
 
 
 class SFXConfig(object):
@@ -85,15 +101,15 @@ class SFXConfig(object):
         self.fallback_config.read(utils2to3.abspathmaker(__file__, config_file))
         user_cfg_path = utils2to3.abspathmaker(__file__, user_config_file)
         if os.path.exists(user_cfg_path):
-            EDRLog().log(u"Using user defined SFX at {}.".format(user_config_file[0]), "INFO")
+            EDRLog().log(u"Using user defined SFX at {}.".format(user_config_file), "INFO")
             self.config.read(user_cfg_path)
         else:
             EDRLog().log(u"No user defined SFX at {}, using {} instead.".format(user_config_file, config_file), "INFO")
             self.config = self.fallback_config
 
     def snd(self, kind, loud=True):
-        prefix = "" if loud else "soft_"
-        return self._get("sfx", '{}{}'.format(prefix, kind), "silence.wav")
+        suffix = "" if loud else "_soft"
+        return self._get("SFX{}".format(suffix), kind, None)
 
     def _get(self, category, variable, default=""):
         try:
@@ -112,6 +128,8 @@ if platform == 'darwin':
     class AudioFeedback(object):
         def __init__(self, audio_filename):
             self.snd = None
+            if not audio_filename:
+                return
             audio_file_path = utils2to3.abspathmaker(__file__, 'sounds', audio_filename)
             if os.path.exists(audio_file_path):
                 self.snd = NSSound.alloc().initWithContentsOfFile_byReference_(audio_file_path, False)
@@ -126,7 +144,10 @@ elif platform == 'win32':
     class AudioFeedback(object):
         def __init__(self, audio_filename):
             self.snd = None
+            if not audio_filename:
+                return
             audio_file_path = utils2to3.abspathmaker(__file__, 'sounds', audio_filename)
+            print(audio_file_path)
             if os.path.exists(audio_file_path):
                 self.snd = audio_file_path
 
@@ -141,6 +162,8 @@ elif platform == 'linux':
     class AudioFeedback(object):
         def __init__(self, audio_filename):
             self.snd = None
+            if not audio_filename:
+                return
             audio_file_path = utils2to3.abspathmaker(__file__, 'sounds', audio_filename)
             if os.path.exists(audio_file_path):
                 self.snd = audio_file_path
