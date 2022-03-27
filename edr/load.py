@@ -1643,7 +1643,6 @@ def handle_bang_commands(cmdr, command, command_parts):
             override_radius = int(parameters[1]) if len(parameters) > 1 else None
         EDR_CLIENT.rrr_near(search_center, override_radius)
     elif command == "!parking":
-        # TODO surface a tip when a cmdr is scheduling a fleet carrier jump (if it fails(?) to be aknowledged?)
         search_center = cmdr.star_system
         override_rank = None
         if len(command_parts) >= 2:

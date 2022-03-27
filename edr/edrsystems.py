@@ -901,11 +901,9 @@ class EDRSystems(object):
             if new_kv:
                 bodies[0][new_kv["k"]] = new_kv["v"](scan[key])
 
-        print("Bodies[0]: {}".format(bodies[0]))
         if scan["event"] == "FSSAllBodiesFound":
             bodies[0]["progress"] = 1.0
             bodies[0]["bodyCount"] = scan["Count"]
-            print("100%")
 
         self.edsm_bodies_cache.set(system_name.lower(), bodies)
         
@@ -1474,13 +1472,13 @@ class EDRSystems(object):
                             karma = criminal.get("karma", 0)
                             if not karma > 0:
                                 karma = min(karma, criminal.get("dkarma", 0))
-                            bounty = EDFineOrBounty(traffic.get("bounty", 0))
-                            enemy = traffic.get("enemy", False)
-                            by_pledge = traffic.get("byPledge", None)
+                            bounty = EDFineOrBounty(criminal.get("bounty", 0))
+                            enemy = criminal.get("enemy", False)
+                            by_pledge = crime.get("victimPower", None)
                             if karma <= -100 or bounty.is_significant():
                                 wanted_cmdrs[criminal["name"]] = [ crime["timestamp"], karma]
                             elif powerplay and enemy and powerplay == by_pledge:
-                                enemies[traffic["cmdr"]] = [traffic["timestamp"], karma]
+                                enemies[criminal["name"]] = [crime["timestamp"], karma]
                 for criminal in summary_crimes:
                     if summary_crimes[criminal][1] == "Murder":
                         summary_destroyers.append(u"{} {}".format(criminal, edtime.EDTime.t_minus(summary_crimes[criminal][0], short=True)))
