@@ -27,7 +27,7 @@ class EDRSoundEffects(object):
     def soft(self):
         self.sounds = {}
         for kind in self.kinds:
-            audio_filename = self.sfx_config.snd(kind, loud=True)
+            audio_filename = self.sfx_config.snd(kind, loud=False)
             self.sounds[kind] = AudioFeedback(audio_filename)
 
     def startup(self):
@@ -92,7 +92,7 @@ class SFXConfig(object):
             self.config = self.fallback_config
 
     def snd(self, kind, loud=True):
-        suffix = "" if loud else "_soft"
+        suffix = "" if loud else "_SOFT"
         return self._get("SFX{}".format(suffix), kind, None)
 
     def _get(self, category, variable, default=""):
