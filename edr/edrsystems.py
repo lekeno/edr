@@ -901,11 +901,9 @@ class EDRSystems(object):
             if new_kv:
                 bodies[0][new_kv["k"]] = new_kv["v"](scan[key])
 
-        print("Bodies[0]: {}".format(bodies[0]))
         if scan["event"] == "FSSAllBodiesFound":
             bodies[0]["progress"] = 1.0
             bodies[0]["bodyCount"] = scan["Count"]
-            print("100%")
 
         self.edsm_bodies_cache.set(system_name.lower(), bodies)
         

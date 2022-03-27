@@ -31,67 +31,51 @@ class EDRSoundEffects(object):
             self.sounds[kind] = AudioFeedback(audio_filename)
 
     def startup(self):
-        print("startup sound")
         self.__sfx("startup")
 
     def intel(self):
-        print("intel sound")
         self.__sfx("intel")
 
     def warning(self):
-        print("warning sound")
         self.__sfx("warning")
 
     def sitrep(self):
-        print("sitrep sound")
         self.__sfx("sitrep")
 
     def notify(self):
-        print("notify sound")
         self.__sfx("notify")
 
     def help(self):
-        print("help sound")
         self.__sfx("help")
 
     def navigation(self):
-        print("nav sound")
         self.__sfx("navigation")
 
     def docking(self):
-        print("dock sound")
         self.__sfx("docking")
 
     def mining(self):
-        print("mining sound")
         self.__sfx("mining")
 
     def bounty_hunting(self):
-        print("bh sound")
         self.__sfx("bounty-hunting")
 
     def target(self):
-        print("target sound")
         self.__sfx("target")
 
     def failed(self):
-        print("failed sound")
         self.__sfx("failed")
 
     def jammed(self):
-        print("jammed sound")
         self.__sfx("jammed")
 
     def searching(self):
-        print("searching sound")
         self.__sfx("searching")
 
     def __sfx(self, kind):
         sound = self.sounds.get(kind, None)
         if sound:
             sound.play()
-        else:
-            print("no sound for {} in {}".format(kind, self.sounds))
 
 
 class SFXConfig(object):
@@ -147,7 +131,6 @@ elif platform == 'win32':
             if not audio_filename:
                 return
             audio_file_path = utils2to3.abspathmaker(__file__, 'sounds', audio_filename)
-            print(audio_file_path)
             if os.path.exists(audio_file_path):
                 self.snd = audio_file_path
 
