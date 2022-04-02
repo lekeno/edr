@@ -173,7 +173,7 @@ class EDRFSSInsights(object):
         fc_regexp = r"^(.+ )?([A-Z0-9]{3}-[A-Z0-9]{3})$"
         m = re.match(fc_regexp, location_name)
         if m:
-            carrier_name = m.group(1)
+            carrier_name = m.group(1) or ""
             callsign = m.group(2)
             self.fleet_carriers[callsign] = carrier_name
             self.recent_fleet_carriers[callsign] = carrier_name
@@ -294,6 +294,12 @@ class EDRFSSInsights(object):
 
     def is_scenario_signal(self, name):
         return bool(re.search('^\$[ -~]+;$', name))
+
+    def is_nav_beacon(self, name):
+        return name in ["$MULTIPLAYER_SCENARIO42_TITLE;", "$MULTIPLAYER_SCENARIO80_TITLE;"]
+
+    def is_uss(self, name):
+        return name in ["$USS_Type_Salvage;", "$USS_Type_ValuableSalvage;", "$USS_Type_VeryValuableSalvage;"]
 
     def is_station(self, name):
         return name in self.stations
