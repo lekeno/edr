@@ -1,0 +1,1291 @@
+{
+    "conn": {
+        "a 3 a": [{
+            "title": "Almeida Landing",
+            "latitude": 73.3809,
+            "longitude": 102.3764
+        }]
+    },
+    "hip 12099": {
+        "1 b": [
+            {
+                "title": "CMDR Jameson's Cobra MK3",
+                "latitude": -54.3803,
+                "longitude": -50.3575
+            }
+        ],
+        "1 a": [
+            {
+                "title": "Stack",
+                "latitude": -72.6561,
+                "longitude": -67.3629
+            }
+        ]
+    },
+    "hip 16613": {
+        "1 a": [
+            {
+                "title": "Bug Killer Crashed Anaconda",
+                "latitude": -11.0093,
+                "longitude": -95.6755
+            },
+            {
+                "title": "Clark Barrow's SRV wreck",
+                "latitude": -11.0962,
+                "longitude": -96.0339 
+            }
+        ]
+    },
+    "orrere": {
+        "2 b": [
+            {
+                "title": "Crashed Anaconda",
+                "latitude": 43.8214,
+                "longitude": -173.9800
+            }
+        ]
+    },
+    "koli discii": {
+        "c 6 a": [
+            {
+                "title": "Crashed Anaconda",
+                "latitude": 28.577,
+                "longitude": 7.219
+            },
+            {
+                "title": "Gregory's Rest",
+                "latitude": 28.5560,
+                "longitude": 7.1570
+            }
+        ]
+    },
+    "dt virginis": {
+        "a 2 a": [
+            {
+                "title": "Crashed Anaconda",
+                "latitude": -3.5542,
+                "longitude": 112.1317
+            }
+        ]
+    },
+    "pleiades sector ih-v c2-16": {
+        "c 4": [
+            {
+                "title":  "Barnacle #1",
+                "latitude": -1.254,
+                "longitude": -164.182
+            },{
+                "title":  "Barnacle #2",
+                "latitude": -3.13,
+                "longitude": -162.2377
+            },{
+                "title":  "Barnacle #3",
+                "latitude": -0.7678,
+                "longitude": -162.5522
+            },{
+                "title":  "Barnacle #4",
+                "latitude": -0.5601,
+                "longitude": -161.9771
+            },{
+                "title":  "Barnacle #5",
+                "latitude": -1.61,
+                "longitude": -163.54
+            },{
+                "title":  "Barnacle #6",
+                "latitude": -1.4193,
+                "longitude": -165.1568
+            }
+        ],
+        "d 2": [
+            {
+                "title":  "Barnacle #1",
+                "latitude": -6.51,
+                "longitude": 132.85
+            },{
+                "title":  "Barnacle #2",
+                "latitude": -4.66,
+                "longitude": 136.69
+            }
+        ],
+        "d 3": [
+            {
+                "title":  "Barnacle #1",
+                "latitude": 5.89,
+                "longitude": -70.95
+            },{
+                "title":  "Barnacle #2",
+                "latitude": 3.31,
+                "longitude": -70.97
+            },{
+                "title":  "Barnacle #3",
+                "latitude": 4.23,
+                "longitude": -69.81
+            },{
+                "title":  "Barnacle #4",
+                "latitude": 28.41,
+                "longitude": 4.8037
+            },{
+                "title":  "Barnacle #5",
+                "latitude": 42.764,
+                "longitude": -97.152
+            },{
+                "title":  "Barnacle #6",
+                "latitude": 42.845,
+                "longitude": -96.98
+            }
+        ]
+    },
+    "pleiades sector jc-u b3-2": {
+        "1": [{
+            "title": "Crashed Anaconda",
+            "latitude": 20.8736,
+            "longitude": 91.6983
+        },
+        {
+            "title": "Barnacle #1",
+            "latitude": -57.8318,
+            "longitude": 107.4311
+        },
+        {
+            "title": "Barnacle #2",
+            "latitude": 19.25,
+            "longitude": 92.09
+        },
+        {
+            "title": "Barnacle #2",
+            "latitude": 19.25,
+            "longitude": 92.09
+        },
+        {
+            "title": "Barnacle #3",
+            "latitude": 20.1833,
+            "longitude": 86.7352
+        },
+        {
+            "title": "Barnacle #4",
+            "latitude": 20.86,
+            "longitude": 91.68
+        },
+        {
+            "title": "Barnacle #5",
+            "latitude": 20.86,
+            "longitude": 91.73
+        },
+        {
+            "title": "Barnacle #6",
+            "latitude": 21.3348,
+            "longitude": 91.9834
+        },
+        {
+            "title": "Barnacle #7",
+            "latitude": 21.6104,
+            "longitude": 89.0181
+        },
+        {
+            "title": "Barnacle #8",
+            "latitude": 21.62,
+            "longitude": 89.02
+        },
+        {
+            "title": "Barnacle #9",
+            "latitude": 21.9135,
+            "longitude": 96.9802
+        },
+        {
+            "title": "Barnacle #10",
+            "latitude": 22.8,
+            "longitude": 94.07
+        },
+        {
+            "title": "Barnacle #11",
+            "latitude": 25.3363,
+            "longitude": 25.5291
+        },
+        {
+            "title": "Barnacle #12",
+            "latitude": 2.4138,
+            "longitude": 23.5577
+        },
+        {
+            "title": "Barnacle #13",
+            "latitude": -0.9981,
+            "longitude": 25.85
+        },
+        {
+            "title": "Barnacle #14",
+            "latitude": 9.34,
+            "longitude": 22.49
+        },
+        {
+            "title": "Barnacle #15",
+            "latitude": 21.3401,
+            "longitude": 91.9827
+        },
+        {
+            "title": "Barnacle #16",
+            "latitude": -21.27,
+            "longitude": -85.61
+        },
+        {
+            "title": "Barnacle #17",
+            "latitude": -8.7979,
+            "longitude": -13.3657
+        },
+        {
+            "title": "Barnacle #18",
+            "latitude": -58.6949,
+            "longitude": -98.2852
+        }
+        ],
+        "2": [
+            {
+                "title":  "Barnacle #1",
+                "latitude": 13,
+                "longitude": 18.24
+            },{
+                "title":  "Barnacle #2",
+                "latitude": 49.0665,
+                "longitude": 102.9364
+            },{
+                "title":  "Barnacle #3",
+                "latitude": 49.5347,
+                "longitude": 102.0792
+            },{
+                "title":  "Barnacle #4",
+                "latitude": 49.7519,
+                "longitude": 102.161
+            },{
+                "title":  "Barnacle #5",
+                "latitude": 49.7498,
+                "longitude": 102.7589
+            },{
+                "title":  "Barnacle #6",
+                "latitude": 49.9075,
+                "longitude": 102.7141
+            },{
+                "title":  "Barnacle #7",
+                "latitude": 59.4,
+                "longitude": -59.7
+            },{
+                "title":  "Barnacle #8",
+                "latitude": 49.98,
+                "longitude": 101.51
+            },{
+                "title":  "Barnacle #9",
+                "latitude": -1.86,
+                "longitude": -45.17
+            },{
+                "title":  "Barnacle #10",
+                "latitude": -17.61,
+                "longitude": -18.06
+            },{
+                "title":  "Barnacle #11",
+                "latitude": -17.95,
+                "longitude": -17.28
+            },{
+                "title":  "Barnacle #12",
+                "latitude": -18.23,
+                "longitude": -17.35
+            },{
+                "title":  "Barnacle #13",
+                "latitude": -28.04,
+                "longitude": 29.51
+            },{
+                "title":  "Barnacle #14",
+                "latitude": -2.7,
+                "longitude": 45.27
+            },{
+                "title":  "Barnacle #15",
+                "latitude": -1.85,
+                "longitude": 43.63
+            },{
+                "title":  "Barnacle #16",
+                "latitude": 13.01,
+                "longitude": 18.25
+            },{
+                "title":  "Barnacle #17",
+                "latitude": 61.23,
+                "longitude": -56.02
+            },{
+                "title":  "Barnacle #18",
+                "latitude": 60.3878,
+                "longitude": -51.8026
+            },{
+                "title":  "Barnacle #19",
+                "latitude": 46.6403,
+                "longitude": -62.9002
+            },{
+                "title":  "Barnacle #20",
+                "latitude": 49.906,
+                "longitude": 101.5107
+            }            
+        ]
+    },
+    "pleione": {
+        "11 a": [
+            {
+            "title":  "Barnacle #1",
+            "latitude": 0.8185,
+            "longitude": 176.5622
+            },{
+            "title":  "Barnacle #2",
+            "latitude": 2.3189,
+            "longitude": 177.2434
+            },{
+            "title":  "Barnacle #3",
+            "latitude": -6.2472,
+            "longitude": -173.9321
+            }
+        ]
+    },
+    "california sector ba-a e6": {
+        "4": [
+            {
+                "title":  "Barnacle #1",
+                "latitude": 37.9339,
+                "longitude": -40.4353
+            },{
+                "title":  "Barnacle #2",
+                "latitude": 34.832,
+                "longitude": -40.392
+            },{
+                "title":  "Barnacle #3",
+                "latitude": 30.5814,
+                "longitude": -66.2712
+            },{
+                "title":  "Barnacle #4",
+                "latitude": -37.4567,
+                "longitude": 14.9971
+            }
+        ]
+    },
+    "california sector dl-y d4": {
+        "c 2": [
+            {
+                "title":  "Barnacle #1",
+                "latitude": 45.6905,
+                "longitude": -88.1535
+            }
+        ],
+        "c 3": [
+            {
+                "title":  "Barnacle #1",
+                "latitude": -21.6941,
+                "longitude": 23.0779
+            },{
+                "title":  "Barnacle #2",
+                "latitude": -34.46,
+                "longitude": -44.4367
+            }
+        ],
+        "c 4": [
+            {
+                "title":  "Barnacle #1",
+                "latitude": -29.4314,
+                "longitude": -54.3335
+            }
+        ],
+        "c 5": [
+            {
+                "title":  "Barnacle #1",
+                "latitude": -24.7449,
+                "longitude": -64.0429
+            }
+        ],
+        "c 6": [
+            {
+                "title":  "Barnacle #1",
+                "latitude": 10.357,
+                "longitude": -80.2207
+            }
+        ]
+    },
+    "california sector lc-v c2-10": {
+        "a 3": [
+            {
+                "title":  "Barnacle #1",
+                "latitude": -17.3842,
+                "longitude": -18.7939
+            }
+        ],
+        "b 1": [
+            {
+                "title":  "Barnacle #1",
+                "latitude": -56.2571,
+                "longitude": 108.4921
+            }
+        ]
+    },
+    "merope": {
+        "2 a": [
+            {
+            "title": "Barnacle #1",
+            "latitude": 13.4277,
+            "longitude": -161.5145
+            }
+        ],
+        "5 c": [
+            {
+            "title":  "Barnacle #1",
+            "latitude": -26.3515,
+            "longitude": -156.4056
+            },{
+            "title":  "Barnacle #2",
+            "latitude": 8.3379,
+            "longitude": -96.1337
+            },{
+            "title":  "Barnacle #3",
+            "latitude": -28.245,
+            "longitude": -109.5219
+            }
+        ]
+    },
+    "witch head sector gw-w c1-4": {
+        "a 4": [
+            {
+            "title": "Barnacle #1",
+            "latitude": -65.9886,
+            "longitude": -173.642
+            }
+        ]
+    },
+    "witch head sector lc-v c2-10": {
+        "a 4": [
+            {
+            "title": "Barnacle #1",
+            "latitude": -16.5359,
+            "longitude": 151.8175
+            }
+        ],
+        "a 6": [
+            {
+            "title": "Barnacle #1",
+            "latitude": -24.4643,
+            "longitude": -26.8704
+            }
+        ],
+        "b 1": [
+            {
+            "title": "Barnacle #1",
+            "latitude": 4.0266,
+            "longitude": -40.045
+            }
+        ],
+        "b 2": [
+            {
+            "title": "Barnacle #1",
+            "latitude": -0.5026,
+            "longitude": -163.3102
+            }
+        ]
+    },
+    "hyades sector dr-v c2-23": {
+        "a 5": [
+            {
+            "title": "Dav's Hope",
+            "latitude": 50.5277,
+            "longitude": 137.4382,
+            "note": "adjusted for odyssey"
+            }
+        ]
+    },
+    "hyades sector aq-y d81": {
+        "c 2": [
+            {
+            "title": "Barnacle Forest",
+            "latitude": 9.2939,
+            "longitude": -153.9096
+            }
+        ]
+    },
+    "pleiades sector pn-t b3-0": {
+        "a 5": [
+            {
+            "title": "Barnacle Forest",
+            "latitude": -4.4946,
+            "longitude": 145.6557
+            }
+        ]
+    },
+    "leucos": {
+        "a 5 a": [
+            {
+            "title": "Crashed Anaconda",
+            "latitude": -36.1280,
+            "longitude": -45.2436
+            }
+        ]
+    },
+    "pleiades sector ab-w b2-4": {
+        "9 a": [
+            {
+                "title": "Crashed Thargoid Ship",
+                "latitude": -26.3420,
+                "longitude": 97.7335
+            }
+        ]
+    },
+    "hip 17862": {
+        "6 c": [
+            {
+                "title": "Crashed Thargoid Ship",
+                "latitude": 30.34,
+                "longitude": -98.58
+            }
+        ]
+    },
+    "hip 17403": {
+        "a 4 a": [
+            {
+                "title": "Crashed Thargoid Ship",
+                "latitude": -34.98,
+                "longitude": -141.41
+            },
+            {
+                "title": "Research Base LV 87",
+                "latitude": -51.1941,
+                "longitude": 14.2181
+            }
+        ]
+    },
+    "hd 76133": {
+        "1 c": [
+            {
+                "title": "Anaconda Graveyard",
+                "latitude": 23.488,
+                "longitude": 81.934
+            }
+        ]
+    },
+    "eafots gl-y e2": {
+        "6": [
+            {
+                "title": "Formidine Rift Delta Site",
+                "latitude": 21.2752,
+                "longitude": 19.066
+            }
+        ]
+    },
+    "eafots ra-g b11-0": {
+        "3": [
+            {
+                "title": "Formidine Rift Gamma Site",
+                "latitude": -17.8739,
+                "longitude": -76.052
+            }
+        ]
+    },
+    "eafots lz-h b10-0": {
+        "d 1": [
+            {
+                "title": "Formidine Rift Beta Site",
+                "latitude":  -23.0615,
+                "longitude": -174.8785
+            }
+        ]
+    },
+    "eafots eu-r c4-1": {
+        "c 2": [
+            {
+                "title": "Formidine Rift Alpha Site",
+                "latitude": -34.2070,
+                "longitude": -77.6690
+            }
+        ]
+    },
+    "col 285 sector uz-o c6-9":{
+        "b 6": [
+            {
+                "title": "Orion's Folly",
+                "latitude": -87.0514,
+                "longitude": -10.5902
+            }
+        ]
+    },
+    "34 virginis": {
+        "5 a":[
+            {
+                "title": "Abandoned SRV",
+                "latitude": 18.6834,
+                "longitude": -40.4150
+            }
+        ]
+    },
+    "hr 5991": {
+        "1 b":[
+            {
+                "title": "Research Facility 5592",
+                "latitude": 35.8774,
+                "longitude": -36.2252,
+                "dummy": "adjusted for odyssey"
+            }
+        ]
+    },
+    "hr 5906": {
+        "ab 2 a":[
+            {
+                "title": "Derelict Anaconda",
+                "latitude": 6.9201,
+                "longitude": -102.4340
+            }
+        ]
+    },
+    "44 k virginis": {
+        "b 7 e":[
+            {
+                "title": "Abandoned SRV",
+                "latitude": 8.8974,
+                "longitude": -103.5549
+            }
+        ]
+    },
+    "aldhibah": {
+        "1 a":[
+            {
+                "title": "Lookout Military Test Facility",
+                "latitude": -12.4996,
+                "longitude": -62.1916
+            }
+        ]
+    },
+    "hip 83237": {
+        "3 b": [
+            {
+                "title": "Site 16",
+                "latitude": -26.4437,
+                "longitude": 143.7251
+            }
+        ]
+    },
+    "col 285 sector fl-x b17-3": {
+        "a 2 a": [
+            {
+                "title": "Medical Research Base MIR-14",
+                "latitude": -59.3604,
+                "longitude": -142.5855
+            }
+        ]
+    },
+    "col 359 sector rn-s c4-12": {
+        "a 1": [
+            {
+                "title": "Medical Research Base BJI-86",
+                "latitude": -23.8994,
+                "longitude": -95.1066
+            }
+        ]
+    },
+    "wredguia jc-k c22-8": {
+        "6 a": [
+            {
+                "title": "Colony SNB-86",
+                "latitude": -51.6961,
+                "longitude": -144.0040
+            }
+        ]
+    },
+    "col 285 sector op-l b9-0": {
+        "a 1": [
+            {
+                "title": "Unamed Crash Site",
+                "latitude": -16.4839,
+                "longitude": -65.1510
+            }
+        ]
+    },
+    "hr 2551": {
+        "2 d": [
+            {
+                "title": "Dixon Dock",
+                "latitude": -26.0807,
+                "longitude": -130.8341
+            }
+        ]
+    },
+    "synuefe qa-u d4-27": {
+        "a 1": [
+            {
+                "title": "Pirate Cache",
+                "latitude": 43.5393,
+                "longitude": -134.2668
+            }
+        ]
+    },
+    "col 285 sector oz-n c7-13": {
+        "bc 3 a": [
+            {
+                "title": "Exploration Camp JSPR-003",
+                "latitude": 59.3170,
+                "longitude": -62.2233
+            }
+        ]
+    },
+    "col 285 sector yf-m c8-8": {
+        "10 b": [
+            {
+                "title": "Jackson Enterprise",
+                "latitude": 0.3905,
+                "longitude": 33.5990
+            }
+        ]
+    },
+    "col 285 sector ep-c b27-3": {
+        "a 2": [
+            {
+                "title": "Unlisted Wreckage Site",
+                "latitude": -1.1357,
+                "longitude": -170.9290
+            }
+        ]
+    },
+    "belu": {
+        "b 1": [
+            {
+                "title": "Crashed Anaconda",
+                "latitude": 7.1537,
+                "longitude": -40.1309
+            }
+        ]
+    },
+    "alshat": {
+        "a 6 b": [
+            {
+                "title": "SRV Odysseus",
+                "latitude": 28.1916,
+                "longitude": -29.99
+            },
+            {
+                "title": "Expedition Vessel Odysseus",
+                "latitude": 24.2493,
+                "longitude": -29.0171
+            },
+            {
+                "title": "Clark's Rest",
+                "latitude": 26.8376,
+                "longitude": -29.0197
+            }
+        ]
+    },
+    "almana": {
+        "1 a": [
+            {
+                "title": "Crashed Diamondback",
+                "latitude": 16.9,
+                "longitude": 116.83
+            }
+        ]
+    },
+    "synuefe jb-g b58-6": {
+        "6 h": [
+            {
+                "title": "Exploration Camp C-NO4",
+                "latitude": -22.1323,
+                "longitude": 177.7064
+            }
+        ]
+    },
+    "thoth": {
+        "1 a": [
+            {
+                "title": "Transport Lakon Baker Gamma Sierra Heavy",
+                "latitude":  -2.77,
+                "longitude": 16.67
+            }
+        ]
+    },
+    "hr 6890": {
+        "a 1": [
+            {
+                "title": "Transmitter VJS-81",
+                "latitude":  23.1737,
+                "longitude": 97.4123
+            }
+        ]
+    },
+    "col 285 sector bg-o d6-93": {
+        "ab 1 d": [
+            {
+                "title": "Communication Array Delta 69",
+                "latitude":  -5.8360,
+                "longitude": 177.3792
+            }
+        ]
+    },
+    "colonia": {
+        "5 e a": [
+            {
+                "title": "Wrecked Type 9",
+                "latitude": 29.2425,
+                "longitude": 39.1472
+            }
+        ],
+        "3 c a": [
+            {
+                "title": "Fungal Life",
+                "latitude": 47.21,
+                "longitude": -174.16
+            }
+        ],
+        "7 a a": [
+            {
+                "title": "Settlement",
+                "latitude": 43.55,
+                "longitude": -85.32
+            }
+        ]
+    },
+    "wregoe vk-e c12-0 b 1 a": {
+        "1 a": [
+            {
+                "title": "Columbus Expedition Camp 14",
+                "latitude": -65.8616,
+                "longitude": 32.5213
+            }
+        ]
+    },
+    "col 359 sector ry-h d10-58": {
+        "b 3 a": [
+            {
+                "title": "Exploration Camp JSPR-003 #2",
+                "latitude": -38.4721,
+                "longitude": 89.8610
+            }
+        ]
+    },
+    "hip 17746": {
+        "3 c": [
+            {
+                "title": "Recon 6 (Crashed DBX)",
+                "latitude": 23.1688,
+                "longitude": 14.8599
+            }
+        ]
+    },
+    "hip 16378": {
+        "3 b": [
+            {
+                "title": "Stargazer (Crashed DBX)",
+                "latitude": 37.0654,
+                "longitude": -147.8092
+            }
+        ]
+    },
+    "hip 16824": {
+        "a 2 f": [
+            {
+                "title": "Carmichael Point",
+                "latitude": 73.8762,
+                "longitude": 61.8761
+            }
+        ]
+    },
+    "pru aescs ty-j a64-1": {
+        "3": [
+            {
+                "title": "Conflux Alpha Site",
+                "latitude": -66.47,
+                "longitude": -56.13
+            }
+        ]
+    },
+    "pru aescs hw-s b31-2": {
+        "cd 1": [
+            {
+                "title": "Conflux Beta Site",
+                "latitude": -7.2989,
+                "longitude": -35.9180
+            }
+        ]
+    },
+    "pru aescs oi-k a64-0": {
+        "1 a": [
+            {
+                "title": "Conflux Gamma Site",
+                "latitude": 64.2,
+                "longitude": 74.4
+            }
+        ]
+    },
+    "pru aescs nc-m d7-192": {
+        "a 3 a": [
+            {
+                "title": "Conflux Delta Site",
+                "latitude": -53.36,
+                "longitude": -48.91
+            }
+        ]
+    },
+    "plaa aec iz-n c20-1": {
+        "a 1 a": [
+            {
+                "title": "Hawkins Gap Alpha Site",
+                "latitude": 25.0029,
+                "longitude": 21.5814
+            }
+        ]
+    },
+    "plaa aec xz-z b41-0": {
+        "2": [
+            {
+                "title": "Hawkins Gap Beta Site",
+                "latitude": 36.3800,
+                "longitude": -12.7100
+            }
+        ]
+    },
+    "plaa aec tt-b b41-3": {
+        "b 2": [
+            {
+                "title": "Hawkins Gap Gamma Site",
+                "latitude": -9.3229,
+                "longitude": -103.8591
+            }
+        ]
+    },
+    "plaa aec ry-b b41-1": {
+        "2 b": [
+            {
+                "title": "Hawkins Gap Delta Site",
+                "latitude": 50.9203,
+                "longitude": -155.0895
+            }
+        ]
+    },
+    "hip 17125": {
+        "a 3 a": [
+            {
+                "title": "Crashed Thargoid Scout",
+                "latitude": -65.8228,
+                "longitude": 48.8618
+            }
+        ]
+    },
+    "hip 15329": {
+        "a 3 c": [
+            {
+                "title": "Stuart Retreat",
+                "latitude": -62.6134,
+                "longitude": -44.2569
+            }
+        ]
+    },
+    "hermitage": {
+        "4 a": [
+            {
+                "title": "Hollis Gateway",
+                "latitude": -53.7548,
+                "longitude": 157.5843
+            }
+        ]
+    },
+    "alnath": {
+        "a 2 a a": [
+            {
+                "title": "Klatt Enterprises",
+                "latitude": 4.0279,
+                "longitude": 133.5280
+            }
+        ]
+    },
+    "hip 59382": {
+        "1 b": [
+            {
+                "title": "Mayes Chemical Plant",
+                "latitude": 11.3987,
+                "longitude": 177.0659
+            }
+        ]
+    },
+    "hip 7158": {
+        "a 2 b": [
+            {
+                "title": "Hogan Depot",
+                "latitude": -44.6309,
+                "longitude": -63.7982
+            }
+        ]
+    },
+    "hip 32001": {
+        "3 a": [
+            {
+                "title": "Crashed Type-9 (Ariane's Pride)",
+                "latitude": 7.78,
+                "longitude": 142.94
+            }
+        ]
+
+    },
+    "hip 83003": {
+        "6 a": [
+            {
+                "title": "Crashed Anaconda (Trading Vessel MD-004)",
+                "latitude": -54.66,
+                "longitude": 147.12
+            }
+        ]
+    },
+    "hip 69200": {
+        "1 b": [
+            {
+                "title": "Prof. Carver's Crashed Sidewinder",
+                "latitude": -59.1811,
+                "longitude": -76.6915
+            }
+        ]
+    },
+    "wregoe ji-b d13-130": {
+        "1": [
+            {
+                "title": "Site 426",
+                "latitude":  65.837708,
+                "longitude": 176.946
+            }
+        ]
+    },
+    "synuefai fv-u b20-0": {
+        "2 a": [
+            {
+                "title": "Extraction Site V-81",
+                "latitude":  -34.0563,
+                "longitude": -140.7461
+            }
+        ]
+    },
+    "lp 389-95": {
+        "7": [
+            {
+                "title": "Velasquez Medical Research Centre",
+                "latitude":  57.9668,
+                "longitude": 50.0331
+            }
+        ]
+    },
+    "musca dark region pj-p b6-1": {
+        "3": [
+            {
+                "title": "Geological Survey 23B",
+                "latitude":  11.858,
+                "longitude": -38.009
+            },
+            {
+                "title": "Crashed Thargoid Ship",
+                "latitude":  19.514,
+                "longitude": -34.346
+            },
+            {
+                "title": "Wrecked SRV",
+                "latitude":  11.647,
+                "longitude": -38.097
+            }            
+        ]
+    },
+    "12 trianguli": {
+        "a 1": [
+            {
+                "title": "Taylor Keep",
+                "latitude": -51.5711,
+                "longitude": 130.6677
+            }
+        ]
+    },
+    "pleiades sector ln-t c3-4": {
+        "2 a": [
+            {
+                "title": "Crashed Thargoid Scout",
+                "latitude": -60.880077,
+                "longitude": 42.56736
+            }
+        ]
+    },
+    "renet": {
+        "b 1": [
+            {
+                "title": "Crashed Anaconda",
+                "latitude": 14,
+                "longitude": 135
+            }
+        ]
+    },
+    "lhs 2429": {
+        "1": [
+            {
+                "title": "Crashed Type-9",
+                "latitude": -14.17,
+                "longitude": 131.13
+            }
+        ]
+    },
+    "sol": {
+        "mercury": [
+            {
+                "title": "Crashed Anaconda (1)",
+                "latitude": 40.253,
+                "longitude": -164.231
+            },
+            {
+                "title": "Crashed Anaconda (2)",
+                "latitude": 71.362,
+                "longitude": 6.148
+            }
+        ],
+        "charon": [
+            {
+                "title": "Crashed Anaconda",
+                "latitude": -45.804,
+                "longitude": -80.751
+            }
+        ]
+    },
+    "atropos": {
+        "4": [
+            {
+                "title": "Crashed Type-9",
+                "latitude": 64.7,
+                "longitude": 133.85
+            }
+        ]
+    },
+    "ltt 1935": {
+        "6 a": [
+            {
+                "title": "Crashed Anaconda",
+                "latitude": 30.172,
+                "longitude": 56.075
+            }
+        ]
+    },
+    "arietis sector ze-a d75": {
+        "10 a": [
+            {
+                "title": "Crashed Thargoid Scout",
+                "latitude": 18.02,
+                "longitude": 131.939
+            }
+        ]
+
+    },
+    "col 173 sector lj-f c12-0": {
+        "a 4 c": [
+            {
+                "title": "The Brifrost (Crashed Anaconda)",
+                "latitude": 23.508,
+                "longitude": 154.878
+            }
+        ]
+    },
+    "etain": {
+        "4 c": [
+            {
+                "title": "The Prophet",
+                "latitude": 29.9527,
+                "longitude": -87.8558
+            }
+        ],
+        "4 a": [
+            {
+                "title": "The Sanctum",
+                "latitude": -19.950,
+                "longitude": 103.5927
+            }
+        ]
+    },
+    "shibboleth": {
+        "2 e": [
+            {
+                "title": "The Church of The Path",
+                "latitude": -11.1675,
+                "longitude": 148.9552
+            }
+        ]
+    },
+    "nervir": {
+        "a 2 a": [
+            {
+                "title": "Crowther's Rest",
+                "latitude": 50.5091,
+                "longitude": -17.1776 
+            }
+        ]
+    },
+    "col 285 sector zt-i b25-0": {
+        "2 a": [
+            {
+                "title": "Planet Dave Outpost",
+                "latitude": -19.7754,
+                "longitude": 36.4421
+            }
+        ]
+    },
+    "col 285 sector np-w a31-3": {
+        "6 a": [
+            {
+                "title": "Extraction site HS-98",
+                "latitude": 35.34,
+                "longitude": 137.66
+            }
+        ]
+    },
+    "pleiades sector hr-w d1-17": {
+        "1 a": [
+            {
+                "title": "Research Base KG-3362",
+                "latitude": 58.115,
+                "longitude": 19.543
+            }
+        ]
+    },
+    "pleiades sector jn-s b4-3": {
+        "2": [
+            {
+                "title": "Scrump Landing",
+                "latitude": -0.343,
+                "longitude": 12.922
+            }
+        ]
+    },
+    "hip 19792": {
+        "c 2": [
+            {
+                "title": "Betterton outpost",
+                "latitude": -24.70,
+                "longitude": 6.55
+            }
+        ]
+    },
+    "hip 16217": {
+        "ab 1 a": [
+            {
+                "title": "Penal Colony BV-2259",
+                "latitude": -55.001,
+                "longitude": 30.283
+            }
+        ]
+    },
+    "pleiades sector gw-w c1-15": {
+        "12 a": [
+            {
+                "title": "Dominic's Corner",
+                "latitude": 5.562,
+                "longitude": 116.736
+            }
+        ]
+    },
+    "hip 19284": {
+        "a 2 d": [
+            {
+                "title": "Site 94",
+                "latitude": -19.062,
+                "longitude": -99.445
+            }
+        ]
+    },
+    "wregoe hv-z b15-0": {
+        "c 1": [
+            {
+                "title": "Herpin Research Base",
+                "latitude": 2.768,
+                "longitude": 45.958
+            }
+        ]
+    }
+}

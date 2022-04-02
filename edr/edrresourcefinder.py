@@ -162,12 +162,16 @@ class EDRResourceFinder(object):
         "ambiguous abbreviation (cc)": "ambiguous_c_c",
     }
 
-    def __init__(self, edr_systems, permits = []):
+    def __init__(self, edr_systems, permits = [], dlc=None):
         self.edr_systems = edr_systems
         self.edr_factions = EDRFactions()
         self.radius = 50
         self.permits = permits
         self.raw_profile = None
+        self.dlc = dlc
+
+    def set_dlc(self, dlc):
+        self.dlc = dlc
 
     def persist(self):
         self.edr_factions.persist()
@@ -602,7 +606,8 @@ class EDRResourceFinder(object):
         # TODO add nav to recommended sites
         if resource != "selenium":
             return False
-        candidates = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'sel.json')).read())
+        filename = '{}_sel.json'.format(dlc) if self.dlc else 'sel.json' 
+        candidates = json.loads(open(utils2to3.abspathmaker(__file__, 'data', filename)).read())
         if not candidates:
             return False
 

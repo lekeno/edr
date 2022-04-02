@@ -123,6 +123,7 @@ class EDRClient(object):
         }
  
         self.edrsystems = EDRSystems(self.server)
+        self.edrboi = EDRBodiesOfInterest()
         self.edrresourcefinder = EDRResourceFinder(self.edrsystems)
         self.edrcmdrs = EDRCmdrs(self.server)
         self.edropponents = {
@@ -358,6 +359,8 @@ class EDRClient(object):
         self.player.dlc_name = dlc
         self.server.set_dlc(dlc)
         self.edrsystems.set_dlc(dlc)
+        self.edrboi.set_dlc(dlc)
+        self.edrresourcefinder.set_dlc(dlc)
 
     def pledged_to(self, power, time_pledged=0):
         if self.server.is_anonymous():
@@ -555,7 +558,7 @@ class EDRClient(object):
         facts = self.edrresourcefinder.assess_jump(fsdjump_event, self.player.inventory)
         header = _('Rare materials in {} (USS-HGE/EE, Mission Rewards)'.format(fsdjump_event['StarSystem']))
         if not facts:
-            facts = EDRBodiesOfInterest.bodies_of_interest(fsdjump_event['StarSystem'])
+            facts = self.edrboi.bodies_of_interest(fsdjump_event['StarSystem'])
             header = _('Noteworthy stellar bodies in {}').format(fsdjump_event['StarSystem'])
         
         if not facts:
@@ -568,7 +571,7 @@ class EDRClient(object):
         return True
 
     def noteworthy_about_body(self, star_system, body_name):
-        pois = EDRBodiesOfInterest.points_of_interest(star_system, body_name)
+        pois = self.edrboi.points_of_interest(star_system, body_name)
         if pois:
             facts = [poi["title"] for poi in pois]
             self.__notify(_(u'Noteworthy about {}: {} sites').format(body_name, len(facts)), facts, clear_before = True)
@@ -674,7 +677,7 @@ class EDRClient(object):
     def closest_poi_on_body(self, star_system, body_name, attitude):
         body = self.edrsystems.body(star_system, body_name)
         radius = body.get("radius", None) if body else None
-        return EDRBodiesOfInterest.closest_point_of_interest(star_system, body_name, attitude, radius)
+        return self.edrboi.closest_point_of_interest(star_system, body_name, attitude, radius)
 
     def navigation(self, latitude, longitude):
         position = {"latitude": float(latitude), "longitude": float(longitude)}
