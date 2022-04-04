@@ -9,6 +9,7 @@ import time
 import random
 import math
 import re
+import json
 
 try:
     # for Python2
@@ -679,12 +680,22 @@ class EDRClient(object):
         radius = body.get("radius", None) if body else None
         return self.edrboi.closest_point_of_interest(star_system, body_name, attitude, radius)
 
-    def navigation(self, latitude, longitude):
+    def navigation(self, latitude, longitude, title="Navpoint"):
         position = {"latitude": float(latitude), "longitude": float(longitude)}
+        boi = {}
+        poi = {}
+        body = self.player.body or "Unknown body"
+        poi[body] = [{
+            "title": title,
+            "latitude": float(latitude),
+            "longitude": float(longitude)
+        }]
+        boi[self.player.star_system] = poi
+        copy(json.dumps(boi))
         loc = EDPlanetaryLocation(position)
         if loc.valid():
             self.player.planetary_destination = loc
-            self.__notify(_(u'Assisted Navigation'), [_(u"Destination set to {} | {}").format(latitude, longitude), _(u"Guidance will be shown when approaching a stellar body")], clear_before = True)
+            self.__notify(_(u'Assisted Navigation'), [_(u"Destination set to {} | {}").format(latitude, longitude), _(u"Guidance will be shown when approaching a stellar body"), _(u"Destination added to the clipboard")], clear_before = True)
         else:
             self.player.planetary_destination = None
             self.__notify(_(u'Assisted Navigation'), [_(u"Invalid destination")], clear_before = True)
