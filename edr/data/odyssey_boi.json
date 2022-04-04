@@ -10,8 +10,9 @@
         "1 b": [
             {
                 "title": "CMDR Jameson's Cobra MK3",
-                "latitude": -54.3803,
-                "longitude": -50.3575
+                "latitude": -54.3753,
+                "longitude":  -50.3540,
+                "dummy":"adjusted for odyssey"
             }
         ],
         "1 a": [
@@ -40,8 +41,9 @@
         "2 b": [
             {
                 "title": "Crashed Anaconda",
-                "latitude": 43.8214,
-                "longitude": -173.9800
+                "latitude": 43.8271,
+                "longitude": -173.9660,
+                "dummy": "adjusted for odyssey"
             }
         ]
     },
@@ -49,13 +51,15 @@
         "c 6 a": [
             {
                 "title": "Crashed Anaconda",
-                "latitude": 28.577,
-                "longitude": 7.219
+                "latitude": 28.5771,
+                "longitude":  7.2136,
+                "dummy":"adjusted for odyssey"
             },
             {
                 "title": "Gregory's Rest",
-                "latitude": 28.5560,
-                "longitude": 7.1570
+                "latitude": -21.5113,
+                "longitude":  136.1322,
+                "dummy":"adjusted for odyssey"
             }
         ]
     },
@@ -511,8 +515,9 @@
         "a 5 a": [
             {
             "title": "Crashed Anaconda",
-            "latitude": -36.1280,
-            "longitude": -45.2436
+            "latitude": -36.1382,
+            "longitude":  -45.2228,
+            "dummy": "adjusted for odyssey"
             }
         ]
     },
@@ -742,8 +747,9 @@
         "b 1": [
             {
                 "title": "Crashed Anaconda",
-                "latitude": 7.1537,
-                "longitude": -40.1309
+                "latitude": 7.1549,
+                "longitude":  -40.1318,
+                "dummy":"adjusted for odyssey"
             }
         ]
     },
@@ -788,8 +794,9 @@
         "1 a": [
             {
                 "title": "Transport Lakon Baker Gamma Sierra Heavy",
-                "latitude":  -2.77,
-                "longitude": 16.67
+                "latitude":  -2.774357,
+                "longitude": 16.684441,
+                "dummy": "adjusted for odyssey"
             }
         ]
     },
@@ -1009,8 +1016,9 @@
         "3 a": [
             {
                 "title": "Crashed Type-9 (Ariane's Pride)",
-                "latitude": 7.78,
-                "longitude": 142.94
+                "latitude": 7.7785,
+                "longitude": 142.9554,
+                "dummy":"adjusted for odyssey"
             }
         ]
 
@@ -1119,20 +1127,23 @@
         "mercury": [
             {
                 "title": "Crashed Anaconda (1)",
-                "latitude": 40.253,
-                "longitude": -164.231
+                "latitude": -19.4070,
+                "longitude": -126.6534,
+                "dummy":"adjusted for odyssey"
             },
             {
                 "title": "Crashed Anaconda (2)",
-                "latitude": 71.362,
-                "longitude": 6.148
+                "latitude": 32.4857,
+                "longitude": 53.6333,
+                "dummy":"adjusted for odyssey"
             }
         ],
         "charon": [
             {
                 "title": "Crashed Anaconda",
-                "latitude": -45.804,
-                "longitude": -80.751
+                "latitude": -17.7323,
+                "longitude":  -145.4584,
+                "dummy":"adjusted for odyssey"
             }
         ]
     },
@@ -1140,8 +1151,9 @@
         "4": [
             {
                 "title": "Crashed Type-9",
-                "latitude": 64.7,
-                "longitude": 133.85
+                "latitude": -39.496223,
+                "longitude": 107.101746,
+                "dummy":"adjusted for odyssey"
             }
         ]
     },
