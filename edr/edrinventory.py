@@ -321,7 +321,7 @@ class EDRInventory(object):
         "audiologs" :{ "localized": _(u"Audiologs"), "raw": "Audiologs", "category": "data", "grade": 0},
         "geneticresearch" :{ "localized": _(u"Genetic Research"), "raw": "Genetic Research", "category": "data", "grade": 0},
         "clinicaltrialrecords" :{ "localized": _(u"Clinical Trial Records"), "raw": "Clinical Trial Records", "category": "data", "grade": 0},
-        "gmeds" :{ "localized": _(u"G-Meds"), "raw": "G-Meds", "category": "data", "grade": 0},
+        "gmeds" :{ "localized": _(u"G-Meds"), "raw": "G-Meds", "category": "item", "grade": 0},
         "genesequencingdata" :{ "localized": _(u"Gene Sequencing Data"), "raw": "Gene Sequencing Data", "category": "data", "grade": 0},
         "settlementassaultplans" :{ "localized": _(u"Settlement Assault Plans"), "raw": "Settlement Assault Plans", "category": "data", "grade": 0},
         "geneticresearch" :{ "localized": _(u"Biological Sample"), "raw": "Biological Sample", "category": "data", "grade": 0},
