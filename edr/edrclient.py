@@ -142,7 +142,7 @@ class EDRClient(object):
         self._throttle_until_timestamp = None
         self.edrfssinsights = EDRFSSInsights()
         self.edrdiscord = EDRDiscordIntegration(self.edrcmdrs)
-
+        
     def __get_realtime_params(self, kind):
         min_bounty = None
         key = "{}MinBounty".format(kind)
@@ -568,6 +568,10 @@ class EDRClient(object):
                 facts = [_(u"Crimes will not be reported.")]
             else:
                 return False
+        # TODO bug at 2022-04-04 06:41:06.827 UTC - INFO - 11408:3184:3184 <plugins>.EDR.edrlog.EDRLog.log:32: Updating system info (was missing or obsolete). HIP 69157 vs. HIP 69200
+        # EDRLOG.log(u"Notify about {}; details: {}".format(header, details[0]), "DEBUG")
+        # TypeError: 'dict_keys' object is not subscriptable
+
         self.__notify(header, facts, clear_before = True)
         return True
 
@@ -684,13 +688,13 @@ class EDRClient(object):
         position = {"latitude": float(latitude), "longitude": float(longitude)}
         boi = {}
         poi = {}
-        body = self.player.body or "Unknown body"
-        poi[body] = [{
+        body = self.player.body or "unknown body"
+        poi[body.lower()] = [{
             "title": title,
             "latitude": float(latitude),
             "longitude": float(longitude)
         }]
-        boi[self.player.star_system] = poi
+        boi[self.player.star_system.lower()] = poi
         copy(json.dumps(boi))
         loc = EDPlanetaryLocation(position)
         if loc.valid():
@@ -1016,12 +1020,29 @@ class EDRClient(object):
             self.__commsjammed()
             return None
 
+    def eval_mission(self, entry):
+        if entry["event"] != "MissionAccepted":
+            return
+        commodity = entry.get("Commodity", None)
+        if not commodity:
+            return
+
+        localized_commodity = entry.get("Commodity_Localised", commodity)
+        description = self.player.remlok_helmet.describe_item(commodity)
+        if not description:
+            return
+        self.__notify(_(u"EDR Mission Eval: {}").format(localized_commodity), description, clear_before=True)
+
     def eval(self, eval_type):
         canonical_commands = ["power", "backpack", "locker"]
         synonym_commands = {"power": ["priority", "pp", "priorities"]}
         supported_commands = set(canonical_commands + synonym_commands["power"])
         if eval_type not in supported_commands:
-            self.__notify(_(u"EDR Evals"), [_(u"Yo dawg, I don't do evals for '{}'").format(eval_type), _(u"Try {} instead.").format(", ".join(canonical_commands))], clear_before=True)
+            description = self.player.remlok_helmet.describe_item(eval_type)
+            if description:
+                self.__notify(_(u"EDR Evals"), description, clear_before=True)
+            else:
+                self.__notify(_(u"EDR Evals"), [_(u"Yo dawg, I don't do evals for '{}'").format(eval_type), _(u"Try {} instead.").format(", ".join(canonical_commands)), _(u"Or specific materials (e.g. '!eval surveillance equipements').")], clear_before=True)
             return
 
         if eval_type == "power" or eval_type in synonym_commands["power"]:
@@ -2302,6 +2323,28 @@ class EDRClient(object):
         details = self.IN_GAME_MSG.describe_station(station)
         self.__notify(header, details, clear_before=True)
         return True
+
+    def pointing_guidance(self, entry):
+        # TODO add the name of the thing in the header
+        description = self.player.remlok_helmet.describe_target(entry)
+        if description:
+            self.__notify(_("Remlok Insights"), description, clear_before=True)
+
+    # TODO eval carrier, ship storage?
+
+    def carrier_trade(self, entry):
+        if entry.get("event", "") != "CarrierTradeOrder":
+            return
+        item = entry.get("Commodity", None)
+        if item is None:
+            return
+        description = self.player.remlok_helmet.describe_item(item)
+        if description:
+            l_item = entry.get("Commodity_Localised", item)
+            self.__notify(_("Trading Insights for {}").format(l_item), description, clear_before=True)
+        # TODO report trade orders to facilitate transactions between players in a batch to avoid spamming PUTs
+        # use "event":"Music", "MusicTrack":"FleetCarrier_Managment" and "event":"CarrierStats" to close
+        # perhaps { "timestamp":"2022-04-06T21:24:52Z", "event":"Music", "MusicTrack":"NoTrack" } to close on exiting the carrier screen?
 
     def system_guidance(self, system_name, passive=False):
         description = self.edrsystems.describe_system(system_name, self.player.star_system == system_name)
