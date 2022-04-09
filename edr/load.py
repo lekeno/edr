@@ -214,6 +214,8 @@ def handle_carrier_events(ed_player, entry):
         EDR_CLIENT.edrfssinsights.update_system(entry.get("SystemAddress", None), entry["StarSystem"])
         ed_player.update_star_system_if_obsolete(entry["StarSystem"], entry.get("SystemAddress", None))
         ed_player.fleet_carrier.update_from_jump_if_relevant(entry)
+    elif entry["event"] == "CarrierTradeOrder":
+        EDR_CLIENT.carrier_trade(entry)
         
 
 def handle_movement_events(ed_player, entry):
@@ -635,7 +637,6 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         if "first_run" not in journal_entry.__dict__:
             journal_entry.first_run = False
             from_genesis = (entry["event"] == "LoadGame") and (cmdr and system is None and station is None)
-            print("from_genesis: {}, entry event {}, cmdr {}, system {}, station {}".format(from_genesis, entry["event"], cmdr, system, station))
         handle_lifecycle_events(ed_player, entry, state, from_genesis)
 
     if entry["event"] in ["BookTaxi", "BookDropship", "CancelTaxi", "CancelDropship"]:
@@ -687,7 +688,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] == "Bounty":
         handle_bounty_hunting_events(ed_player, entry)
 
-    if entry["event"] in ["CarrierJump", "CarrierBuy", "CarrierStats", "CarrierJumpRequest", "CarrierJumpCancelled", "CarrierDecommission", "CarrierCancelDecommission", "CarrierDockingPermission"]:
+    if entry["event"] in ["CarrierJump", "CarrierBuy", "CarrierStats", "CarrierJumpRequest", "CarrierJumpCancelled", "CarrierDecommission", "CarrierCancelDecommission", "CarrierDockingPermission", "CarrierTradeOrder"]:
         handle_carrier_events(ed_player, entry)
 
     status_outcome = {"updated": False, "reason": "Unspecified"}
@@ -715,7 +716,8 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         if outcome["updated"]:
             status_outcome["updated"] = True
             status_outcome["reason"] = outcome["reason"]
-
+    
+    # TODO take advantage of nearestdestination for the place, use that in the nav set blob too
     if entry["event"] == "Touchdown" and entry.get("PlayerControlled", None) and entry.get("NearestDestination", None):
         depletables = EDRRawDepletables()
         depletables.visit(entry["NearestDestination"])
@@ -781,6 +783,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     if entry["event"] in ["SendText"]:
         handle_commands(ed_player, entry)
+
+    if entry["event"] == "MissionAccepted":
+        handle_mission_events(ed_player, entry)
 
     if status_outcome["updated"]:
         edr_update_cmdr_status(ed_player, status_outcome["reason"], entry["timestamp"])
@@ -1189,7 +1194,7 @@ def report_comms(player, entry):
             edr_submit_contact(contact, entry["timestamp"],
                                 "Received text (starsystem channel)", player, system_wide = True)
         elif entry["Channel"] in ["npc"] and entry["From"] == "$CHAT_System;":
-            emote_regex = r"^\$HumanoidEmote_TargetMessage:#player=\$cmdr_decorate:#name=(.+);:#targetedAction=\$HumanoidEmote_([a-zA-Z]+)_Action_Targeted;:#target=\$cmdr_decorate:#name=(.+);;$$"
+            emote_regex = r"^\$HumanoidEmote_TargetMessage:#player=\$cmdr_decorate:#name=(.+);:#targetedAction=\$HumanoidEmote_([a-zA-Z]+)_Action_Targeted;:#target=\$cmdr_decorate:#name=(.+);;$"
             m = re.match(emote_regex, entry.get("Message", ""))
             if m:
                 action = m.group(2)
@@ -1203,6 +1208,8 @@ def report_comms(player, entry):
                 if action in ["wave", "point"]:
                     EDRLOG.log(u"Implicit who emote-command for {}".format(receiving_party), "INFO")
                     EDR_CLIENT.who(receiving_party, autocreate=True)
+            elif "$HumanoidEmote_TargetMessage:#player=$cmdr_decorate:#name=" in entry.get("Message", ""):
+                EDR_CLIENT.pointing_guidance(entry)
     elif entry["event"] == "SendText" and not entry["To"] in ["local", "wing", "starsystem", "squadron", "squadleaders"]:
         to_cmdr = entry["To"]
         if entry["To"].startswith("$cmdr_decorate:#name="):
@@ -2020,3 +2027,7 @@ def handle_cargo_events(ed_player, entry):
         ed_player.piloted_vehicle.cargo.eject(entry)
     elif entry["event"] == "CollectCargo":
         ed_player.piloted_vehicle.cargo.collect(entry)
+
+def handle_mission_events(ed_player, entry):
+    if entry["event"] == "MissionAccepted":
+        EDR_CLIENT.eval_mission(entry)
