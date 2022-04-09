@@ -524,8 +524,17 @@
             }
         ]
     },
+    "pleiades sector ic-u b3-1": {
+        "1": [
+            {
+                "title": "Sharpe Works", 
+                "latitude": -4.943096,
+                "longitude": -85.761383
+            }
+        ]
+    },
     "hip 17862": {
-        "6 c": [
+        "6 c a": [
             {
                 "title": "Crashed Thargoid Ship",
                 "latitude": 30.34,
@@ -1283,6 +1292,15 @@
                 "title": "Herpin Research Base",
                 "latitude": 2.768,
                 "longitude": 45.958
+            }
+        ]
+    },
+    "hr 1172": {
+        "a 5 b": [
+            {
+                "title": "Herpin Research Base",
+                "latitude": -0.251,
+                "longitude":  -67.681
             }
         ]
     }
