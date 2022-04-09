@@ -196,14 +196,73 @@ class EDUmaLaszlo(EDEngineer):
         if self.progress is None:
             return self.relevant(material_name)
         return False
+
+class EDEleanorBresa(EDEngineer):
+    def __init__(self):
+        super().__init__()
+        self.name = "Eleanor Bresa"
+
+class EDBaltanos(EDEngineer):
+    def __init__(self):
+        super().__init__()
+        self.name = "Baltanos"
+
+class EDRosaDayette(EDEngineer):
+    def __init__(self):
+        super().__init__()
+        self.name = "Rosa Dayette"
+
+    def dibs(self, materials):
+        needed = {}
+        if self.progress != "Unlocked":
+            cur = materials.get("culinaryrecipes", 0)
+            cor = materials.get("cocktailrecipes", 0)
+            cur = max(min(10, cur), 5)
+            cor = max(min(10-cur, cor), 10-cur-5)
+            
+            needed = {"culinary recipes":cur, "cocktail recipes":cor}
+        return needed
+
+    def relevant(self, material_name):
+        return material_name.lower() in ["culinaryrecipes", "cocktailrecipes"]
+
+    def interested_in(self, material_name):
+        theset = ["culinaryrecipes", "cocktailrecipes"]
+        if self.progress != "Unlocked":
+            return material_name.lower() in theset
+        return False
         
+class EDYiShen(EDEngineer):
+    def __init__(self):
+        super().__init__()
+        self.name = "Yi Shen"
+
+    def dibs(self, materials):
+        needed = {}
+        if self.progress is None:
+            needed["factionassociates"] = 10
+            needed["digitaldesigns"] = 10
+            needed["manufacturinginstructions"] = 10
+        return needed
+
+    def relevant(self, material_name):
+        return material_name.lower() in ["factionassociates", "digitaldesigns", "manufacturinginstructions"]
+
+    def interested_in(self, material_name):
+        theset = []
+        if self.progress is None:
+            theset = ["factionassociates", "digitaldesigns", "manufacturinginstructions"]
+        
+        if self.progress != "Unlocked":
+            return material_name.lower() in theset
+        return False
 
 class EDEngineers(object):
     ODYSSEY_MATS = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'odyssey_mats.json')).read())
 
     def __init__(self):
         self.engineers = {}
-        engineers = ["domino green", "kit fowler", "yarden bond", "terra velasquez", "jude navarro", "hero ferrari", "wellington beck", "uma laszlo", "oden geiger"]
+        engineers = ["domino green", "kit fowler", "yarden bond", "terra velasquez", "jude navarro", "hero ferrari", "wellington beck", "uma laszlo", "oden geiger", "baltanos", "rosa dayette", "eleanor bresa", "yi shen"]
         for e in engineers:
             self.engineers[e] = EDEngineerFactory.from_engineer_name(e)
 
@@ -263,6 +322,10 @@ class EDEngineerFactory(object):
         "wellington beck": EDWellingtonBeck,
         "uma laszlo": EDUmaLaszlo,
         "oden geiger": EDOdenGeiger,
+        "rosa dayette": EDRosaDayette,
+        "baltanos": EDBaltanos,
+        "eleanor bresa": EDEleanorBresa,
+        "yi shen": EDYiShen,
         "unknown": EDUnknownEngineer
     }
 
