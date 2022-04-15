@@ -128,10 +128,10 @@ class EDOdenGeiger(EDEngineer):
         return needed
 
     def relevant(Self, material_name):
-        return material_name.lower() in ["financialprojections", "geneticsample", "employeegeneticdata", "geneticresearch"]
+        return material_name.lower() in ["financialprojections", "geneticsample", "biologicalsample", "employeegeneticdata", "geneticresearch"]
 
     def interested_in(self, material_name):
-        theset = ["geneticsample", "employeegeneticdata", "geneticresearch"]
+        theset = ["geneticsample", "biologicalsample", "employeegeneticdata", "geneticresearch"]
         if self.progress is None:
             theset.append("financialprojections")
         
@@ -258,7 +258,7 @@ class EDYiShen(EDEngineer):
         return False
 
 class EDEngineers(object):
-    ODYSSEY_MATS = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'odyssey_mats.json')).read())
+    ODYSSEY_MATS = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'odyssey_mats_v2.json')).read())
 
     def __init__(self):
         self.engineers = {}
@@ -269,10 +269,9 @@ class EDEngineers(object):
     def update(self, engineer_progress_event):
         engineers = engineer_progress_event.get("Engineers", [])
         for e in engineers:
-            self.engineers[e["Engineer"]] = EDEngineerFactory.from_engineer_progress_dict(e)
+            self.engineers[e["Engineer"].lower()] = EDEngineerFactory.from_engineer_progress_dict(e)
 
     def dibs(self, materials):
-        # TODO not needed?
         dibs_list = []
         for name in self.engineers:
             dibs = self.engineers[name].dibs(materials)
@@ -302,7 +301,7 @@ class EDEngineers(object):
     def is_unnecessary(self, material_name):
         for name in self.engineers:
             if self.engineers[name].relevant(material_name) and not self.engineers[name].interested_in(material_name):
-                return True
+                return EDEngineers.ODYSSEY_MATS[material_name].get("used", 0) <= 0
         return False
 
 
