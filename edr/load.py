@@ -1448,6 +1448,8 @@ def handle_scan_events(player, entry):
 def handle_material_events(cmdr, entry, state):
     if entry["event"] in ["Materials", "ShipLockerMaterials"] or (entry["event"] == "ShipLocker" and len(entry.keys()) > 2) or (entry["event"] == "Backpack" and len(entry.keys()) > 2):
         cmdr.inventory.initialize(entry)
+
+    # TODO auto eval of locker if on fleet carrier and shiplocker event kicks in, only if recently updated/different?
         
     if cmdr.inventory.stale_or_incorrect():
         cmdr.inventory.initialize_with_edmc(state)
@@ -1467,7 +1469,7 @@ def handle_material_events(cmdr, entry, state):
         cmdr.inventory.traded(entry)
     elif entry["event"] == "MissionCompleted":
         cmdr.inventory.rewarded(entry)
-        EDR_CLIENT.eval_locker(passive=True)
+        EDR_CLIENT.eval_mission(entry)
     elif entry["event"] == "BackpackChange":
         cmdr.inventory.backpack_change(entry)
         if "Added" in entry:
