@@ -658,8 +658,9 @@
         "1 a":[
             {
                 "title": "Lookout Military Test Facility",
-                "latitude": -12.4996,
-                "longitude": -62.1916
+                "latitude": -4.352922,
+                "longitude": -167.448517,
+                "odyssey": "adjusted"
             }
         ]
     },
@@ -699,8 +700,8 @@
             }
         ]
     },
-    "col 285 sector op-l b9-0": {
-        "a 1": [
+    "NO LONGER THERE col 285 sector op-l b9-0": {
+        "NO LONGER THERE a 1": [
             {
                 "title": "Unamed Crash Site",
                 "latitude": -16.4839,
@@ -730,8 +731,9 @@
         "bc 3 a": [
             {
                 "title": "Exploration Camp JSPR-003",
-                "latitude": 59.3170,
-                "longitude": -62.2233
+                "latitude": 59.318607,
+                "longitude": -62.224945,
+                "odyssey": "adjusted"
             }
         ]
     },
@@ -739,8 +741,9 @@
         "10 b": [
             {
                 "title": "Jackson Enterprise",
-                "latitude": 0.3905,
-                "longitude": 33.5990
+                "latitude": -36.37571,
+                "longitude": 134.621124,
+                "odyssey": "adjusted"
             }
         ]
     },
@@ -1015,8 +1018,9 @@
         "1 b": [
             {
                 "title": "Mayes Chemical Plant",
-                "latitude": 11.3987,
-                "longitude": 177.0659
+                "latitude": 11.393682,
+                "longitude": 177.062439,
+                "odyssey": "adjusted"
             }
         ]
     },
@@ -1349,6 +1353,16 @@
                 "latitude": 31.530195,
                 "longitude": -125.028923,
                 "odyssey": "adjusted (potentially good mats spot, g3 g4)"
+            }
+        ]
+    },
+    "col 285 sector mz-n c7-13": {
+        "ab 1": [
+            {
+                "title": "Botanical Research Station FNA-559",
+                "latitude": 51.088089,
+                "longitude": 26.821867,
+                "odyssey": "adjusted"
             }
         ]
     }
