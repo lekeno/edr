@@ -1020,18 +1020,48 @@ class EDRClient(object):
             self.__commsjammed()
             return None
 
-    def eval_mission(self, entry):
-        if entry["event"] != "MissionAccepted":
+    def eval_mission(self, entry, passive=True):
+        # TODO missioncompleted { "timestamp":"2022-04-09T11:57:23Z", "event":"MissionCompleted", "Faction":"Gnowee Energy Limited", "Name":"Mission_OnFoot_Salvage_MB_name", "MissionID":859165783, "Commodity":"$SurveillanceEquipment_Name;", "Commodity_Localised":"Surveillance Equipment", "Count":1, "Reward":83683, "MaterialsReward":[ { "Name":"MaintenanceLogs", "Name_Localised":"Maintenance Logs", "Category":"$MICRORESOURCE_CATEGORY_Data;", "Category_Localised":"Data", "Count":5 } ], "FactionEffects":[ { "Faction":"Gnowee Energy Limited", "Effects":[  ], "Influence":[ { "SystemAddress":358797546202, "Trend":"UpGood", "Influence":"++" } ], "ReputationTrend":"UpGood", "Reputation":"++" } ] }w
+        if entry["event"] not in ["MissionAccepted", "MissionCompleted"]:
             return
-        commodity = entry.get("Commodity", None)
-        if not commodity:
-            return
+        if entry["event"] == "MissionAccepted":
+            commodity = entry.get("Commodity", None)
+            if not commodity:
+                return
 
-        localized_commodity = entry.get("Commodity_Localised", commodity)
-        description = self.player.remlok_helmet.describe_item(commodity)
-        if not description:
-            return
-        self.__notify(_(u"EDR Mission Eval: {}").format(localized_commodity), description, clear_before=True)
+            localized_commodity = entry.get("Commodity_Localised", commodity)
+            description = self.player.remlok_helmet.describe_item(commodity)
+            if not description:
+                if not passive:
+                    self.__notify(_(u"Mission Eval"), [_("Nothing noteworthy to share")], clear_before=True)
+                return
+            
+            inventory_description = self.player.inventory.oneliner(commodity)
+            details = []
+            header = _(u"Eval of mission item : {}").format(localized_commodity)
+            if inventory_description:
+                header = _(u"Eval of mission item")
+                details.append(inventory_description)
+            details.extend(description)
+            self.__notify(header, details, clear_before=True)
+        elif entry["event"] == "MissionCompleted":
+            print("missioncompleted")
+            if "MaterialsReward" not in entry:
+                print("no mats")
+                return
+            details = []
+            for reward in entry["MaterialsReward"]:
+                commodity = reward["Name"]
+                inventory_description = self.player.inventory.oneliner(commodity)
+                if inventory_description:
+                    details.append(inventory_description)
+                description = self.player.remlok_helmet.describe_item(commodity)
+                if description:
+                    details.extend(description)
+            if details:
+                self.__notify(_("Mission rewards eval"), details, clear_before=True)
+            elif not passive:
+                self.__notify(_("Mission rewards eval"), [_("Nothing noteworthy to share")], clear_before=True)
 
     def eval(self, eval_type):
         canonical_commands = ["power", "backpack", "locker"]
@@ -1040,7 +1070,12 @@ class EDRClient(object):
         if eval_type not in supported_commands:
             description = self.player.remlok_helmet.describe_item(eval_type)
             if description:
-                self.__notify(_(u"EDR Evals"), description, clear_before=True)
+                details = []
+                inventory_description = self.player.inventory.oneliner(eval_type)
+                if inventory_description:
+                    details.append(inventory_description)
+                details.extend(description)
+                self.__notify(_(u"EDR Evals"), details, clear_before=True)
             else:
                 self.__notify(_(u"EDR Evals"), [_(u"Yo dawg, I don't do evals for '{}'").format(eval_type), _(u"Try {} instead.").format(", ".join(canonical_commands)), _(u"Or specific materials (e.g. '!eval surveillance equipements').")], clear_before=True)
             return
@@ -2326,9 +2361,17 @@ class EDRClient(object):
 
     def pointing_guidance(self, entry):
         # TODO add the name of the thing in the header
-        description = self.player.remlok_helmet.describe_target(entry)
+        target = self.player.remlok_helmet.pointing_at(entry)
+        if not target:
+            return
+        details = []
+        description = self.player.remlok_helmet.describe_item(target)
+        inventory_description = self.player.inventory.oneliner(target, fallback=False)
+        if inventory_description:
+            details.append(inventory_description)
         if description:
-            self.__notify(_("Remlok Insights"), description, clear_before=True)
+            details.extend(description)
+            self.__notify(_("Remlok Insights"), details, clear_before=True)
 
     # TODO eval carrier, ship storage?
 
