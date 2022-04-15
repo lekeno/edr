@@ -258,7 +258,7 @@ class EDYiShen(EDEngineer):
         return False
 
 class EDEngineers(object):
-    ODYSSEY_MATS = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'odyssey_mats_v2.json')).read())
+    ODYSSEY_MATS = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'odyssey_mats.json')).read())
 
     def __init__(self):
         self.engineers = {}

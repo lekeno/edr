@@ -12,7 +12,7 @@ import utils2to3
 #TODO anarchy only microresources...
 #TODO clear backpack when boarding, etc.
 #TODO consistency checks, or at least not showing useless/unnecessary for items that are at 0
-ODYSSEY_MATS = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'odyssey_mats_v2.json')).read())
+ODYSSEY_MATS = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'odyssey_mats.json')).read())
 
 # TODO add encoded data
 HORIZONS_MATS = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'horizons_mats.json')).read())
