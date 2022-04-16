@@ -1,0 +1,110 @@
+{
+    "salvagedalloys": {"blueprints": 57, "experimentals": 2, "rarity": "Very common", "grade": 1, "type": "manufactured", "subtype": "Alloys"},
+    "galvanisingalloys": {"blueprints": 7, "experimentals": 7, "rarity": "Common", "grade": 2, "type": "manufactured", "subtype": "Alloys"},
+    "phasealloys": {"blueprints": 33, "synthesis": 5, "experimentals": 3, "techbroker": 1, "rarity": "Standard", "grade": 3, "type": "manufactured", "subtype": "Alloys"},
+    "protolightalloys": {"blueprints": 51, "experimentals": 9, "rarity": "Rare", "grade": 4, "type": "manufactured", "subtype": "Alloys"},
+    "protoradiolicalloys": {"blueprints": 26, "synthesis": 1, "techbroker": 1, "rarity": "Very rare", "grade": 5, "type": "manufactured", "subtype": "Alloys"},
+
+    "gridresistors": {"blueprints": 8, "synthesis": 3, "experimentals": 6, "rarity": "Very common", "grade": 1, "type": "manufactured", "subtype": "Capacitors"},
+    "hybridcapacitors": {"blueprints": 17, "experimentals": 9, "rarity": "Common", "grade": 2, "type": "manufactured", "subtype": "Capacitors"},
+    "electrochemicalarrays": {"blueprints": 32, "synthesis": 3, "experimentals": 2, "techbroker": 1, "rarity": "Standard", "grade": 3, "type": "manufactured", "subtype": "Capacitors"},
+    "polymercapacitors": {"blueprints": 19, "experimentals": 2, "rarity": "Rare", "grade": 4, "type": "manufactured", "subtype": "Capacitors"},
+    "militarysupercapacitors": {"blueprints": 13, "rarity": "Very rare", "grade": 5, "type": "manufactured", "subtype": "Capacitors"},
+
+    "chemicalstorageunits": {"experimentals": 6, "rarity": "Very common", "grade": 1, "type": "manufactured", "subtype": "Chemical"},
+    "chemicalprocessors": {"blueprints": 3, "techbroker": 1, "rarity": "Common", "grade": 2, "type": "manufactured", "subtype": "Chemical"},
+    "chemicaldistillery": {"blueprints": 2, "experimentals": 1, "rarity": "Standard", "grade": 3, "type": "manufactured", "subtype": "Chemical"},
+    "chemicalmanipulators": {"blueprints": 4, "experimentals": 1, "techbroker": 1, "rarity": "Rare", "grade": 4, "type": "manufactured", "subtype": "Chemical"},
+    "pharmaceuticalisolators": {"blueprints": 1, "rarity": "Very rare", "grade": 5, "type": "manufactured", "subtype": "Chemical"},
+
+    "compactcomposites": {"synthesis": 3, "experimentals": 6, "rarity": "Very common", "grade": 1, "type": "manufactured", "subtype": "Composite"},
+    "filamentcomposites": {"synthesis": 4, "experimentals": 3, "rarity": "Common", "grade": 2, "type": "manufactured", "subtype": "Composite"},
+    "highdensitycomposites": {"blueprints": 58, "experimentals": 6, "rarity": "Standard", "grade": 3, "type": "manufactured", "subtype": "Composite"},
+    "proprietarycomposites": {"blueprints": 34, "experimentals": 3, "rarity": "Rare", "grade": 4, "type": "manufactured", "subtype": "Composite"},
+    "coredynamicscomposites": {"blueprints": 21, "rarity": "Very rare", "grade": 5, "type": "manufactured", "subtype": "Composite"},
+
+    "basicconductors": {"synthesis": 3, "rarity": "Very common", "grade": 1, "type": "manufactured", "subtype": "Conductive"},
+    "conductivecomponents": {"blueprints": 62, "experimentals": 2, "rarity": "Common", "grade": 2, "type": "manufactured", "subtype": "Conductive"},
+    "conductiveceramics": {"blueprints": 71, "experimentals": 1, "techbroker": 1, "rarity": "Standard", "grade": 3, "type": "manufactured", "subtype": "Conductive"},
+    "conductivepolymers": {"blueprints": 22, "experimentals": 6, "rarity": "Rare", "grade": 4, "type": "manufactured", "subtype": "Conductive"},
+    "biotechconductors": {"blueprints": 14, "rarity": "Very rare", "grade": 5, "type": "manufactured", "subtype": "Conductive"},
+
+    "crystalshards": {"synthesis": 3, "experimentals": 1, "rarity": "Very common", "grade": 1, "type": "manufactured", "subtype": "Crystals"},
+    "flawedfocuscrystals": {"blueprints": 8, "experimentals": 11, "rarity": "Common", "grade": 2, "type": "manufactured", "subtype": "Crystals"},
+    "focuscrystals": {"blueprints": 27, "synthesis": 6, "experimentals": 4, "tech broker items": 2, "rarity": "Standard", "grade": 3, "type": "manufactured", "subtype": "Crystals"},
+    "refinedfocuscrystals": {"blueprints": 14, "experimentals": 4, "rarity": "Rare", "grade": 4, "type": "manufactured", "subtype": "Crystals"},
+    "exquisitefocuscrystals": {"blueprints": 4, "rarity": "Very rare", "grade": 5, "type": "manufactured", "subtype": "Crystals"},
+
+    "guardianpowercell": {"synthesis": 7, "tech broker items": 9, "rarity": "Very common", "grade": 1, "type": "manufactured", "subtype": "Guardian"},
+    "guardianpowerconduit": {"synthesis": 5, "tech broker items": 9, "rarity": "Common", "grade": 2, "type": "manufactured", "subtype": "Guardian"},
+    "guardiansentinelweaponparts": {"synthesis": 3, "tech broker items": 10, "rarity": "Standard", "grade": 3, "type": "manufactured", "subtype": "Guardian"},
+    "guardiantechnologycomponent": {"synthesis": 4, "experimentals": 14, "rarity": "Very common", "grade": 1, "type": "manufactured", "subtype": "Guardian"},
+    "guardianwreckagecomponents": {"synthesis": 3, "tech broker items": 8, "rarity": "Standard", "grade": 3, "type": "manufactured", "subtype": "Guardian"},
+
+    "heatconductionwiring": {"blueprints": 8, "synthesis": 3, "experimentals": 6, "rarity": "Very common", "grade": 1, "type": "manufactured", "subtype": "Heat"},
+    "heatdispersionplate": {"blueprints": 23, "synthesis": 4, "experimentals": 5, "rarity": "Common", "grade": 2, "type": "manufactured", "subtype": "Heat"},
+    "heatexchangers": {"blueprints": 13, "synthesis": 4, "experimentals": 3, "rarity": "Standard", "grade": 3, "type": "manufactured", "subtype": "Heat"},
+    "heatvanes": {"blueprints": 11, "experimentals": 5, "rarity": "Rare", "grade": 4, "type": "manufactured", "subtype": "Heat"},
+    "protoheatradiators": {"blueprints": 10, "synthesis": 1, "rarity": "Very rare", "grade": 5, "type": "manufactured", "subtype": "Heat"},
+
+    "mechanicalscrap": {"blueprints": 61, "experimentals": 9, "techbroker": 1, "rarity": "Very common", "grade": 1, "type": "manufactured", "subtype": "Mechanical"},
+    "mechanicalequipment": {"blueprints": 27, "experimentals": 5, "rarity": "Common", "grade": 2, "type": "manufactured", "subtype": "Mechanical"},
+    "mechanicalcomponents": {"blueprints": 27, "synthesis": 3, "experimentals": 4, "techbroker": 1, "rarity": "Standard", "grade": 3, "type": "manufactured", "subtype": "Mechanical"},
+    "configurablecomponents": {"blueprints": 19, "experimentals": 7, "techbroker": 1, "rarity": "Rare", "grade": 4, "type": "manufactured", "subtype": "Mechanical"},
+    "improvisedcomponents": {"blueprints": 1, "rarity": "Very rare", "grade": 5, "type": "manufactured", "subtype": "Mechanical"},
+
+    "wornshieldemitters": {"blueprints": 17, "experimentals": 9, "rarity": "Very common", "grade": 1, "type": "manufactured", "subtype": "Shielding"},
+    "shieldemitters": {"blueprints": 87, "experimentals": 2, "rarity": "Common", "grade": 2, "type": "manufactured", "subtype": "Shielding"},
+    "shieldingsensors": {"blueprints": 21, "experimentals": 3, "rarity": "Standard", "grade": 3, "type": "manufactured", "subtype": "Shielding"},
+    "compoundshielding": {"blueprints": 21, "experimentals": 1, "rarity": "Rare", "grade": 4, "type": "manufactured", "subtype": "Shielding"},
+    "imperialshielding": {"blueprints": 3, "rarity": "Very rare", "grade": 5, "type": "manufactured", "subtype": "Shielding"},
+    
+    "thargoidcarapace": {"synthesis": 1, "rarity": "Common", "grade": 2, "type": "manufactured", "subtype": "Thargoid"},
+    "thargoidenergycell": {"techbroker": 1, "rarity": "Standard", "grade": 3, "type": "manufactured", "subtype": "Thargoid"},
+    "biomechanicalconduits": {"synthesis": 4, "rarity": "Standard", "grade": 3, "type": "manufactured", "subtype": "Thargoid"},
+    "thargoidtechnologicalcomponents": {"experimentals": 2, "rarity": "Rare", "grade": 4, "type": "manufactured", "subtype": "Thargoid"},
+    "thargoidorganiccircuitry": {"synthesis": 1, "techbroker": 1, "rarity": "Very rare", "grade": 5, "type": "manufactured", "subtype": "Thargoid"},
+    "propulsionelements": {"synthesis": 6, "rarity": "Very rare", "grade": 5, "type": "manufactured", "subtype": "Thargoid"},
+    "sensorfragment": {"synthesis": 3, "unlock": "Professor Palin", "rarity": "Very rare", "grade": 5, "type": "manufactured", "subtype": "Thargoid"},
+
+    "temperedalloys": {"experimentals": 3, "rarity": "Very common", "grade": 1, "type": "manufactured", "subtype": "Thermic"},
+    "heatresistantceramics": {"synthesis": 1, "experimentals": 7, "techbroker": 1, "rarity": "Common", "grade": 2, "type": "manufactured", "subtype": "Thermic"},
+    "precipitatedalloys": {"blueprints": 20, "experimentals": 2, "rarity": "Standard", "grade": 3, "type": "manufactured", "subtype": "Thermic"},
+    "thermicalloys": {"blueprints": 18, "synthesis": 2, "experimentals": 1, "rarity": "Rare", "grade": 4, "type": "manufactured", "subtype": "Thermic"},
+    "militarygradealloys": {"blueprints": 3, "rarity": "Very rare", "grade": 5, "type": "manufactured", "subtype": "Thermic"},
+    
+    "carbon": {"blueprints": 48, "synthesis": 11, "experimentals": 3, "techbroker": 4, "rarity": "Very common", "grade": 1, "type": "raw", "subtype": "Group 1"},
+    "vanadium": {"blueprints": 47, "synthesis": 12, "experimentals": 5, "techbroker": 9, "rarity": "Common", "grade": 2, "type": "raw", "subtype": "Group 1"},
+    "niobium": {"blueprints": 27, "synthesis": 3, "experimentals": 4, "techbroker": 1, "rarity": "Stanndard", "type": "raw", "subtype": "Group 1"},
+    "ytrium": {"blueprints": 1, "synthesis": 2, "experimentals": 1, "rarity": "Rare", "grade": 4, "type": "raw", "subtype": "Group 1"},
+    
+    "phosphorus": {"blueprints": 44, "synthesis": 19, "experimentals": 8, "techbroker": 1, "rarity": "Very common", "grade": 1, "type": "raw", "subtype": "Group 2"},
+    "chromium": {"blueprints": 18, "synthesis": 6, "experimentals": 6, "techbroker": 4, "rarity": "Common", "grade": 2, "type": "raw", "subtype": "Group 2"},
+    "molybdenum": {"blueprints": 54, "synthesis": 6, "experimentals": 3, "techbroker": 3, "rarity": "Standard", "grade": 3, "type": "raw", "subtype": "Group 2"},
+    "technetium": {"blueprints": 33, "synthesis": 3, "tech broker": 9, "rarity": "Rare", "grade": 4, "type": "raw", "subtype": "Group 2"},
+    
+    "sulphur": {"blueprints": 46, "synthesis": 19, "experimentals": 3, "rarity": "Very common", "grade": 1, "type": "raw", "subtype": "Group 3"},
+    "manganese": {"blueprints": 57, "synthesis": 8, "experimentals": 2, "techbroker": 1, "rarity": "Common", "grade": 2, "type": "raw", "subtype": "Group 3"},
+    "cadmium": {"blueprints": 13, "synthesis": 2, "experimentals": 2, "rarity": "Standard", "grade": 3, "type": "raw", "subtype": "Group 3"},
+    "ruthenium": {"blueprints": 4, "synthesis": 1, "experimentals": 2, "rarity": "Rare", "grade": 4, "type": "raw", "subtype": "Group 3"},
+
+    "iron": {"blueprints": 38, "synthesis": 16, "experimentals": 3, "rarity": "Very common", "grade": 1, "type": "raw", "subtype": "Group 4"},
+    "zinc": {"blueprints": 34, "synthesis": 9, "experimentals": 2, "rarity": "Common", "grade": 2, "type": "raw", "subtype": "Group 4"},
+    "tin": {"blueprints": 18, "synthesis": 4, "experimentals": 1, "rarity": "Standard", "grade": 3, "type": "raw", "subtype": "Group 4"},
+    "selenium": {"blueprints": 16, "synthesis": 5, "experimentals": 3, "rarity": "Rare", "grade": 4, "type": "raw", "subtype": "Group 4"},
+    
+    "nickel": {"blueprints": 123, "synthesis": 15, "experimentals": 1, "rarity": "Very common", "grade": 1, "type": "raw", "subtype": "Group 5"},
+    "germanium": {"blueprints": 30, "synthesis": 3, "experimentals": 1, "techbroker": 3, "rarity": "Common", "grade": 2, "type": "raw", "subtype": "Group 5"},
+    "tungsten": {"blueprints": 74, "synthesis": 13, "experimentals": 3, "techbroker": 10, "rarity": "Standard", "grade": 3, "type": "raw", "subtype": "Group 5"},
+    "tellurium": {"blueprints": 3, "synthesis": 2, "techbroker": 1, "rarity": "Rare", "grade": 4, "type": "raw", "subtype": "Group 5"},
+
+    "rhenium": {"techbroker": 11, "rarity": "Very common", "grade": 1, "type": "raw", "subtype": "Group 6"},
+    "arsenic": {"blueprints": 6, "synthesis": 10, "experimentals": 1, "techbroker": 3, "rarity": "Common", "grade": 2, "type": "raw", "subtype": "Group 6"},
+    "mercury": {"blueprints": 4, "synthesis": 10, "experimentals": 2, "rarity": "Standard", "grade": 3, "type": "raw", "subtype": "Group 6"},
+    "polonium": {"synthesis": 3, "experimentals": 1, "rarity": "Rare", "grade": 4, "type": "raw", "subtype": "Group 6"},
+
+    "lead": {"synthesis": 6, "rarity": "Very common", "grade": 1, "type": "raw", "subtype": "Group 7"},
+    "zirconium": {"blueprints": 9, "synthesis": 10, "experimental effect": 5, "rarity": "Common", "grade": 2, "type": "raw", "subtype": "Group 7"},
+    "bordon": {"synthesis": 3, "rarity": "Standard", "grade": 3, "type": "raw", "subtype": "Group 7"},
+    "antimony": {"blueprints": 1, "synthesis": 2, "rarity": "Rare", "grade": 4, "type": "raw", "subtype": "Group 7"}
+}
