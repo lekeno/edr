@@ -1154,14 +1154,14 @@ class EDRClient(object):
     def evict_system(self, star_system):
         self.edrsystems.evict(star_system)
 
-    def __novel_enough_situation(self, new, old, cognitive = False):
+    def __novel_enough_situation(self, new, old, cognitive = False, system_wide=False):
         if old is None:
             return True
 
         delta = new["timestamp"] - old["timestamp"]
         
         if cognitive:
-            return (new["starSystem"] != old["starSystem"] or new["place"] != old["place"]) or delta > self.cognitive_novelty_threshold
+            return (not system_wide and (new["starSystem"] != old["starSystem"] or new["place"] != old["place"])) or delta > self.cognitive_novelty_threshold
 
         if new["starSystem"] != old["starSystem"]:
             return delta > self.system_novelty_threshold
@@ -1200,9 +1200,9 @@ class EDRClient(object):
         last_alert = self.alerts_cache.get(alert_for_cmdr)
         return self.__novel_enough_situation(alert, last_alert)
 
-    def novel_enough_blip(self, cmdr_id, blip, cognitive = False):
+    def novel_enough_blip(self, cmdr_id, blip, cognitive = False, system_wide=False):
         last_blip = self.cognitive_blips_cache.get(cmdr_id) if cognitive else self.blips_cache.get(cmdr_id)
-        return self.__novel_enough_situation(blip, last_blip, cognitive)
+        return self.__novel_enough_situation(blip, last_blip, cognitive, system_wide)
 
     def novel_enough_scan(self, cmdr_id, scan, cognitive = False):
         last_scan = self.cognitive_scans_cache.get(cmdr_id) if cognitive else self.scans_cache.get(cmdr_id)
@@ -1480,7 +1480,7 @@ class EDRClient(object):
         self.__notify(_("Distance"), details, clear_before = True)
 
 
-    def blip(self, cmdr_name, blip):
+    def blip(self, cmdr_name, blip, system_wide=False):
         if self.player.in_solo():
             EDRLOG.log(u"Skipping blip since the user is in solo (unexpected).", "INFO")
             return False
@@ -1496,10 +1496,12 @@ class EDRClient(object):
         legal = self.edrlegal.summarize(profile.cid)
         if profile and (self.player.name != cmdr_name) and profile.is_dangerous(self.player.powerplay):
             self.status = _(u"{} is bad news.").format(cmdr_name)
-            if self.novel_enough_blip(cmdr_id, blip, cognitive = True):
+            if self.novel_enough_blip(cmdr_id, blip, cognitive = True, system_wide=system_wide):
                 details = [profile.short_profile(self.player.powerplay)]
                 if legal:
                     details.append(legal["overview"])
+                if blip.get("source", None):
+                    details.append(blip["source"]) # TODO TEMP
                 header = _(u"[Caution!] Intel about {}").format(cmdr_name)
                 self.__warning(header, details, clear_before=True, legal=legal)
                 self.cognitive_blips_cache.set(cmdr_id, blip)
@@ -1510,7 +1512,7 @@ class EDRClient(object):
             else:
                 EDRLOG.log(u"Skipping warning since a warning was recently shown.", "INFO")
 
-        if not self.novel_enough_blip(cmdr_id, blip):
+        if not self.novel_enough_blip(cmdr_id, blip, system_wide):
             EDRLOG.log(u"Blip is not novel enough to warrant reporting", "INFO")
             return True
 
