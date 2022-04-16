@@ -1001,7 +1001,7 @@ def edr_submit_contact(contact, timestamp, source, witness, system_wide=False):
         EDRLOG.log(u"Skipping cmdr update due to partial status", "INFO")
         return
 
-    if not EDR_CLIENT.blip(contact.name, report):
+    if not EDR_CLIENT.blip(contact.name, report, system_wide):
         EDR_CLIENT.status = _(u"failed to report contact.")
         
     edr_submit_traffic(contact, timestamp, source, witness, system_wide)
@@ -1468,7 +1468,7 @@ def handle_material_events(cmdr, entry, state):
     elif entry["event"] == "MaterialTrade":
         cmdr.inventory.traded(entry)
     elif entry["event"] == "MissionCompleted":
-        cmdr.inventory.rewarded(entry)
+        cmdr.inventory.rewarded(entry) # TODO seems to overcount by one time the reward?
         EDR_CLIENT.eval_mission(entry)
     elif entry["event"] == "BackpackChange":
         cmdr.inventory.backpack_change(entry)
