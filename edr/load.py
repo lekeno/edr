@@ -1202,9 +1202,6 @@ def report_comms(player, entry):
                 EDRLOG.log(u"Emote to {} (not friend/wing) == same location".format(receiving_party), "INFO")
                 contact = player.instanced_player(receiving_party)
                 edr_submit_contact(contact, entry["timestamp"], "Emote sent (non wing/friend player)", player)
-                print(entry)
-                print(m)
-                print(action)
                 if action in ["wave", "point"]:
                     EDRLOG.log(u"Implicit who emote-command for {}".format(receiving_party), "INFO")
                     EDR_CLIENT.who(receiving_party, autocreate=True)
@@ -1468,7 +1465,7 @@ def handle_material_events(cmdr, entry, state):
     elif entry["event"] == "MaterialTrade":
         cmdr.inventory.traded(entry)
     elif entry["event"] == "MissionCompleted":
-        cmdr.inventory.rewarded(entry) # TODO seems to overcount by one time the reward?
+        cmdr.inventory.rewarded(entry)
         EDR_CLIENT.eval_mission(entry)
     elif entry["event"] == "BackpackChange":
         cmdr.inventory.backpack_change(entry)
