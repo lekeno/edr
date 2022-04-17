@@ -8,6 +8,7 @@ import json
 
 from edri18n import _
 import utils2to3
+from edtime import EDTime
 
 #TODO anarchy only microresources...
 #TODO clear backpack when boarding, etc.
@@ -394,6 +395,7 @@ class EDRInventory(object):
     def __init__(self):
         self.initialized = False
         self.inconsistencies = False
+        self.locker_timestamp = None
         try:
             with open(self.EDR_INVENTORY_ENCODED_CACHE, 'rb') as handle:
                 self.encoded = pickle.load(handle)
@@ -496,6 +498,7 @@ class EDRInventory(object):
         self.inconsistencies = False
 
     def initialize_locker(self, materials):
+        self.locker_timestamp = EDTime.py_epoch_now()
         if "Encoded" in materials:
             self.encoded = {}
         for thing in materials.get("Encoded", []):
@@ -577,7 +580,7 @@ class EDRInventory(object):
             cname = self.__c_name(thing)
             self.data[cname] = state["Data"][thing]
 
-        backpack = {} if "BackPack" in state else self.backpack
+        self.backpack = {} if "BackPack" in state else self.backpack
         for category in state["BackPack"]:
             ccategory = category.lower()
             self.backpack[ccategory] = {}
@@ -796,6 +799,10 @@ class EDRInventory(object):
     def rewarded(self, info):
         # TODO Does Search And Rescue give material rewards??
         if "MaterialsReward" not in info:
+            return
+        now = EDTime.py_epoch_now()
+        if self.locker_timestamp and (now - self.locker_timestamp) < 5:
+            # skip manual operation since we likely got a shiplocker event already containing the change
             return
         for reward in info["MaterialsReward"]:
             self.add(reward["Category"], reward["Name"], reward["Count"])
