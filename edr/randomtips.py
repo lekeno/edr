@@ -127,7 +127,9 @@ DEFAULT_TIPS = {
         _(u"Send '!parking deciat' to check for fleet carrier parking slots in Deciat."),
         _(u"Send '!parking deciat #3' to check for fleet carrier parking slots in the third closest system to Deciat."),
         _(u"Send '!fc J6B' to display info for a local fleet carrier whose callsign or name contains J6B."),
-        _(u"Send '!station Jameson' to display info for a local station/outpost/... whose name contains Jameson.")
+        _(u"Send '!station Jameson' to display info for a local station/outpost/... whose name contains Jameson."),
+        _(u"Point at materials with the emote gesture to identify them and have EDR share some info about how useful the material is."),
+        _(u"Point at, or salute other players with the emote gestures to show their EDR and Inara profile.")
     ],
     "OPEN tips": [
         _(u"Never fly what you can't afford to lose. Check your rebuy and credit balance on your right panel."),
