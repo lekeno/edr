@@ -11,8 +11,6 @@ import utils2to3
 from edtime import EDTime
 
 #TODO anarchy only microresources...
-#TODO clear backpack when boarding, etc.
-#TODO consistency checks, or at least not showing useless/unnecessary for items that are at 0
 ODYSSEY_MATS = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'odyssey_mats.json')).read())
 
 # TODO add encoded data
@@ -976,96 +974,95 @@ class EDRInventory(object):
 
 class EDRRemlokHelmet(object):  
     MISC_LUT = {
-        "healthpack": [_("TODO: healthpack; some useful info about it")],
-        "ammgrenadeshieldname": [_("TODO: grenade shield; some useful info about it")],
+        "healthpack": ["TODO: healthpack; some useful info about it"],
+        "ammgrenadeshieldname": ["TODO: grenade shield; some useful info about it"],
        
-        "interactiveconsoleapu": [_("todo: interactiveconsoleapu; some useful info about it")],
-        "interactiverechargepoint": [_("todo: recharge point; some useful info about it")],        
-        "interactivepanellifesupportcutting01": [_("todo: panel life support cutting01; some useful info about it")],
-        "interactivelifesupportdoor": [_("todo: life support door; some useful info about it")],
-        "interactivecontaineritem": [_("todo: container item; some useful info about it")],
-        "interactivelocker": [_("todo: locker; some useful info about it")],
-        "interactivegrenadecontainer": [_("todo: grenade container; some useful info about it")],
-        "interactivemedkitcontainer": [_("todo: medkit container; some useful info about it")],
-        "interactivedropboxreactor": [_("todo: dropbox reactor; some useful info about it")],
-        "interactiveenergycontainer": [_("todo: energy container; some useful info about it")],
-        "interactivesuitcharge": [_("that's useful to recharge your space suit batteries. [placeholder]")],
-        "interactivedataportgeneric": [_("download/upload data from here. [placeholder]")],
-        "interactiveammocachesmall01": [_("todo: ammunition small 01")],
-        "interactivemillockera11x1maglock": [_("todo: mil locker a1_1x1 maglock")],
-        "interactivepanelsmallcutting01_": [_("a small panel which can be cut. [placeholder]")],
-        "interactiveindustdropbox": [_("todo: interactiveindustdropbox; some useful info about it")],
-        "interactiveconsoleindustdropbox": [_("todo: console industdropbox; some useful info about it")],
-        "interactiveconsoleautho": [_("todo: console authorization; some useful info about it")],
-        "interactiveconsolealarms": [_("todo: console alarms; some useful info about it")],
-        "interactivedataportindustrial": [_("todo: dapaport industrial; some useful info about it")],
-        "interactivelockerindustrial": [_("todo: locker industrial; some useful info about it")],
-        "interactiveconsolepdefence": [_("todo: console pdefence; some useful info about it")],
-        "interactiverechargepoint2": [_("todo: rechargepoint2; some useful info about it")],
-        "interactiveconsoleapturret": [_("todo: console ap turret; some useful info about it")],
-        "interactivepanelturretcutting01_": [_("todo: panel turret cutting01; some useful info about it")],
-        "interactivedataportpoi": [_("dataport poi. [placeholder]")],
-        "interactivedataportextraction": [_("dataport extraction. [placeholder]")],
-        "interactivelockerresearch'": [_("locker research. [placeholder]")],
-        "interactivelockermedical": [_("locker medical. [placeholder]")],
-        "interactivedataportpower": [_("dataport power. [placeholder]")],
-        "interactiveconsolereactor": [_("console reactor. [placeholder]")],
-        "interactiveconsolesampledropbox": [_("console sample dropbox. [placeholder]")],
-        "interactiveconsoleagridropbox": [_("console agriculture dropbox. [placeholder]")],
-        "interactivelockeragricultural": [_("locker agriculture. [placeholder]")],
-        "interactivedataportagricultural":  [_("dataport agriculture. [placeholder]")],
-        "interactivedataportsecurity": [_("todo: dataport")],
-        "interactivelockercomputer": [_("todo: locker computer")],
-        "interactivelockerpowerroom": [_("todo: locker power room")],
-        "interactivelockerresearch": [_("todo: locker research")],
-        "interactivesampledropbox":  [_("todo: Sample dropbox")],
+        "interactiveconsoleapu": ["todo: interactiveconsoleapu; some useful info about it"],
+        "interactiverechargepoint": ["todo: recharge point; some useful info about it"],        
+        "interactivepanellifesupportcutting01": ["todo: panel life support cutting01; some useful info about it"],
+        "interactivelifesupportdoor": ["todo: life support door; some useful info about it"],
+        "interactivecontaineritem": ["todo: container item; some useful info about it"],
+        "interactivelocker": ["todo: locker; some useful info about it"],
+        "interactivegrenadecontainer": ["todo: grenade container; some useful info about it"],
+        "interactivemedkitcontainer": ["todo: medkit container; some useful info about it"],
+        "interactivedropboxreactor": ["todo: dropbox reactor; some useful info about it"],
+        "interactiveenergycontainer": ["todo: energy container; some useful info about it"],
+        "interactivesuitcharge": ["that's useful to recharge your space suit batteries. [placeholder]"],
+        "interactivedataportgeneric": ["download/upload data from here. [placeholder]"],
+        "interactiveammocachesmall01": ["todo: ammunition small 01"],
+        "interactivemillockera11x1maglock": ["todo: mil locker a1_1x1 maglock"],
+        "interactivepanelsmallcutting01_": ["a small panel which can be cut. [placeholder]"],
+        "interactiveindustdropbox": ["todo: interactiveindustdropbox; some useful info about it"],
+        "interactiveconsoleindustdropbox": ["todo: console industdropbox; some useful info about it"],
+        "interactiveconsoleautho": ["todo: console authorization; some useful info about it"],
+        "interactiveconsolealarms": ["todo: console alarms; some useful info about it"],
+        "interactivedataportindustrial": ["todo: dapaport industrial; some useful info about it"],
+        "interactivelockerindustrial": ["todo: locker industrial; some useful info about it"],
+        "interactiveconsolepdefence": ["todo: console pdefence; some useful info about it"],
+        "interactiverechargepoint2": ["todo: rechargepoint2; some useful info about it"],
+        "interactiveconsoleapturret": ["todo: console ap turret; some useful info about it"],
+        "interactivepanelturretcutting01_": ["todo: panel turret cutting01; some useful info about it"],
+        "interactivedataportpoi": ["dataport poi. [placeholder]"],
+        "interactivedataportextraction": ["dataport extraction. [placeholder]"],
+        "interactivelockerresearch'": ["locker research. [placeholder]"],
+        "interactivelockermedical": ["locker medical. [placeholder]"],
+        "interactivedataportpower": ["dataport power. [placeholder]"],
+        "interactiveconsolereactor": ["console reactor. [placeholder]"],
+        "interactiveconsolesampledropbox": ["console sample dropbox. [placeholder]"],
+        "interactiveconsoleagridropbox": ["console agriculture dropbox. [placeholder]"],
+        "interactivelockeragricultural": ["locker agriculture. [placeholder]"],
+        "interactivedataportagricultural":  ["dataport agriculture. [placeholder]"],
+        "interactivedataportsecurity": ["todo: dataport"],
+        "interactivelockercomputer": ["todo: locker computer"],
+        "interactivelockerpowerroom": ["todo: locker power room"],
+        "interactivelockerresearch": ["todo: locker research"],
+        "interactivesampledropbox":  ["todo: Sample dropbox"],
         
-        "guiinteractiveterminalgen": [_("that's a terminal. you can access stuff from it. [placeholder]")],
-        "guiinteractiveshipyardterminalstandinggen_01": [_("that's a shipyard terminal. you can manage your ships from there. [placeholder]")],
+        "guiinteractiveterminalgen": ["that's a terminal. you can access stuff from it. [placeholder]"],
+        "guiinteractiveshipyardterminalstandinggen_01": ["that's a shipyard terminal. you can manage your ships from there. [placeholder]"],
         
-        "humanoidcorridorroomname": [_("todo: corridor room")],
-        "humanoidpowerplantroomname": [_("todo: powerplant room")],
-        "humanoidbarroomname": [_("todo: bar room")],
-        "humanoidfoyerroomname": [_("todo: foyer room")],
-        "humanoidhabitatbldlongname": [_("todo: habitat building")],
-        "humanoidcabinroomname": [_("todo: cabin room")],
-        "humanoidleisurebldlongname": [_("todo: leisure building")],
-        "humanoidpowercentrebldlongname": [_("todo: power building")],
-        "humanoidaccesswaya_bldlongname": [_("todo: accessway a building")],
-        "humanoidproductionindbldlongname": [_("todo: industrial production building")],
-        "humanoidprocessingroomname": [_("todo: processing room")],
-        "humanoidproductionagribldlongname": [_("todo: agricultural production building")],
-        "humanoidwarehousebldlongname": [_("todo: warehouse building")],
-        "humanoidcommandcenterbldlongname": [_("todo: command center building")],
-        "humanoidhudunknownhumanoidname":  [_("todo: not yet scanned humanoid")],
-        "humanoidresearchbldlongname":  [_("todo: Research building")],
-        "humanoidmedbayroomname": [_("todo: medbay room")],
-        "humanoidlaboratoryroomname": [_("todo: laboratory room")],
+        "humanoidcorridorroomname": ["todo: corridor room"],
+        "humanoidpowerplantroomname": ["todo: powerplant room"],
+        "humanoidbarroomname": ["todo: bar room"],
+        "humanoidfoyerroomname": ["todo: foyer room"],
+        "humanoidhabitatbldlongname": ["todo: habitat building"],
+        "humanoidcabinroomname": ["todo: cabin room"],
+        "humanoidleisurebldlongname": ["todo: leisure building"],
+        "humanoidpowercentrebldlongname": ["todo: power building"],
+        "humanoidaccesswaya_bldlongname": ["todo: accessway a building"],
+        "humanoidproductionindbldlongname": ["todo: industrial production building"],
+        "humanoidprocessingroomname": ["todo: processing room"],
+        "humanoidproductionagribldlongname": ["todo: agricultural production building"],
+        "humanoidwarehousebldlongname": ["todo: warehouse building"],
+        "humanoidcommandcenterbldlongname": ["todo: command center building"],
+        "humanoidhudunknownhumanoidname":  ["todo: not yet scanned humanoid"],
+        "humanoidresearchbldlongname":  ["todo: Research building"],
+        "humanoidmedbayroomname": ["todo: medbay room"],
+        "humanoidlaboratoryroomname": ["todo: laboratory room"],
         
-        "energycell": [_("energy cell. [todo]")],
+        "energycell": ["energy cell. [todo]"],
         
-        "skimmerdrone":  [_("that's a skimmer drone, yep. [placeholder]")],
-        "bombskimmerdrone":  [_("that's a bomb skimmer drone, yep. [placeholder]")],
+        "skimmerdrone":  ["that's a skimmer drone, yep. [placeholder]"],
+        "bombskimmerdrone":  ["that's a bomb skimmer drone, yep. [placeholder]"],
         
-        "higenauthorisationpanel": [_("moultipass? [placeholder]")],
-        "higenkeypad": [_("that's a higen keypad. [placeholder]")],
+        "higenauthorisationpanel": ["moultipass? [placeholder]"],
+        "higenkeypad": ["that's a higen keypad. [placeholder]"],
         
-        "psairlock6mstr02": [_("that's an airlock 6mstr 02. [placeholder]")],
-        "psturretbasemedium6m": [_("that's a 6m medium turret. [placeholder]")],
-        "psturretbasemedium026m": [_("that's a 6m medium turret 02. [placeholder]")],
-        "psturretbasesmall3m": [_("that's a 3m small turret. [placeholder]")],
-        "psdoorwaywidelux01": [_("that's a wide luxury door 01. [placeholder]")],
-        "psdoorwaywide01": [_("that's a wide door 01. [placeholder]")],
-        "psdoorwaywidetech01": [_("todo: Door way wide tech 01 building")],
-        "psdoorwaywidegen01": [_("that's a wide door gen 01. [placeholder]")],
+        "psairlock6mstr02": ["that's an airlock 6mstr 02. [placeholder]"],
+        "psturretbasemedium6m": ["that's a 6m medium turret. [placeholder]"],
+        "psturretbasemedium026m": ["that's a 6m medium turret 02. [placeholder]"],
+        "psturretbasesmall3m": ["that's a 3m small turret. [placeholder]"],
+        "psdoorwaywidelux01": ["that's a wide luxury door 01. [placeholder]"],
+        "psdoorwaywide01": ["that's a wide door 01. [placeholder]"],
+        "psdoorwaywidetech01": ["todo: Door way wide tech 01 building"],
+        "psdoorwaywidegen01": ["that's a wide door gen 01. [placeholder]"],
         
-        "poiturretplatforma": [_("that's a turret platform. [placeholder]")],
-        "poisalvagelootsmall": [_("salvage loot small. [placeholder]")],
+        "poiturretplatforma": ["that's a turret platform. [placeholder]"],
+        "poisalvagelootsmall": ["salvage loot small. [placeholder]"],
     }
 
     # TODO add timer for console sample, power, etc, using one of the gesture to trigger it and clear it.
     # TODO add SRV, clap your hand to enable/disable lights, same for ships
-
     
     def __init__(self):
         self.unknown_things = []
@@ -1078,8 +1075,6 @@ class EDRRemlokHelmet(object):
             target = m.group(2)
     
         if target is None:
-            print(pointing_event)
-            print("no target")
             return None
         target = target.rstrip(";")
         return target
@@ -1089,9 +1084,7 @@ class EDRRemlokHelmet(object):
         
         c_item = item.lower()
         if c_item in INTERNAL_NAMES_LUT:
-            print("conversion of {}".format(c_item))
             c_item = INTERNAL_NAMES_LUT[c_item]
-            print("converted to {}".format(c_item))
         else:
             c_item = c_item.rstrip(";")
             if c_item.startswith("$"):
@@ -1125,8 +1118,7 @@ class EDRRemlokHelmet(object):
 
         if item not in self.unknown_things:
             self.unknown_things.append(item)
-            print(self.unknown_things)
-        return None # [_("Unknown"), item]
+        return None
 
     def __describe_odyssey_material(self, internal_name):
         if internal_name not in ODYSSEY_MATS:
@@ -1196,7 +1188,8 @@ class EDRRemlokHelmet(object):
         return details
 
     def __describe_misc(self, internal_name):
-        if internal_name not in self.MISC_LUT:
-            return None
-        
-        return self.MISC_LUT[internal_name]
+        #if internal_name not in self.MISC_LUT:
+        #    return None
+        #
+        #return self.MISC_LUT[internal_name]
+        return None
