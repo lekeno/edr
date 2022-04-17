@@ -1511,6 +1511,44 @@ class EDRSystems(object):
 
         return summary
 
+    def recent_outlaws(self, star_system, max_age=3600):
+        outlaws = {}
+        if self.has_recent_traffic(star_system):
+            recent_traffic = self.recent_traffic(star_system)
+            if recent_traffic is not None: # Should always be true... simplify. TODO
+                for traffic in recent_traffic:
+                    previous_timestamp = outlaws[traffic["cmdr"]][0] if traffic["cmdr"] in outlaws else 0
+                    if traffic["timestamp"] < previous_timestamp:
+                        continue
+                    if not self.is_recent(traffic["timestamp"], max_age*1000):
+                        continue
+                    karma = traffic.get("karma", 0)
+                    if not karma > 0:
+                        karma = min(karma, traffic.get("dkarma", 0))
+                    bounty = EDFineOrBounty(traffic.get("bounty", 0))
+                    if karma <= -100 or bounty.is_significant():
+                        outlaws[traffic["cmdr"]] = [ traffic["timestamp"], karma ]
+        
+        if self.has_recent_crimes(star_system):
+            recent_crimes = self.recent_crimes(star_system)
+            if recent_crimes is not None: # Should always be true... simplify. TODO
+                for crime in recent_crimes:
+                    for criminal in crime["criminals"]:
+                        previous_timestamp = outlaws[criminal["name"]][0] if criminal["name"] in outlaws else 0
+                        if previous_timestamp > crime["timestamp"]:
+                            continue
+                        if not self.is_recent(crime["timestamp"], max_age*1000):
+                            continue
+                        karma = criminal.get("karma", 0)
+                        if not karma > 0:
+                            karma = min(karma, criminal.get("dkarma", 0))
+                        bounty = EDFineOrBounty(criminal.get("bounty", 0))
+                        if karma <= -100 or bounty.is_significant():
+                            outlaws[criminal["name"]] = [ crime["timestamp"], karma]
+                
+        outlaws = collections.OrderedDict(sorted(outlaws.items(), key=lambda kv: kv[1][0], reverse=True))
+        return outlaws.keys()
+
     def search_interstellar_factors(self, star_system, callback, with_large_pad = True, with_medium_pad = False, override_radius = None, override_sc_distance = None, permits = []):
         checker = edrservicecheck.EDRStationServiceCheck('Interstellar Factors Contact')
         checker.name = 'Interstellar Factors Contact'

@@ -906,6 +906,18 @@ class EDRClient(object):
                     summary = self.edrsystems.summarize_recent_activity(star_system, self.player.power)
                     for section in summary:
                         details.append(u"{}: {}".format(section, "; ".join(summary[section])))
+                    recent_outlaws = self.edrsystems.recent_outlaws(star_system)
+                    summary_for_chat = ""
+                    separator = "'' "
+                    max_copy_pastable = 100
+                    for outlaw in recent_outlaws:
+                        if len(summary_for_chat) + len(separator) + len(outlaw) > max_copy_pastable:
+                            break
+                        if summary_for_chat != "":
+                            summary_for_chat += " '{}'".format(outlaw)
+                        else:
+                            summary_for_chat = "'{}'".format(outlaw)
+                    copy(summary_for_chat)
             if details:
                 # Translators: this is the heading for the sitrep of a given system {}; shown via the overlay
                 header = _(u"SITREP for {}") if self.player.in_open() else _(u"SITREP for {} (Open)")
@@ -1481,7 +1493,7 @@ class EDRClient(object):
 
 
     def blip(self, cmdr_name, blip, system_wide=False):
-        if self.player.in_solo():
+        if self.player.in_solo() and not system_wide:
             EDRLOG.log(u"Skipping blip since the user is in solo (unexpected).", "INFO")
             return False
 
