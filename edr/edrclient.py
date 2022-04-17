@@ -1033,7 +1033,6 @@ class EDRClient(object):
             return None
 
     def eval_mission(self, entry, passive=True):
-        # TODO missioncompleted { "timestamp":"2022-04-09T11:57:23Z", "event":"MissionCompleted", "Faction":"Gnowee Energy Limited", "Name":"Mission_OnFoot_Salvage_MB_name", "MissionID":859165783, "Commodity":"$SurveillanceEquipment_Name;", "Commodity_Localised":"Surveillance Equipment", "Count":1, "Reward":83683, "MaterialsReward":[ { "Name":"MaintenanceLogs", "Name_Localised":"Maintenance Logs", "Category":"$MICRORESOURCE_CATEGORY_Data;", "Category_Localised":"Data", "Count":5 } ], "FactionEffects":[ { "Faction":"Gnowee Energy Limited", "Effects":[  ], "Influence":[ { "SystemAddress":358797546202, "Trend":"UpGood", "Influence":"++" } ], "ReputationTrend":"UpGood", "Reputation":"++" } ] }w
         if entry["event"] not in ["MissionAccepted", "MissionCompleted"]:
             return
         if entry["event"] == "MissionAccepted":
@@ -1089,7 +1088,7 @@ class EDRClient(object):
                 details.extend(description)
                 self.__notify(_(u"EDR Evals"), details, clear_before=True)
             else:
-                self.__notify(_(u"EDR Evals"), [_(u"Yo dawg, I don't do evals for '{}'").format(eval_type), _(u"Try {} instead.").format(", ".join(canonical_commands)), _(u"Or specific materials (e.g. '!eval surveillance equipements').")], clear_before=True)
+                self.__notify(_(u"EDR Evals"), [_(u"Yo dawg, I don't do evals for '{}'").format(eval_type), _(u"Try {} instead.").format(", ".join(canonical_commands)), _(u"Or specific materials (e.g. '!eval surveillance equipment').")], clear_before=True)
             return
 
         if eval_type == "power" or eval_type in synonym_commands["power"]:
