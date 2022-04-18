@@ -1080,8 +1080,6 @@ class EDRRemlokHelmet(object):
         return target
 
     def describe_item(self, item):
-        print(item)
-        
         c_item = item.lower()
         if c_item in INTERNAL_NAMES_LUT:
             c_item = INTERNAL_NAMES_LUT[c_item]
@@ -1094,7 +1092,6 @@ class EDRRemlokHelmet(object):
             if c_item.startswith("microresource_of:#content=$"):
                 c_item = c_item[len("microresource_of:#content=$"):]
             c_item = re.sub("[ \-_]", "", c_item)
-        print(c_item)
         
         if c_item in ODYSSEY_MATS:
             return self.__describe_odyssey_material(c_item)
