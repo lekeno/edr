@@ -1056,9 +1056,7 @@ class EDRClient(object):
             details.extend(description)
             self.__notify(header, details, clear_before=True)
         elif entry["event"] == "MissionCompleted":
-            print("missioncompleted")
             if "MaterialsReward" not in entry:
-                print("no mats")
                 return
             details = []
             for reward in entry["MaterialsReward"]:
@@ -1511,8 +1509,19 @@ class EDRClient(object):
                 details = [profile.short_profile(self.player.powerplay)]
                 if legal:
                     details.append(legal["overview"])
-                if blip.get("source", None):
-                    details.append(blip["source"]) # TODO TEMP
+                lut = {
+                    "Received text (local)": _("Signal: local comms"),
+                    "Received text (non wing/friend player)": _("Signal: direct comms"),
+                    "Received text (starsystem channel)": _("Signal: system comms"),
+                    "Emote sent (non wing/friend player)": _("Signal: emote"),
+                    "Sent text (non wing/friend player)": _("Signal: direct comms"),
+                    "Ship targeted": _("Signal: targeted"),
+                    "Multicrew (captain)": _("Signal: multicrew captain"),
+                    "Multicrew (crew)": _("Signal: multicrew member"),
+
+                }
+                if blip.get("source", "") in lut:
+                    details.append(lut[blip["source"]])
                 header = _(u"[Caution!] Intel about {}").format(cmdr_name)
                 self.__warning(header, details, clear_before=True, legal=legal)
                 self.cognitive_blips_cache.set(cmdr_id, blip)
