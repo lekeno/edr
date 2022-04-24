@@ -2,31 +2,41 @@ from __future__ import absolute_import
 
 import os
 import json
+import copy
 
 import utils2to3
 from edsitu import EDPlanetaryLocation
 
 class EDRBodiesOfInterest(object):
-    BOI = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'boi.json')).read())
+    def __init__(self, dlc=None):
+        filename = "{}_boi.json".format(dlc) if dlc else "boi.json"
+        self.boi = json.loads(open(utils2to3.abspathmaker(__file__, 'data', filename)).read())
+        self.dlc = None
 
-    @staticmethod
-    def bodies_of_interest(star_system):
+    def set_dlc(self, dlc):
+        c_dlc = dlc.lower()
+        if c_dlc == "horizons":
+            self.dlc = None
+        else:
+            self.dlc = c_dlc
+        filename = "{}_boi.json".format(self.dlc) if self.dlc else "boi.json"
+        self.boi = json.loads(open(utils2to3.abspathmaker(__file__, 'data', filename)).read())
+
+    def bodies_of_interest(self, star_system):
         if not star_system:
             return None
         c_star_system = star_system.lower()
-        return EDRBodiesOfInterest.BOI.get(c_star_system, {}).keys()
+        return list(self.boi.get(c_star_system, {}).keys())
     
-    @staticmethod
-    def points_of_interest(star_system, body_name):
+    def points_of_interest(self, star_system, body_name):
         if not star_system or not body_name:
             return None
         c_star_system = star_system.lower()
         c_body_name = EDRBodiesOfInterest.simplified_body_name(star_system, body_name)
-        return EDRBodiesOfInterest.BOI.get(c_star_system, {}).get(c_body_name, None)
+        return self.boi.get(c_star_system, {}).get(c_body_name, None)
 
-    @staticmethod
-    def closest_point_of_interest(star_system, body_name, attitude, planet_radius):
-        pois = EDRBodiesOfInterest.points_of_interest(star_system, body_name)
+    def closest_point_of_interest(self, star_system, body_name, attitude, planet_radius):
+        pois = self.points_of_interest(star_system, body_name)
         if not pois:
             return None
         if not planet_radius:
@@ -38,7 +48,11 @@ class EDRBodiesOfInterest(object):
             if closest["distance"] is None or candidate < closest["distance"]:
                 closest["distance"] = candidate
                 closest["poi"] = poi
-        return closest["poi"]
+
+        poi = copy.deepcopy(closest["poi"])
+        if self.dlc == "odyssey" and "odyssey" not in poi:
+            poi["title"] = "{} (Horizons Lat/Lon)".format(closest["poi"]["title"])
+        return poi
 
 
     @staticmethod

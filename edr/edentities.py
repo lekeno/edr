@@ -5,7 +5,6 @@ from __future__ import division
 import pickle
 from edsitu import EDLocation, EDAttitude, EDSpaceDimension, EDDestination
 
-from edspacesuits import EDSpaceSuit
 from edtime import EDTime
 from edvehicles import EDVehicleFactory 
 from edspacesuits import EDSuitFactory
@@ -13,13 +12,14 @@ from edinstance import EDInstance
 from edrlog import EDRLog
 from edrconfig import EDRConfig #TODO replace config object with singleton
 from edreconbox import EDReconBox
-from edrinventory import EDRInventory
+from edrinventory import EDRInventory, EDRRemlokHelmet
 from edri18n import _, _c
 import edrfleet
 import edrfleetcarrier
 import edrminingstats
 import edrbountyhuntingstats
 import edengineers
+
 import utils2to3
 EDRLOG = EDRLog()
 
@@ -903,6 +903,7 @@ class EDPlayerOne(EDPlayer):
         self.bounty_hunting_stats = edrbountyhuntingstats.EDRBountyHuntingStats()
         self.engineers = edengineers.EDEngineers()
         self.destination = EDDestination()
+        self.remlok_helmet = EDRRemlokHelmet()
 
     def __repr__(self):
         return str(self.__dict__)

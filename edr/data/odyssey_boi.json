@@ -2,23 +2,26 @@
     "conn": {
         "a 3 a": [{
             "title": "Almeida Landing",
-            "latitude": 73.3809,
-            "longitude": 102.3764
+            "latitude": -8.310295,
+            "longitude": 99.128166,
+            "odyssey":"adjusted"
         }]
     },
     "hip 12099": {
         "1 b": [
             {
                 "title": "CMDR Jameson's Cobra MK3",
-                "latitude": -54.3803,
-                "longitude": -50.3575
+                "latitude": -54.3753,
+                "longitude":  -50.3540,
+                "odyssey":"adjusted"
             }
         ],
         "1 a": [
             {
                 "title": "Stack",
-                "latitude": -72.6561,
-                "longitude": -67.3629
+                "latitude": -36.072079,
+                "longitude": 39.507095,
+                "odyssey":"adjusted"
             }
         ]
     },
@@ -26,13 +29,15 @@
         "1 a": [
             {
                 "title": "Bug Killer Crashed Anaconda",
-                "latitude": -11.0093,
-                "longitude": -95.6755
+                "latitude": -11.027189,
+                "longitude": -95.704079,
+                "odyssey":"adjusted"
             },
             {
                 "title": "Clark Barrow's SRV wreck",
-                "latitude": -11.0962,
-                "longitude": -96.0339 
+                "latitude": -11.095112,
+                "longitude": -96.03614,
+                "odyssey":"adjusted"
             }
         ]
     },
@@ -40,8 +45,9 @@
         "2 b": [
             {
                 "title": "Crashed Anaconda",
-                "latitude": 43.8214,
-                "longitude": -173.9800
+                "latitude": 43.8271,
+                "longitude": -173.9660,
+                "odyssey": "adjusted"
             }
         ]
     },
@@ -49,13 +55,15 @@
         "c 6 a": [
             {
                 "title": "Crashed Anaconda",
-                "latitude": 28.577,
-                "longitude": 7.219
+                "latitude": 28.5771,
+                "longitude":  7.2136,
+                "odyssey":"adjusted"
             },
             {
                 "title": "Gregory's Rest",
-                "latitude": 28.5560,
-                "longitude": 7.1570
+                "latitude": -21.5113,
+                "longitude":  136.1322,
+                "odyssey":"adjusted"
             }
         ]
     },
@@ -483,8 +491,9 @@
         "a 5": [
             {
             "title": "Dav's Hope",
-            "latitude": 44.8180,
-            "longitude": -31.3893
+            "latitude": 50.5277,
+            "longitude": 137.4382,
+            "note": "adjusted"
             }
         ]
     },
@@ -510,8 +519,9 @@
         "a 5 a": [
             {
             "title": "Crashed Anaconda",
-            "latitude": -36.1280,
-            "longitude": -45.2436
+            "latitude": -36.1382,
+            "longitude":  -45.2228,
+            "odyssey": "adjusted"
             }
         ]
     },
@@ -519,17 +529,9 @@
         "9 a": [
             {
                 "title": "Crashed Thargoid Ship",
-                "latitude": -26.3420,
-                "longitude": 97.7335
-            }
-        ]
-    },
-    "pleiades sector ic-u b3-1": {
-        "1": [
-            {
-                "title": "Sharpe Works", 
-                "latitude": -4.943096,
-                "longitude": -85.761383
+                "latitude": 43.939007,
+                "longitude": -143.847366,
+                "odyssey":"adjusted"
             }
         ]
     },
@@ -537,8 +539,9 @@
         "6 c a": [
             {
                 "title": "Crashed Thargoid Ship",
-                "latitude": 30.34,
-                "longitude": -98.58
+                "latitude": 30.345028,
+                "longitude": -98.585068,
+                "odyssey":"adjusted"
             }
         ]
     },
@@ -546,13 +549,15 @@
         "a 4 a": [
             {
                 "title": "Crashed Thargoid Ship",
-                "latitude": -34.98,
-                "longitude": -141.41
+                "latitude": -7.336807,
+                "longitude": -6.276469,
+                "odyssey": "adjusted"
             },
             {
                 "title": "Research Base LV 87",
-                "latitude": -51.1941,
-                "longitude": 14.2181
+                "latitude": 40.478603,
+                "longitude": -56.92403,
+                "odyssey":"adjusted"
             }
         ]
     },
@@ -614,8 +619,9 @@
         "5 a":[
             {
                 "title": "Abandoned SRV",
-                "latitude": 18.6834,
-                "longitude": -40.4150
+                "latitude": -16.632538,
+                "longitude": -47.965744,
+                "odyssey": "adjusted"
             }
         ]
     },
@@ -623,8 +629,9 @@
         "1 b":[
             {
                 "title": "Research Facility 5592",
-                "latitude": 33.4701,
-                "longitude": -2.1706
+                "latitude": 35.8774,
+                "longitude": -36.2252,
+                "odyssey": "adjusted"
             }
         ]
     },
@@ -641,8 +648,9 @@
         "b 7 e":[
             {
                 "title": "Abandoned SRV",
-                "latitude": 8.8974,
-                "longitude": -103.5549
+                "latitude": -38.09391,
+                "longitude": -119.481728,
+                "odyssey": "adjusted"
             }
         ]
     },
@@ -650,8 +658,9 @@
         "1 a":[
             {
                 "title": "Lookout Military Test Facility",
-                "latitude": -12.4996,
-                "longitude": -62.1916
+                "latitude": -4.352922,
+                "longitude": -167.448517,
+                "odyssey": "adjusted"
             }
         ]
     },
@@ -722,8 +731,9 @@
         "bc 3 a": [
             {
                 "title": "Exploration Camp JSPR-003",
-                "latitude": 59.3170,
-                "longitude": -62.2233
+                "latitude": 59.318607,
+                "longitude": -62.224945,
+                "odyssey": "adjusted"
             }
         ]
     },
@@ -731,8 +741,9 @@
         "10 b": [
             {
                 "title": "Jackson Enterprise",
-                "latitude": 0.3905,
-                "longitude": 33.5990
+                "latitude": -36.37571,
+                "longitude": 134.621124,
+                "odyssey": "adjusted"
             }
         ]
     },
@@ -749,8 +760,9 @@
         "b 1": [
             {
                 "title": "Crashed Anaconda",
-                "latitude": 7.1537,
-                "longitude": -40.1309
+                "latitude": 7.1549,
+                "longitude":  -40.1318,
+                "odyssey":"adjusted"
             }
         ]
     },
@@ -795,8 +807,9 @@
         "1 a": [
             {
                 "title": "Transport Lakon Baker Gamma Sierra Heavy",
-                "latitude":  -2.77,
-                "longitude": 16.67
+                "latitude":  -2.774357,
+                "longitude": 16.684441,
+                "odyssey": "adjusted"
             }
         ]
     },
@@ -863,8 +876,9 @@
         "3 c": [
             {
                 "title": "Recon 6 (Crashed DBX)",
-                "latitude": 23.1688,
-                "longitude": 14.8599
+                "latitude": 28.698006, 
+                "longitude": 16.553446,
+                "odyssey":"adjusted"
             }
         ]
     },
@@ -872,8 +886,9 @@
         "3 b": [
             {
                 "title": "Stargazer (Crashed DBX)",
-                "latitude": 37.0654,
-                "longitude": -147.8092
+                "latitude": 37.104477,
+                "longitude": -148.039749,
+                "odyssey":"adjusted (2 comms control, potentially an alternative to james)"
             }
         ]
     },
@@ -881,8 +896,9 @@
         "a 2 f": [
             {
                 "title": "Carmichael Point",
-                "latitude": 73.8762,
-                "longitude": 61.8761
+                "latitude": 4.661059,
+                "longitude": -27.039272,
+                "odyssey":"adjusted"
             }
         ]
     },
@@ -962,17 +978,20 @@
         "a 3 a": [
             {
                 "title": "Crashed Thargoid Scout",
-                "latitude": -65.8228,
-                "longitude": 48.8618
+                "latitude": -65.158424,
+                "longitude": 47.464195,
+                "odyssey":"adjusted"
             }
+            
         ]
     },
     "hip 15329": {
         "a 3 c": [
             {
                 "title": "Stuart Retreat",
-                "latitude": -62.6134,
-                "longitude": -44.2569
+                "latitude": -62.610775,
+                "longitude": -44.261826,
+                "odyssey":"adjusted"
             }
         ]
     },
@@ -980,8 +999,9 @@
         "4 a": [
             {
                 "title": "Hollis Gateway",
-                "latitude": -53.7548,
-                "longitude": 157.5843
+                "latitude": -53.767868,
+                "longitude": 157.585388,
+                "odyssey": "adjusted"
             }
         ]
     },
@@ -998,8 +1018,9 @@
         "1 b": [
             {
                 "title": "Mayes Chemical Plant",
-                "latitude": 11.3987,
-                "longitude": 177.0659
+                "latitude": 11.393682,
+                "longitude": 177.062439,
+                "odyssey": "adjusted"
             }
         ]
     },
@@ -1016,8 +1037,9 @@
         "3 a": [
             {
                 "title": "Crashed Type-9 (Ariane's Pride)",
-                "latitude": 7.78,
-                "longitude": 142.94
+                "latitude": 7.7785,
+                "longitude": 142.9554,
+                "odyssey":"adjusted"
             }
         ]
 
@@ -1035,8 +1057,9 @@
         "1 b": [
             {
                 "title": "Prof. Carver's Crashed Sidewinder",
-                "latitude": -59.1811,
-                "longitude": -76.6915
+                "latitude": -58.187447,
+                "longitude": -76.883408,
+                "odyssey":"adjusted"
             }
         ]
     },
@@ -1062,8 +1085,9 @@
         "7": [
             {
                 "title": "Velasquez Medical Research Centre",
-                "latitude":  57.9668,
-                "longitude": 50.0331
+                "latitude": -30.807924,
+                "longitude": 138.622375,
+                "odyssey": "adjusted"
             }
         ]
     },
@@ -1099,8 +1123,9 @@
         "2 a": [
             {
                 "title": "Crashed Thargoid Scout",
-                "latitude": -60.880077,
-                "longitude": 42.56736
+                "latitude": -60.208576,
+                "longitude": 41.18388,
+                "odyssey": "adjusted"
             }
         ]
     },
@@ -1126,20 +1151,23 @@
         "mercury": [
             {
                 "title": "Crashed Anaconda (1)",
-                "latitude": 40.253,
-                "longitude": -164.231
+                "latitude": -19.4070,
+                "longitude": -126.6534,
+                "odyssey":"adjusted"
             },
             {
                 "title": "Crashed Anaconda (2)",
-                "latitude": 71.362,
-                "longitude": 6.148
+                "latitude": 32.4857,
+                "longitude": 53.6333,
+                "odyssey":"adjusted"
             }
         ],
         "charon": [
             {
                 "title": "Crashed Anaconda",
-                "latitude": -45.804,
-                "longitude": -80.751
+                "latitude": -17.7323,
+                "longitude":  -145.4584,
+                "odyssey":"adjusted"
             }
         ]
     },
@@ -1147,8 +1175,9 @@
         "4": [
             {
                 "title": "Crashed Type-9",
-                "latitude": 64.7,
-                "longitude": 133.85
+                "latitude": -39.496223,
+                "longitude": 107.101746,
+                "odyssey":"adjusted"
             }
         ]
     },
@@ -1156,8 +1185,9 @@
         "6 a": [
             {
                 "title": "Crashed Anaconda",
-                "latitude": 30.172,
-                "longitude": 56.075
+                "latitude": 30.174929,
+                "longitude": 56.077927,
+                "odyssey": "adjusted"
             }
         ]
     },
@@ -1165,8 +1195,9 @@
         "10 a": [
             {
                 "title": "Crashed Thargoid Scout",
-                "latitude": 18.02,
-                "longitude": 131.939
+                "latitude": 18.021477, 
+                "longitude": 132.873367,
+                "odyssey":"adjusted"
             }
         ]
 
@@ -1184,15 +1215,17 @@
         "4 c": [
             {
                 "title": "The Prophet",
-                "latitude": 29.9527,
-                "longitude": -87.8558
+                "latitude": -28.69343,
+                "longitude": 147.373917,
+                "odyssey": "adjusted"
             }
         ],
         "4 a": [
             {
                 "title": "The Sanctum",
-                "latitude": -19.950,
-                "longitude": 103.5927
+                "latitude": 1.10602,
+                "longitude": 29.330332,
+                "odyssey": "adjusted"
             }
         ]
     },
@@ -1200,8 +1233,9 @@
         "2 e": [
             {
                 "title": "The Church of The Path",
-                "latitude": -11.1675,
-                "longitude": 148.9552
+                "latitude": -45.840645,
+                "longitude": 163.242889,
+                "odyssey": "adjusted"
             }
         ]
     },
@@ -1209,8 +1243,9 @@
         "a 2 a": [
             {
                 "title": "Crowther's Rest",
-                "latitude": 50.5091,
-                "longitude": -17.1776 
+                "latitude": -45.821007,
+                "longitude": 66.830612,
+                "odyssey": "adjusted"
             }
         ]
     },
@@ -1236,8 +1271,19 @@
         "1 a": [
             {
                 "title": "Research Base KG-3362",
-                "latitude": 58.115,
-                "longitude": 19.543
+                "latitude": 43.762974,
+                "longitude": 55.018879,
+                "odyssey":"adjusted"
+            }
+        ]
+    },
+    "pleiades sector ic-u b3-1": {
+        "1": [
+            {
+                "title": "Sharpe Works", 
+                "latitude": -28.748987,
+                "longitude": -47.463188,
+                "odyssey": "adjusted"
             }
         ]
     },
@@ -1245,8 +1291,9 @@
         "2": [
             {
                 "title": "Scrump Landing",
-                "latitude": -0.343,
-                "longitude": 12.922
+                "latitude": 47.151909,
+                "longitude": 41.597393,
+                "odyssey":"adjusted"
             }
         ]
     },
@@ -1254,8 +1301,9 @@
         "c 2": [
             {
                 "title": "Betterton outpost",
-                "latitude": -24.70,
-                "longitude": 6.55
+                "latitude": 3.277587,
+                "longitude": -121.259193,
+                "odyssey":"adjusted"
             }
         ]
     },
@@ -1263,8 +1311,9 @@
         "ab 1 a": [
             {
                 "title": "Penal Colony BV-2259",
-                "latitude": -55.001,
-                "longitude": 30.283
+                "latitude": -18.528774,
+                "longitude": 30.607222,
+                "odyssey":"adjusted"
             }
         ]
     },
@@ -1272,8 +1321,9 @@
         "12 a": [
             {
                 "title": "Dominic's Corner",
-                "latitude": 5.562,
-                "longitude": 116.736
+                "latitude": -64.626732,
+                "longitude": 177.48349,
+                "odyssey":"adjusted"
             }
         ]
     },
@@ -1281,8 +1331,9 @@
         "a 2 d": [
             {
                 "title": "Site 94",
-                "latitude": -19.062,
-                "longitude": -99.445
+                "latitude": -32.215591,
+                "longitude": -125.896027,
+                "odyssey": "adjusted"
             }
         ]
     },
@@ -1298,9 +1349,20 @@
     "hr 1172": {
         "a 5 b": [
             {
-                "title": "Herpin Research Base",
-                "latitude": -0.251,
-                "longitude":  -67.681
+                "title": "Comms Facility 89563",
+                "latitude": 31.530195,
+                "longitude": -125.028923,
+                "odyssey": "adjusted (potentially good mats spot, g3 g4)"
+            }
+        ]
+    },
+    "col 285 sector mz-n c7-13": {
+        "ab 1": [
+            {
+                "title": "Botanical Research Station FNA-559",
+                "latitude": 51.088089,
+                "longitude": 26.821867,
+                "odyssey": "adjusted"
             }
         ]
     }

@@ -1077,7 +1077,13 @@ class EDVehicleFactory(object):
         vehicle.identity = event.get('ShipIdent', None)
         vehicle.name = event.get('ShipName', None)
         vehicle.hull_health = event.get('HullHealth', 0) * 100.0 # normalized to 0.0 ... 1.0
-        vehicle.fuel_capacity = event.get('FuelCapacity', None)
+        fuel_capacity = event.get('FuelCapacity', None)
+        vehicle.fuel_capacity = fuel_capacity
+        if fuel_capacity:
+            try:
+                vehicle.fuel_capacity = fuel_capacity["Main"]
+            except:
+                pass
         vehicle.fuel_level = event.get('FuelLevel', None)
         if not 'Modules' in event:
             return vehicle
@@ -1094,7 +1100,13 @@ class EDVehicleFactory(object):
         vehicle.id = event.get('ShipID', None)
         vehicle.identity = event.get('ShipIdent', None)
         vehicle.name = event.get('ShipName', None)
-        vehicle.fuel_capacity = event.get('FuelCapacity', None)
+        fuel_capacity = event.get('FuelCapacity', None)
+        vehicle.fuel_capacity = fuel_capacity
+        if fuel_capacity:
+            try:
+                vehicle.fuel_capacity = fuel_capacity["Main"]
+            except:
+                pass
         vehicle.fuel_level = event.get('FuelLevel', None)
         return vehicle
 
@@ -1105,7 +1117,13 @@ class EDVehicleFactory(object):
         vehicle.identity = event.get('ShipIdent', None)
         vehicle.name = event.get('ShipName', None)
         vehicle.hull_health = event.get('HullHealth', 0) * 100.0 # normalized to 0.0 ... 1.0
-        vehicle.fuel_capacity = event.get('FuelCapacity', None) #missing from loadout event...
+        fuel_capacity = event.get('FuelCapacity', None)
+        vehicle.fuel_capacity = fuel_capacity
+        if fuel_capacity:
+            try:
+                vehicle.fuel_capacity = fuel_capacity["Main"]
+            except:
+                pass
         vehicle.fuel_level = event.get('FuelLevel', None) #missing from loadout event...
         if not 'Modules' in event:
             return vehicle

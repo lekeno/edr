@@ -9,6 +9,7 @@ import time
 import random
 import math
 import re
+import json
 
 try:
     # for Python2
@@ -123,6 +124,7 @@ class EDRClient(object):
         }
  
         self.edrsystems = EDRSystems(self.server)
+        self.edrboi = EDRBodiesOfInterest()
         self.edrresourcefinder = EDRResourceFinder(self.edrsystems)
         self.edrcmdrs = EDRCmdrs(self.server)
         self.edropponents = {
@@ -140,7 +142,7 @@ class EDRClient(object):
         self._throttle_until_timestamp = None
         self.edrfssinsights = EDRFSSInsights()
         self.edrdiscord = EDRDiscordIntegration(self.edrcmdrs)
-
+        
     def __get_realtime_params(self, kind):
         min_bounty = None
         key = "{}MinBounty".format(kind)
@@ -358,6 +360,8 @@ class EDRClient(object):
         self.player.dlc_name = dlc
         self.server.set_dlc(dlc)
         self.edrsystems.set_dlc(dlc)
+        self.edrboi.set_dlc(dlc)
+        self.edrresourcefinder.set_dlc(dlc)
 
     def pledged_to(self, power, time_pledged=0):
         if self.server.is_anonymous():
@@ -555,7 +559,7 @@ class EDRClient(object):
         facts = self.edrresourcefinder.assess_jump(fsdjump_event, self.player.inventory)
         header = _('Rare materials in {} (USS-HGE/EE, Mission Rewards)'.format(fsdjump_event['StarSystem']))
         if not facts:
-            facts = EDRBodiesOfInterest.bodies_of_interest(fsdjump_event['StarSystem'])
+            facts = self.edrboi.bodies_of_interest(fsdjump_event['StarSystem'])
             header = _('Noteworthy stellar bodies in {}').format(fsdjump_event['StarSystem'])
         
         if not facts:
@@ -564,11 +568,15 @@ class EDRClient(object):
                 facts = [_(u"Crimes will not be reported.")]
             else:
                 return False
+        # TODO bug at 2022-04-04 06:41:06.827 UTC - INFO - 11408:3184:3184 <plugins>.EDR.edrlog.EDRLog.log:32: Updating system info (was missing or obsolete). HIP 69157 vs. HIP 69200
+        # EDRLOG.log(u"Notify about {}; details: {}".format(header, details[0]), "DEBUG")
+        # TypeError: 'dict_keys' object is not subscriptable
+
         self.__notify(header, facts, clear_before = True)
         return True
 
     def noteworthy_about_body(self, star_system, body_name):
-        pois = EDRBodiesOfInterest.points_of_interest(star_system, body_name)
+        pois = self.edrboi.points_of_interest(star_system, body_name)
         if pois:
             facts = [poi["title"] for poi in pois]
             self.__notify(_(u'Noteworthy about {}: {} sites').format(body_name, len(facts)), facts, clear_before = True)
@@ -674,14 +682,24 @@ class EDRClient(object):
     def closest_poi_on_body(self, star_system, body_name, attitude):
         body = self.edrsystems.body(star_system, body_name)
         radius = body.get("radius", None) if body else None
-        return EDRBodiesOfInterest.closest_point_of_interest(star_system, body_name, attitude, radius)
+        return self.edrboi.closest_point_of_interest(star_system, body_name, attitude, radius)
 
-    def navigation(self, latitude, longitude):
+    def navigation(self, latitude, longitude, title="Navpoint"):
         position = {"latitude": float(latitude), "longitude": float(longitude)}
+        boi = {}
+        poi = {}
+        body = self.player.body or "unknown body"
+        poi[body.lower()] = [{
+            "title": title,
+            "latitude": float(latitude),
+            "longitude": float(longitude)
+        }]
+        boi[self.player.star_system.lower()] = poi
+        copy(json.dumps(boi))
         loc = EDPlanetaryLocation(position)
         if loc.valid():
             self.player.planetary_destination = loc
-            self.__notify(_(u'Assisted Navigation'), [_(u"Destination set to {} | {}").format(latitude, longitude), _(u"Guidance will be shown when approaching a stellar body")], clear_before = True)
+            self.__notify(_(u'Assisted Navigation'), [_(u"Destination set to {} | {}").format(latitude, longitude), _(u"Guidance will be shown when approaching a stellar body"), _(u"Destination added to the clipboard")], clear_before = True)
         else:
             self.player.planetary_destination = None
             self.__notify(_(u'Assisted Navigation'), [_(u"Invalid destination")], clear_before = True)
@@ -888,6 +906,18 @@ class EDRClient(object):
                     summary = self.edrsystems.summarize_recent_activity(star_system, self.player.power)
                     for section in summary:
                         details.append(u"{}: {}".format(section, "; ".join(summary[section])))
+                    recent_outlaws = self.edrsystems.recent_outlaws(star_system)
+                    summary_for_chat = ""
+                    separator = "'' "
+                    max_copy_pastable = 100
+                    for outlaw in recent_outlaws:
+                        if len(summary_for_chat) + len(separator) + len(outlaw) > max_copy_pastable:
+                            break
+                        if summary_for_chat != "":
+                            summary_for_chat += " '{}'".format(outlaw)
+                        else:
+                            summary_for_chat = "'{}'".format(outlaw)
+                    copy(summary_for_chat)
             if details:
                 # Translators: this is the heading for the sitrep of a given system {}; shown via the overlay
                 header = _(u"SITREP for {}") if self.player.in_open() else _(u"SITREP for {} (Open)")
@@ -1002,12 +1032,64 @@ class EDRClient(object):
             self.__commsjammed()
             return None
 
+    def eval_mission(self, entry, passive=True):
+        # TODO missioncompleted { "timestamp":"2022-04-09T11:57:23Z", "event":"MissionCompleted", "Faction":"Gnowee Energy Limited", "Name":"Mission_OnFoot_Salvage_MB_name", "MissionID":859165783, "Commodity":"$SurveillanceEquipment_Name;", "Commodity_Localised":"Surveillance Equipment", "Count":1, "Reward":83683, "MaterialsReward":[ { "Name":"MaintenanceLogs", "Name_Localised":"Maintenance Logs", "Category":"$MICRORESOURCE_CATEGORY_Data;", "Category_Localised":"Data", "Count":5 } ], "FactionEffects":[ { "Faction":"Gnowee Energy Limited", "Effects":[  ], "Influence":[ { "SystemAddress":358797546202, "Trend":"UpGood", "Influence":"++" } ], "ReputationTrend":"UpGood", "Reputation":"++" } ] }w
+        if entry["event"] not in ["MissionAccepted", "MissionCompleted"]:
+            return
+        if entry["event"] == "MissionAccepted":
+            commodity = entry.get("Commodity", None)
+            if not commodity:
+                return
+
+            localized_commodity = entry.get("Commodity_Localised", commodity)
+            description = self.player.remlok_helmet.describe_item(commodity)
+            if not description:
+                if not passive:
+                    self.__notify(_(u"Mission Eval"), [_("Nothing noteworthy to share")], clear_before=True)
+                return
+            
+            inventory_description = self.player.inventory.oneliner(commodity)
+            details = []
+            header = _(u"Eval of mission item : {}").format(localized_commodity)
+            if inventory_description:
+                header = _(u"Eval of mission item")
+                details.append(inventory_description)
+            details.extend(description)
+            self.__notify(header, details, clear_before=True)
+        elif entry["event"] == "MissionCompleted":
+            print("missioncompleted")
+            if "MaterialsReward" not in entry:
+                print("no mats")
+                return
+            details = []
+            for reward in entry["MaterialsReward"]:
+                commodity = reward["Name"]
+                inventory_description = self.player.inventory.oneliner(commodity)
+                if inventory_description:
+                    details.append(inventory_description)
+                description = self.player.remlok_helmet.describe_item(commodity)
+                if description:
+                    details.extend(description)
+            if details:
+                self.__notify(_("Mission rewards eval"), details, clear_before=True)
+            elif not passive:
+                self.__notify(_("Mission rewards eval"), [_("Nothing noteworthy to share")], clear_before=True)
+
     def eval(self, eval_type):
         canonical_commands = ["power", "backpack", "locker"]
         synonym_commands = {"power": ["priority", "pp", "priorities"]}
         supported_commands = set(canonical_commands + synonym_commands["power"])
         if eval_type not in supported_commands:
-            self.__notify(_(u"EDR Evals"), [_(u"Yo dawg, I don't do evals for '{}'").format(eval_type), _(u"Try {} instead.").format(", ".join(canonical_commands))], clear_before=True)
+            description = self.player.remlok_helmet.describe_item(eval_type)
+            if description:
+                details = []
+                inventory_description = self.player.inventory.oneliner(eval_type)
+                if inventory_description:
+                    details.append(inventory_description)
+                details.extend(description)
+                self.__notify(_(u"EDR Evals"), details, clear_before=True)
+            else:
+                self.__notify(_(u"EDR Evals"), [_(u"Yo dawg, I don't do evals for '{}'").format(eval_type), _(u"Try {} instead.").format(", ".join(canonical_commands)), _(u"Or specific materials (e.g. '!eval surveillance equipements').")], clear_before=True)
             return
 
         if eval_type == "power" or eval_type in synonym_commands["power"]:
@@ -1084,14 +1166,14 @@ class EDRClient(object):
     def evict_system(self, star_system):
         self.edrsystems.evict(star_system)
 
-    def __novel_enough_situation(self, new, old, cognitive = False):
+    def __novel_enough_situation(self, new, old, cognitive = False, system_wide=False):
         if old is None:
             return True
 
         delta = new["timestamp"] - old["timestamp"]
         
         if cognitive:
-            return (new["starSystem"] != old["starSystem"] or new["place"] != old["place"]) or delta > self.cognitive_novelty_threshold
+            return (not system_wide and (new["starSystem"] != old["starSystem"] or new["place"] != old["place"])) or delta > self.cognitive_novelty_threshold
 
         if new["starSystem"] != old["starSystem"]:
             return delta > self.system_novelty_threshold
@@ -1130,9 +1212,9 @@ class EDRClient(object):
         last_alert = self.alerts_cache.get(alert_for_cmdr)
         return self.__novel_enough_situation(alert, last_alert)
 
-    def novel_enough_blip(self, cmdr_id, blip, cognitive = False):
+    def novel_enough_blip(self, cmdr_id, blip, cognitive = False, system_wide=False):
         last_blip = self.cognitive_blips_cache.get(cmdr_id) if cognitive else self.blips_cache.get(cmdr_id)
-        return self.__novel_enough_situation(blip, last_blip, cognitive)
+        return self.__novel_enough_situation(blip, last_blip, cognitive, system_wide)
 
     def novel_enough_scan(self, cmdr_id, scan, cognitive = False):
         last_scan = self.cognitive_scans_cache.get(cmdr_id) if cognitive else self.scans_cache.get(cmdr_id)
@@ -1410,8 +1492,8 @@ class EDRClient(object):
         self.__notify(_("Distance"), details, clear_before = True)
 
 
-    def blip(self, cmdr_name, blip):
-        if self.player.in_solo():
+    def blip(self, cmdr_name, blip, system_wide=False):
+        if self.player.in_solo() and not system_wide:
             EDRLOG.log(u"Skipping blip since the user is in solo (unexpected).", "INFO")
             return False
 
@@ -1426,10 +1508,12 @@ class EDRClient(object):
         legal = self.edrlegal.summarize(profile.cid)
         if profile and (self.player.name != cmdr_name) and profile.is_dangerous(self.player.powerplay):
             self.status = _(u"{} is bad news.").format(cmdr_name)
-            if self.novel_enough_blip(cmdr_id, blip, cognitive = True):
+            if self.novel_enough_blip(cmdr_id, blip, cognitive = True, system_wide=system_wide):
                 details = [profile.short_profile(self.player.powerplay)]
                 if legal:
                     details.append(legal["overview"])
+                if blip.get("source", None):
+                    details.append(blip["source"]) # TODO TEMP
                 header = _(u"[Caution!] Intel about {}").format(cmdr_name)
                 self.__warning(header, details, clear_before=True, legal=legal)
                 self.cognitive_blips_cache.set(cmdr_id, blip)
@@ -1440,7 +1524,7 @@ class EDRClient(object):
             else:
                 EDRLOG.log(u"Skipping warning since a warning was recently shown.", "INFO")
 
-        if not self.novel_enough_blip(cmdr_id, blip):
+        if not self.novel_enough_blip(cmdr_id, blip, system_wide):
             EDRLOG.log(u"Blip is not novel enough to warrant reporting", "INFO")
             return True
 
@@ -2288,6 +2372,36 @@ class EDRClient(object):
         details = self.IN_GAME_MSG.describe_station(station)
         self.__notify(header, details, clear_before=True)
         return True
+
+    def pointing_guidance(self, entry):
+        # TODO add the name of the thing in the header
+        target = self.player.remlok_helmet.pointing_at(entry)
+        if not target:
+            return
+        details = []
+        description = self.player.remlok_helmet.describe_item(target)
+        inventory_description = self.player.inventory.oneliner(target, fallback=False)
+        if inventory_description:
+            details.append(inventory_description)
+        if description:
+            details.extend(description)
+            self.__notify(_("Remlok Insights"), details, clear_before=True)
+
+    # TODO eval carrier, ship storage?
+
+    def carrier_trade(self, entry):
+        if entry.get("event", "") != "CarrierTradeOrder":
+            return
+        item = entry.get("Commodity", None)
+        if item is None:
+            return
+        description = self.player.remlok_helmet.describe_item(item)
+        if description:
+            l_item = entry.get("Commodity_Localised", item)
+            self.__notify(_("Trading Insights for {}").format(l_item), description, clear_before=True)
+        # TODO report trade orders to facilitate transactions between players in a batch to avoid spamming PUTs
+        # use "event":"Music", "MusicTrack":"FleetCarrier_Managment" and "event":"CarrierStats" to close
+        # perhaps { "timestamp":"2022-04-06T21:24:52Z", "event":"Music", "MusicTrack":"NoTrack" } to close on exiting the carrier screen?
 
     def system_guidance(self, system_name, passive=False):
         description = self.edrsystems.describe_system(system_name, self.player.star_system == system_name)

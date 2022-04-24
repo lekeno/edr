@@ -1284,7 +1284,6 @@ class InGameMsg(object):
             if scaled and scaled[-1]["x"] == s["x"]:
                 adjusted = scaled[-1]
                 adjusted["y"] = min(scaled[-1]["y"], s["y"])
-                EDRLOG.log("quantization s{} & ps{} >>> s{}".format(s, scaled[-1], adjusted), "DEBUG")
                 scaled[-1] = adjusted
             else:
                 scaled.append(s)
@@ -1324,7 +1323,6 @@ class InGameMsg(object):
             if scaled and scaled[-1]["x"] == s["x"]:
                 adjusted = scaled[-1]
                 adjusted["y"] = min(scaled[-1]["y"] , s["y"])
-                EDRLOG.log("quantization s{} & ps{} >>> s{}".format(s, scaled[-1], adjusted), "DEBUG")
                 scaled[-1] = adjusted
             else:
                 scaled.append(s)
@@ -1364,7 +1362,6 @@ class InGameMsg(object):
             s = {"x":int(cx+x*w), "y":int(cy-(y*h))}
             if scaled and scaled[-1]["x"] == s["x"]:
                 adjusted = {"x": s["x"], "y": min(scaled[-1]["y"], s["y"])}
-                EDRLOG.log("quantization s{} & ps{} >>> adj.{}".format(s, scaled[-1], adjusted), "DEBUG")
                 scaled[-1] = adjusted
             else:
                 scaled.append(s)
