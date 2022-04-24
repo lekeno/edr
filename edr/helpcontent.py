@@ -27,6 +27,7 @@ class HelpContent(object):
                 _(u" - !help nearby: commands to find services near you or a specific system, e.g. interstellar factors"),
                 _(u" - !help search: find the best spots to obtain specific resources, e.g. adaptive encryptors capture"),
                 _(u" - !help ship: find out where you've parked your ships, evaluate your build, find a fleet carrier parking slot"),
+                _(u" - !help odyssey: evaluate your storage of materials, know if a material is useful or not"),
                 _(u" - !help config: configuration options"),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
@@ -105,6 +106,7 @@ class HelpContent(object):
                 _(u"Use the following chat commands to lookup a commander's profile:"),
                 _(u" - 'o7': direct message a commander with a salute emoji to see their EDR and Inara profile."),
                 _(u" - '!who cmdr_name': to see cmdr_name's EDR and Inara profile."),
+                _(u" - Point at, or salute another player with the emote gestures to show their EDR and Inara profile."),
                 _(u"These commands will show the following information:"),
                 _(u" - EDR alignment: outlaw, ambiguous, lawful with grades, e.g. outlaw ++++."),
                 _(u" - User tags: [!12, ?1, +0], i.e. 12 users marked that commander as an outlaw, 1 as neutral, 0 as enforcer."),
@@ -267,6 +269,17 @@ class HelpContent(object):
                 _(u" - !audiocue [on|off|loud|soft] to control the audio cues, e.g. '!audiocue soft' for soft cues."),
                 _(u" - !overlay [on|off|] to enable/disable or verify the overlay, e.g. '!overlay' to check if it is enabled/working."),
                 _(u" - check the instructions in config/igm_config.v7.ini to customize the layout and timeouts."),
+                u"⚶",
+                _(u"Send !clear in chat to clear everything on the overlay.")
+            ]
+        },
+        "odyssey": {
+            "header": _(u"Odyssey"),
+            "details": [
+                _(u"EDR offers the following features to help you make sense of Odyssey materials and engineers:"),
+                _(u" - !eval [locker|backpack]: to evaluate the usefulness of materials in your ship locker or backpack, e.g. '!eval locker'. Useful when selling stuff at the bar, or via your fleet carrier."),
+                _(u" - !eval [name of the material] to evaluate the usefulness of a specific material, e.g. '!eval surveillance equipment'. Useful to assess a reward before accepting a mission."),
+                _(u" - Point at materials while on foot with the emote gesture to get EDR to identify it and provide info about its usefulness."),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
             ]
