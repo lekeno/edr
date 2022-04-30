@@ -2397,6 +2397,17 @@ class EDRClient(object):
 
     # TODO eval carrier, ship storage?
 
+    def fleet_carrier_update(self):
+        if self.player.fleet_carrier.has_market_changed():
+            market = self.player.fleet_carrier.json_market()
+            # TODO send market to end point
+            print(market)
+            text_market = self.player.fleet_carrier.text_market()
+            # TODO test if there are any orders first
+            print(text_market)
+            copy(text_market)
+            self.player.fleet_carrier.acknowledge_market()
+
     def carrier_trade(self, entry):
         if entry.get("event", "") != "CarrierTradeOrder":
             return
@@ -2407,6 +2418,8 @@ class EDRClient(object):
         if description:
             l_item = entry.get("Commodity_Localised", item)
             self.__notify(_("Trading Insights for {}").format(l_item), description, clear_before=True)
+        
+        self.player.fleet_carrier.trade_order(entry)
         # TODO report trade orders to facilitate transactions between players in a batch to avoid spamming PUTs
         # use "event":"Music", "MusicTrack":"FleetCarrier_Managment" and "event":"CarrierStats" to close
         # perhaps { "timestamp":"2022-04-06T21:24:52Z", "event":"Music", "MusicTrack":"NoTrack" } to close on exiting the carrier screen?
