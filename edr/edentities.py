@@ -872,7 +872,7 @@ class EDWing(object):
         return changes
 
 class EDPlayerOne(EDPlayer):
-    EDR_FLEET_CARRIER_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'fleet_carrier.v2.p')
+    EDR_FLEET_CARRIER_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'fleet_carrier.v3.p')
 
     def __init__(self, name=None):
         super(EDPlayerOne, self).__init__(name)

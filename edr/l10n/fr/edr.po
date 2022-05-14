@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2022-05-14 15:01+0900\n"
-"PO-Revision-Date: 2022-05-14 15:09+0900\n"
+"POT-Creation-Date: 2022-05-14 15:11+0900\n"
+"PO-Revision-Date: 2022-05-14 15:56+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -1921,17 +1921,13 @@ msgstr "refusé"
 msgid "[Selling]\n"
 msgstr "[Ventes]\n"
 
-#: edrfleetcarrier.py:303
+#: edrfleetcarrier.py:303 edrfleetcarrier.py:309
 msgid "{\"Quantity\": >8} {\"Item\": <30} {\"Price (cr)\": >10}\n"
 msgstr "{\"Quantité\": >8} {\"Produit\": <30} {\"Prix(cr)\": >10}\n"
 
 #: edrfleetcarrier.py:308
 msgid "[Buying]\n"
 msgstr "[Achats]\n"
-
-#: edrfleetcarrier.py:309
-msgid "{\"Quantity\": >8} {\"Item\": <30} {\"Price (cr)\": <10}\n"
-msgstr "{\"Quantité\": >8} {\"Produit\": <30} {\"Prix (cr)\": <10}\n"
 
 #: edrfleetcarrier.py:315
 msgid ""
@@ -7071,6 +7067,9 @@ msgid ""
 msgstr ""
 "[Minage] Maintenez votre cargo (e.g. LTD) en dessous de 10% de la demande "
 "d'un marché afin de bénéficier du meilleur prix."
+
+#~ msgid "{\"Quantity\": >8} {\"Item\": <30} {\"Price (cr)\": <10}\n"
+#~ msgstr "{\"Quantité\": >8} {\"Produit\": <30} {\"Prix (cr)\": <10}\n"
 
 #, fuzzy
 #~| msgid "docking computer"
