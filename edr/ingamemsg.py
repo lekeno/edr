@@ -33,6 +33,7 @@ class InGameMsg(object):
     LEGAL_KINDS = ["intel", "warning"] 
 
     def __init__(self, standalone=False):
+        self.standalone_overlay = standalone
         if (standalone):
             self._overlay = edmcoverlay.Overlay(args=["--standalone"])
         else:

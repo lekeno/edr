@@ -358,18 +358,17 @@ class EDRClient(object):
     def visual_feedback_type(self, new_value):
         self._visual_feedback_type.set(new_value)
         if new_value is None or new_value == _(u"Disabled"):
-            print("disabled")
             self.visual_feedback = 0
             if self.IN_GAME_MSG:
                 self.IN_GAME_MSG.shutdown()
                 self.IN_GAME_MSG = None
         else:
-            print("new value: {}".format(new_value))
             self.visual_feedback = 1
-            if self.IN_GAME_MSG:
-                self.IN_GAME_MSG.shutdown()
             standalone_overlay = new_value == _("Standalone (for VR or multi-display)")
-            self.IN_GAME_MSG = InGameMsg(standalone = standalone_overlay)
+            if self.IN_GAME_MSG and self.IN_GAME_MSG.standalone_overlay != standalone_overlay:
+                self.IN_GAME_MSG.shutdown()
+                self.IN_GAME_MSG = None
+                self.IN_GAME_MSG = InGameMsg(standalone = standalone_overlay)
 
     def player_name(self, name):
         self.edrcmdrs.set_player_name(name)
@@ -569,7 +568,10 @@ class EDRClient(object):
 
         config.set("EDREmail", self.email)
         config.set("EDRPassword", self.password)
-        config.set("EDRVisualFeedback2", self.visual_feedback_type)
+        visual_feedback_type = self.visual_feedback_type
+        config.set("EDRVisualFeedback2", visual_feedback_type)
+        # Note: ugly stuff to trigger the setter with the side-effects behaviors... 
+        self.visual_feedback_type = visual_feedback_type
         config.set("EDRAudioFeedback", "True" if self.audio_feedback else "False")
         config.set("EDRRedactMyInfo", self.anonymous_reports)
         config.set("EDRFCJumpPSA", self.fc_jump_psa)
