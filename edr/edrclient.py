@@ -89,9 +89,15 @@ class EDRClient(object):
         # Translators: this is shown on the EDMC's status line
         self._status = tk.StringVar(value=_(u"not authenticated."))
         
-        visual = 1 if config.get_str("EDRVisualFeedback") == "True" else 0
-        self.IN_GAME_MSG = InGameMsg() if visual else None
-        self._visual_feedback = tk.IntVar(value=visual)
+        visual_feedback_type = _("Enabled") if config.get_str("EDRVisualFeedback") == "True" else _("Disabled")
+        standalone_overlay = False
+        if config.get_str("EDRVisualFeedback2") != None:
+            visual_feedback_type = config.get_str("EDRVisualFeedback2")
+            standalone_overlay = visual_feedback_type == _("Standalone (for VR or multi-display)")
+        visual = 1 if visual_feedback_type != _("Disabled") else 0
+        self.IN_GAME_MSG = InGameMsg(standalone = standalone_overlay) if visual else None
+        self._visual_feedback_type = tk.StringVar(value=visual_feedback_type)
+        self._visual_feedback = True if visual else False
 
         visual_alt = 1 if config.get_str("EDRVisualAltFeedback") == "True" else 0
         self._visual_alt_feedback = tk.IntVar(value=visual_alt)
@@ -181,7 +187,7 @@ class EDRClient(object):
     def apply_config(self):
         c_email = config.get_str("EDREmail")
         c_password = config.get_str("EDRPassword")
-        c_visual_feedback = config.get_str("EDRVisualFeedback")
+        c_visual_feedback_type = config.get_str("EDRVisualFeedback2") or (_("Enabled") if config.get_str("EDRVisualFeedback") == "True" else _("Disabled"))
         c_visual_alt_feedback = config.get_str("EDRVisualAltFeedback")
         c_audio_feedback = config.get_str("EDRAudioFeedback")
         c_audio_volume = config.get_str("EDRAudioFeedbackVolume")
@@ -198,11 +204,8 @@ class EDRClient(object):
         else:
             self._password.set(c_password)
 
-        if c_visual_feedback is None or c_visual_feedback == "False":
-            self._visual_feedback.set(0)
-        else:
-            self._visual_feedback.set(1)
-
+        self.visual_feedback_type = c_visual_feedback_type
+        
         if c_visual_alt_feedback is None or c_visual_alt_feedback == "False":
             self._visual_alt_feedback.set(0)
         else:
@@ -294,16 +297,17 @@ class EDRClient(object):
 
     @property
     def visual_feedback(self):
-        if self._visual_feedback.get() == 0:
+        if self._visual_feedback == 0:
             return False
         
         if not self.IN_GAME_MSG:
-             self.IN_GAME_MSG = InGameMsg() 
+             standalone_overlay = self.visual_feedback_type == _("Standalone (for VR or multi-display)")
+             self.IN_GAME_MSG = InGameMsg(standalone = standalone_overlay)
         return True
 
     @visual_feedback.setter
     def visual_feedback(self, new_value):
-        self._visual_feedback.set(new_value)
+        self._visual_feedback = new_value
 
     @property
     def visual_alt_feedback(self):
@@ -346,6 +350,26 @@ class EDRClient(object):
         elif new_value in [_(u"Public"), _(u"Private"), _(u"Direct")]:
             self.server.fc_jump_psa = (new_value == _(u"Public")) 
 
+    @property
+    def visual_feedback_type(self):
+        return self._visual_feedback_type.get()
+
+    @visual_feedback_type.setter
+    def visual_feedback_type(self, new_value):
+        self._visual_feedback_type.set(new_value)
+        if new_value is None or new_value == _(u"Disabled"):
+            print("disabled")
+            self.visual_feedback = 0
+            if self.IN_GAME_MSG:
+                self.IN_GAME_MSG.shutdown()
+                self.IN_GAME_MSG = None
+        else:
+            print("new value: {}".format(new_value))
+            self.visual_feedback = 1
+            if self.IN_GAME_MSG:
+                self.IN_GAME_MSG.shutdown()
+            standalone_overlay = new_value == _("Standalone (for VR or multi-display)")
+            self.IN_GAME_MSG = InGameMsg(standalone = standalone_overlay)
 
     def player_name(self, name):
         self.edrcmdrs.set_player_name(name)
@@ -492,9 +516,12 @@ class EDRClient(object):
         notebook.Label(frame, text=_(u"EDR Feedback:")).grid(padx=10, row=19, sticky=tk.W)
         ttk.Separator(frame, orient=tk.HORIZONTAL).grid(columnspan=2, padx=10, pady=2, sticky=tk.EW)
         
-        notebook.Checkbutton(frame, text=_(u"Overlay"),
-                             variable=self._visual_feedback).grid(padx=10, row=21,
-                                                                  sticky=tk.W)
+        notebook.Label(frame, text=_(u"Overlay")).grid(padx=10, row = 21, sticky=tk.W)
+        choices = { _(u"Enabled"),_(u"Standalone (for VR or multi-display)"), _(u'Disabled')}
+        popupMenu = notebook.OptionMenu(frame, self._visual_feedback_type, self.visual_feedback_type, *choices)
+        popupMenu.grid(padx=10, row=21, column=1, sticky=tk.EW)
+        popupMenu["menu"].configure(background="white", foreground="black")
+        
         notebook.Checkbutton(frame, text=_(u"Sound"),
                              variable=self._audio_feedback).grid(padx=10, row=22, sticky=tk.W)
 
@@ -542,7 +569,7 @@ class EDRClient(object):
 
         config.set("EDREmail", self.email)
         config.set("EDRPassword", self.password)
-        config.set("EDRVisualFeedback", "True" if self.visual_feedback else "False")
+        config.set("EDRVisualFeedback2", self.visual_feedback_type)
         config.set("EDRAudioFeedback", "True" if self.audio_feedback else "False")
         config.set("EDRRedactMyInfo", self.anonymous_reports)
         config.set("EDRFCJumpPSA", self.fc_jump_psa)
@@ -1170,7 +1197,7 @@ class EDRClient(object):
         delta = new["timestamp"] - old["timestamp"]
         
         if cognitive:
-            return (not system_wide and (new["starSystem"] != old["starSystem"] or new["place"] != old["place"])) or delta > self.cognitive_novelty_threshold
+            return (not system_wide and (new["starSystem"] != old["starSystem"] or new["place"] != old["place"])) or delta > self.cognitive_novelty_threshold + random.randint(0, 5*1000)
 
         if new["starSystem"] != old["starSystem"]:
             return delta > self.system_novelty_threshold
@@ -2399,13 +2426,18 @@ class EDRClient(object):
 
     def fleet_carrier_update(self):
         if self.player.fleet_carrier.has_market_changed():
-            market = self.player.fleet_carrier.json_market()
-            # TODO send market to end point
-            print(market)
-            text_market = self.player.fleet_carrier.text_market()
-            # TODO test if there are any orders first
-            print(text_market)
-            copy(text_market)
+            timeframe = 60*15
+            market = self.player.fleet_carrier.json_market(timeframe)
+            text_summary = self.player.fleet_carrier.text_summary(timeframe)
+            # TODO send market to endpoint
+            details = []
+            if market.get("sales", None):
+                details.append(_("{} sale orders").format(len(market["sales"])))
+            if market.get("purchases", None):
+                details.append(_("{} purchase orders").format(len(market["purchases"])))
+            copy(text_summary)
+            details.append(_("Summary placed in the clipboard"))
+            self.__notify(_("Fleet Carrier status summary"), details, clear_before=True)
             self.player.fleet_carrier.acknowledge_market()
 
     def carrier_trade(self, entry):

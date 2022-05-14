@@ -32,8 +32,11 @@ class InGameMsg(object):
     MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice", "help", "navigation", "docking", "mining", "bounty-hunting", "target-guidance"]
     LEGAL_KINDS = ["intel", "warning"] 
 
-    def __init__(self):
-        self._overlay = edmcoverlay.Overlay()
+    def __init__(self, standalone=False):
+        if (standalone):
+            self._overlay = edmcoverlay.Overlay(args=["--standalone"])
+        else:
+            self._overlay = edmcoverlay.Overlay()
         self.cfg = {}
         self.layout_type = None
         self.must_clear = False
@@ -1592,5 +1595,8 @@ class InGameMsg(object):
         return cfg["fill"][0]
 
     def shutdown(self):
-        # TODO self._overlay.shutdown() or something
+        try:
+            self._overlay.send_raw({ "command": "exit" })
+        except:
+            pass
         return

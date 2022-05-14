@@ -1,4 +1,7 @@
 from __future__ import absolute_import
+import copy
+from pickle import TRUE
+
 import edtime
 from edrlog import EDRLog
 from edri18n import _
@@ -17,6 +20,13 @@ class EDRFleetCarrier(object):
         self.purchase_orders = {}
         self.sale_orders = {}
         self.market_updated = False
+        self.fuel_level = None
+        self.decommission = False
+        self.space_usage = {}
+        self.finance = {}
+        self.services = {}
+        self.ship_packs = {}
+        self.module_packs = {}
 
 
     def __reset(self):
@@ -31,6 +41,13 @@ class EDRFleetCarrier(object):
         self.purchase_orders = {}
         self.sale_orders = {}
         self.market_updated = False
+        self.fuel_level = None
+        self.decommission = False
+        self.space_usage = {}
+        self.finance = {}
+        self.services = {}
+        self.ship_packs = {}
+        self.module_packs = {}
 
 
     def bought(self, buy_event):
@@ -47,7 +64,16 @@ class EDRFleetCarrier(object):
         self.name = fc_stats_event.get("Name", None)
         self.access = fc_stats_event.get("DockingAccess", "none")
         self.allow_notorious = fc_stats_event.get("AllowNotorious", False)
-
+        self.fuel_level = fc_stats_event.get("FuelLevel", None)
+        self.decommission = fc_stats_event.get("PendingDecommission", False)
+        self.space_usage = fc_stats_event.get("SpaceUsage", {})
+        self.finance = fc_stats_event.get("Finance", {})
+        if fc_stats_event.get("Crew", {}):
+            for crew_description in fc_stats_event["Crew"]:
+                self.__tweak_service(crew_description)
+        self.ship_packs = fc_stats_event.get("ShipPacks", {})
+        self.module_packs = fc_stats_event.get("ModulePacks", {})
+        
     def jump_requested(self, jump_request_event):
         if self.id and self.id != jump_request_event.get("CarrierID", None):
             self.__reset()
@@ -194,7 +220,8 @@ class EDRFleetCarrier(object):
             pass
     
     def __purchase_order(self, item, localized_item, price, quantity):
-        self.purchase_orders[item] = {"price": price, "quantity": quantity, "l10n": localized_item}
+        now = edtime.EDTime.py_epoch_now()
+        self.purchase_orders[item] = {"price": price, "quantity": quantity, "l10n": localized_item, "timestamp": now}
         self.market_updated = True
         try:
             del self.sale_orders[item]
@@ -202,14 +229,16 @@ class EDRFleetCarrier(object):
             pass
 
     def __sale_order(self, item, localized_item, price, quantity):
-        self.sale_orders[item] = {"price": price, "quantity": quantity, "l10n": localized_item}
+        now = edtime.EDTime.py_epoch_now()
+        self.sale_orders[item] = {"price": price, "quantity": quantity, "l10n": localized_item, "timestamp": now}
         self.market_updated = True
         try:
             del self.purchase_orders[item]
         except:
             pass
     
-    def json_market(self):
+    def json_market(self, timeframe=None):
+        # TODO within timeframe
         self.__update_position()
         if self.id is None:
             return None
@@ -221,33 +250,47 @@ class EDRFleetCarrier(object):
             "location": self.position,
             "access": self.access,
             "allow_notorious": self.allow_notorious,
-            "sales": self.sale_orders,
-            "purchases": self.purchase_orders
+            "sales": self.__sale_orders_within(timeframe),
+            "purchases": self.__purchase_orders_within(timeframe)
         }
 
-    def text_market(self, timeframe=None):
-        # TODO within timeframe
+    def __sale_orders_within(self, timeframe):
+        all = copy.deepcopy(self.sale_orders)
+        if timeframe is None:
+            return all
+        threshold = edtime.EDTime.py_epoch_now() - timeframe
+        return {item: values for item, values in all.items() if values["timestamp"] >= threshold}
+        
+
+    def __purchase_orders_within(self, timeframe):
+        all = copy.deepcopy(self.purchase_orders)
+        if timeframe is None:
+            return all
+        threshold = edtime.EDTime.py_epoch_now() - timeframe
+        return {item: values for item, values in all.items() if values["timestamp"] >= threshold}
+
+    def text_summary(self, timeframe=None):
         self.__update_position()
         if self.id is None:
             return None
 
-        header = _("Fleet Carrier Market Info")
-        key_info = _("Callsign:  \t{}\nName:      \t{}\nLocation:  \t{}\nAccess:    \t{}\nNotorious: \t{}").format(self.callsign, self.name, self.position, self.access, _("allowed") if self.allow_notorious else _("disallowed"))
+        header = _("Fleet Carrier [{}] - {}").format(self.callsign, self.name)
+        key_info = _("Location:  \t{}\nAccess:    \t{}\nNotorious: \t{}").format(self.position, self.access, _("allowed") if self.allow_notorious else _("disallowed"))
+        # TODO add services, tax, etc.
         details_purchases = []
         details_sales = []
-        for order in self.purchase_orders:
-            quantity = self.purchase_orders[order]["quantity"]
-            item = self.purchase_orders[order]["l10n"][:30]
-            price = self.purchase_orders[order]["price"]
+        orders = self.__purchase_orders_within(timeframe)
+        for order in orders:
+            quantity = orders[order]["quantity"]
+            item = orders[order]["l10n"][:30]
+            price = orders[order]["price"]
             details_purchases.append(f'{quantity: >8} {item: <30} {price: >10n}')
 
-        # TODO not used
-        headers = [_("Item"), _("Price"), _("Quantity")]
-        
-        for order in self.sale_orders:
-            quantity = self.sale_orders[order]["quantity"]
-            item = self.sale_orders[order]["l10n"][:30]
-            price = self.sale_orders[order]["price"]
+        orders = self.__sale_orders_within(timeframe)
+        for order in orders:
+            quantity = orders[order]["quantity"]
+            item = orders[order]["l10n"][:30]
+            price = orders[order]["price"]
             details_sales.append(f'{quantity: >8} {item: <30} {price: >10n}')
 
         summary = header
@@ -263,9 +306,12 @@ class EDRFleetCarrier(object):
         if details_purchases:
             summary += "\n"
             summary += _("[Buying]\n")
-            summary += _(f'{"Quantity": >8} {"Item": <30} {"Price (cr)": <10}\n')
+            summary += _(f'{"Quantity": >8} {"Item": <30} {"Price (cr)": >10}\n')
             summary += "\n".join(details_purchases)
             summary += "\n"
+
+        timestamp = edtime.EDTime()
+        summary += _("\n ----===<<  As of {}   -   Info provided by ED Recon  >>===----").format(timestamp.as_journal_timestamp())
         
         return summary
 
@@ -287,18 +333,50 @@ class EDRFleetCarrier(object):
         crew = entry.get("CrewName", None)
         if not (service and operation and crew):
             return False
-        ops_LUT = {
-            "replace": "open", # TODO not sure
-            "activate": "open",
-            "deactivate": "n/a",
-            "pause": "closed",
-            "resume": "open"
-        }
-        state = ops_LUT.get(operation.lower(), "??? ({})".format(operation.lower()))
-        if operation.lower() == "replace":
+        
+        operation = operation.lower()
+        if operation == "activate":
+            if self.services[service.lower()]:
+                self.services[service.lower()]["active"] = True
+                self.services[service.lower()]["enabled"] = True
+            else:
+                self.services[service.lower()] = {"active": True, "crew": crew, "enabled": True}
+        elif operation == "deactivate":
+            if self.services[service.lower()]:
+                self.services[service.lower()]["active"] = False
+            else:
+                self.services[service.lower()] = {"active": False, "crew": crew, "enabled": True}
+        elif operation == "replace":
             if self.services[service.lower()]:
                 self.services[service.lower()]["crew"] = crew
             else:
-                self.services[service.lower()] = {"state": state, "crew": crew}
+                self.services[service.lower()] = {"active": True, "crew": crew, "enabled": True}
+        elif operation == "pause":
+            if self.services[service.lower()]:
+                self.services[service.lower()]["active"] = True
+                self.services[service.lower()]["enabled"] = False
+            else:
+                self.services[service.lower()] = {"active": True, "crew": crew, "enabled": False}
+        elif operation == "resume":
+            if self.services[service.lower()]:
+                self.services[service.lower()]["active"] = True
+                self.services[service.lower()]["enabled"] = True
+            else:
+                self.services[service.lower()] = {"active": True, "crew": crew, "enabled": True}
+
+
+    def __tweak_service(self, crew__description):
+        role = crew__description.get("CrewRole", None)
+        activated = crew__description.get("Activated", False)
+        enabled = crew__description.get("Enabled", False)
+        name = crew__description.get("CrewName", None)
+        if not role:
+            return
+        role = role.lower()
+        if role not in self.services:
+            self.services[role] = {"active": activated, "enabled": enabled, "crew": name}
         else:
-            self.services[service.lower()] = {"state": state, "crew": crew}
+            self.services[role]["active"] = activated
+            self.services[role]["enabled"] = enabled
+            if name:
+                self.services[role]["crew"] = name
