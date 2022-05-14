@@ -2435,9 +2435,10 @@ class EDRClient(object):
                 details.append(_("{} sale orders").format(len(market["sales"])))
             if market.get("purchases", None):
                 details.append(_("{} purchase orders").format(len(market["purchases"])))
-            copy(text_summary)
-            details.append(_("Summary placed in the clipboard"))
-            self.__notify(_("Fleet Carrier status summary"), details, clear_before=True)
+            if details:
+                copy(text_summary)
+                details.append(_("Summary placed in the clipboard"))
+                self.__notify(_("Fleet Carrier status summary"), details, clear_before=True)
             self.player.fleet_carrier.acknowledge_market()
 
     def carrier_trade(self, entry):
