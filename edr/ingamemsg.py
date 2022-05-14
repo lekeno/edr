@@ -34,8 +34,13 @@ class InGameMsg(object):
 
     def __init__(self, standalone=False):
         self.standalone_overlay = standalone
+        self.compatibility_issue = False
         if (standalone):
-            self._overlay = edmcoverlay.Overlay(args=["--standalone"])
+            try:
+                self._overlay = edmcoverlay.Overlay(args=["--standalone"])
+            except:
+                self._overlay = edmcoverlay.Overlay()
+                self.compatibility_issue = True
         else:
             self._overlay = edmcoverlay.Overlay()
         self.cfg = {}

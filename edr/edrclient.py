@@ -420,8 +420,12 @@ class EDRClient(object):
             details = [_(u"Mandatory update!")]
         details += self.motd
         # Translators: this is shown when EDR warms-up via the overlay, the -- are for presentation purpose
-        details.append(_(u"-- Feeling lost? Send !help via the in-game chat --"))
-        details.append(self.tips.tip())
+        if self.IN_GAME_MSG and self.IN_GAME_MSG.compatibility_issue and self.IN_GAME_MSG.standalone_overlay:
+            details.append(_(u"Standalone overlay requires EDMCOverlay Version >= 1.1."))
+            details.append(_(u"Try to disable / upgrade the global EDMCOverlay module."))
+        else:
+            details.append(_(u"-- Feeling lost? Send !help via the in-game chat --"))
+            details.append(self.tips.tip())
         # Translators: this is shown when EDR warms-up via the overlay
         self.__notify(_(u"EDR v{} by LeKeno").format(self.edr_version), details, clear_before=True)
         if self.audio_feedback:
