@@ -193,6 +193,7 @@ class EDRDiscordIntegration(object):
             "local": EDRDiscordWebhook(user_config.discord_webhook("local")),
             "wing": EDRDiscordWebhook(user_config.discord_webhook("wing")),
             "crew": EDRDiscordWebhook(user_config.discord_webhook("crew")),
+            "voice": EDRDiscordWebhook(user_config.discord_webhook("voice")),
             "player": EDRDiscordWebhook(user_config.discord_webhook("player")),
         }
         
@@ -201,7 +202,11 @@ class EDRDiscordIntegration(object):
             "squadron": EDRDiscordWebhook(user_config.discord_webhook("squadron", incoming=False)),
             "squadleaders": EDRDiscordWebhook(user_config.discord_webhook("squadronleaders", incoming=False)),
             "wing": EDRDiscordWebhook(user_config.discord_webhook("wing", incoming=False)),
-            "crew": EDRDiscordWebhook(user_config.discord_webhook("crew", incoming=False))
+            "crew": EDRDiscordWebhook(user_config.discord_webhook("crew", incoming=False)),
+            "voice": EDRDiscordWebhook(user_config.discord_webhook("voice", incoming=False)),
+            "local": EDRDiscordWebhook(user_config.discord_webhook("local", incoming=False)),
+            "starsystem": EDRDiscordWebhook(user_config.discord_webhook("starsystem", incoming=False)),
+            "player": EDRDiscordWebhook(user_config.discord_webhook("player", incoming=False))
         }
 
         self.cognitive_novelty_threshold = edr_config.cognitive_novelty_threshold()
@@ -345,7 +350,10 @@ class EDRDiscordIntegration(object):
                 return self.outgoing["broadcast"].send(dm)
             return False
 
-        channel = entry.get("Channel", None)
+        channel = entry.get("To", None)
+        if not channel in self.outgoing:
+            channel = "player"
+
         if not channel in self.outgoing:
             return False
         
