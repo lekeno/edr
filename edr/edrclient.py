@@ -495,17 +495,20 @@ class EDRClient(object):
         popupMenu.grid(padx=10, row=16, column=1, sticky=tk.EW)
         popupMenu["menu"].configure(background="white", foreground="black")
 
-        notebook.Label(frame, text=_(u"Announce my Fleet Carrier's jump schedule (α)")).grid(padx=10, row = 17, sticky=tk.W)
-        choices = { _(u'Never'),_(u'Public'),_(u'Private')}
+        notebook.Label(frame, text=_(u"Announce my Fleet Carrier's jump schedule")).grid(padx=10, row = 17, sticky=tk.W)
+        choices = { _(u'Never'),_(u'Public'),_(u'Private'), _(u'Direct')}
         popupMenu = notebook.OptionMenu(frame, self._fc_jump_psa, self.fc_jump_psa, *choices, command=self.__toggle_fc_links)
         popupMenu.grid(padx=10, row=17, column=1, sticky=tk.EW)
         popupMenu["menu"].configure(background="white", foreground="black")
         self._private_fc_link = ttkHyperlinkLabel.HyperlinkLabel(frame, text=_(u"Configure your private channel (managed by EDR)"), background=notebook.Label().cget('background'), url="https://forms.gle/7pntJRpDgRBcbcfp8", underline=True)
-        self._direct_fc_link = ttkHyperlinkLabel.HyperlinkLabel(frame, text=_(u"Configure your direct channel"), background=notebook.Label().cget('background'), url="https://example.org/TODO", underline=True)
+        self._direct_fc_link = notebook.Label(frame, text=_(u"Configure your Fleet Carrier channel in config/user_config.ini"))
+        self._private_fc_link.grid(padx=10, row=18, column=1, sticky=tk.EW)
+        self._direct_fc_link.grid(padx=10, row=19, column=1, sticky=tk.EW)
+        # ttkHyperlinkLabel.HyperlinkLabel(frame, text=_(u"Configure your Fleet Carrier channel in config/user_config.ini"), background=notebook.Label().cget('background'), url="https://example.org/TODO", underline=True)
         if self.fc_jump_psa == _(u'Private'):
-            self._private_fc_link.grid(padx=10, row=18, column=1, sticky=tk.EW)
+            self._direct_fc_link.grid_remove()
         elif self.fc_jump_psa == _(u'Direct'):
-            self._direct_fc_link.grid(padx=10, row=18, column=1, sticky=tk.EW)
+            self._private_fc_link.grid_remove()
 
         if self.server.is_authenticated():
             if self.is_anonymous():
@@ -516,17 +519,17 @@ class EDRClient(object):
             self.status = _(u"not authenticated.")
 
         # Translators: this is shown in the preferences panel as a heading for feedback options (e.g. overlay, audio cues)
-        notebook.Label(frame, text=_(u"EDR Feedback:")).grid(padx=10, row=19, sticky=tk.W)
+        notebook.Label(frame, text=_(u"EDR Feedback:")).grid(padx=10, row=20, sticky=tk.W)
         ttk.Separator(frame, orient=tk.HORIZONTAL).grid(columnspan=2, padx=10, pady=2, sticky=tk.EW)
         
-        notebook.Label(frame, text=_(u"Overlay")).grid(padx=10, row = 21, sticky=tk.W)
+        notebook.Label(frame, text=_(u"Overlay")).grid(padx=10, row = 22, sticky=tk.W)
         choices = { _(u"Enabled"),_(u"Standalone (for VR or multi-display)"), _(u'Disabled')}
         popupMenu = notebook.OptionMenu(frame, self._visual_feedback_type, self.visual_feedback_type, *choices)
-        popupMenu.grid(padx=10, row=21, column=1, sticky=tk.EW)
+        popupMenu.grid(padx=10, row=23, column=1, sticky=tk.EW)
         popupMenu["menu"].configure(background="white", foreground="black")
         
         notebook.Checkbutton(frame, text=_(u"Sound"),
-                             variable=self._audio_feedback).grid(padx=10, row=22, sticky=tk.W)
+                             variable=self._audio_feedback).grid(padx=10, row=24, sticky=tk.W)
 
 
         return frame
@@ -1808,31 +1811,33 @@ class EDRClient(object):
         if not jump_info:
             return
 
-        if self.is_anonymous():
-            EDRLOG.log(u"Skipping fleet carrier jump report since the user is anonymous.", "INFO")
-            return True
-
         if self.fc_jump_psa == _(u"Never"):
             EDRLOG.log(u"FC Jump reporting is off.", "INFO")
             self.status = _(u"Skipped FC jump announcement.")
             return True
 
         jump_info["owner"] = self.player.name
-        if self.server.fc_jump_scheduled(jump_info):
-            if self.fc_jump_psa == _(u"Public"):
-                self.status = _(u"Sent PSA for FC jump schedule.")
-            else:
-                self.status = _(u"Sent Private FC jump schedule.")
-            return True
+        if self.fc_jump_psa in [_(u"Public"), _(u"Private")]:
+            if self.is_anonymous():
+                EDRLOG.log(u"Skipping fleet carrier jump report since the user is anonymous.", "INFO")
+                self.status = _(u"Skipped Public/Private FC jump announcement (EDR account needed).")
+                return True
+        
+            if self.server.fc_jump_scheduled(jump_info):
+                if self.fc_jump_psa == _(u"Public"):
+                    self.status = _(u"Sent PSA for FC jump schedule.")
+                else:
+                    self.status = _(u"Sent Private PSA for FC jump schedule.")
+                return True
+        elif self.fc_jump_psa == _(u"Direct"):
+            if self.edrdiscord.fc_jump_scheduled(jump_info):
+                self.status = _(u"Sent Direct PSA for FC jump schedule.")
+                return True
         return False
     
     def fc_jump_cancelled(self, event):
         self.player.fleet_carrier.jump_cancelled(event)
         
-        if self.is_anonymous():
-            EDRLOG.log(u"Skipping fleet carrier jump report since the user is anonymous.", "INFO")
-            return True
-
         if self.fc_jump_psa == _(u"Never"):
             EDRLOG.log(u"FC Jump reporting is off.", "INFO")
             self.status = _(u"Skipped FC jump announcement.")
@@ -1840,9 +1845,20 @@ class EDRClient(object):
 
         status = self.player.fleet_carrier.json_status()
         status["owner"] = self.player.name
-        if self.server.fc_jump_cancelled(status):
-            self.status = _(u"Cancelled FC jump schedule.")
-            return True
+        if self.fc_jump_psa in [_(u"Public"), _(u"Private")]:
+            if self.is_anonymous():
+                EDRLOG.log(u"Skipping fleet carrier jump report since the user is anonymous.", "INFO")
+                self.status = _(u"Skipped Public/Private FC jump announcement (EDR account needed).")
+                return True
+            
+            if self.server.fc_jump_cancelled(status):
+                self.status = _(u"Cancelled FC jump schedule.")
+                return True
+        elif self.fc_jump_psa == _(u"Direct"):
+            if self.edrdiscord.fc_jump_scheduled(status):
+                self.status = _(u"Cancelled FC jump schedule.")
+                return True
+        
         return False
 
     def __throttling_duration(self):
