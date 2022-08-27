@@ -284,6 +284,44 @@ class EDRServer(object):
 
         return the_system
 
+    def fc(self, callsign, name, star_system, may_create):
+        if not self.__preflight("fc_id", callsign):
+            EDRLOG.log(u"Preflight failed for fc call. Forcing a new authentication, just in case.", "DEBUG")
+            self.refresh_auth()
+            raise CommsJammedError("fc")
+
+        params = {"orderBy": '"ccallsign"', "equalTo": json.dumps(callsign.lower()), "limitToFirst": 1, "auth": self.auth_token()}
+        resp = self.__get("{}/v1/fcs.json".format(self.EDR_SERVER), "EDR", params)
+
+        if not self.__check_response(resp, "EDR", "system"):
+            EDRLOG.log(u"Failed to retrieve FC.", "ERROR")
+            return None
+
+        the_fc = None
+        if resp.content == 'null' or resp.content == b'null':
+            EDRLOG.log(u"FC {} is not recorded in EDR.".format(callsign), "DEBUG")
+            if may_create:
+                EDRLOG.log(u"Creating FC in EDR.", "DEBUG")
+                params = { "auth" : self.auth_token() }
+                payload = {"callsign": callsign, "name": name, "starSystem": star_system, "uid" : self.uid()}
+                resp = self.__post("{}/v1/fcs.json".format(self.EDR_SERVER), "EDR", json=payload, params=params)
+                if not self.__check_response(resp, "EDR", "FCs"):
+                    EDRLOG.log(u"Failed to create new FC.", "ERROR")
+                    return None
+                the_fc = json.loads(resp.content)
+                EDRLOG.log(u"Created FC {} in EDR.".format(callsign), "DEBUG")
+            else:
+                return None
+        else:
+            the_fc = json.loads(resp.content)
+            fcid = list(the_fc)[0] if the_fc else None
+            if fcid is None:
+                EDRLOG.log(u"FC {} has no id={}.".format(callsign, fcid), "DEBUG")
+                return None
+            EDRLOG.log(u"FC {} is in EDR with id={}.".format(callsign, fcid), "DEBUG")
+            
+        return the_fc
+
     def pledged_to(self, power, since):
         params = { "auth": self.auth_token() }
         if power is None:
@@ -495,6 +533,30 @@ class EDRServer(object):
         else:
             return None
 
+    def report_fc_materials(self, fc_id, report):
+        if self.is_anonymous():
+            return False
+        EDRLOG.log(u"Reporting Materials on Fleet Carrier {}: {}".format(fc_id, report), "INFO")
+        report["uid"] = self.uid()
+        params = { "auth": self.auth_token() }
+        endpoint = "{server}/v1/fc_materials_reports/{fc_id}/{uid}/.json".format(server=self.EDR_SERVER, fc_id=fc_id, uid=self.uid())
+        EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
+        resp = self.__put(endpoint, "EDR", params=params, json=report)
+        EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+        return self.__check_response(resp, "EDR", "Put fcs materials report")
+
+    def report_fc_market(self, fc_id, report):
+        if self.is_anonymous():
+            return False
+        EDRLOG.log(u"Reporting Market info on Fleet Carrier {}: {}".format(fc_id, report), "INFO")
+        report["uid"] = self.uid()
+        params = { "auth": self.auth_token() }
+        endpoint = "{server}/v1/fc_market_reports/{fc_id}/{uid}/.json".format(server=self.EDR_SERVER, fc_id=fc_id, uid=self.uid())
+        EDRLOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
+        resp = self.__put(endpoint, "EDR", params=params, json=report)
+        EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+        return self.__check_response(resp, "EDR", "Put fcs market report")
+    
     def __get_recent(self, path, timespan_seconds, limitToLast=None):
         now_epoch_js = int(1000 * calendar.timegm(time.gmtime()))
         past_epoch_js = int(now_epoch_js - (1000 * timespan_seconds))
