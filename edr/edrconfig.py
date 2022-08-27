@@ -225,6 +225,12 @@ class EDRConfig(object):
     def fc_presence_max_age(self):
         return int(self.config.get('fc', 'fc_presence_max_age'))
 
+    def fc_materials_max_age(self):
+        return int(self.config.get('fc', 'fc_materials_max_age'))
+
+    def fc_max_age(self):
+        return int(self.config.get('fc', 'fc_max_age'))
+
     def instance_fight_staleness_threshold(self):
         return int(self.config.get('instance', 'fight_staleness_threshold'))
 
