@@ -216,6 +216,8 @@ def handle_carrier_events(ed_player, entry):
         ed_player.fleet_carrier.update_from_jump_if_relevant(entry)
     elif entry["event"] == "CarrierTradeOrder":
         EDR_CLIENT.carrier_trade(entry)
+    elif entry["event"] == "CarrierCrewServices":
+        ed_player.fleet_carrier.tweak_crew_service(entry)
         
 
 def handle_movement_events(ed_player, entry):
@@ -342,6 +344,16 @@ def handle_fc_position_related_events(ed_player, entry):
         if not star_system:
             return
         ed_player.fleet_carrier.update_star_system_if_relevant(star_system, market_id, station_name)
+        # TODO maybe update other things too, e.g. services?
+        # { "timestamp":"2022-03-28T20:00:40Z", "event":"Location", "Docked":true, "StationName":"B6J-0HZ", "StationType":"FleetCarrier", "MarketID":3700480256, 
+        # "StationServices":[ "dock", "autodock", "commodities", "contacts", "exploration", "outfitting", "crewlounge", "rearm", "refuel", "repair", "shipyard", "engineer", "flightcontroller", "stationoperations", "stationMenu", "carriermanagement", "carrierfuel", "livery", "voucherredemption", "socialspace", "bartender", "vistagenomics", "pioneersupplies" ], 
+        # "Taxi":false, "Multicrew":false, "StarSystem":"Gurney Slade", "SystemAddress":182292842867, "StarPos":[70.21875,53.28125,81.00000], 
+        # "SystemAllegiance":"Independent", "SystemEconomy":"$economy_Colony;", "SystemEconomy_Localised":"Colony", 
+        # "SystemSecondEconomy":"$economy_Industrial;", "SystemSecondEconomy_Localised":"Industrial", "SystemGovernment":"$government_Democracy;", "SystemGovernment_Localised":"Democracy",
+        #  "SystemSecurity":"$SYSTEM_SECURITY_low;", "SystemSecurity_Localised":"Low Security", "Population":66351, 
+        # "Body":"Gurney Slade", "BodyID":0, "BodyType":"Star",
+        #  "Powers":[ "Edmund Mahon" ], "PowerplayState":"Exploited", 
+        # "Factions":[ { "Name":"Gurney Slade Republic Party", "FactionState":"None", "Government":"Democracy", "Influence":0.026000, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":0.000000 }, { "Name":"Union of Jath for Equality", "FactionState":"War", "Government":"Democracy", "Influence":0.085000, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":0.000000, "PendingStates":[ { "State":"Expansion", "Trend":0 } ], "ActiveStates":[ { "State":"War" } ] }, { "Name":"Partnership of Gurney Slade", "FactionState":"Bust", "Government":"Anarchy", "Influence":0.010000, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":0.000000, "ActiveStates":[ { "State":"Bust" } ] }, { "Name":"Orrere Energy Company", "FactionState":"None", "Government":"Corporate", "Influence":0.146000, "Allegiance":"Federation", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":0.000000 }, { "Name":"Gurney Slade Dynasty", "FactionState":"War", "Government":"Feudal", "Influence":0.085000, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":0.000000, "ActiveStates":[ { "State":"War" } ] }, { "Name":"Gurney Slade Blue General PLC", "FactionState":"Drought", "Government":"Corporate", "Influence":0.061000, "Allegiance":"Federation", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":0.000000, "ActiveStates":[ { "State":"Drought" } ] }, { "Name":"The Silverbacks", "FactionState":"CivilUnrest", "Government":"Democracy", "Influence":0.587000, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":0.000000, "RecoveringStates":[ { "State":"PublicHoliday", "Trend":0 } ], "ActiveStates":[ { "State":"Boom" }, { "State":"CivilUnrest" } ] } ], "SystemFaction":{ "Name":"The Silverbacks", "FactionState":"CivilUnrest" }, "Conflicts":[ { "WarType":"war", "Status":"active", "Faction1":{ "Name":"Union of Jath for Equality", "Stake":"McCabe Cultivation Centre", "WonDays":1 }, "Faction2":{ "Name":"Gurney Slade Dynasty", "Stake":"Kopyl Metallurgic Installation", "WonDays":1 } } ] }
 
 def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
     if entry["event"] == "Music":
@@ -387,6 +399,9 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
         elif entry["MusicTrack"] == "OnFoot":
             ed_player.in_spacesuit()
             return
+        elif entry["MusicTrack"] == "FleetCarrier_Managment":
+            EDR_CLIENT.fleet_carrier_update()
+
 
     if entry["event"] == "Shutdown":
         EDRLOG.log(u"Shutting down in-game features...", "INFO")
