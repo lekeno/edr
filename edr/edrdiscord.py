@@ -212,8 +212,11 @@ class EDRDiscordIntegration(object):
             "player": EDRDiscordWebhook(user_config.discord_webhook_for_comms("player", incoming=False))
         }
 
-        self.fc_jump = EDRDiscordWebhook(user_config.discord_webhook_for_fc("jump"))
-
+        self.fc = {
+            "jump": EDRDiscordWebhook(user_config.discord_webhook_for_fc("jump")),
+            "market": EDRDiscordWebhook(user_config.discord_webhook_for_fc("market"))
+        }
+        
         self.cognitive_novelty_threshold = edr_config.cognitive_novelty_threshold()
         self.cognitive_comms_cache = LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
         self.cognitive_outgoing_comms_cache = LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
@@ -228,13 +231,22 @@ class EDRDiscordIntegration(object):
         return False
 
     def fc_jump_scheduled(self, jump_info):
-        if not self.fc_jump:
+        if not self.fc or not self.fc["jump"]:
             return False
         dm = self.__create_discord_fc_jump_psa(jump_info)
         if not dm:
             return False
 
-        return self.fc_jump.send(dm)
+        return self.fc["jump"].send(dm)
+
+    def fc_market_update(self, market_info):
+        if not self.fc or not self.fc["market"]:
+            return False
+        dm = self.__create_discord_fc_market_psa(market_info)
+        if not dm:
+            return False
+
+        return self.fc["market"].send(dm)
 
     def __process_incoming(self, entry):
         dm = self.__create_discord_message(entry)
@@ -461,23 +473,6 @@ class EDRDiscordIntegration(object):
         
         dm.content = "`{}` has scheduled a fleet carrier jump from `{}` to `{}`.".format(jump_info["owner"], jump_info["from"], jump_info["to"])
         
-        # TODO
-        colorLUT = {
-            "none": 13632027,
-            "friends": 4886754,
-            "squadron": 16751872,
-            "squadronfriends": 16312092,
-            "all": 8311585,
-        }
-
-        dockingLUT = {
-            "none": "Owner only",
-            "friends": "Friends",
-            "squadron": "Squadmates",
-            "squadronfriends": "Squadmates & friends",
-            "all": "Anybody"
-        }
-
         dm.username = cfg["name"]
         dm.avatar_url = cfg["icon_url"]
         dm.tts = cfg["tts"]
@@ -494,7 +489,7 @@ class EDRDiscordIntegration(object):
             "icon_url": cfg["icon_url"]
         }
         de.timestamp = datetime.now(timezone.utc).isoformat()
-        de.color = colorLUT[jump_info["access"]] or 10197915
+        de.color = self.__colorcoded_fc_access(jump_info["access"])
         de.footer = {
             "text": _("via ED Recon on behalf of Cmdr {}").format(player.name),
             "icon_url": "https://lekeno.github.io/favicon-16x16.png"
@@ -504,7 +499,84 @@ class EDRDiscordIntegration(object):
         }   
 
         if sender_profile:
-            df = EDRDiscordField(_(u"Landing"), _("```Access   :    {}\nNotorious:    {}```").format(dockingLUT[jump_info["access"]] or "?", _("Allowed") if jump_info["allow_notorious"] else _("Not allowed")), True)
+            df = EDRDiscordField(_(u"Landing"), _("```Access   :    {}\nNotorious:    {}```").format(self.__readable_fc_docking(jump_info["access"]), self.__readable_fc_notorious(jump_info["allow_notorious"])), True)
+            de.fields.append(df)
+        
+        dm.add_embed(de)
+        return dm
+
+    def __colorcoded_fc_access(self, access):
+        colorLUT = {
+            "none": 13632027,
+            "friends": 4886754,
+            "squadron": 16751872,
+            "squadronfriends": 16312092,
+            "all": 8311585,
+        }
+
+        return colorLUT.get(access, 10197915)
+
+    def __readable_fc_docking(self, access):
+        dockingLUT = {
+            "none": "Owner only",
+            "friends": "Friends",
+            "squadron": "Squadmates",
+            "squadronfriends": "Squadmates & friends",
+            "all": "Anybody"
+        }
+        
+        return dockingLUT.get(access, "?")
+
+    def __readable_fc_notorious(self, allow_notorious):
+        return _("Allowed") if allow_notorious else _("Not allowed")
+
+    def __create_discord_fc_market_psa(self, market_info):
+        player = self.edrcmdrs.player
+        from_cmdr = player.name
+        channel = "fc"
+        
+        cfg = self.__combined_cfg(from_cmdr, channel)
+        
+        sender_profile = self.edrcmdrs.cmdr(from_cmdr, autocreate=False, check_inara_server=False)
+
+        dm = EDRDiscordMessage()
+        if not market_info["sales"] and not market_info["purchases"]:
+            dm.content = "`{}` no longer trading items at their fleet carrier ({} | {}).".format(market_info["owner"], market_info["name"], market_info["callsign"])
+            return dm
+        
+        trading_kinds =  []
+        if market_info["sales"]:
+            trading_kinds.append(_("selling"))
+        if market_info["purchases"]:
+            trading_kinds.append(_("buying"))
+        dm.content = "`{}` is {} items at their fleet carrier ({} | {}).".format(market_info["owner"], " & ".join(trading_kinds), market_info["name"], market_info["callsign"])
+        
+        dm.username = cfg["name"]
+        dm.avatar_url = cfg["icon_url"]
+        dm.tts = cfg["tts"]
+
+        de = EDRDiscordEmbed()
+        de.title = _(u"Bar / Market trading")
+        de.description = market_info["summary"]
+        de.author = {
+            "name": "{} | {}".format(market_info["name"], market_info["callsign"]),
+            "url": cfg["url"],
+            "icon_url": cfg["icon_url"]
+        }
+        de.timestamp = datetime.now(timezone.utc).isoformat()
+        de.color = self.__colorcoded_fc_access(market_info["access"])
+        de.footer = {
+            "text": _("via ED Recon on behalf of Cmdr {}").format(player.name),
+            "icon_url": "https://lekeno.github.io/favicon-16x16.png"
+        }
+        de.thumbnail = {
+            "url": "https://lekeno.github.io/fc-jump.png" # TODO different icon
+        }   
+
+        if sender_profile:
+            df = EDRDiscordField(_(u"Landing"), _("```Access   :    {}\nNotorious:    {}```").format(self.__readable_fc_docking(market_info["access"]), self.__readable_fc_notorious(market_info["allow_notorious"])), True)
+            de.fields.append(df)
+            df = EDRDiscordField(_(u"Location"), _("```System:    {}\nBody  :    {}```").format(market_info["location"]["system"], market_info["location"]["body"] or "N/A"), True)
             de.fields.append(df)
         
         dm.add_embed(de)
