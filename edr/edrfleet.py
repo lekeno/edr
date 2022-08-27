@@ -213,7 +213,7 @@ class EDRFleet(object):
         src_system = transfer_event.get("System", None)
         src_market_id = transfer_event.get("MarketID", None)
         distance = transfer_event.get("Distance", None)
-        eta = EDTime.py_epoch_now() + int(math.ceil(distance * 9.75 + 300)) #TODO refactor, 1 more copy of this in edrsystems
+        eta = EDTime.eta_transfer(distance)
         self.db.execute('DELETE from transits WHERE ship_id=?', (ship_id, ))
         self.db.execute('''INSERT INTO transits(ship_id, eta, source_system, source_market_id, destination_system, destination_market_id)
                             VALUES (?,?,?,?,?,?)''', (ship_id, eta, src_system, src_market_id, dst_system, dst_market_id))
