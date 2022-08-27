@@ -626,7 +626,12 @@ class EDRInventory(object):
         return {**self.backpack.get("item",{}), **self.backpack.get("consumable",{}), **self.backpack.get("data",{}), **self.backpack.get("component",{})}
 
     def bought(self, info):
-        self.add(info["Category"], info["Name"], info["Count"])
+        if "MicroResources" not in info:
+            self.add(info["Category"], info["Name"], info["Count"])
+            return
+
+        for resource in info["MicroResources"]: 
+            self.add(resource["Category"], resource["Name"], resource["Count"])
 
     def sold(self, info):
         if "MicroResources" not in info:
@@ -724,6 +729,13 @@ class EDRInventory(object):
         if from_backpack:
             return u"{} [{}]: (Backpack: {}; Locker:{})".format(_(entry["raw"]), shorthands.get(category, category[0:min(3,len(category))]), count, (total_count - count) or 0)
         return u"{} [{}]: {}".format(_(entry["raw"]), shorthands.get(category, category[0:min(3,len(category))]), total_count)
+
+    def readable_name(self, name, fallback=True):
+        cname = self.__c_name(name)
+        entry = MATERIALS_LUT.get(cname, None)
+        if not entry:
+            return name if fallback else None
+        return entry["raw"]
 
 
     def __check(self):
@@ -1153,6 +1165,48 @@ class EDRRemlokHelmet(object):
             details.append(_("Found in: {}".format("; ".join(descriptor["locations"]))))
 
         return details
+
+    def describe_odyssey_material_short(self, internal_name, ignore_eng_unlocks=False):
+        if internal_name not in ODYSSEY_MATS:
+            return None
+        
+        values = self.worthiness_odyssey_material(internal_name, ignore_eng_unlocks)
+        
+        cname = self.__c_name(internal_name)
+        entry = MATERIALS_LUT.get(cname, {})
+        
+        return "{} ({})".format(entry.get("raw", internal_name), values)
+
+    def worthiness_odyssey_material(self, internal_name, ignore_eng_unlocks=False):
+        if internal_name not in ODYSSEY_MATS:
+            return None
+        
+        descriptor = ODYSSEY_MATS[internal_name]
+        values  = []
+        if descriptor.get("useless", False):
+            values.append(_("0"))
+        
+        if descriptor.get("blueprints", False):
+            values.append(_("B{}").format(descriptor["blueprints"]))
+        
+        if descriptor.get("upgrades", False):
+            values.append(_("U{}").format(descriptor["upgrades"]))
+
+        if descriptor.get("value", False):
+            values.append(_("X{}".format(descriptor["value"])))
+        
+        if not ignore_eng_unlocks:
+            value = 0
+            if descriptor.get("referer", False) and descriptor.get("refer", False):
+                value +=1
+            
+            if descriptor.get("unlock", False):
+                value +=1
+            
+            if value:
+                values.append(_("E{}".format(value)))            
+        
+        return "/".join(values)
     
     def __describe_horizons_material(self, internal_name):
         if internal_name not in HORIZONS_MATS:
@@ -1183,6 +1237,96 @@ class EDRRemlokHelmet(object):
             details.append(_("Required by {}".format(descriptor["unlock"])))
 
         return details
+
+    def is_data(self, name):
+        cname = self.__c_name(name)
+        entry = MATERIALS_LUT.get(cname, None)
+        return entry["category"] == "data" if entry else False
+    
+    def is_assets(self, name):
+        cname = self.__c_name(name)
+        entry = MATERIALS_LUT.get(cname, None)
+        return entry["category"] == "component" if entry else False
+
+    def is_goods(self, name):
+        cname = self.__c_name(name)
+        entry = MATERIALS_LUT.get(cname, None)
+        return entry["category"] == "item" if entry else False
+
+    def is_odyssey_mat(self, name):
+        cname = self.__c_name(name)
+        return cname in ODYSSEY_MATS
+        
+
+    def __c_name(self, name):
+        cname = name.lower()
+        if cname in MATERIALS_LUT:
+            return cname
+
+        adj_cname = cname.rstrip(";")
+        if adj_cname.startswith("$"):
+            adj_cname = adj_cname[1:]
+        if adj_cname.endswith("_name"):
+            adj_cname = adj_cname[:-5]
+        adj_cname = re.sub("[ -_]", "", adj_cname)
+        
+        if adj_cname in MATERIALS_LUT:
+            return adj_cname
+
+        if adj_cname.endswith("s") and adj_cname[:-1] in MATERIALS_LUT:
+            return adj_cname[:-1]
+        elif adj_cname + "s" in MATERIALS_LUT:
+            return adj_cname + "s"
+        
+        return INTERNAL_NAMES_LUT.get(cname, cname)
+
+    def how_useful(self, item):
+        c_item = item.lower()
+        if c_item in INTERNAL_NAMES_LUT:
+            c_item = INTERNAL_NAMES_LUT[c_item]
+        else:
+            c_item = c_item.rstrip(";")
+            if c_item.startswith("$"):
+                c_item = c_item[1:]
+            if c_item.endswith("_name"):
+                c_item = c_item[:-5]
+            if c_item.startswith("microresource_of:#content=$"):
+                c_item = c_item[len("microresource_of:#content=$"):]
+            c_item = re.sub("[ \-_]", "", c_item)
+        
+        if c_item in ODYSSEY_MATS:
+            return self.__how_useful_odyssey_material(c_item)
+        elif c_item in HORIZONS_MATS:
+            # TODO not expected yet
+            return 0
+        elif c_item in self.MISC_LUT:
+            return 0
+        return 0
+
+    def __how_useful_odyssey_material(self, internal_name):
+        score = {"engineering": 0, "unlocks": 0}
+        if internal_name not in ODYSSEY_MATS:
+            return score["engineering"]
+        
+        descriptor = ODYSSEY_MATS[internal_name]
+        if descriptor.get("useless", False):
+            return score["engineering"]
+            
+        # 4 is the median trading value for odyssey mats.
+        # So, this adds up 1 point if "mid of the pack" stuff, 2 points for the highest known value.
+        score["engineering"] += descriptor.get("value", 0) / 4
+
+        score["engineering"] += descriptor.get("blueprints", 0)
+        score["engineering"] += descriptor.get("upgrades", 0)
+        
+        if descriptor.get("referer", False) and descriptor.get("refer", False):
+            score["unlocks"] += 1
+        
+        if descriptor.get("unlock", False):
+            score["unlocks"] += 1
+
+        return score["engineering"]
+
 
     def __describe_misc(self, internal_name):
         #if internal_name not in self.MISC_LUT:
