@@ -570,7 +570,7 @@ class EDRDiscordIntegration(object):
             "icon_url": "https://lekeno.github.io/favicon-16x16.png"
         }
         de.thumbnail = {
-            "url": "https://lekeno.github.io/fc-jump.png" # TODO different icon
+            "url": "https://lekeno.github.io/fc-trade.png"
         }   
 
         if sender_profile:
