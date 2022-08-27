@@ -2,6 +2,7 @@ import datetime
 import calendar
 import time
 import comparable
+import math
 from edri18n import _, _c
 
 class EDTime(comparable.ComparableMixin):
@@ -43,6 +44,15 @@ class EDTime(comparable.ComparableMixin):
         # Translators: this is to show how long ahead an event will take place, keep it short, e.g. T+{} would show something like T+3H
         return u"T+{}".format(EDTime.pretty_print_timespan(ahead))
 
+    @staticmethod
+    def eta_transfer(distance):
+        return EDTime.py_epoch_now() + EDTime.transfer_time()
+
+    
+    @staticmethod
+    def transfer_time(distance):
+        return int(math.ceil(distance * 9.75 + 300))
+    
     @staticmethod
     def pretty_print_timespan(timespan, short=False, verbose=False):
         if timespan < 0:
