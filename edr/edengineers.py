@@ -298,6 +298,12 @@ class EDEngineers(object):
                 return True
         return False
 
+    def is_necessary(self, material_name):
+        for name in self.engineers:
+            if self.engineers[name].relevant(material_name) and self.engineers[name].interested_in(material_name):
+                return True
+        return False
+
     def is_unnecessary(self, material_name):
         for name in self.engineers:
             if self.engineers[name].relevant(material_name) and not self.engineers[name].interested_in(material_name):
