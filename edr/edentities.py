@@ -10,7 +10,7 @@ from edvehicles import EDVehicleFactory
 from edspacesuits import EDSuitFactory
 from edinstance import EDInstance
 from edrlog import EDRLog
-from edrconfig import EDRConfig #TODO replace config object with singleton
+from edrconfig import EDRConfig
 from edreconbox import EDReconBox
 from edrinventory import EDRInventory, EDRRemlokHelmet
 from edri18n import _, _c
@@ -181,8 +181,9 @@ class EDRPowerplayUnknown(EDRPowerplay):
     
 
 class EDFineOrBounty(object):
-    def __init__(self, value):
+    def __init__(self, value, faction=None):
         self.value = value
+        self.faction = faction
         config = EDRConfig()
         self.threshold = config.intel_bounty_threshold()
     
@@ -239,6 +240,7 @@ class EDPilot(object):
         self.slf = None
         self.shuttle = None
         self.location = EDLocation()
+        self.last_station = None
         self.powerplay = EDRPowerplayUnknown()
         self.squadron = None
         self.sqid = None
@@ -247,6 +249,8 @@ class EDPilot(object):
         self.enemy = False
         self._bounty = None
         self._fine = None
+        self.bounties = {}
+        self.fines = {}
         self.targeted_vehicle = None
         self.timestamp = now
         self.rank = rank
@@ -284,6 +288,8 @@ class EDPilot(object):
         self.wanted = False
         self._bounty = None
         self._fine = None
+        self.bounties = {}
+        self.fines = {}
         self.targeted_vehicle = None
         self.shuttle = None
         if self.mothership:
@@ -444,7 +450,7 @@ class EDPilot(object):
         elif entry.get("Taxi", False):
             self.in_taxi()
         elif entry.get("Multicrew", False):
-            # TODO multicrew, hmmm
+            # TODO multicrew
             self.mothership = EDVehicleFactory.unknown_crew_vehicle()
             self.in_mothership()
         else:
@@ -511,6 +517,14 @@ class EDPilot(object):
                 self.slf.safe()
             if self.srv:
                 self.srv.safe()
+
+    def docked_at(self, entry):
+        self.docked()
+        if entry.get("StationType", None) == "FleetCarrier":
+            self.last_station = edrfleetcarrier.EDRFleetCarrier()
+            self.last_station.update_from_location_or_docking(entry)
+        else:
+            self.last_station = None # TODO
 
     def hardpoints(self, deployed):
         self._touch()
@@ -605,6 +619,39 @@ class EDPilot(object):
         else:
             self._bounty = None
 
+    # TODO should be moved to the ship....
+    def add_bounty(self, credits, faction):
+        self._touch()
+        self.bounties[faction] = self.bounties.get(faction, 0) + credits
+
+    def add_fine(self, credits, faction):
+        self._touch()
+        self.fines[faction] = self.fines.get(faction, 0) + credits
+    
+    def paid_all_bounties(self):
+        self._touch()
+        self.bounties = {}
+        self.bounty = 0
+
+    def paid_fine(self, entry):
+        true_amount = entry["Amount"] * (1.0 - entry.get("BrokerPercentage", 0)/100.0)
+        self.fine = max(0, self.fine - true_amount)
+
+    def paid_bounty(self, entry):
+        true_amount = entry["Amount"] * (1.0 - entry.get("BrokerPercentage", 0)/100.0)
+        self.bounty = max(0, self.bounty - true_amount)
+        if "Faction" in entry:
+            self.bounties[entry["Faction"]] = max(0, self.bounties[entry["Faction"]] - true_amount)
+
+    def is_wanted_by_faction(self, faction):
+        return self.bounties.get(faction, 0) > 0 
+
+    def paid_all_fines(self):
+        self._touch()
+        self.fines = {}
+        self.fine = 0
+
+
     @property
     def fine(self):
         if self._fine:
@@ -667,7 +714,6 @@ class EDPilot(object):
         if event.get("event", None) in ["SuitLoadout", "SwitchSuitLoadout"]:
             self.in_spacesuit()
             self.spacesuit = EDSuitFactory.from_suitloadout_event(event)
-            # TODO should this be more conservative?
             self._touch()
             return True
         elif event.get("event", None) in ["LoadGame", "Loadout"]:
@@ -678,7 +724,6 @@ class EDPilot(object):
             if EDSuitFactory.is_spacesuit(so_called_ship):
                 self.in_spacesuit()
                 self.spacesuit = EDSuitFactory.from_load_game_event(event)
-                # TODO should this be more conservative?
                 self._touch()
                 return True
             else:
@@ -1029,6 +1074,8 @@ class EDPlayerOne(EDPlayer):
         self.slf = None
         self.location = EDLocation()
         self._bounty = None
+        self.bounties = {}
+        self.fines = {}
         self.instance.reset()
         self.to_normal_space()
         self._touch()
