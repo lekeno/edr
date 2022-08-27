@@ -1,9 +1,10 @@
 import json
+from xmlrpc.client import DateTime
 import requests
 import os
 import random
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from binascii import crc32
 from hashlib import md5
 from numbers import Number
@@ -127,7 +128,7 @@ class EDRDiscordWebhook(object):
         if self.backoff.throttled():
             return False
     
-        message = DiscordSimpleMessage(text)
+        message = EDRDiscordSimpleMessage(text)
         payload_json = message.json()
         
         return self.__post(payload_json)        
@@ -186,26 +187,36 @@ class EDRDiscordIntegration(object):
             self.channels_players_cfg = {}
 
         self.incoming = {
-            "afk": EDRDiscordWebhook(user_config.discord_webhook("afk")),
-            "squadron": EDRDiscordWebhook(user_config.discord_webhook("squadron")),
-            "squadleaders": EDRDiscordWebhook(user_config.discord_webhook("squadronleaders")),
-            "starsystem": EDRDiscordWebhook(user_config.discord_webhook("starsystem")),
-            "local": EDRDiscordWebhook(user_config.discord_webhook("local")),
-            "wing": EDRDiscordWebhook(user_config.discord_webhook("wing")),
-            "crew": EDRDiscordWebhook(user_config.discord_webhook("crew")),
-            "player": EDRDiscordWebhook(user_config.discord_webhook("player")),
+            "afk": EDRDiscordWebhook(user_config.discord_webhook_for_comms("afk")),
+            "squadron": EDRDiscordWebhook(user_config.discord_webhook_for_comms("squadron")),
+            "squadleaders": EDRDiscordWebhook(user_config.discord_webhook_for_comms("squadronleaders")),
+            "starsystem": EDRDiscordWebhook(user_config.discord_webhook_for_comms("starsystem")),
+            "local": EDRDiscordWebhook(user_config.discord_webhook_for_comms("local")),
+            "wing": EDRDiscordWebhook(user_config.discord_webhook_for_comms("wing")),
+            "crew": EDRDiscordWebhook(user_config.discord_webhook_for_comms("crew")),
+            "chat": EDRDiscordWebhook(user_config.discord_webhook_for_comms("crew")),
+            "voicechat": EDRDiscordWebhook(user_config.discord_webhook_for_comms("voicechat")),
+            "player": EDRDiscordWebhook(user_config.discord_webhook_for_comms("player")),
         }
         
         self.outgoing = {
-            "broadcast": EDRDiscordWebhook(user_config.discord_webhook("broadcast", incoming=False)),
-            "squadron": EDRDiscordWebhook(user_config.discord_webhook("squadron", incoming=False)),
-            "squadleaders": EDRDiscordWebhook(user_config.discord_webhook("squadronleaders", incoming=False)),
-            "wing": EDRDiscordWebhook(user_config.discord_webhook("wing", incoming=False)),
-            "crew": EDRDiscordWebhook(user_config.discord_webhook("crew", incoming=False))
+            "broadcast": EDRDiscordWebhook(user_config.discord_webhook_for_comms("broadcast", incoming=False)),
+            "squadron": EDRDiscordWebhook(user_config.discord_webhook_for_comms("squadron", incoming=False)),
+            "squadleaders": EDRDiscordWebhook(user_config.discord_webhook_for_comms("squadronleaders", incoming=False)),
+            "wing": EDRDiscordWebhook(user_config.discord_webhook_for_comms("wing", incoming=False)),
+            "crew": EDRDiscordWebhook(user_config.discord_webhook_for_comms("crew", incoming=False)),
+            "chat": EDRDiscordWebhook(user_config.discord_webhook_for_comms("crew", incoming=False)),
+            "voicechat": EDRDiscordWebhook(user_config.discord_webhook_for_comms("voicechat", incoming=False)),
+            "local": EDRDiscordWebhook(user_config.discord_webhook_for_comms("local", incoming=False)),
+            "starsystem": EDRDiscordWebhook(user_config.discord_webhook_for_comms("starsystem", incoming=False)),
+            "player": EDRDiscordWebhook(user_config.discord_webhook_for_comms("player", incoming=False))
         }
+
+        self.fc_jump = EDRDiscordWebhook(user_config.discord_webhook_for_fc("jump"))
 
         self.cognitive_novelty_threshold = edr_config.cognitive_novelty_threshold()
         self.cognitive_comms_cache = LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
+        self.cognitive_outgoing_comms_cache = LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
 
     def process(self, entry):
         self.afk_detector.process(entry) # TODO move AFK state to player.
@@ -216,17 +227,31 @@ class EDRDiscordIntegration(object):
             return self.__process_outgoing(entry)
         return False
 
+    def fc_jump_scheduled(self, jump_info):
+        if not self.fc_jump:
+            return False
+        dm = self.__create_discord_fc_jump_psa(jump_info)
+        if not dm:
+            return False
+
+        return self.fc_jump.send(dm)
+
     def __process_incoming(self, entry):
         dm = self.__create_discord_message(entry)
         if not dm:
             return False
 
         channel = entry.get("Channel", None)
+        if channel is None and "From" in entry:
+            # multi-crew appears to be incoming but without channel
+            if entry["From"] not in ["chat", "voicechat", "wing", "crew", "squadron", "squadronleaders", "starsystem", "local", "friend", "player"]:
+                channel = "player"
+            else:
+                channel = entry["From"]
         if self.afk_detector.is_afk() and self.incoming["afk"] and channel in ["player", "friend"]:
             return self.incoming["afk"].send(dm)
         
         if not (channel in self.incoming and self.incoming[channel]):
-            # TODO: support voicechat channel?
             return False
 
         return self.incoming[channel].send(dm)
@@ -275,8 +300,6 @@ class EDRDiscordIntegration(object):
         
             
         channel = entry.get("Channel", "unknown")
-        if "To" in entry:
-            channel = "player"
         message = entry.get("Message", "")
              
         
@@ -296,6 +319,8 @@ class EDRDiscordIntegration(object):
             "squadleaders": _(u"Squadron Leaders"),
             "wing": _(u"Wing"),
             "crew": _(u"Crew"),
+            "chat": _(u"Crew"),
+            "voicechat": _(u"Voice"),
             "unknown": _(u"Unknown")
         }
         
@@ -317,7 +342,7 @@ class EDRDiscordIntegration(object):
             de.timestamp = entry["timestamp"]
             de.color = cfg["color"]
             de.footer = {
-                "text": "via ED Recon on behalf of Cmdr {}".format(player.name),
+                "text": _("via ED Recon on behalf of Cmdr {}").format(player.name),
                 "icon_url": "https://lekeno.github.io/favicon-16x16.png"
             }
 
@@ -329,9 +354,165 @@ class EDRDiscordIntegration(object):
             self.cognitive_comms_cache.set(from_cmdr, entry)
         return dm
 
+    def __create_outgoing_discord_message(self, entry):
+        player = self.edrcmdrs.player
+        from_cmdr = player.name
+        to_cmdr = None
+        
+        channel = entry.get("To", "unknown")
+        message = entry.get("Message", "")
+        c_channel = channel
+        if c_channel not in ["local", "starsystem", "squadron", "squadleaders", "wing", "crew", "chat", "voicechat"]:
+            c_channel = "player"
+            to_cmdr = entry.get("To", "unknown")
+             
+        cfg = self.__combined_cfg(from_cmdr, c_channel)
+
+        sender_profile = self.edrcmdrs.cmdr(from_cmdr, autocreate=False, check_inara_server=False)
+        receiver_profile = None
+        if to_cmdr:
+            receiver_profile = self.edrcmdrs.cmdr(to_cmdr, autocreate=False, check_inara_server=False)
+        
+        description_lut = {
+            "player": _(u"Direct"),
+            "friend": _(u"Direct"),
+            "local": _(u"Local: `{location}`").format(location=player.location.pretty_print()),
+            "starsystem": _(u"System: `{location}`").format(location=player.star_system),
+            "squadron": _(u"Squadron"),
+            "squadleaders": _(u"Squadron Leaders"),
+            "wing": _(u"Wing"),
+            "crew": _(u"Crew"),
+            "chat": _(u"Crew"),
+            "voicechat": _(u"Voice"),
+            "unknown": _(u"Unknown")
+        }
+        
+        dm = EDRDiscordMessage()
+        dm.content = self.__discord_escape(message, add_spoiler_tags=cfg["spoiler"])
+        dm.username = cfg["name"]
+        dm.avatar_url = cfg["icon_url"]
+        dm.tts = cfg["tts"]
+
+        if self.__novel_enough_comms(from_cmdr, entry):
+            de = EDRDiscordEmbed()
+            de.title = _(u"Channel")
+            de.description = description_lut.get(c_channel, c_channel)
+            if to_cmdr:
+                de.description += _(" to: {}").format(to_cmdr)
+            de.author = {
+                "name": cfg["name"],
+                "url": cfg["url"],
+                "icon_url": cfg["icon_url"]
+            }
+            de.timestamp = entry["timestamp"]
+            de.color = cfg["color"]
+            de.footer = {
+                "text": _("via ED Recon on behalf of Cmdr {}").format(player.name),
+                "icon_url": "https://lekeno.github.io/favicon-16x16.png"
+            }
+
+            if sender_profile:
+                df = EDRDiscordField(_(u"EDR Karma"), format(sender_profile.readable_karma(details=True)), True)
+                de.fields.append(df)
+            
+            dm.add_embed(de)
+            self.cognitive_comms_cache.set(from_cmdr, entry)
+
+        if to_cmdr and self.__novel_enough_outgoing_comms(to_cmdr, entry):
+            to_cfg = self.__combined_cfg(to_cmdr, c_channel)
+            de = EDRDiscordEmbed()
+            de.title = _(u"Receiver")
+            de.description = to_cmdr
+            de.author = {
+                "name": to_cfg["name"],
+                "url": to_cfg["url"],
+                "icon_url": to_cfg["icon_url"]
+            }
+            de.timestamp = entry["timestamp"]
+            de.color = to_cfg["color"]
+            de.footer = {
+                "text": _("via ED Recon on behalf of Cmdr {}").format(player.name),
+                "icon_url": "https://lekeno.github.io/favicon-16x16.png"
+            }
+
+            if receiver_profile:
+                df = EDRDiscordField(_(u"EDR Karma"), format(receiver_profile.readable_karma(details=True)), True)
+                de.fields.append(df)            
+        
+            dm.add_embed(de)
+            self.cognitive_outgoing_comms_cache.set(to_cmdr, entry)
+
+        return dm
+
+
+    def __create_discord_fc_jump_psa(self, jump_info):
+        player = self.edrcmdrs.player
+        from_cmdr = player.name
+        channel = "fc"
+        
+        cfg = self.__combined_cfg(from_cmdr, channel)
+        
+        sender_profile = self.edrcmdrs.cmdr(from_cmdr, autocreate=False, check_inara_server=False)
+
+        dm = EDRDiscordMessage()
+        if not jump_info["to"]:
+            dm.content = "`{}` has cancelled their fleet carrier jump ({} | {}).".format(jump_info["owner"], jump_info["name"], jump_info["callsign"])
+            return dm
+        
+        dm.content = "`{}` has scheduled a fleet carrier jump from `{}` to `{}`.".format(jump_info["owner"], jump_info["from"], jump_info["to"])
+        
+        # TODO
+        colorLUT = {
+            "none": 13632027,
+            "friends": 4886754,
+            "squadron": 16751872,
+            "squadronfriends": 16312092,
+            "all": 8311585,
+        }
+
+        dockingLUT = {
+            "none": "Owner only",
+            "friends": "Friends",
+            "squadron": "Squadmates",
+            "squadronfriends": "Squadmates & friends",
+            "all": "Anybody"
+        }
+
+        dm.username = cfg["name"]
+        dm.avatar_url = cfg["icon_url"]
+        dm.tts = cfg["tts"]
+
+        de = EDRDiscordEmbed()
+        de.title = _(u"Flight Plan")
+        departureTime = EDTime()
+        dm.content += " timestamp: {}".format(jump_info["at"])
+        departureTime.from_js_epoch(jump_info["at"])
+        de.description = _("```From     :    {}\nTo       :    {}\nTime(UTC):    {}```").format(jump_info["from"], jump_info["to"], departureTime.as_hhmmss())
+        de.author = {
+            "name": "{} | {}".format(jump_info["name"], jump_info["callsign"]),
+            "url": cfg["url"],
+            "icon_url": cfg["icon_url"]
+        }
+        de.timestamp = datetime.now(timezone.utc).isoformat()
+        de.color = colorLUT[jump_info["access"]] or 10197915
+        de.footer = {
+            "text": _("via ED Recon on behalf of Cmdr {}").format(player.name),
+            "icon_url": "https://lekeno.github.io/favicon-16x16.png"
+        }
+        de.thumbnail = {
+            "url": "https://lekeno.github.io/fc-jump.png"
+        }   
+
+        if sender_profile:
+            df = EDRDiscordField(_(u"Landing"), _("```Access   :    {}\nNotorious:    {}```").format(dockingLUT[jump_info["access"]] or "?", _("Allowed") if jump_info["allow_notorious"] else _("Not allowed")), True)
+            de.fields.append(df)
+        
+        dm.add_embed(de)
+        return dm
+
                 
     def __process_outgoing(self, entry):
-        dm = self.__create_discord_message(entry)
+        dm = self.__create_outgoing_discord_message(entry)
         if not dm:
             return False
         command_parts = entry["Message"].split(" ", 1)
@@ -345,7 +526,10 @@ class EDRDiscordIntegration(object):
                 return self.outgoing["broadcast"].send(dm)
             return False
 
-        channel = entry.get("Channel", None)
+        channel = entry.get("To", None)
+        if not channel in self.outgoing:
+            channel = "player"
+
         if not channel in self.outgoing:
             return False
         
@@ -415,6 +599,22 @@ class EDRDiscordIntegration(object):
         last_channel = last_comms["Channel"] if "Channel" in last_comms else last_comms.get("To", None)
         new_from = new_comms["From"] if "From" in new_comms else sender
         last_from = last_comms["From"] if "From" in last_comms else sender
+
+        return enough_time_has_passed or (new_channel != last_channel or new_from != last_from)
+
+    def __novel_enough_outgoing_comms(self, receiver, new_comms):
+        last_comms = self.cognitive_outgoing_comms_cache.get(receiver)
+        if last_comms is None:
+            return True
+
+        new_edt = EDTime()
+        new_edt.from_journal_timestamp(new_comms["timestamp"])
+        enough_time_has_passed = new_edt.elapsed_threshold(last_comms["timestamp"], self.cognitive_novelty_threshold)
+        
+        new_channel = new_comms["Channel"] if "Channel" in new_comms else new_comms.get("To", None)
+        last_channel = last_comms["Channel"] if "Channel" in last_comms else last_comms.get("To", None)
+        new_from = new_comms["From"] if "From" in new_comms else receiver
+        last_from = last_comms["From"] if "From" in last_comms else receiver
 
         return enough_time_has_passed or (new_channel != last_channel or new_from != last_from)
 
