@@ -1,5 +1,6 @@
 # coding= utf-8
 from __future__ import absolute_import
+from concurrent.futures import process
 from copy import deepcopy
 #from builtins import map, filter
 
@@ -51,6 +52,7 @@ from edvehicles import EDVehicleFactory
 from edri18n import _, _c, _edr, set_language
 from clippy import copy
 from edrfssinsights import EDRFSSInsights
+from edrcommands import EDRCommands
 
 EDRLOG = EDRLog()
 
@@ -151,6 +153,7 @@ class EDRClient(object):
         self._throttle_until_timestamp = None
         self.edrfssinsights = EDRFSSInsights()
         self.edrdiscord = EDRDiscordIntegration(self.edrcmdrs)
+        self.edrcommands = EDRCommands(self)
         
     def __get_realtime_params(self, kind):
         min_bounty = None
@@ -454,7 +457,7 @@ class EDRClient(object):
 
     def app_ui(self, parent):
         if self.ui is None:
-            self.ui = EDRTogglingPanel(self._status, self._visual_alt_feedback, parent=parent)
+            self.ui = EDRTogglingPanel(self._status, self._visual_alt_feedback, self.edrcommands.process, parent=parent)
             self.ui.notify(_(u"Troubleshooting"), [
                 _(u"If the overlay doesn't show up, try one of the following:"),
                 _(u" - In E:D Market Connector: click on the File menu, then Settings, EDR, and select the Overlay checkbox."),

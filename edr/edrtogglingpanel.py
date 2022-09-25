@@ -16,7 +16,7 @@ import ttkHyperlinkLabel
 
 class ToggledFrame(tk.Frame):
 
-    def __init__(self, parent, label, status, show, *args, **options):
+    def __init__(self, parent, label, status, show, callback_entry, *args, **options):
         conf = IGMConfig(config_file='config/igm_alt_config.v3.ini', user_config_file=['config/user_igm_alt_config.v3.ini', 'config/user_igm_alt_config.v2.ini'])
         theme=EDMCConfig.config.get_int('theme') # hat tip to ewanm89@
         if (theme):
@@ -29,6 +29,7 @@ class ToggledFrame(tk.Frame):
         self.tk_setPalette(background=bg, foreground=fg, activeBackground=conf.rgb("status", "active_bg"), activeForeground=conf.rgb("status", "active_fg"))
         
         self.show = show
+        self.callback_entry = callback_entry
         
         self.grid(sticky="nsew")
         self.status_frame = tk.Frame(self)
@@ -45,14 +46,28 @@ class ToggledFrame(tk.Frame):
         self.status_frame.grid_rowconfigure(0, weight=1)
 
         self.label = tk.Label(self.status_frame, text=label, foreground=conf.rgb("status", "label"), background=bg)
-        self.label.grid(sticky="w", row=1, column=0)
+        self.label.grid(sticky="nw", row=1, column=0)
         self.status_ui = ttkHyperlinkLabel.HyperlinkLabel(self.status_frame, textvariable=status, foreground=fg, background=bg)
         self.status_ui.grid(sticky="ew", row=1, column=1)
         
         self.toggle_button = tk.Checkbutton(self.status_frame, width=2, text='+', command=self.toggle,
                                             variable=self.show, foreground=conf.rgb("status", "check"), background=bg)
         self.toggle_button.grid(sticky="e", row=1, column=2)
+        
+        self.input = tk.Entry(self.status_frame)
+        self.input.bind("<Return>", (lambda event: self.__entry_process(self.input.get())))
+        self.input.grid(sticky="ew", row=2, column=1, columnspan=2)
+        
         self.status_frame.grid_columnconfigure(2, weight=1)
+
+    def __entry_process(self, command):
+        if not command:
+            return
+        
+        if self.callback_entry(command):
+            self.input.delete(0, tk.END)
+
+        return "break"
 
 
     def toggle(self):
@@ -61,10 +76,12 @@ class ToggledFrame(tk.Frame):
             self.sub_frame.grid_columnconfigure(0, weight=1)
             self.grid_rowconfigure(1,weight=1)
             self.toggle_button.configure(text='-')
+            self.status_frame.grid_columnconfigure(1, weight=1)
         else:
             self.sub_frame.grid_forget()
             self.grid_rowconfigure(0,weight=1)
             self.toggle_button.configure(text='+')
+            self.status_frame.grid_columnconfigure(2, weight=1)
     
     def refresh_theme(self):
         self.status_frame.grid_propagate(False)
@@ -86,12 +103,12 @@ class ToggledFrame(tk.Frame):
 
 
 class EDRTogglingPanel(ToggledFrame):
-    def __init__(self, status, show, parent=0):
+    def __init__(self, status, show, callback_entry, parent=0):
         conf = IGMConfig(config_file='config/igm_alt_config.v3.ini', user_config_file=['config/user_igm_alt_config.v3.ini', 'config/user_igm_alt_config.v2.ini'])
         theme=EDMCConfig.config.get_int('theme') # hat tip to ewanm89@
         if (theme):
             conf = IGMConfig(config_file='config/igm_alt_themed_config.v3.ini', user_config_file=['config/user_igm_alt_themed_config.v3.ini', 'config/user_igm_alt_themed_config.v2.ini'])
-        ToggledFrame.__init__(self, parent, label="EDR:", status=status, show=show)
+        ToggledFrame.__init__(self, parent, label="EDR:", status=status, show=show, callback_entry=callback_entry)
         self.configure(background=conf.rgb("general", "fill"))
         self.grid(sticky="nswe")
         self.output = tk.Text(self.sub_frame, width=conf.len("general", "body"), height=conf.body_rows("general"),

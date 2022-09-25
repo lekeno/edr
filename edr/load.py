@@ -19,11 +19,11 @@ from edvehicles import EDVehicleFactory
 from edrrawdepletables import EDRRawDepletables
 from edtime import EDTime
 from edrlog import EDRLog
-import edentities
 import edrautoupdater
 from edri18n import _, _c
 
 EDR_CLIENT = EDRClient()
+EDR_COMMANDS = EDR_CLIENT.edrcommands
 EDRLOG = EDRLog()
 LAST_KNOWN_SHIP_NAME = ""
 OVERLAY_DUMMY_COUNTER = 0
@@ -1525,6 +1525,8 @@ def handle_commands(cmdr, entry):
     if not entry["event"] == "SendText":
         return
 
+    return EDR_COMMANDS.process(entry["Message"], entry.get("To", None))
+    '''
     command_parts = entry["Message"].split(" ", 1)
     command = command_parts[0].lower()
     if not command:
@@ -1545,7 +1547,9 @@ def handle_commands(cmdr, entry):
         if entry["To"].startswith("$cmdr_decorate:#name="):
             to_cmdr = entry["To"][len("$cmdr_decorate:#name="):-1]
         EDR_CLIENT.who(to_cmdr, autocreate=True)
+    '''
 
+'''
 def handle_bang_commands(cmdr, command, command_parts):
     if command == "!overlay":
         overlay_command("" if len(command_parts) == 1 else command_parts[1])
@@ -2012,7 +2016,7 @@ def audiocue_command(param):
         EDR_CLIENT.soft_audio_feedback()
         EDR_CLIENT.audio_feedback = True
         EDR_CLIENT.notify_with_details("EDR audio cues", ["Enabled", "Soft"])
-
+'''
 def handle_shuttle_events(entry):
     if entry["event"]  not in ["BookTaxi", "BookDropship", "CancelTaxi", "CancelDropship"]:
         return
