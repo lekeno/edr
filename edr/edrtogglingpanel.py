@@ -14,6 +14,36 @@ import config as EDMCConfig
 from igmconfig import IGMConfig
 import ttkHyperlinkLabel
 
+from edri18n import _
+
+class EntryWithPlaceholder(tk.Entry):
+    def __init__(self, master=None, placeholder="type here", color='grey'):
+        super().__init__(master)
+
+        self.placeholder = placeholder
+        self.placeholder_color = color
+        self.default_fg_color = self['fg']
+
+        self.bind("<FocusIn>", self.focus_in)
+        self.bind("<FocusOut>", self.focus_out)
+
+        self.show_placeholder()
+
+    def show_placeholder(self):
+        self.delete(0, tk.END)
+        self.insert(0, self.placeholder)
+        self['fg'] = self.placeholder_color
+        
+    def focus_in(self, *args):
+        if self['fg'] == self.placeholder_color:
+            self.delete(0, tk.END)
+            self['fg'] = self.default_fg_color
+
+    def focus_out(self, *args):
+        if not self.get():
+            self.show_placeholder()
+
+
 class ToggledFrame(tk.Frame):
 
     def __init__(self, parent, label, status, show, callback_entry, *args, **options):
@@ -54,9 +84,10 @@ class ToggledFrame(tk.Frame):
                                             variable=self.show, foreground=conf.rgb("status", "check"), background=bg)
         self.toggle_button.grid(sticky="e", row=1, column=2)
         
-        self.input = tk.Entry(self.status_frame)
+        self.input = EntryWithPlaceholder(self.status_frame, placeholder=_("Waiting for a game session..."))
         self.input.bind("<Return>", (lambda event: self.__entry_process(self.input.get())))
-        self.input.grid(sticky="ew", row=2, column=1, columnspan=2)
+        self.input.grid(sticky="ew", row=2, column=0, columnspan=3)
+        self.input.config(state='disabled')
         
         self.status_frame.grid_columnconfigure(2, weight=1)
 
@@ -118,6 +149,16 @@ class EDRTogglingPanel(ToggledFrame):
 
         self.__configure_tags(conf)
         self.toggle()
+
+    def enable_entry(self):
+        self.input.config(state='normal')
+        self.input.placeholder = _("Type EDR commands here or via the in-game chat.")
+        self.input.show_placeholder()
+
+    def disable_entry(self):
+        self.input.placeholder = _("Waiting for a game session...")
+        self.input.show_placeholder()
+        self.input.config(state='disabled')
 
     def nolink(self):
         self.status_ui.url = None

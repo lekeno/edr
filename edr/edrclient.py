@@ -436,6 +436,8 @@ class EDRClient(object):
         self.__notify(_(u"EDR v{} by LeKeno").format(self.edr_version), details, clear_before=True)
         if self.audio_feedback:
             self.SFX.startup()
+        if self.ui:
+            self.ui.enable_entry()
 
     def shutdown(self, everything=False):
         self.edrcmdrs.persist()
@@ -448,6 +450,8 @@ class EDRClient(object):
         self.edrlegal.persist()
         if self.IN_GAME_MSG:
             self.IN_GAME_MSG.shutdown()
+        if self.ui:
+            self.ui.disable_entry()
         config.set("EDRVisualAltFeedback", "True" if self.visual_alt_feedback else "False")
 
         if not everything:
