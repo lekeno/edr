@@ -93,7 +93,7 @@ class ToggledFrame(tk.Frame):
 
     def __entry_process(self, command):
         if not command:
-            return
+            return "break"
         
         if self.callback_entry(command):
             self.input.delete(0, tk.END)
