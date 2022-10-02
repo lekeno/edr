@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from subprocess import call
 
 try:
     # for Python2
@@ -59,7 +60,6 @@ class ToggledFrame(tk.Frame):
         self.tk_setPalette(background=bg, foreground=fg, activeBackground=conf.rgb("status", "active_bg"), activeForeground=conf.rgb("status", "active_fg"))
         
         self.show = show
-        self.callback_entry = callback_entry
         
         self.grid(sticky="nsew")
         self.status_frame = tk.Frame(self)
@@ -85,21 +85,11 @@ class ToggledFrame(tk.Frame):
         self.toggle_button.grid(sticky="e", row=1, column=2)
         
         self.input = EntryWithPlaceholder(self.status_frame, placeholder=_("Waiting for a game session..."))
-        self.input.bind("<Return>", (lambda event: self.__entry_process(self.input.get())))
+        self.input.bind("<Return>", (lambda event: callback_entry(self.input.get())))
         self.input.grid(sticky="ew", row=2, column=0, columnspan=3)
         self.input.config(state='disabled')
         
         self.status_frame.grid_columnconfigure(2, weight=1)
-
-    def __entry_process(self, command):
-        if not command:
-            return "break"
-        
-        if self.callback_entry(command):
-            self.input.delete(0, tk.END)
-
-        return "break"
-
 
     def toggle(self):
         if bool(self.show.get()):
@@ -139,14 +129,22 @@ class EDRTogglingPanel(ToggledFrame):
         theme=EDMCConfig.config.get_int('theme') # hat tip to ewanm89@
         if (theme):
             conf = IGMConfig(config_file='config/igm_alt_themed_config.v3.ini', user_config_file=['config/user_igm_alt_themed_config.v3.ini', 'config/user_igm_alt_themed_config.v2.ini'])
-        ToggledFrame.__init__(self, parent, label="EDR:", status=status, show=show, callback_entry=callback_entry)
-        self.configure(background=conf.rgb("general", "fill"))
+        self.callback_entry = callback_entry
+        ToggledFrame.__init__(self, parent, label="EDR:", status=status, show=show, callback_entry=self.__entry_process)
+        self.bg_color = conf.rgb("general", "fill")
+        self.fg_color = conf.rgb("general", "body")
+        self.configure(background=self.bg_color)
         self.grid(sticky="nswe")
         self.output = tk.Text(self.sub_frame, width=conf.len("general", "body"), height=conf.body_rows("general"),
-                                                bg=conf.rgb("general", "fill"), fg=conf.rgb("general", "body"),
+                                                bg=self.bg_color, fg=self.fg_color,
                                                 wrap=tk.WORD, padx=4, borderwidth=0)
+        scrollbar = ttk.Scrollbar(self.sub_frame, command=self.output.yview)
+        scrollbar.grid(row=0, column=1, sticky='nsew')
+        
         self.output.grid(row=0, column=0, sticky="nswe")
-
+        self.output.config(state="disabled", yscrollcommand= scrollbar.set)
+        self.output.bind("<1>", lambda event: self.output.focus_set())
+        
         self.__configure_tags(conf)
         self.toggle()
 
@@ -184,6 +182,7 @@ class EDRTogglingPanel(ToggledFrame):
         self.__push_message("help", header, body)
 
     def __push_message(self, kind, header, body):
+        self.output.config(state="normal")
         self.output.insert(1.0,u"\n", ("body_"+kind))
         body.reverse()
         for line in body:
@@ -191,9 +190,12 @@ class EDRTogglingPanel(ToggledFrame):
             self.output.insert(1.0, u"\n", ("body_"+kind))
         self.output.insert(1.0, header, ("header_"+kind))
         self.output.insert(1.0, "\n", ("header_"+kind))
+        self.output.config(state="disabled")
     
     def clear(self):
+        self.output.config(state="normal")
         self.output.delete(1.0, tk.END)
+        self.output.config(state="disabled")
 
     def __configure_tags(self, conf):
         kinds = ["sitrep", "intel", "warning", "notice", "help"]
@@ -210,6 +212,21 @@ class EDRTogglingPanel(ToggledFrame):
             super(EDRTogglingPanel, self).refresh_theme()
         else:
             super().refresh_theme()
-        self.configure(background=conf.rgb("general", "fill"))
-        self.output.configure(bg=conf.rgb("general", "fill"), fg=conf.rgb("general", "body"))
+        self.bg_color = conf.rgb("general", "fill")
+        self.fg_color = conf.rgb("general", "body")
+        self.configure(background=self.bg_color)
+        self.output.configure(bg=self.bg_color, fg=self.fg_color)
         self.__configure_tags(conf)
+
+    def __entry_process(self, command):
+        if not command:
+            return "break"
+        
+        if self.callback_entry(command):
+            self.input.delete(0, tk.END)
+            self.input.config(fg=self.fg_color)
+        else:
+            self.input.config(fg="red")
+            self.notify(_("Unrecognized command"), [_("This doesn't appear to be a recognized command."), _("Please verify the prefix and syntax."), _("Use the !help command for further info.")])
+
+        return "break"

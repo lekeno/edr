@@ -27,9 +27,9 @@ class EDRCommands(object):
         elif command[0] == "?":
             return self.handle_query_commands(cmdr, command, command_parts)
         elif command[0] == "#":
-            return self.handle_hash_commands(command, command_parts, text, recipient)
+            return self.handle_hash_commands(command, command_parts, recipient)
         elif command[0] == "-":
-            return self.handle_minus_commands(command, command_parts, text, recipient)
+            return self.handle_minus_commands(command, command_parts, recipient)
         elif command[0] == "@":
             return self.handle_at_commands(text, recipient)
         elif command == "o7":
@@ -347,8 +347,8 @@ class EDRCommands(object):
         return False
         
         
-    def handle_hash_commands(self, command, command_parts, text, recipient):
-        target_cmdr = EDRCommands.get_target_cmdr(command_parts, text, recipient, self.edr_client.player)
+    def handle_hash_commands(self, command, command_parts, recipient):
+        target_cmdr = EDRCommands.get_target_cmdr(command_parts, recipient, self.edr_client.player)
         if target_cmdr is None:
             self.edr_log.log(u"Skipping tag command: no valid target", "WARNING")
             return
@@ -379,8 +379,8 @@ class EDRCommands(object):
             return False
         return True
 
-    def handle_minus_commands(self, command, command_parts, text, recipient):
-        target_cmdr = EDRCommands.get_target_cmdr(command_parts, text, recipient, self.edr_client.player)
+    def handle_minus_commands(self, command, command_parts, recipient):
+        target_cmdr = EDRCommands.get_target_cmdr(command_parts, recipient, self.edr_client.player)
         if target_cmdr is None:
             self.edr_log.log(u"Skipping untag command: no valid target", "WARNING")
             return False

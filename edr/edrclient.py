@@ -596,6 +596,12 @@ class EDRClient(object):
         self.ui.refresh_theme()
         self.login()
 
+    def process_sent_message(self, entry):
+        if self.ui:
+            self.ui.enable_entry()
+        
+        return self.edrcommands.process(entry["Message"], entry.get("To", None))
+
     def noteworthy_about_system(self, fsdjump_event):
         if fsdjump_event["SystemSecurity"]:
             self.player.location_security(fsdjump_event["SystemSecurity"])

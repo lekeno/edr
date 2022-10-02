@@ -23,7 +23,6 @@ import edrautoupdater
 from edri18n import _, _c
 
 EDR_CLIENT = EDRClient()
-EDR_COMMANDS = EDR_CLIENT.edrcommands
 EDRLOG = EDRLog()
 LAST_KNOWN_SHIP_NAME = ""
 OVERLAY_DUMMY_COUNTER = 0
@@ -1525,7 +1524,7 @@ def handle_commands(cmdr, entry):
     if not entry["event"] == "SendText":
         return
 
-    return EDR_COMMANDS.process(entry["Message"], entry.get("To", None))
+    return EDR_CLIENT.process_sent_message(entry)
     
 def handle_shuttle_events(entry):
     if entry["event"]  not in ["BookTaxi", "BookDropship", "CancelTaxi", "CancelDropship"]:
