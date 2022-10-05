@@ -1,8 +1,10 @@
 # coding= utf-8
 from __future__ import absolute_import
+from copy import deepcopy
 #from builtins import map, filter
 
 import datetime
+import itertools
 from sys import float_repr_style
 import sys
 import time
@@ -10,6 +12,7 @@ import random
 import math
 import re
 import json
+from edrfleetcarrier import EDRFleetCarrier
 
 try:
     # for Python2
@@ -504,7 +507,6 @@ class EDRClient(object):
         self._direct_fc_link = notebook.Label(frame, text=_(u"Configure your Fleet Carrier channel in config/user_config.ini"))
         self._private_fc_link.grid(padx=10, row=18, column=1, sticky=tk.EW)
         self._direct_fc_link.grid(padx=10, row=19, column=1, sticky=tk.EW)
-        # ttkHyperlinkLabel.HyperlinkLabel(frame, text=_(u"Configure your Fleet Carrier channel in config/user_config.ini"), background=notebook.Label().cget('background'), url="https://example.org/TODO", underline=True)
         if self.fc_jump_psa == _(u'Private'):
             self._direct_fc_link.grid_remove()
         elif self.fc_jump_psa == _(u'Direct'):
@@ -604,10 +606,7 @@ class EDRClient(object):
                 facts = [_(u"Crimes will not be reported.")]
             else:
                 return False
-        # TODO bug at 2022-04-04 06:41:06.827 UTC - INFO - 11408:3184:3184 <plugins>.EDR.edrlog.EDRLog.log:32: Updating system info (was missing or obsolete). HIP 69157 vs. HIP 69200
-        # EDRLOG.log(u"Notify about {}; details: {}".format(header, details[0]), "DEBUG")
-        # TypeError: 'dict_keys' object is not subscriptable
-
+        
         self.__notify(header, facts, clear_before = True)
         return True
 
@@ -1109,7 +1108,7 @@ class EDRClient(object):
                 self.__notify(_("Mission rewards eval"), [_("Nothing noteworthy to share")], clear_before=True)
 
     def eval(self, eval_type):
-        canonical_commands = ["power", "backpack", "locker"]
+        canonical_commands = ["power", "backpack", "locker", "bar", "bar stock", "bar demand"]
         synonym_commands = {"power": ["priority", "pp", "priorities"]}
         supported_commands = set(canonical_commands + synonym_commands["power"])
         if eval_type not in supported_commands:
@@ -1131,6 +1130,10 @@ class EDRClient(object):
             self.eval_backpack()
         elif eval_type == "locker":
             self.eval_locker()
+        elif eval_type in ["bar", "bar stock"]:
+            self.eval_bar()
+        elif eval_type == "bar demand":
+            self.eval_bar(stock=False)
 
     def eval_build(self):
         if not self.player.mothership.update_modules():
@@ -1184,6 +1187,24 @@ class EDRClient(object):
         elif not passive:
             self.__notify(_("Storage assessment"), [_(u"Empty ship locker?")], clear_before=True)
 
+    def eval_bar(self, stock=True):
+        header = _("Bar: stock assessment") if stock else _("Bar: demand assessment")
+        if not self.player.last_station or not self.player.last_station.type == "FleetCarrier" or not self.player.last_station.bar:
+            self.__notify(header, [_(u"Unexpected state: either no fleet carrier, or no bar?")], clear_before = True)
+            return False
+
+        bar = self.player.last_station.bar
+        items = bar.items_in_stock() if stock else bar.items_in_demand()
+        if items:
+            details = self.__eval_good_micro_resources(items) if stock else self.__eval_bad_micro_resources(items)
+            if details:
+                legend = [_(u"Kind: best items (b=blueprint, u=upgrades, x=trading, e=eng. unlocks)")] if stock else [_(u"Kind: worst items (b=blueprint, u=upgrades, x=trading, e=eng. unlocks)")]
+                self.__notify(header, legend + details, clear_before=True)
+                return True
+            else:
+                self.__notify(header, [_(u"Nothing noteworthy")], clear_before = True)
+                return False
+    
     def __eval_micro_resources(self, micro_resources, from_backpack=False):
         discardable = [self.player.inventory.oneliner(name, from_backpack) for name in micro_resources if (self.player.engineers.is_useless(name) and self.player.inventory.count(name, from_backpack=from_backpack, from_locker=not from_backpack))]
         unnecessary = [self.player.inventory.oneliner(name, from_backpack) for name in micro_resources if (self.player.engineers.is_unnecessary(name) and self.player.inventory.count(name, from_backpack=from_backpack, from_locker=not from_backpack))]
@@ -1195,6 +1216,119 @@ class EDRClient(object):
         if unnecessary:
             details.append(_(u"Unnecessary: {}").format(", ".join(unnecessary)))
         return details
+
+    def __eval_good_micro_resources(self, micro_resources):
+        self_unlocking = [self.player.remlok_helmet.describe_odyssey_material_short(name) for name in micro_resources if self.player.engineers.is_necessary(name)]
+        other_unlocking = [self.player.remlok_helmet.describe_odyssey_material_short(name) for name in micro_resources if (self.player.engineers.is_contributing(name) and self.player.engineers.is_unnecessary(name))]
+        engineering_assets = [[self.player.remlok_helmet.describe_odyssey_material_short(name, ignore_eng_unlocks=True), self.player.remlok_helmet.how_useful(name)] for name in micro_resources if self.player.remlok_helmet.is_assets(name) and self.player.remlok_helmet.how_useful(name) > 0]
+        engineering_goods = [[self.player.remlok_helmet.describe_odyssey_material_short(name, ignore_eng_unlocks=True), self.player.remlok_helmet.how_useful(name)] for name in micro_resources if self.player.remlok_helmet.is_goods(name) and self.player.remlok_helmet.how_useful(name) > 0]
+        engineering_data = [[self.player.remlok_helmet.describe_odyssey_material_short(name, ignore_eng_unlocks=True), self.player.remlok_helmet.how_useful(name)] for name in micro_resources if self.player.remlok_helmet.is_data(name) and self.player.remlok_helmet.how_useful(name) > 0]
+        sorted_engineering_assets = sorted(engineering_assets, key=lambda b: b[1], reverse=True)
+        sorted_engineering_goods = sorted(engineering_goods, key=lambda b: b[1], reverse=True)
+        sorted_engineering_data = sorted(engineering_data, key=lambda b: b[1], reverse=True)
+        details = []
+        if self_unlocking:
+            details.append(_(u"Unlocks: {}").format(", ".join(self_unlocking)))
+        if sorted_engineering_assets:
+            details.append(_(u"Assets: {}").format(", ".join([pair[0] for pair in sorted_engineering_assets])))
+        if sorted_engineering_goods:
+            details.append(_(u"Goods: {}").format(", ".join([pair[0] for pair in sorted_engineering_goods])))
+        if sorted_engineering_data:
+            details.append(_(u"Data: {}").format(", ".join([pair[0] for pair in sorted_engineering_data])))
+        if other_unlocking:
+            details.append(_(u"Unlocked: {}").format(", ".join(other_unlocking)))
+        return details
+
+    def __eval_bad_micro_resources(self, micro_resources):
+        other_unlocking = [self.player.remlok_helmet.describe_odyssey_material_short(name) for name in micro_resources if (self.player.engineers.is_contributing(name) and self.player.engineers.is_unnecessary(name) and self.player.inventory.count(name))]
+        engineering_assets = [[self.player.remlok_helmet.describe_odyssey_material_short(name, ignore_eng_unlocks=True), self.player.remlok_helmet.how_useful(name)] for name in micro_resources if self.player.remlok_helmet.is_assets(name) and self.player.inventory.count(name)]
+        engineering_goods = [[self.player.remlok_helmet.describe_odyssey_material_short(name, ignore_eng_unlocks=True), self.player.remlok_helmet.how_useful(name)] for name in micro_resources if self.player.remlok_helmet.is_goods(name) and self.player.inventory.count(name)]
+        engineering_data = [[self.player.remlok_helmet.describe_odyssey_material_short(name, ignore_eng_unlocks=True), self.player.remlok_helmet.how_useful(name)] for name in micro_resources if self.player.remlok_helmet.is_data(name) and self.player.inventory.count(name)]
+        sorted_engineering_assets = sorted(engineering_assets, key=lambda b: b[1])
+        sorted_engineering_goods = sorted(engineering_goods, key=lambda b: b[1])
+        sorted_engineering_data = sorted(engineering_data, key=lambda b: b[1])
+        details = []
+        if sorted_engineering_assets:
+            details.append(_(u"Assets: {}").format(", ".join([pair[0] for pair in sorted_engineering_assets])))
+        if sorted_engineering_goods:
+            details.append(_(u"Goods: {}").format(", ".join([pair[0] for pair in sorted_engineering_goods])))
+        if sorted_engineering_data:
+            details.append(_(u"Data: {}").format(", ".join([pair[0] for pair in sorted_engineering_data])))
+        if other_unlocking:
+            details.append(_(u"Unlocked: {}").format(", ".join(other_unlocking)))
+        return details
+
+    def __summarize_fc_market(self, sale_orders, purchase_orders, max_len=2048):
+        remaining = max_len
+        details_purchases = []
+        details_sales = []
+        if sale_orders:
+            sale_orders_with_value = [[sale_orders[order], self.player.remlok_helmet.how_useful(order), order] for order in sale_orders if self.player.remlok_helmet.how_useful(order) >= 0]
+            sorted_sale_orders = sorted(sale_orders_with_value, key=lambda b: b[1], reverse=True)
+            for order in sorted_sale_orders:
+                quantity = pretty_print_number(order[0]["quantity"])
+                item = order[0]["l10n"][:21].capitalize()
+                price = pretty_print_number(order[0]["price"])
+                worthy = self.player.remlok_helmet.worthiness_odyssey_material(order[2])
+                if worthy:
+                    details_sales.append(f'{quantity: >5} {item: <21} {price: >7} {worthy: >15}')
+                else:
+                    details_sales.append(f'{quantity: >5} {item: <21} {price: >7}')
+
+        for order in purchase_orders:
+            quantity = pretty_print_number(purchase_orders[order]["quantity"])
+            item = purchase_orders[order]["l10n"][:21].capitalize()
+            price = pretty_print_number(purchase_orders[order]["price"])
+            details_purchases.append(f'{quantity: >5} {item: <21} {price: >7}')
+
+        
+        header_sales = ""
+        if details_sales:
+            header_sales += _(f'{"Units": >5} {"Item": <21} {"Credits": >7} {"Worthiness*": >15}\n')
+            header_sales += _(f'{" [Selling] ":-^50}\n')
+            
+
+        header_purchases = ""                
+        if details_purchases:
+            if header_sales:
+                header_purchases += "\n\n"
+                header_purchases += _(f'{" [Buying] ":-^50}\n')
+            else:
+                header_purchases += _(f'{"Units": >5} {"Item": <15} {"Credits": >7}\n')
+                header_purchases += _(f'{" [Buying] ":-^50}\n')
+            
+        opening = "```"
+        closing = "```"
+        summary = opening
+        summary_footer = closing
+        if details_sales:
+            summary_footer = "\n\n*: b=blueprint u=upgrades x=trading e=eng. unlocks"
+            summary_footer += closing
+        
+        included_sales = []
+        included_purchases = []
+        remaining -= len(summary) + len(header_sales) + len(header_purchases) + len(summary_footer) 
+        for s,p in itertools.zip_longest(details_sales, details_purchases):
+            if remaining <= 0:
+                break
+            if s and len(s) <= remaining:
+                included_sales.append(s)
+                remaining -= len(s)+1
+            if p and len(p) <= remaining:
+                included_purchases.append(p)
+                remaining -= len(p)+1
+        
+        if included_sales:
+            summary += header_sales
+            summary += "\n".join(included_sales)
+    
+        if included_purchases:
+            summary += header_purchases
+            summary += "\n".join(included_purchases)
+
+        summary += summary_footer
+        return summary
+
 
     def evict_system(self, star_system):
         self.edrsystems.evict(star_system)
@@ -1861,6 +1995,44 @@ class EDRClient(object):
         
         return False
 
+    def fc_materials(self, entry):
+        if self.player.last_station == None or self.player.last_station.type != "FleetCarrier":
+            self.player.last_station = EDRFleetCarrier()
+        
+        if not self.player.last_station.update_from_fcmaterials(entry):
+            return False
+
+        if not self.player.last_station.bar:
+            return False
+        return True
+
+    def ack_station_pending_reports(self):
+        if self.player.last_station == None:
+            return False
+        if self.player.last_station.type != "FleetCarrier":
+            return False
+
+        if not self.player.last_station.bar:
+            return False
+        
+        if not self.player.last_station.bar.has_changed():
+            return True
+
+        adjusted_entry = {
+            "timestamp": self.player.last_station.bar.timestamp.as_js_epoch(), 
+            "name": self.player.last_station.name,
+            "callsign": self.player.last_station.callsign,
+            "starSystem": self.player.star_system,
+            "reportedBy": self.player.name
+        }
+
+        if self.player.last_station.bar.items:
+            adjusted_entry["items"] = deepcopy(self.player.last_station.bar.items)
+        
+        if self.edrsystems.update_fc_materials(self.player.star_system, adjusted_entry):
+            self.status = _(u"Reported bartender resources")
+        self.player.last_station.bar.acknowledge()
+
     def __throttling_duration(self):
         now_epoch = EDTime.py_epoch_now()
         if now_epoch > self._throttle_until_timestamp:
@@ -1907,7 +2079,7 @@ class EDRClient(object):
             else:
                 self.status = _(u"Message sent to EDR central")
             self.__notify(_(u"EDR central"), details, clear_before = True)
-            self._throttle_until_timestamp = EDTime.py_epoch_now() + 60*5 #TODO parameterize
+            self._throttle_until_timestamp = EDTime.py_epoch_now() + 60*5
             return True
         return False
 
@@ -2444,24 +2616,37 @@ class EDRClient(object):
             details.extend(description)
             self.__notify(_("Remlok Insights"), details, clear_before=True)
 
-    # TODO eval carrier, ship storage?
-
     def fleet_carrier_update(self):
         if self.player.fleet_carrier.has_market_changed():
             timeframe = 60*15
             market = self.player.fleet_carrier.json_market(timeframe)
             text_summary = self.player.fleet_carrier.text_summary(timeframe)
-            # TODO send market to endpoint
             details = []
             if market.get("sales", None):
                 details.append(_("{} sale orders").format(len(market["sales"])))
             if market.get("purchases", None):
                 details.append(_("{} purchase orders").format(len(market["purchases"])))
+            
+            fc = self.server.fc(self.player.fleet_carrier.callsign, self.player.fleet_carrier.name, self.player.fleet_carrier.position, may_create=True)
+            if market and fc:
+                if self.player.fleet_carrier.is_open_to_all():
+                    fc_id = list(fc)[0] if fc else None
+                    market["owner"] = self.player.name
+                    if self.server.report_fc_market(fc_id, market):
+                        details.append(_("Access: all => Market info sent."))
+                sale_orders = self.player.fleet_carrier.sale_orders_within(timeframe)
+                purchase_orders = self.player.fleet_carrier.purchase_orders_within(timeframe)
+                summary = self.__summarize_fc_market(sale_orders, purchase_orders)
+                market["summary"] = summary
+                if self.edrdiscord.fc_market_update(market):
+                    details.append(_(u"Sent FC trading info to your discord channel."))
+
+            self.player.fleet_carrier.acknowledge_market()
+
             if details:
                 copy(text_summary)
                 details.append(_("Summary placed in the clipboard"))
                 self.__notify(_("Fleet Carrier status summary"), details, clear_before=True)
-            self.player.fleet_carrier.acknowledge_market()
 
     def carrier_trade(self, entry):
         if entry.get("event", "") != "CarrierTradeOrder":
@@ -2475,9 +2660,6 @@ class EDRClient(object):
             self.__notify(_("Trading Insights for {}").format(l_item), description, clear_before=True)
         
         self.player.fleet_carrier.trade_order(entry)
-        # TODO report trade orders to facilitate transactions between players in a batch to avoid spamming PUTs
-        # use "event":"Music", "MusicTrack":"FleetCarrier_Managment" and "event":"CarrierStats" to close
-        # perhaps { "timestamp":"2022-04-06T21:24:52Z", "event":"Music", "MusicTrack":"NoTrack" } to close on exiting the carrier screen?
 
     def system_guidance(self, system_name, passive=False):
         description = self.edrsystems.describe_system(system_name, self.player.star_system == system_name)
@@ -2674,7 +2856,6 @@ class EDRClient(object):
         return result
 
     def show_material_profiles(self):
-        # TODO verify clear before
         profiles = self.edrresourcefinder.profiles()
         self.__notify(_(u"Available materials profiles"), [" ;; ".join(profiles)], clear_before=True)
 

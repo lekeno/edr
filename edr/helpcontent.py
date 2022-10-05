@@ -280,6 +280,8 @@ class HelpContent(object):
                 _(u" - !eval [locker|backpack]: to evaluate the usefulness of materials in your ship locker or backpack, e.g. '!eval locker'. Useful when selling stuff at the bar, or via your fleet carrier."),
                 _(u" - !eval [name of the material] to evaluate the usefulness of a specific material, e.g. '!eval surveillance equipment'. Useful to assess a reward before accepting a mission."),
                 _(u" - Point at materials while on foot with the emote gesture to get EDR to identify it and provide info about its usefulness."),
+                _(u" - !eval [bar|bar demand] to evaluate the items on sale (or in demand) at the last visited bar on a fleet carrier, e.g. '!eval bar demand'. Useful to know which items to buy / sale."),
+                _(u" - Visit the bar on a fleet carrier to get a list of most useful items on sale, or least useful items in demand."),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
             ]

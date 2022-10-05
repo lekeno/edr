@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 import copy
 from pickle import TRUE
+import re
 
 import edtime
 from edrlog import EDRLog
@@ -10,6 +11,7 @@ EDRLOG = EDRLog()
 class EDRFleetCarrier(object):
     def __init__(self):
         self.id = None
+        self.type = "FleetCarrier"
         self.callsign = None
         self.name = None
         self.access = "none"
@@ -27,10 +29,12 @@ class EDRFleetCarrier(object):
         self.services = {}
         self.ship_packs = {}
         self.module_packs = {}
+        self.bar = None
 
 
     def __reset(self):
         self.id = None
+        self.type = "FleetCarrier"
         self.callsign = None
         self.name = None
         self.access = "none"
@@ -56,6 +60,26 @@ class EDRFleetCarrier(object):
         self.callsign = buy_event.get("Callsign", None)
         self._position["system"] = buy_event.get("Location", None)
 
+    def update_from_location_or_docking(self, entry):
+        if not entry.get("event", None) in ["Location", "Docked"]:
+            return False
+
+        if entry.get("StationType", None) != "FleetCarrier":
+            return False
+
+        if self.id and self.id != entry.get("MarketID", None):
+            self.__reset()
+        
+        self.id = entry.get("MarketID", None)
+        self.callsign = entry.get("StationName", None)
+        self.name = entry.get("Name", None)
+        self._position = {
+            "system": entry.get("StarSystem", None),
+            "body": entry.get("Body", None)
+        }
+        # TODO "StationServices":[ "dock", "autodock", "commodities", "contacts", "exploration", "outfitting", "crewlounge", "rearm", "refuel", "repair", "shipyard", "engineer", "flightcontroller", "stationoperations", "stationMenu", "carriermanagement", "carrierfuel", "livery", "voucherredemption", "socialspace", "bartender", "vistagenomics", "pioneersupplies" ],
+        return True
+    
     def update_from_stats(self, fc_stats_event):
         if self.id and self.id != fc_stats_event.get("CarrierID", None):
             self.__reset()
@@ -73,6 +97,15 @@ class EDRFleetCarrier(object):
                 self.__tweak_service(crew_description)
         self.ship_packs = fc_stats_event.get("ShipPacks", {})
         self.module_packs = fc_stats_event.get("ModulePacks", {})
+
+    def update_from_fcmaterials(self, fc_materials_event):
+        if self.id and self.id != fc_materials_event.get("MarketID", None):
+            self.__reset()
+        self.id = fc_materials_event.get("MarketID", None)
+        self.callsign = fc_materials_event.get("CarrierID", None)
+        self.name = fc_materials_event.get("CarrierName", None)
+        self.bar = EDRFleetCarrierBar()
+        return self.bar.from_fcmaterials(fc_materials_event)
         
     def jump_requested(self, jump_request_event):
         if self.id and self.id != jump_request_event.get("CarrierID", None):
@@ -154,6 +187,9 @@ class EDRFleetCarrier(object):
 
     def is_parked(self):
         return self.departure["destination"] is None or self.departure["time"] is None
+
+    def is_open_to_all(self, include_notorious=False):
+        return self.access == "all" and self.allow_notorious if include_notorious else True
 
     def json_jump_schedule(self):
         self.__update_position()
@@ -238,23 +274,26 @@ class EDRFleetCarrier(object):
             pass
     
     def json_market(self, timeframe=None):
-        # TODO within timeframe
         self.__update_position()
         if self.id is None:
             return None
 
+        since = edtime.EDTime.js_epoch_now()
+        if timeframe:
+            since -= timeframe*1000
         return {
             "id": self.id,
             "callsign": self.callsign,
             "name": self.name,
-            "location": self.position,
+            "location": self._position,
             "access": self.access,
             "allow_notorious": self.allow_notorious,
-            "sales": self.__sale_orders_within(timeframe),
-            "purchases": self.__purchase_orders_within(timeframe)
+            "sales": self.sale_orders_within(timeframe),
+            "purchases": self.purchase_orders_within(timeframe),
+            "timestamp": since
         }
 
-    def __sale_orders_within(self, timeframe):
+    def sale_orders_within(self, timeframe):
         all = copy.deepcopy(self.sale_orders)
         if timeframe is None:
             return all
@@ -262,7 +301,7 @@ class EDRFleetCarrier(object):
         return {item: values for item, values in all.items() if values["timestamp"] >= threshold}
         
 
-    def __purchase_orders_within(self, timeframe):
+    def purchase_orders_within(self, timeframe):
         all = copy.deepcopy(self.purchase_orders)
         if timeframe is None:
             return all
@@ -279,14 +318,14 @@ class EDRFleetCarrier(object):
         # TODO add services, tax, etc.
         details_purchases = []
         details_sales = []
-        orders = self.__purchase_orders_within(timeframe)
+        orders = self.purchase_orders_within(timeframe)
         for order in orders:
             quantity = orders[order]["quantity"]
             item = orders[order]["l10n"][:30]
             price = orders[order]["price"]
             details_purchases.append(f'{quantity: >8} {item: <30} {price: >10n}')
 
-        orders = self.__sale_orders_within(timeframe)
+        orders = self.sale_orders_within(timeframe)
         for order in orders:
             quantity = orders[order]["quantity"]
             item = orders[order]["l10n"][:30]
@@ -380,3 +419,56 @@ class EDRFleetCarrier(object):
             self.services[role]["enabled"] = enabled
             if name:
                 self.services[role]["crew"] = name
+
+class EDRFleetCarrierBar(object):
+    def __init__(self):
+        self.items = {}
+        self.updated = False
+        self.timestamp = edtime.EDTime()
+    
+    def from_fcmaterials(self, entry):
+        self.items = {}
+
+        if entry.get("event", "") != "FCMaterials":
+            return False
+
+        items = entry.get("Items", [])
+        self.timestamp = edtime.EDTime()
+        self.updated = True
+        for item in items:
+            listing = item
+            if listing["Stock"] > 0 or listing["Demand"] > 0:
+                name_regex = r"^\$([a-z]+)_name;$"
+                m = re.match(name_regex, listing["Name"])
+                if m:
+                    name = m.group(1)
+                    self.items[name] = {
+                        "price": listing["Price"],
+                        "stock": listing["Stock"],
+                        "demand": listing["Demand"]
+                    }
+
+        return True
+
+    def acknowledge(self):
+        self.bar_updated = False
+
+    def has_changed(self):
+        return self.updated
+    
+    def items_in_stock(self):
+        in_stock = {}
+        for item in self.items:
+            if self.items[item]["stock"] > 0:
+                in_stock[item] = copy.deepcopy(self.items[item])
+
+        return in_stock
+
+    def items_in_demand(self):
+        in_demand = {}
+        for item in self.items:
+            if self.items[item]["demand"] > 0:
+                in_demand[item] = copy.deepcopy(self.items[item])
+
+        return in_demand
+

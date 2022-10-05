@@ -113,6 +113,8 @@ DEFAULT_TIPS = {
         _(u"Send '!eval power' to get an assessment of your power priorities."),
         _(u"[Odyssey] Send '!eval backpack' to get an assessment of items in your backpack."),
         _(u"[Odyssey] Send '!eval locker' to get an assessment of items in your ship locker."),
+        _(u"[Odyssey] Send '!eval bar' to get an assessment of items on sale from the last visited bar on a fleet carrier."),
+        _(u"[Odyssey] Send '!eval bar demand' to get an assessment of items in demand at the last visited bar on a fleet carrier."),
         _(u"Send '!offbeat' to get a station whose info hasn't been updated recently and has a higher chance of carrying premium weapons/suits."),
         _(u"Send '!materials' to get a list of material profiles supported by EDR (e.g. synthesis for FSD, etc.)"),
         _(u"Send '!rrrfc' to get a fleet carrier with repair, rearm, refuel in the current system. Double check docking access before proceeding."),
@@ -129,7 +131,9 @@ DEFAULT_TIPS = {
         _(u"Send '!fc J6B' to display info for a local fleet carrier whose callsign or name contains J6B."),
         _(u"Send '!station Jameson' to display info for a local station/outpost/... whose name contains Jameson."),
         _(u"Point at materials with the emote gesture to identify them and have EDR share some info about how useful the material is."),
-        _(u"Point at, or salute other players with the emote gestures to show their EDR and Inara profile.")
+        _(u"Point at, or salute other players with the emote gestures to show their EDR and Inara profile."),
+        _(u"When visiting a bar on a fleet carrier, EDR will list the most useful Odyssey items that are on sale if any."),
+        _(u"When visiting a bar on a fleet carrier with no items on sale, EDR will list the least useful Odyssey items that can be sold if any.")
     ],
     "OPEN tips": [
         _(u"Never fly what you can't afford to lose. Check your rebuy and credit balance on your right panel."),

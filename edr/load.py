@@ -218,6 +218,10 @@ def handle_carrier_events(ed_player, entry):
         EDR_CLIENT.carrier_trade(entry)
     elif entry["event"] == "CarrierCrewServices":
         ed_player.fleet_carrier.tweak_crew_service(entry)
+    elif entry["event"] == "FCMaterials":
+        EDR_CLIENT.fc_materials(entry)
+        if not EDR_CLIENT.eval_bar():
+            EDR_CLIENT.eval_bar(stock=False)
         
 
 def handle_movement_events(ed_player, entry):
@@ -300,6 +304,7 @@ def handle_change_events(ed_player, entry):
             place = entry["StationName"]
             outcome["updated"] |= ed_player.update_place_if_obsolete(place)
             EDRLOG.log(u"Place changed: {} (location event)".format(place), "INFO")
+            ed_player.docked_at(entry)
         body = entry.get("Body", None)
         outcome["updated"] |= ed_player.update_body_if_obsolete(body)
         EDRLOG.log(u"Body changed: {} (location event)".format(body), "INFO")
@@ -321,13 +326,16 @@ def handle_change_events(ed_player, entry):
         ed_player.to_normal_space()
         EDR_CLIENT.docking_guidance(entry)
         if entry["event"] == "Docked":
+            ed_player.docked_at(entry)
             ed_player.wanted = entry.get("Wanted", False)
             ed_player.mothership.update_cargo()
             if ed_player.mothership.could_use_limpets():
                 limpets = ed_player.mothership.cargo.how_many("drones")
                 capacity = ed_player.mothership.cargo_capacity
                 EDR_CLIENT.notify_with_details(_(U"Restock reminder"), [_(u"Don't forget to restock on limpets before heading out."), _(u"Limpets: {}/{}").format(limpets, capacity)])
-        elif entry["event"] == "Undocked" and ed_player.mothership.is_mining_rig():
+        elif entry["event"] == "Undocked":
+            EDR_CLIENT.ack_station_pending_reports()
+            ed_player.docked(False)
             ed_player.reset_stats()
         outcome["reason"] = "Docking events"
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
@@ -568,7 +576,11 @@ def dashboard_entry(cmdr, is_beta, entry):
     
     if ed_player.piloted_vehicle:
         ed_player.piloted_vehicle.low_fuel = bool(flags & edmc_data.FlagsLowFuel)
-    ed_player.docked(bool(flags & edmc_data.FlagsDocked))
+    # TODO probably here things go wrong with report on undocked, clears the station before it's reported.
+    docked = bool(flags & edmc_data.FlagsDocked)
+    if ed_player.is_docked and not docked:
+        EDR_CLIENT.ack_station_pending_reports()
+    ed_player.docked(docked)
     unsafe = bool(flags & edmc_data.FlagsIsInDanger)
     ed_player.in_danger(unsafe)
     deployed = bool(flags & edmc_data.FlagsHardpointsDeployed)
@@ -703,7 +715,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] == "Bounty":
         handle_bounty_hunting_events(ed_player, entry)
 
-    if entry["event"] in ["CarrierJump", "CarrierBuy", "CarrierStats", "CarrierJumpRequest", "CarrierJumpCancelled", "CarrierDecommission", "CarrierCancelDecommission", "CarrierDockingPermission", "CarrierTradeOrder"]:
+    if entry["event"] in ["CarrierJump", "CarrierBuy", "CarrierStats", "CarrierJumpRequest", "CarrierJumpCancelled", "CarrierDecommission", "CarrierCancelDecommission", "CarrierDockingPermission", "CarrierTradeOrder", "FCMaterials"]:
         handle_carrier_events(ed_player, entry)
 
     status_outcome = {"updated": False, "reason": "Unspecified"}
@@ -815,7 +827,6 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     
     if ed_player.maybe_in_a_pvp_fight():
         report_fight(ed_player)
-
 
 def edr_update_cmdr_status(cmdr, reason_for_update, timestamp):
     """
@@ -1336,16 +1347,18 @@ def handle_legal_fees(player, entry):
        return False
     
     #TODO this should be on a ship whose id is in the entry rather than the player
+    #TODO also use the Wanted flag on FSDJump, Docked + StationFaction, Location events and the status file's legalstate
+    #TODO also use the "Hot" flag on Loadout event
     if entry["event"] == "PayFines":
         if entry.get("AllFines", None):
-            player.fine = 0
+            player.paid_all_fines()
         else:
-            true_amount = entry["Amount"] * (1.0 - entry.get("BrokerPercentage", 0)/100.0)
-            player.fine = max(0, player.fine - true_amount)
+            player.paid_fine(entry)
     elif entry["event"] == "PayBounties":
         if entry.get("AllFines", None):
-            player.bounty = 0
+            player.paid_all_bounties()
         else:
+            player.paid_bounty(entry)
             true_amount = entry["Amount"] * (1.0 - entry.get("BrokerPercentage", 0)/100.0)
             player.bounty = max(0, player.bounty - true_amount)
 

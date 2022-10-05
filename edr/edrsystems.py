@@ -48,7 +48,8 @@ class EDRSystems(object):
     EDR_CRIMES_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'crimes.v2.p')
     EDR_FC_REPORTS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'fc_reports.v1.p')
     EDR_FC_PRESENCE_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'fc_presence.v1.p')
-    
+    EDR_FC_MATERIALS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'fc_materials.v1.p')
+    EDR_FCS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'fcs.v1.p')
 
     def __init__(self, server):
         self.reasonable_sc_distance = 1500
@@ -104,6 +105,20 @@ class EDRSystems(object):
             self.fc_presence_cache = lrucache.LRUCache(edr_config.lru_max_size(),
                                               edr_config.fc_presence_max_age())
 
+        try:
+            with open(self.EDR_FC_MATERIALS_CACHE, 'rb') as handle:
+                self.fc_materials_cache = pickle.load(handle)
+        except:
+            self.fc_materials_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                              edr_config.fc_materials_max_age())
+            
+        try:
+            with open(self.EDR_FCS_CACHE, 'rb') as handle:
+                self.fcs_cache = pickle.load(handle)
+        except:
+            self.fcs_cache = lrucache.LRUCache(edr_config.lru_max_size(),
+                                              edr_config.fc_max_age())
+            
         try:
             with open(self.EDR_TRAFFIC_CACHE, 'rb') as handle:
                 self.traffic_cache = pickle.load(handle)
@@ -231,6 +246,30 @@ class EDRSystems(object):
         EDRLOG.log(u"No match on EDR. Temporary entry to be nice on EDR's server.", "DEBUG")
         return None
 
+    def fc_id(self, callsign, name, star_system, may_create=False):
+        if not callsign:
+            return None
+        fc = self.fcs_cache.get(callsign.lower())
+        cached = self.fcs_cache.has_key(callsign.lower())
+        if cached and fc is None:
+            EDRLOG.log(u"Temporary entry for FC {} in the cache".format(callsign), "DEBUG")
+            return None
+
+        if cached and fc:
+            fcid = list(fc)[0]
+            return fcid
+
+        fc = self.server.fc(callsign, name, star_system,  may_create)
+        if fc:
+            self.fcs_cache.set(callsign.lower(), fc)
+            fcid = list(fc)[0]
+            EDRLOG.log(u"Cached {}'s info with id={}".format(callsign, fcid), "DEBUG")
+            return fcid
+
+        self.fcs_cache.set(callsign.lower(), None)
+        EDRLOG.log(u"No match on EDR. Temporary entry to be nice on EDR's server.", "DEBUG")
+        return None
+
     def are_stations_stale(self, star_system):
         if not star_system:
             return False
@@ -310,9 +349,15 @@ class EDRSystems(object):
 
         with open(self.EDR_FC_REPORTS_CACHE, 'wb') as handle:
             pickle.dump(self.fc_reports_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        with open(self.EDR_FC_MATERIALS_CACHE, 'wb') as handle:
+            pickle.dump(self.fc_materials_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
         
         with open(self.EDR_FC_PRESENCE_CACHE, 'wb') as handle:
             pickle.dump(self.fc_presence_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        with open(self.EDR_FCS_CACHE, 'wb') as handle:
+            pickle.dump(self.fcs_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         with open(self.EDSM_SYSTEMS_CACHE, 'wb') as handle:
             pickle.dump(self.edsm_systems_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -373,6 +418,28 @@ class EDRSystems(object):
                 return True
         return False
 
+    def update_fc_materials(self, star_system, fc_materials):
+        if star_system is None:
+            return False
+
+        callsign = fc_materials.get("callsign", None)
+        if callsign is None:
+            return False
+
+        name = fc_materials.get("name", None)
+        fcid = self.fc_id(callsign, name, star_system, may_create=True)
+        if not fcid:
+            return False
+        
+        fc_materials["starSystem"] = star_system
+        if self.__novel_enough_fc_materials(fcid, fc_materials):
+            success = self.server.report_fc_materials(fcid, fc_materials)
+            if success:
+                self.fc_materials_cache.set(fcid, fc_materials)
+                self.fc_presence_cache.evict(fcid)
+                return True
+        return False
+
     def __novel_enough_fc_report(self, sid, fc_report):
         if not self.fc_reports_cache.has_key(sid):
             return True
@@ -383,6 +450,33 @@ class EDRSystems(object):
         different_count = (fc_report["fcCount"] != last_fc_report["fcCount"])
         different_fcs = (fc_report.get("fc", None) != last_fc_report.get("fc", None))
         return different_count or different_fcs
+
+    def __novel_enough_fc_materials(self, fcid, fc_materials):
+        if not self.fc_materials_cache.has_key(fcid):
+            return True
+
+        if self.fc_materials_cache.is_stale(fcid):
+            return True
+        last_fc_materials = self.fc_materials_cache.get(fcid)
+        different_system = (fc_materials["starSystem"] != last_fc_materials["starSystem"])
+        different_name = (fc_materials["name"] != last_fc_materials["name"])
+        different_items_count = len(fc_materials.get("items", {})) != len(last_fc_materials.get("items", {}))
+        if different_system or different_items_count or different_name:
+            return True
+
+        items = fc_materials.get("items", {})
+        for item in items:
+            previous_items = last_fc_materials.get("items", {})
+            if item not in previous_items:
+                return True
+            listing = items[item]
+            previous_listing = previous_items[item]
+            different_price = listing["price"] != previous_listing["price"]
+            different_stock = listing["stock"] != previous_listing["stock"]
+            different_demand = listing["demand"] != previous_listing["demand"]
+            if different_price or different_stock or different_demand:
+                return True
+        return False
 
     def fleet_carriers(self, star_system):
         if star_system is None:
@@ -1185,7 +1279,7 @@ class EDRSystems(object):
 
     def transfer_time(self, origin, destination):
         dist = self.distance(origin, destination)
-        return int(ceil(dist * 9.75 + 300))
+        return edtime.EDTime.transfer_time(dist)
 
     def jumping_time(self, origin, destination, jump_range, seconds_per_jump = 55):
         dist = self.distance(origin, destination)
