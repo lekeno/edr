@@ -1091,7 +1091,7 @@ class EDRRemlokHelmet(object):
         target = target.rstrip(";")
         return target
 
-    def describe_item(self, item):
+    def describe_item(self, item, inventory):
         c_item = item.lower()
         if c_item in INTERNAL_NAMES_LUT:
             c_item = INTERNAL_NAMES_LUT[c_item]
@@ -1106,9 +1106,9 @@ class EDRRemlokHelmet(object):
             c_item = re.sub("[ \-_]", "", c_item)
         
         if c_item in ODYSSEY_MATS:
-            return self.__describe_odyssey_material(c_item)
+            return self.__describe_odyssey_material(c_item, inventory)
         elif c_item in HORIZONS_MATS:
-            return self.__describe_horizons_material(c_item)
+            return self.__describe_horizons_material(c_item, inventory)
         elif c_item in self.MISC_LUT:
             return self.__describe_misc(c_item)
 
@@ -1118,9 +1118,9 @@ class EDRRemlokHelmet(object):
             c_item = c_item + "s"
 
         if c_item in ODYSSEY_MATS:
-            return self.__describe_odyssey_material(c_item)
+            return self.__describe_odyssey_material(c_item, inventory)
         elif c_item in HORIZONS_MATS:
-            return self.__describe_horizons_material(c_item)
+            return self.__describe_horizons_material(c_item, inventory)
         elif c_item in self.MISC_LUT:
             return self.__describe_misc(c_item)
 
@@ -1129,12 +1129,16 @@ class EDRRemlokHelmet(object):
             self.unknown_things.append(item)
         return None
 
-    def __describe_odyssey_material(self, internal_name):
+    def __describe_odyssey_material(self, internal_name, inventory):
         if internal_name not in ODYSSEY_MATS:
             return None
         
         descriptor = ODYSSEY_MATS[internal_name]
         details = []
+        owned = inventory.count(internal_name)
+        if owned:
+            details.append(_("{} in stock").format(owned))
+
         if descriptor.get("useless", False):
             if descriptor.get("subtype", False):
                 details.append(_("Useless [{}/{}] material".format(descriptor["type"], descriptor.get("subtype", "")+" ")))
@@ -1166,15 +1170,17 @@ class EDRRemlokHelmet(object):
 
         return details
 
-    def describe_odyssey_material_short(self, internal_name, ignore_eng_unlocks=False):
+    def describe_odyssey_material_short(self, internal_name, inventory, ignore_eng_unlocks=False):
         if internal_name not in ODYSSEY_MATS:
             return None
         
         values = self.worthiness_odyssey_material(internal_name, ignore_eng_unlocks)
-        
+        owned = inventory.count(internal_name)
         cname = self.__c_name(internal_name)
         entry = MATERIALS_LUT.get(cname, {})
         
+        if owned:
+            return "{} ({}) [S{}]".format(entry.get("raw", internal_name), values, owned) 
         return "{} ({})".format(entry.get("raw", internal_name), values)
 
     def worthiness_odyssey_material(self, internal_name, ignore_eng_unlocks=False):
@@ -1208,7 +1214,7 @@ class EDRRemlokHelmet(object):
         
         return "/".join(values)
     
-    def __describe_horizons_material(self, internal_name):
+    def __describe_horizons_material(self, internal_name, inventory):
         if internal_name not in HORIZONS_MATS:
             return None
 
