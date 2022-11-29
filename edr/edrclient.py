@@ -51,6 +51,7 @@ from edvehicles import EDVehicleFactory
 from edri18n import _, _c, _edr, set_language
 from clippy import copy
 from edrfssinsights import EDRFSSInsights
+from edrcommands import EDRCommands
 
 EDRLOG = EDRLog()
 
@@ -151,6 +152,7 @@ class EDRClient(object):
         self._throttle_until_timestamp = None
         self.edrfssinsights = EDRFSSInsights()
         self.edrdiscord = EDRDiscordIntegration(self.edrcmdrs)
+        self.edrcommands = EDRCommands(self)
         
     def __get_realtime_params(self, kind):
         min_bounty = None
@@ -433,6 +435,8 @@ class EDRClient(object):
         self.__notify(_(u"EDR v{} by LeKeno").format(self.edr_version), details, clear_before=True)
         if self.audio_feedback:
             self.SFX.startup()
+        if self.ui:
+            self.ui.enable_entry()
 
     def shutdown(self, everything=False):
         self.edrcmdrs.persist()
@@ -445,6 +449,8 @@ class EDRClient(object):
         self.edrlegal.persist()
         if self.IN_GAME_MSG:
             self.IN_GAME_MSG.shutdown()
+        if self.ui:
+            self.ui.disable_entry()
         config.set("EDRVisualAltFeedback", "True" if self.visual_alt_feedback else "False")
 
         if not everything:
@@ -454,7 +460,7 @@ class EDRClient(object):
 
     def app_ui(self, parent):
         if self.ui is None:
-            self.ui = EDRTogglingPanel(self._status, self._visual_alt_feedback, parent=parent)
+            self.ui = EDRTogglingPanel(self._status, self._visual_alt_feedback, self.edrcommands.process, parent=parent)
             self.ui.notify(_(u"Troubleshooting"), [
                 _(u"If the overlay doesn't show up, try one of the following:"),
                 _(u" - In E:D Market Connector: click on the File menu, then Settings, EDR, and select the Overlay checkbox."),
@@ -589,6 +595,12 @@ class EDRClient(object):
         EDRLOG.log(u"Anonymous reports: {}".format(config.get_str("EDRRedactMyInfo")), "DEBUG")
         self.ui.refresh_theme()
         self.login()
+
+    def process_sent_message(self, entry):
+        if self.ui:
+            self.ui.enable_entry()
+        
+        return self.edrcommands.process(entry["Message"], entry.get("To", None))
 
     def noteworthy_about_system(self, fsdjump_event):
         if fsdjump_event["SystemSecurity"]:
