@@ -6,6 +6,7 @@ import sys
 import re
 import random
 import codecs
+from datetime import datetime, timedelta, timezone
 
 try:
     import edmc_data
@@ -26,6 +27,7 @@ EDR_CLIENT = EDRClient()
 EDRLOG = EDRLog()
 LAST_KNOWN_SHIP_NAME = ""
 OVERLAY_DUMMY_COUNTER = 0
+IN_LEGACY_MODE = False
 
 def plugin_start3(plugin_dir):
     return plugin_start()
@@ -75,7 +77,7 @@ def plugin_prefs(parent, cmdr, is_beta):
 def prefs_changed(cmdr, is_beta):
     EDR_CLIENT.prefs_changed()
 
-def prerequisites(edr_client, is_beta):
+def prerequisites(edr_client, is_beta, is_legacy):
     if edr_client.mandatory_update:
         EDRLOG.log(u"Out-of-date client, aborting.", "ERROR")
         return False
@@ -86,6 +88,11 @@ def prerequisites(edr_client, is_beta):
 
     if is_beta:
         EDRLOG.log(u"Player is in beta: skip!", "INFO")
+        return False
+
+    if is_legacy:
+        edr_client.status = _("Legacy mode is not supported.")
+        EDRLOG.log(u"Player is in Legacy mode: skip!", "INFO")
         return False
     return True
 
@@ -522,7 +529,7 @@ def dashboard_entry(cmdr, is_beta, entry):
     # TODO suit/on foot specific flags
     ed_player = EDR_CLIENT.player
     
-    if not prerequisites(EDR_CLIENT, is_beta):
+    if not prerequisites(EDR_CLIENT, is_beta, IN_LEGACY_MODE):
         return
 
     if entry.get("GuiFocus", 0) > 0:
@@ -639,6 +646,19 @@ def handle_bounty_hunting_events(ed_player, entry):
             EDR_CLIENT.bounty_hunting_guidance()
         else:
             EDR_CLIENT.bounty_hunting_guidance(turn_off=True) 
+
+def is_legacy(gameVersionRawString):
+    # The Legacy / Live split only happens after Update 14 which is scheduled to go live by November 29th 15:00 UTC
+    # Servers go down by 7:00
+    if datetime.now(timezone.utc) <= datetime.fromisoformat("2022-11-29T07:00:00+00:00"):
+        return False
+    gameversion = "0.0.0.0"
+    m = re.match(r"^([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+).*$", gameVersionRawString)
+    if m:
+        gameversion = m.group(1)
+    client_parts = list(map(int, gameversion.split('.')))
+    live_baseline_parts = list(map(int, "4.0.0.0".split('.')))
+    return client_parts < live_baseline_parts
             
 def journal_entry(cmdr, is_beta, system, station, entry, state):
     """
@@ -652,8 +672,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     EDR_CLIENT.player_name(cmdr)
     ed_player = EDR_CLIENT.player
     ed_player.friends = state["Friends"]
+    IN_LEGACY_MODE = is_legacy(state["GameVersion"])
         
-    if not prerequisites(EDR_CLIENT, is_beta):
+    if not prerequisites(EDR_CLIENT, is_beta, IN_LEGACY_MODE):
         return
 
     EDR_CLIENT.edrdiscord.process(entry)

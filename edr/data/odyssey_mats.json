@@ -32,6 +32,7 @@
     "airqualityreports": { "blueprints": 3, "type": "data", "locations": ["STO buildings", "PWR buildings", "IND buildings", "HAB buildings", "EXT buildings", "AGRI buildings", "Mission reward"], "used": 3},
     "chemicalinventory": { "blueprints": 3, "type": "data", "locations": ["RES buildings", "IND buildings", "EXT buildings", "AGRI buildings", "Mission reward"], "used": 3},
     "clinicaltrialrecords": { "blueprints": 3, "type": "data", "locations": ["MED room", "RES buildings", "Mission reward"], "used": 3},
+    "medicaltrialrecords": { "blueprints": 3, "type": "data", "locations": ["MED room", "RES buildings", "Mission reward"], "used": 3},
     "evacuationprotocols": { "blueprints": 3, "type": "data", "locations": ["PWR buildings", "IND buildings", "HAB buildings", "Mission reward"], "used": 3},
     "genesequencingdata": { "blueprints": 3, "type": "data", "locations": ["MED room", "RES buildings", "AGRI buildings", "Mission reward"], "used": 3},
     "maintenancelogs": { "blueprints": 3, "type": "data", "locations": ["Irregular markers", "PWR buildings", "AGRI buildings", "Mission reward"], "used": 3},

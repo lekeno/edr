@@ -1374,9 +1374,3 @@ class EDPlayerOne(EDPlayer):
     def reset_stats(self):
         self.mining_stats.reset()
         self.bounty_hunting_stats.reset()
-        
-    def describe_item(self, internal_name):
-        return self.remlok_helmet.describe_item(internal_name, self.inventory)
-
-    def describe_odyssey_material_short(self, internal_name, ignore_eng_unlocks=False):
-        return self.remlok_helmet.describe_odyssey_material_short(internal_name, self.inventory, ignore_eng_unlocks)

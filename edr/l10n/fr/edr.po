@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2022-09-28 15:52+0900\n"
-"PO-Revision-Date: 2022-09-28 15:53+0900\n"
+"POT-Creation-Date: 2022-11-29 13:45+0900\n"
+"PO-Revision-Date: 2022-11-29 13:45+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -682,11 +682,11 @@ msgstr "Type : pires éléments (b=blueprint, u=upgrades, x=trade, e=accès ing�
 msgid "Nothing noteworthy"
 msgstr "Rien d'intéressant"
 
-#: edrclient.py:1227 load.py:1505
+#: edrclient.py:1227 load.py:1526
 msgid "Useless: {}"
 msgstr "Inutile : {}"
 
-#: edrclient.py:1229 load.py:1507
+#: edrclient.py:1229 load.py:1528
 msgid "Unnecessary: {}"
 msgstr "Pas nécessaire: {}"
 
@@ -1059,11 +1059,11 @@ msgstr "crime rapporté!"
 msgid "Anarchy system (fights not reported)."
 msgstr "Anarchie (combats non rapportés)"
 
-#: edrclient.py:1899 helpcontent.py:121 load.py:592 load.py:596 load.py:598
+#: edrclient.py:1899 helpcontent.py:121 load.py:599 load.py:603 load.py:605
 msgid "EDR Central"
 msgstr "EDR Central"
 
-#: edrclient.py:1899 load.py:596
+#: edrclient.py:1899 load.py:603
 msgid "Fight reporting enabled"
 msgstr "Rapport de combat activé"
 
@@ -1071,7 +1071,7 @@ msgstr "Rapport de combat activé"
 msgid "Reason: presence of outlaws"
 msgstr "Raison: présence d'hors-la-loi"
 
-#: edrclient.py:1899 load.py:596
+#: edrclient.py:1899 load.py:603
 msgid ""
 "Turn it off: flash your lights twice, or leave this area, or escape danger "
 "and retract hardpoints."
@@ -3485,227 +3485,227 @@ msgstr ""
 msgid "Genetic Research"
 msgstr ""
 
-#: edrinventory.py:318
+#: edrinventory.py:318 edrinventory.py:319
 msgid "Clinical Trial Records"
 msgstr ""
 
-#: edrinventory.py:319
+#: edrinventory.py:320
 msgid "G-Meds"
 msgstr ""
 
-#: edrinventory.py:320
+#: edrinventory.py:321
 msgid "Gene Sequencing Data"
 msgstr ""
 
-#: edrinventory.py:321
+#: edrinventory.py:322
 msgid "Settlement Assault Plans"
 msgstr ""
 
-#: edrinventory.py:322 edrinventory.py:323
+#: edrinventory.py:323 edrinventory.py:324
 msgid "Biological Sample"
 msgstr ""
 
-#: edrinventory.py:324
+#: edrinventory.py:325
 msgid "Smear Campaign Plans"
 msgstr ""
 
-#: edrinventory.py:325
+#: edrinventory.py:326
 msgid "Ax Combat Logs"
 msgstr ""
 
-#: edrinventory.py:326
+#: edrinventory.py:327
 msgid "Biological Weapon Data"
 msgstr ""
 
-#: edrinventory.py:327
+#: edrinventory.py:328
 msgid "Chemical Weapon Data"
 msgstr ""
 
-#: edrinventory.py:328
+#: edrinventory.py:329
 msgid "Criminal Records"
 msgstr ""
 
-#: edrinventory.py:329
+#: edrinventory.py:330
 msgid "Enhanced Interrogation Recordings"
 msgstr ""
 
-#: edrinventory.py:330
+#: edrinventory.py:331
 msgid "Espionage Material"
 msgstr ""
 
-#: edrinventory.py:331
+#: edrinventory.py:332
 msgid "Incident Logs"
 msgstr ""
 
-#: edrinventory.py:332
+#: edrinventory.py:333
 msgid "Inorganic Contaminant"
 msgstr ""
 
-#: edrinventory.py:333
+#: edrinventory.py:334
 msgid "Interrogation Recordings"
 msgstr ""
 
-#: edrinventory.py:334
+#: edrinventory.py:335
 msgid "Mutagenic Catalyst"
 msgstr ""
 
-#: edrinventory.py:335
+#: edrinventory.py:336
 msgid "Network Security Protocols"
 msgstr ""
 
-#: edrinventory.py:336
+#: edrinventory.py:337
 msgid "Patient History"
 msgstr ""
 
-#: edrinventory.py:337
+#: edrinventory.py:338
 msgid "Plant Growth Charts"
 msgstr ""
 
-#: edrinventory.py:338
+#: edrinventory.py:339
 msgid "Prisoner Logs"
 msgstr ""
 
-#: edrinventory.py:339
+#: edrinventory.py:340
 msgid "Seed Geneaology"
 msgstr ""
 
-#: edrinventory.py:340
+#: edrinventory.py:341
 msgid "Slush Fund Logs"
 msgstr ""
 
-#: edrinventory.py:341
+#: edrinventory.py:342
 msgid "Synthetic Genome"
 msgstr ""
 
-#: edrinventory.py:342
+#: edrinventory.py:343
 msgid "Epinephrine"
 msgstr ""
 
-#: edrinventory.py:343
+#: edrinventory.py:344
 msgid "Graphene"
 msgstr ""
 
-#: edrinventory.py:344
+#: edrinventory.py:345
 msgid "Rdx"
 msgstr ""
 
-#: edrinventory.py:345
+#: edrinventory.py:346
 msgid "Electromagnet"
 msgstr ""
 
-#: edrinventory.py:346
+#: edrinventory.py:347
 msgid "Microelectrode"
 msgstr ""
 
-#: edrinventory.py:347
+#: edrinventory.py:348
 msgid "Motor"
 msgstr ""
 
-#: edrinventory.py:348
+#: edrinventory.py:349
 msgid "Scrambler"
 msgstr ""
 
-#: edrinventory.py:349
+#: edrinventory.py:350
 msgid "Transmitter"
 msgstr ""
 
-#: edrinventory.py:728
+#: edrinventory.py:729
 msgid "DATA"
 msgstr ""
 
-#: edrinventory.py:728
+#: edrinventory.py:729
 msgid "ASSET"
 msgstr ""
 
-#: edrinventory.py:728
+#: edrinventory.py:729
 msgid "GOODS"
 msgstr ""
 
-#: edrinventory.py:728
+#: edrinventory.py:729
 msgid "CONSUMABLE"
 msgstr ""
 
-#: edrinventory.py:1140 edrinventory.py:1219
+#: edrinventory.py:1141 edrinventory.py:1220
 msgid "Useless [{}/{}] material"
 msgstr "Matériau Inutile [{}/{}]"
 
-#: edrinventory.py:1142 edrinventory.py:1221
+#: edrinventory.py:1143 edrinventory.py:1222
 msgid "Useless [{}] material"
 msgstr "Matériau inutile : {}"
 
-#: edrinventory.py:1146
+#: edrinventory.py:1147
 msgid "Bar exchange: worth {}, cost {}"
 msgstr "Échange au bar: valeur {}, coût: {}"
 
-#: edrinventory.py:1148
+#: edrinventory.py:1149
 msgid "Bar exchange: worth {}"
 msgstr "Échange au bar: valeur {}"
 
-#: edrinventory.py:1152
+#: edrinventory.py:1153
 msgid "Used in {} blueprints, {} upgrades"
 msgstr "Utilisé dans {} plans, et {} améliorations"
 
-#: edrinventory.py:1154
+#: edrinventory.py:1155
 msgid "Used in {} blueprints"
 msgstr "Utilisé dans {} plans"
 
-#: edrinventory.py:1156
+#: edrinventory.py:1157
 msgid "Used in {} upgrades"
 msgstr "Utilisé dans {} améliorations"
 
-#: edrinventory.py:1159
+#: edrinventory.py:1160
 msgid "Required by {} to refer {}"
 msgstr "Requis par {} pour introduction à {}"
 
-#: edrinventory.py:1162 edrinventory.py:1237
+#: edrinventory.py:1163 edrinventory.py:1238
 msgid "Required by {}"
 msgstr "Requis par {}"
 
-#: edrinventory.py:1165
+#: edrinventory.py:1166
 msgid "Found in: {}"
 msgstr "Se trouve dans: {}"
 
-#: edrinventory.py:1187
+#: edrinventory.py:1188
 msgid "0"
 msgstr ""
 
-#: edrinventory.py:1190
+#: edrinventory.py:1191
 msgid "B{}"
 msgstr "B{}"
 
-#: edrinventory.py:1193
+#: edrinventory.py:1194
 msgid "U{}"
 msgstr "U{}"
 
-#: edrinventory.py:1196
+#: edrinventory.py:1197
 msgid "X{}"
 msgstr "X{}"
 
-#: edrinventory.py:1207
+#: edrinventory.py:1208
 msgid "E{}"
 msgstr "E{}"
 
-#: edrinventory.py:1229
+#: edrinventory.py:1230
 msgid "blueprints"
 msgstr "plans"
 
-#: edrinventory.py:1229
+#: edrinventory.py:1230
 msgid "synthesis"
 msgstr "synthèse"
 
-#: edrinventory.py:1229
+#: edrinventory.py:1230
 msgid "experimental effects"
 msgstr "effets expérimentaux"
 
-#: edrinventory.py:1229
+#: edrinventory.py:1230
 msgid "tech broker items"
 msgstr "objets tech broker"
 
-#: edrinventory.py:1233
+#: edrinventory.py:1234
 msgid "{} {}"
 msgstr "{} {}"
 
-#: edrinventory.py:1234
+#: edrinventory.py:1235
 msgid "Used in: {}"
 msgstr "Utilisé dans: {}"
 
@@ -5930,113 +5930,117 @@ msgstr "HULL{}: {}% {}"
 msgid "{subsys}{signal}: {hp:.4g}% {delta}"
 msgstr "{subsys}{signal}: {hp:.4g}% {delta}"
 
-#: load.py:101
+#: load.py:94
+msgid "Legacy mode is not supported."
+msgstr "Le mode Legacy n'est pas supporté."
+
+#: load.py:108
 msgid "added to wing: "
 msgstr "a rejoint l'esquadrille: "
 
-#: load.py:107
+#: load.py:114
 msgid "joined wing."
 msgstr "en formation."
 
-#: load.py:111
+#: load.py:118
 msgid "left wing."
 msgstr "hors formation."
 
-#: load.py:115
+#: load.py:122
 msgid "wing invite from: "
 msgstr "invitation escadrille de: "
 
-#: load.py:125
+#: load.py:132
 msgid "added to crew: "
 msgstr "a rejoint l'équipage: "
 
-#: load.py:135
+#: load.py:142
 msgid "{} left the crew."
 msgstr "{} a quitté l'équipage."
 
-#: load.py:153
+#: load.py:160
 msgid "joined a crew."
 msgstr "rejoint un équipage."
 
-#: load.py:173
+#: load.py:180
 msgid "left crew."
 msgstr "quitté un équipage."
 
-#: load.py:193
+#: load.py:200
 msgid "crew disbanded."
 msgstr "équipage dissous."
 
-#: load.py:334 load.py:464
+#: load.py:341 load.py:471
 msgid "Restock reminder"
 msgstr "Mémo de ravitaillement"
 
-#: load.py:334 load.py:464
+#: load.py:341 load.py:471
 msgid "Don't forget to restock on limpets before heading out."
 msgstr "N'oubliez pas de ravitailler vos drones avant de décoller."
 
-#: load.py:334 load.py:464
+#: load.py:341 load.py:471
 msgid "Limpets: {}/{}"
 msgstr "Drones: {}/{}"
 
-#: load.py:430
+#: load.py:437
 msgid "initialized."
 msgstr "initialisé."
 
-#: load.py:592 load.py:598
+#: load.py:599 load.py:605
 msgid "Fight reporting disabled"
 msgstr "Rapport de combat désactivé"
 
-#: load.py:592
+#: load.py:599
 msgid "Looks like you are safe, and disengaged."
 msgstr "Il semble que vous soyez en sécurité et désengagé."
 
-#: load.py:598
+#: load.py:605
 msgid "Flash your lights twice to re-enable."
 msgstr "Flashez vos phares deux fois afin de réactiver."
 
-#: load.py:776
+#: load.py:797
 msgid "System info acquired"
 msgstr "Infos du système acquises"
 
-#: load.py:776
+#: load.py:797
 msgid "Noteworthy material densities will be shown when approaching a planet."
 msgstr ""
 "Un sommaire des matériaux présents en forte densité s'affichera lors d'une "
 "approche planétaire."
 
-#: load.py:867
+#: load.py:888
 msgid "blip failed."
 msgstr "échec d'un blip."
 
-#: load.py:882 load.py:935
+#: load.py:903 load.py:956
 msgid "Crime reporting disabled in solo/private modes."
 msgstr "Rapport de crime désactivé en mode Solo/Privé."
 
-#: load.py:921 load.py:980
+#: load.py:942 load.py:1001
 msgid "failed to report crime."
 msgstr "crime non rapporté (échec)."
 
-#: load.py:986
+#: load.py:1007
 msgid "Fight reporting disabled in solo/private modes."
 msgstr "Rapport de combat désactivé en mode Solo/Privé."
 
-#: load.py:1030
+#: load.py:1051
 msgid "failed to report contact."
 msgstr "contact non rapporté (échec)."
 
-#: load.py:1084
+#: load.py:1105
 msgid "Traffic reporting disabled in solo/private modes."
 msgstr "Rapport de traffic désactivé en mode Solo/Privé."
 
-#: load.py:1092
+#: load.py:1113
 msgid "failed to report traffic."
 msgstr "trafic non rapporté (échec)."
 
-#: load.py:1098
+#: load.py:1119
 msgid "Multicrew reporting disabled in private mode."
 msgstr "Pas de rapport multicrew en mode privé."
 
-#: load.py:1102
+#: load.py:1123
 msgid "failed to report multicrew session."
 msgstr "crime équipage non rapporté (échec)."
 

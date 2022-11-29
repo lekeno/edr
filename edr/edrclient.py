@@ -1088,7 +1088,7 @@ class EDRClient(object):
                 return
 
             localized_commodity = entry.get("Commodity_Localised", commodity)
-            description = self.player.describe_item(commodity)
+            description = self.player.remlok_helmet.describe_item(commodity)
             if not description:
                 if not passive:
                     self.__notify(_(u"Mission Eval"), [_("Nothing noteworthy to share")], clear_before=True)
@@ -1111,7 +1111,7 @@ class EDRClient(object):
                 inventory_description = self.player.inventory.oneliner(commodity)
                 if inventory_description:
                     details.append(inventory_description)
-                description = self.player.describe_item(commodity)
+                description = self.player.remlok_helmet.describe_item(commodity)
                 if description:
                     details.extend(description)
             if details:
@@ -1124,7 +1124,7 @@ class EDRClient(object):
         synonym_commands = {"power": ["priority", "pp", "priorities"]}
         supported_commands = set(canonical_commands + synonym_commands["power"])
         if eval_type not in supported_commands:
-            description = self.player.describe_item(eval_type)
+            description = self.player.remlok_helmet.describe_item(eval_type)
             if description:
                 details = []
                 inventory_description = self.player.inventory.oneliner(eval_type)
@@ -1230,11 +1230,11 @@ class EDRClient(object):
         return details
 
     def __eval_good_micro_resources(self, micro_resources):
-        self_unlocking = [self.player.describe_odyssey_material_short(name) for name in micro_resources if self.player.engineers.is_necessary(name)]
-        other_unlocking = [self.player.describe_odyssey_material_short(name) for name in micro_resources if (self.player.engineers.is_contributing(name) and self.player.engineers.is_unnecessary(name))]
-        engineering_assets = [[self.player.describe_odyssey_material_short(name, ignore_eng_unlocks=True), self.player.remlok_helmet.how_useful(name)] for name in micro_resources if self.player.remlok_helmet.is_assets(name) and self.player.remlok_helmet.how_useful(name) > 0]
-        engineering_goods = [[self.player.describe_odyssey_material_short(name, ignore_eng_unlocks=True), self.player.remlok_helmet.how_useful(name)] for name in micro_resources if self.player.remlok_helmet.is_goods(name) and self.player.remlok_helmet.how_useful(name) > 0]
-        engineering_data = [[self.player.describe_odyssey_material_short(name, ignore_eng_unlocks=True), self.player.remlok_helmet.how_useful(name)] for name in micro_resources if self.player.remlok_helmet.is_data(name) and self.player.remlok_helmet.how_useful(name) > 0]
+        self_unlocking = [self.player.remlok_helmet.describe_odyssey_material_short(name) for name in micro_resources if self.player.engineers.is_necessary(name)]
+        other_unlocking = [self.player.remlok_helmet.describe_odyssey_material_short(name) for name in micro_resources if (self.player.engineers.is_contributing(name) and self.player.engineers.is_unnecessary(name))]
+        engineering_assets = [[self.player.remlok_helmet.describe_odyssey_material_short(name, ignore_eng_unlocks=True), self.player.remlok_helmet.how_useful(name)] for name in micro_resources if self.player.remlok_helmet.is_assets(name) and self.player.remlok_helmet.how_useful(name) > 0]
+        engineering_goods = [[self.player.remlok_helmet.describe_odyssey_material_short(name, ignore_eng_unlocks=True), self.player.remlok_helmet.how_useful(name)] for name in micro_resources if self.player.remlok_helmet.is_goods(name) and self.player.remlok_helmet.how_useful(name) > 0]
+        engineering_data = [[self.player.remlok_helmet.describe_odyssey_material_short(name, ignore_eng_unlocks=True), self.player.remlok_helmet.how_useful(name)] for name in micro_resources if self.player.remlok_helmet.is_data(name) and self.player.remlok_helmet.how_useful(name) > 0]
         sorted_engineering_assets = sorted(engineering_assets, key=lambda b: b[1], reverse=True)
         sorted_engineering_goods = sorted(engineering_goods, key=lambda b: b[1], reverse=True)
         sorted_engineering_data = sorted(engineering_data, key=lambda b: b[1], reverse=True)
@@ -1252,10 +1252,10 @@ class EDRClient(object):
         return details
 
     def __eval_bad_micro_resources(self, micro_resources):
-        other_unlocking = [self.player.describe_odyssey_material_short(name) for name in micro_resources if (self.player.engineers.is_contributing(name) and self.player.engineers.is_unnecessary(name) and self.player.inventory.count(name))]
-        engineering_assets = [[self.player.describe_odyssey_material_short(name, ignore_eng_unlocks=True), self.player.remlok_helmet.how_useful(name)] for name in micro_resources if self.player.remlok_helmet.is_assets(name) and self.player.inventory.count(name)]
-        engineering_goods = [[self.player.describe_odyssey_material_short(name, ignore_eng_unlocks=True), self.player.remlok_helmet.how_useful(name)] for name in micro_resources if self.player.remlok_helmet.is_goods(name) and self.player.inventory.count(name)]
-        engineering_data = [[self.player.describe_odyssey_material_short(name, ignore_eng_unlocks=True), self.player.remlok_helmet.how_useful(name)] for name in micro_resources if self.player.remlok_helmet.is_data(name) and self.player.inventory.count(name)]
+        other_unlocking = [self.player.remlok_helmet.describe_odyssey_material_short(name) for name in micro_resources if (self.player.engineers.is_contributing(name) and self.player.engineers.is_unnecessary(name) and self.player.inventory.count(name))]
+        engineering_assets = [[self.player.remlok_helmet.describe_odyssey_material_short(name, ignore_eng_unlocks=True), self.player.remlok_helmet.how_useful(name)] for name in micro_resources if self.player.remlok_helmet.is_assets(name) and self.player.inventory.count(name)]
+        engineering_goods = [[self.player.remlok_helmet.describe_odyssey_material_short(name, ignore_eng_unlocks=True), self.player.remlok_helmet.how_useful(name)] for name in micro_resources if self.player.remlok_helmet.is_goods(name) and self.player.inventory.count(name)]
+        engineering_data = [[self.player.remlok_helmet.describe_odyssey_material_short(name, ignore_eng_unlocks=True), self.player.remlok_helmet.how_useful(name)] for name in micro_resources if self.player.remlok_helmet.is_data(name) and self.player.inventory.count(name)]
         sorted_engineering_assets = sorted(engineering_assets, key=lambda b: b[1])
         sorted_engineering_goods = sorted(engineering_goods, key=lambda b: b[1])
         sorted_engineering_data = sorted(engineering_data, key=lambda b: b[1])
@@ -2620,7 +2620,7 @@ class EDRClient(object):
         if not target:
             return
         details = []
-        description = self.player.describe_item(target)
+        description = self.player.remlok_helmet.describe_item(target)
         inventory_description = self.player.inventory.oneliner(target, fallback=False)
         if inventory_description:
             details.append(inventory_description)
@@ -2666,7 +2666,7 @@ class EDRClient(object):
         item = entry.get("Commodity", None)
         if item is None:
             return
-        description = self.player.describe_item(item)
+        description = self.player.remlok_helmet.describe_item(item)
         if description:
             l_item = entry.get("Commodity_Localised", item)
             self.__notify(_("Trading Insights for {}").format(l_item), description, clear_before=True)
