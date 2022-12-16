@@ -14,6 +14,7 @@ class EDRFSSInsights(object):
             "$MULTIPLAYER_SCENARIO80_TITLE;": {"count": 0, "short_name": _("Compromised Nav Beacon") },
             "$MULTIPLAYER_SCENARIO81_TITLE;": {"count": 0, "short_name": _("Salvageable Wreckage")},
             "$FIXED_EVENT_NUMBERSTATION;": {"count": 0, "short_name": _("Anomalous Signal - Numbers Station") },
+            # TODO "$Warzone_TG_...:#index=1; ... = High, Low, Med, VeryHigh
             "$Warzone_TG;": {"count": 0, "short_name": _("CZ [AX]") },
             "$FIXED_EVENT_CAPSHIP;": {"count": 0, "short_name": _("CAPITAL SHIP") },
             "$NumberStation:#index=1;": {"count": 0, "short_name": _("Unreg. Comms - Numbers Station (Ⅰ)") },
