@@ -46,7 +46,7 @@ class EDTime(comparable.ComparableMixin):
 
     @staticmethod
     def eta_transfer(distance):
-        return EDTime.py_epoch_now() + EDTime.transfer_time()
+        return EDTime.py_epoch_now() + EDTime.transfer_time(distance)
 
     
     @staticmethod

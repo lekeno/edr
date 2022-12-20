@@ -316,6 +316,7 @@ MATERIALS_LUT = {
     "audiologs" :{ "localized": _(u"Audiologs"), "raw": "Audiologs", "category": "data", "grade": 0},
     "geneticresearch" :{ "localized": _(u"Genetic Research"), "raw": "Genetic Research", "category": "data", "grade": 0},
     "clinicaltrialrecords" :{ "localized": _(u"Clinical Trial Records"), "raw": "Clinical Trial Records", "category": "data", "grade": 0},
+    "medicaltrialrecords" :{ "localized": _(u"Clinical Trial Records"), "raw": "Clinical Trial Records", "category": "data", "grade": 0},
     "gmeds" :{ "localized": _(u"G-Meds"), "raw": "G-Meds", "category": "item", "grade": 0},
     "genesequencingdata" :{ "localized": _(u"Gene Sequencing Data"), "raw": "Gene Sequencing Data", "category": "data", "grade": 0},
     "settlementassaultplans" :{ "localized": _(u"Settlement Assault Plans"), "raw": "Settlement Assault Plans", "category": "data", "grade": 0},
@@ -1091,7 +1092,7 @@ class EDRRemlokHelmet(object):
         target = target.rstrip(";")
         return target
 
-    def describe_item(self, item):
+    def describe_item(self, item, inventory):
         c_item = item.lower()
         if c_item in INTERNAL_NAMES_LUT:
             c_item = INTERNAL_NAMES_LUT[c_item]
@@ -1106,9 +1107,9 @@ class EDRRemlokHelmet(object):
             c_item = re.sub("[ \-_]", "", c_item)
         
         if c_item in ODYSSEY_MATS:
-            return self.__describe_odyssey_material(c_item)
+            return self.__describe_odyssey_material(c_item, inventory)
         elif c_item in HORIZONS_MATS:
-            return self.__describe_horizons_material(c_item)
+            return self.__describe_horizons_material(c_item, inventory)
         elif c_item in self.MISC_LUT:
             return self.__describe_misc(c_item)
 
@@ -1118,9 +1119,9 @@ class EDRRemlokHelmet(object):
             c_item = c_item + "s"
 
         if c_item in ODYSSEY_MATS:
-            return self.__describe_odyssey_material(c_item)
+            return self.__describe_odyssey_material(c_item, inventory)
         elif c_item in HORIZONS_MATS:
-            return self.__describe_horizons_material(c_item)
+            return self.__describe_horizons_material(c_item, inventory)
         elif c_item in self.MISC_LUT:
             return self.__describe_misc(c_item)
 
@@ -1129,18 +1130,22 @@ class EDRRemlokHelmet(object):
             self.unknown_things.append(item)
         return None
 
-    def __describe_odyssey_material(self, internal_name):
+    def __describe_odyssey_material(self, internal_name, inventory):
         if internal_name not in ODYSSEY_MATS:
             return None
         
         descriptor = ODYSSEY_MATS[internal_name]
         details = []
+        owned = inventory.count(internal_name)
+        stock = _("Stock: 0")
+        type_descriptor = descriptor["type"] if descriptor.get("subtype", False) else "{}/{}".format(descriptor["type"], descriptor["subtype"])
+        if owned:
+            stock = _("Stock: {}").format(owned)
+        details.append(_("{}; Category:{})").format(type_descriptor, stock))
+
         if descriptor.get("useless", False):
-            if descriptor.get("subtype", False):
-                details.append(_("Useless [{}/{}] material".format(descriptor["type"], descriptor.get("subtype", "")+" ")))
-            else:
-                details.append(_("Useless [{}] material".format(descriptor["type"])))
-        
+            details.append(_("Useless material"))
+            
         if descriptor.get("value", False):
             if descriptor.get("cost", False):
                 details.append(_("Bar exchange: worth {}, cost {}".format(descriptor["value"], descriptor["cost"])))
@@ -1166,15 +1171,17 @@ class EDRRemlokHelmet(object):
 
         return details
 
-    def describe_odyssey_material_short(self, internal_name, ignore_eng_unlocks=False):
+    def describe_odyssey_material_short(self, internal_name, inventory, ignore_eng_unlocks=False):
         if internal_name not in ODYSSEY_MATS:
             return None
         
         values = self.worthiness_odyssey_material(internal_name, ignore_eng_unlocks)
-        
+        owned = inventory.count(internal_name)
         cname = self.__c_name(internal_name)
         entry = MATERIALS_LUT.get(cname, {})
         
+        if owned:
+            return "{} ({}) [S{}]".format(entry.get("raw", internal_name), values, owned) 
         return "{} ({})".format(entry.get("raw", internal_name), values)
 
     def worthiness_odyssey_material(self, internal_name, ignore_eng_unlocks=False):
@@ -1208,7 +1215,7 @@ class EDRRemlokHelmet(object):
         
         return "/".join(values)
     
-    def __describe_horizons_material(self, internal_name):
+    def __describe_horizons_material(self, internal_name, inventory):
         if internal_name not in HORIZONS_MATS:
             return None
 
