@@ -12,15 +12,15 @@ import utils2to3
 CONTEXT_SEPARATOR = u"|"
 L10N_DIR = utils2to3.abspathmaker(__file__, 'l10n')
 language = None
-translate = gettext.translation('edr', L10N_DIR, fallback=True, codeset="utf-8")
+translate = gettext.translation('edr', L10N_DIR, fallback=True)
 
 def set_language(lang):
     global language, translate
     language = lang
     if language:
-        translate = gettext.translation('edr', L10N_DIR, fallback=True, languages=[language], codeset="utf-8")
+        translate = gettext.translation('edr', L10N_DIR, fallback=True, languages=[language])
     else:
-        translate = gettext.translation('edr', L10N_DIR, fallback=True, codeset="utf-8")
+        translate = gettext.translation('edr', L10N_DIR, fallback=True)
 
 def ugettext(message):
     if sys.version_info.major == 2:
