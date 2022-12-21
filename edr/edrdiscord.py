@@ -480,7 +480,6 @@ class EDRDiscordIntegration(object):
         de = EDRDiscordEmbed()
         de.title = _(u"Flight Plan")
         departureTime = EDTime()
-        dm.content += " timestamp: {}".format(jump_info["at"])
         departureTime.from_js_epoch(jump_info["at"])
         de.description = _("```From     :    {}\nTo       :    {}\nTime(UTC):    {}```").format(jump_info["from"], jump_info["to"], departureTime.as_hhmmss())
         de.author = {

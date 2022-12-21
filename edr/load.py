@@ -6,6 +6,7 @@ import sys
 import re
 import random
 import codecs
+from datetime import datetime, timedelta, timezone
 
 try:
     import edmc_data
@@ -19,7 +20,6 @@ from edvehicles import EDVehicleFactory
 from edrrawdepletables import EDRRawDepletables
 from edtime import EDTime
 from edrlog import EDRLog
-import edentities
 import edrautoupdater
 from edri18n import _, _c
 
@@ -27,6 +27,7 @@ EDR_CLIENT = EDRClient()
 EDRLOG = EDRLog()
 LAST_KNOWN_SHIP_NAME = ""
 OVERLAY_DUMMY_COUNTER = 0
+IN_LEGACY_MODE = False
 
 def plugin_start3(plugin_dir):
     return plugin_start()
@@ -76,7 +77,7 @@ def plugin_prefs(parent, cmdr, is_beta):
 def prefs_changed(cmdr, is_beta):
     EDR_CLIENT.prefs_changed()
 
-def prerequisites(edr_client, is_beta):
+def prerequisites(edr_client, is_beta, is_legacy):
     if edr_client.mandatory_update:
         EDRLOG.log(u"Out-of-date client, aborting.", "ERROR")
         return False
@@ -87,6 +88,11 @@ def prerequisites(edr_client, is_beta):
 
     if is_beta:
         EDRLOG.log(u"Player is in beta: skip!", "INFO")
+        return False
+
+    if is_legacy:
+        edr_client.status = _("Legacy mode is not supported.")
+        EDRLOG.log(u"Player is in Legacy mode: skip!", "INFO")
         return False
     return True
 
@@ -523,7 +529,7 @@ def dashboard_entry(cmdr, is_beta, entry):
     # TODO suit/on foot specific flags
     ed_player = EDR_CLIENT.player
     
-    if not prerequisites(EDR_CLIENT, is_beta):
+    if not prerequisites(EDR_CLIENT, is_beta, IN_LEGACY_MODE):
         return
 
     if entry.get("GuiFocus", 0) > 0:
@@ -640,6 +646,19 @@ def handle_bounty_hunting_events(ed_player, entry):
             EDR_CLIENT.bounty_hunting_guidance()
         else:
             EDR_CLIENT.bounty_hunting_guidance(turn_off=True) 
+
+def is_legacy(gameVersionRawString):
+    # The Legacy / Live split only happens after Update 14 which is scheduled to go live by November 29th 15:00 UTC
+    # Servers go down by 7:00
+    if datetime.now(timezone.utc) <= datetime.fromisoformat("2022-11-29T07:00:00+00:00"):
+        return False
+    gameversion = "0.0.0.0"
+    m = re.match(r"^([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+).*$", gameVersionRawString)
+    if m:
+        gameversion = m.group(1)
+    client_parts = list(map(int, gameversion.split('.')))
+    live_baseline_parts = list(map(int, "4.0.0.0".split('.')))
+    return client_parts < live_baseline_parts
             
 def journal_entry(cmdr, is_beta, system, station, entry, state):
     """
@@ -653,8 +672,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     EDR_CLIENT.player_name(cmdr)
     ed_player = EDR_CLIENT.player
     ed_player.friends = state["Friends"]
+    IN_LEGACY_MODE = is_legacy(state["GameVersion"])
         
-    if not prerequisites(EDR_CLIENT, is_beta):
+    if not prerequisites(EDR_CLIENT, is_beta, IN_LEGACY_MODE):
         return
 
     EDR_CLIENT.edrdiscord.process(entry)
@@ -1525,494 +1545,8 @@ def handle_commands(cmdr, entry):
     if not entry["event"] == "SendText":
         return
 
-    command_parts = entry["Message"].split(" ", 1)
-    command = command_parts[0].lower()
-    if not command:
-        return
-    if command[0] == "!":
-        handle_bang_commands(cmdr, command, command_parts)
-    elif command[0] == "?":
-        handle_query_commands(cmdr, command, command_parts)
-    elif command[0] == "#":
-        handle_hash_commands(command, command_parts, entry)
-    elif command[0] == "-":
-        handle_minus_commands(command, command_parts, entry)
-    elif command[0] == "@":
-        handle_at_commands(entry)
-    elif command == "o7" and not entry["To"] in ["local", "voicechat", "wing", "friend", "starsystem", "squadron", "squadleaders"]:
-        EDRLOG.log(u"Implicit who command for {}".format(entry["To"]), "INFO")
-        to_cmdr = entry["To"]
-        if entry["To"].startswith("$cmdr_decorate:#name="):
-            to_cmdr = entry["To"][len("$cmdr_decorate:#name="):-1]
-        EDR_CLIENT.who(to_cmdr, autocreate=True)
-
-def handle_bang_commands(cmdr, command, command_parts):
-    if command == "!overlay":
-        overlay_command("" if len(command_parts) == 1 else command_parts[1])
-    elif command == "!audiocue" and len(command_parts) == 2:
-        audiocue_command(command_parts[1])
-    elif command in ["!who", "!w"]:
-        target_cmdr = None
-        if len(command_parts) == 2:
-            target_cmdr = command_parts[1]
-        else:
-            target = EDR_CLIENT.player.target_pilot()
-            target_cmdr = target.name if target and target.is_human() else None
-        if target_cmdr:
-            EDRLOG.log(u"Explicit who command for {}".format(target_cmdr), "INFO")
-            EDR_CLIENT.who(target_cmdr)
-    elif command == "!crimes":
-        crimes_command("" if len(command_parts) == 1 else command_parts[1])
-    elif command == "!sitrep":
-        system = cmdr.star_system if len(command_parts) == 1 else command_parts[1]
-        EDRLOG.log(u"Sitrep command for {}".format(system), "INFO")
-        EDR_CLIENT.check_system(system)
-    elif command == "!sitreps":
-        EDRLOG.log(u"Sitreps command", "INFO")
-        EDR_CLIENT.sitreps()
-    elif command == "!signals":
-        EDRLOG.log(u"Signals command", "INFO")
-        EDR_CLIENT.noteworthy_signals_in_system()
-    elif command == "!notams":
-        EDRLOG.log(u"Notams command", "INFO")
-        EDR_CLIENT.notams()
-    elif command == "!notam":
-        system = cmdr.star_system if len(command_parts) == 1 else command_parts[1]
-        EDRLOG.log(u"Notam command for {}".format(system), "INFO")
-        EDR_CLIENT.notam(system)
-    elif command == "!outlaws":
-        EDRLOG.log(u"Outlaws command", "INFO")
-        EDR_CLIENT.outlaws()
-    elif command == "!enemies":
-        EDRLOG.log(u"Enemies command", "INFO")
-        EDR_CLIENT.enemies()
-    elif command == "!where":
-        target_cmdr = None
-        if len(command_parts) == 2:
-            target_cmdr = command_parts[1]
-        else:
-            target = EDR_CLIENT.player.target_pilot()
-            target_cmdr = target.name if target and target.is_human() else None
-        if target_cmdr:
-            EDRLOG.log(u"Explicit where command for {}".format(target_cmdr), "INFO")
-            EDR_CLIENT.where(target_cmdr)
-    elif command == "!search":
-        resource = None
-        system = cmdr.star_system
-        if len(command_parts) == 2:
-            better_parts = command_parts[1].split("@", 1)
-            if len(better_parts) == 2:
-                system = better_parts[1].lstrip()
-            resource = better_parts[0].rstrip()
-        if resource:
-            EDRLOG.log(u"Search command for {}".format(resource), "INFO")
-            EDR_CLIENT.search_resource(resource, system)
-    elif command in ["!distance", "!d"] and len(command_parts) >= 2:
-        EDRLOG.log(u"Distance command", "INFO")
-        systems = " ".join(command_parts[1:]).split(" > ", 1)
-        if not systems:
-            EDRLOG.log(u"Aborting distance calculation (no params).", "DEBUG")
-            return
-        from_sys = systems[0] if len(systems) == 2 else cmdr.star_system
-        to_sys = systems[1] if len(systems) == 2 else systems[0]
-        EDRLOG.log(u"Distance command from {} to {}".format(from_sys, to_sys), "INFO")
-        EDR_CLIENT.distance(from_sys, to_sys)
-    elif command == "!if":
-        EDRLOG.log(u"Interstellar Factors command", "INFO")
-        search_center = cmdr.star_system
-        override_sc_dist = None
-        if len(command_parts) >= 2:
-            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
-            search_center = parameters[0] or cmdr.star_system
-            override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
-        EDR_CLIENT.interstellar_factors_near(search_center, override_sc_dist)
-    elif command == "!raw":
-        EDRLOG.log(u"Raw Material Trader command", "INFO")
-        search_center = cmdr.star_system
-        override_sc_dist = None
-        if len(command_parts) >= 2:
-            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
-            search_center = parameters[0] or cmdr.star_system
-            override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
-        EDR_CLIENT.raw_material_trader_near(search_center, override_sc_dist)
-    elif command in ["!encoded", "!enc"]:
-        EDRLOG.log(u"Encoded Material Trader command", "INFO")
-        search_center = cmdr.star_system
-        override_sc_dist = None
-        if len(command_parts) >= 2:
-            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
-            search_center = parameters[0] or cmdr.star_system
-            override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
-        EDR_CLIENT.encoded_material_trader_near(search_center, override_sc_dist)
-    elif command in ["!manufactured", "!man"]:
-        EDRLOG.log(u"Manufactured Material Trader command", "INFO")
-        search_center = cmdr.star_system
-        override_sc_dist = None
-        if len(command_parts) >= 2:
-            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
-            search_center = parameters[0] or cmdr.star_system
-            override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
-        EDR_CLIENT.manufactured_material_trader_near(search_center, override_sc_dist)
-    elif command == "!staging":
-        EDRLOG.log(u"Looking for a staging station", "INFO")
-        search_center = cmdr.star_system
-        override_sc_dist = None
-        if len(command_parts) >= 2:
-            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
-            search_center = parameters[0] or cmdr.star_system
-            override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
-        EDR_CLIENT.staging_station_near(search_center, override_sc_dist)
-    elif command == "!fc":
-        if len(command_parts) < 2:
-            return
-        callsign_or_name = " ".join(command_parts[1:]).upper()
-        EDRLOG.log(u"Looking for a Fleet Carrier in current system with {} in callsign or name".format(callsign_or_name), "INFO")
-        EDR_CLIENT.fc_in_current_system(callsign_or_name)
-    elif command == "!station":
-        if len(command_parts) < 2:
-            return
-        station_name = " ".join(command_parts[1:]).upper()
-        EDRLOG.log(u"Looking for a Station in current system with {} in its name".format(station_name), "INFO")
-        EDR_CLIENT.station_in_current_system(station_name)
-    elif command == "!rrrfc":
-        EDRLOG.log(u"Looking for a RRR Fleet Carrier", "INFO")
-        search_center = cmdr.star_system
-        override_radius = None
-        if len(command_parts) >= 2:
-            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
-            search_center = parameters[0] or cmdr.star_system
-            override_radius = int(parameters[1]) if len(parameters) > 1 else None
-        EDR_CLIENT.rrr_fc_near(search_center, override_radius)
-    elif command == "!rrr":
-        EDRLOG.log(u"Looking for a RRR Station", "INFO")
-        search_center = cmdr.star_system
-        override_radius = None
-        if len(command_parts) >= 2:
-            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
-            search_center = parameters[0] or cmdr.star_system
-            override_radius = int(parameters[1]) if len(parameters) > 1 else None
-        EDR_CLIENT.rrr_near(search_center, override_radius)
-    elif command == "!parking":
-        search_center = cmdr.star_system
-        override_rank = None
-        if len(command_parts) >= 2:
-            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("#", 1)]
-            search_center = parameters[0] or cmdr.star_system
-            override_rank = int(parameters[1]) if len(parameters) > 1 else None
-        EDRLOG.log(u"Looking for a system to park a fleet carrier near {}".format(search_center), "INFO")
-        EDR_CLIENT.parking_system_near(search_center, override_rank)
-    elif command in ["!htb", "!humantechbroker"]:
-        EDRLOG.log(u"Looking for a human tech broker", "INFO")
-        search_center = cmdr.star_system
-        override_sc_dist = None
-        if len(command_parts) >= 2:
-            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
-            search_center = parameters[0] or cmdr.star_system
-            override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
-        EDR_CLIENT.human_tech_broker_near(search_center, override_sc_dist)
-    elif command in ["!gtb", "!guardiantechbroker"]:
-        EDRLOG.log(u"Looking for a guardian tech broker", "INFO")
-        search_center = cmdr.star_system
-        override_sc_dist = None
-        if len(command_parts) >= 2:
-            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
-            search_center = parameters[0] or cmdr.star_system
-            override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
-        EDR_CLIENT.guardian_tech_broker_near(search_center, override_sc_dist)
-    elif command in ["!offbeat"]:
-        EDRLOG.log(u"Looking for an offbeat station", "INFO")
-        search_center = cmdr.star_system
-        override_sc_dist = None
-        if len(command_parts) >= 2:
-            parameters = [param.strip() for param in " ".join(command_parts[1:]).split("< ", 1)]
-            search_center = parameters[0] or cmdr.star_system
-            override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
-        EDR_CLIENT.offbeat_station_near(search_center, override_sc_dist)
-    elif command in ["!edr", "!911", "!fuel", "!repair"]:
-        services = {
-            "!edr": "edr",
-            "!911": "police",
-            "!fuel": "fuel",
-            "!repair": "repair"
-        }
-        service = services[command]
-        message = command_parts[1] if len(command_parts) == 2 else "N/A"
-        if service == "fuel" and not cmdr.lowish_fuel():
-            EDRLOG.log(u"EDR Central for {} with {} not allowed (enough fuel)".format(service, message), "INFO")
-            EDR_CLIENT.notify_with_details("EDR Central", [_(u"Call rejected: you seem to have enough fuel."), _("Contact Cmdr LeKeno if this is inaccurate")])
-            return
-        if service == "repair" and not cmdr.heavily_damaged():
-            EDRLOG.log(u"EDR Central for {} with {} not allowed (no serious damage)".format(service, message), "INFO")
-            EDR_CLIENT.notify_with_details("EDR Central", [_(u"Call rejected: you seem to have enough hull left."), _("Contact Cmdr LeKeno if this is inaccurate")])
-            return
-        info = EDR_CLIENT.player.json(fuel_info=(service == "fuel"))
-        info["message"] = message
-        EDRLOG.log(u"Message to EDR Central for {} with {}".format(service, message), "INFO")
-        EDR_CLIENT.call_central(service, info)
-    elif command == "!nav":
-        if len(command_parts) < 2:
-            EDRLOG.log(u"Not enough parameters for navigation command", "INFO")
-            return
-        if command_parts[1].lower() == "off":
-            EDRLOG.log(u"Clearing destination", "INFO")
-            EDR_CLIENT.player.planetary_destination = None
-            return
-        elif command_parts[1].lower() == "set" and EDR_CLIENT.player.attitude.valid():
-            EDRLOG.log(u"Setting destination", "INFO")
-            attitude = EDR_CLIENT.player.attitude
-            name = command_parts[2:].lower() if len(command_parts) > 2 else "Navpoint"
-            EDR_CLIENT.navigation(attitude.latitude, attitude.longitude, name)
-            return
-        lat_long = command_parts[1].split(" ")
-        if len(lat_long) != 2:
-            EDRLOG.log(u"Invalid parameters for navigation command", "INFO")
-            return
-        EDRLOG.log(u"Navigation command", "INFO")
-        EDR_CLIENT.navigation(lat_long[0], lat_long[1])
-    elif command == "!ship" and len(command_parts) == 2:
-        name_or_type = command_parts[1]
-        EDRLOG.log(u"Ship search command for {}".format(name_or_type), "INFO")
-        EDR_CLIENT.where_ship(name_or_type)
-    elif command == "!eval" and len(command_parts) == 2:
-        eval_type = command_parts[1]
-        EDRLOG.log(u"Eval command for {}".format(eval_type), "INFO")
-        EDR_CLIENT.eval(eval_type)
-    elif command == "!contracts" and len(command_parts) == 1:
-        EDRLOG.log(u"Contracts command", "INFO")
-        EDR_CLIENT.contracts()
-    elif command == "!contract":
-        target_cmdr = cmdr.target
-        reward = None
-        if len(command_parts) >= 2:
-            parts = [p.strip() for p in filter(len, " ".join(command_parts[1:]).split("$$$ ", 1))]
-            target_cmdr = parts[0]
-            if len(parts)>=2:
-                reward = int(parts[1])
-        EDRLOG.log(u"Contract command on {} with reward of {}".format(target_cmdr, reward), "INFO")
-        if reward is None:
-            EDR_CLIENT.contract(target_cmdr)
-        else:
-            EDR_CLIENT.contract_on(target_cmdr, reward)
-    elif command == "!help":
-        EDRLOG.log(u"Help command", "INFO")
-        EDR_CLIENT.help("" if len(command_parts) == 1 else command_parts[1])
-    elif command == "!clear":
-        EDRLOG.log(u"Clear command", "INFO")
-        EDR_CLIENT.clear()
-    elif command == "!materials":
-        if len(command_parts) == 2:
-            profile = command_parts[1]
-            EDRLOG.log(u"Configure material profile with {}".format(profile), "INFO")
-            EDR_CLIENT.configure_resourcefinder(profile)
-        else:
-            EDR_CLIENT.show_material_profiles()
-            EDRLOG.log(u"Listing material profiles", "INFO")
-
-def handle_query_commands(cmdr, command, command_parts):
-    if command == "?outlaws":
-        EDRLOG.log(u"Outlaws alerts command", "INFO")
-        param = "" if len(command_parts) == 1 else command_parts[1]
-        if param == "":
-            EDR_CLIENT.outlaws_alerts_enabled(silent=False)
-        elif param == "on": 
-            EDRLOG.log(u"Enabling Outlaws alerts", "INFO")
-            EDR_CLIENT.enable_outlaws_alerts()
-        elif param == "off":
-            EDRLOG.log(u"Disabling Outlaws alerts", "INFO")
-            EDR_CLIENT.disable_outlaws_alerts()
-        elif param.startswith("ly "):
-            EDRLOG.log(u"Max distance for Outlaws alerts", "INFO")
-            EDR_CLIENT.max_distance_outlaws_alerts(param[3:])
-        elif param.startswith("cr "):
-            EDRLOG.log(u"Min bounty for Outlaws alerts", "INFO")
-            EDR_CLIENT.min_bounty_outlaws_alerts(param[3:])
-    elif command == "?enemies":
-        EDRLOG.log(u"Enemies alerts command", "INFO")
-        param = "" if len(command_parts) == 1 else command_parts[1]
-        if param == "":
-            EDR_CLIENT.enemies_alerts_enabled(silent=False)
-        elif param == "on": 
-            EDRLOG.log(u"Enabling enemies alerts", "INFO")
-            EDR_CLIENT.enable_enemies_alerts()
-        elif param == "off":
-            EDRLOG.log(u"Disabling enemies alerts", "INFO")
-            EDR_CLIENT.disable_enemies_alerts()
-        elif param.startswith("ly "):
-            EDRLOG.log(u"Max distance for Enemies alerts", "INFO")
-            EDR_CLIENT.max_distance_enemies_alerts(param[3:])
+    return EDR_CLIENT.process_sent_message(entry)
     
-def handle_hash_commands(command, command_parts, entry):
-    target_cmdr = get_target_cmdr(command_parts, entry, EDR_CLIENT.player)
-    
-    if target_cmdr is None:
-        EDRLOG.log(u"Skipping tag command: no valid target", "WARNING")
-        return
-    
-    if (command == "#!" or command == "#outlaw"):
-        EDRLOG.log(u"Tag outlaw command for {}".format(target_cmdr), "INFO")
-        EDR_CLIENT.tag_cmdr(target_cmdr, "outlaw")
-    elif (command == "#?" or command == "#neutral"):
-        EDRLOG.log(u"Tag neutral command for {}".format(target_cmdr), "INFO")
-        EDR_CLIENT.tag_cmdr(target_cmdr, "neutral")
-    elif (command == "#+" or command == "#enforcer"):
-        EDRLOG.log(u"Tag enforcer command for {}".format(target_cmdr), "INFO")
-        EDR_CLIENT.tag_cmdr(target_cmdr, "enforcer")
-    elif (command == "#s!" or command == "#enemy"):
-        EDRLOG.log(u"Tag squadron enemy command for {}".format(target_cmdr), "INFO")
-        EDR_CLIENT.tag_cmdr(target_cmdr, "enemy")
-    elif (command == "#s+" or command == "#ally"):
-        EDRLOG.log(u"Tag squadron ally command for {}".format(target_cmdr), "INFO")
-        EDR_CLIENT.tag_cmdr(target_cmdr, "ally")
-    elif (command == "#=" or command == "#friend"):
-        EDRLOG.log(u"Tag friend command for {}".format(target_cmdr), "INFO")
-        EDR_CLIENT.tag_cmdr(target_cmdr, "friend")
-    elif (len(command) > 1 and command[0] == "#"):
-        tag = command[1:]
-        EDRLOG.log(u"Tag command for {} with {}".format(target_cmdr, tag), "INFO")
-        EDR_CLIENT.tag_cmdr(target_cmdr, tag)
-
-def get_target_cmdr(command_parts, entry, player):
-    target_cmdr = command_parts[1] if len(command_parts) > 1 else None
-    if target_cmdr is None:
-        if not entry["To"] in ["local", "voicechat", "wing", "friend", "starsystem", "squadron", "squadleaders"]:
-            prefix = "$cmdr_decorate:#name="
-            target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
-        else:
-            target = player.target_pilot()
-            target_cmdr = target.name if target and target.is_human() else None
-    return target_cmdr
-
-def handle_minus_commands(command, command_parts, entry):
-    target_cmdr = get_target_cmdr(command_parts, entry, EDR_CLIENT.player)
-    if target_cmdr is None:
-        EDRLOG.log(u"Skipping untag command: no valid target", "WARNING")
-        return
-
-    if command == "-#":
-        EDRLOG.log(u"Remove {} from dex".format(target_cmdr), "INFO")
-        EDR_CLIENT.untag_cmdr(target_cmdr, tag=None)
-    elif command == "-#!" or command == "-#outlaw":
-        EDRLOG.log(u"Remove outlaw tag for {}".format(target_cmdr), "INFO")
-        EDR_CLIENT.untag_cmdr(target_cmdr, "outlaw")
-    elif command == "-#?" or command == "-#neutral":
-        EDRLOG.log(u"Remove neutral tag for {}".format(target_cmdr), "INFO")
-        EDR_CLIENT.untag_cmdr(target_cmdr, "neutral")
-    elif command == "-#+" or command == "-#enforcer":
-        EDRLOG.log(u"Remove enforcer tag for {}".format(target_cmdr), "INFO")
-        EDR_CLIENT.untag_cmdr(target_cmdr, "enforcer")
-    elif command == "-#s!" or command == "-#enemy":
-        EDRLOG.log(u"Remove squadron enemy tag for {}".format(target_cmdr), "INFO")
-        EDR_CLIENT.untag_cmdr(target_cmdr, "enemy")
-    elif command == "-#s+" or command == "-#ally":
-        EDRLOG.log(u"Remove squadron ally tag for {}".format(target_cmdr), "INFO")
-        EDR_CLIENT.untag_cmdr(target_cmdr, "ally")    
-    elif command == "-#=" or command == "-#friend":
-        EDRLOG.log(u"Remove friend tag for {}".format(target_cmdr), "INFO")
-        EDR_CLIENT.untag_cmdr(target_cmdr, "friend")
-    elif (len(command) > 2 and command[0] == "-#"):
-        tag = command[2:]
-        EDRLOG.log(u"Remove tag {} for {}".format(tag, target_cmdr), "INFO")
-        EDR_CLIENT.untag_cmdr(target_cmdr, tag)
-    elif command == "-@#":
-        EDRLOG.log(u"Remove memo for {}".format(target_cmdr), "INFO")
-        EDR_CLIENT.clear_memo_cmdr(target_cmdr)
-    
-
-def handle_at_commands(entry):
-    if not entry["event"] == "SendText":
-        return
-    command_parts = entry["Message"].split(" memo=", 1)
-    command = command_parts[0].lower()
-    target_cmdr = None
-    
-    if command == "@# ":
-        if not entry["To"] in ["local", "voicechat", "wing", "friend", "starsystem", "squadron", "squadleaders"]:
-            prefix = "$cmdr_decorate:#name="
-            target_cmdr = entry["To"][len(prefix):-1] if entry["To"].startswith(prefix) else entry["To"]
-            EDRLOG.log(u"Memo command for tagged cmdr {}".format(target_cmdr), "INFO")
-        else:
-            target = EDR_CLIENT.player.target_pilot()
-            target_cmdr = target.name if target and target.is_human() else None
-    elif command.startswith("@# ") and len(command)>2:
-        target_cmdr = command[3:]
-        EDRLOG.log(u"Memo command for tagged cmdr {}".format(target_cmdr), "INFO")
-
-    if target_cmdr:
-        EDR_CLIENT.memo_cmdr(target_cmdr, command_parts[1])
-
-
-def overlay_command(param):
-    if param == "":
-        EDRLOG.log(u"Visual feedback is {}".format("enabled." if EDR_CLIENT.visual_feedback
-                                                   else "disabled."), "INFO")
-        EDR_CLIENT.IN_GAME_MSG.reconfigure()
-        random.seed()
-        r = random.random()
-        if r < 0.5:
-            EDR_CLIENT.who(codecs.decode(random.choice(['yrxrab', 'Fgrs']), 'rot_13'))
-        else:
-            EDR_CLIENT.who(codecs.decode(random.choice(['Qnatrebhf.pbz', 'Yrzna Ehff IV', 'qvrtb anpxl', 'Ahzvqn', 'Nyovab Fnapurm']), 'rot_13')) # top 5 for self reported kills in 2021
-        EDR_CLIENT.noteworthy_about_system({ "timestamp":"2021-10-22T12:34:56Z", "event":"FSDJump", "Taxi":False, "Multicrew":False, "StarSystem":"Deciat", "SystemAddress":6681123623626, "StarPos":[122.62500,-0.81250,-47.28125], "SystemAllegiance":"Independent", "SystemEconomy":"$economy_Industrial;", "SystemEconomy_Localised":"Industrial", "SystemSecondEconomy":"$economy_Refinery;", "SystemSecondEconomy_Localised":"Refinery", "SystemGovernment":"$government_Feudal;", "SystemGovernment_Localised":"Feudal", "SystemSecurity":"$SYSTEM_SECURITY_high;", "SystemSecurity_Localised":"High Security", "Population":31778844, "Body":"Deciat", "BodyID":0, "BodyType":"Star", "Powers":[ "A. Lavigny-Duval" ], "PowerplayState":"Exploited", "JumpDist":5.973, "FuelUsed":0.111415, "FuelLevel":8.000000, "Factions":[ { "Name":"Independent Deciat Green Party", "FactionState":"War", "Government":"Democracy", "Influence":0.109109, "Allegiance":"Federation", "Happiness":"$Faction_HappinessBand3;", "Happiness_Localised":"Discontented", "MyReputation":57.083599, "ActiveStates":[ { "State":"InfrastructureFailure" }, { "State":"War" } ] }, { "Name":"Kremata Incorporated", "FactionState":"Election", "Government":"Corporate", "Influence":0.105105, "Allegiance":"Federation", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":-6.000000, "ActiveStates":[ { "State":"Election" } ] }, { "Name":"Windri & Co", "FactionState":"War", "Government":"Corporate", "Influence":0.151151, "Allegiance":"Federation", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":-11.800000, "ActiveStates":[ { "State":"Boom" }, { "State":"War" } ] }, { "Name":"Deciat Flag", "FactionState":"None", "Government":"Dictatorship", "Influence":0.100100, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":0.000000 }, { "Name":"Deciat Corp.", "FactionState":"Election", "Government":"Corporate", "Influence":0.105105, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":-1.200000, "ActiveStates":[ { "State":"Election" } ] }, { "Name":"Deciat Blue Dragons", "FactionState":"None", "Government":"Anarchy", "Influence":0.010010, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":3.300000 }, { "Name":"Ryders of the Void", "FactionState":"Boom", "Government":"Feudal", "Influence":0.419419, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":93.099998, "PendingStates":[ { "State":"Expansion", "Trend":0 } ], "RecoveringStates":[ { "State":"CivilUnrest", "Trend":0 }, { "State":"PirateAttack", "Trend":0 } ], "ActiveStates":[ { "State":"Boom" } ] } ], "SystemFaction":{ "Name":"Ryders of the Void", "FactionState":"Boom" }, "Conflicts":[ { "WarType":"war", "Status":"active", "Faction1":{ "Name":"Independent Deciat Green Party", "Stake":"Carson Hub", "WonDays":2 }, "Faction2":{ "Name":"Windri & Co", "Stake":"Alonso Cultivation Estate", "WonDays":1 } }, { "WarType":"election", "Status":"active", "Faction1":{ "Name":"Kremata Incorporated", "Stake":"Folorunsho Military Enterprise", "WonDays":2 }, "Faction2":{ "Name":"Deciat Corp.", "Stake":"Amos Synthetics Moulding", "WonDays":1 } } ] })
-        EDR_CLIENT.check_system("Deciat")
-        global OVERLAY_DUMMY_COUNTER
-        OVERLAY_DUMMY_COUNTER = (OVERLAY_DUMMY_COUNTER + 1) % 3
-        if OVERLAY_DUMMY_COUNTER == 0:
-            real_star_system = EDR_CLIENT.player.star_system
-            EDR_CLIENT.player.star_system = "Deciat"
-            EDR_CLIENT.docking_guidance({ "timestamp":"2021-10-22T12:34:56Z", "event":"DockingGranted", "LandingPad":7, "MarketID":3229756160, "StationName":"Garay Terminal", "StationType":"Coriolis" })
-            EDR_CLIENT.player.star_system = real_star_system
-        elif OVERLAY_DUMMY_COUNTER == 1:
-            EDR_CLIENT.player.mining_stats.dummify()
-            EDR_CLIENT.mining_guidance()
-            EDR_CLIENT.player.mining_stats.reset()
-        else:
-            EDR_CLIENT.player.bounty_hunting_stats.dummify() # TODO
-            EDR_CLIENT.bounty_hunting_guidance() 
-            EDR_CLIENT.player.bounty_hunting_stats.reset()
-    elif param == "on":
-        EDRLOG.log(u"Enabling visual feedback", "INFO")
-        EDR_CLIENT.visual_feedback = True
-        EDR_CLIENT.warmup()
-    elif param == "off":
-        EDRLOG.log(u"Disabling visual feedback", "INFO")
-        EDR_CLIENT.notify_with_details("Visual Feedback System", ["disabling"])
-        EDR_CLIENT.visual_feedback = False
-
-def crimes_command(param):
-    if param == "":
-        EDRLOG.log(u"Crimes report is {}".format("enabled." if EDR_CLIENT.crimes_reporting
-                                                 else "disabled."), "INFO")
-        EDR_CLIENT.notify_with_details("EDR crimes report",
-                                       ["Enabled" if EDR_CLIENT.crimes_reporting else "Disabled"])
-    elif param == "on":
-        EDRLOG.log(u"Enabling crimes reporting", "INFO")
-        EDR_CLIENT.crimes_reporting = True
-        EDR_CLIENT.notify_with_details("EDR crimes report", ["Enabling"])
-    elif param == "off":
-        EDRLOG.log(u"Disabling crimes reporting", "INFO")
-        EDR_CLIENT.crimes_reporting = False
-        EDR_CLIENT.notify_with_details("EDR crimes report", ["Disabling"])
-
-def audiocue_command(param):
-    if param == "on":
-        EDRLOG.log(u"Enabling audio feedback", "INFO")
-        EDR_CLIENT.audio_feedback = True
-        EDR_CLIENT.notify_with_details("EDR audio cues", ["Enabling"])
-    elif param == "off":
-        EDRLOG.log(u"Disabling audio feedback", "INFO")
-        EDR_CLIENT.audio_feedback = False
-        EDR_CLIENT.notify_with_details("EDR audio cues", ["Disabling"])
-    elif param == "loud":
-        EDRLOG.log(u"Loud audio feedback", "INFO")
-        EDR_CLIENT.loud_audio_feedback()
-        EDR_CLIENT.audio_feedback = True
-        EDR_CLIENT.notify_with_details("EDR audio cues", ["Enabled", "Loud"])
-    elif param == "soft":
-        EDRLOG.log(u"Soft audio feedback", "INFO")
-        EDR_CLIENT.soft_audio_feedback()
-        EDR_CLIENT.audio_feedback = True
-        EDR_CLIENT.notify_with_details("EDR audio cues", ["Enabled", "Soft"])
-
 def handle_shuttle_events(entry):
     if entry["event"]  not in ["BookTaxi", "BookDropship", "CancelTaxi", "CancelDropship"]:
         return
