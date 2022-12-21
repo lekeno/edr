@@ -150,10 +150,10 @@ MATERIALS_LUT = {
     "unknownorganiccircuitry": {"localized": _(u"Thargoid Organic Circuitry"), "raw": "Thargoid Organic Circuitry", "category": "manufactured", "grade": 5},
     "unknowntechnologycomponents": {"localized": _(u"Thargoid Technological Components"), "raw": "Thargoid Technological Components", "category": "manufactured", "grade": 4},
     "bypass": { "localized": _(u"E-Breach"), "category": "consumable", "raw": "E-Breach", "grade":0},
-    "largecapacitypowerregulator": { "localized": _(u"Power Regulator"), "category": "item", "raw": "Power Regulator", "grade":0},
-    "chemicalinventory": { "localized": _(u"Chemical Inventory"), "category": "data", "raw": "Chemical Inventory", "grade":0},
+    "largecapacitypowerregulator": { "localized": _(u"Power Regulator"), "category": "item", "raw": "Power Regulator", "grade":0, "comments": _("Suits upgrades")},
+    "chemicalinventory": { "localized": _(u"Chemical Inventory"), "category": "data", "raw": "Chemical Inventory", "grade":0, "comments": _("Extra backpack")},
     "dutyrota": { "localized": _(u"Duty Rota"), "category": "data", "raw": "Duty Rota", "grade":0},
-    "evacuationprotocols": { "localized": _(u"Evacuation Protocols"), "category": "data", "raw": "Evacuation Protocols", "grade":0},
+    "evacuationprotocols": { "localized": _(u"Evacuation Protocols"), "category": "data", "raw": "Evacuation Protocols", "grade":0, "comments": _("Combat movement")},
     "explorationjournals": { "localized": _(u"Exploration Journals"), "category": "data", "raw": "Exploration Journals", "grade":0},
     "factionnews": { "localized": _(u"Faction News"), "category": "data", "raw": "Faction News", "grade":0},
     "financialprojections": { "localized": _(u"Financial Projections"), "category": "data", "raw": "Financial Projections", "grade":0},
@@ -169,78 +169,78 @@ MATERIALS_LUT = {
     "biochemicalagent": { "localized": _(u"Biochemical Agent"), "category": "item", "raw": "Biochemical Agent", "grade":0},
     "degradedpowerregulator": { "localized": _(u"Degraded Power Regulator"), "category": "item", "raw": "Degraded Power Regulator", "grade":0},
     "hush": { "localized": _(u"Hush"), "category": "item", "raw": "Hush", "grade":0},
-    "maintenancelogs": { "localized": _(u"Maintenance Logs"), "category": "data", "raw": "Maintenance Logs", "grade":0},
-    "patrolroutes": { "localized": _(u"Patrol Routes"), "category": "data", "raw": "Patrol Routes", "grade":0},
+    "maintenancelogs": { "localized": _(u"Maintenance Logs"), "category": "data", "raw": "Maintenance Logs", "grade":0, "comments": _("Extra battery")},
+    "patrolroutes": { "localized": _(u"Patrol Routes"), "category": "data", "raw": "Patrol Routes", "grade":0, "comments": _("Quieter footsteps, Audio masking")},
     "push": { "localized": _(u"push"), "category": "item", "raw": "push", "grade":0},
     "settlementdefenceplans": { "localized": _(u"Settlement Defence Plans"), "category": "data", "raw": "Settlement Defence Plans", "grade":0},
-    "surveilleancelogs": { "localized": _(u"Surveillance Logs"), "category": "data", "raw": "Surveillance Logs", "grade":0},
+    "surveilleancelogs": { "localized": _(u"Surveillance Logs"), "category": "data", "raw": "Surveillance Logs", "grade":0, "comments": _("Night vision")},
     "syntheticpathogen": { "localized": _(u"Synthetic Pathogen"), "category": "item", "raw": "Synthetic Pathogen", "grade":0},
     "buildingschematic": { "localized": _(u"Building Schematic"), "category": "item", "raw": "Building Schematic", "grade":0},
-    "operationalmanual": { "localized": _(u"Operational Manual"), "category": "data", "raw": "Operational Manual", "grade":0},
+    "operationalmanual": { "localized": _(u"Operational Manual"), "category": "data", "raw": "Operational Manual", "grade":0, "comments": _("Faster handling, Faster/Stowed reloading")},
     "blacklistdata": { "localized": _(u"Blacklist Data"), "category": "data", "raw": "Blacklist Data", "grade":0},
     "insight": { "localized": _(u"Insight"), "category": "item", "raw": "Insight", "grade":0},
-    "airqualityreports": { "localized": _(u"Air Quality Reports"), "category": "data", "raw": "Air Quality Reports", "grade":0},
+    "airqualityreports": { "localized": _(u"Air Quality Reports"), "category": "data", "raw": "Air Quality Reports", "grade":0, "comments": _("Extra air")},
     "employeedirectory": { "localized": _(u"Employee Directory"), "category": "data", "raw": "Employee Directory", "grade":0},
     "factionassociates": { "localized": _(u"Faction Associates"), "category": "data", "raw": "Faction Associates", "grade":0},
     "meetingminutes": { "localized": _(u"Meeting Minutes"), "category": "data", "raw": "Meeting Minutes", "grade":0},
     "multimediaentertainment": { "localized": _(u"Multimedia Entertainment"), "category": "data", "raw": "Multimedia Entertainment", "grade":0},
     "networkaccesshistory": { "localized": _(u"Network Access History"), "category": "data", "raw": "Network Access History", "grade":0},
     "purchaserecords": { "localized": _(u"Purchase Records"), "category": "data", "raw": "Purchase Records", "grade":0},
-    "radioactivitydata": { "localized": _(u"Radioactivity Data"), "category": "data", "raw": "Radioactivity Data", "grade":0},
+    "radioactivitydata": { "localized": _(u"Radioactivity Data"), "category": "data", "raw": "Radioactivity Data", "grade":0, "comments": _("Night vision, TK hip fire")},
     "residentialdirectory": { "localized": _(u"Residential Directory"), "category": "data", "raw": "Residential Directory", "grade":0},
     "shareholderinformation": { "localized": _(u"Shareholder Information"), "category": "data", "raw": "Shareholder Information", "grade":0},
     "travelpermits": { "localized": _(u"Travel Permits"), "category": "data", "raw": "Travel Permits", "grade":0},
     "accidentlogs": { "localized": _(u"Accident Logs"), "category": "data", "raw": "Accident Logs", "grade":0},
     "campaignplans": { "localized": _(u"Campaign Plans"), "category": "data", "raw": "Campaign Plans", "grade":0},
-    "combattrainingmaterial": { "localized": _(u"Combat Training Material"), "category": "data", "raw": "Combat Training Material", "grade":0},
+    "combattrainingmaterial": { "localized": _(u"Combat Training Material"), "category": "data", "raw": "Combat Training Material", "grade":0, "comments": _("Faster handling/reload, Melee damage")},
     "internalcorrespondence": { "localized": _(u"Internal Correspondence"), "category": "data", "raw": "Internal Correspondence", "grade":0},
     "payrollinformation": { "localized": _(u"Payroll Information"), "category": "data", "raw": "Payroll Information", "grade":0},
     "personallogs": { "localized": _(u"Personal Logs"), "category": "data", "raw": "Personal Logs", "grade":0},
-    "weaponinventory": { "localized": _(u"Weapon Inventory"), "category": "data", "raw": "Weapon Inventory", "grade":0},
-    "atmosphericdata": { "localized": _(u"Atmospheric Data"), "category": "data", "raw": "Atmospheric Data", "grade":0},
-    "topographicalsurveys": { "localized": _(u"Topographical Surveys"), "category": "data", "raw": "Topographical Surveys", "grade":0},
+    "weaponinventory": { "localized": _(u"Weapon Inventory"), "category": "data", "raw": "Weapon Inventory", "grade":0, "comments": _("Extra backpack, Damage resistance")},
+    "atmosphericdata": { "localized": _(u"Atmospheric Data"), "category": "data", "raw": "Atmospheric Data", "grade":0, "comments": _("Noise suppressor")},
+    "topographicalsurveys": { "localized": _(u"Topographical Surveys"), "category": "data", "raw": "Topographical Surveys", "grade":0, "comments": _("Jump assist, Enhanced tracking, Karma range")},
     "literaryfiction": { "localized": _(u"Literary Fiction"), "category": "data", "raw": "Literary Fiction", "grade":0},
-    "reactoroutputreview": { "localized": _(u"Reactor Output Review"), "category": "data", "raw": "Reactor Output Review", "grade":0},
+    "reactoroutputreview": { "localized": _(u"Reactor Output Review"), "category": "data", "raw": "Reactor Output Review", "grade":0, "comments": _("Battery capacity/consumption, Shield regen")},
     "nextofkinrecords": { "localized": _(u"Next of Kin Records"), "category": "data", "raw": "Next of Kin Records", "grade":0},
     "purchaserequests": { "localized": _(u"Purchase Requests"), "category": "data", "raw": "Purchase Requests", "grade":0},
     "taxrecords": { "localized": _(u"Tax Records"), "category": "data", "raw": "Tax Records", "grade":0},
     "visitorregister": { "localized": _(u"Visitor Register"), "category": "data", "raw": "Visitor Register", "grade":0},
-    "pharmaceuticalpatents": { "localized": _(u"Pharmaceutical Patents"), "category": "data", "raw": "Pharmaceutical Patents", "grade":0},
+    "pharmaceuticalpatents": { "localized": _(u"Pharmaceutical Patents"), "category": "data", "raw": "Pharmaceutical Patents", "grade":0, "comments": _("Extra air")},
     "vaccineresearch": { "localized": _(u"Vaccine Research"), "category": "data", "raw": "Vaccine Research", "grade":0},
     "virologydata": { "localized": _(u"Virology Data"), "category": "data", "raw": "Virology Data", "grade":0},
     "vaccinationrecords": { "localized": _(u"Vaccination Records"), "category": "data", "raw": "Vaccination Records", "grade":0},
     "censusdata": { "localized": _(u"Census Data"), "category": "data", "raw": "Census Data", "grade":0},
     "geographicaldata": { "localized": _(u"Geographical Data"), "category": "data", "raw": "Geographical Data", "grade":0},
-    "mineralsurvey": { "localized": _(u"Mineral Survey"), "category": "data", "raw": "Mineral Survey", "grade":0},
-    "chemicalformulae": { "localized": _(u"Chemical Formulae"), "category": "data", "raw": "Chemical Formulae", "grade":0},
+    "mineralsurvey": { "localized": _(u"Mineral Survey"), "category": "data", "raw": "Mineral Survey", "grade":0, "comments": _("Manticore range")},
+    "chemicalformulae": { "localized": _(u"Chemical Formulae"), "category": "data", "raw": "Chemical Formulae", "grade":0, "comments": _("Manticore range")},
     "amm_grenade_frag": { "localized": _(u"Frag Grenade"), "category": "consumable", "raw": "Frag Grenade", "grade":0},
     "amm_grenade_emp": { "localized": _(u"Shield Disruptor"), "category": "consumable", "raw": "Shield Disruptor", "grade":0},
     "amm_grenade_shield": { "localized": _(u"Shield Projector"), "category": "consumable", "raw": "Shield Projector", "grade":0},
-    "chemicalexperimentdata": { "localized": _(u"Chemical Experiment Data"), "category": "data", "raw": "Chemical Experiment Data", "grade":0},
-    "chemicalpatents": { "localized": _(u"Chemical Patents"), "category": "data", "raw": "Chemical Patents", "grade":0},
-    "productionreports": { "localized": _(u"Production Reports"), "category": "data", "raw": "Production Reports", "grade":0},
-    "productionschedule": { "localized": _(u"Production Schedule"), "category": "data", "raw": "Production Schedule", "grade":0},
-    "bloodtestresults": { "localized": _(u"Blood Test Results"), "category": "data", "raw": "Blood Test Results", "grade":0},
-    "combatantperformance": { "localized": _(u"Combatant Performance"), "category": "data", "raw": "Combatant Performance", "grade":0},
-    "troopdeploymentrecords": { "localized": _(u"Troop Deployment Records"), "category": "data", "raw": "Troop Deployment Records", "grade":0},
+    "chemicalexperimentdata": { "localized": _(u"Chemical Experiment Data"), "category": "data", "raw": "Chemical Experiment Data", "grade":0, "comments": _("Manticore headshot")},
+    "chemicalpatents": { "localized": _(u"Chemical Patents"), "category": "data", "raw": "Chemical Patents", "grade":0, "comments": _("Manticore hip fire")},
+    "productionreports": { "localized": _(u"Production Reports"), "category": "data", "raw": "Production Reports", "grade":0, "comments": _("Extra ammo, Faster reloading")},
+    "productionschedule": { "localized": _(u"Production Schedule"), "category": "data", "raw": "Production Schedule", "grade":0, "comments": _("Stowed reloading")},
+    "bloodtestresults": { "localized": _(u"Blood Test Results"), "category": "data", "raw": "Blood Test Results", "grade":0, "comments": _("Manticore headshot")},
+    "combatantperformance": { "localized": _(u"Combatant Performance"), "category": "data", "raw": "Combatant Performance", "grade":0, "comments": _("Faster handling, Hip fire, Melee damage")},
+    "troopdeploymentrecords": { "localized": _(u"Troop Deployment Records"), "category": "data", "raw": "Troop Deployment Records", "grade":0, "comments": _("Longer sprint")},
     "catmedia": { "localized": _(u"Cat Media"), "category": "data", "raw": "Cat Media", "grade":0},
     "employeegeneticdata": { "localized": _(u"Employee Genetic Data"), "category": "data", "raw": "Employee Genetic Data", "grade":0},
     "factiondonatorlist": { "localized": _(u"Faction Donator List"), "category": "data", "raw": "Faction Donator List", "grade":0},
-    "nocdata": { "localized": _(u"NOC Data"), "category": "data", "raw": "NOC Data", "grade":0},
+    "nocdata": { "localized": _(u"NOC Data"), "category": "data", "raw": "NOC Data", "grade":0, "comments": _("Night vision")},
     "trueformfossil": { "localized": _(u"True Form Fossil"), "category": "item", "raw": "True Form Fossil", "grade":0},
-    "healthmonitor": { "localized": _(u"Health Monitor"), "category": "item", "raw": "Health Monitor", "grade":0},
+    "healthmonitor": { "localized": _(u"Health Monitor"), "category": "item", "raw": "Health Monitor", "grade":0, "comments": _("Suits upgrades")},
     "nutritionalconcentrate": { "localized": _(u"Nutritional Concentrate"), "category": "item", "raw": "Nutritional Concentrate", "grade":0},
     "personaldocuments": { "localized": _(u"Personal Documents"), "category": "item", "raw": "Personal Documents", "grade":0},
     "chemicalsample": { "localized": _(u"Chemical Sample"), "category": "item", "raw": "Chemical Sample", "grade":0},
     "insightdatabank": { "localized": _(u"Insight Data Bank"), "category": "item", "raw": "Insight Data Bank", "grade":0},
-    "ionisedgas": { "localized": _(u"Ionised Gas"), "category": "item", "raw": "Ionised Gas", "grade":0},
+    "ionisedgas": { "localized": _(u"Ionised Gas"), "category": "item", "raw": "Ionised Gas", "grade":0, "comments": _("Manticore/TK upgrades")},
     "personalcomputer": { "localized": _(u"Personal Computer"), "category": "item", "raw": "Personal Computer", "grade":0},
     "shipschematic": { "localized": _(u"Ship Schematic"), "category": "item", "raw": "Ship Schematic", "grade":0},
-    "suitschematic": { "localized": _(u"Suit Schematic"), "category": "item", "raw": "Suit Schematic", "grade":0},
+    "suitschematic": { "localized": _(u"Suit Schematic"), "category": "item", "raw": "Suit Schematic", "grade":0, "comments": _("Suits upgrades")},
     "vehicleschematic": { "localized": _(u"Vehicle Schematic"), "category": "item", "raw": "Vehicle Schematic", "grade":0},
-    "weaponschematic": { "localized": _(u"Weapon Schematic"), "category": "item", "raw": "Weapon Schematic", "grade":0},
+    "weaponschematic": { "localized": _(u"Weapon Schematic"), "category": "item", "raw": "Weapon Schematic", "grade":0, "comments": _("Weapon upgrades")},
     "inertiacanister": { "localized": _(u"Inertia Canister"), "category": "item", "raw": "Inertia Canister", "grade":0},
-    "surveillanceequipment": { "localized": _(u"Surveillance Equipment"), "category": "item", "raw": "Surveillance Equipment", "grade":0},
+    "surveillanceequipment": { "localized": _(u"Surveillance Equipment"), "category": "item", "raw": "Surveillance Equipment", "grade":0, "comments": _("Night vision")},
     "deepmantlesample": { "localized": _(u"Deep Mantle Sample"), "category": "item", "raw": "Deep Mantle Sample", "grade":0},
     "microbialinhibitor": { "localized": _(u"Microbial Inhibitor"), "category": "item", "raw": "Microbial Inhibitor", "grade":0},
     "castfossil": { "localized": _(u"Cast Fossil"), "category": "item", "raw": "Cast Fossil", "grade":0},
@@ -248,59 +248,59 @@ MATERIALS_LUT = {
     "agriculturalprocesssample": { "localized": _(u"Agricultural Process Sample"), "category": "item", "raw": "Agricultural Process Sample", "grade":0},
     "chemicalprocesssample": { "localized": _(u"Chemical Process Sample"), "category": "item", "raw": "Chemical Process Sample", "grade":0},
     "refinementprocesssample": { "localized": _(u"Refinement Process Sample"), "category": "item", "raw": "Refinement Process Sample", "grade":0},
-    "microsupercapacitor": { "localized": _(u"Micro Supercapacitor"), "category": "component", "raw": "Micro Supercapacitor", "grade":0},
-    "microtransformer": { "localized": _(u"Micro Transformer"), "category": "component", "raw": "Micro Transformer", "grade":0},
-    "chemicalsuperbase": { "localized": _(u"Chemical Superbase"), "category": "component", "raw": "Chemical Superbase", "grade":0},
-    "circuitswitch": { "localized": _(u"Circuit Switch"), "category": "component", "raw": "Circuit Switch", "grade":0},
-    "electricalwiring": { "localized": _(u"Electrical Wiring"), "category": "component", "raw": "Electrical Wiring", "grade":0},
-    "encryptedmemorychip": { "localized": _(u"Encrypted Memory Chip"), "category": "component", "raw": "Encrypted Memory Chip", "grade":0},
-    "epoxyadhesive": { "localized": _(u"Epoxy Adhesive"), "category": "component", "raw": "Epoxy Adhesive", "grade":0},
-    "memorychip": { "localized": _(u"Memory Chip"), "category": "component", "raw": "Memory Chip", "grade":0},
-    "microhydraulics": { "localized": _(u"Micro Hydraulics"), "category": "component", "raw": "Micro Hydraulics", "grade":0},
-    "opticalfibre": { "localized": _(u"Optical Fibre"), "category": "component", "raw": "Optical Fibre", "grade":0},
-    "titaniumplating": { "localized": _(u"Titanium Plating"), "category": "component", "raw": "Titanium Plating", "grade":0},
-    "phneutraliser": { "localized": _(u"pH Neutraliser"), "category": "component", "raw": "pH Neutraliser", "grade":0},
-    "metalcoil": { "localized": _(u"Metal Coil"), "category": "component", "raw": "Metal Coil", "grade":0},
-    "viscoelasticpolymer": { "localized": _(u"Viscoelastic Polymer"), "category": "component", "raw": "Viscoelastic Polymer", "grade":0},
-    "ionbattery": { "localized": _(u"Ion Battery"), "category": "component", "raw": "Ion Battery", "grade":0},
-    "chemicalcatalyst": { "localized": _(u"Chemical Catalyst"), "category": "component", "raw": "Chemical Catalyst", "grade":0},
-    "electricalfuse": { "localized": _(u"Electrical Fuse"), "category": "component", "raw": "Electrical Fuse", "grade":0},
-    "opticallens": { "localized": _(u"Optical Lens"), "category": "component", "raw": "Optical Lens", "grade":0},
-    "weaponcomponent": { "localized": _(u"Weapon Component"), "category": "component", "raw": "Weapon Component", "grade":0},
-    "carbonfibreplating": { "localized": _(u"Carbon Fibre Plating"), "category": "component", "raw": "Carbon Fibre Plating", "grade":0},
-    "microthrusters": { "localized": _(u"Micro Thrusters"), "category": "component", "raw": "Micro Thrusters", "grade":0},
-    "oxygenicbacteria": { "localized": _(u"Oxygenic Bacteria"), "category": "component", "raw": "Oxygenic Bacteria", "grade":0},
-    "circuitboard": { "localized": _(u"Circuit Board"), "category": "component", "raw": "Circuit Board", "grade":0},
-    "tungstencarbide": { "localized": _(u"Tungsten Carbide"), "category": "component", "raw": "Tungsten Carbide", "grade":0},
-    "ballisticsdata": { "localized": _(u"Ballistics Data"), "category": "data", "raw": "Ballistics Data", "grade":0},
+    "microsupercapacitor": { "localized": _(u"Micro Supercapacitor"), "category": "component", "raw": "Micro Supercapacitor", "grade":0, "comments": _("Extra battery, Manticore headshot")},
+    "microtransformer": { "localized": _(u"Micro Transformer"), "category": "component", "raw": "Micro Transformer", "grade":0, "comments": _("Shield regen, Battery consumption, TK range")},
+    "chemicalsuperbase": { "localized": _(u"Chemical Superbase"), "category": "component", "raw": "Chemical Superbase", "grade":0, "comments": _("Manticore upgrades")},
+    "circuitswitch": { "localized": _(u"Circuit Switch"), "category": "component", "raw": "Circuit Switch", "grade":0, "comments": _("Night vision")},
+    "electricalwiring": { "localized": _(u"Electrical Wiring"), "category": "component", "raw": "Electrical Wiring", "grade":0, "comments": _("Battery consumption, Extra battery, Shield regen, TK hip fire")},
+    "encryptedmemorychip": { "localized": _(u"Encrypted Memory Chip"), "category": "component", "raw": "Encrypted Memory Chip", "grade":0, "comments": _("Stowed reloading")},
+    "epoxyadhesive": { "localized": _(u"Epoxy Adhesive"), "category": "component", "raw": "Epoxy Adhesive", "grade":0, "comments": _("Extra backpack, Damage resistance")},
+    "memorychip": { "localized": _(u"Memory Chip"), "category": "component", "raw": "Memory Chip", "grade":0, "comments": _("Extra backpack")},
+    "microhydraulics": { "localized": _(u"Micro Hydraulics"), "category": "component", "raw": "Micro Hydraulics", "grade":0, "comments": _("Quieter footsteps, Faster reload, Stability")},
+    "opticalfibre": { "localized": _(u"Optical Fibre"), "category": "component", "raw": "Optical Fibre", "grade":0, "comments": _("Scope, TK upgrades")},
+    "titaniumplating": { "localized": _(u"Titanium Plating"), "category": "component", "raw": "Titanium Plating", "grade":0, "comments": _("Damage resistance, Dominator upgrades")},
+    "phneutraliser": { "localized": _(u"pH Neutraliser"), "category": "component", "raw": "pH Neutraliser", "grade":0, "comments": _("Extra air, Combat movement")},
+    "metalcoil": { "localized": _(u"Metal Coil"), "category": "component", "raw": "Metal Coil", "grade":0, "comments": _("Mag size, Karma range, TK & Manticore: hip fire")},
+    "viscoelasticpolymer": { "localized": _(u"Viscoelastic Polymer"), "category": "component", "raw": "Viscoelastic Polymer", "grade":0, "comments": _("Quieter footsteps, Noise suppressor, Faster handling, Stability, Karma hip fire")},
+    "ionbattery": { "localized": _(u"Ion Battery"), "category": "component", "raw": "Ion Battery", "grade":0, "comments": _("Shield regen, extra battery, TK & Manticore: headshot")},
+    "chemicalcatalyst": { "localized": _(u"Chemical Catalyst"), "category": "component", "raw": "Chemical Catalyst", "grade":0, "comments": _("Longer sprint, Karma headshot, Manticore hip fire")},
+    "electricalfuse": { "localized": _(u"Electrical Fuse"), "category": "component", "raw": "Electrical Fuse", "grade":0, "comments": _("Battery consumption, Manticore range")},
+    "opticallens": { "localized": _(u"Optical Lens"), "category": "component", "raw": "Optical Lens", "grade":0, "comments": _("Scope, TK: hip fire / headshot / range")},
+    "weaponcomponent": { "localized": _(u"Weapon Component"), "category": "component", "raw": "Weapon Component", "grade":0, "comments": _("Extra ammo, Mag size, Karma: Headshot / Range, TK & Manticore: Mag size, Noise suppressor")},
+    "carbonfibreplating": { "localized": _(u"Carbon Fibre Plating"), "category": "component", "raw": "Carbon Fibre Plating", "grade":0, "comments": _("Damage resistance, Maverick upgrades")},
+    "microthrusters": { "localized": _(u"Micro Thrusters"), "category": "component", "raw": "Micro Thrusters", "grade":0, "comments": _("Jump assist, Melee damage")},
+    "oxygenicbacteria": { "localized": _(u"Oxygenic Bacteria"), "category": "component", "raw": "Oxygenic Bacteria", "grade":0, "comments": _("Longer sprint, Extra air")},
+    "circuitboard": { "localized": _(u"Circuit Board"), "category": "component", "raw": "Circuit Board", "grade":0, "comments": _("Enhanced tracking, Audio masking, Stowed reloading, TK range")},
+    "tungstencarbide": { "localized": _(u"Tungsten Carbide"), "category": "component", "raw": "Tungsten Carbide", "grade":0, "comments": _("Mag size, Karma upgrades")},
+    "ballisticsdata": { "localized": _(u"Ballistics Data"), "category": "data", "raw": "Ballistics Data", "grade":0, "comments": _("Damage resistance, Karma range")},
     "politicalaffiliations": { "localized": _(u"Political Affiliations"), "category": "data", "raw": "Political Affiliations", "grade":0},
     "conflicthistory": { "localized": _(u"Conflict History"), "category": "data", "raw": "Conflict History", "grade":0},
-    "riskassessments": { "localized": _(u"Risk Assessments"), "category": "data", "raw": "Risk Assessments", "grade":0},
-    "stellaractivitylogs": { "localized": _(u"Stellar Activity Logs"), "category": "data", "raw": "Stellar Activity Logs", "grade":0},
-    "manufacturinginstructions": { "localized": _(u"Manufacturing Instructions"), "category": "data", "raw": "Manufacturing Instructions", "grade":0},
-    "digitaldesigns": { "localized": _(u"Digital Designs"), "category": "data", "raw": "Digital Designs", "grade":0},
-    "medicalrecords": { "localized": _(u"Medical Records"), "category": "data", "raw": "Medical Records", "grade":0},
+    "riskassessments": { "localized": _(u"Risk Assessments"), "category": "data", "raw": "Risk Assessments", "grade":0, "comments": _("Stability, Greater range")},
+    "stellaractivitylogs": { "localized": _(u"Stellar Activity Logs"), "category": "data", "raw": "Stellar Activity Logs", "grade":0, "comments": _("Enhanced tracking, TK range")},
+    "manufacturinginstructions": { "localized": _(u"Manufacturing Instructions"), "category": "data", "raw": "Manufacturing Instructions", "grade":0, "comments": _("Suits & weapons upgrades")},
+    "digitaldesigns": { "localized": _(u"Digital Designs"), "category": "data", "raw": "Digital Designs", "grade":0, "comments": _("Extra backpack, Stowed reloading")},
+    "medicalrecords": { "localized": _(u"Medical Records"), "category": "data", "raw": "Medical Records", "grade":0, "comments": _("Karma headshot")},
     "employmenthistory": { "localized": _(u"Employment History"), "category": "data", "raw": "Employment History", "grade":0},
     "vipsecuritydetail": { "localized": _(u"VIP Security Detail"), "category": "data", "raw": "VIP Security Detail", "grade":0},
     "classicentertainment": { "localized": _(u"Classic Entertainment"), "category": "data", "raw": "Classic Entertainment", "grade":0},
     "photoalbums": { "localized": _(u"Photo Albums"), "category": "data", "raw": "Photo Albums", "grade":0},
-    "biometricdata": { "localized": _(u"Biometric Data"), "category": "data", "raw": "Biometric Data", "grade":0},
-    "extractionyielddata": { "localized": _(u"Extraction Yield Data"), "category": "data", "raw": "Extraction Yield Data", "grade":0},
-    "securityexpenses": { "localized": _(u"Security Expenses"), "category": "data", "raw": "Security Expenses", "grade":0},
+    "biometricdata": { "localized": _(u"Biometric Data"), "category": "data", "raw": "Biometric Data", "grade":0, "comments": _("Hip fire, Scope, TK Headshot")},
+    "extractionyielddata": { "localized": _(u"Extraction Yield Data"), "category": "data", "raw": "Extraction Yield Data", "grade":0, "comments": _("Karma hip fire")},
+    "securityexpenses": { "localized": _(u"Security Expenses"), "category": "data", "raw": "Security Expenses", "grade":0, "comments": _("Mag size")},
     "culinaryrecipes": { "localized": _(u"Culinary Recipes"), "category": "data", "raw": "Culinary Recipes", "grade":0},
     "fleetregistry": { "localized": _(u"Fleet Registry"), "category": "data", "raw": "Fleet Registry", "grade":0},
     "influenceprojections": { "localized": _(u"Influence Projections"), "category": "data", "raw": "Influence Projections", "grade":0},
     "cocktailrecipes": { "localized": _(u"Cocktail Recipes"), "category": "data", "raw": "Cocktail Recipes", "grade":0},
     "employeeexpenses": { "localized": _(u"Employee Expenses"), "category": "data", "raw": "Employee Expenses", "grade":0},
     "interviewrecordings": { "localized": _(u"Interview Recordings"), "category": "data", "raw": "Interview Recordings", "grade":0},
-    "recyclinglogs": { "localized": _(u"Recycling Logs"), "category": "data", "raw": "Recycling Logs", "grade":0},
+    "recyclinglogs": { "localized": _(u"Recycling Logs"), "category": "data", "raw": "Recycling Logs", "grade":0, "comments": _("Extra ammo")},
     "jobapplications": { "localized": _(u"Job Applications"), "category": "data", "raw": "Job Applications", "grade":0},
     "californium": { "localized": _(u"Californium"), "category": "item", "raw": "Californium", "grade":0},
     "pyrolyticcatalyst": { "localized": _(u"Pyrolytic catalyst"), "category": "item", "raw": "Pyrolytic catalyst", "grade":0},
     "spyware": { "localized": _(u"Spyware"), "category": "data", "raw": "Spyware", "grade":0},
-    "tacticalplans": { "localized": _(u"Tactical Plans"), "category": "data", "raw": "Tactical plans", "grade":0},
+    "tacticalplans": { "localized": _(u"Tactical Plans"), "category": "data", "raw": "Tactical plans", "grade":0, "comments": _("Quieter footsteps")},
     "virus": { "localized": _(u"Virus"), "category": "data", "raw": "Virus", "grade":0},
-    "aerogel": { "localized": _(u"Aerogel"), "category": "component", "raw": "Aerogel", "grade":0},
+    "aerogel": { "localized": _(u"Aerogel"), "category": "component", "raw": "Aerogel", "grade":0, "comments": _("Artermis upgrades")},
     "geneticrepairmeds": { "localized": _(u"Genetic Repair Meds"), "category": "item", "raw": "Genetic Repair Meds", "grade":0},
     "cropyieldanalysis": { "localized": _(u"Crop Yield Analysis"), "category": "data", "raw": "Crop Yield Analysis", "grade":0},
     "kompromat": { "localized": _(u"Kompromat"), "category": "data", "raw": "Kompromat", "grade":0},
@@ -309,19 +309,19 @@ MATERIALS_LUT = {
     "opinionpolls":  { "localized": _(u"Opinion Polls"), "category": "data", "raw": "Opinion Polls", "grade":0},
     "propaganda":  { "localized": _(u"Propaganda"), "category": "data", "raw": "Propaganda", "grade":0},
     "hydroponicdata": { "localized": _(u"Hydroponic Data"), "category": "data", "raw": "Hydroponic Data", "grade":0},
-    "mininganalytics" :{ "localized": _(u"Mining Analytics"), "raw": "Mining Analytics", "category": "data", "grade": 0},
-    "compressionliquefiedgas" :{ "localized": _(u"Compression Liquefied Gas"), "raw": "Compression Liquefied Gas", "category": "item", "grade": 0},
-    "weapontestdata" :{ "localized": _(u"Weapon Test Data"), "raw": "Weapon Test Data", "category": "data", "grade": 0},
-    "spectralanalysisdata" :{ "localized": _(u"Spectral Analysis Data"), "raw": "Spectral Analysis Data", "category": "data", "grade": 0},
-    "audiologs" :{ "localized": _(u"Audiologs"), "raw": "Audiologs", "category": "data", "grade": 0},
-    "geneticresearch" :{ "localized": _(u"Genetic Research"), "raw": "Genetic Research", "category": "data", "grade": 0},
-    "clinicaltrialrecords" :{ "localized": _(u"Clinical Trial Records"), "raw": "Clinical Trial Records", "category": "data", "grade": 0},
-    "medicaltrialrecords" :{ "localized": _(u"Clinical Trial Records"), "raw": "Clinical Trial Records", "category": "data", "grade": 0},
-    "gmeds" :{ "localized": _(u"G-Meds"), "raw": "G-Meds", "category": "item", "grade": 0},
-    "genesequencingdata" :{ "localized": _(u"Gene Sequencing Data"), "raw": "Gene Sequencing Data", "category": "data", "grade": 0},
-    "settlementassaultplans" :{ "localized": _(u"Settlement Assault Plans"), "raw": "Settlement Assault Plans", "category": "data", "grade": 0},
+    "mininganalytics" :{ "localized": _(u"Mining Analytics"), "raw": "Mining Analytics", "category": "data", "grade": 0, "comments": _("Noise suppressor, Stability")},
+    "compressionliquefiedgas" :{ "localized": _(u"Compression Liquefied Gas"), "raw": "Compression Liquefied Gas", "category": "item", "grade": 0, "comments": _("Karma upgrades")},
+    "weapontestdata" :{ "localized": _(u"Weapon Test Data"), "raw": "Weapon Test Data", "category": "data", "grade": 0, "comments": _("Extra ammo, Mag size, Karma headshot")},
+    "spectralanalysisdata" :{ "localized": _(u"Spectral Analysis Data"), "raw": "Spectral Analysis Data", "category": "data", "grade": 0, "comments": _("Enhanced tracking, Scope, TK headshot")},
+    "audiologs" :{ "localized": _(u"Audiologs"), "raw": "Audiologs", "category": "data", "grade": 0, "comments": _("Audio masking")},
+    "geneticresearch" :{ "localized": _(u"Genetic Research"), "raw": "Genetic Research", "category": "data", "grade": 0, "comments": _("Combat movement")},
+    "clinicaltrialrecords" :{ "localized": _(u"Clinical Trial Records"), "raw": "Clinical Trial Records", "category": "data", "grade": 0, "comments": _("Longer sprint")},
+    "medicaltrialrecords" :{ "localized": _(u"Clinical Trial Records"), "raw": "Clinical Trial Records", "category": "data", "grade": 0, "comments": _("Longer sprint")},
+    "gmeds" :{ "localized": _(u"G-Meds"), "raw": "G-Meds", "category": "item", "grade": 0, "comments": _("Jump assist")},
+    "genesequencingdata" :{ "localized": _(u"Gene Sequencing Data"), "raw": "Gene Sequencing Data", "category": "data", "grade": 0, "comments": _("Longer sprint")},
+    "settlementassaultplans" :{ "localized": _(u"Settlement Assault Plans"), "raw": "Settlement Assault Plans", "category": "data", "grade": 0, "comments": _("Quieter footsteps")},
     "geneticsample" :{ "localized": _(u"Biological Sample"), "raw": "Biological Sample", "category": "data", "grade": 0},
-    "biologicalsample" :{ "localized": _(u"Biological Sample"), "raw": "Biological Sample", "category": "data", "grade": 0},
+    "biologicalsample" :{ "localized": _(u"Biological Sample"), "raw": "Biological Sample", "category": "goods", "grade": 0},
     "smearcampaignplans" :{ "localized": _(u"Smear Campaign Plans"), "raw": "Smear Campaign Plans", "category": "data", "grade": 0},
     "axcombatlogs" :{ "localized": _(u"Ax Combat Logs"), "raw": "Ax Combat Logs", "category": "data", "grade": 0},
     "biologicalweapondata" :{ "localized": _(u"Biological Weapon Data"), "raw": "Biological Weapon Data", "category": "data", "grade": 0},
@@ -340,14 +340,14 @@ MATERIALS_LUT = {
     "seedgeneaology" :{ "localized": _(u"Seed Geneaology"), "raw": "Seed Geneaology", "category": "data", "grade": 0},
     "slushfundlogs" :{ "localized": _(u"Slush Fund Logs"), "raw": "Slush Fund Logs", "category": "data", "grade": 0},
     "syntheticgenome" :{ "localized": _(u"Synthetic Genome"), "raw": "Synthetic Genome", "category": "item", "grade": 0},
-    "epinephrine" :{ "localized": _(u"Epinephrine"), "raw": "Epinephrine", "category": "component", "grade": 0},
-    "graphene" :{ "localized": _(u"Graphene"), "raw": "Graphene", "category": "component", "grade": 0},
-    "rdx" :{ "localized": _(u"Rdx"), "raw": "Rdx", "category": "component", "grade": 0},
-    "electromagnet" :{ "localized": _(u"Electromagnet"), "raw": "Electromagnet", "category": "component", "grade": 0},
-    "microelectrode" :{ "localized": _(u"Microelectrode"), "raw": "Microelectrode", "category": "component", "grade": 0},
-    "motor" :{ "localized": _(u"Motor"), "raw": "Motor", "category": "component", "grade": 0},
-    "scrambler" :{ "localized": _(u"Scrambler"), "raw": "Scrambler", "category": "component", "grade": 0},
-    "transmitter" :{ "localized": _(u"Transmitter"), "raw": "Transmitter", "category": "component", "grade": 0},
+    "epinephrine" :{ "localized": _(u"Epinephrine"), "raw": "Epinephrine", "category": "component", "grade": 0, "comments": _("Melee damage, Combat movement")},
+    "graphene" :{ "localized": _(u"Graphene"), "raw": "Graphene", "category": "component", "grade": 0, "comments": _("Suits upgrades")},
+    "rdx" :{ "localized": _(u"Rdx"), "raw": "Rdx", "category": "component", "grade": 0, "comments": _("Karma: hip fire, headshot, range")},
+    "electromagnet" :{ "localized": _(u"Electromagnet"), "raw": "Electromagnet", "category": "component", "grade": 0, "comments": _("Faster reloading, Manticore: headshot, range, hip fire")},
+    "microelectrode" :{ "localized": _(u"Microelectrode"), "raw": "Microelectrode", "category": "component", "grade": 0, "comments": _("Suits upgrades")},
+    "motor" :{ "localized": _(u"Motor"), "raw": "Motor", "category": "component", "grade": 0, "comments": _("Jump assits, Manticore range")},
+    "scrambler" :{ "localized": _(u"Scrambler"), "raw": "Scrambler", "category": "component", "grade": 0, "comments": _("Audio masking, TK headshot")},
+    "transmitter" :{ "localized": _(u"Transmitter"), "raw": "Transmitter", "category": "component", "grade": 0, "comments": _("Enhanced tracking, Audio masking")},
 }
 
 INTERNAL_NAMES_LUT = { u'classified scan databanks': 'scandatabanks', u'conductive components': 'conductivecomponents', u'abnormal compact emissions data': 'compactemissionsdata', u'germanium': 'germanium',
@@ -728,7 +728,10 @@ class EDRInventory(object):
         
         shorthands = {"data": _("DATA"), "component": _("ASSET"), "item": _("GOODS"), "consumable": _("CONSUMABLE") }
         if from_backpack:
-            return u"{} [{}]: (Backpack: {}; Locker:{})".format(_(entry["raw"]), shorthands.get(category, category[0:min(3,len(category))]), count, (total_count - count) or 0)
+            if entry.get("comments", False):
+                return u"{} [{}]: (Backpack: {}; Locker:{}); For: {}".format(_(entry["raw"]), shorthands.get(category, category[0:min(3,len(category))]), count, (total_count - count) or 0, entry["comments"])
+            else:
+                return u"{} [{}]: (Backpack: {}; Locker:{})".format(_(entry["raw"]), shorthands.get(category, category[0:min(3,len(category))]), count, (total_count - count) or 0)
         return u"{} [{}]: {}".format(_(entry["raw"]), shorthands.get(category, category[0:min(3,len(category))]), total_count)
 
     def readable_name(self, name, fallback=True):
@@ -1135,13 +1138,17 @@ class EDRRemlokHelmet(object):
             return None
         
         descriptor = ODYSSEY_MATS[internal_name]
+        entry = MATERIALS_LUT.get(internal_name, {})
+        
         details = []
         owned = inventory.count(internal_name)
         stock = _("Stock: 0")
-        type_descriptor = descriptor["type"] if descriptor.get("subtype", False) else "{}/{}".format(descriptor["type"], descriptor["subtype"])
+        type_descriptor = descriptor["type"]
+        if descriptor.get("subtype", None):
+            type_descriptor = "{}/{}".format(descriptor["type"], descriptor["subtype"])
         if owned:
             stock = _("Stock: {}").format(owned)
-        details.append(_("{}; Category:{})").format(type_descriptor, stock))
+        details.append(_("{}; {}").format(type_descriptor, stock))
 
         if descriptor.get("useless", False):
             details.append(_("Useless material"))
@@ -1152,13 +1159,16 @@ class EDRRemlokHelmet(object):
             else:
                 details.append(_("Bar exchange: worth {}".format(descriptor["value"])))
         
-        if descriptor.get("blueprints", False):
-            if descriptor.get("upgrades", False):
-                details.append(_("Used in {} blueprints, {} upgrades").format(descriptor["blueprints"], descriptor["upgrades"]))
-            else:
-                details.append(_("Used in {} blueprints").format(descriptor["blueprints"]))
-        elif descriptor.get("upgrades", False):
-            details.append(_("Used in {} upgrades").format(descriptor["upgrades"]))
+        if entry.get("comments", False):
+            details.append(_("Used for: {}").format(entry["comments"]))
+        else:
+            if descriptor.get("blueprints", False):
+                if descriptor.get("upgrades", False):
+                    details.append(_("Used in {} blueprints, {} upgrades").format(descriptor["blueprints"], descriptor["upgrades"]))
+                else:
+                    details.append(_("Used in {} blueprints").format(descriptor["blueprints"]))
+            elif descriptor.get("upgrades", False):
+                details.append(_("Used in {} upgrades").format(descriptor["upgrades"]))
 
         if descriptor.get("referer", False) and descriptor.get("refer", False):
             details.append(_("Required by {} to refer {}".format(descriptor["referer"], descriptor["refer"])))
@@ -1175,16 +1185,22 @@ class EDRRemlokHelmet(object):
         if internal_name not in ODYSSEY_MATS:
             return None
         
-        values = self.worthiness_odyssey_material(internal_name, ignore_eng_unlocks)
-        owned = inventory.count(internal_name)
         cname = self.__c_name(internal_name)
         entry = MATERIALS_LUT.get(cname, {})
+        has_comments = entry.get("comments", False)
+        values = self.worthiness_odyssey_material(internal_name, ignore_eng_unlocks, ignore_upgrades_and_mods=has_comments)
+        owned = inventory.count(internal_name)
         
         if owned:
-            return "{} ({}) [S{}]".format(entry.get("raw", internal_name), values, owned) 
+            if has_comments:
+                return "{} ({} => {}) [S{}]".format(entry.get("raw", internal_name), values, owned, entry["comments"]) 
+            else:
+                return "{} ({}) [S{}]".format(entry.get("raw", internal_name), values, owned) 
+        if has_comments:
+            return "{} ({} => {})".format(entry.get("raw", internal_name), values, entry["comments"])
         return "{} ({})".format(entry.get("raw", internal_name), values)
 
-    def worthiness_odyssey_material(self, internal_name, ignore_eng_unlocks=False):
+    def worthiness_odyssey_material(self, internal_name, ignore_eng_unlocks=False, ignore_upgrades_and_mods=False):
         if internal_name not in ODYSSEY_MATS:
             return None
         
@@ -1193,10 +1209,10 @@ class EDRRemlokHelmet(object):
         if descriptor.get("useless", False):
             values.append(_("0"))
         
-        if descriptor.get("blueprints", False):
+        if descriptor.get("blueprints", False) and not ignore_upgrades_and_mods:
             values.append(_("B{}").format(descriptor["blueprints"]))
         
-        if descriptor.get("upgrades", False):
+        if descriptor.get("upgrades", False) and not ignore_upgrades_and_mods:
             values.append(_("U{}").format(descriptor["upgrades"]))
 
         if descriptor.get("value", False):
