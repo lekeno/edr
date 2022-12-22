@@ -1193,7 +1193,7 @@ class EDRRemlokHelmet(object):
         
         if owned:
             if has_comments:
-                return "{} ({} => {}) [S{}]".format(entry.get("raw", internal_name), values, owned, entry["comments"]) 
+                return "{} ({} => {}) [S{}]".format(entry.get("raw", internal_name), values, entry["comments"], owned) 
             else:
                 return "{} ({}) [S{}]".format(entry.get("raw", internal_name), values, owned) 
         if has_comments:
