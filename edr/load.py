@@ -717,7 +717,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] == "EngineerProgress":
         handle_engineer_progress(ed_player, entry)
 
-    if entry["event"] in ["Materials", "MaterialCollected", "MaterialDiscarded", "EngineerContribution", "EngineerCraft", "MaterialTrade", "MissionCompleted", "ScientificResearch", "TechnologyBroker", "Synthesis", "Backpack", "BackpackChange", "BuyMicroResources", "SellMicroResources", "TransferMicroResources", "TradeMicroResources", "ShipLockerMaterials", "ShipLocker"]:
+    if entry["event"] in ["Materials", "MaterialCollected", "MaterialDiscarded", "EngineerContribution", "EngineerCraft", "MaterialTrade", "MissionCompleted", "ScientificResearch", "TechnologyBroker", "Synthesis", "Backpack", "BackpackChange", "BuyMicroResources", "SellMicroResources", "TransferMicroResources", "TradeMicroResources", "ShipLockerMaterials", "ShipLocker", "UpgradeSuit", "UpgradeWeapon"]:
         handle_material_events(ed_player, entry, state)
 
     if entry["event"] == "StoredShips":
@@ -1507,8 +1507,14 @@ def handle_material_events(cmdr, entry, state):
         cmdr.inventory.donated_engineer(entry)
     elif entry["event"] == "ScientificResearch":
         cmdr.inventory.donated_science(entry)
-    elif entry["event"] in ["EngineerCraft", "TechnologyBroker", "Synthesis"]:
-        ingredients = entry["Ingredients"] if entry["event"] == "EngineerCraft" else entry["Materials"]
+    elif entry["event"] in ["EngineerCraft", "TechnologyBroker", "Synthesis", "UpgradeSuit", "UpgradeWeapon"]:
+        ingredients = None
+        if entry["event"] == "EngineerCraft":
+            ingredients = entry["Ingredients"]
+        elif entry["event"] in ["UpgradeSuit", "UpgradeWeapon"]:
+            ingredients = entry["Resources"]
+        else:
+            ingredients = entry["Materials"]
         cmdr.inventory.consumed(ingredients)
     elif entry["event"] == "MaterialTrade":
         cmdr.inventory.traded(entry)

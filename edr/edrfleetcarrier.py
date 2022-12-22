@@ -115,6 +115,10 @@ class EDRFleetCarrier(object):
         request_time = edtime.EDTime()
         request_time.from_journal_timestamp(jump_request_event["timestamp"])
         jump_time = request_time.as_py_epoch() + 60*15
+        if jump_request_event.get("DepartureTime", False):
+            departure_time = edtime.EDTime()
+            departure_time.from_journal_timestamp(jump_request_event["DepartureTime"])
+            jump_time = departure_time.as_py_epoch()
        
         self.departure = {
             "time": jump_time,
