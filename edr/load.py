@@ -414,6 +414,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
             ed_player.in_spacesuit()
             return
         elif entry["MusicTrack"] == "FleetCarrier_Managment":
+            # typo intentional
             EDR_CLIENT.fleet_carrier_update()
 
 
@@ -462,6 +463,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
         return
 
     if entry["event"] in ["Loadout"]:
+        # Sometimes it's not a ship but the spacesuit, maybe the srv too :/
         if ed_player.mothership.id == entry.get("ShipID", None):
             ed_player.mothership.update_from_loadout(entry)
             ed_player.mothership.update_cargo()
@@ -476,7 +478,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
         return
 
     if entry["event"] in ["SuitLoadout", "SwitchSuitLoadout"]:
-        ed_player.update_vehicle_or_suit_if_obsolete(entry)
+        ed_player.update_suit_if_obsolete(entry)
         return
 
     if entry["event"] in ["LaunchSRV"] and entry.get("PlayerControlled", False):
@@ -547,7 +549,10 @@ def dashboard_entry(cmdr, is_beta, entry):
     flags2 = entry.get('Flags2', 0)
 
     # TODO in multicrew
-    
+
+    # TODO a bit messy
+    ed_player.location.on_foot_location.update(flags2)
+
     if (flags2 & (edmc_data.Flags2OnFoot | edmc_data.Flags2OnFootInStation | edmc_data.Flags2OnFootOnPlanet | edmc_data.Flags2OnFootInHangar | edmc_data.Flags2OnFootSocialSpace | edmc_data.Flags2OnFootExterior)):
         ed_player.in_spacesuit()
         EDR_CLIENT.on_foot()
@@ -565,14 +570,24 @@ def dashboard_entry(cmdr, is_beta, entry):
         if (flags2 & edmc_data.Flags2InTaxi):
             ed_player.in_taxi()
     
-    ed_player.spacesuit.low_health = flags2 & edmc_data.Flags2LowHealth
-    ed_player.spacesuit.low_oxygen = flags2 & edmc_data.Flags2LowOxygen
+    if ed_player.piloted_vehicle:
+        ed_player.piloted_vehicle.over_heating = flags & edmc_data.FlagsOverHeating
+        ed_player.piloted_vehicle.low_fuel = bool(flags & edmc_data.FlagsLowFuel)
+        fuel = entry.get('Fuel', None)
+        if fuel and ed_player.piloted_vehicle:
+            main = fuel.get('FuelMain', ed_player.piloted_vehicle.fuel_level)
+            reservoir = fuel.get('FuelReservoir', 0)
+            ed_player.piloted_vehicle.fuel_level = main + reservoir
     
-    if (entry.get("Oxygen", None)):
-        ed_player.spacesuit.oxygen = entry["Oxygen"]
+    if ed_player.spacesuit:
+        ed_player.spacesuit.low_health = flags2 & edmc_data.Flags2LowHealth
+        ed_player.spacesuit.low_oxygen = flags2 & edmc_data.Flags2LowOxygen
     
-    if (entry.get("Health", None)):
-        ed_player.spacesuit.health = entry["Health"]
+        if (entry.get("Oxygen", None)):
+            ed_player.spacesuit.oxygen = entry["Oxygen"]
+        
+        if (entry.get("Health", None)):
+            ed_player.spacesuit.health = entry["Health"]
 
 
     if (flags & edmc_data.FlagsFsdJump or flags2 & edmc_data.Flags2GlideMode):
@@ -580,8 +595,6 @@ def dashboard_entry(cmdr, is_beta, entry):
     else:
         ed_player.in_blue_tunnel(False)
     
-    if ed_player.piloted_vehicle:
-        ed_player.piloted_vehicle.low_fuel = bool(flags & edmc_data.FlagsLowFuel)
     # TODO probably here things go wrong with report on undocked, clears the station before it's reported.
     docked = bool(flags & edmc_data.FlagsDocked)
     if ed_player.is_docked and not docked:
@@ -591,7 +604,19 @@ def dashboard_entry(cmdr, is_beta, entry):
     ed_player.in_danger(unsafe)
     deployed = bool(flags & edmc_data.FlagsHardpointsDeployed)
     ed_player.hardpoints(deployed)
-    
+    '''
+    TODO temporarily disabled
+    if ed_player.pips(entry.get("Pips", None)) and ed_player.piloted_vehicle:
+        shield_res = ed_player.piloted_vehicle.shield_resistances()
+        hull_res = ed_player.piloted_vehicle.hull_resistances()
+        dps = ed_player.piloted_vehicle.damage_per_shot()
+        details = [
+            "S{:0.1f} T{:0.2f}% K{:0.2f}% E{:0.2f}%".format(ed_player.piloted_vehicle.shield_strength(), shield_res.thermal*100, shield_res.kinetic*100, shield_res.explosive*100),
+            "H{:0.1f} T{:0.2f}% K{:0.2f}% E{:0.2f}%".format(ed_player.piloted_vehicle.hull_strength(), hull_res.thermal*100, hull_res.kinetic*100, hull_res.explosive*100),
+            "A{:0.1f} T{:0.2f}  K{:0.2f}  E{:0.2f}".format(dps["absolute"], dps["thermal"], dps["kinetic"], dps["explosive"], dps["caustic"])
+        ]
+        EDR_CLIENT.notify_with_details("[Debug] O/D stats", details, clear_before=True)
+    '''
     safe = not unsafe
     retracted = not deployed
     if ed_player.recon_box.active and (safe and retracted):
@@ -603,12 +628,6 @@ def dashboard_entry(cmdr, is_beta, entry):
             EDR_CLIENT.notify_with_details(_(u"EDR Central"), [_(u"Fight reporting enabled"), _(u"Turn it off: flash your lights twice, or leave this area, or escape danger and retract hardpoints.")])
         else:
             EDR_CLIENT.notify_with_details(_(u"EDR Central"), [_(u"Fight reporting disabled"), _(u"Flash your lights twice to re-enable.")])
-
-    fuel = entry.get('Fuel', None)
-    if fuel and ed_player.piloted_vehicle:  # TODO on foot case?
-        main = fuel.get('FuelMain', ed_player.piloted_vehicle.fuel_level)
-        reservoir = fuel.get('FuelReservoir', 0)
-        ed_player.piloted_vehicle.fuel_level = main + reservoir
 
     attitude_keys = { "Latitude", "Longitude", "Heading", "Altitude"}
     if sys.version_info.major == 2:
@@ -622,8 +641,15 @@ def dashboard_entry(cmdr, is_beta, entry):
     if "altitude" in attitude:
         attitude["altitude"] /= 1000.0
     ed_player.update_attitude(attitude)
+    # TODO only if near a body?
+    if ed_player.body and ed_player.tracking_organic():
+        EDR_CLIENT.biology_guidance()
+    elif not ed_player.planetary_destination and ed_player.body and ed_player.star_system:
+        # TODO consider showing custom poi nav if the poi is about the same species and far enough?
+        EDR_CLIENT.try_custom_poi()
+
     if ed_player.planetary_destination:
-        EDR_CLIENT.show_navigation()
+        EDR_CLIENT.show_navigation()    
 
 def handle_mining_events(ed_player, entry):
     if entry["event"] not in ["MiningRefined", "ProspectedAsteroid"]:
@@ -773,6 +799,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] == "SAAScanComplete":
         EDR_CLIENT.saa_scan_complete(entry)
     
+    if entry["event"] == "SAASignalsFound":
+        EDR_CLIENT.saa_signals_found(entry)
+    
     if entry["event"] in ["FSSSignalDiscovered"]:
         EDR_CLIENT.noteworthy_about_signal(entry)
 
@@ -794,12 +823,23 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         if "SystemAddress" in entry:
             ed_player.star_system_address = entry["SystemAddress"]
         # TODO new events: ScanBaryCentre, "scan" with scantype:"NavBeaconDetail"
+        # TODO add noteworthy bio info
         EDR_CLIENT.notify_with_details(_(u"System info acquired"), [_(u"Noteworthy material densities will be shown when approaching a planet.")])
 
-    if entry["event"] in ["Scan"]:
+    if entry["event"] in ["Scan", "ScanOrganic"]:
         EDR_CLIENT.process_scan(entry)
+        # saasignal founds track find vs remaining
+        # use { "timestamp":"2023-01-17T21:48:49Z", "event":"Music", "MusicTrack":"SystemAndSurfaceScanner" } to show the guidance about remaining species?
+        # use codex / analyse event to show progress so far?
+        # add terrain requirements  (Osseus needs rocky area)
+        # move abandonned species' loc into navpoints
         if entry["ScanType"] in ["Detailed", "Basic"]: # removed AutoScan because spammy
             EDR_CLIENT.noteworthy_about_scan(entry)
+
+
+    if entry["event"] == "CodexEntry":
+        # TODO don't add (rather show) nav if already tracked
+        EDR_CLIENT.process_codex_entry(entry)
         
     if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PVPKill", "CrimeVictim", "CommitCrime"]:
         report_crime(ed_player, entry)
@@ -1252,7 +1292,11 @@ def report_comms(player, entry):
                     EDRLOG.log(u"Implicit who emote-command for {}".format(receiving_party), "INFO")
                     EDR_CLIENT.who(receiving_party, autocreate=True)
             elif "$HumanoidEmote_TargetMessage:#player=$cmdr_decorate:#name=" in entry.get("Message", ""):
-                EDR_CLIENT.pointing_guidance(entry)
+                # sometimes goes to the wing channel :/
+                if not EDR_CLIENT.pointing_guidance(entry):
+                    EDR_CLIENT.gesture(entry)
+            elif "$HumanoidEmote_DefaultMessage:#player=$cmdr_decorate:#name=" in entry.get("Message", ""):
+                EDR_CLIENT.gesture(entry)
     elif entry["event"] == "SendText" and not entry["To"] in ["local", "wing", "starsystem", "squadron", "squadleaders"]:
         to_cmdr = entry["To"]
         if entry["To"].startswith("$cmdr_decorate:#name="):
