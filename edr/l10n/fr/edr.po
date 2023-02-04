@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2023-02-04 15:44+0900\n"
-"PO-Revision-Date: 2023-02-04 15:54+0900\n"
+"POT-Creation-Date: 2023-02-04 16:38+0900\n"
+"PO-Revision-Date: 2023-02-04 16:39+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -3999,87 +3999,87 @@ msgstr ""
 msgid "CONSUMABLE"
 msgstr ""
 
-#: edrinventory.py:1157 edrinventory.py:1249
+#: edrinventory.py:1149 edrinventory.py:1241
 msgid "Useless material"
 msgstr "Matériau inutile"
 
-#: edrinventory.py:1161
+#: edrinventory.py:1153
 msgid "Bar exchange: worth {}, cost {}"
 msgstr "Échange au bar: valeur {}, coût: {}"
 
-#: edrinventory.py:1163
+#: edrinventory.py:1155
 msgid "Bar exchange: worth {}"
 msgstr "Échange au bar: valeur {}"
 
-#: edrinventory.py:1166
+#: edrinventory.py:1158
 msgid "Used for: {}"
 msgstr "Utile pour: {}"
 
-#: edrinventory.py:1170
+#: edrinventory.py:1162
 msgid "Used in {} blueprints, {} upgrades"
 msgstr "Utilisé dans {} plans, et {} améliorations"
 
-#: edrinventory.py:1172
+#: edrinventory.py:1164
 msgid "Used in {} blueprints"
 msgstr "Utilisé dans {} plans"
 
-#: edrinventory.py:1174
+#: edrinventory.py:1166
 msgid "Used in {} upgrades"
 msgstr "Utilisé dans {} améliorations"
 
-#: edrinventory.py:1177
+#: edrinventory.py:1169
 msgid "Required by {} to refer {}"
 msgstr "Requis par {} pour introduction à {}"
 
-#: edrinventory.py:1180 edrinventory.py:1273
+#: edrinventory.py:1172 edrinventory.py:1252
 msgid "Required by {}"
 msgstr "Requis par {}"
 
-#: edrinventory.py:1183
+#: edrinventory.py:1175
 msgid "Found in: {}"
 msgstr "Se trouve dans: {}"
 
-#: edrinventory.py:1213
+#: edrinventory.py:1205
 msgid "0"
 msgstr ""
 
-#: edrinventory.py:1216
+#: edrinventory.py:1208
 msgid "B{}"
 msgstr "B{}"
 
-#: edrinventory.py:1219
+#: edrinventory.py:1211
 msgid "U{}"
 msgstr "U{}"
 
-#: edrinventory.py:1222
+#: edrinventory.py:1214
 msgid "X{}"
 msgstr "X{}"
 
-#: edrinventory.py:1233
+#: edrinventory.py:1225
 msgid "E{}"
 msgstr "E{}"
 
-#: edrinventory.py:1265
+#: edrinventory.py:1244
 msgid "blueprints"
 msgstr "plans"
 
-#: edrinventory.py:1265
+#: edrinventory.py:1244
 msgid "synthesis"
 msgstr "synthèse"
 
-#: edrinventory.py:1265
+#: edrinventory.py:1244
 msgid "experimental effects"
 msgstr "effets expérimentaux"
 
-#: edrinventory.py:1265
+#: edrinventory.py:1244
 msgid "tech broker items"
 msgstr "objets tech broker"
 
-#: edrinventory.py:1269
+#: edrinventory.py:1248
 msgid "{} {}"
 msgstr "{} {}"
 
-#: edrinventory.py:1270
+#: edrinventory.py:1249
 msgid "Used in: {}"
 msgstr "Utilisé dans: {}"
 
@@ -6545,7 +6545,7 @@ msgstr "Odyssey"
 #: helpcontent.py:280
 msgid ""
 "EDR offers the following features to help you make sense of Odyssey "
-"materials, engineers and xeobiology:"
+"materials, engineers and exobiology:"
 msgstr ""
 "EDR offre les fonctionnalités suivantes afin de vous aider à comprendre les "
 "matériaux, ingénieurs et exobiologie pour Odyssey:"
@@ -7874,7 +7874,7 @@ msgstr ""
 
 #: randomtips.py:141
 msgid ""
-"When targeting or approaching a planet, EDR will provide xeobiology insights "
+"When targeting or approaching a planet, EDR will provide exobiology insights "
 "if the planet is suitable."
 msgstr ""
 
