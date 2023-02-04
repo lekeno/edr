@@ -10,6 +10,13 @@ import utils2to3
 EDRLOG = EDRLog()
 POWER_DATA = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'modules_power_data.json')).read())
 
+class EDResistances(object):
+    def __init__(self, thermal=0, kinetic=0, explosive=0, caustic=0):
+        self.thermal = thermal
+        self.kinetic = kinetic
+        self.explosive = explosive
+        self.caustic = caustic
+
 class EDModule(object):
     def __init__(self, module):
         self.power_draw = EDModule.__get_power_draw(module)
