@@ -11,7 +11,7 @@ import textwrap
 from edri18n import _, _c
 import utils2to3
 from edrlandables import EDRLandables
-from edentities import EDFineOrBounty
+from edentities import EDFineOrBounty, pretty_print_number
 from edtime import EDTime
 
 EDRLOG = edrlog.EDRLog()
@@ -29,7 +29,7 @@ except ImportError:
 import lrucache
 
 class InGameMsg(object):   
-    MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice", "help", "navigation", "docking", "mining", "bounty-hunting", "target-guidance"]
+    MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice", "help", "navigation", "docking", "mining", "bounty-hunting", "target-guidance", "biology"]
     LEGAL_KINDS = ["intel", "warning"] 
 
     def __init__(self, standalone=False):
@@ -423,8 +423,39 @@ class InGameMsg(object):
             details.append(_(u"Dis: {}m").format(int(distance*1000)))
         details.append(_(u"Lat: {:.4f}").format(destination.latitude))
         details.append(_(u"Lon: {:.4f}").format(destination.longitude))
+        if destination.heading is not None:
+            details.append(_(u"Head: > {:03} <").format(destination.heading))
+        if destination.altitude:
+            if destination.altitude >= 1.0:
+                details.append(_(u"Alt: {}km").format(int(destination.altitude)))
+            else:
+                details.append(_(u"Alt: {}m").format(destination.altitude))
         self.__msg_header("navigation", header)
         self.__msg_body("navigation", details)
+
+    def biology_guidance(self, species, ccr, value, distances_meters, bearings):
+        # TODO Osseus Discus on rough, hilly areas instead. Concha Renibus will keep to rocky places, bacteria flat ground hard to find not worth much
+        # TODO planets with thin water atmospheres are best; best main stars to filter for are B and A, then Neutron stars, Non-Sequence filter), F and G, in this order. In mass codes, not surprisingly this would mean D and E.
+        # TODO the DSS filters only show genus, and if a planet has different species (and/or colours) of the same kind, they won't show up there separately! For example, a planet might have three species of brain trees, or bacteria, or whatever else, all under the same biological signal. See the Organics tab on the system map to see how many distinct species you can sample on a planet.
+        if not self.cfg["biology"].get("enabled", None):
+            return
+        self.clear_biology()
+        if "panel" in self.cfg["biology"]:
+            self.__shape("biology", self.cfg["biology"]["panel"])
+        header = species
+        details = []
+        details.append(_("Value: {} credits".format(pretty_print_number(value))))
+        details.append(_("Gene diversity: +{}m").format(ccr))
+        i = 1
+        for distance in distances_meters:
+            check = u"◌" if distance < ccr else u"●"
+            if distance > ccr and distance >= 10000:
+                details.append(_(u"{} Sample #{}: ≥10km  ›{:03}‹").format(check, i, math.floor(distance), bearings[i-1]))
+            else:
+                details.append(_(u"{} Sample #{}: {}m  ›{:03}‹").format(check, i, math.floor(distance), bearings[i-1]))
+            i += 1
+        self.__msg_header("biology", header)
+        self.__msg_body("biology", details)
 
     def describe_station(self, station):
         station_type = (station.get("type","N/A") or "N/A").lower()
@@ -1412,6 +1443,9 @@ class InGameMsg(object):
 
     def clear_navigation(self):
         self.__clear_kind("navigation")
+    
+    def clear_biology(self):
+        self.__clear_kind("biology")
 
     def clear_docking(self):
         self.__clear_kind("docking")
