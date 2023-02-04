@@ -258,6 +258,26 @@ class EDRCommands(object):
                 name = command_parts[2:].lower() if len(command_parts) > 2 else "Navpoint"
                 self.edr_client.navigation(attitude.latitude, attitude.longitude, name)
                 return
+            elif command_parts[1].lower() == "next":
+                self.edr_log.log(u"Next custom POI", "INFO")
+                self.edr_client.player.planetary_destination = None
+                self.edr_client.next_custom_poi()
+                return
+            elif command_parts[1].lower() == "previous":
+                self.edr_log.log(u"Previous custom POI", "INFO")
+                self.edr_client.player.planetary_destination = None
+                self.edr_client.previous_custom_poi()
+                return
+            elif command_parts[1].lower() == "clear":
+                self.edr_log.log(u"Clearing POI", "INFO")
+                self.edr_client.player.planetary_destination = None
+                self.edr_client.clear_current_custom_poi()
+                return
+            elif command_parts[1].lower() == "reset":
+                self.edr_log.log(u"Reset POIs", "INFO")
+                self.edr_client.player.planetary_destination = None
+                self.edr_client.reset_custom_pois()
+                return
             lat_long = command_parts[1].split(" ")
             if len(lat_long) != 2:
                 self.edr_log.log(u"Invalid parameters for navigation command", "INFO")
@@ -291,6 +311,9 @@ class EDRCommands(object):
         elif command == "!help":
             self.edr_log.log(u"Help command", "INFO")
             self.edr_client.help("" if len(command_parts) == 1 else command_parts[1])
+        elif command == "!tip" or command == "!tips":
+            self.edr_log.log(u"Tip command", "INFO")
+            self.edr_client.tip("" if len(command_parts) == 1 else command_parts[1])
         elif command == "!clear":
             self.edr_log.log(u"Clear command", "INFO")
             self.edr_client.clear()
@@ -302,6 +325,13 @@ class EDRCommands(object):
             else:
                 self.edr_client.show_material_profiles()
                 self.edr_log.log(u"Listing material profiles", "INFO")
+        elif command == "!biology":
+            self.edr_log.log(u"Biology info", "INFO")
+            target = cmdr.body
+            if len(command_parts) >= 2:
+                target = command_parts[1]or cmdr.body
+            if target:
+                self.edr_client.biology_on(target)
         else:
             return False
         return True
