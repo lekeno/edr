@@ -2,6 +2,7 @@ import re
 import os
 import json
 from collections import deque
+from math import log10
 
 from edtime import EDTime
 import edrconfig
@@ -12,6 +13,10 @@ import edcargoreader
 import edrlog
 import edcargo
 import utils2to3
+from edshield import EDPowerDistributor, EDShieldGenerator, EDShieldingFactory
+from edarmour import EDHullFactory
+from edweapons import EDWeaponFactory
+
 EDRLOG = edrlog.EDRLog()
 
 class EDVehicleSize(object):
@@ -33,8 +38,12 @@ class EDVehicle(object):
         now = EDTime.py_epoch_now()
         config = edrconfig.EDR_CONFIG
         self._hull_health = edrhitppoints.EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
+        self.hull_mass = 0
+        self.hull_hardness = 0
+        self.hull_base_strength = 0
         self._shield_health = edrhitppoints.EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
         self.shield_up = True
+        self.shield_base_strength = 0
         self.subsystems = {}
         self.timestamp = now
         self.fight = {u"value": False, "large": False, u"timestamp": now}
@@ -56,7 +65,63 @@ class EDVehicle(object):
         self.cargo_capacity = 0
         self.cargo = edcargo.EDCargo()
         self.whole_loadout = False
+        self.distro = EDPowerDistributor()
+        self.shield_gen = EDShieldGenerator()
+        self.boosters = [] # TODO maybe merge into modules? maybe keep them?
+        self.gsrps = [] # TODO maybe merge into modules? maybe keep them?
+        self.armour = EDHullFactory.default_armour()
+        self.weapons = []
+        self.hrps = []
+        self.scbs = []
+        self.over_heating = False
+
+    def hull_strength(self):
+        strength = self.armour.strength(self.hull_base_strength)
+        hrps_bonus = 0
+        for h in self.hrps:
+            if h.enabled:
+                hrps_bonus += h.armour
         
+        strength += hrps_bonus
+        return strength
+
+    def hull_resistances(self):
+        thermal = 1.0
+        kinetic = 1.0
+        explosive = 1.0
+        caustic = 1.0
+
+        for h in self.hrps:
+            thermal   *= (1.0 - h.resistances.thermal)
+            kinetic   *= (1.0 - h.resistances.kinetic)
+            explosive *= (1.0 - h.resistances.explosive)
+            caustic   *= (1.0 - h.resistances.caustic)
+            
+        if thermal < 0.7:
+            thermal   = 0.7 - (0.7 - thermal)/2.0
+            
+        if kinetic < 0.7:
+            kinetic   = 0.7 - (0.7 - kinetic)/2.0
+            
+        if explosive < 0.7:
+            explosive = 0.7 - (0.7 - explosive)/2.0
+            
+        if caustic < 0.7:
+            caustic   = 0.7 - (0.7 - caustic)/2.0
+        
+        thermal   = (1.0 - self.armour.hull_resistances.thermal)   * thermal
+        kinetic   = (1.0 - self.armour.hull_resistances.kinetic)   * kinetic
+        explosive = (1.0 - self.armour.hull_resistances.explosive) * explosive
+        caustic   = (1.0 - self.armour.hull_resistances.caustic)   * caustic
+        
+        overall_resistances = edmodule.EDResistances()
+        overall_resistances.thermal = 1.0 - thermal
+        overall_resistances.kinetic = 1.0 - kinetic
+        overall_resistances.explosive = 1.0 - explosive
+        overall_resistances.caustic = 1.0 - caustic
+
+        return overall_resistances
+     
     @property
     def hull_health(self):
         if self._hull_health.empty():
@@ -87,6 +152,64 @@ class EDVehicle(object):
 
     def shield_health_stats(self):
         return self._shield_health
+
+    def shield_strength(self):
+        strength = self.shield_gen.strength(self.hull_mass, self.shield_base_strength)
+        boosters_bonus = 0
+        for b in self.boosters:
+            if b.enabled:
+                boosters_bonus += b.strength_bonus
+        
+        strength *= 1.0 + boosters_bonus
+        
+        gsrp_bonus = 0
+        for g in self.gsrps:
+            if g.enabled:
+                gsrp_bonus += g.strength
+
+        strength += gsrp_bonus
+        pips_multiplier = 1.0 + self.distro.shield_boost()
+        strength *= pips_multiplier
+        
+        return strength
+
+    def shield_resistances(self):
+        thermal = 1.0
+        kinetic = 1.0
+        explosive = 1.0
+        caustic = 1.0
+
+        for b in self.boosters:
+            thermal   *= (1.0 - b.resistances.thermal)
+            kinetic   *= (1.0 - b.resistances.kinetic)
+            explosive *= (1.0 - b.resistances.explosive)
+            caustic   *= (1.0 - b.resistances.caustic)
+            
+        if thermal < 0.7:
+            thermal   = 0.7 - (0.7 - thermal)/2.0
+            
+        if kinetic < 0.7:
+            kinetic   = 0.7 - (0.7 - kinetic)/2.0
+            
+        if explosive < 0.7:
+            explosive = 0.7 - (0.7 - explosive)/2.0
+            
+        if caustic < 0.7:
+            caustic   = 0.7 - (0.7 - caustic)/2.0
+        
+        thermal   = (1.0 - self.shield_gen.shield_resistances.thermal)   * thermal
+        kinetic   = (1.0 - self.shield_gen.shield_resistances.kinetic)   * kinetic
+        explosive = (1.0 - self.shield_gen.shield_resistances.explosive) * explosive
+        caustic   = (1.0 - self.shield_gen.shield_resistances.caustic)   * caustic
+        
+        overall_resistances = edmodule.EDResistances()
+        overall_resistances.thermal = 1.0 - thermal
+        overall_resistances.kinetic = 1.0 - kinetic
+        overall_resistances.explosive = 1.0 - explosive
+        overall_resistances.caustic = 1.0 - caustic
+
+        return overall_resistances
+
     
     @shield_health.setter
     def shield_health(self, new_value):
@@ -170,21 +293,118 @@ class EDVehicle(object):
         self.hull_health = event.get('HullHealth', None) * 100.0 # normalized to 0.0 ... 1.0
         if not 'Modules' in event:
             return
-        self.modules = event['Modules']
-        self.slots = {}
-        timestamp = EDTime() 
-        self.slots_timestamp = timestamp.from_journal_timestamp(event['timestamp']) if 'timestamp' in event else timestamp
-        self.module_info_timestamp = self.slots_timestamp # To prevent reading stale data from modulesinfo.json
-        for module in self.modules:
-            ed_module = edmodule.EDModule(module)
-            self.slots[module['Slot']] = ed_module
-            if module.get("Slot", "").lower() == "powerplant":
-                self.power_capacity = ed_module.power_generation
-            health = module['Health'] * 100.0 if 'Health' in module else None 
-            self.subsystem_health(module.get('Item', None), health)
+        self.update_from_modules_dict(event['Modules'])
         self.whole_loadout = True
         self.cargo_capacity = event.get("CargoCapacity", 0)
         self.cargo.update(event)
+
+    def update_from_modules_dict(self, modules):
+        self.modules = modules
+        self.slots = {}
+        self.boosters = []
+        self.gsrps = []
+        self.hrps = []
+        self.weapons = []
+        self.scbs = []
+        timestamp = EDTime() 
+        self.slots_timestamp = timestamp
+        self.module_info_timestamp = self.slots_timestamp # To prevent reading stale data from modulesinfo.json
+        for module in self.modules:
+            ed_module = edmodule.EDModule(module)
+            if module["Slot"]:
+                self.slots[module['Slot']] = ed_module
+
+            if module.get("Slot", "").lower() == "powerplant":
+                self.power_capacity = ed_module.power_generation
+            elif module.get("Slot", "").lower() == "armour":
+                self.armour = EDHullFactory.from_module(module)
+            elif module.get("Item", "").lower().startswith('int_shieldgenerator'):
+                self.shield_gen = EDShieldingFactory.from_module(module)
+            elif module.get("Item", "").lower().startswith('int_shieldcellbank'):
+                self.__add_scb(module)
+            elif module.get("Item", "").lower().startswith('hpt_shieldbooster'):
+                self.__add_booster(module)
+            elif module.get("Item", "").lower().startswith('int_guardianshieldreinforcement'):
+                self.__add_gsrp(module)
+            elif module.get("Item", "").lower().startswith('int_hullreinforcement'):
+                self.__add_hrp(module)
+            elif module.get("Item", "").lower().startswith('int_guardianhullreinforcement'):
+                self.__add_hrp(module)
+            
+            m = re.match(r'([a-zA-Z]+)Hardpoint([0-9]+)', module.get("Slot", ""))
+            if m and m.group(1) in ["Huge", "Large", "Medium"]:
+                self.__add_weapon(module)
+
+            #TODO other
+            health = module['Health'] * 100.0 if 'Health' in module else None 
+            self.subsystem_health(module.get('Item', None), health)
+
+    def __add_booster(self, module):
+        booster = EDShieldingFactory.from_module(module)
+        if booster:
+            self.boosters.append(booster)
+
+    def __add_scb(self, module):
+        scb = EDShieldingFactory.from_module(module)
+        if scb:
+            self.boosters.append(scb)
+
+    def __add_gsrp(self, module):
+        gsrp = EDShieldingFactory.from_module(module)
+        if gsrp:
+           self.gsrps.append(gsrp)
+
+    def __add_hrp(self, module):
+        hrp = EDHullFactory.from_module(module)
+        if hrp:
+           self.hrps.append(hrp)
+           
+    def __add_weapon(self, module):
+        weapon = EDWeaponFactory.from_module(module)
+        if weapon:
+           self.weapons.append(weapon)
+           
+    def update_from_modules_edmc(self, modules):
+        self.modules = modules # TODO not exactly the same
+        self.slots = {}
+        self.boosters = []
+        self.gsrps = []
+        self.hrps = []
+        self.weapons = []
+        self.scbs = []
+        timestamp = EDTime() 
+        self.slots_timestamp = timestamp
+        self.module_info_timestamp = self.slots_timestamp # To prevent reading stale data from modulesinfo.json
+        for name in self.modules:
+            module = self.modules[name]
+            ed_module = edmodule.EDModule(module)
+            if module["Slot"]:
+                self.slots[module['Slot']] = ed_module
+                
+            if module.get("Slot", "").lower() == "powerplant":
+                self.power_capacity = ed_module.power_generation
+            elif module.get("Slot", "").lower() == "armour":
+                self.armour = EDHullFactory.from_module(module)
+            elif module.get("Item", "").lower().startswith('int_shieldgenerator'):
+                self.shield_gen = EDShieldingFactory.from_module(module)
+            elif module.get("Item", "").lower().startswith('hpt_shieldbooster'):
+                self.__add_booster(module)
+            elif module.get("Item", "").lower().startswith('int_shieldcellbank'):
+                self.__add_scb(module)
+            elif module.get("Item", "").lower().startswith('int_guardianshieldreinforcement'):
+                self.__add_gsrp(module)
+            elif module.get("Item", "").lower().startswith('int_hullreinforcement'):
+                self.__add_hrp(module)
+            elif module.get("Item", "").lower().startswith('int_guardianhullreinforcement'):
+                self.__add_hrp(module)
+
+            m = re.match(r'([a-zA-Z]+)Hardpoint([0-9]+)', module.get("Slot", ""))
+            if m and m.group(1) in ["Huge", "Large", "Medium"]:
+                self.__add_weapon(module)
+
+            health = module['Health'] * 100.0 if 'Health' in module else None 
+            self.subsystem_health(module.get('Item', None), health)
+            
 
     def update_modules(self):
         reader = edmodulesinforeader.EDModulesInfoReader()
@@ -257,6 +477,15 @@ class EDVehicle(object):
         self.slots_timestamp = None
         self.module_info_timestamp = None
         self.whole_loadout = False
+        self.distro.reset()
+        self.shield_gen.reset()
+        self.boosters = [] # TODO maybe merge into modules?
+        self.gsrps = [] # TODO maybe merge into modules?
+        self.armour = EDHullFactory.default_armour()
+        self.hrps = []
+        self.weapons = []
+        self.scbs = []
+        self.over_heating = False
     
     def destroy(self):
         now = EDTime.py_epoch_now()
@@ -284,7 +513,7 @@ class EDVehicle(object):
     def taking_heat_damage(self):
         now = EDTime.py_epoch_now()
         self.timestamp = now
-        self.heat_damaged = {u"value": True, u"timestamp": now}        
+        self.heat_damaged = {u"value": True, u"timestamp": now}
 
     def outfit_probably_changed(self, timestamp=None):
         edt = EDTime()
@@ -389,10 +618,30 @@ class EDVehicle(object):
             return (now >= self._hardpoints_deployed["timestamp"]) and ((now - self._hardpoints_deployed["timestamp"]) <= self.fight_staleness_threshold)
         return False
 
+    def damage_per_shot(self):
+        overall = {
+            "absolute": 0,         
+            "explosive": 0,
+            "kinetic": 0,
+            "thermal": 0,
+            "caustic": 0,
+        }
+        # TODO premium, basic, standard ammo
+        for w in self.weapons:
+            if self.over_heating:
+                w.temperature_percent(1.0) # TODO not exact but the minimum value required to trigger the over heating flag
+            damage = w.damage_per_shot()
+            overall = {k: overall.get(k, 0) + damage.get(k, 0) for k in set(overall) | set(damage)}
+        return overall
+
+
     def shield_state(self, is_up):
         if not is_up:
             self.shield_health = 0.0
         self.shield_up = is_up
+
+    def pips(self, values):
+        return self.distro.update(values)
 
     def skirmish(self):
         now = EDTime.py_epoch_now()
@@ -466,7 +715,7 @@ class EDVehicle(object):
         for internal_name in self.subsystems:
             module_tags = EDVehicle.module_tags(internal_name)
             for tag in module_tags:
-                weighted_tags[tag] = module_tags[tag] + weighted_tags.get(tag, 0) 
+                weighted_tags[tag] = module_tags[tag] + weighted_tags.get(tag, 0)
 
         return sorted(weighted_tags, key=weighted_tags.get, reverse=True)
 
@@ -484,6 +733,10 @@ class EDSidewinder(EDVehicle):
         self.type = u'Sidewinder'
         self.size = EDVehicleSize.SMALL
         self.value = 31000
+        self.shield_base_strength = 40
+        self.hull_mass = 25
+        self.hull_hardness = 35
+        self.hull_base_strength = 108 / 1.8
 
 class EDHauler(EDVehicle):
     def __init__(self):
@@ -491,6 +744,10 @@ class EDHauler(EDVehicle):
         self.type = u'Hauler'
         self.size = EDVehicleSize.SMALL
         self.value = 51720
+        self.shield_base_strength = 50
+        self.hull_mass = 14
+        self.hull_hardness = 20
+        self.hull_base_strength = 180 / 1.8
 
 class EDEagle(EDVehicle):
     def __init__(self):
@@ -498,6 +755,10 @@ class EDEagle(EDVehicle):
         self.type = u'Eagle'
         self.size = EDVehicleSize.SMALL
         self.value = 43800
+        self.shield_base_strength = 60
+        self.hull_mass = 50
+        self.hull_hardness = 20
+        self.hull_base_strength = 72 / 1.8
 
 class EDAdder(EDVehicle):
     def __init__(self):
@@ -506,6 +767,10 @@ class EDAdder(EDVehicle):
         self.size = EDVehicleSize.SMALL
         self.seats = 2
         self.value = 86472
+        self.shield_base_strength = 60
+        self.hull_mass = 35
+        self.hull_hardness = 35
+        self.hull_base_strength = 162 / 1.8
 
 class EDTaxi(EDVehicle):
     def __init__(self):
@@ -525,6 +790,10 @@ class EDAdderApex(EDTaxi):
         self.size = EDVehicleSize.SMALL
         self.seats = 2
         self.value = 86472
+        self.shield_base_strength = 60
+        self.hull_mass = 35
+        self.hull_hardness = 35
+        self.hull_base_strength = 162 / 1.8
     
 
 class EDViperMkIII(EDVehicle):
@@ -533,6 +802,10 @@ class EDViperMkIII(EDVehicle):
         self.type = u'Viper Mk III'
         self.size = EDVehicleSize.SMALL
         self.value = 141592
+        self.shield_base_strength = 105
+        self.hull_mass = 50
+        self.hull_hardness = 35
+        self.hull_base_strength = 126 / 1.8
 
 class EDCobraMkIII(EDVehicle):
     def __init__(self):
@@ -541,6 +814,10 @@ class EDCobraMkIII(EDVehicle):
         self.size = EDVehicleSize.SMALL
         self.seats = 2
         self.value = 346634
+        self.shield_base_strength = 80
+        self.hull_mass = 180
+        self.hull_hardness = 35
+        self.hull_base_strength = 216 / 1.8
 
 class EDT6Transporter(EDVehicle):
     def __init__(self):
@@ -548,6 +825,10 @@ class EDT6Transporter(EDVehicle):
         self.type = u'Type-6 Transporter'
         self.size = EDVehicleSize.MEDIUM
         self.value = 1044612
+        self.shield_base_strength = 90
+        self.hull_mass = 155
+        self.hull_hardness = 35
+        self.hull_base_strength = 324 / 1.8
 
 class EDDolphin(EDVehicle):
     def __init__(self):
@@ -555,6 +836,10 @@ class EDDolphin(EDVehicle):
         self.type = u'Dolphin'
         self.size = EDVehicleSize.SMALL
         self.value = 1334244
+        self.shield_base_strength = 110
+        self.hull_mass = 140
+        self.hull_hardness = 35
+        self.hull_base_strength = 198 / 1.8
 
 class EDT7Transporter(EDVehicle):
     def __init__(self):
@@ -562,6 +847,10 @@ class EDT7Transporter(EDVehicle):
         self.type = u'Type-7 Transporter'
         self.size = EDVehicleSize.LARGE
         self.value = 17469174
+        self.shield_base_strength = 155
+        self.hull_mass = 350
+        self.hull_hardness = 54
+        self.hull_base_strength = 612 / 1.8
 
 class EDAspExplorer(EDVehicle):
     def __init__(self):
@@ -570,6 +859,10 @@ class EDAspExplorer(EDVehicle):
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
         self.value = 6650520
+        self.shield_base_strength = 140
+        self.hull_mass = 280
+        self.hull_hardness = 52
+        self.hull_base_strength = 378 / 1.8
 
 class EDVulture(EDVehicle):
     def __init__(self):
@@ -578,6 +871,10 @@ class EDVulture(EDVehicle):
         self.size = EDVehicleSize.SMALL
         self.seats = 2
         self.value = 4922534
+        self.shield_base_strength = 240
+        self.hull_mass = 230
+        self.hull_hardness = 55
+        self.hull_base_strength = 288 / 1.8
     
 class EDVultureFrontlines(EDTaxi):
     def __init__(self):
@@ -586,6 +883,10 @@ class EDVultureFrontlines(EDTaxi):
         self.size = EDVehicleSize.SMALL
         self.seats = 2
         self.value = 4922534
+        self.shield_base_strength = 240
+        self.hull_mass = 230
+        self.hull_hardness = 55
+        self.hull_base_strength = 288 / 1.8
 
 class EDImperialClipper(EDVehicle):
     def __init__(self):
@@ -594,6 +895,10 @@ class EDImperialClipper(EDVehicle):
         self.size = EDVehicleSize.LARGE
         self.seats = 2
         self.value = 22256248
+        self.shield_base_strength = 180
+        self.hull_mass = 400
+        self.hull_hardness = 60
+        self.hull_base_strength = 486 / 1.8
 
 class EDFederalDropship(EDVehicle):
     def __init__(self):
@@ -602,6 +907,10 @@ class EDFederalDropship(EDVehicle):
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
         self.value = 14273598
+        self.shield_base_strength = 200
+        self.hull_mass = 580
+        self.hull_hardness = 60
+        self.hull_base_strength = 540 / 1.8
 
 class EDOrca(EDVehicle):
     def __init__(self):
@@ -610,6 +919,10 @@ class EDOrca(EDVehicle):
         self.size = EDVehicleSize.LARGE
         self.seats = 2
         self.value = 48529270
+        self.shield_base_strength = 220
+        self.hull_mass = 290
+        self.hull_hardness = 55
+        self.hull_base_strength = 396 / 1.8
 
 class EDT9Heavy(EDVehicle):
     def __init__(self):
@@ -618,6 +931,10 @@ class EDT9Heavy(EDVehicle):
         self.size = EDVehicleSize.LARGE
         self.seats = 3
         self.value = 77693648
+        self.shield_base_strength = 240
+        self.hull_mass = 850
+        self.hull_hardness = 65
+        self.hull_base_strength = 864 / 1.8
 
     def supports_slf(self):
         return True
@@ -629,6 +946,10 @@ class EDT10Defender(EDVehicle):
         self.size = EDVehicleSize.LARGE
         self.seats = 3
         self.value = 124874411
+        self.shield_base_strength = 320
+        self.hull_mass = 1200
+        self.hull_hardness = 75
+        self.hull_base_strength = 1044 / 1.8
     
     def supports_slf(self):
         return True
@@ -640,6 +961,10 @@ class EDPython(EDVehicle):
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
         self.value = 56824391
+        self.shield_base_strength = 260
+        self.hull_mass = 350
+        self.hull_hardness = 65
+        self.hull_base_strength = 468 / 1.8
     
 class EDBelugaLiner(EDVehicle):
     def __init__(self):
@@ -648,6 +973,10 @@ class EDBelugaLiner(EDVehicle):
         self.size = EDVehicleSize.LARGE
         self.seats = 3
         self.value = 84492158
+        self.shield_base_strength = 280
+        self.hull_mass = 950
+        self.hull_hardness = 60
+        self.hull_base_strength = 504 / 1.8
 
     def supports_slf(self):
         return True
@@ -659,6 +988,10 @@ class EDFerDeLance(EDVehicle):
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
         self.value = 51556410
+        self.shield_base_strength = 300
+        self.hull_mass = 250
+        self.hull_hardness = 70
+        self.hull_base_strength = 405 / 1.8
 
 class EDAnaconda(EDVehicle):
     def __init__(self):
@@ -667,6 +1000,10 @@ class EDAnaconda(EDVehicle):
         self.size = EDVehicleSize.LARGE
         self.seats = 3
         self.value = 146402444
+        self.shield_base_strength = 350
+        self.hull_mass = 400
+        self.hull_hardness = 65
+        self.hull_base_strength = 945 / 1.8
 
     def supports_slf(self):
         return True
@@ -678,6 +1015,10 @@ class EDFederalCorvette(EDVehicle):
         self.size = EDVehicleSize.LARGE
         self.seats = 3
         self.value = 187402444
+        self.shield_base_strength = 555
+        self.hull_mass = 900
+        self.hull_hardness = 70
+        self.hull_base_strength = 666 / 1.8
     
     def supports_slf(self):
         return True
@@ -689,6 +1030,10 @@ class EDImperialCutter(EDVehicle):
         self.size = EDVehicleSize.LARGE
         self.seats = 3
         self.value = 208402444
+        self.shield_base_strength = 600
+        self.hull_mass = 1100
+        self.hull_hardness = 70
+        self.hull_base_strength = 720 / 1.8
 
     def supports_slf(self):
         return True
@@ -699,6 +1044,10 @@ class EDDiamondbackScout(EDVehicle):
         self.type = u'Diamondback Scout'
         self.size = EDVehicleSize.SMALL
         self.value = 561244
+        self.shield_base_strength = 120
+        self.hull_mass = 170
+        self.hull_hardness = 40
+        self.hull_base_strength = 216 / 1.8
 
 class EDImperialCourier(EDVehicle):
     def __init__(self):
@@ -706,6 +1055,10 @@ class EDImperialCourier(EDVehicle):
         self.type = u'Imperial Courier'
         self.size = EDVehicleSize.SMALL
         self.value = 2539844
+        self.shield_base_strength = 200
+        self.hull_mass = 35
+        self.hull_hardness = 30
+        self.hull_base_strength = 144 / 1.8
 
 class EDDiamondbackExplorer(EDVehicle):
     def __init__(self):
@@ -713,6 +1066,10 @@ class EDDiamondbackExplorer(EDVehicle):
         self.type = u'Diamondback Explorer'
         self.size = EDVehicleSize.SMALL
         self.value = 1891674
+        self.shield_base_strength = 150
+        self.hull_mass = 260
+        self.hull_hardness = 42
+        self.hull_base_strength = 270 / 1.8
 
 class EDImperialEagle(EDVehicle):
     def __init__(self):
@@ -720,6 +1077,10 @@ class EDImperialEagle(EDVehicle):
         self.type = u'Imperial Eagle'
         self.size = EDVehicleSize.SMALL
         self.value = 109492
+        self.shield_base_strength = 80
+        self.hull_mass = 50
+        self.hull_hardness = 28
+        self.hull_base_strength = 108 / 1.8
 
 class EDFederalAssaultShip(EDVehicle):
     def __init__(self):
@@ -728,6 +1089,10 @@ class EDFederalAssaultShip(EDVehicle):
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
         self.value = 19774598
+        self.shield_base_strength = 200
+        self.hull_mass = 480
+        self.hull_hardness = 60
+        self.hull_base_strength = 540 / 1.8
 
 class EDFederalGunship(EDVehicle):
     def __init__(self):
@@ -736,6 +1101,10 @@ class EDFederalGunship(EDVehicle):
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
         self.value = 35773598
+        self.shield_base_strength = 250
+        self.hull_mass = 580
+        self.hull_hardness = 60
+        self.hull_base_strength = 630 / 1.8
 
     def supports_slf(self):
         return True
@@ -746,6 +1115,10 @@ class EDViperMkIV(EDVehicle):
         self.type = u'Viper Mk IV'
         self.size = EDVehicleSize.SMALL
         self.value = 434844
+        self.shield_base_strength = 150
+        self.hull_mass = 190
+        self.hull_hardness = 35
+        self.hull_base_strength = 270 / 1.8
 
 class EDCobraMkIV(EDVehicle):
     def __init__(self):
@@ -754,6 +1127,10 @@ class EDCobraMkIV(EDVehicle):
         self.size = EDVehicleSize.SMALL
         self.seats = 2
         self.value = 744574
+        self.shield_base_strength = 120
+        self.hull_mass = 210
+        self.hull_hardness = 35
+        self.hull_base_strength = 216 / 1.8
 
 class EDKeelback(EDVehicle):
     def __init__(self):
@@ -762,6 +1139,10 @@ class EDKeelback(EDVehicle):
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
         self.value = 3123064
+        self.shield_base_strength = 135
+        self.hull_mass = 180
+        self.hull_hardness = 45
+        self.hull_base_strength = 486 / 1.8
 
     def supports_slf(self):
         return True
@@ -773,6 +1154,10 @@ class EDAspScout(EDVehicle):
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
         self.value = 3959064
+        self.shield_base_strength = 120
+        self.hull_mass = 150
+        self.hull_hardness = 52
+        self.hull_base_strength = 324 / 1.8
 
 class EDAllianceChieftain(EDVehicle):
     def __init__(self):
@@ -781,6 +1166,10 @@ class EDAllianceChieftain(EDVehicle):
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
         self.value = 18952161
+        self.shield_base_strength = 200
+        self.hull_mass = 400
+        self.hull_hardness = 65
+        self.hull_base_strength = 504 / 1.8
 
 class EDAllianceChallenger(EDVehicle):
     def __init__(self):
@@ -789,6 +1178,11 @@ class EDAllianceChallenger(EDVehicle):
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
         self.value = 30540973
+        self.shield_base_strength = 220
+        self.hull_mass = 450
+        self.hull_hardness = 65
+        self.hull_base_strength = 540 / 1.8
+
 
 class EDAllianceCrusader(EDVehicle):
     def __init__(self):
@@ -797,6 +1191,10 @@ class EDAllianceCrusader(EDVehicle):
         self.size = EDVehicleSize.MEDIUM
         self.seats = 3
         self.value = 23635619
+        self.shield_base_strength = 200
+        self.hull_mass = 500
+        self.hull_hardness = 65
+        self.hull_base_strength = 540 / 1.8
 
     def supports_slf(self):
         return True
@@ -808,6 +1206,10 @@ class EDKraitMkII(EDVehicle):
         self.size = EDVehicleSize.MEDIUM
         self.seats = 3
         self.value = 45660416
+        self.shield_base_strength = 220
+        self.hull_mass = 320
+        self.hull_hardness = 55
+        self.hull_base_strength = 396 / 1.8
 
     def supports_slf(self):
         return True
@@ -819,6 +1221,10 @@ class EDKraitPhantom(EDVehicle):
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
         self.value = 44139676
+        self.shield_base_strength = 200
+        self.hull_mass = 270
+        self.hull_hardness = 60
+        self.hull_base_strength = 324 / 1.8
 
 class EDMamba(EDVehicle):
     def __init__(self):
@@ -827,6 +1233,10 @@ class EDMamba(EDVehicle):
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
         self.value = 56289969
+        self.shield_base_strength = 270
+        self.hull_mass = 250
+        self.hull_hardness = 70
+        self.hull_base_strength = 414 / 1.8
 
 class EDShipLaunchedFighter(EDVehicle):
     def __init__(self):
@@ -843,36 +1253,57 @@ class EDImperialFighter(EDShipLaunchedFighter):
         super(EDImperialFighter, self).__init__()
         self.type = u'Imperial Fighter'
         self.size = EDVehicleSize.UNKNOWN
+        self.shield_base_strength = 15
+        self.hull_mass = 10
+        self.hull_base_strength = 15 / 1.8
+        # Hull of 15, Shield of 15
 
 class EDF63Condor(EDShipLaunchedFighter):
     def __init__(self):
         super(EDF63Condor, self).__init__()
         self.type = u'F63 Condor'
         self.size = EDVehicleSize.UNKNOWN
+        self.shield_base_strength = 25
+        self.hull_mass = 20
+        self.hull_base_strength = 25 / 1.8
+        # 50 total: Hull of 25, Shield of 25
 
 class EDTaipanFighter(EDShipLaunchedFighter):
     def __init__(self):
         super(EDTaipanFighter, self).__init__()
         self.type = u'Taipan Fighter'
         self.size = EDVehicleSize.UNKNOWN
+        self.shield_base_strength = 30
+        self.hull_mass = 22
+        self.hull_base_strength = 45 / 1.8
+        # Hull of 45, Shield of 30
 
 class EDTrident(EDShipLaunchedFighter):
     def __init__(self):
         super(EDTrident, self).__init__()
         self.type = u'Trident'
         self.size = EDVehicleSize.UNKNOWN
+        self.shield_base_strength = 30
+        self.hull_mass = 20
+        self.hull_base_strength = 10 / 1.8
 
 class EDJavelin(EDShipLaunchedFighter):
     def __init__(self):
         super(EDJavelin, self).__init__()
         self.type = u'Javelin'
         self.size = EDVehicleSize.UNKNOWN
+        self.shield_base_strength = 30
+        self.hull_mass = 20
+        self.hull_base_strength = 10 / 1.8
 
 class EDLance(EDShipLaunchedFighter):
     def __init__(self):
         super(EDLance, self).__init__()
         self.type = u'Lance'
         self.size = EDVehicleSize.UNKNOWN
+        self.shield_base_strength = 30
+        self.hull_mass = 20
+        self.hull_base_strength = 10 / 1.8
 
 class EDSurfaceVehicle(EDVehicle):
     def __init__(self):
@@ -890,30 +1321,45 @@ class EDSRVScorpion(EDSurfaceVehicle):
         self.type = u'SRV Scorpion'
         self.size = EDVehicleSize.UNKNOWN
         self.seats = 2
+        self.shield_base_strength = 130
+        self.hull_mass = 30
+        self.hull_base_strength = 162 / 1.8
 
 class EDSRVScarab(EDSurfaceVehicle):
     def __init__(self):
         super(EDSRVScarab, self).__init__()
         self.type = u'SRV Scarab'
         self.size = EDVehicleSize.UNKNOWN
+        self.shield_base_strength = 25
+        self.hull_mass = 4
+        self.hull_base_strength = 108 / 1.8
 
 class EDUnknownVehicle(EDVehicle):
     def __init__(self):
         super(EDUnknownVehicle, self).__init__()
         self.type = u'Unknown'
         self.size = EDVehicleSize.UNKNOWN
+        self.shield_base_strength = 25
+        self.hull_mass = 10
+        self.hull_base_strength = 25 / 1.8
 
 class EDCrewUnknownVehicle(EDVehicle):
     def __init__(self):
         super(EDCrewUnknownVehicle, self).__init__()
         self.type = u'Unknown (crew)'
         self.size = EDVehicleSize.UNKNOWN
+        self.shield_base_strength = 25
+        self.hull_mass = 10
+        self.hull_base_strength = 25 / 1.8
 
 class EDCaptainUnknownVehicle(EDVehicle):
     def __init__(self):
         super(EDCaptainUnknownVehicle, self).__init__()
         self.type = u'Unknown (captain)'
         self.size = EDVehicleSize.UNKNOWN
+        self.shield_base_strength = 25
+        self.hull_mass = 10
+        self.hull_base_strength = 25 / 1.8
 
 class EDVehicleFactory(object):
     __vehicle_classes = {
@@ -1060,9 +1506,7 @@ class EDVehicleFactory(object):
 
         modules = state.get('Modules', None)
         if modules:
-            for module in modules:
-                health = modules[module]['Health'] * 100.0 if 'Health' in modules[module] else None 
-                vehicle.subsystem_health(modules[module].get('Item', None), health)
+            vehicle.update_from_modules_edmc(modules)
         return vehicle
 
     @staticmethod
