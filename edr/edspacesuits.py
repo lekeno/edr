@@ -1,12 +1,19 @@
 from os import stat
 import re
+import json
+import utils2to3
+from copy import deepcopy
 
 from edtime import EDTime
 import edrconfig
+from edrlog import EDRLog
+
+EDRLOG = EDRLog()
 
 class EDSuitLoadout(object):
     def __init__(self):
         self.id = None
+        self.loadout_id = None
         self.name = None
         self.suit_mods = []
         self.modules = []
@@ -18,7 +25,7 @@ class EDSuitLoadout(object):
         self.modules = event.get("Modules", [])
 
 
-class EDSpaceSuit(object):    
+class EDSpaceSuit(object):
     def __init__(self):
         self.type = None
         self.id = None
@@ -164,7 +171,7 @@ class EDSpaceSuit(object):
 
     def update_from_suitloadout(self, event):
         other_id = event.get("SuitID", None)
-        other_type = EDSuitFactory.canonicalize(event.get("SuitName", "unknown")) 
+        other_type = EDSuitFactory.suit_type(event.get("SuitName", "unknown")) 
 
         if other_id != self.id or other_type != self.type:
             EDRLOG.log(u"Mismatch between Suit ID ({} vs {}) and/or Type ({} vs. {}), can't update from loadout".format(self.id, other_id, self.type, other_type), "WARNING")
@@ -180,7 +187,6 @@ class EDSpaceSuit(object):
         
     def __ne__(self, other):
         return not self.__eq__(other)
-
 
 class EDUnknownSuit(EDSpaceSuit):
     def __init__(self):
@@ -202,18 +208,128 @@ class EDArtemisSuit(EDSpaceSuit):
         super(EDArtemisSuit, self).__init__()
         self.type = u'Artemis'
 
+
 class EDDominatorSuit(EDSpaceSuit):
     def __init__(self):
         super(EDDominatorSuit, self).__init__()
         self.type = u'Dominator'
+
+class EDOdysseyCloset(object):
+    # because why not
+
+    def __init__(self):
+        self.loadouts = {}
+        self.genetic_sampler = EDGeneticSampler()
+        # other tools, not interesting for now
+        #   arc cutter
+        #   profile analyzer
+        #   energy link
+
+    def switch_suit_loadout(self, entry):
+        loadout_id = entry["LoadoutID"] if "LoadoutID" in entry else entry.get("ShipID", -1)
+        suit_name = entry["SuitName"] if "SuitName" in entry else entry.get("Ship", "unknown")
+        if loadout_id not in self.loadouts or self.loadouts[loadout_id].type != EDSuitFactory.suit_type(suit_name):
+            self.loadouts[loadout_id] = EDSuitFactory.from_suitloadout_event(entry)
+        else:
+            # todo: update loadout
+            pass
+        return self.loadouts[loadout_id]
+
+class EDGeneticSampler(object):
+    BIOLOGY = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'biology.json')).read())
+    
+    def __init__(self):
+        self.samples = {}
+        self.genus = {}
+        self.species = {}
+        self.last_system_body = {}
+
+    def reset(self):
+        self.samples = {}
+        self.genus = {}
+        self.species = {}
+        self.last_system_body = {}
+    
+    def process(self, scan_event, location):
+        if scan_event["ScanType"] == "Analyse":
+            self.reset()
+            return
+
+        if scan_event["ScanType"] == "Log":
+            self.reset()
+        
+        if scan_event["ScanType"] in ["Log", "Sample"]:
+            self.last_system_body = {
+                "systemAddress": scan_event["SystemAddress"],
+                "bodyNb": scan_event["Body"],
+            }
+            
+            genus = scan_event.get("Genus", "").lower()
+            self.genus = {
+                "internal_name": genus,
+                "name": scan_event["Genus_Localised"]
+            }
+
+            species = scan_event.get("Species", "").lower()
+            self.species = {
+                "internal_name": species,
+                "name": scan_event["Species_Localised"]
+            }
+            system_body_id = EDGeneticSampler.__sys_body_id(scan_event["SystemAddress"], scan_event["Body"])
+            if system_body_id in self.samples:
+                self.samples[system_body_id].append(deepcopy(location))
+            else:
+                self.samples[system_body_id] = [ deepcopy(location) ]
+        
+    def is_tracking(self):
+        return self.genus != {}
+
+    def clonal_colony_range(self):
+        if not self.genus:
+            return None
+
+        genus = EDGeneticSampler.BIOLOGY["genuses"].get(self.genus["internal_name"], None)
+        if not genus:
+            return None
+        
+        ccr = genus.get("ccr", None)
+        
+        return ccr
+
+    def tracked_species_credits(self):
+        if not self.species_tracked():
+            return None
+        
+        species = EDGeneticSampler.BIOLOGY["species"].get(self.species["internal_name"], None)
+        if not species:
+            return None
+        
+        credits = species.get("credits", None)
+        
+        return credits
+        
+    def species_tracked(self):
+        return self.species.get("name", None)
+
+    def samples_locations(self, system_address=None, body_nb=None):
+        system_address = system_address or self.last_system_body.get("systemAddress", None)
+        body_nb = body_nb or self.last_system_body.get("bodyNb", None)
+        system_body_id = EDGeneticSampler.__sys_body_id(system_address, body_nb)
+        locs = self.samples.get(system_body_id, [])
+        
+        return locs
+
+    @staticmethod
+    def __sys_body_id(system_address, body_nb):
+        return "S{}-B{}".format(system_address, body_nb)
 
 
 class EDSuitFactory(object):
     __suit_classes = {
         "flightsuit": EDFlightSuit,
         "utilitysuit": EDMaverickSuit,
-        "explorersuit": EDArtemisSuit,
-        "assaultsuit": EDDominatorSuit,
+        "explorationsuit": EDArtemisSuit,
+        "tacticalsuit": EDDominatorSuit,
         "unknown": EDUnknownSuit
     }
 
@@ -235,15 +351,27 @@ class EDSuitFactory(object):
         return re.match(ai_space_suit_lax_regexp, cname)
 
     @staticmethod
-    def canonicalize(name):
+    def canonicalize_name(name):
         if name is None:
             return u"unknown" # Note: this shouldn't be translated
         cname = name.lower()
-        player_space_suit_regexp = r"^(flightsuit|(explorationsuit|utilitysuit|tacticalsuit)_class[1-5])$" # TODO confirm that those are the internal names used for players
+        player_space_suit_regexp = r"^(flightsuit|explorationsuit|utilitysuit|tacticalsuit)_class[1-5]$" # TODO confirm that those are the internal names used for players
         m = re.match(player_space_suit_regexp, cname)
         if m:
             cname = m.group(1)
         return cname
+
+    @staticmethod
+    def suit_type(internal_name):
+        cname = EDSuitFactory.canonicalize_name(internal_name)
+        LUT = {
+            "flightsuit": "Flight",
+            "utilitysuit": "Maverick",
+            "explorationsuit": "Artemis",
+            "tacticalsuit": "Dominator",
+            "unknown": "Unknown"
+        }
+        return LUT.get(cname, "Unknown")
 
     @staticmethod
     def grade(name):
@@ -259,7 +387,7 @@ class EDSuitFactory(object):
 
     @staticmethod
     def from_internal_name(internal_name):
-        suit_name = EDSuitFactory.canonicalize(internal_name)
+        suit_name = EDSuitFactory.canonicalize_name(internal_name)
         grade = EDSuitFactory.grade(internal_name)
         suit = EDSuitFactory.__suit_classes.get(suit_name, EDUnknownSuit)()
         suit.grade = grade
