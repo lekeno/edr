@@ -6598,7 +6598,7 @@ msgstr ""
 
 #: helpcontent.py:286
 msgid ""
-" - Xeobiology hints and progress tracking when targeting a planet, being in "
+" - Exobiology hints and progress tracking when targeting a planet, being in "
 "its orbit or by sending the '!biology' command (e.g. '!biology 1 A'"
 msgstr ""
 

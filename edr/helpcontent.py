@@ -283,7 +283,7 @@ class HelpContent(object):
                 _(u" - Point at materials while on foot with the emote gesture to get EDR to identify it and provide info about its usefulness."),
                 _(u" - !eval [bar|bar demand] to evaluate the items on sale (or in demand) at the last visited bar on a fleet carrier, e.g. '!eval bar demand'. Useful to know which items to buy / sale."),
                 _(u" - Visit the bar on a fleet carrier to get a list of most useful items on sale, or least useful items in demand."),
-                _(u" - Xeobiology hints and progress tracking when targeting a planet, being in its orbit or by sending the '!biology' command (e.g. '!biology 1 A'"),
+                _(u" - Exobiology hints and progress tracking when targeting a planet, being in its orbit or by sending the '!biology' command (e.g. '!biology 1 A'"),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
             ]
