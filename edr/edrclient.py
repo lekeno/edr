@@ -1,8 +1,6 @@
 # coding= utf-8
 from __future__ import absolute_import
 from copy import deepcopy
-#from builtins import map, filter
-
 import datetime
 import itertools
 from sys import float_repr_style
@@ -630,9 +628,46 @@ class EDRClient(object):
             return True
         materials_info = self.edrsystems.materials_on(star_system, body_name)
         facts = self.edrresourcefinder.assess_materials_density(materials_info, self.player.inventory)
+        header = _("Noteworthy about {}").format(body_name)
+        details = []
+
         if facts:
             qualifier = self.edrresourcefinder.raw_profile or _("Noteworthy")
-            self.__notify(_(u'{} material densities on {}').format(qualifier, body_name), facts, clear_before = True)
+            details.append(_(u'{} materials: {}').format(qualifier, ",".join(facts)))
+        
+        bio_info = self.edrsystems.biology_on(star_system, body_name)
+        if bio_info and "species" in bio_info:
+            details.append(_("Expected Bio: {}").format(", ".join(bio_info["species"])))
+            progress = self.__biome_progress_oneliner(star_system, body_name)
+            if progress:
+                details.append(progress)
+
+        self.__notify(header, details, clear_before = True)
+
+        
+    def __biome_progress_oneliner(self, star_system, body_id_or_name):
+        progress = self.edrsystems.analyzed_biome(star_system, body_id_or_name)
+        genus_analyzed = progress["genuses"].get("analyzed", None)
+        genus_detected = progress["genuses"].get("detected", None)
+        genus_expected = progress["genuses"].get("expected", None)
+        localized = progress["genuses"].get("localized", [])
+        genus_localized = ", ".join(localized) if localized else "n/a"
+        genus_bit = ""
+        if genus_detected:
+            genus_bit = _("genus {}/{};  analyzed: {}").format(genus_analyzed, genus_detected, genus_localized)
+        elif genus_expected:
+            genus_bit = _("genus {}/{}?;  analyzed: {}").format(genus_analyzed, genus_expected, genus_localized)
+        else:
+            genus_bit = _("genus {}/???;  analyzed: {}").format(genus_analyzed, genus_localized)
+
+        species_analyzed = progress["species"].get("analyzed", None)
+        species_bit = ""
+        if species_analyzed:
+            species_bit = _("; species {}").format(species_analyzed)
+        
+        if not genus_bit and not species_bit:
+            return None
+        return _("Progress: {}{}").format(genus_bit, species_bit)
 
     def noteworthy_about_scan(self, scan_event):
         if scan_event["event"] != "Scan" or not scan_event["ScanType"] in ["Detailed", "Basic", "AutoScan"]:
@@ -641,6 +676,7 @@ class EDRClient(object):
         if "BodyName" not in scan_event:
             return
         
+        # TODO tweak species info with mats coloring
         header = _(u'Noteworthy about {}').format(scan_event["BodyName"])
         facts = []
         if scan_event["BodyName"]:
@@ -662,7 +698,14 @@ class EDRClient(object):
                     facts.append(_("Estimated value: {} cr (mapped: {}) @ {} LS; {}").format(pretty_print_number(value["valueScanned"]), pretty_print_number(value["valueMax"]), pretty_print_number(value["distance"]), flags))
                 else:
                     facts.append(_("Estimated value: {} cr @ {} LS; {}").format(pretty_print_number(value["valueMax"]), pretty_print_number(value["distance"]), flags))
-                    
+
+        bio_info = self.edrsystems.biology_on(star_system, scan_event["BodyName"])
+        if bio_info and "species" in bio_info:
+            facts.append(_("Expected Bio: {}").format(", ".join(bio_info["species"])))
+            progress = self.__biome_progress_oneliner(star_system, scan_event["BodyName"])
+            if progress:
+                facts.append(progress)
+
         if "Materials" in scan_event:
             mats_assessment = self.edrresourcefinder.assess_materials_density(scan_event["Materials"], self.player.inventory)
             if mats_assessment:
@@ -721,6 +764,37 @@ class EDRClient(object):
         return True
 
     def process_scan(self, scan_event):
+        if scan_event["event"] == "Scan":
+            return self.__process_space_scan(scan_event)
+        elif scan_event["event"] == "ScanOrganic":
+            result = self.player.process_organic_scan(scan_event)
+            self.edrsystems.reflect_organic_scan(self.player.star_system, scan_event["Body"], scan_event)
+            if scan_event["ScanType"] == "Analyse":
+                progress = self.edrsystems.analyzed_biome(self.player.star_system, scan_event["Body"])
+                details = []
+                genus_analyzed = progress["genuses"].get("analyzed", "1+?") # should be at least 1
+                genus_detected = progress["genuses"].get("detected", None)
+                genus_expected = progress["genuses"].get("expected", None)
+                genus_localized = progress["genuses"].get("localized", None)
+                if genus_detected:
+                    details.append(_("Genus: {}/{}").format(genus_analyzed, genus_detected))
+                elif genus_expected:
+                    details.append(_("Genus: {}/{}").format(genus_analyzed, genus_expected))
+                else:
+                    details.append(_("Genus: {}/???").format(genus_analyzed))
+                
+                if genus_localized:
+                    details.append(_(" - analyzed: {}").format(", ".join(genus_localized)))
+
+                species_analyzed = progress["species"].get("analyzed", "1+?") # should be at least 1
+                details.append(_("Species: {}").format(species_analyzed))
+                
+                self.__notify(_("Biome analysis progress"), details, clear_before=True)
+            
+            return result
+        return False
+        
+    def __process_space_scan(self, scan_event):
         self.edrsystems.reflect_scan(self.player.star_system, scan_event["BodyName"], scan_event)
         if "Materials" not in scan_event:
             return False
@@ -893,12 +967,103 @@ class EDRClient(object):
 
     def saa_scan_complete(self, entry):
         self.edrsystems.saa_scan_complete(self.player.star_system, entry)
+        
+    def biology_on(self, body_name, star_system=None):
+        star_system = star_system or self.player.star_system
+        bio_info = self.edrsystems.biology_on(star_system, body_name)
+        
+        if not body_name or body_name.lower() == "unknown":
+            return
+        
+        header = _("Biome assessment for {}").format(body_name)
+        details = []
+        
+        if not (bio_info and "species" in bio_info):
+            body_name = star_system + " " + body_name
+            bio_info = self.edrsystems.biology_on(star_system, body_name)
+
+        if not (bio_info and "species" in bio_info):
+            EDRLOG.log("No bio on {}".format(bio_info), "INFO")
+            details.append(_("Expected Bio: none"))
+            self.__notify(header, details, clear_before=True)
+            return
+
+        details.append(_("Expected Bio: {}").format(", ".join(bio_info["species"])))
+        progress = self.__biome_progress_oneliner(self.player.star_system, body_name)
+        if progress:
+            details.append(progress)
+        self.__notify(header, details, clear_before=True)
+
+    def saa_signals_found(self, entry):
+        self.edrsystems.saa_signals_found(self.player.star_system, entry)
+        body_name = entry["BodyName"]
+        details = []
+        if "Signals" in entry:
+            signals = []
+            for s in entry["Signals"]:
+                signals.append("{}: {}".format(s["Type_Localised"], s["Count"]))
+
+            if signals:
+               details.extend(signals)
+        
+        if "Genuses" in entry:
+            bio_info = self.edrsystems.biology_on(self.player.star_system, body_name)
+            # TODO some assessment step => reorder, add credit estimates?
+            if bio_info and "species" in bio_info:
+                details.append(_("Expected Bio: {}").format(", ".join(bio_info["species"])))
+                progress = self.__biome_progress_oneliner(self.player.star_system, body_name)
+                if progress:
+                    details.append(progress)
+        
+        if details:
+            self.__notify(_(u'Signals on {}').format(body_name), details, clear_before = True)
 
     def reflect_fss_discovery_scan(self, entry):
         self.edrsystems.fss_discovery_scan_update(entry)
         
-            
+    def process_codex_entry(self, entry):
+        if entry.get("event", "") != "CodexEntry":
+            return
 
+        self.player.codex.process(entry)
+        
+        if entry.get("Category", "") != "$Codex_Category_Biology;" or entry.get("SubCategory", "") != "$Codex_SubCategory_Organic_Structures;":
+            return
+        
+        if self.player.on_foot:
+            EDRLOG.log("Player is on foot, so no cutom POI from codex entry needed (not coming from the com scanner", "INFO")
+            return
+        now = datetime.datetime.now()
+        name = entry.get("Name_Localised", "Comp.Scan")
+        title = "{} ({})".format(name, now.strftime("%H:%M:%S"))
+        
+        if "Latitude" not in entry or "Longitude" not in entry:
+            EDRLOG.log("No Lat/Lon for codex", "WARNING")
+            return
+
+        poi = {
+            "title": title,
+            "latitude": entry["Latitude"],
+            "longitude": entry["Longitude"],
+            "heading": self.player.attitude.heading
+        }
+        system_name = entry["System"]
+        body_name = self.edrsystems.body_name_with_id(system_name, entry["BodyID"])
+        if not body_name:
+            EDRLOG.log("No body name found for codex with {}, {}".format(system_name, entry["BodyID"]), "WARNING")
+            return
+
+        if self.edrboi.add_custom_poi(system_name, body_name, poi):
+            details = [
+                _("Added a point of interest at the current position."),
+                    _("Use the '!nav next' or '!nav previous! to select the next or previous POI."),
+                    _("Use the 'stop' gesture or '!nav clear' to clear the current point of interest."),
+                    _("Use the '!nav reset' to reset all custom POI for the current planet.")
+            ]
+            self.__notify(_("EDR Navigation (comp. scanner)"), details)
+
+        
+ 
     def show_navigation(self):
         current = self.player.attitude
         destination = self.player.planetary_destination
@@ -920,7 +1085,7 @@ class EDRClient(object):
             EDRLOG.log(u"No distance info out of System:{}, Body:{}, Place: {}, Radius:{}".format(location.star_system, location.body, location.place, radius), "DEBUG")
             return
         
-        threshold = 0.25
+        threshold = 0.1
         if self.player.piloted_vehicle is None:
             threshold = 0.001
         elif EDVehicleFactory.is_surface_vehicle(self.player.piloted_vehicle):
@@ -930,10 +1095,71 @@ class EDRClient(object):
         pitch = destination.pitch(current, distance) if distance and distance <= 700 else None
         
         if self.visual_feedback:
-            self.IN_GAME_MSG.navigation(bearing, destination, distance, pitch)
+            self.IN_GAME_MSG.navigation(bearing, destination, distance, pitch) # TODO consider showing current heading for when on foot or an arrow for the direction to  aim for
             if self.audio_feedback:
                     self.SFX.navigation()
         self.status = _(u"> {:03} < for Lat:{:.4f} Lon:{:.4f}").format(bearing, destination.latitude, destination.longitude)
+
+    def try_custom_poi(self):
+        current = self.player.attitude
+        if not current or not current.valid():
+            return
+        
+        location = self.player.location
+        body = self.edrsystems.body(location.star_system, location.body or location.place)
+        radius = body.get("radius", None) if body else None
+
+        star_system = location.star_system
+        body_name = location.body or location.place
+        if not star_system or not body_name:
+            return
+        
+        poi = self.edrboi.closest_custom_point_of_interest(star_system, body_name, current, radius)
+        if not poi:
+            return
+
+        self.player.planetary_destination = EDPlanetaryLocation(poi)
+    
+    def biology_guidance(self):
+        current = self.player.attitude
+        if not current or not current.valid():
+            return
+        
+        genetic_sampler = self.player.closet.genetic_sampler
+        locations = genetic_sampler.samples_locations()
+        ccr = genetic_sampler.clonal_colony_range()
+        species = genetic_sampler.species_tracked()
+        credits = genetic_sampler.tracked_species_credits()
+        
+        location = self.player.location
+        body = self.edrsystems.body(location.star_system, location.body or location.place)
+        radius = body.get("radius", None) if body else None
+
+        if not locations or ccr is None or not species:
+            return
+        
+        distances = []
+        bearings = []
+        distances_summary = ""
+        i = 1
+        for loc in locations:
+            poi = EDPlanetaryLocation()
+            poi.update_from_obj(loc)
+            bearing = poi.bearing(current)
+            distance = poi.distance(current, radius) * 1000 if radius else None
+            if distance is None:
+                EDRLOG.log(u"No distance info out of System:{}, Body:{}, Place: {}, Radius:{}".format(location.star_system, location.body, location.place, radius), "DEBUG")
+                continue
+            distances.append(distance)
+            distances_summary += _(" [{loc_index}]: {dist}m  >{head:03}<").format(loc_index=i, dist=math.floor(distance), head=bearing)
+            bearings.append(bearing)
+            i += 1
+        
+        if self.visual_feedback:
+            self.IN_GAME_MSG.biology_guidance(species, ccr, credits, distances,  bearings)
+            if self.audio_feedback:
+                self.SFX.biology()
+        self.status = _(u"Value: {} cr; Gene diversity: +{}m => {}").format(pretty_print_number(credits), ccr, distances_summary)
 
     def check_system(self, star_system, may_create=False, coords=None):
         try:
@@ -2329,6 +2555,20 @@ class EDRClient(object):
         self.ui.help(_(content["header"]), _(content["details"]))
         return True
 
+    def tip(self, category=None):
+        the_tip = self.tips.tip(category)
+        if not the_tip:
+            return False
+
+        if self.visual_feedback:
+            EDRLOG.log(u"Show tip for {} with details: {}".format(category, the_tip), "DEBUG")
+            self.__notify(_(u"EDR pro-tips"), [the_tip], clear_before=True)
+            if self.audio_feedback:
+                self.SFX.help()
+        EDRLOG.log(u"[Alt] Show tip for {} with details: {}".format(category, the_tip), "DEBUG")
+        self.ui.help(_(u"EDR pro-tips"), [the_tip])
+        return True
+
     def clear(self):
         if self.visual_feedback:
             self.IN_GAME_MSG.clear()
@@ -2383,8 +2623,8 @@ class EDRClient(object):
         if self.audio_feedback:
             self.SFX.jammed()
 
-    def notify_with_details(self, notice, details):
-        self.__notify(notice, details)
+    def notify_with_details(self, notice, details, clear_before=False):
+        self.__notify(notice, details, clear_before)
 
     def warn_with_details(self, warning, details):
         self.__warning(warning, details)
@@ -2618,15 +2858,123 @@ class EDRClient(object):
         # TODO add the name of the thing in the header
         target = self.player.remlok_helmet.pointing_at(entry)
         if not target:
-            return
+            return False
         details = []
         description = self.player.describe_item(target)
         inventory_description = self.player.inventory.oneliner(target, fallback=False)
         if inventory_description:
             details.append(inventory_description)
-        if description:
-            details.extend(description)
-            self.__notify(_("Remlok Insights"), details, clear_before=True)
+        if not description:
+            return False
+
+        details.extend(description)
+        self.__notify(_("Remlok Insights"), details, clear_before=True)
+        
+        return True
+    
+    def gesture(self, entry):
+        default_emote_regex = r"^\$HumanoidEmote_DefaultMessage:#player=\$cmdr_decorate:#name=(.+);:#action=\$HumanoidEmote_(.+)_Action[;]+$"
+        m = re.match(default_emote_regex, entry.get("Message", ""))
+        action = None
+        target = None
+        if not m:
+            targeted_emote_regex = r"^\$HumanoidEmote_TargetMessage:#player=\$cmdr_decorate:#name=(.+);:#targetedAction=\$HumanoidEmote_(.+)_Action_Targeted;:#target=(.+)[;]+$"
+            m = re.match(targeted_emote_regex, entry.get("Message", ""))
+            if m:
+                target = m.group(3)
+            
+        if not m:
+            return
+        
+        action = m.group(2)
+        
+        if action == "point":
+            if not (self.player.body and self.player.star_system):
+                EDRLOG.log("Skipping point gesture: not on/near a body, or no system set", "INFO")
+                return
+
+            if not (self.player.location.on_foot_location.on_planet):
+                EDRLOG.log("Skipping point gesture: not on a planet", "INFO")
+                return
+
+            now = datetime.datetime.now()
+            title = "POI ({})".format(now.strftime("%H:%M:%S"))
+            if target:
+                m = re.match(r"^\$Codex_Ent_([^_]+)_.+_Name[;]+$", target)
+                if m:
+                    title = "{} ({})".format(m.group(1), now.strftime("%H:%M:%S"))
+            poi = {
+                "title": title,
+                "latitude": self.player.attitude.latitude,
+                "longitude": self.player.attitude.longitude,
+                "heading": self.player.attitude.heading
+            }
+            system_name = self.player.star_system
+            body_name = self.player.body
+            if not body_name or body_name.lower() == "unknown":
+                return
+
+            if self.edrboi.add_custom_poi(system_name, body_name, poi):
+                details = [
+                    _("Added a point of interest at the current position."),
+                    _("Use the '!nav next' or '!nav previous! to select the next or previous POI."),
+                    _("Use the 'stop' gesture or '!nav clear' to clear the current point of interest."),
+                    _("Use the '!nav reset' to reset all custom POI for the current planet.")
+                ]
+                self.__notify(_("EDR Navigation (pointing gesture)"), details)
+            pass
+        elif action == "wave":
+            pass
+        elif action == "agree":
+            pass
+        elif action == "disagree":
+            pass
+        elif action == "go":
+            pass
+        elif action == "stop":
+            pass
+        elif action == "applaud":
+            pass
+        elif action == "salute":
+            pass        
+    
+    def reset_custom_pois(self):
+        system_name = self.player.star_system
+        body_name = self.player.body
+        if not body_name or body_name.lower() == "unknown":
+            EDRLOG.log("Can't reset custom POIs, no body name: {}".format(body_name), "WARNING")
+            return
+
+        self.edrboi.reset_custom_poi(system_name, body_name)
+    
+    def clear_current_custom_poi(self):
+        system_name = self.player.star_system
+        body_name = self.player.body
+        if not body_name or body_name.lower() == "unknown":
+            EDRLOG.log("Can't clear current custom POI, no body name: {}".format(body_name), "WARNING")
+            return
+
+        self.edrboi.clear_current_custom_poi(system_name, body_name)
+    
+    def next_custom_poi(self):
+        return self.__next_previous_custom_poi(True)
+    
+    def previous_custom_poi(self):
+        return self.__next_previous_custom_poi(False)
+
+    def __next_previous_custom_poi(self, next):
+        location = self.player.location
+        
+        poi = None
+        if next:
+            poi = self.edrboi.next_custom_point_of_interest(location.star_system, location.body or location.place)
+        else:
+            poi = self.edrboi.previous_custom_point_of_interest(location.star_system, location.body or location.place)
+        
+        if not poi:
+            return
+
+        self.player.planetary_destination = EDPlanetaryLocation(poi)
 
     def fleet_carrier_update(self):
         if self.player.fleet_carrier.has_market_changed():
@@ -2695,6 +3043,12 @@ class EDRClient(object):
         facts = self.edrresourcefinder.assess_materials_density(materials_info, self.player.inventory)
         if facts:
             description.extend(facts)
+        bio_info = self.edrsystems.biology_on(system_name, body_name)
+        if bio_info and "species" in bio_info:
+            description.append(_("Expected Bio: {}").format(", ".join(bio_info["species"])))
+            progress = self.__biome_progress_oneliner(system_name, body_name)
+            if progress:
+                description.append(progress)
         header = u"{}".format(body_name)
         self.__notify(header, description, clear_before=True)
         return True
