@@ -1,6 +1,12 @@
 import math
 import re
 
+try:
+    import edmc_data
+except ImportError:
+    import plug as edmc_data
+
+
 class EDSpaceDimension(object):
     UNKNOWN = 0
     NORMAL_SPACE = 1
@@ -12,12 +18,20 @@ class EDPlanetaryLocation(object):
         self.latitude = poi[u"latitude"] if poi else None
         self.longitude = poi[u"longitude"] if poi else None
         self.altitude = poi.get(u"altitude", 0.0) if poi else None
+        self.heading = poi.get(u"heading", None) if poi else None
         self.title = poi.get(u"title", None) if poi else None
 
-    def update(self, attitude):
-        self.latitude = attitude.get(u"latitude", None)
-        self.longitude = attitude.get(u"longitude", None)
-        self.altitude = attitude.get(u"altitude", None)
+    def update(self, attitude_bag):
+        self.latitude = attitude_bag.get(u"latitude", None)
+        self.longitude = attitude_bag.get(u"longitude", None)
+        self.altitude = attitude_bag.get(u"altitude", None)
+        self.heading = attitude_bag.get(u"heading", None)
+
+    def update_from_obj(self, attitude):
+        self.latitude = attitude.latitude
+        self.longitude = attitude.longitude
+        self.altitude = attitude.altitude
+        self.heading = attitude.heading
 
     def valid(self):
         if self.latitude is None or self.longitude is None or self.altitude is None:
@@ -61,6 +75,25 @@ class EDPlanetaryLocation(object):
         pitch = -math.degrees(math.atan(loc.altitude / distance))
         return int(round(pitch, 0))
 
+class EDOnFootLocation(object):
+    def __init__(self):
+        self.on_foot = False
+        self.in_hangar = False
+        self.in_station = False
+        self.on_planet = False
+        self.in_social_space = False
+        self.in_social_space = False
+        self.outside = False
+        
+    def update(self, flags2):
+        self.on_foot = flags2 & edmc_data.Flags2OnFoot
+        self.in_station = flags2 & edmc_data.Flags2OnFootInStation
+        self.on_planet = flags2 & edmc_data.Flags2OnFootOnPlanet
+        self.in_hangar = flags2 & edmc_data.Flags2OnFootInHangar
+        self.in_social_space = flags2 & edmc_data.Flags2OnFootSocialSpace
+        self.outside = flags2 & edmc_data.Flags2OnFootExterior
+
+
 class EDLocation(object):
     def __init__(self, star_system=None, body=None, place=None, security=None, space_dimension=EDSpaceDimension.UNKNOWN):
         self.star_system = star_system
@@ -68,6 +101,7 @@ class EDLocation(object):
         self.body = body
         self.security = security
         self.space_dimension = space_dimension
+        self.on_foot_location = EDOnFootLocation()
         self.population = None
         self.allegiance = None
         self.star_system_address = None
@@ -89,7 +123,7 @@ class EDLocation(object):
         self.space_dimension = other_location.space_dimension
         self.population = other_location.population
         self.allegiance = other_location.allegiance
-        self.star_system_address = other_location.star_system_address
+        self.star_system_address = other_location.star_system_address    
    
     def in_normal_space(self):
         return self.space_dimension == EDSpaceDimension.NORMAL_SPACE
