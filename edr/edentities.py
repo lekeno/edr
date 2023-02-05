@@ -803,7 +803,7 @@ class EDPilot(object):
         self._touch()
         if self.location.body is None or self.location.body != body:
             EDRLOG.log(u"Updating body info (was missing or obsolete). {old} vs. {body}".format(old=self.location.body, body=body), u"INFO")
-            self.location.place = body
+            self.location.body = body
             return True
         return False
 
