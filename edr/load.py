@@ -641,11 +641,9 @@ def dashboard_entry(cmdr, is_beta, entry):
     if "altitude" in attitude:
         attitude["altitude"] /= 1000.0
     ed_player.update_attitude(attitude)
-    # TODO only if near a body?
     if ed_player.body and ed_player.tracking_organic():
         EDR_CLIENT.biology_guidance()
     elif not ed_player.planetary_destination and ed_player.body and ed_player.star_system:
-        # TODO consider showing custom poi nav if the poi is about the same species and far enough?
         EDR_CLIENT.try_custom_poi()
 
     if ed_player.planetary_destination:

@@ -941,6 +941,36 @@ class EDRSystems(object):
                 biome.append(readable_genus)
 
 
+    def __meets_biome_conditions(self, planet, system_name):
+        if not EDRSystems.__planet_walkable(planet):
+            return False
+        
+        atmosphere = planet.get("atmosphereType", "No atmosphere")
+        if atmosphere.lower().startswith("thin "):
+            atmosphere = atmosphere[len("thin "):]
+        atmosphere = atmosphere.replace(" ", "")
+        atmosphere = atmosphere.replace("-", "")
+        atmosphere = atmosphere.lower()
+        
+        if not atmosphere in ["water", "waterrich", "helium", "neon", "neonrich", "argon", "argonrich", "methane", "methanerich", "nitrogen", "oxygen", "ammonia", "carbondioxide", "carbondioxiderich", "sulphurdioxide"]:
+            return False
+        
+        planet_class = planet.get("subType", "Unknown").lower()
+        planet_class = planet_class.replace("world", "")
+        planet_class = planet_class.replace("body", "")
+        planet_class = planet_class.replace(" ", "")
+        
+        if atmosphere == "sulphurdioxide":
+            return planet_class in ["highmetalcontent", "icy", "rockyice", "rocky"]
+        
+        if atmosphere in ["carbondioxide", "carbondioxiderich"]:
+            return planet_class in ["highmetalcontent", "rocky"]
+
+        if atmosphere in ["ammonia"]:
+            return planet_class in ["highmetalcontent", "rocky"]
+        
+        return True
+
     def __expected_bio_on_planet(self, planet, system_name):
         EDRLOG.log("Expected bio on planet {} in system {}".format(planet.get("name", "???"), system_name), "INFO")
         species = []
@@ -1042,7 +1072,6 @@ class EDRSystems(object):
         if atmosphere in ["water", "waterrich"]:
             self.__maybe_append(species, genuses, _("Bacterium Cerbrus"), "Bacterium", detected_genuses)
             self.__maybe_append(species, genuses, _("Concha Renibus"), "Conchas", detected_genuses)
-            # TODO redo the combos in a constructed manner
             fungoidas = _("Fungoida Gelata")
             fungoidas += "/" + _("Stabitis")
             self.__maybe_append(species, genuses, fungoidas, "Fungoids", detected_genuses)
@@ -1303,7 +1332,7 @@ class EDRSystems(object):
             receptas += "/" + _("Conditivus")
             self.__maybe_append(species, genuses, receptas, "Recepta", detected_genuses)
             self.__maybe_append(species, genuses, _("Bacterium Cerbrus"), "Bacterium", detected_genuses)
-        elif atmosphere == "sulphurdioxide" and planet_class in ["icy", "rockyice"]:
+        elif atmosphere == "sulphurdioxide" and planet_class == "rocky":
             self.__maybe_append(species, genuses, _("Frutexa Collum"), "Shrubs", detected_genuses)
             receptas = _("Recepta Deltahedronix")
             receptas += "/" + _("Umbrux")
@@ -1398,7 +1427,26 @@ class EDRSystems(object):
             EDRLOG.log("No body for biology on: {}".format(system_name, body_name), "INFO")
             return {}
         return self.__expected_bio_on_planet(the_body, system_name)
+
+    def biology_spots(self, system_name):
+        if not system_name:
+            return None
+
+        # TODO go over the relevant bodies, and check for expected bio.
+        # add those body names to the result
+        # consider adding hints about the value? genus?
+        bodies = self.bodies(system_name)
+        if not bodies:
+            return None
         
+        spots = []
+        for b in bodies:
+            if not "name" in b:
+                continue
+            if self.__meets_biome_conditions(b, system_name):
+                spots.append(b["name"])
+
+        return spots
 
     def reflect_scan(self, system_name, body_name, scan):
         if "belt cluster" in body_name.lower():
