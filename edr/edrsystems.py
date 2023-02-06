@@ -1303,7 +1303,7 @@ class EDRSystems(object):
             receptas += "/" + _("Conditivus")
             self.__maybe_append(species, genuses, receptas, "Recepta", detected_genuses)
             self.__maybe_append(species, genuses, _("Bacterium Cerbrus"), "Bacterium", detected_genuses)
-        elif atmosphere == "sulphurdioxide" and planet_class in ["icy", "rockyice"]:
+        elif atmosphere == "sulphurdioxide" and planet_class == "rocky":
             self.__maybe_append(species, genuses, _("Frutexa Collum"), "Shrubs", detected_genuses)
             receptas = _("Recepta Deltahedronix")
             receptas += "/" + _("Umbrux")
