@@ -997,25 +997,9 @@ class EDRClient(object):
     def biology_spots(self, star_system):
         bio_info = self.edrsystems.biology_spots(star_system)
         
-        header = _("Expected biomes in {}").format(star_system)
+        header = _("Planets suitable for exobiology in {}").format(star_system)
         details = []
-        
-        '''
-        if not (bio_info and "species" in bio_info):
-            body_name = star_system + " " + body_name
-            bio_info = self.edrsystems.biology_on(star_system, body_name)
-
-        if not (bio_info and "species" in bio_info):
-            EDRLOG.log("No bio on {}".format(bio_info), "INFO")
-            details.append(_("Expected Bio: none"))
-            self.__notify(header, details, clear_before=True)
-            return
-
-        details.append(_("Expected Bio: {}").format(", ".join(bio_info["species"])))
-        progress = self.__biome_progress_oneliner(self.player.star_system, body_name)
-        if progress:
-            details.append(progress)
-        '''
+        details.append(", ".join(bio_info))
         self.__notify(header, details, clear_before=True)
 
     def saa_signals_found(self, entry):
