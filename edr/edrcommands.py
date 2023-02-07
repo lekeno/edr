@@ -327,6 +327,7 @@ class EDRCommands(object):
                 self.edr_log.log(u"Listing material profiles", "INFO")
         elif command == "!biology":
             self.edr_log.log(u"Biology info", "INFO")
+            target = None
             if len(command_parts) >= 2:
                 target = command_parts[1] or cmdr.body
             if target:
