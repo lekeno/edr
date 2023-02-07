@@ -1444,7 +1444,10 @@ class EDRSystems(object):
             if not "name" in b:
                 continue
             if self.__meets_biome_conditions(b, system_name):
-                spots.append(b["name"])
+                sname = b["name"]
+                if sname.startswith(system_name):
+                    sname = sname[len(system_name)+1:]
+                spots.append(sname)
 
         return spots
 
@@ -1581,23 +1584,35 @@ class EDRSystems(object):
         if body_name is None:
             return
         biome = self.biology_on(star_system, body_name)
-        detected_genuses = len(planet.get("genuses", []))
+        genuses = planet.get("genuses", [])
+        detected_genuses = len(genuses)
         expected_genuses = len(biome.get("genuses", [])) 
         actual_genuses = set()
         actual_species = set()
         species = planet.get("species", {})
+        togo_genuses = set()
+        
+        for g in genuses:
+            print(g)
+            togo_genuses.add(g["Genus_Localised"])
+                    
         for s in species:
+            print(s)
+            print(species[s])
             actual_genuses.add(species[s]["genusLocalised"])
+            togo_genuses.remove(species[s]["genusLocalised"])
             actual_species.add(species[s]["speciesLocalised"])
         analyzed_genuses = len(actual_genuses)
         analyzed_species = len(actual_species)
+        print("togo_genuses after: {}".format(togo_genuses))
         
         return {
             "genuses": {
                 "detected": detected_genuses,
                 "expected": expected_genuses,
                 "analyzed": analyzed_genuses,
-                "localized": actual_genuses
+                "localized": actual_genuses,
+                "togo": togo_genuses
             },
             "species": {
                 "analyzed": analyzed_species,

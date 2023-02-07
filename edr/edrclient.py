@@ -776,6 +776,7 @@ class EDRClient(object):
                 genus_detected = progress["genuses"].get("detected", None)
                 genus_expected = progress["genuses"].get("expected", None)
                 genus_localized = progress["genuses"].get("localized", None)
+                genus_togo = progress["genuses"].get("togo", None)
                 if genus_detected:
                     details.append(_("Genus: {}/{}").format(genus_analyzed, genus_detected))
                 elif genus_expected:
@@ -785,6 +786,9 @@ class EDRClient(object):
                 
                 if genus_localized:
                     details.append(_(" - analyzed: {}").format(", ".join(genus_localized)))
+                    # TODO add not yet analyzed genuses
+                if genus_togo:
+                    details.append(_(" - remaining: {}").format(", ".join(genus_togo)))
 
                 species_analyzed = progress["species"].get("analyzed", "1+?") # should be at least 1
                 details.append(_("Species: {}").format(species_analyzed))
