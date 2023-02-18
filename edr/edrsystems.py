@@ -945,6 +945,10 @@ class EDRSystems(object):
         if not EDRSystems.__planet_walkable(planet):
             return False
         
+        if planet.get("mapped", False) and not planet.get("genuses", None):
+            # SAA scan complete but no bio signals
+            return False
+        
         atmosphere = planet.get("atmosphereType", "No atmosphere")
         if atmosphere.lower().startswith("thin "):
             atmosphere = atmosphere[len("thin "):]
@@ -972,6 +976,10 @@ class EDRSystems(object):
         return True
 
     def __expected_bio_on_planet(self, planet, system_name):
+        if planet.get("mapped", False) and not planet.get("genuses", None):
+            # skip SAA complete scanned with no bio signals
+            return {}
+        
         EDRLOG.log("Expected bio on planet {} in system {}".format(planet.get("name", "???"), system_name), "INFO")
         species = []
         detected_genuses = planet.get("genuses", None)
@@ -1263,11 +1271,11 @@ class EDRSystems(object):
             if mean_temperature > 165:
                 stratums = _("Stratum Paleas")
                 if  mean_temperature < 190:
-                    stratums += "/" + _("Stratum Excutitus")
+                    stratums += "/" + _("Excutitus")
                 else:
-                    stratums += "/" + _("Stratum Limaxus")
-                    stratums += "/" + _("Stratum Frigus")
-                    stratums += "/" + _("Stratum Cucumisis")
+                    stratums += "/" + _("Limaxus")
+                    stratums += "/" + _("Frigus")
+                    stratums += "/" + _("Cucumisis")
 
             self.__maybe_append(species, genuses, tussocks, "tussocks", detected_genuses)
             self.__maybe_append(species, genuses, conchas, "conchas", detected_genuses)
@@ -1340,13 +1348,14 @@ class EDRSystems(object):
             self.__maybe_append(species, genuses, _("Tussock Stigmasis"), "tussocks", detected_genuses)
             bacterium = _("Bacterium Cerbrus")
             if mean_temperature > 165:
-                self.__maybe_append(species, genuses, _("Stratum Araneamus"), "Stratum", detected_genuses)
+                stratums = _("Stratum Araneamus")
                 if mean_temperature <  190:
-                    bacterium += "/" + _("Excutitus")
-                    bacterium += "/" + _("Limaxus")
+                    stratums += "/" + _("Excutitus")
+                    stratums += "/" + _("Limaxus")
                 if mean_temperature > 190:
-                    bacterium += "/" + _("Frigus")
-                    bacterium += "/" + _("Cucumisis")
+                    stratums += "/" + _("Frigus")
+                    stratums += "/" + _("Cucumisis")
+            self.__maybe_append(species, genuses, stratums, "Stratum", detected_genuses)
             self.__maybe_append(species, genuses, bacterium, "Bacterium", detected_genuses)
         elif atmosphere == "sulphurdioxide" and planet_class == "highmetalcontent":
             receptas = _("Recepta Deltahedronix")
@@ -1432,9 +1441,6 @@ class EDRSystems(object):
         if not system_name:
             return None
 
-        # TODO go over the relevant bodies, and check for expected bio.
-        # add those body names to the result
-        # consider adding hints about the value? genus?
         bodies = self.bodies(system_name)
         if not bodies:
             return None
@@ -1528,7 +1534,7 @@ class EDRSystems(object):
         self.edsm_bodies_cache.set(system_name.lower(), bodies)
 
     def reflect_organic_scan(self, system_name, body_id, scan):
-        if scan["event"] != "ScanOrganic" and scan["ScanType"] != "Analyse":
+        if scan["event"] != "ScanOrganic" or scan["ScanType"] != "Analyse":
             return
         
         bodies = self.bodies(system_name)
@@ -1593,18 +1599,14 @@ class EDRSystems(object):
         togo_genuses = set()
         
         for g in genuses:
-            print(g)
             togo_genuses.add(g["Genus_Localised"])
                     
         for s in species:
-            print(s)
-            print(species[s])
             actual_genuses.add(species[s]["genusLocalised"])
             togo_genuses.remove(species[s]["genusLocalised"])
             actual_species.add(species[s]["speciesLocalised"])
         analyzed_genuses = len(actual_genuses)
         analyzed_species = len(actual_species)
-        print("togo_genuses after: {}".format(togo_genuses))
         
         return {
             "genuses": {
@@ -1721,7 +1723,7 @@ class EDRSystems(object):
         
         self.edsm_bodies_cache.set(system_name.lower(), bodies)
 
-    def saa_signals_found(self, system_name, scan):
+    def body_signals_found(self, system_name, scan):
         body_name = scan.get("BodyName", None)
         if not body_name:
             return
@@ -1867,6 +1869,17 @@ class EDRSystems(object):
                 value["progress"] = bodies[0]["progress"]
 
         return value
+
+    def body_count(self, system_name):
+        bodies = self.bodies(system_name)
+        print(bodies)
+        if not bodies:
+            return 0
+        
+        if "bodyCount" in bodies[0]:
+            return max(bodies[0]["bodyCount"], len(bodies))
+        
+        return len(bodies)
 
     def body_value(self, system_name, body_name):
         system_value = self.system_value(system_name)
