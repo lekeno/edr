@@ -610,13 +610,20 @@ class EDRClient(object):
             facts = self.edrboi.bodies_of_interest(fsdjump_event['StarSystem'])
             header = _('Noteworthy stellar bodies in {}').format(fsdjump_event['StarSystem'])
         
+        if self.player.dlc_name == "odyssey":
+            bio_info = self.edrsystems.biology_spots(self.player.star_system)
+            if bio_info:
+                body_count = self.edrsystems.body_count(self.player.star_system)
+                facts.append(_("Bio-suitable: {} [{} among {} known bodies]").format(", ".join(bio_info), len(bio_info), body_count))
+        
+
         if not facts:
             if self.player.in_bad_neighborhood() and (self.edrsystems.in_bubble(self.player.star_system, 700) or self.edrsystems.in_colonia(self.player.star_system, 350)):
                 header = _(u"Anarchy system")
                 facts = [_(u"Crimes will not be reported.")]
             else:
                 return False
-        
+            
         self.__notify(header, facts, clear_before = True)
         return True
 
@@ -642,7 +649,8 @@ class EDRClient(object):
             if progress:
                 details.append(progress)
 
-        self.__notify(header, details, clear_before = True)
+        if details:
+            self.__notify(header, details, clear_before = True)
 
         
     def __biome_progress_oneliner(self, star_system, body_id_or_name):
@@ -776,6 +784,7 @@ class EDRClient(object):
                 genus_detected = progress["genuses"].get("detected", None)
                 genus_expected = progress["genuses"].get("expected", None)
                 genus_localized = progress["genuses"].get("localized", None)
+                genus_togo = progress["genuses"].get("togo", None)
                 if genus_detected:
                     details.append(_("Genus: {}/{}").format(genus_analyzed, genus_detected))
                 elif genus_expected:
@@ -785,6 +794,9 @@ class EDRClient(object):
                 
                 if genus_localized:
                     details.append(_(" - analyzed: {}").format(", ".join(genus_localized)))
+                    
+                if genus_togo:
+                    details.append(_(" - remaining: {}").format(", ".join(genus_togo)))
 
                 species_analyzed = progress["species"].get("analyzed", "1+?") # should be at least 1
                 details.append(_("Species: {}").format(species_analyzed))
@@ -967,6 +979,7 @@ class EDRClient(object):
 
     def saa_scan_complete(self, entry):
         self.edrsystems.saa_scan_complete(self.player.star_system, entry)
+        self.player.location.from_entry(entry)
         
     def biology_on(self, body_name, star_system=None):
         star_system = star_system or self.player.star_system
@@ -994,8 +1007,21 @@ class EDRClient(object):
             details.append(progress)
         self.__notify(header, details, clear_before=True)
 
-    def saa_signals_found(self, entry):
-        self.edrsystems.saa_signals_found(self.player.star_system, entry)
+    def biology_spots(self, star_system):
+        bio_info = self.edrsystems.biology_spots(star_system)
+        body_count = self.edrsystems.body_count(star_system)
+        header = _("Bodies suitable for exobiology in {}").format(star_system)
+        details = []
+        if bio_info:
+            details.append(", ".join(bio_info))
+        else:
+            details.append(_("None detected"))
+        details.append(_("[among {} known bodies]").format(body_count))
+                
+        self.__notify(header, details, clear_before=True)
+
+    def body_signals_found(self, entry):
+        self.edrsystems.body_signals_found(self.player.star_system, entry)
         body_name = entry["BodyName"]
         details = []
         if "Signals" in entry:
@@ -1025,6 +1051,7 @@ class EDRClient(object):
         if entry.get("event", "") != "CodexEntry":
             return
 
+        self.player.location.from_entry(entry)
         self.player.codex.process(entry)
         
         if entry.get("Category", "") != "$Codex_Category_Biology;" or entry.get("SubCategory", "") != "$Codex_SubCategory_Organic_Structures;":
@@ -1138,6 +1165,9 @@ class EDRClient(object):
         if not locations or ccr is None or not species:
             return
         
+        if not genetic_sampler.has_samples_from(location.star_system_address, location.body_id):
+            return
+
         distances = []
         bearings = []
         distances_summary = ""

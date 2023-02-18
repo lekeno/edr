@@ -62,7 +62,7 @@ class EDPlanetaryLocation(object):
         destination_latitude = math.radians(self.latitude)
         delta_longitude = math.radians(self.longitude - loc.longitude)
         delta_latitude = math.log(math.tan(math.pi/4.0 + destination_latitude/2.0)/math.tan(math.pi/4.0 + current_latitude/2.0))
-        bearing = math.degrees(math.atan2(delta_longitude, delta_latitude))
+        bearing = math.degrees(math.atan2(delta_longitude, delta_latitude)) % 360
         if bearing < 0:
             bearing += 360
             
@@ -105,19 +105,37 @@ class EDLocation(object):
         self.population = None
         self.allegiance = None
         self.star_system_address = None
+        self.body_id = None
 
     def __repr__(self):
         return str(self.__dict__)
 
     def from_entry(self, entry):
-        self.star_system = entry.get("StarSystem", self.star_system)
+        # TODO consistency is lacking (e.g. if body changes, then bodyID should too, etc.)
         self.star_system_address = entry.get("SystemAddress", self.star_system_address)
-        self.body = entry.get("Body", self.body)
-        self.place = entry.get("StationName", self.place)
+        if "StarSystem" in entry:
+            self.star_system = entry["StarSystem"]
+        elif "System" in entry:
+            self.star_system = entry["System"]
+        
+        if entry["event"] == "ScanOrganic":
+            self.body_id = entry.get("Body", self.body_id)
+        elif entry["event"] in ["SAAScanComplete", "ApproachSettlement"]:
+            self.body = entry.get("BodyName", self.body)
+            self.body_id = entry.get("BodyID", self.body_id)
+        else:
+            self.body = entry.get("Body", self.body)
+            self.body_id = entry.get("BodyID", self.body_id)
+        
+        if "StationName" in entry:
+            self.place = entry["StationName"]
+        elif "NearestDestination" in entry:
+            self.place = entry["NearestDestination"]
 
     def from_other(self, other_location):
         self.star_system = other_location.star_system
         self.body = other_location.body
+        self.body_id = other_location.body_id
         self.place = other_location.place
         self.security = other_location.security
         self.space_dimension = other_location.space_dimension
