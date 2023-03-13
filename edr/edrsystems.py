@@ -12,6 +12,7 @@ import sys
 import time
 import collections
 import operator
+import json
 
 import edtime
 import edrconfig
@@ -22,8 +23,10 @@ from edentities import EDFineOrBounty
 from edentities import pretty_print_number
 from edri18n import _, _c, _edr
 import edrservicecheck
+import edrsysplacheck
 import edrservicefinder
 import edrparkingsystemfinder
+import edrplanetfinder
 import utils2to3
 
 EDRLOG = edrlog.EDRLog()
@@ -50,6 +53,8 @@ class EDRSystems(object):
     EDR_FC_PRESENCE_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'fc_presence.v1.p')
     EDR_FC_MATERIALS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'fc_materials.v1.p')
     EDR_FCS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'fcs.v1.p')
+    NEBULAE = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'nebulae.json')).read())
+    BIOLOGY = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'biology.json')).read())
 
     def __init__(self, server):
         self.reasonable_sc_distance = 1500
@@ -270,6 +275,11 @@ class EDRSystems(object):
         EDRLOG.log(u"No match on EDR. Temporary entry to be nice on EDR's server.", "DEBUG")
         return None
 
+    def are_bodies_stale(self, star_system):
+        if not star_system:
+            return False
+        return self.edsm_bodies_cache.is_stale(star_system.lower())
+
     def are_stations_stale(self, star_system):
         if not star_system:
             return False
@@ -402,6 +412,18 @@ class EDRSystems(object):
             source_coords = source[0]["coords"]
             return sqrt((dest_coords["x"] - source_coords["x"])**2 + (dest_coords["y"] - source_coords["y"])**2 + (dest_coords["z"] - source_coords["z"])**2)
         raise ValueError('Unknown system')
+    
+    def near_nebula(self, system_name):
+        distanceSol = self.distance("sol", system_name)
+        
+        for i in EDRSystems.NEBULAE:
+            nbatch = EDRSystems.NEBULAE[i]
+            if "rangeSol" in nbatch and abs(distanceSol - nbatch["rangeSol"]) <= 500:
+                for n in nbatch:
+                    if self.distance_with_coords(system_name, nbatch[n]["coords"]) < nbatch[n]["range"]:
+                        return True
+        
+        return False
 
     def update_fc_presence(self, fc_report):
         star_system = fc_report.get("starSystem", None)
@@ -614,6 +636,8 @@ class EDRSystems(object):
             "supermassive black hole": "Supermassive Black Hole",
         }
         
+        if star_type.lower() not in type_lut:
+            print("missing star type:", star_type)
         return type_lut.get(star_type.lower(), star_type)
         
 
@@ -794,7 +818,7 @@ class EDRSystems(object):
             info += _("{}  ").format(body_type)
 
         if planet.get("isLandable", False):
-            gravity = "{:0.2f}".format(planet["gravity"]) if "gravity" in planet else "-" #TODO not really G? but earth G? verify other field for conversions too
+            gravity = "{:0.2f}".format(planet["gravity"]) if "gravity" in planet else "-"
             temperature = "{:0.0f}".format(planet["surfaceTemperature"]) if "surfaceTemperature" in planet else "-"
             land_or_walk =  _("[LAND: {}G; {}K]").format(gravity, temperature)
             if EDRSystems.__planet_walkable(planet):
@@ -835,6 +859,32 @@ class EDRSystems(object):
         if star_parent_id is None:
             return None
         return self.__body_with_id(system_name, star_parent_id)
+
+    def parent_star_type(self, system_name, body):
+        parent_star = self.__parent_star(system_name, body)
+        star_type = "???"
+        if not parent_star:
+            print("no parent star: ", body.get("name", "unknown body"))
+            return star_type
+    
+        raw_type = parent_star.get("subType", "???")
+        if raw_type == "???":
+            print("weird star:", parent_star)
+        return self.__star_type_lut(raw_type)
+
+    def parent_star_distance(self, system_name, body):
+        parent_star = self.__parent_star(system_name, body)
+        if not parent_star:
+            return body.get("distanceToArrival", 0)
+    
+        return body.get("distanceToArrival", 0) - parent_star.get("distanceToArrival", 0)
+        
+    def parent_star_luminosity(self, system_name, body):
+        parent_star = self.__parent_star(system_name, body)
+        if not parent_star:
+            return "???"
+    
+        return parent_star.get("luminosity", "???")
     
     def __body_with_id(self, system_name, body_id):
         if not system_name:
@@ -860,48 +910,99 @@ class EDRSystems(object):
             return body.get("name", "Unknown")
         return None
 
-    def __maybe_append(self, biome, genuses, species, genus, detected_genuses):
+
+    def __bio_credits(a_species_int_name):
+        cname = a_species_int_name.lower()
+        if cname not in EDRSystems.BIOLOGY["species"]:
+            return 0
+
+        return EDRSystems.BIOLOGY["species"][cname]["credits"]
+
+
+    '''
+    def __bio_credits(a_species):
+        c_a_species = a_species.lower()
+
+        if c_a_species not in EDRSystems.BIOLOGY["species_int_names"]:
+            return 0
+        
+        int_name = EDRSystems.BIOLOGY["species_int_names"][c_a_species]
+        if int_name not in EDRSystems.BIOLOGY["species"]:
+            return 0
+
+        return EDRSystems.BIOLOGY["species"][int_name]["credits"]
+
+    def __maybe_add_to_credits(self, credits, species, genus, detected_genuses):
         if detected_genuses is not None and len(detected_genuses) == 0:
-            # Scanned but no genuses detected => donn't append anything
+            # Scanned but no genuses detected => don't append anything
             return
 
-        CGENUS_LUT = {
-            "aleoids": "$Codex_Ent_Aleoids_Genus_Name;",
-            "anemone": "$Codex_Ent_Sphere_Genus_Name;",
-            "bacterium": "$Codex_Ent_Bacterial_Genus_Name;",
-            "bark mound": "$Codex_Ent_Cone_Genus_Name;",
-            "seed": "$Codex_Ent_Seed_Genus_Name;",
-            "cactoids": "$Codex_Ent_Cactoid_Genus_Name;",
-            "clypeus": "$Codex_Ent_Clypeus_Genus_Name;",
-            "conchas": "$Codex_Ent_Conchas_Genus_Name;",
-            "electricae": "$Codex_Ent_Electricae_Genus_Name;",
-            "fonticulus": "$Codex_Ent_Fonticulus_Genus_Name;",
-            "shrubs": "$Codex_Ent_Shrubs_Genus_Name;",
-            "fumerolas": "$Codex_Ent_Fumerolas_Genus_Name;",
-            "fungoids": "$Codex_Ent_Fungoids_Genus_Name;",
-            "osseus": "$Codex_Ent_Osseus_Genus_Name;",
-            "recepta": "$Codex_Ent_Recepta_Genus_Name;",
-            "sinuous tuber": "$Codex_Ent_Tube_Genus_Name;",
-            "stratum": "$Codex_Ent_Stratum_Genus_Name;",
-            "tubus": "$Codex_Ent_Tubus_Genus_Name;",
-            "tussocks": "$Codex_Ent_Tussocks_Genus_Name;",
-            "crystalline shard": "$Codex_Ent_Ground_Struct_Ice_Name;",
-            "amphora": "$Codex_Ent_Vents_Name;"
-        }
+        CGENUS_LUT = EDRSystems.BIOLOGY.get("genuses_int_names", {})
+        cgenus = CGENUS_LUT.get(genus.lower(), "unknown")
+        
+        genus_is_present = not detected_genuses or cgenus == "unknown"
+
+        if not genus_is_present:
+            for g in detected_genuses:
+                if cgenus in g["Genus"]:
+                    genus_is_present = True
+                    break
+            
+        if not genus_is_present:
+            return
+        
+        for s in species:
+            credit = self.__bio_credits(s)
+            if genus not in credits:
+                credits[genus] = {
+                    "min": credit,
+                    "max": credit
+                }
+            else:
+                credits[genus] = {
+                    "min": min(credit, credits[genus]["min"]),
+                    "max": max(credit, credits[genus]["max"])
+                }
+    '''
+
+    def __maybe_append(self, biome, genuses, species, genus, detected_genuses, credits=None, int_species_names=None):
+        if detected_genuses is not None and len(detected_genuses) == 0:
+            # Scanned but no genuses detected => don't append anything
+            return
+
+        CGENUS_LUT = EDRSystems.BIOLOGY.get("genuses_int_names", {})
         cgenus = CGENUS_LUT.get(genus.lower(), "unknown")
         if cgenus not in genuses:
             genuses.append(cgenus)
 
+        species_added = False
         if not detected_genuses:
             biome.append(species)
+            species_added = True
         elif cgenus == "unknown":
             EDRLOG.log("Unknown genus: {}".format(genus), "WARNING")
             biome.append(species)
+            species_added = True
         else:
             for g in detected_genuses:
                 if cgenus in g["Genus"]:
                     biome.append(species)
+                    species_added = True
                     break
+
+        if species_added and credits and int_species_names:
+            for int_name in int_species_names:
+                credit = self.__bio_credits(int_name)
+                if cgenus not in credits:
+                    credits[cgenus] = {
+                        "min": credit,
+                        "max": credit
+                    }
+                else:
+                    credits[cgenus] = {
+                        "min": min(credit, credits[cgenus]["min"]),
+                        "max": max(credit, credits[cgenus]["max"])
+                    }
 
     def __add_missing_genuses(self, biome, genuses, detected_genuses):
         if detected_genuses is None or len(detected_genuses) == 0:
@@ -941,7 +1042,8 @@ class EDRSystems(object):
                 biome.append(readable_genus)
 
 
-    def __meets_biome_conditions(self, planet, system_name):
+    @staticmethod
+    def meets_biome_conditions(planet):
         if not EDRSystems.__planet_walkable(planet):
             return False
         
@@ -949,21 +1051,11 @@ class EDRSystems(object):
             # SAA scan complete but no bio signals
             return False
         
-        atmosphere = planet.get("atmosphereType", "No atmosphere")
-        if atmosphere.lower().startswith("thin "):
-            atmosphere = atmosphere[len("thin "):]
-        atmosphere = atmosphere.replace(" ", "")
-        atmosphere = atmosphere.replace("-", "")
-        atmosphere = atmosphere.lower()
-        
+        atmosphere = EDRSystems.canonical_atmosphere(planet)
         if not atmosphere in ["water", "waterrich", "helium", "neon", "neonrich", "argon", "argonrich", "methane", "methanerich", "nitrogen", "oxygen", "ammonia", "carbondioxide", "carbondioxiderich", "sulphurdioxide"]:
             return False
         
-        planet_class = planet.get("subType", "Unknown").lower()
-        planet_class = planet_class.replace("world", "")
-        planet_class = planet_class.replace("body", "")
-        planet_class = planet_class.replace(" ", "")
-        
+        planet_class = EDRSystems.canonical_planet_class(planet)
         if atmosphere == "sulphurdioxide":
             return planet_class in ["highmetalcontent", "icy", "rockyice", "rocky"]
         
@@ -981,35 +1073,23 @@ class EDRSystems(object):
             return {}
         
         EDRLOG.log("Expected bio on planet {} in system {}".format(planet.get("name", "???"), system_name), "INFO")
+        credits = {}
         species = []
         detected_genuses = planet.get("genuses", None)
         genuses = []
         EDRLOG.log("Detected genuses: {}".format(detected_genuses), "INFO")
-        atmosphere = planet.get("atmosphereType", "No atmosphere")
-        if atmosphere.lower().startswith("thin "):
-            atmosphere = atmosphere[len("thin "):]
-        atmosphere = atmosphere.replace(" ", "")
-        atmosphere = atmosphere.replace("-", "")
-        atmosphere = atmosphere.lower()
+        atmosphere = EDRSystems.canonical_atmosphere(planet)
         EDRLOG.log("Atm: {}".format(atmosphere), "INFO")
         gravity = planet.get("gravity", 100) / 9.81
         EDRLOG.log("Gravity: {}".format(gravity), "INFO")
         mean_temperature = planet.get("surfaceTemperature", 1000)
         EDRLOG.log("Temperature: {}".format(mean_temperature), "INFO")
-        planet_class = planet.get("subType", "Unknown").lower()
-        planet_class = planet_class.replace("world", "")
-        planet_class = planet_class.replace("body", "")
-        planet_class = planet_class.replace(" ", "")
+        planet_class = EDRSystems.canonical_planet_class(planet)
         EDRLOG.log("Class: {}".format(planet_class), "INFO")
-        luminosity = "???"
-        parent_star = self.__parent_star(system_name, planet)
-        star_type = "???"
-        distance_from_parent_star = planet.get("distanceToArrival", 0)
-        if parent_star:
-            raw_type = parent_star.get("subType", "???")
-            star_type = self.__star_type_lut(raw_type)
-            distance_from_parent_star = planet.get("distanceToArrival", 0) - parent_star.get("distanceToArrival", 0)
-            luminosity = planet.get("luminosity", "???")
+        volcanism = planet.get("volcanismType", "").lower()
+        luminosity = self.parent_star_luminosity(system_name, planet)
+        star_type = self.parent_star_type(system_name, planet)
+        distance_from_parent_star = self.parent_star_distance(system_name, planet)
         
         EDRLOG.log("parent star type: {}".format(star_type), "INFO")
         EDRLOG.log("distance from parent star: {}".format(distance_from_parent_star), "INFO")
@@ -1050,21 +1130,20 @@ class EDRSystems(object):
                     '''        
                     self.__maybe_append(species, genuses, _("Crystalline shard(?)"), "crystalline shard", detected_genuses)
 
-            if (planet.get("volcanism","")): 
+            if volcanism: 
                 '''
                 TODO complex, rare....
                 Believed to be located near Guardian ruins.
                 Type of planet, temperature, presence of an Earth-like world, or a gas giant with water-based life are also extra factors...
                 '''
                 # species.append(_("Brain trees(??)"))
-                
-                if planet.get("volcanism", ""):
-                    self.__maybe_append(species, genuses, _("Sinuous Tubers(?)"), "sinuous tuber", detected_genuses)
+                self.__maybe_append(species, genuses, _("Sinuous Tubers(?)"), "sinuous tuber", detected_genuses)
                     
             self.__add_missing_genuses(species, genuses, detected_genuses)
             return {
                 "spieces": species,
                 "genuses": genuses,
+                "credits": credits
             }
         
         if not EDRSystems.__planet_walkable(planet):
@@ -1073,66 +1152,80 @@ class EDRSystems(object):
             return {
                 "spieces": species,
                 "genuses": genuses,
+                "credits": credits
             }
         
         # TODO color variation (mats or parent star?)
         
         if atmosphere in ["water", "waterrich"]:
-            self.__maybe_append(species, genuses, _("Bacterium Cerbrus"), "Bacterium", detected_genuses)
-            self.__maybe_append(species, genuses, _("Concha Renibus"), "Conchas", detected_genuses)
+            bacterium = _("Bacterium Cerbrus")
+            if volcanism in ["helium", "iron", "silicate"]:
+                bacterium += "/" + _("Tela")
+            self.__maybe_append(species, genuses, bacterium, "Bacterium", detected_genuses, ["$codex_ent_bacterial_12_name;"], credits)
+            self.__maybe_append(species, genuses, _("Concha Renibus"), "Conchas", detected_genuses, ["$codex_ent_conchas_01_name;"], credits)
             fungoidas = _("Fungoida Gelata")
             fungoidas += "/" + _("Stabitis")
-            self.__maybe_append(species, genuses, fungoidas, "Fungoids", detected_genuses)
-            self.__maybe_append(species, genuses, _("Cactoida Vermis"), "Cactoids", detected_genuses)
+            int_names = ["$codex_ent_fungoids_02_name;", "$codex_ent_fungoids_04_name;"]
+            self.__maybe_append(species, genuses, fungoidas, "Fungoids", detected_genuses, int_names, credits)
+            self.__maybe_append(species, genuses, _("Cactoida Vermis"), "Cactoids", detected_genuses, ["$codex_ent_cactoid_03_name;"], credits)
 
             if mean_temperature >= 165:
                 if planet_class == "rocky":
-                    self.__maybe_append(species, genuses, _("Stratum Paleas"), "Stratum", detected_genuses)
+                    self.__maybe_append(species, genuses, _("Stratum Paleas"), "Stratum", detected_genuses, ["$codex_ent_stratum_02_name;"], credits)
                 else:
-                    self.__maybe_append(species, genuses, _("Stratum Tectonicas"), "Stratum", detected_genuses)
+                    self.__maybe_append(species, genuses, _("Stratum Tectonicas"), "Stratum", detected_genuses, ["$codex_ent_stratum_07_name;"], credits)
 
             
             if mean_temperature >= 190:
                 clypeus = _("Clypeus Lacrimam")
                 clypeus += "/" + _("Margaritus")
-                if parent_star and distance_from_parent_star > 2500:
+                int_names = ["$codex_ent_clypeus_01_name;", "$codex_ent_clypeus_02_name;"]
+                if distance_from_parent_star > 2500:
                     clypeus += "/" + _("Speculumi")
-                self.__maybe_append(species, genuses, clypeus, "Clypeus", detected_genuses)
+                    int_names.append("$codex_ent_clypeus_03_name;")
+                self.__maybe_append(species, genuses, clypeus, "Clypeus", detected_genuses, int_names, credits)
 
             if planet_class == "rocky":
-                self.__maybe_append(species, genuses, _("Frutexa Sponsae"), "Shrubs", detected_genuses)
-                self.__maybe_append(species, genuses, _("Osseus Discus"), "Osseus", detected_genuses)
-                self.__maybe_append(species, genuses, _("Tussock Virgam"), "tussocks", detected_genuses)
+                self.__maybe_append(species, genuses, _("Frutexa Sponsae"), "Shrubs", detected_genuses, ["$codex_ent_shrubs_06_name;"], credits)
+                self.__maybe_append(species, genuses, _("Osseus Discus"), "Osseus", detected_genuses, ["$codex_ent_osseus_02_name;"], credits)
+                self.__maybe_append(species, genuses, _("Tussock Virgam"), "tussocks", detected_genuses, ["$codex_ent_tussocks_14_name;"], credits)
             elif planet_class in ["icy", "rockyice"]:
-                self.__maybe_append(species, genuses, _("Fumerola Aquatis"), "Fumerolas", detected_genuses)
+                self.__maybe_append(species, genuses, _("Fumerola Aquatis"), "Fumerolas", detected_genuses, ["$codex_ent_fumerolas_04_name;"], credits)
             elif planet_class == "highmetalcontent":
-                self.__maybe_append(species, genuses, _("Osseus Discus"), "Osseus", detected_genuses)
-                self.__maybe_append(species, genuses, _("Tussock Virgam"), "tussocks", detected_genuses) # example: Hangu C 2
+                self.__maybe_append(species, genuses, _("Osseus Discus"), "Osseus", detected_genuses, ["$codex_ent_osseus_02_name;"], credits)
+                self.__maybe_append(species, genuses, _("Tussock Virgam"), "tussocks", detected_genuses, ["$codex_ent_tussocks_14_name;"], credits) # example: Hangu C 2
         elif atmosphere == "helium":
-            self.__maybe_append(species, genuses, _("Bacterium Nebulus"), "Bacterium", detected_genuses)
-            if star_type == "A" and luminosity.startswith("V"):
+            bacterium = _("Bacterium Nebulus")
+            if volcanism in ["helium", "iron", "silicate"]:
+                bacterium += "/" + _("Tela")
+            self.__maybe_append(species, genuses, bacterium, "Bacterium", detected_genuses)
+            if self.near_nebula(system_name):
+                self.__maybe_append(species, genuses, _("Electricae Radialem"), "Electricae", detected_genuses)
+            elif (star_type == "A" and luminosity.startswith("V")) or star_type in ["White Dwarf (DA)", "DA"]:
                 self.__maybe_append(species, genuses, _("Electricae Pluma"), "Electricae", detected_genuses)
-            '''
-            Electricae radialem (Nebulae)
-            '''
         elif atmosphere in ["neon", "neonrich"]:
             self.__maybe_append(species, genuses, _("Fonticulua segmentatus"), "Fonticulus", detected_genuses)
             bacterium = _("Bacterium Acies")
-            if planet.get("volcanism","") == "Water":
+            if volcanism == "Water":
                 bacterium += "/" + _("Verrata")
-            elif planet.get("volcanism","") in ["Nitrogen", "Ammonia"]:
+            elif volcanism in ["nitrogen", "ammonia"]:
                 bacterium += "/" + _("Omentum")
-            elif planet.get("volcanism","") in ["Carbon", "Methane"]:
+            elif volcanism in ["carbon", "methane"]:
                 bacterium += "/" + _("Scopulum")
+            elif volcanism in ["helium", "iron", "silicate"]:
+                bacterium += "/" + _("Tela")
             self.__maybe_append(species, genuses, bacterium, "Bacterium", detected_genuses)
 
-            if star_type == "A" and luminosity.startswith("V"):
+            if self.near_nebula(system_name):
+                self.__maybe_append(species, genuses, _("Electricae Radialem"), "Electricae", detected_genuses)
+            elif (star_type == "A" and luminosity.startswith("V")) or star_type in ["White Dwarf (DA)", "DA"]:
                 self.__maybe_append(species, genuses, _("Electricae Pluma"), "Electricae", detected_genuses)
-            '''
-            Electricae radialem (Nebulae)            
-            '''
         elif atmosphere in ["argon", "argonrich"]:
-            self.__maybe_append(species, genuses, _("Bacterium Vesicula"), "Bacterium", detected_genuses)
+            bacterium = _("Bacterium Vesicula")
+            if volcanism in ["helium", "iron", "silicate"]:
+                bacterium += "/" + _("Tela")
+            
+            self.__maybe_append(species, genuses, bacterium, "Bacterium", detected_genuses)
             self.__maybe_append(species, genuses, _("Fungoida Bullarum"), "Fungoids", detected_genuses)
             self.__maybe_append(species, genuses, _("Osseus Pumice"), "Osseus", detected_genuses)
             if planet_class == "rocky":
@@ -1141,26 +1234,34 @@ class EDRSystems(object):
                 self.__maybe_append(species, genuses, _("Fonticulua Campestris"), "Fonticulus", detected_genuses)
             elif atmosphere == "argonrich" and planet_class in ["icy", "rockyice"]:
                 self.__maybe_append(species, genuses, _("Fonticulua Upupam"), "Fonticulus", detected_genuses)
-            if star_type == "A" and luminosity.startswith("V"):
+            if self.near_nebula(system_name):
+                self.__maybe_append(species, genuses, _("Electricae Radialem"), "Electricae", detected_genuses)
+            elif (star_type == "A" and luminosity.startswith("V")) or star_type in ["White Dwarf (DA)", "DA"]:
                 self.__maybe_append(species, genuses, _("Electricae Pluma"), "Electricae", detected_genuses)
-            '''
-            Electricae radialem (Nebulae)
-            '''
         elif atmosphere in ["methane", "methanerich"]:
             self.__maybe_append(species, genuses, _("Fungoida Setisis"), "Fungoids", detected_genuses)
             self.__maybe_append(species, genuses, _("Osseus Pumice"), "Osseus", detected_genuses)
-            self.__maybe_append(species, genuses, _("Bacterium Bullaris"), "Bacterium", detected_genuses)
+            bacterium = _("Bacterium Bullaris")
+            if volcanism in ["helium", "iron", "silicate"]:
+                bacterium += "/" + _("Tela")
+            self.__maybe_append(species, genuses, bacterium, "Bacterium", detected_genuses)
             if planet_class in ["icy", "rockyice"]:
                 self.__maybe_append(species, genuses, _("Fonticulua Digitos"), "Fonticulus", detected_genuses)
             elif planet_class == "rocky":
                 self.__maybe_append(species, genuses, _("Tussock Capillum"), "tussocks", detected_genuses)
         elif atmosphere == "nitrogen":
             self.__maybe_append(species, genuses, _("Concha Biconcavis"), "Conchas", detected_genuses)
-            self.__maybe_append(species, genuses, _("Bacterium Informem"), "Bacterium", detected_genuses)
+            bacterium = _("Bacterium Informem")
+            if volcanism in ["helium", "iron", "silicate"]:
+                bacterium += "/" + _("Tela")
+            self.__maybe_append(species, genuses, bacterium, "Bacterium", detected_genuses)
             if planet_class in ["icy", "rockyice"]:
                 self.__maybe_append(species, genuses, _("Fonticulua Lapida"), "Fonticulus", detected_genuses)
         elif atmosphere == "oxygen":
-            self.__maybe_append(species, genuses, _("Bacterium Volu"), "Bacterium", detected_genuses)
+            bacterium = _("Bacterium Volu")
+            if volcanism in ["helium", "iron", "silicate"]:
+                bacterium += "/" + _("Tela")
+            self.__maybe_append(species, genuses, bacterium, "Bacterium", detected_genuses)
             if planet_class in ["icy", "rockyice"]:
                 self.__maybe_append(species, genuses, _("Fonticulua Fluctus"), "Fonticulus", detected_genuses)
             elif planet_class == "highmetalcontent" and mean_temperature > 165:
@@ -1182,7 +1283,10 @@ class EDRSystems(object):
             tussocks += "/" + _("Cultro")
             tussocks += "/" + _("Divisa")
             self.__maybe_append(species, genuses, tussocks, "Tussocks", detected_genuses)
-            self.__maybe_append(species, genuses, _("Bacterium Alcyoneum"), "Bacterium", detected_genuses)
+            bacterium = _("Bacterium Alcyoneum")
+            if volcanism in ["helium", "iron", "silicate"]:
+                bacterium += "/" + _("Tela")
+            self.__maybe_append(species, genuses, bacterium, "Bacterium", detected_genuses)
             if gravity < 0.15:
                 self.__maybe_append(species, genuses, _("Tubus Rosarium"), "Tubus", detected_genuses)
             if mean_temperature > 165:
@@ -1190,7 +1294,10 @@ class EDRSystems(object):
                 stratums += "/" + _("Laminamus")
                 self.__maybe_append(species, genuses, stratums, "Stratum", detected_genuses)
         elif atmosphere == "ammonia" and planet_class == "highmetalcontent":
-            self.__maybe_append(species, genuses, _("Bacterium Alcyoneum"), "Bacterium", detected_genuses)
+            bacterium = _("Bacterium Alcyoneum")
+            if volcanism in ["helium", "iron", "silicate"]:
+                bacterium += "/" + _("Tela")
+            self.__maybe_append(species, genuses, bacterium, "Bacterium", detected_genuses)
             aleoidas = _("Aleoida Laminiae")
             aleoidas += "/" + _("Spica")
             self.__maybe_append(species, genuses, aleoidas, "Aleoids", detected_genuses)
@@ -1206,7 +1313,10 @@ class EDRSystems(object):
             if mean_temperature > 165:
                 self.__maybe_append(species, genuses, _("Stratum Tectonicas"), "Stratum", detected_genuses)
         elif atmosphere in ["carbondioxide", "carbondioxiderich"] and planet_class == "rocky":
-            self.__maybe_append(species, genuses, _("Bacterium Aurasus"), "Bacterium", detected_genuses)
+            bacterium = _("Bacterium Aurasus")
+            if volcanism in ["helium", "iron", "silicate"]:
+                bacterium += "/" + _("Tela")
+            self.__maybe_append(species, genuses, bacterium, "Bacterium", detected_genuses)
             conchas = _("Concha Labiata")
             shrubs = _("Frutexa Acus")
             shrubs += "/" + _("Fera")
@@ -1280,7 +1390,10 @@ class EDRSystems(object):
             self.__maybe_append(species, genuses, tussocks, "tussocks", detected_genuses)
             self.__maybe_append(species, genuses, conchas, "conchas", detected_genuses)
         elif atmosphere in ["carbondioxide", "carbondioxiderich"] and planet_class == "highmetalcontent":
-            self.__maybe_append(species, genuses, _("Bacterium Aurasus"), "Bacterium", detected_genuses)
+            bacterium = _("Bacterium Aurasus")
+            if volcanism in ["helium", "iron", "silicate"]:
+                bacterium += "/" + _("Tela")
+            self.__maybe_append(species, genuses, bacterium, "Bacterium", detected_genuses)
             self.__maybe_append(species, genuses, _("Frutexa Metallicum"), "Shrubs", detected_genuses)
             if mean_temperature > 175 and mean_temperature < 180:
                 self.__maybe_append(species, genuses, _("Aleoida Arcus"), "Aleoids", detected_genuses)
@@ -1339,7 +1452,10 @@ class EDRSystems(object):
             receptas = _("Recepta Umbrux")
             receptas += "/" + _("Conditivus")
             self.__maybe_append(species, genuses, receptas, "Recepta", detected_genuses)
-            self.__maybe_append(species, genuses, _("Bacterium Cerbrus"), "Bacterium", detected_genuses)
+            bacterium = _("Bacterium Cerbrus")
+            if volcanism in ["helium", "iron", "silicate"]:
+                bacterium += "/" + _("Tela")
+            self.__maybe_append(species, genuses, bacterium, "Bacterium", detected_genuses)
         elif atmosphere == "sulphurdioxide" and planet_class == "rocky":
             self.__maybe_append(species, genuses, _("Frutexa Collum"), "Shrubs", detected_genuses)
             receptas = _("Recepta Deltahedronix")
@@ -1355,13 +1471,18 @@ class EDRSystems(object):
                 if mean_temperature > 190:
                     stratums += "/" + _("Frigus")
                     stratums += "/" + _("Cucumisis")
+            if volcanism in ["helium", "iron", "silicate"]:
+                bacterium += "/" + _("Tela")
             self.__maybe_append(species, genuses, stratums, "Stratum", detected_genuses)
             self.__maybe_append(species, genuses, bacterium, "Bacterium", detected_genuses)
         elif atmosphere == "sulphurdioxide" and planet_class == "highmetalcontent":
             receptas = _("Recepta Deltahedronix")
             receptas += "/" + _("Umbrux")
             self.__maybe_append(species, genuses, receptas, "Recepta", detected_genuses)
-            self.__maybe_append(species, genuses, _("Bacterium Cerbrus"), "Bacterium", detected_genuses)
+            bacterium = _("Bacterium Cerbus")
+            if volcanism in ["helium", "iron", "silicate"]:
+                bacterium += "/" + _("Tela")
+            self.__maybe_append(species, genuses, bacterium, "Bacterium", detected_genuses)
             if mean_temperature > 165:
                 self.__maybe_append(species, genuses, _("Stratum Tectonicas"), "Stratum", detected_genuses)
 
@@ -1373,6 +1494,7 @@ class EDRSystems(object):
         return {
             "species": species,
             "genuses": genuses,
+            "credits": credits
         }
 
 
@@ -1449,7 +1571,7 @@ class EDRSystems(object):
         for b in bodies:
             if not "name" in b:
                 continue
-            if self.__meets_biome_conditions(b, system_name):
+            if EDRSystems.meets_biome_conditions(b):
                 sname = b["name"]
                 if sname.startswith(system_name):
                     sname = sname[len(system_name)+1:]
@@ -1596,14 +1718,16 @@ class EDRSystems(object):
         actual_genuses = set()
         actual_species = set()
         species = planet.get("species", {})
-        togo_genuses = set()
+        togo_genuses = {}
         
         for g in genuses:
-            togo_genuses.add(g["Genus_Localised"])
-                    
+            cgenus = g["Genus"].lower()
+            togo_genuses[cgenus] = { "localized": g["Genus_Localised"], "credits": credits.get(cgenus, None) }
+            
         for s in species:
             actual_genuses.add(species[s]["genusLocalised"])
-            togo_genuses.remove(species[s]["genusLocalised"])
+            cgenus = species[s]["genus"].lower()
+            del togo_genuses[cgenus]
             actual_species.add(species[s]["speciesLocalised"])
         analyzed_genuses = len(actual_genuses)
         analyzed_species = len(actual_species)
@@ -1872,7 +1996,6 @@ class EDRSystems(object):
 
     def body_count(self, system_name):
         bodies = self.bodies(system_name)
-        print(bodies)
         if not bodies:
             return 0
         
@@ -2436,6 +2559,7 @@ class EDRSystems(object):
         self.__search_a_service(star_system, callback, checker,  with_large_pad, with_medium_pad, override_radius, override_sc_distance, permits)
 
     def search_offbeat_station(self, star_system, callback, with_large_pad = True, with_medium_pad = False, override_radius = 100, override_sc_distance = 100000, permits = []):
+        override_sc_distance = override_sc_distance or 100000
         checker = edrservicecheck.EDROffBeatStationCheck(override_sc_distance)
         self.__search_a_service(star_system, callback, checker,  with_large_pad, with_medium_pad, override_radius, override_sc_distance, permits, shuffle_systems=True, shuffle_stations=True, exclude_center=True)
 
@@ -2467,6 +2591,27 @@ class EDRSystems(object):
         finder.nb_to_pick(rank)
         finder.start()
 
+    def search_planet_with_genus(self, star_system, genus, callback, override_radius = 100, override_sc_distance = 100000, permits = []):
+        override_sc_distance = override_sc_distance or 100000
+        checker = edrsysplacheck.EDRGenusCheckerFactory.get_checker(genus, self, override_sc_distance)
+        if checker:
+            self.__search_a_planet(star_system, callback, checker, override_radius, override_sc_distance, permits, shuffle_systems=True, shuffle_planets=True, exclude_center=True)
+
+    def __search_a_planet(self, star_system, callback, checker, override_radius = None, override_sc_distance = None, permits = [], shuffle_systems=True, shuffle_planets=True, exclude_center=False):
+        sc_distance = override_sc_distance or self.reasonable_sc_distance
+        sc_distance = max(250, sc_distance)
+        radius = override_radius if override_radius is not None and override_radius >= 0 else self.reasonable_hs_radius
+        radius = min(100, radius)
+
+        finder = edrplanetfinder.EDRPlanetFinder(star_system, checker, self, callback)
+        finder.within_radius(radius)
+        finder.within_supercruise_distance(sc_distance)
+        finder.permits_in_possesion(permits)
+        finder.shuffling(shuffle_systems, shuffle_planets)
+        finder.ignore_center(exclude_center)
+        finder.set_dlc(self.dlc_name)
+        finder.start()
+    
     def systems_within_radius(self, star_system, override_radius = None):
         if not star_system:
             return None
@@ -2550,7 +2695,13 @@ class EDRSystems(object):
 
         return updated
 
-    def closest_destination(self, sysAndSta1, sysAndSta2, override_sc_distance = None):
+    def closest_station(self, sysAndSta1, sysAndSta2, override_sc_distance = None):
+        return self.__closest_destination("station", sysAndSta1, sysAndSta2, override_sc_distance)
+
+    def closest_planet(self, sysAndPla1, sysAndPla2, override_sc_distance = None):
+        return self.__closest_destination("planet", sysAndPla1, sysAndPla2, override_sc_distance)
+    
+    def __closest_destination(self, key, sysAndSta1, sysAndSta2, override_sc_distance = None):
         if not sysAndSta1:
             return sysAndSta2
 
@@ -2559,16 +2710,16 @@ class EDRSystems(object):
 
         sc_distance = override_sc_distance or self.reasonable_sc_distance 
 
-        if sysAndSta1['station']['distanceToArrival'] > sc_distance and sysAndSta2['station']['distanceToArrival'] > sc_distance:
+        if sysAndSta1[key]['distanceToArrival'] > sc_distance and sysAndSta2[key]['distanceToArrival'] > sc_distance:
             if abs(sysAndSta1['distance'] - sysAndSta2['distance']) < 5:
-                return sysAndSta1 if sysAndSta1['station']['distanceToArrival'] < sysAndSta2['station']['distanceToArrival'] else sysAndSta2
+                return sysAndSta1 if sysAndSta1[key]['distanceToArrival'] < sysAndSta2[key]['distanceToArrival'] else sysAndSta2
             else:
                 return sysAndSta1 if sysAndSta1['distance'] < sysAndSta2['distance'] else sysAndSta2
     
-        if sysAndSta1['station']['distanceToArrival'] > sc_distance:
+        if sysAndSta1[key]['distanceToArrival'] > sc_distance:
             return sysAndSta2
     
-        if sysAndSta2['station']['distanceToArrival'] > sc_distance:
+        if sysAndSta2[key]['distanceToArrival'] > sc_distance:
             return sysAndSta1
 
         return sysAndSta1 if sysAndSta1['distance'] < sysAndSta2['distance'] else sysAndSta2
@@ -2584,3 +2735,26 @@ class EDRSystems(object):
             return self.distance(system_name, 'Colonia') <= max_dist
         except ValueError:
             return False
+
+    @staticmethod
+    def canonical_planet_class(planet):
+        planet_class = planet.get("subType", "Unknown").lower()
+        planet_class = planet_class.replace("world", "")
+        planet_class = planet_class.replace("body", "")
+        planet_class = planet_class.replace(" ", "")
+        return planet_class
+
+    @staticmethod
+    def canonical_atmosphere(planet):
+        if not planet:
+            return "Unknown"
+        atmosphere = planet.get("atmosphereType", "No atmosphere")
+        if not atmosphere:
+            return "Unknown"
+        
+        if atmosphere.lower().startswith("thin "):
+            atmosphere = atmosphere[len("thin "):]
+        atmosphere = atmosphere.replace(" ", "")
+        atmosphere = atmosphere.replace("-", "")
+        atmosphere = atmosphere.lower()
+        return atmosphere

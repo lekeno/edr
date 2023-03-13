@@ -45,6 +45,7 @@ from edrlegalrecords import EDRLegalRecords
 from edrxzibit import EDRXzibit
 from edrdiscord import EDRDiscordIntegration
 from edvehicles import EDVehicleFactory
+from edrsysplacheck import EDRGenusCheckerFactory
 
 from edri18n import _, _c, _edr, set_language
 from clippy import copy
@@ -796,7 +797,22 @@ class EDRClient(object):
                     details.append(_(" - analyzed: {}").format(", ".join(genus_localized)))
                     
                 if genus_togo:
-                    details.append(_(" - remaining: {}").format(", ".join(genus_togo)))
+                    genuses_credits = []
+                    for g in genus_togo:
+                        if not genus_togo[g]["credits"]:
+                            genuses_credits.append(genus_togo[g]["localized"])
+                            continue
+                        
+                        if genus_togo[g]["credits"]["min"] == genus_togo[g]["max"]:
+                            value = pretty_print_number(genus_togo[g]["max"])
+                            genuses_credits.append("{} ({} cr)".format(genus_togo[g]["localized"], value))
+                            continue
+
+                        min_value = pretty_print_number(genus_togo[g]["min"])
+                        max_value = pretty_print_number(genus_togo[g]["max"])
+                        genuses_credits.append("{} ({} ~ {} cr)".format(genus_togo[g]["localized"], min_value, max_value))
+                        
+                    details.append(_(" - remaining: {}").format(", ".join(genuses_credits)))
 
                 species_analyzed = progress["species"].get("analyzed", "1+?") # should be at least 1
                 details.append(_("Species: {}").format(species_analyzed))
@@ -3131,6 +3147,23 @@ class EDRClient(object):
             self.status = _(u"Offbeat station: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
+    def search_genus_near(self, genus, star_system):
+        if not self.__search_prerequisites(star_system):
+            return
+
+        try:
+            self.edrsystems.search_planet_with_genus(star_system, genus, self.__plaoi_found)
+            self.searching = True
+            self.status = _(u"Biofit planet: searching...")
+            self.__notify(_(u"EDR Search"), [_(u"Biofit planet: searching...")], clear_before = True, sfx=False)
+            if self.audio_feedback:
+                self.SFX.searching()
+        except ValueError:
+            self.searching = False
+            self.status = _(u"Biofit planet: failed")
+            self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
+
+
     def __staoi_found(self, reference, radius, sc, soi_checker, result):
         self.searching = False
         details = []
@@ -3153,6 +3186,30 @@ class EDRClient(object):
             if soi_checker.hint:
                 details.append(soi_checker.hint)
         self.__notify(_(u"{} near {}").format(soi_checker.name, reference), details, clear_before = True)
+
+    def __plaoi_found(self, reference, radius, sc, plaoi_checker, result):
+        self.searching = False
+        details = []
+        if result:
+            sc_distance = result['planet']['distanceToArrival']
+            distance = result['distance']
+            pretty_dist = _(u"{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _(u"{dist}LY").format(dist=int(distance))
+            pretty_sc_dist = _(u"{dist}LS").format(dist=int(sc_distance))
+            planet_name = EDRBodiesOfInterest.simplified_body_name(result['name'], result['planet']['name'])
+            details.append(_(u"{system}, {dist}").format(system=result['name'], dist=pretty_dist))
+            details.append(_(u"{planet} ({type}, {atm}), {sc_dist}").format(planet=planet_name, type=result['planet']['subType'], atm=result['planet']['atmosphereType'], sc_dist=pretty_sc_dist))
+            details.append(_(u"as of {date}").format(date=result['planet']['updateTime']))
+            self.status = u"{item}: {system}, {dist} - {planet}, {sc_dist}".format(item=plaoi_checker.name, system=result['name'], dist=pretty_dist, planet=planet_name, sc_dist=pretty_sc_dist)
+            copy(result["name"])
+        else:
+            self.status = _(u"{}: nothing within [{}LY, {}LS] of {}").format(plaoi_checker.name, int(radius), int(sc), reference)
+            checked = _("checked {} systems").format(plaoi_checker.systems_counter)
+            if plaoi_checker.planets_counter: 
+                checked = _("checked {} systems and {} planets").format(plaoi_checker.systems_counter, plaoi_checker.planets_counter)
+            details.append(_(u"nothing found within [{}LY, {}LS], {}.").format(int(radius), int(sc), checked))
+            if plaoi_checker.hint:
+                details.append(plaoi_checker.hint)
+        self.__notify(_(u"{} near {}").format(plaoi_checker.name, reference), details, clear_before = True)
 
     def __parking_found(self, reference, radius, rank, result):
         self.searching = False
@@ -3254,6 +3311,18 @@ class EDRClient(object):
     def show_material_profiles(self):
         profiles = self.edrresourcefinder.profiles()
         self.__notify(_(u"Available materials profiles"), [" ;; ".join(profiles)], clear_before=True)
+
+    def search(self, thing, star_system):
+        cresource = self.edrresourcefinder.canonical_name(thing)
+        if EDRGenusCheckerFactory.recognized_genus(thing):
+            self.search_genus_near(thing, star_system)
+        elif cresource:
+            self.search_resource(thing, star_system)
+        else:
+            matches = EDRGenusCheckerFactory.recognized_candidates(thing)
+            matches.extend(self.edrresourcefinder.recognized_candidates(thing))
+            self.__notify(_(u"EDR Search: suggested terms"), [" ;; ".join(matches)], clear_before=True)
+        
 
     def search_resource(self, resource, star_system):
         if not star_system:
