@@ -143,7 +143,12 @@ DEFAULT_TIPS = {
         _(u"EDR will automatically add a custom Point of Interest when pointing at something while on foot (current location)."),
         _(u"After scanning a biological with the genetic sampler, EDR will show the value of the specimen, the minimum distance for gene diversity, the distance and heading for the previous samples."),
         _(u"If you stumble upon another species while doing Exobiology research, consider using the 'pointing' gesture to record your current position as a custom Point of Interest so that you can find it back later."),
-        _(u"Custom Point of Interests on planets are not persistent (i.e. will disappear if you close EDMC).")
+        _(u"Custom Point of Interests on planets are not persistent (i.e. will disappear if you close EDMC)."),
+        _(u"Send '!search bio' to find a nearby planet with the right conditions for exobiology."),
+        _(u"Send '!search water' to find a nearby planet with a water atmosphere (rich in exobiology)."),
+        _(u"Send '!search ammonia' to find a nearby planet with an ammonia atmospehere."),
+        _(u"You can use the !search command to find a nearby planet with the right conditions for a given genus, e.g. '!search stratum'"),
+        _(u"You can use the !search command to find a nearby planet with the right conditions for a given species, e.g. '!search stratum tectonicas'")
     ],
     "open": [
         _(u"Never fly what you can't afford to lose. Check your rebuy and credit balance on your right panel."),
