@@ -345,7 +345,7 @@ MATERIALS_LUT = {
     "rdx" :{ "localized": _(u"Rdx"), "raw": "Rdx", "category": "component", "subcategory": "chemical", "grade": 0, "comments": _("Karma: hip fire, headshot, range")},
     "electromagnet" :{ "localized": _(u"Electromagnet"), "raw": "Electromagnet", "category": "component", "subcategory": "circuit", "grade": 0, "comments": _("Faster reloading, Manticore: headshot, range, hip fire")},
     "microelectrode" :{ "localized": _(u"Microelectrode"), "raw": "Microelectrode", "category": "component", "subcategory": "circuit", "grade": 0, "comments": _("Suits upgrades")},
-    "motor" :{ "localized": _(u"Motor"), "raw": "Motor", "category": "component", "subcategory": "circuit", "grade": 0, "comments": _("Jump assits, Manticore range")},
+    "motor" :{ "localized": _(u"Motor"), "raw": "Motor", "category": "component", "subcategory": "circuit", "grade": 0, "comments": _("Jump assist, Manticore range")},
     "scrambler" :{ "localized": _(u"Scrambler"), "raw": "Scrambler", "category": "component", "subcategory": "tech", "grade": 0, "comments": _("Audio masking, TK headshot")},
     "transmitter" :{ "localized": _(u"Transmitter"), "raw": "Transmitter", "category": "component", "subcategory": "tech", "grade": 0, "comments": _("Enhanced tracking, Audio masking")},
 }
