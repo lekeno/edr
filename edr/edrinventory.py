@@ -248,30 +248,30 @@ MATERIALS_LUT = {
     "agriculturalprocesssample": { "localized": _(u"Agricultural Process Sample"), "category": "item", "raw": "Agricultural Process Sample", "grade":0},
     "chemicalprocesssample": { "localized": _(u"Chemical Process Sample"), "category": "item", "raw": "Chemical Process Sample", "grade":0},
     "refinementprocesssample": { "localized": _(u"Refinement Process Sample"), "category": "item", "raw": "Refinement Process Sample", "grade":0},
-    "microsupercapacitor": { "localized": _(u"Micro Supercapacitor"), "category": "component", "raw": "Micro Supercapacitor", "grade":0, "comments": _("Extra battery, Manticore headshot")},
-    "microtransformer": { "localized": _(u"Micro Transformer"), "category": "component", "raw": "Micro Transformer", "grade":0, "comments": _("Shield regen, Battery consumption, TK range")},
-    "chemicalsuperbase": { "localized": _(u"Chemical Superbase"), "category": "component", "raw": "Chemical Superbase", "grade":0, "comments": _("Manticore upgrades")},
-    "circuitswitch": { "localized": _(u"Circuit Switch"), "category": "component", "raw": "Circuit Switch", "grade":0, "comments": _("Night vision")},
-    "electricalwiring": { "localized": _(u"Electrical Wiring"), "category": "component", "raw": "Electrical Wiring", "grade":0, "comments": _("Battery consumption, Extra battery, Shield regen, TK hip fire")},
-    "encryptedmemorychip": { "localized": _(u"Encrypted Memory Chip"), "category": "component", "raw": "Encrypted Memory Chip", "grade":0, "comments": _("Stowed reloading")},
-    "epoxyadhesive": { "localized": _(u"Epoxy Adhesive"), "category": "component", "raw": "Epoxy Adhesive", "grade":0, "comments": _("Extra backpack, Damage resistance")},
-    "memorychip": { "localized": _(u"Memory Chip"), "category": "component", "raw": "Memory Chip", "grade":0, "comments": _("Extra backpack")},
-    "microhydraulics": { "localized": _(u"Micro Hydraulics"), "category": "component", "raw": "Micro Hydraulics", "grade":0, "comments": _("Quieter footsteps, Faster reload, Stability")},
-    "opticalfibre": { "localized": _(u"Optical Fibre"), "category": "component", "raw": "Optical Fibre", "grade":0, "comments": _("Scope, TK upgrades")},
-    "titaniumplating": { "localized": _(u"Titanium Plating"), "category": "component", "raw": "Titanium Plating", "grade":0, "comments": _("Damage resistance, Dominator upgrades")},
-    "phneutraliser": { "localized": _(u"pH Neutraliser"), "category": "component", "raw": "pH Neutraliser", "grade":0, "comments": _("Extra air, Combat movement")},
-    "metalcoil": { "localized": _(u"Metal Coil"), "category": "component", "raw": "Metal Coil", "grade":0, "comments": _("Mag size, Karma range, TK & Manticore: hip fire")},
-    "viscoelasticpolymer": { "localized": _(u"Viscoelastic Polymer"), "category": "component", "raw": "Viscoelastic Polymer", "grade":0, "comments": _("Quieter footsteps, Noise suppressor, Faster handling, Stability, Karma hip fire")},
-    "ionbattery": { "localized": _(u"Ion Battery"), "category": "component", "raw": "Ion Battery", "grade":0, "comments": _("Shield regen, extra battery, TK & Manticore: headshot")},
-    "chemicalcatalyst": { "localized": _(u"Chemical Catalyst"), "category": "component", "raw": "Chemical Catalyst", "grade":0, "comments": _("Longer sprint, Karma headshot, Manticore hip fire")},
-    "electricalfuse": { "localized": _(u"Electrical Fuse"), "category": "component", "raw": "Electrical Fuse", "grade":0, "comments": _("Battery consumption, Manticore range")},
-    "opticallens": { "localized": _(u"Optical Lens"), "category": "component", "raw": "Optical Lens", "grade":0, "comments": _("Scope, TK: hip fire / headshot / range")},
-    "weaponcomponent": { "localized": _(u"Weapon Component"), "category": "component", "raw": "Weapon Component", "grade":0, "comments": _("Extra ammo, Mag size, Karma: Headshot / Range, TK & Manticore: Mag size, Noise suppressor")},
-    "carbonfibreplating": { "localized": _(u"Carbon Fibre Plating"), "category": "component", "raw": "Carbon Fibre Plating", "grade":0, "comments": _("Damage resistance, Maverick upgrades")},
-    "microthrusters": { "localized": _(u"Micro Thrusters"), "category": "component", "raw": "Micro Thrusters", "grade":0, "comments": _("Jump assist, Melee damage")},
-    "oxygenicbacteria": { "localized": _(u"Oxygenic Bacteria"), "category": "component", "raw": "Oxygenic Bacteria", "grade":0, "comments": _("Longer sprint, Extra air")},
-    "circuitboard": { "localized": _(u"Circuit Board"), "category": "component", "raw": "Circuit Board", "grade":0, "comments": _("Enhanced tracking, Audio masking, Stowed reloading, TK range")},
-    "tungstencarbide": { "localized": _(u"Tungsten Carbide"), "category": "component", "raw": "Tungsten Carbide", "grade":0, "comments": _("Mag size, Karma upgrades")},
+    "microsupercapacitor": { "localized": _(u"Micro Supercapacitor"), "category": "component", "subcategory": "circuit", "raw": "Micro Supercapacitor", "grade":0, "comments": _("Extra battery, Manticore headshot")},
+    "microtransformer": { "localized": _(u"Micro Transformer"), "category": "component", "subcategory": "circuit", "raw": "Micro Transformer", "grade":0, "comments": _("Shield regen, Battery consumption, TK range")},
+    "chemicalsuperbase": { "localized": _(u"Chemical Superbase"), "category": "component", "subcategory": "chemical", "raw": "Chemical Superbase", "grade":0, "comments": _("Manticore upgrades")},
+    "circuitswitch": { "localized": _(u"Circuit Switch"), "category": "component", "subcategory": "circuit", "raw": "Circuit Switch", "grade":0, "comments": _("Night vision")},
+    "electricalwiring": { "localized": _(u"Electrical Wiring"), "category": "component", "subcategory": "circuit", "raw": "Electrical Wiring", "grade":0, "comments": _("Battery consumption, Extra battery, Shield regen, TK hip fire")},
+    "encryptedmemorychip": { "localized": _(u"Encrypted Memory Chip"), "category": "component", "subcategory": "tech", "raw": "Encrypted Memory Chip", "grade":0, "comments": _("Stowed reloading")},
+    "epoxyadhesive": { "localized": _(u"Epoxy Adhesive"), "category": "component", "subcategory": "chemical", "raw": "Epoxy Adhesive", "grade":0, "comments": _("Extra backpack, Damage resistance")},
+    "memorychip": { "localized": _(u"Memory Chip"), "category": "component", "subcategory": "tech", "raw": "Memory Chip", "grade":0, "comments": _("Extra backpack")},
+    "microhydraulics": { "localized": _(u"Micro Hydraulics"), "category": "component", "subcategory": "tech", "raw": "Micro Hydraulics", "grade":0, "comments": _("Quieter footsteps, Faster reload, Stability")},
+    "opticalfibre": { "localized": _(u"Optical Fibre"), "category": "component", "subcategory": "circuit", "raw": "Optical Fibre", "grade":0, "comments": _("Scope, TK upgrades")},
+    "titaniumplating": { "localized": _(u"Titanium Plating"), "category": "component", "subcategory": "tech", "raw": "Titanium Plating", "grade":0, "comments": _("Damage resistance, Dominator upgrades")},
+    "phneutraliser": { "localized": _(u"pH Neutraliser"), "category": "component", "subcategory": "chemical", "raw": "pH Neutraliser", "grade":0, "comments": _("Extra air, Combat movement")},
+    "metalcoil": { "localized": _(u"Metal Coil"), "category": "component", "subcategory": "circuit", "raw": "Metal Coil", "grade":0, "comments": _("Mag size, Karma range, TK & Manticore: hip fire")},
+    "viscoelasticpolymer": { "localized": _(u"Viscoelastic Polymer"), "category": "component", "subcategory": "chemical", "raw": "Viscoelastic Polymer", "grade":0, "comments": _("Quieter footsteps, Noise suppressor, Faster handling, Stability, Karma hip fire")},
+    "ionbattery": { "localized": _(u"Ion Battery"), "category": "component", "subcategory": "circuit", "raw": "Ion Battery", "grade":0, "comments": _("Shield regen, extra battery, TK & Manticore: headshot")},
+    "chemicalcatalyst": { "localized": _(u"Chemical Catalyst"), "category": "component", "subcategory": "chemical", "raw": "Chemical Catalyst", "grade":0, "comments": _("Longer sprint, Karma headshot, Manticore hip fire")},
+    "electricalfuse": { "localized": _(u"Electrical Fuse"), "category": "component", "subcategory": "circuit", "raw": "Electrical Fuse", "grade":0, "comments": _("Battery consumption, Manticore range")},
+    "opticallens": { "localized": _(u"Optical Lens"), "category": "component", "subcategory": "tech", "raw": "Optical Lens", "grade":0, "comments": _("Scope, TK: hip fire / headshot / range")},
+    "weaponcomponent": { "localized": _(u"Weapon Component"), "category": "component", "subcategory": "tech", "raw": "Weapon Component", "grade":0, "comments": _("Extra ammo, Mag size, Karma: Headshot / Range, TK & Manticore: Mag size, Noise suppressor")},
+    "carbonfibreplating": { "localized": _(u"Carbon Fibre Plating"), "category": "component", "subcategory": "tech", "raw": "Carbon Fibre Plating", "grade":0, "comments": _("Damage resistance, Maverick upgrades")},
+    "microthrusters": { "localized": _(u"Micro Thrusters"), "category": "component", "subcategory": "tech", "raw": "Micro Thrusters", "grade":0, "comments": _("Jump assist, Melee damage")},
+    "oxygenicbacteria": { "localized": _(u"Oxygenic Bacteria"), "category": "component", "subcategory": "chemical", "raw": "Oxygenic Bacteria", "grade":0, "comments": _("Longer sprint, Extra air")},
+    "circuitboard": { "localized": _(u"Circuit Board"), "category": "component", "subcategory": "circuit", "raw": "Circuit Board", "grade":0, "comments": _("Enhanced tracking, Audio masking, Stowed reloading, TK range")},
+    "tungstencarbide": { "localized": _(u"Tungsten Carbide"), "category": "component", "subcategory": "tech", "raw": "Tungsten Carbide", "grade":0, "comments": _("Mag size, Karma upgrades")},
     "ballisticsdata": { "localized": _(u"Ballistics Data"), "category": "data", "raw": "Ballistics Data", "grade":0, "comments": _("Damage resistance, Karma range")},
     "politicalaffiliations": { "localized": _(u"Political Affiliations"), "category": "data", "raw": "Political Affiliations", "grade":0},
     "conflicthistory": { "localized": _(u"Conflict History"), "category": "data", "raw": "Conflict History", "grade":0},
@@ -300,7 +300,7 @@ MATERIALS_LUT = {
     "spyware": { "localized": _(u"Spyware"), "category": "data", "raw": "Spyware", "grade":0},
     "tacticalplans": { "localized": _(u"Tactical Plans"), "category": "data", "raw": "Tactical plans", "grade":0, "comments": _("Quieter footsteps")},
     "virus": { "localized": _(u"Virus"), "category": "data", "raw": "Virus", "grade":0},
-    "aerogel": { "localized": _(u"Aerogel"), "category": "component", "raw": "Aerogel", "grade":0, "comments": _("Artermis upgrades")},
+    "aerogel": { "localized": _(u"Aerogel"), "category": "component", "subcategory": "chemical", "raw": "Aerogel", "grade":0, "comments": _("Artermis upgrades")},
     "geneticrepairmeds": { "localized": _(u"Genetic Repair Meds"), "category": "item", "raw": "Genetic Repair Meds", "grade":0},
     "cropyieldanalysis": { "localized": _(u"Crop Yield Analysis"), "category": "data", "raw": "Crop Yield Analysis", "grade":0},
     "kompromat": { "localized": _(u"Kompromat"), "category": "data", "raw": "Kompromat", "grade":0},
@@ -340,14 +340,14 @@ MATERIALS_LUT = {
     "seedgeneaology" :{ "localized": _(u"Seed Geneaology"), "raw": "Seed Geneaology", "category": "data", "grade": 0},
     "slushfundlogs" :{ "localized": _(u"Slush Fund Logs"), "raw": "Slush Fund Logs", "category": "data", "grade": 0},
     "syntheticgenome" :{ "localized": _(u"Synthetic Genome"), "raw": "Synthetic Genome", "category": "item", "grade": 0},
-    "epinephrine" :{ "localized": _(u"Epinephrine"), "raw": "Epinephrine", "category": "component", "grade": 0, "comments": _("Melee damage, Combat movement")},
-    "graphene" :{ "localized": _(u"Graphene"), "raw": "Graphene", "category": "component", "grade": 0, "comments": _("Suits upgrades")},
-    "rdx" :{ "localized": _(u"Rdx"), "raw": "Rdx", "category": "component", "grade": 0, "comments": _("Karma: hip fire, headshot, range")},
-    "electromagnet" :{ "localized": _(u"Electromagnet"), "raw": "Electromagnet", "category": "component", "grade": 0, "comments": _("Faster reloading, Manticore: headshot, range, hip fire")},
-    "microelectrode" :{ "localized": _(u"Microelectrode"), "raw": "Microelectrode", "category": "component", "grade": 0, "comments": _("Suits upgrades")},
-    "motor" :{ "localized": _(u"Motor"), "raw": "Motor", "category": "component", "grade": 0, "comments": _("Jump assits, Manticore range")},
-    "scrambler" :{ "localized": _(u"Scrambler"), "raw": "Scrambler", "category": "component", "grade": 0, "comments": _("Audio masking, TK headshot")},
-    "transmitter" :{ "localized": _(u"Transmitter"), "raw": "Transmitter", "category": "component", "grade": 0, "comments": _("Enhanced tracking, Audio masking")},
+    "epinephrine" :{ "localized": _(u"Epinephrine"), "raw": "Epinephrine", "category": "component", "subcategory": "chemical", "grade": 0, "comments": _("Melee damage, Combat movement")},
+    "graphene" :{ "localized": _(u"Graphene"), "raw": "Graphene", "category": "component", "subcategory": "chemical", "grade": 0, "comments": _("Suits upgrades")},
+    "rdx" :{ "localized": _(u"Rdx"), "raw": "Rdx", "category": "component", "subcategory": "chemical", "grade": 0, "comments": _("Karma: hip fire, headshot, range")},
+    "electromagnet" :{ "localized": _(u"Electromagnet"), "raw": "Electromagnet", "category": "component", "subcategory": "circuit", "grade": 0, "comments": _("Faster reloading, Manticore: headshot, range, hip fire")},
+    "microelectrode" :{ "localized": _(u"Microelectrode"), "raw": "Microelectrode", "category": "component", "subcategory": "circuit", "grade": 0, "comments": _("Suits upgrades")},
+    "motor" :{ "localized": _(u"Motor"), "raw": "Motor", "category": "component", "subcategory": "circuit", "grade": 0, "comments": _("Jump assits, Manticore range")},
+    "scrambler" :{ "localized": _(u"Scrambler"), "raw": "Scrambler", "category": "component", "subcategory": "tech", "grade": 0, "comments": _("Audio masking, TK headshot")},
+    "transmitter" :{ "localized": _(u"Transmitter"), "raw": "Transmitter", "category": "component", "subcategory": "tech", "grade": 0, "comments": _("Enhanced tracking, Audio masking")},
 }
 
 INTERNAL_NAMES_LUT = { u'classified scan databanks': 'scandatabanks', u'conductive components': 'conductivecomponents', u'abnormal compact emissions data': 'compactemissionsdata', u'germanium': 'germanium',
@@ -725,14 +725,20 @@ class EDRInventory(object):
             grades = [u"?", u"Ⅰ", u"Ⅱ", u"Ⅲ", u"Ⅳ", u"Ⅴ"]
             slots = [u"?", u"300", u"250", u"200", u"150", u"100"]
             return u"{} (Grade {}; {}/{})".format(_(entry["raw"]), grades[entry["grade"]], total_count, slots[entry["grade"]])
+
         
-        shorthands = {"data": _("DATA"), "component": _("ASSET"), "item": _("GOODS"), "consumable": _("CONSUMABLE") }
+        shorthands = {"data": _("DATA"), "component": _("ASSET"), "item": _("GOODS"), "consumable": _("CONSUMABLE"), "tech": _("TECH"), "chemical": _("CHEMICALS"), "circuit": _("CIRCUITS") }
+        shorthand = shorthands.get(category, category[0:min(3,len(category))])
+        if category == "component":
+            subcategory = self.subcategory(cname)
+            shorthand = shorthands.get(subcategory, shorthand)
+
         if from_backpack:
             if entry.get("comments", False):
-                return u"{} [{}]: (Backpack: {}; Locker:{}); For: {}".format(_(entry["raw"]), shorthands.get(category, category[0:min(3,len(category))]), count, (total_count - count) or 0, entry["comments"])
+                return u"{} [{}]: (Backpack: {}; Locker:{}); For: {}".format(_(entry["raw"]), shorthand, count, (total_count - count) or 0, entry["comments"])
             else:
-                return u"{} [{}]: (Backpack: {}; Locker:{})".format(_(entry["raw"]), shorthands.get(category, category[0:min(3,len(category))]), count, (total_count - count) or 0)
-        return u"{} [{}]: {}".format(_(entry["raw"]), shorthands.get(category, category[0:min(3,len(category))]), total_count)
+                return u"{} [{}]: (Backpack: {}; Locker:{})".format(_(entry["raw"]), shorthand, count, (total_count - count) or 0)
+        return u"{} [{}]: {}".format(_(entry["raw"]), shorthand, total_count)
 
     def readable_name(self, name, fallback=True):
         cname = self.__c_name(name)
@@ -949,6 +955,12 @@ class EDRInventory(object):
         cname = self.__c_name(name)
         entry = MATERIALS_LUT.get(cname, None)
         return entry["category"] if entry else None
+
+    def subcategory(self, name):
+        cname = self.__c_name(name)
+        entry = MATERIALS_LUT.get(cname, None)
+        return entry.get("subcategory", None) if entry else None
+        
 
     @staticmethod
     def readable(name):
