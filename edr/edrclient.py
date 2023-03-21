@@ -2592,13 +2592,14 @@ class EDRClient(object):
         if not content:
             return False
 
+        translated_content_details = [_(line) for line in content["details"]]
         if self.visual_feedback:
             EDRLOG.log(u"Show help for {} with header: {} and details: {}".format(section, content["header"], content["details"][0]), "DEBUG")
-            self.IN_GAME_MSG.help(content["header"], content["details"])
+            self.IN_GAME_MSG.help(_(content["header"]), translated_content_details)
             if self.audio_feedback:
                 self.SFX.help()
         EDRLOG.log(u"[Alt] Show help for {} with header: {} and details: {}".format(section, content["header"], content["details"][0]), "DEBUG")
-        self.ui.help(_(content["header"]), _(content["details"]))
+        self.ui.help(_(content["header"]), translated_content_details)
         return True
 
     def tip(self, category=None):
