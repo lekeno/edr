@@ -8512,11 +8512,11 @@ msgstr ""
 #: randomtips.py:191
 #, python-format
 msgid ""
-"[Combat] Double shield cell banking: fire first cell, wait for 90% heat, "
+"[Combat] Double shield cell banking: fire first cell, wait for 90 percents heat, "
 "fire heat sink, when heat drops rapidly fire the second cell."
 msgstr ""
 "[Combat] Deux cellules de bouclier sur un seul dissipateur thermique: "
-"première cellule, 90% en température, dissipateur, chute rapide de la "
+"première cellule, 90 pourcents en température, dissipateur, chute rapide de la "
 "température, deuxième cellule."
 
 #: randomtips.py:192
@@ -8591,10 +8591,10 @@ msgstr "[Défense] Sachez quand il vaut mieux prendre la poudre d'escampette."
 #: randomtips.py:202
 #, python-format
 msgid ""
-"[Mining] Limit your cargo (e.g. LTD) to be within 10% of the demand of a "
+"[Mining] Limit your cargo (e.g. LTD) to be within 10 percents of the demand of a "
 "market in order to get the highest price."
 msgstr ""
-"[Minage] Maintenez votre cargo (e.g. LTD) en dessous de 10% de la demande "
+"[Minage] Maintenez votre cargo (e.g. LTD) en dessous de 10 pourcents de la demande "
 "d'un marché afin de bénéficier du meilleur prix."
 
 #~ msgid ""
