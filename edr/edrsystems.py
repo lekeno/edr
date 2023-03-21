@@ -425,6 +425,18 @@ class EDRSystems(object):
         
         return False
 
+    def has_planet_type(self, system_name, planet_types):
+        bodies = self.bodies(system_name)
+        if not bodies:
+            return False
+        
+        for b in bodies:
+            subType = self.canonical_planet_class(b)
+            if subType in planet_types:
+                return True
+        return False
+
+
     def update_fc_presence(self, fc_report):
         star_system = fc_report.get("starSystem", None)
         if star_system is None:
@@ -918,53 +930,6 @@ class EDRSystems(object):
 
         return EDRSystems.BIOLOGY["species"][cname]["credits"]
 
-
-    '''
-    def __bio_credits(a_species):
-        c_a_species = a_species.lower()
-
-        if c_a_species not in EDRSystems.BIOLOGY["species_int_names"]:
-            return 0
-        
-        int_name = EDRSystems.BIOLOGY["species_int_names"][c_a_species]
-        if int_name not in EDRSystems.BIOLOGY["species"]:
-            return 0
-
-        return EDRSystems.BIOLOGY["species"][int_name]["credits"]
-
-    def __maybe_add_to_credits(self, credits, species, genus, detected_genuses):
-        if detected_genuses is not None and len(detected_genuses) == 0:
-            # Scanned but no genuses detected => don't append anything
-            return
-
-        CGENUS_LUT = EDRSystems.BIOLOGY.get("genuses_int_names", {})
-        cgenus = CGENUS_LUT.get(genus.lower(), "unknown")
-        
-        genus_is_present = not detected_genuses or cgenus == "unknown"
-
-        if not genus_is_present:
-            for g in detected_genuses:
-                if cgenus in g["Genus"]:
-                    genus_is_present = True
-                    break
-            
-        if not genus_is_present:
-            return
-        
-        for s in species:
-            credit = self.__bio_credits(s)
-            if genus not in credits:
-                credits[genus] = {
-                    "min": credit,
-                    "max": credit
-                }
-            else:
-                credits[genus] = {
-                    "min": min(credit, credits[genus]["min"]),
-                    "max": max(credit, credits[genus]["max"])
-                }
-    '''
-
     def __maybe_append(self, biome, genuses, species, genus, detected_genuses, credits=None, int_species_names=None):
         if detected_genuses is not None and len(detected_genuses) == 0:
             # Scanned but no genuses detected => don't append anything
@@ -1019,7 +984,7 @@ class EDRSystems(object):
             "$Codex_Ent_Conchas_Genus_Name;": _("Conchas"),
             "$Codex_Ent_Electricae_Genus_Name;": _("Electricae"),
             "$Codex_Ent_Fonticulus_Genus_Name;": _("Fonticulus"),
-            "$Codex_Ent_Shrubs_Genus_Name;": _("Shrubs"),
+            "$Codex_Ent_Shrubs_Genus_Name;": _("Frutexa"),
             "$Codex_Ent_Fumerolas_Genus_Name;": _("Fumerolas"),
             "$Codex_Ent_Fungoids_Genus_Name;": _("Fungoids"),
             "$Codex_Ent_Osseus_Genus_Name;": _("Osseus"),
@@ -1120,28 +1085,22 @@ class EDRSystems(object):
 
             if star_type in ["A", "F", "G", "K", "M", "S"]:
                 if mean_temperature < 273 and distance_from_parent_star > 12000:
-                    '''
-                    TODO check for the presence of any of these:
-                        Earth-Like World
-                        Ammoniac
-                        Gas Giant with water based life
-                        Gas Giant with ammonia based life
-                        Water Giant
-                    '''        
-                    self.__maybe_append(species, genuses, _("Crystalline shard(?)"), "crystalline shard", detected_genuses)
+                    conditions = set("earthlike", "ammonia", "gasgiantwithwaterbasedlife", "gasgiantwithammoniabasedlife", "watergiant")
+                    if self.has_planet_type(conditions, system_name):
+                        self.__maybe_append(species, genuses, _("Crystalline shard"), "crystalline shard", detected_genuses)
 
             if volcanism: 
                 '''
                 TODO complex, rare....
+                # species.append(_("Brain trees(??)"))
                 Believed to be located near Guardian ruins.
                 Type of planet, temperature, presence of an Earth-like world, or a gas giant with water-based life are also extra factors...
                 '''
-                # species.append(_("Brain trees(??)"))
                 self.__maybe_append(species, genuses, _("Sinuous Tubers(?)"), "sinuous tuber", detected_genuses)
                     
             self.__add_missing_genuses(species, genuses, detected_genuses)
             return {
-                "spieces": species,
+                "species": species,
                 "genuses": genuses,
                 "credits": credits
             }
@@ -1150,7 +1109,7 @@ class EDRSystems(object):
             EDRLOG.log("High gravity or not landable => no bio expected", "INFO")
             self.__add_missing_genuses(species, genuses, detected_genuses)
             return {
-                "spieces": species,
+                "species": species,
                 "genuses": genuses,
                 "credits": credits
             }
@@ -2742,6 +2701,7 @@ class EDRSystems(object):
         planet_class = planet_class.replace("world", "")
         planet_class = planet_class.replace("body", "")
         planet_class = planet_class.replace(" ", "")
+        planet_class = planet_class.replace("-", "")
         return planet_class
 
     @staticmethod
