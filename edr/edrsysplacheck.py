@@ -38,46 +38,28 @@ class EDRSystemPlanetCheck(object):
         return system['distance'] <= self.max_distance
 
     def check_planet(self, planet, system_name):
-        log = False
-        if system_name == "LHS 2661":
-            print("Here Here Here: ", planet.get("name",  "unknown"))
-            log = True
         self.planets_counter = self.planets_counter + 1
         if not planet:
-            if log:
-                print("1")
             return False
 
         if planet.get('distanceToArrival', None) is None:
-            if log:
-                print("2")
             return False
 
         if self.max_sc_distance and planet['distanceToArrival'] > self.max_sc_distance:
-            if log:
-                print("3")
             return False
         
         atmosphere = self.edrsystems.canonical_atmosphere(planet)
         if self.atmospheres and not atmosphere in self.atmospheres:
-            if log:
-                print("no atm")
             return False
         
         planet_class = self.edrsystems.canonical_planet_class(planet)
         if self.planet_classes and not planet_class in self.planet_classes:
-            if log:
-                print("5")
             return False
         
         mean_temperature = planet.get("surfaceTemperature", 1000)
         if self.min_temperature and mean_temperature < self.min_temperature:
-            if log:
-                print("6")
             return False
         if self.max_temperature and mean_temperature > self.max_temperature:
-            if log:
-                print("7")
             return False
         
         volcanism = planet.get("volcanism","")
@@ -86,21 +68,13 @@ class EDRSystemPlanetCheck(object):
 
         if self.parent_star_types:
             star_type = self.edrsystems.parent_star_type(system_name, planet)
-            print("checking parent star: ", planet.get("name", "unknown"), system_name, star_type)
             if not star_type in self.parent_star_types:
-                if log:
-                    print("wrong parant star type")
                 return False
-            print("hit? system, star type, star", system_name, star_type)
-        
+            
         if self.min_parent_star_distance and self.edrsystems.parent_star_distance(system_name, planet) < self.min_parent_star_distance:
-            if log:
-                print("9")
             return False
         
         if self.max_gravity and planet.get("gravity", 100) > self.max_gravity:
-            if log:
-                print("9")
             return False
         
         return True
@@ -520,12 +494,9 @@ class EDRElectricaeCheck(EDRBiologyCheck):
 
         self.parent_star_types = set(["A", "Neutron", "White Dwarf (DA)", "DA"])
         star_type = self.edrsystems.parent_star_type(system_name, planet)
-        print("checking parent star: ", planet.get("name", "unknown"), system_name, star_type)
         if not star_type in self.parent_star_types:
-            print("wrong parant star type")
             return near_nebula
-        print("hit? system, star type, star", system_name, star_type)
-
+        
         if star_type == "A":
             return self.edrsystems.parent_star_luminosity(system_name, planet).startswith("V")
         
