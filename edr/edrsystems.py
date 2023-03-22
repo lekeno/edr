@@ -773,6 +773,12 @@ class EDRSystems(object):
             details.append(_("as of {}  ").format(the_body["updateTime"]))
         
         return details
+
+    @staticmethod
+    def __planet_walkable(planet):
+        landable = planet.get("isLandable", False)
+        walkable = planet.get("surfaceTemperature", 1000) < 800 and planet.get("gravity", 3) < 2.7 and (planet.get("surfacePressure", None) and planet.get("surfacePressure", 1) < 0.1)
+        return landable and walkable
     
     def __describe_planet(self, planet, system_name):
         details = []
@@ -791,7 +797,7 @@ class EDRSystems(object):
             gravity = "{:0.2f}".format(planet["gravity"]) if "gravity" in planet else "-" #TODO not really G? but earth G? verify other field for conversions too
             temperature = "{:0.0f}".format(planet["surfaceTemperature"]) if "surfaceTemperature" in planet else "-"
             land_or_walk =  _("[LAND: {}G; {}K]").format(gravity, temperature)
-            if planet.get("surfaceTemperature", 1000) < 800 and planet.get("gravity", 3) < 2.7 and (planet.get("surfacePressure", None) and planet.get("surfacePressure", 1) < 0.1):
+            if EDRSystems.__planet_walkable(planet):
                 land_or_walk = _("[WALK: {}G; {}K]").format(gravity, temperature)
             info += land_or_walk
 
@@ -814,6 +820,523 @@ class EDRSystems(object):
             details.append(_("Max value: {} cr @ {} LS").format(pretty_print_number(value["valueMax"]), pretty_print_number(value["distance"])))
 
         return details
+
+    def __parent_star(self, system_name, body):
+        parents = body.get("parents", [])
+        star_parent_id = None
+        if not parents:
+            return None
+        for p in parents:
+            if "Star" not in p:
+                continue
+            star_parent_id = p["Star"]
+            break
+    
+        if star_parent_id is None:
+            return None
+        return self.__body_with_id(system_name, star_parent_id)
+    
+    def __body_with_id(self, system_name, body_id):
+        if not system_name:
+            return None
+
+        bodies = self.edsm_bodies_cache.get(system_name.lower())
+        if not bodies:
+            bodies = self.edsm_server.bodies(system_name)
+            if bodies:
+                self.edsm_bodies_cache.set(system_name.lower(), bodies)
+
+        if not bodies:
+            return None
+
+        for body in bodies:
+            if body.get("bodyId", -1) == body_id:
+                return body
+        return None
+    
+    def body_name_with_id(self, system_name, body_id):
+        body = self.__body_with_id(system_name, body_id)
+        if body:
+            return body.get("name", "Unknown")
+        return None
+
+    def __maybe_append(self, biome, genuses, species, genus, detected_genuses):
+        if detected_genuses is not None and len(detected_genuses) == 0:
+            # Scanned but no genuses detected => donn't append anything
+            return
+
+        CGENUS_LUT = {
+            "aleoids": "$Codex_Ent_Aleoids_Genus_Name;",
+            "anemone": "$Codex_Ent_Sphere_Genus_Name;",
+            "bacterium": "$Codex_Ent_Bacterial_Genus_Name;",
+            "bark mound": "$Codex_Ent_Cone_Genus_Name;",
+            "seed": "$Codex_Ent_Seed_Genus_Name;",
+            "cactoids": "$Codex_Ent_Cactoid_Genus_Name;",
+            "clypeus": "$Codex_Ent_Clypeus_Genus_Name;",
+            "conchas": "$Codex_Ent_Conchas_Genus_Name;",
+            "electricae": "$Codex_Ent_Electricae_Genus_Name;",
+            "fonticulus": "$Codex_Ent_Fonticulus_Genus_Name;",
+            "shrubs": "$Codex_Ent_Shrubs_Genus_Name;",
+            "fumerolas": "$Codex_Ent_Fumerolas_Genus_Name;",
+            "fungoids": "$Codex_Ent_Fungoids_Genus_Name;",
+            "osseus": "$Codex_Ent_Osseus_Genus_Name;",
+            "recepta": "$Codex_Ent_Recepta_Genus_Name;",
+            "sinuous tuber": "$Codex_Ent_Tube_Genus_Name;",
+            "stratum": "$Codex_Ent_Stratum_Genus_Name;",
+            "tubus": "$Codex_Ent_Tubus_Genus_Name;",
+            "tussocks": "$Codex_Ent_Tussocks_Genus_Name;",
+            "crystalline shard": "$Codex_Ent_Ground_Struct_Ice_Name;",
+            "amphora": "$Codex_Ent_Vents_Name;"
+        }
+        cgenus = CGENUS_LUT.get(genus.lower(), "unknown")
+        if cgenus not in genuses:
+            genuses.append(cgenus)
+
+        if not detected_genuses:
+            biome.append(species)
+        elif cgenus == "unknown":
+            EDRLOG.log("Unknown genus: {}".format(genus), "WARNING")
+            biome.append(species)
+        else:
+            for g in detected_genuses:
+                if cgenus in g["Genus"]:
+                    biome.append(species)
+                    break
+
+    def __add_missing_genuses(self, biome, genuses, detected_genuses):
+        if detected_genuses is None or len(detected_genuses) == 0:
+            return
+        
+        GENUS_LUT = {
+            "$Codex_Ent_Aleoids_Genus_Name;": _("Aleoids"),
+            "$Codex_Ent_Sphere_Genus_Name;": _("Anemone"),
+            "$Codex_Ent_Bacterial_Genus_Name;": _("Bacterium"),
+            "$Codex_Ent_Cone_Genus_Name;": _("Bark mound"),
+            "$Codex_Ent_Seed_Genus_Name;": _("Seed"),
+            "$Codex_Ent_Cactoid_Genus_Name;": _("Cactoids"),
+            "$Codex_Ent_Clypeus_Genus_Name;": _("Clypeus"),
+            "$Codex_Ent_Conchas_Genus_Name;": _("Conchas"),
+            "$Codex_Ent_Electricae_Genus_Name;": _("Electricae"),
+            "$Codex_Ent_Fonticulus_Genus_Name;": _("Fonticulus"),
+            "$Codex_Ent_Shrubs_Genus_Name;": _("Shrubs"),
+            "$Codex_Ent_Fumerolas_Genus_Name;": _("Fumerolas"),
+            "$Codex_Ent_Fungoids_Genus_Name;": _("Fungoids"),
+            "$Codex_Ent_Osseus_Genus_Name;": _("Osseus"),
+            "$Codex_Ent_Recepta_Genus_Name;": _("Recepta"),
+            "$Codex_Ent_Tube_Genus_Name;": _("Sinuous tuber"),
+            "$Codex_Ent_Stratum_Genus_Name;": _("Stratum"),
+            "$Codex_Ent_Tubus_Genus_Name;": _("Tubus"),
+            "$Codex_Ent_Tussocks_Genus_Name;": _("Tussocks"),
+            "$Codex_Ent_Ground_Struct_Ice_Name;": _("Crystalline shards"),
+            "$Codex_Ent_Vents_Name;": _("Amphora")
+        }
+
+        predicted = set(genuses)
+
+        for g in detected_genuses:
+            if g["Genus"] not in GENUS_LUT:
+                continue
+            readable_genus = GENUS_LUT[g["Genus"]]
+            if g["Genus"] not in predicted:
+                biome.append(readable_genus)
+
+
+    def __expected_bio_on_planet(self, planet, system_name):
+        EDRLOG.log("Expected bio on planet {} in system {}".format(planet.get("name", "???"), system_name), "INFO")
+        species = []
+        detected_genuses = planet.get("genuses", None)
+        genuses = []
+        EDRLOG.log("Detected genuses: {}".format(detected_genuses), "INFO")
+        atmosphere = planet.get("atmosphereType", "No atmosphere")
+        if atmosphere.lower().startswith("thin "):
+            atmosphere = atmosphere[len("thin "):]
+        atmosphere = atmosphere.replace(" ", "")
+        atmosphere = atmosphere.replace("-", "")
+        atmosphere = atmosphere.lower()
+        EDRLOG.log("Atm: {}".format(atmosphere), "INFO")
+        gravity = planet.get("gravity", 100) / 9.81
+        EDRLOG.log("Gravity: {}".format(gravity), "INFO")
+        mean_temperature = planet.get("surfaceTemperature", 1000)
+        EDRLOG.log("Temperature: {}".format(mean_temperature), "INFO")
+        planet_class = planet.get("subType", "Unknown").lower()
+        planet_class = planet_class.replace("world", "")
+        planet_class = planet_class.replace("body", "")
+        planet_class = planet_class.replace(" ", "")
+        EDRLOG.log("Class: {}".format(planet_class), "INFO")
+        luminosity = "???"
+        parent_star = self.__parent_star(system_name, planet)
+        star_type = "???"
+        distance_from_parent_star = planet.get("distanceToArrival", 0)
+        if parent_star:
+            raw_type = parent_star.get("subType", "???")
+            star_type = self.__star_type_lut(raw_type)
+            distance_from_parent_star = planet.get("distanceToArrival", 0) - parent_star.get("distanceToArrival", 0)
+            luminosity = planet.get("luminosity", "???")
+        
+        EDRLOG.log("parent star type: {}".format(star_type), "INFO")
+        EDRLOG.log("distance from parent star: {}".format(distance_from_parent_star), "INFO")
+
+        if atmosphere == "noatmosphere":
+            '''
+            Amphora Plant also needs one the following planets types present in the system:
+            Earth-Like World
+            Ammoniac
+            Gas Giant with water based life
+            Gas Giant with ammonia based life
+            Water Giant
+            '''
+            if star_type == "A" and planet_class == "metalrich":
+                self.__maybe_append(species, genuses, _("Amphora(?)"), "amphora", detected_genuses)
+            
+            if star_type in ["O", "B"]:
+                self.__maybe_append(species, genuses, _("Anemones"), "anemone", detected_genuses)
+                
+            if star_type in ["A"]:
+                self.__maybe_append(species, genuses, _("Anemones(?)"), "anemone", detected_genuses)
+
+            '''
+            Planets types: planets with no atmosphere
+            In or near a nebula (less than 150 Ly from the centre of the nebula)
+            '''
+            # species.append(_("Bark mounds(?)"))
+
+            if star_type in ["A", "F", "G", "K", "M", "S"]:
+                if mean_temperature < 273 and distance_from_parent_star > 12000:
+                    '''
+                    TODO check for the presence of any of these:
+                        Earth-Like World
+                        Ammoniac
+                        Gas Giant with water based life
+                        Gas Giant with ammonia based life
+                        Water Giant
+                    '''        
+                    self.__maybe_append(species, genuses, _("Crystalline shard(?)"), "crystalline shard", detected_genuses)
+
+            if (planet.get("volcanism","")): 
+                '''
+                TODO complex, rare....
+                Believed to be located near Guardian ruins.
+                Type of planet, temperature, presence of an Earth-like world, or a gas giant with water-based life are also extra factors...
+                '''
+                # species.append(_("Brain trees(??)"))
+                
+                if planet.get("volcanism", ""):
+                    self.__maybe_append(species, genuses, _("Sinuous Tubers(?)"), "sinuous tuber", detected_genuses)
+                    
+            self.__add_missing_genuses(species, genuses, detected_genuses)
+            return {
+                "spieces": species,
+                "genuses": genuses,
+            }
+        
+        if not EDRSystems.__planet_walkable(planet):
+            EDRLOG.log("High gravity or not landable => no bio expected", "INFO")
+            self.__add_missing_genuses(species, genuses, detected_genuses)
+            return {
+                "spieces": species,
+                "genuses": genuses,
+            }
+        
+        # TODO color variation (mats or parent star?)
+        
+        if atmosphere in ["water", "waterrich"]:
+            self.__maybe_append(species, genuses, _("Bacterium Cerbrus"), "Bacterium", detected_genuses)
+            self.__maybe_append(species, genuses, _("Concha Renibus"), "Conchas", detected_genuses)
+            # TODO redo the combos in a constructed manner
+            fungoidas = _("Fungoida Gelata")
+            fungoidas += "/" + _("Stabitis")
+            self.__maybe_append(species, genuses, fungoidas, "Fungoids", detected_genuses)
+            self.__maybe_append(species, genuses, _("Cactoida Vermis"), "Cactoids", detected_genuses)
+
+            if mean_temperature >= 165:
+                if planet_class == "rocky":
+                    self.__maybe_append(species, genuses, _("Stratum Paleas"), "Stratum", detected_genuses)
+                else:
+                    self.__maybe_append(species, genuses, _("Stratum Tectonicas"), "Stratum", detected_genuses)
+
+            
+            if mean_temperature >= 190:
+                clypeus = _("Clypeus Lacrimam")
+                clypeus += "/" + _("Margaritus")
+                if parent_star and distance_from_parent_star > 2500:
+                    clypeus += "/" + _("Speculumi")
+                self.__maybe_append(species, genuses, clypeus, "Clypeus", detected_genuses)
+
+            if planet_class == "rocky":
+                self.__maybe_append(species, genuses, _("Frutexa Sponsae"), "Shrubs", detected_genuses)
+                self.__maybe_append(species, genuses, _("Osseus Discus"), "Osseus", detected_genuses)
+                self.__maybe_append(species, genuses, _("Tussock Virgam"), "tussocks", detected_genuses)
+            elif planet_class in ["icy", "rockyice"]:
+                self.__maybe_append(species, genuses, _("Fumerola Aquatis"), "Fumerolas", detected_genuses)
+            elif planet_class == "highmetalcontent":
+                self.__maybe_append(species, genuses, _("Osseus Discus"), "Osseus", detected_genuses)
+                self.__maybe_append(species, genuses, _("Tussock Virgam"), "tussocks", detected_genuses) # example: Hangu C 2
+        elif atmosphere == "helium":
+            self.__maybe_append(species, genuses, _("Bacterium Nebulus"), "Bacterium", detected_genuses)
+            if star_type == "A" and luminosity.startswith("V"):
+                self.__maybe_append(species, genuses, _("Electricae Pluma"), "Electricae", detected_genuses)
+            '''
+            Electricae radialem (Nebulae)
+            '''
+        elif atmosphere in ["neon", "neonrich"]:
+            self.__maybe_append(species, genuses, _("Fonticulua segmentatus"), "Fonticulus", detected_genuses)
+            bacterium = _("Bacterium Acies")
+            if planet.get("volcanism","") == "Water":
+                bacterium += "/" + _("Verrata")
+            elif planet.get("volcanism","") in ["Nitrogen", "Ammonia"]:
+                bacterium += "/" + _("Omentum")
+            elif planet.get("volcanism","") in ["Carbon", "Methane"]:
+                bacterium += "/" + _("Scopulum")
+            self.__maybe_append(species, genuses, bacterium, "Bacterium", detected_genuses)
+
+            if star_type == "A" and luminosity.startswith("V"):
+                self.__maybe_append(species, genuses, _("Electricae Pluma"), "Electricae", detected_genuses)
+            '''
+            Electricae radialem (Nebulae)            
+            '''
+        elif atmosphere in ["argon", "argonrich"]:
+            self.__maybe_append(species, genuses, _("Bacterium Vesicula"), "Bacterium", detected_genuses)
+            self.__maybe_append(species, genuses, _("Fungoida Bullarum"), "Fungoids", detected_genuses)
+            self.__maybe_append(species, genuses, _("Osseus Pumice"), "Osseus", detected_genuses)
+            if planet_class == "rocky":
+                self.__maybe_append(species, genuses, _("Tussock Capillum"), "tussocks", detected_genuses)
+            if atmosphere == "argon" and planet_class in ["icy", "rockyice"]:
+                self.__maybe_append(species, genuses, _("Fonticulua Campestris"), "Fonticulus", detected_genuses)
+            elif atmosphere == "argonrich" and planet_class in ["icy", "rockyice"]:
+                self.__maybe_append(species, genuses, _("Fonticulua Upupam"), "Fonticulus", detected_genuses)
+            if star_type == "A" and luminosity.startswith("V"):
+                self.__maybe_append(species, genuses, _("Electricae Pluma"), "Electricae", detected_genuses)
+            '''
+            Electricae radialem (Nebulae)
+            '''
+        elif atmosphere in ["methane", "methanerich"]:
+            self.__maybe_append(species, genuses, _("Fungoida Setisis"), "Fungoids", detected_genuses)
+            self.__maybe_append(species, genuses, _("Osseus Pumice"), "Osseus", detected_genuses)
+            self.__maybe_append(species, genuses, _("Bacterium Bullaris"), "Bacterium", detected_genuses)
+            if planet_class in ["icy", "rockyice"]:
+                self.__maybe_append(species, genuses, _("Fonticulua Digitos"), "Fonticulus", detected_genuses)
+            elif planet_class == "rocky":
+                self.__maybe_append(species, genuses, _("Tussock Capillum"), "tussocks", detected_genuses)
+        elif atmosphere == "nitrogen":
+            self.__maybe_append(species, genuses, _("Concha Biconcavis"), "Conchas", detected_genuses)
+            self.__maybe_append(species, genuses, _("Bacterium Informem"), "Bacterium", detected_genuses)
+            if planet_class in ["icy", "rockyice"]:
+                self.__maybe_append(species, genuses, _("Fonticulua Lapida"), "Fonticulus", detected_genuses)
+        elif atmosphere == "oxygen":
+            self.__maybe_append(species, genuses, _("Bacterium Volu"), "Bacterium", detected_genuses)
+            if planet_class in ["icy", "rockyice"]:
+                self.__maybe_append(species, genuses, _("Fonticulua Fluctus"), "Fonticulus", detected_genuses)
+            elif planet_class == "highmetalcontent" and mean_temperature > 165:
+                self.__maybe_append(species, genuses, _("Stratum Tectonicas"), "Stratum", detected_genuses)
+        elif atmosphere == "ammonia" and planet_class == "rocky":
+            aleoidas = _("Aleoida Laminiae")
+            aleoidas += "/" + _("Spica")
+            self.__maybe_append(species, genuses, aleoidas, "Aleoids", detected_genuses)
+            cactoidas = _("Cactoida Lapis")
+            cactoidas += "/" + _("Peperatis")
+            self.__maybe_append(species, genuses, cactoidas, "Cactoids", detected_genuses)
+            self.__maybe_append(species, genuses, _("Concha Aureolas"), "Conchas", detected_genuses)
+            shrubs = _("Frutexa Flabellum")
+            shrubs += "/" + _("Flammasis")
+            self.__maybe_append(species, genuses, shrubs, "shrubs", detected_genuses)
+            self.__maybe_append(species, genuses, _("Fungoida Setisis"), "Fungoids", detected_genuses)
+            self.__maybe_append(species, genuses, _("Osseus Spiralis"), "Osseus", detected_genuses)
+            tussocks = _("Tussock Catena")
+            tussocks += "/" + _("Cultro")
+            tussocks += "/" + _("Divisa")
+            self.__maybe_append(species, genuses, tussocks, "Tussocks", detected_genuses)
+            self.__maybe_append(species, genuses, _("Bacterium Alcyoneum"), "Bacterium", detected_genuses)
+            if gravity < 0.15:
+                self.__maybe_append(species, genuses, _("Tubus Rosarium"), "Tubus", detected_genuses)
+            if mean_temperature > 165:
+                stratums = _("Stratum Paleas")
+                stratums += "/" + _("Laminamus")
+                self.__maybe_append(species, genuses, stratums, "Stratum", detected_genuses)
+        elif atmosphere == "ammonia" and planet_class == "highmetalcontent":
+            self.__maybe_append(species, genuses, _("Bacterium Alcyoneum"), "Bacterium", detected_genuses)
+            aleoidas = _("Aleoida Laminiae")
+            aleoidas += "/" + _("Spica")
+            self.__maybe_append(species, genuses, aleoidas, "Aleoids", detected_genuses)
+            cactoidas = _("Cactoida Lapis")
+            cactoidas += "/" + _("Peperatis")
+            self.__maybe_append(species, genuses, cactoidas, "Cactoids", detected_genuses)
+            self.__maybe_append(species, genuses, _("Concha Aureolas"), "Conchas", detected_genuses)
+            self.__maybe_append(species, genuses, _("Frutexa Metallicum"), "Shrubs", detected_genuses)
+            self.__maybe_append(species, genuses, _("Fungoida Setisis"), "Fungoids", detected_genuses)
+            self.__maybe_append(species, genuses, _("Osseus Spiralis"), "Osseus", detected_genuses)
+            if gravity < 0.15:
+                self.__maybe_append(species, genuses, _("Tubus Sororibus"), "Tubus", detected_genuses)
+            if mean_temperature > 165:
+                self.__maybe_append(species, genuses, _("Stratum Tectonicas"), "Stratum", detected_genuses)
+        elif atmosphere in ["carbondioxide", "carbondioxiderich"] and planet_class == "rocky":
+            self.__maybe_append(species, genuses, _("Bacterium Aurasus"), "Bacterium", detected_genuses)
+            conchas = _("Concha Labiata")
+            shrubs = _("Frutexa Acus")
+            shrubs += "/" + _("Fera")
+            self.__maybe_append(species, genuses, shrubs, "shrubs", detected_genuses)
+            tussocks = _("Tussock Propagito")
+            tussocks += "/" + _("Pennatis")
+            if mean_temperature > 145 and mean_temperature < 155:
+                tussocks += "/" + _("Pennata")
+            elif mean_temperature > 155 and mean_temperature < 160:
+                tussocks += "/" + _("Ventusa")
+            elif mean_temperature > 160 and mean_temperature < 170:
+                tussocks += "/" + _("Ignis")
+            elif mean_temperature > 170 and mean_temperature < 175:
+                tussocks += "/" + _("Serrati")
+            elif mean_temperature > 175 and mean_temperature < 180:
+                tussocks += "/" + _("Albata")
+                self.__maybe_append(species, genuses, _("Aleoida Arcus"), "Aleoids", detected_genuses)
+            elif mean_temperature > 180 and mean_temperature < 190:
+                self.__maybe_append(species, genuses, _("Aleoida Coronamus"), "Aleoids", detected_genuses)
+                self.__maybe_append(species, genuses, _("Cactoida Cortexum"), "Cactoids", detected_genuses)
+                cactoidas = _("Cactoida Cortexum")
+                cactoidas += "/" + _("Pullulanta")
+                self.__maybe_append(species, genuses, cactoidas, "cactoids", detected_genuses)
+                conchas += "/" + _("Renibus")
+                osseuses = _("Osseus Fractus")
+                osseuses += "/" + _("Cornibus")
+                self.__maybe_append(species, genuses, osseuses, "osseus", detected_genuses)
+                tussocks += "/" + _("Caputus")
+                fungoidas = _("Fungoida Gelata")
+                fungoidas += "/" + _("Stabitis")
+                self.__maybe_append(species, genuses, fungoidas, "Fungoids", detected_genuses)
+            elif mean_temperature > 180 and mean_temperature < 195:
+                cactoidas = _("Cactoida Cortexum")
+                cactoidas += "/" + _("Pullulanta")
+                self.__maybe_append(species, genuses, cactoidas, "cactoids", detected_genuses)
+                conchas += "/" + "Renibus"
+                self.__maybe_append(species, genuses, _("Osseus Cornibus"), "Osseus", detected_genuses)
+                tussocks += "/" + _("Caputus")
+                fungoidas = _("Fungoida Gelata")
+                fungoidas += "/" + _("Stabitis")
+                self.__maybe_append(species, genuses, fungoidas, "Fungoids", detected_genuses)
+            
+            if mean_temperature > 160 and mean_temperature < 190 and gravity < 0.15:
+                tubus = _("Tubus Cavas")
+                tubus += "/" + _("Compagibus")
+                tubus += "/" + _("Conifer")
+                self.__maybe_append(species, genuses, tubus, "tubus", detected_genuses)
+            
+            if mean_temperature > 190:
+                clypeuses = _("Clypeus Lacrimam")
+                clypeuses += "/" + _("Margaritus")
+                if distance_from_parent_star > 2500:
+                    clypeuses += "/" + _("Speculumi")
+                self.__maybe_append(species, genuses, clypeuses, "clypeus", detected_genuses)
+
+                if mean_temperature < 195:
+                    self.__maybe_append(species, genuses, _("Aleoida Gravis"), "Aleoids", detected_genuses)
+                    self.__maybe_append(species, genuses, _("Osseus Pellebantus"), "Osseus", detected_genuses)
+                    self.__maybe_append(species, genuses, _("Aleoida Gravis"), "Aleoids", detected_genuses)
+                    tussocks += "/" + _("Triticum")
+            
+            if mean_temperature > 165:
+                stratums = _("Stratum Paleas")
+                if  mean_temperature < 190:
+                    stratums += "/" + _("Stratum Excutitus")
+                else:
+                    stratums += "/" + _("Stratum Limaxus")
+                    stratums += "/" + _("Stratum Frigus")
+                    stratums += "/" + _("Stratum Cucumisis")
+
+            self.__maybe_append(species, genuses, tussocks, "tussocks", detected_genuses)
+            self.__maybe_append(species, genuses, conchas, "conchas", detected_genuses)
+        elif atmosphere in ["carbondioxide", "carbondioxiderich"] and planet_class == "highmetalcontent":
+            self.__maybe_append(species, genuses, _("Bacterium Aurasus"), "Bacterium", detected_genuses)
+            self.__maybe_append(species, genuses, _("Frutexa Metallicum"), "Shrubs", detected_genuses)
+            if mean_temperature > 175 and mean_temperature < 180:
+                self.__maybe_append(species, genuses, _("Aleoida Arcus"), "Aleoids", detected_genuses)
+            elif mean_temperature > 180 and mean_temperature < 190:
+                self.__maybe_append(species, genuses, _("Aleoida Coronamus"), "Aleoids", detected_genuses)
+            elif mean_temperature > 190 and mean_temperature < 195:
+                self.__maybe_append(species, genuses, _("Aleoida Gravis"), "Aleoids", detected_genuses)
+            
+            if mean_temperature > 180 and  mean_temperature < 195:
+                cactoidas = _("Cactoida Cortexum")
+                cactoidas += "/" + _("Pullulanta")
+                self.__maybe_append(species, genuses, cactoidas, "Cactoids", detected_genuses)                
+            
+            conchas = None
+            if mean_temperature > 180 and mean_temperature < 195:
+                conchas = _("Concha Renibus")
+                fungoidas = _("Fungoida Gelata")
+                fungoidas += "/" + _("Stabitis")
+                self.__maybe_append(species, genuses, fungoidas, "fungoids", detected_genuses)
+
+            if mean_temperature < 190:
+                if conchas:
+                    conchas += "/" + _("Labiata")
+                else:
+                    conchas = _("Concha Labiata")
+            if conchas:
+                self.__maybe_append(species, genuses, conchas, "conchas", detected_genuses)
+
+            osseuses = None
+            if mean_temperature > 180:
+                if mean_temperature < 195:
+                    osseuses = _("Osseus Cornibus")
+                    if mean_temperature > 190:
+                        osseuses += "/" + _("Pellebantus")
+                if mean_temperature < 190:
+                    if osseuses:
+                        osseuses = _("Osseus Fractus")
+                    else:
+                        osseuses += "/" + _("Fractus")
+            if osseuses:
+                self.__maybe_append(species, genuses, osseuses, "osseus", detected_genuses)
+            
+            if mean_temperature > 160 and mean_temperature < 190 and gravity < 0.15:
+                self.__maybe_append(species, genuses, _("Tubus Sororibus"), "tubus", detected_genuses)
+
+            if mean_temperature > 190:
+                clypeuses = _("Clypeus Lacrimam")
+                clypeuses += "/" + _("Margaritus")
+                if distance_from_parent_star > 2500:
+                    clypeuses += "/" + _("Speculumi")
+                self.__maybe_append(species, genuses, clypeuses, "clypeus", detected_genuses)
+            
+            if mean_temperature > 165:
+                self.__maybe_append(species, genuses, _("Stratum Tectonicas"), "stratum", detected_genuses)
+        elif atmosphere == "sulphurdioxide" and planet_class in ["icy", "rockyice"]:
+            receptas = _("Recepta Umbrux")
+            receptas += "/" + _("Conditivus")
+            self.__maybe_append(species, genuses, receptas, "Recepta", detected_genuses)
+            self.__maybe_append(species, genuses, _("Bacterium Cerbrus"), "Bacterium", detected_genuses)
+        elif atmosphere == "sulphurdioxide" and planet_class in ["icy", "rockyice"]:
+            self.__maybe_append(species, genuses, _("Frutexa Collum"), "Shrubs", detected_genuses)
+            receptas = _("Recepta Deltahedronix")
+            receptas += "/" + _("Umbrux")
+            self.__maybe_append(species, genuses, receptas, "Recepta", detected_genuses)
+            self.__maybe_append(species, genuses, _("Tussock Stigmasis"), "tussocks", detected_genuses)
+            bacterium = _("Bacterium Cerbrus")
+            if mean_temperature > 165:
+                self.__maybe_append(species, genuses, _("Stratum Araneamus"), "Stratum", detected_genuses)
+                if mean_temperature <  190:
+                    bacterium += "/" + _("Excutitus")
+                    bacterium += "/" + _("Limaxus")
+                if mean_temperature > 190:
+                    bacterium += "/" + _("Frigus")
+                    bacterium += "/" + _("Cucumisis")
+            self.__maybe_append(species, genuses, bacterium, "Bacterium", detected_genuses)
+        elif atmosphere == "sulphurdioxide" and planet_class == "highmetalcontent":
+            receptas = _("Recepta Deltahedronix")
+            receptas += "/" + _("Umbrux")
+            self.__maybe_append(species, genuses, receptas, "Recepta", detected_genuses)
+            self.__maybe_append(species, genuses, _("Bacterium Cerbrus"), "Bacterium", detected_genuses)
+            if mean_temperature > 165:
+                self.__maybe_append(species, genuses, _("Stratum Tectonicas"), "Stratum", detected_genuses)
+
+        self.__add_missing_genuses(species, genuses, detected_genuses)
+        
+        EDRLOG.log("Species: {}".format(species), "INFO")
+        EDRLOG.log("Genuses: {}".format(genuses), "INFO")
+        
+        return {
+            "species": species,
+            "genuses": genuses,
+        }
+
 
     def __describe_belt(self, body, belt_full_name):
         # TODO not really working yet
@@ -865,6 +1388,17 @@ class EDRSystems(object):
                 return None
             
         return materials
+
+    def biology_on(self, system_name, body_name):
+        if not system_name or not body_name:
+            return None
+
+        the_body = self.body(system_name, body_name)
+        if not the_body:
+            EDRLOG.log("No body for biology on: {}".format(system_name, body_name), "INFO")
+            return {}
+        return self.__expected_bio_on_planet(the_body, system_name)
+        
 
     def reflect_scan(self, system_name, body_name, scan):
         if "belt cluster" in body_name.lower():
@@ -940,8 +1474,90 @@ class EDRSystems(object):
         else:
             pass
         
-        self.edsm_bodies_cache.set(system_name.lower(), bodies)     
+        self.edsm_bodies_cache.set(system_name.lower(), bodies)
+
+    def reflect_organic_scan(self, system_name, body_id, scan):
+        if scan["event"] != "ScanOrganic" and scan["ScanType"] != "Analyse":
+            return
+        
+        bodies = self.bodies(system_name)
+        if not bodies:
+            bodies = []
+        
+        the_body = None
+        for b in bodies:
+            if b.get("bodyId", -1) == body_id:
+                the_body = b
+                break
+                
+        new_body = the_body is None
+        if new_body:
+            the_body = {}
+
+        kv_lut = {
+            "timestamp": {"k": "updateTime", "v": lambda v: v.replace("T", " ").replace("Z", "") if v else ""},
+            "event": None,
+            "ScanType": None,
+            "Body": {"k": "bodyId", "v": lambda v: v},
+            "SystemAddress": None,
+            "Genus": None,
+            "Genus_Localised": None,
+            "Species": None,
+            "Species_Localised": None
+        }
+        adj_kv = lambda k: kv_lut[k] if k in kv_lut else ({"k": k[:1].lower() + k[1:], "v": lambda v: v} if k else None)
+        
+        for key in scan:
+            new_kv = adj_kv(key)
+            if new_kv:
+                the_body[new_kv["k"]] = new_kv["v"](scan[key])
+
+        if "species" not in the_body:
+            the_body["species"] = {}
+        
+        the_body["species"][scan["Species"]] = {"genus": scan["Genus"], "genusLocalised": scan["Genus_Localised"], "speciesLocalised": scan["Species_Localised"]}
+        
+        if new_body:
+            bodies.append(the_body)
+        else:
+            pass
+        
+        self.edsm_bodies_cache.set(system_name.lower(), bodies)
     
+    def analyzed_biome(self, star_system, body_id_or_name):
+        planet = self.__body_with_id(star_system, body_id_or_name) or self.body(star_system, body_id_or_name)
+        if not planet:
+            return
+        
+        body_name = planet.get("name", None)
+        if body_name is None:
+            return
+        biome = self.biology_on(star_system, body_name)
+        detected_genuses = len(planet.get("genuses", []))
+        expected_genuses = len(biome.get("genuses", [])) 
+        actual_genuses = set()
+        actual_species = set()
+        species = planet.get("species", {})
+        for s in species:
+            actual_genuses.add(species[s]["genusLocalised"])
+            actual_species.add(species[s]["speciesLocalised"])
+        analyzed_genuses = len(actual_genuses)
+        analyzed_species = len(actual_species)
+        
+        return {
+            "genuses": {
+                "detected": detected_genuses,
+                "expected": expected_genuses,
+                "analyzed": analyzed_genuses,
+                "localized": actual_genuses
+            },
+            "species": {
+                "analyzed": analyzed_species,
+                "localized": actual_species
+            }
+        }
+
+
     def body(self, system_name, body_name):
         if not system_name or not body_name:
             return None
@@ -1037,6 +1653,44 @@ class EDRSystems(object):
         the_body["wasEfficient"] = scan["ProbesUsed"] <= scan["EfficiencyTarget"]
         the_body["mapped"] = True
         
+        if new_body:
+            bodies.append(the_body)
+        
+        self.edsm_bodies_cache.set(system_name.lower(), bodies)
+
+    def saa_signals_found(self, system_name, scan):
+        body_name = scan.get("BodyName", None)
+        if not body_name:
+            return
+        bodies = self.bodies(system_name)
+        if not bodies:
+            bodies = []
+        
+        the_body = None
+        for b in bodies:
+            if b.get("name", "").lower() == body_name.lower():
+                the_body = b
+                break
+                
+        new_body = the_body is None
+        if new_body:
+            the_body = {}
+        
+        kv_lut = {
+            "timestamp": {"k": "updateTime", "v": lambda v: v.replace("T", " ").replace("Z", "") if v else ""},
+            "event": None,
+            "BodyName": {"k": "name", "v": lambda v: v},
+            "BodyID": {"k": "bodyId", "v": lambda v: v},
+            "SystemAddress": None,
+        }
+        
+        adj_kv = lambda k: kv_lut[k] if k in kv_lut else ({"k": k[:1].lower() + k[1:], "v": lambda v: v} if k else None)
+        
+        for key in scan:
+            new_kv = adj_kv(key)
+            if new_kv:
+                the_body[new_kv["k"]] = new_kv["v"](scan[key])
+
         if new_body:
             bodies.append(the_body)
         
@@ -1158,7 +1812,8 @@ class EDRSystems(object):
         
         value = None
         for body in system_value.get("valuableBodies", []):
-            if body.get("bodyName", None) == body_name:
+            # if body.get("bodyName", None) == body_name:
+            if body.get("name", None) == body_name:
                 value = body
 
         if value is None:

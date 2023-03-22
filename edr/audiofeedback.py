@@ -12,7 +12,7 @@ from edrlog import EDRLog
 class EDRSoundEffects(object):
     def __init__(self, loud=True):
         self.sfx_config = SFXConfig(config_file='config/sfx_config.v1.ini', user_config_file='config/user_sfx_config.v1.ini')
-        self.kinds = ["startup", "intel", "warning", "sitrep", "notify", "help", "navigation", "docking", "mining", "bounty-hunting", "target", "searching", "failed", "jammed"]
+        self.kinds = ["startup", "intel", "warning", "sitrep", "notify", "help", "navigation", "docking", "mining", "bounty-hunting", "target", "searching", "failed", "jammed", "biology"]
         self.sounds = {}
         for kind in self.kinds:
             audio_filename = self.sfx_config.snd(kind, loud)
@@ -50,6 +50,9 @@ class EDRSoundEffects(object):
 
     def navigation(self):
         self.__sfx("navigation")
+
+    def biology(self):
+        self.__sfx("biology")
 
     def docking(self):
         self.__sfx("docking")

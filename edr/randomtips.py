@@ -11,7 +11,7 @@ import utils2to3
 def _(message): return message
 
 DEFAULT_TIPS = {
-    "EDR tips": [
+    "edr": [
         _(u"Situation reports (SITREPs) provide a summary of recent activity at a location."),
         _(u"Send !sitreps in chat to get a list of systems with recent activity."),
         _(u"Send !sitrep <system> in chat to get a SITREP for <system>, e.g. !sitrep Lave."),
@@ -133,9 +133,19 @@ DEFAULT_TIPS = {
         _(u"Point at materials with the emote gesture to identify them and have EDR share some info about how useful the material is."),
         _(u"Point at, or salute other players with the emote gestures to show their EDR and Inara profile."),
         _(u"When visiting a bar on a fleet carrier, EDR will list the most useful Odyssey items that are on sale if any."),
-        _(u"When visiting a bar on a fleet carrier with no items on sale, EDR will list the least useful Odyssey items that can be sold if any.")
+        _(u"When visiting a bar on a fleet carrier with no items on sale, EDR will list the least useful Odyssey items that can be sold if any."),
+        _(u"Send !tip for a random advice; Send '!tip edr' for an EDR related advice, or '!tip open' for an advice about playing in Open"),
+        _(u"Send '!nav next' or '!nav previous' when near/on a planet to select the next/previous custom Point of Interest."),
+        _(u"Send '!nav clear' or the 'stop' gesture when near/on a planet to clear the current custom Point of Interest."),
+        _(u"Send '!nav reset' when near/on a planet to clear all the custom Point of Interests."),
+        _(u"When targeting or approaching a planet, EDR will provide exobiology insights if the planet is suitable."),
+        _(u"EDR will automatically add a custom Point of Interest when scanning biological element with the composition scanner."),
+        _(u"EDR will automatically add a custom Point of Interest when pointing at something while on foot (current location)."),
+        _(u"After scanning a biological with the genetic sampler, EDR will show the value of the specimen, the minimum distance for gene diversity, the distance and heading for the previous samples."),
+        _(u"If you stumble upon another species while doing Exobiology research, consider using the 'pointing' gesture to record your current position as a custom Point of Interest so that you can find it back later."),
+        _(u"Custom Point of Interests on planets are not persistent (i.e. will disappear if you close EDMC).")
     ],
-    "OPEN tips": [
+    "open": [
         _(u"Never fly what you can't afford to lose. Check your rebuy and credit balance on your right panel."),
         _(u"Never combat log in Open. If you aren't willing to accept the risk, don't bother with Open, Google 'Mobius PVE'."),
         _(u"Hit Ctrl+B to display a bandwidth meter. You are not alone if it goes over 1000 B/s."),
@@ -199,6 +209,10 @@ class RandomTips(object):
         else:
             self.tips = DEFAULT_TIPS
 
-    def tip(self):
-        category = random.choice(list(self.tips))
+    def tip(self, category=None):
+        random.seed()
+        if category not in self.tips:
+            category = random.choice(list(self.tips))
+        else:
+            category = category.lower()
         return edri18n._(random.choice(self.tips[category]))

@@ -7,7 +7,8 @@ from edsitu import EDLocation, EDAttitude, EDSpaceDimension, EDDestination
 
 from edtime import EDTime
 from edvehicles import EDVehicleFactory 
-from edspacesuits import EDSuitFactory
+from edspacesuits import EDSuitFactory, EDOdysseyCloset
+from edcodex import EDCodex
 from edinstance import EDInstance
 from edrlog import EDRLog
 from edrconfig import EDRConfig
@@ -214,7 +215,7 @@ def pretty_print_number(number):
     elif number >= 10000000:
         # Translators: this is a short representation for a bounty >= 10 000 000 credits (m stands for million)
         readable = _(u"{} m").format(number // 1000000)
-    elif number > 1000000:
+    elif number >= 1000000:
         # Translators: this is a short representation for a bounty >= 1 000 000 credits (m stands for million)
         readable = _(u"{:.1f} m").format(number / 1000000.0)
     elif number >= 10000:
@@ -710,24 +711,31 @@ class EDPilot(object):
     def has_partial_status(self):
         return self.mothership is None or self.location.star_system is None or self.location.place is None
 
-    def update_vehicle_or_suit_if_obsolete(self, event):
-        if event.get("event", None) in ["SuitLoadout", "SwitchSuitLoadout"]:
-            self.in_spacesuit()
-            self.spacesuit = EDSuitFactory.from_suitloadout_event(event)
-            self._touch()
-            return True
-        elif event.get("event", None) in ["LoadGame", "Loadout"]:
-            so_called_ship = event.get("Ship", None)
+    def update_suit_if_obsolete(self, entry):
+        if "event" not in entry or entry["event"] not in ["SuitLoadout", "SwitchSuitLoadout"]:
+            return False
+        
+        if entry["event"] in ["SwitchSuitLoadout", "SuitLoadout"]:
+            # note: game says that the backpack content is cleared, nothing about organic data
+            return self.__update_suit_if_obsolete(entry)
+        return False
+
+    def __update_suit_if_obsolete(self, entry):
+        self.in_spacesuit()
+        self.spacesuit = self.closet.switch_suit_loadout(entry)
+        self._touch()
+        return True
+
+    def update_vehicle_or_suit_if_obsolete(self, entry):
+        if entry.get("event", None) in ["LoadGame", "Loadout"]:
+            so_called_ship = entry.get("Ship", None)
             if not so_called_ship:
                 return False
             
             if EDSuitFactory.is_spacesuit(so_called_ship):
-                self.in_spacesuit()
-                self.spacesuit = EDSuitFactory.from_load_game_event(event)
-                self._touch()
-                return True
+                return self.__update_suit_if_obsolete(entry)
             else:
-                return self.update_vehicle_if_obsolete(EDVehicleFactory.from_loadgame_or_loadout_event(event))
+                return self.update_vehicle_if_obsolete(EDVehicleFactory.from_loadgame_or_loadout_event(entry))
         return False
 
     
@@ -938,6 +946,8 @@ class EDPlayerOne(EDPlayer):
         self.planetary_destination = None
         self.recon_box = EDReconBox()
         self.inventory = EDRInventory()
+        self.closet = EDOdysseyCloset()
+        self.codex = EDCodex()
         self.fleet = edrfleet.EDRFleet()
         try:
             with open(self.EDR_FLEET_CARRIER_CACHE, 'rb') as handle:
@@ -1356,6 +1366,11 @@ class EDPlayerOne(EDPlayer):
             else:
                 self.piloted_vehicle.attacked()
 
+    def pips(self, values):
+        if self.vehicle:
+            return self.vehicle.pips(values)
+        return False
+
     def update_fleet(self, stored_ships_entry):
         self.fleet.update(stored_ships_entry)
 
@@ -1380,3 +1395,10 @@ class EDPlayerOne(EDPlayer):
 
     def describe_odyssey_material_short(self, internal_name, ignore_eng_unlocks=False):
         return self.remlok_helmet.describe_odyssey_material_short(internal_name, self.inventory, ignore_eng_unlocks)
+
+    def process_organic_scan(self, scan_event):
+        self.closet.genetic_sampler.process(scan_event, self.attitude)
+        self.codex.process(scan_event)
+
+    def tracking_organic(self):
+        return self.closet.genetic_sampler.is_tracking()

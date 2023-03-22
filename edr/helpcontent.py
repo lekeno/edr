@@ -217,6 +217,7 @@ class HelpContent(object):
                 _(u" - '!htb', '!humantechbroker' or '!htb Lave' to find a Human Tech Broker near your position or Lave"),
                 _(u" - '!gtb', '!guardiantechbroker' or '!gtb Lave' to find a Guardian Tech Broker near your position or Lave"),
                 _(u" - '!nav 12.3 -4.5', '!nav set' or '!nav off' to obtain planetary guidance for getting to a specific location"),
+                _(u" - '!nav clear', '!nav reset', '!nav next', '!nav previous' to clear or reset custom POIs, or select the next/previous custom POI on a planet"),
                 _(u" - '!offbeat', '!offbeat Lave' to find a station that hasn't been recently visited near your position or Lave"),
                 u"⚶",
                 _(u"Send !help nearby2 to see other nearby features. Send !clear in chat to clear everything on the overlay.")
@@ -268,7 +269,7 @@ class HelpContent(object):
                 _(u" - !crimes [off|on]: to disable/enable crime and fight reporting, e.g. '!crimes off' before an agreed upon duel."),
                 _(u" - !audiocue [on|off|loud|soft] to control the audio cues, e.g. '!audiocue soft' for soft cues."),
                 _(u" - !overlay [on|off|] to enable/disable or verify the overlay, e.g. '!overlay' to check if it is enabled/working."),
-                _(u" - check the instructions in config/igm_config.v7.ini to customize the layout and timeouts."),
+                _(u" - check the instructions in config/igm_config.v8.ini to customize the layout and timeouts."),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
             ]
@@ -276,12 +277,13 @@ class HelpContent(object):
         "odyssey": {
             "header": _(u"Odyssey"),
             "details": [
-                _(u"EDR offers the following features to help you make sense of Odyssey materials and engineers:"),
+                _(u"EDR offers the following features to help you make sense of Odyssey materials, engineers and exobiology:"),
                 _(u" - !eval [locker|backpack]: to evaluate the usefulness of materials in your ship locker or backpack, e.g. '!eval locker'. Useful when selling stuff at the bar, or via your fleet carrier."),
                 _(u" - !eval [name of the material] to evaluate the usefulness of a specific material, e.g. '!eval surveillance equipment'. Useful to assess a reward before accepting a mission."),
                 _(u" - Point at materials while on foot with the emote gesture to get EDR to identify it and provide info about its usefulness."),
                 _(u" - !eval [bar|bar demand] to evaluate the items on sale (or in demand) at the last visited bar on a fleet carrier, e.g. '!eval bar demand'. Useful to know which items to buy / sale."),
                 _(u" - Visit the bar on a fleet carrier to get a list of most useful items on sale, or least useful items in demand."),
+                _(u" - Exobiology hints and progress tracking when targeting a planet, being in its orbit or by sending the '!biology' command (e.g. '!biology 1 A'"),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
             ]

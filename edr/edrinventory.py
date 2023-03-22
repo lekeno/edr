@@ -1141,14 +1141,9 @@ class EDRRemlokHelmet(object):
         entry = MATERIALS_LUT.get(internal_name, {})
         
         details = []
-        owned = inventory.count(internal_name)
-        stock = _("Stock: 0")
-        type_descriptor = descriptor["type"]
-        if descriptor.get("subtype", None):
-            type_descriptor = "{}/{}".format(descriptor["type"], descriptor["subtype"])
-        if owned:
-            stock = _("Stock: {}").format(owned)
-        details.append(_("{}; {}").format(type_descriptor, stock))
+        inventory_descr = inventory.oneliner(internal_name)
+        if inventory_descr:
+            details.append(inventory_descr)
 
         if descriptor.get("useless", False):
             details.append(_("Useless material"))
@@ -1193,7 +1188,7 @@ class EDRRemlokHelmet(object):
         
         if owned:
             if has_comments:
-                return "{} ({} => {}) [S{}]".format(entry.get("raw", internal_name), values, owned, entry["comments"]) 
+                return "{} ({} => {}) [S{}]".format(entry.get("raw", internal_name), values, entry["comments"], owned) 
             else:
                 return "{} ({}) [S{}]".format(entry.get("raw", internal_name), values, owned) 
         if has_comments:
@@ -1227,7 +1222,7 @@ class EDRRemlokHelmet(object):
                 value +=1
             
             if value:
-                values.append(_("E{}".format(value)))            
+                values.append(_("E{}".format(value)))
         
         return "/".join(values)
     
@@ -1237,16 +1232,13 @@ class EDRRemlokHelmet(object):
 
         descriptor = HORIZONS_MATS[internal_name]
         details = []
+
+        inventory_descr = inventory.oneliner(internal_name)
+        if inventory_descr:
+            details.append(inventory_descr)
+        
         if descriptor.get("useless", False):
-            if descriptor.get("subtype", False):
-                details.append(_("Useless [{}/{}] material".format(descriptor["type"], descriptor.get("subtype", ""))))
-            else:
-                details.append(_("Useless [{}] material".format(descriptor["type"])))
-        else:
-            if descriptor.get("subtype", False):
-                details.append("{} [{}/{}] material".format(descriptor["rarity"], descriptor["type"], descriptor.get("subtype", "")))
-            else:
-                details.append("{} [{}] material".format(descriptor["rarity"], descriptor["type"]))
+            details.append(_("Useless material"))
         
         recipe_categories = ["blueprints", "synthesis", "experimentals", "techbroker"]
         prefixes = {"blueprints": _("blueprints"), "synthesis": _("synthesis") , "experimentals": _("experimental effects"), "techbroker": _("tech broker items")}

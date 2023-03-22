@@ -73,7 +73,7 @@ class EDRMiningStats(object):
             symbol = self.MINERALS_LUT[mineral]["symbol"]
             self.of_interest["names"].add(name)
             self.of_interest["types"].add(internal_name)
-            self.stats[mineral] = EDRMineralStats(name, internal_name, symbol)
+            self.stats[name] = EDRMineralStats(name, internal_name, symbol)
 
     def reset(self):
         self.lmh = {"-": 0, "L": 0, "M": 0, "H": 0}
@@ -96,7 +96,7 @@ class EDRMiningStats(object):
             symbol = self.MINERALS_LUT[mineral]["symbol"]
             self.of_interest["names"].add(name)
             self.of_interest["types"].add(internal_name)
-            self.stats[mineral] = EDRMineralStats(name, internal_name, symbol)
+            self.stats[name] = EDRMineralStats(name, internal_name, symbol)
 
     def dummify(self):
         self.reset()
