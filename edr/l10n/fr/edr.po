@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2022-11-29 13:45+0900\n"
-"PO-Revision-Date: 2022-11-29 13:45+0900\n"
+"POT-Creation-Date: 2022-12-21 15:14+0900\n"
+"PO-Revision-Date: 2022-12-21 15:15+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -2125,7 +2125,7 @@ msgstr ""
 msgid "Nav Beacon"
 msgstr ""
 
-#: edrfssinsights.py:13 edrfssinsights.py:42 edrfssinsights.py:73
+#: edrfssinsights.py:13 edrfssinsights.py:43 edrfssinsights.py:74
 msgid "USS"
 msgstr "USS"
 
@@ -2141,155 +2141,155 @@ msgstr ""
 msgid "Anomalous Signal - Numbers Station"
 msgstr ""
 
-#: edrfssinsights.py:17
+#: edrfssinsights.py:18
 msgid "CZ [AX]"
 msgstr ""
 
-#: edrfssinsights.py:18
+#: edrfssinsights.py:19
 msgid "CAPITAL SHIP"
 msgstr ""
 
-#: edrfssinsights.py:19
+#: edrfssinsights.py:20
 msgid "Unreg. Comms - Numbers Station (Ⅰ)"
 msgstr ""
 
-#: edrfssinsights.py:20
+#: edrfssinsights.py:21
 msgid "Unreg. Comms"
 msgstr ""
 
-#: edrfssinsights.py:21
+#: edrfssinsights.py:22
 msgid "Pirates [Th. 7]"
 msgstr ""
 
-#: edrfssinsights.py:22
+#: edrfssinsights.py:23
 msgid "Pirates [Th. 6]"
 msgstr ""
 
-#: edrfssinsights.py:23
+#: edrfssinsights.py:24
 msgid "Pirates [Th. 5]"
 msgstr ""
 
-#: edrfssinsights.py:24
+#: edrfssinsights.py:25
 msgid "Ancient probe"
 msgstr ""
 
-#: edrfssinsights.py:25
+#: edrfssinsights.py:26
 msgid "Armed Revolt"
 msgstr ""
 
-#: edrfssinsights.py:26
+#: edrfssinsights.py:27
 msgid "Checkpoint"
 msgstr ""
 
-#: edrfssinsights.py:27
+#: edrfssinsights.py:28
 msgid "Crime Sweep"
 msgstr ""
 
-#: edrfssinsights.py:28
+#: edrfssinsights.py:29
 msgid "Debris field"
 msgstr ""
 
-#: edrfssinsights.py:29
+#: edrfssinsights.py:30
 msgid "Distress Call (Ⅰ)"
 msgstr ""
 
-#: edrfssinsights.py:30
+#: edrfssinsights.py:31
 msgid "Distress Call (Ⅱ)"
 msgstr ""
 
-#: edrfssinsights.py:31
+#: edrfssinsights.py:32
 msgid "Distribution centre"
 msgstr ""
 
-#: edrfssinsights.py:32
+#: edrfssinsights.py:33
 msgid "Stellar phenomena"
 msgstr ""
 
-#: edrfssinsights.py:33
+#: edrfssinsights.py:34
 msgid "Listening Post"
 msgstr ""
 
-#: edrfssinsights.py:34
+#: edrfssinsights.py:35
 msgid "Military Strike"
 msgstr ""
 
-#: edrfssinsights.py:40 edrfssinsights.py:71
+#: edrfssinsights.py:41 edrfssinsights.py:72
 msgid "Standard Res|Std"
 msgstr ""
 
-#: edrfssinsights.py:40 edrfssinsights.py:71
+#: edrfssinsights.py:41 edrfssinsights.py:72
 msgid "Res Low|Low"
 msgstr ""
 
-#: edrfssinsights.py:40 edrfssinsights.py:71
+#: edrfssinsights.py:41 edrfssinsights.py:72
 msgid "Res High|High"
 msgstr ""
 
-#: edrfssinsights.py:40 edrfssinsights.py:71
+#: edrfssinsights.py:41 edrfssinsights.py:72
 msgid "Res Hazardous|Haz"
 msgstr ""
 
-#: edrfssinsights.py:40 edrfssinsights.py:71
+#: edrfssinsights.py:41 edrfssinsights.py:72
 msgid "RES"
 msgstr "RES"
 
-#: edrfssinsights.py:41 edrfssinsights.py:72
+#: edrfssinsights.py:42 edrfssinsights.py:73
 msgid "CZ Low intensity|Low"
 msgstr ""
 
-#: edrfssinsights.py:41 edrfssinsights.py:72
+#: edrfssinsights.py:42 edrfssinsights.py:73
 msgid "CZ Medium intensity|Med"
 msgstr ""
 
-#: edrfssinsights.py:41 edrfssinsights.py:72
+#: edrfssinsights.py:42 edrfssinsights.py:73
 msgid "CZ High intensity|High"
 msgstr ""
 
-#: edrfssinsights.py:41 edrfssinsights.py:72
+#: edrfssinsights.py:42 edrfssinsights.py:73
 msgid "CZ"
 msgstr ""
 
-#: edrfssinsights.py:42 edrfssinsights.py:73
+#: edrfssinsights.py:43 edrfssinsights.py:74
 msgid "Degraded Emissions|Degraded"
 msgstr ""
 
-#: edrfssinsights.py:42 edrfssinsights.py:73
+#: edrfssinsights.py:43 edrfssinsights.py:74
 msgid "Encoded Emissions|Encoded"
 msgstr "Encodées"
 
-#: edrfssinsights.py:42 edrfssinsights.py:73
+#: edrfssinsights.py:43 edrfssinsights.py:74
 msgid "High Grade Emissions|High Grade"
 msgstr ""
 
-#: edrfssinsights.py:42 edrfssinsights.py:73
+#: edrfssinsights.py:43 edrfssinsights.py:74
 msgid "Misc."
 msgstr ""
 
-#: edrfssinsights.py:43 edrfssinsights.py:74
+#: edrfssinsights.py:44 edrfssinsights.py:75
 msgid "Pirates Threat 7|Th7"
 msgstr ""
 
-#: edrfssinsights.py:43 edrfssinsights.py:74
+#: edrfssinsights.py:44 edrfssinsights.py:75
 msgid "Pirates Threat 6|Th6"
 msgstr ""
 
-#: edrfssinsights.py:43 edrfssinsights.py:74
+#: edrfssinsights.py:44 edrfssinsights.py:75
 msgid "Pirates Threat 5|Th5"
 msgstr ""
 
-#: edrfssinsights.py:43 edrfssinsights.py:74
+#: edrfssinsights.py:44 edrfssinsights.py:75
 msgid "Pirates"
 msgstr ""
 
-#: edrfssinsights.py:236
+#: edrfssinsights.py:237
 msgid "Stations: {}"
 msgstr "Statioports: {}"
 
-#: edrfssinsights.py:239
+#: edrfssinsights.py:240
 msgid "FC: {}"
 msgstr ""
 
-#: edrfssinsights.py:245
+#: edrfssinsights.py:246
 msgid "Misc.: {}"
 msgstr "Autres: {}"
 
@@ -2829,9 +2829,22 @@ msgstr ""
 msgid "Power Regulator"
 msgstr ""
 
+#: edrinventory.py:153 edrinventory.py:231 edrinventory.py:239
+#: edrinventory.py:344 edrinventory.py:347
+#, fuzzy
+#| msgid "Used in {} upgrades"
+msgid "Suits upgrades"
+msgstr "Utilisé dans {} améliorations"
+
 #: edrinventory.py:154
 msgid "Chemical Inventory"
 msgstr ""
+
+#: edrinventory.py:154 edrinventory.py:258
+#, fuzzy
+#| msgid "Empty backpack?"
+msgid "Extra backpack"
+msgstr "Sac à dos vide?"
 
 #: edrinventory.py:155
 msgid "Duty Rota"
@@ -2839,6 +2852,10 @@ msgstr ""
 
 #: edrinventory.py:156
 msgid "Evacuation Protocols"
+msgstr ""
+
+#: edrinventory.py:156 edrinventory.py:317
+msgid "Combat movement"
 msgstr ""
 
 #: edrinventory.py:157
@@ -2905,8 +2922,16 @@ msgstr ""
 msgid "Maintenance Logs"
 msgstr ""
 
+#: edrinventory.py:172
+msgid "Extra battery"
+msgstr ""
+
 #: edrinventory.py:173
 msgid "Patrol Routes"
+msgstr ""
+
+#: edrinventory.py:173
+msgid "Quieter footsteps, Audio masking"
 msgstr ""
 
 #: edrinventory.py:174
@@ -2921,6 +2946,11 @@ msgstr ""
 msgid "Surveillance Logs"
 msgstr ""
 
+#: edrinventory.py:176 edrinventory.py:229 edrinventory.py:243
+#: edrinventory.py:254
+msgid "Night vision"
+msgstr ""
+
 #: edrinventory.py:177
 msgid "Synthetic Pathogen"
 msgstr ""
@@ -2933,6 +2963,10 @@ msgstr ""
 msgid "Operational Manual"
 msgstr ""
 
+#: edrinventory.py:179
+msgid "Faster handling, Faster/Stowed reloading"
+msgstr ""
+
 #: edrinventory.py:180
 msgid "Blacklist Data"
 msgstr ""
@@ -2943,6 +2977,10 @@ msgstr ""
 
 #: edrinventory.py:182
 msgid "Air Quality Reports"
+msgstr ""
+
+#: edrinventory.py:182 edrinventory.py:208
+msgid "Extra air"
 msgstr ""
 
 #: edrinventory.py:183
@@ -2973,6 +3011,10 @@ msgstr ""
 msgid "Radioactivity Data"
 msgstr ""
 
+#: edrinventory.py:189
+msgid "Night vision, TK hip fire"
+msgstr ""
+
 #: edrinventory.py:190
 msgid "Residential Directory"
 msgstr ""
@@ -2997,6 +3039,10 @@ msgstr ""
 msgid "Combat Training Material"
 msgstr ""
 
+#: edrinventory.py:195
+msgid "Faster handling/reload, Melee damage"
+msgstr ""
+
 #: edrinventory.py:196
 msgid "Internal Correspondence"
 msgstr ""
@@ -3013,12 +3059,24 @@ msgstr ""
 msgid "Weapon Inventory"
 msgstr ""
 
+#: edrinventory.py:199 edrinventory.py:257
+msgid "Extra backpack, Damage resistance"
+msgstr ""
+
 #: edrinventory.py:200
 msgid "Atmospheric Data"
 msgstr ""
 
+#: edrinventory.py:200
+msgid "Noise suppressor"
+msgstr ""
+
 #: edrinventory.py:201
 msgid "Topographical Surveys"
+msgstr ""
+
+#: edrinventory.py:201
+msgid "Jump assist, Enhanced tracking, Karma range"
 msgstr ""
 
 #: edrinventory.py:202
@@ -3027,6 +3085,10 @@ msgstr ""
 
 #: edrinventory.py:203
 msgid "Reactor Output Review"
+msgstr ""
+
+#: edrinventory.py:203
+msgid "Battery capacity/consumption, Shield regen"
 msgstr ""
 
 #: edrinventory.py:204
@@ -3073,6 +3135,10 @@ msgstr ""
 msgid "Mineral Survey"
 msgstr ""
 
+#: edrinventory.py:214 edrinventory.py:215
+msgid "Manticore range"
+msgstr ""
+
 #: edrinventory.py:215
 msgid "Chemical Formulae"
 msgstr ""
@@ -3093,16 +3159,32 @@ msgstr ""
 msgid "Chemical Experiment Data"
 msgstr ""
 
+#: edrinventory.py:219 edrinventory.py:223
+msgid "Manticore headshot"
+msgstr ""
+
 #: edrinventory.py:220
 msgid "Chemical Patents"
+msgstr ""
+
+#: edrinventory.py:220
+msgid "Manticore hip fire"
 msgstr ""
 
 #: edrinventory.py:221
 msgid "Production Reports"
 msgstr ""
 
+#: edrinventory.py:221
+msgid "Extra ammo, Faster reloading"
+msgstr ""
+
 #: edrinventory.py:222
 msgid "Production Schedule"
+msgstr ""
+
+#: edrinventory.py:222 edrinventory.py:256
+msgid "Stowed reloading"
 msgstr ""
 
 #: edrinventory.py:223
@@ -3113,8 +3195,17 @@ msgstr ""
 msgid "Combatant Performance"
 msgstr ""
 
+#: edrinventory.py:224
+msgid "Faster handling, Hip fire, Melee damage"
+msgstr ""
+
 #: edrinventory.py:225
 msgid "Troop Deployment Records"
+msgstr ""
+
+#: edrinventory.py:225 edrinventory.py:318 edrinventory.py:319
+#: edrinventory.py:321
+msgid "Longer sprint"
 msgstr ""
 
 #: edrinventory.py:226
@@ -3161,6 +3252,10 @@ msgstr ""
 msgid "Ionised Gas"
 msgstr ""
 
+#: edrinventory.py:236
+msgid "Manticore/TK upgrades"
+msgstr ""
+
 #: edrinventory.py:237
 msgid "Personal Computer"
 msgstr ""
@@ -3180,6 +3275,12 @@ msgstr ""
 #: edrinventory.py:241
 msgid "Weapon Schematic"
 msgstr ""
+
+#: edrinventory.py:241
+#, fuzzy
+#| msgid "Used in {} upgrades"
+msgid "Weapon upgrades"
+msgstr "Utilisé dans {} améliorations"
 
 #: edrinventory.py:242
 msgid "Inertia Canister"
@@ -3221,12 +3322,24 @@ msgstr ""
 msgid "Micro Supercapacitor"
 msgstr ""
 
+#: edrinventory.py:251
+msgid "Extra battery, Manticore headshot"
+msgstr ""
+
 #: edrinventory.py:252
 msgid "Micro Transformer"
 msgstr ""
 
+#: edrinventory.py:252
+msgid "Shield regen, Battery consumption, TK range"
+msgstr ""
+
 #: edrinventory.py:253
 msgid "Chemical Superbase"
+msgstr ""
+
+#: edrinventory.py:253
+msgid "Manticore upgrades"
 msgstr ""
 
 #: edrinventory.py:254
@@ -3235,6 +3348,10 @@ msgstr ""
 
 #: edrinventory.py:255
 msgid "Electrical Wiring"
+msgstr ""
+
+#: edrinventory.py:255
+msgid "Battery consumption, Extra battery, Shield regen, TK hip fire"
 msgstr ""
 
 #: edrinventory.py:256
@@ -3253,68 +3370,140 @@ msgstr ""
 msgid "Micro Hydraulics"
 msgstr ""
 
+#: edrinventory.py:259
+msgid "Quieter footsteps, Faster reload, Stability"
+msgstr ""
+
 #: edrinventory.py:260
 msgid "Optical Fibre"
+msgstr ""
+
+#: edrinventory.py:260
+msgid "Scope, TK upgrades"
 msgstr ""
 
 #: edrinventory.py:261
 msgid "Titanium Plating"
 msgstr ""
 
+#: edrinventory.py:261
+msgid "Damage resistance, Dominator upgrades"
+msgstr ""
+
 #: edrinventory.py:262
 msgid "pH Neutraliser"
+msgstr ""
+
+#: edrinventory.py:262
+msgid "Extra air, Combat movement"
 msgstr ""
 
 #: edrinventory.py:263
 msgid "Metal Coil"
 msgstr ""
 
+#: edrinventory.py:263
+msgid "Mag size, Karma range, TK & Manticore: hip fire"
+msgstr ""
+
 #: edrinventory.py:264
 msgid "Viscoelastic Polymer"
+msgstr ""
+
+#: edrinventory.py:264
+msgid ""
+"Quieter footsteps, Noise suppressor, Faster handling, Stability, Karma hip "
+"fire"
 msgstr ""
 
 #: edrinventory.py:265
 msgid "Ion Battery"
 msgstr ""
 
+#: edrinventory.py:265
+msgid "Shield regen, extra battery, TK & Manticore: headshot"
+msgstr ""
+
 #: edrinventory.py:266
 msgid "Chemical Catalyst"
+msgstr ""
+
+#: edrinventory.py:266
+msgid "Longer sprint, Karma headshot, Manticore hip fire"
 msgstr ""
 
 #: edrinventory.py:267
 msgid "Electrical Fuse"
 msgstr ""
 
+#: edrinventory.py:267
+msgid "Battery consumption, Manticore range"
+msgstr ""
+
 #: edrinventory.py:268
 msgid "Optical Lens"
+msgstr ""
+
+#: edrinventory.py:268
+msgid "Scope, TK: hip fire / headshot / range"
 msgstr ""
 
 #: edrinventory.py:269
 msgid "Weapon Component"
 msgstr ""
 
+#: edrinventory.py:269
+msgid ""
+"Extra ammo, Mag size, Karma: Headshot / Range, TK & Manticore: Mag size, "
+"Noise suppressor"
+msgstr ""
+
 #: edrinventory.py:270
 msgid "Carbon Fibre Plating"
+msgstr ""
+
+#: edrinventory.py:270
+msgid "Damage resistance, Maverick upgrades"
 msgstr ""
 
 #: edrinventory.py:271
 msgid "Micro Thrusters"
 msgstr ""
 
+#: edrinventory.py:271
+msgid "Jump assist, Melee damage"
+msgstr ""
+
 #: edrinventory.py:272
 msgid "Oxygenic Bacteria"
+msgstr ""
+
+#: edrinventory.py:272
+msgid "Longer sprint, Extra air"
 msgstr ""
 
 #: edrinventory.py:273
 msgid "Circuit Board"
 msgstr ""
 
+#: edrinventory.py:273
+msgid "Enhanced tracking, Audio masking, Stowed reloading, TK range"
+msgstr ""
+
 #: edrinventory.py:274
 msgid "Tungsten Carbide"
 msgstr ""
 
+#: edrinventory.py:274
+msgid "Mag size, Karma upgrades"
+msgstr ""
+
 #: edrinventory.py:275
 msgid "Ballistics Data"
+msgstr ""
+
+#: edrinventory.py:275
+msgid "Damage resistance, Karma range"
 msgstr ""
 
 #: edrinventory.py:276
@@ -3329,20 +3518,40 @@ msgstr ""
 msgid "Risk Assessments"
 msgstr ""
 
+#: edrinventory.py:278
+msgid "Stability, Greater range"
+msgstr ""
+
 #: edrinventory.py:279
 msgid "Stellar Activity Logs"
+msgstr ""
+
+#: edrinventory.py:279
+msgid "Enhanced tracking, TK range"
 msgstr ""
 
 #: edrinventory.py:280
 msgid "Manufacturing Instructions"
 msgstr ""
 
+#: edrinventory.py:280
+msgid "Suits & weapons upgrades"
+msgstr ""
+
 #: edrinventory.py:281
 msgid "Digital Designs"
 msgstr ""
 
+#: edrinventory.py:281
+msgid "Extra backpack, Stowed reloading"
+msgstr ""
+
 #: edrinventory.py:282
 msgid "Medical Records"
+msgstr ""
+
+#: edrinventory.py:282
+msgid "Karma headshot"
 msgstr ""
 
 #: edrinventory.py:283
@@ -3365,12 +3574,24 @@ msgstr ""
 msgid "Biometric Data"
 msgstr ""
 
+#: edrinventory.py:287
+msgid "Hip fire, Scope, TK Headshot"
+msgstr ""
+
 #: edrinventory.py:288
 msgid "Extraction Yield Data"
 msgstr ""
 
+#: edrinventory.py:288
+msgid "Karma hip fire"
+msgstr ""
+
 #: edrinventory.py:289
 msgid "Security Expenses"
+msgstr ""
+
+#: edrinventory.py:289
+msgid "Mag size"
 msgstr ""
 
 #: edrinventory.py:290
@@ -3401,6 +3622,10 @@ msgstr ""
 msgid "Recycling Logs"
 msgstr ""
 
+#: edrinventory.py:296
+msgid "Extra ammo"
+msgstr ""
+
 #: edrinventory.py:297
 msgid "Job Applications"
 msgstr ""
@@ -3421,6 +3646,10 @@ msgstr ""
 msgid "Tactical Plans"
 msgstr ""
 
+#: edrinventory.py:301 edrinventory.py:322
+msgid "Quieter footsteps"
+msgstr ""
+
 #: edrinventory.py:302
 msgid "Virus"
 msgstr ""
@@ -3428,6 +3657,12 @@ msgstr ""
 #: edrinventory.py:303
 msgid "Aerogel"
 msgstr ""
+
+#: edrinventory.py:303
+#, fuzzy
+#| msgid "Used in {} upgrades"
+msgid "Artermis upgrades"
+msgstr "Utilisé dans {} améliorations"
 
 #: edrinventory.py:304
 msgid "Genetic Repair Meds"
@@ -3465,20 +3700,40 @@ msgstr ""
 msgid "Mining Analytics"
 msgstr ""
 
+#: edrinventory.py:312
+msgid "Noise suppressor, Stability"
+msgstr ""
+
 #: edrinventory.py:313
 msgid "Compression Liquefied Gas"
+msgstr ""
+
+#: edrinventory.py:313
+msgid "Karma upgrades"
 msgstr ""
 
 #: edrinventory.py:314
 msgid "Weapon Test Data"
 msgstr ""
 
+#: edrinventory.py:314
+msgid "Extra ammo, Mag size, Karma headshot"
+msgstr ""
+
 #: edrinventory.py:315
 msgid "Spectral Analysis Data"
 msgstr ""
 
+#: edrinventory.py:315
+msgid "Enhanced tracking, Scope, TK headshot"
+msgstr ""
+
 #: edrinventory.py:316
 msgid "Audiologs"
+msgstr ""
+
+#: edrinventory.py:316
+msgid "Audio masking"
 msgstr ""
 
 #: edrinventory.py:317
@@ -3492,6 +3747,12 @@ msgstr ""
 #: edrinventory.py:320
 msgid "G-Meds"
 msgstr ""
+
+#: edrinventory.py:320
+#, fuzzy
+#| msgid "supercruise assist"
+msgid "Jump assist"
+msgstr "assistant de vol"
 
 #: edrinventory.py:321
 msgid "Gene Sequencing Data"
@@ -3581,6 +3842,10 @@ msgstr ""
 msgid "Epinephrine"
 msgstr ""
 
+#: edrinventory.py:343
+msgid "Melee damage, Combat movement"
+msgstr ""
+
 #: edrinventory.py:344
 msgid "Graphene"
 msgstr ""
@@ -3589,8 +3854,16 @@ msgstr ""
 msgid "Rdx"
 msgstr ""
 
+#: edrinventory.py:345
+msgid "Karma: hip fire, headshot, range"
+msgstr ""
+
 #: edrinventory.py:346
 msgid "Electromagnet"
+msgstr ""
+
+#: edrinventory.py:346
+msgid "Faster reloading, Manticore: headshot, range, hip fire"
 msgstr ""
 
 #: edrinventory.py:347
@@ -3601,12 +3874,24 @@ msgstr ""
 msgid "Motor"
 msgstr ""
 
+#: edrinventory.py:348
+msgid "Jump assits, Manticore range"
+msgstr ""
+
 #: edrinventory.py:349
 msgid "Scrambler"
 msgstr ""
 
+#: edrinventory.py:349
+msgid "Audio masking, TK headshot"
+msgstr ""
+
 #: edrinventory.py:350
 msgid "Transmitter"
+msgstr ""
+
+#: edrinventory.py:350
+msgid "Enhanced tracking, Audio masking"
 msgstr ""
 
 #: edrinventory.py:729
@@ -3625,87 +3910,114 @@ msgstr ""
 msgid "CONSUMABLE"
 msgstr ""
 
-#: edrinventory.py:1141 edrinventory.py:1220
-msgid "Useless [{}/{}] material"
-msgstr "Matériau Inutile [{}/{}]"
+#: edrinventory.py:1145
+msgid "Stock: 0"
+msgstr ""
 
-#: edrinventory.py:1143 edrinventory.py:1222
-msgid "Useless [{}] material"
+#: edrinventory.py:1150
+#, fuzzy
+#| msgid " to: {}"
+msgid "Stock: {}"
+msgstr " à: {}"
+
+#: edrinventory.py:1151
+msgid "{}; {}"
+msgstr ""
+
+#: edrinventory.py:1154
+#, fuzzy
+#| msgid "Useless [{}] material"
+msgid "Useless material"
 msgstr "Matériau inutile : {}"
 
-#: edrinventory.py:1147
+#: edrinventory.py:1158
 msgid "Bar exchange: worth {}, cost {}"
 msgstr "Échange au bar: valeur {}, coût: {}"
 
-#: edrinventory.py:1149
+#: edrinventory.py:1160
 msgid "Bar exchange: worth {}"
 msgstr "Échange au bar: valeur {}"
 
-#: edrinventory.py:1153
+#: edrinventory.py:1163
+#, fuzzy
+#| msgid "Used in: {}"
+msgid "Used for: {}"
+msgstr "Utilisé dans: {}"
+
+#: edrinventory.py:1167
 msgid "Used in {} blueprints, {} upgrades"
 msgstr "Utilisé dans {} plans, et {} améliorations"
 
-#: edrinventory.py:1155
+#: edrinventory.py:1169
 msgid "Used in {} blueprints"
 msgstr "Utilisé dans {} plans"
 
-#: edrinventory.py:1157
+#: edrinventory.py:1171
 msgid "Used in {} upgrades"
 msgstr "Utilisé dans {} améliorations"
 
-#: edrinventory.py:1160
+#: edrinventory.py:1174
 msgid "Required by {} to refer {}"
 msgstr "Requis par {} pour introduction à {}"
 
-#: edrinventory.py:1163 edrinventory.py:1238
+#: edrinventory.py:1177 edrinventory.py:1260
 msgid "Required by {}"
 msgstr "Requis par {}"
 
-#: edrinventory.py:1166
+#: edrinventory.py:1180
 msgid "Found in: {}"
 msgstr "Se trouve dans: {}"
 
-#: edrinventory.py:1188
+#: edrinventory.py:1210
 msgid "0"
 msgstr ""
 
-#: edrinventory.py:1191
+#: edrinventory.py:1213
 msgid "B{}"
 msgstr "B{}"
 
-#: edrinventory.py:1194
+#: edrinventory.py:1216
 msgid "U{}"
 msgstr "U{}"
 
-#: edrinventory.py:1197
+#: edrinventory.py:1219
 msgid "X{}"
 msgstr "X{}"
 
-#: edrinventory.py:1208
+#: edrinventory.py:1230
 msgid "E{}"
 msgstr "E{}"
 
-#: edrinventory.py:1230
+#: edrinventory.py:1242
+msgid "Useless [{}/{}] material"
+msgstr "Matériau Inutile [{}/{}]"
+
+#: edrinventory.py:1244
+msgid "Useless [{}] material"
+msgstr "Matériau inutile : {}"
+
+#: edrinventory.py:1252
 msgid "blueprints"
 msgstr "plans"
 
-#: edrinventory.py:1230
+#: edrinventory.py:1252
 msgid "synthesis"
 msgstr "synthèse"
 
-#: edrinventory.py:1230
+#: edrinventory.py:1252
 msgid "experimental effects"
 msgstr "effets expérimentaux"
 
-#: edrinventory.py:1230
+#: edrinventory.py:1252
 msgid "tech broker items"
 msgstr "objets tech broker"
 
-#: edrinventory.py:1234
+#: edrinventory.py:1256
 msgid "{} {}"
 msgstr "{} {}"
 
-#: edrinventory.py:1235
+#: edrinventory.py:1257
+
 msgid "Used in: {}"
 msgstr "Utilisé dans: {}"
 
@@ -4448,27 +4760,29 @@ msgstr "✪ Destructeurs"
 
 #: edrtogglingpanel.py:87 edrtogglingpanel.py:157
 msgid "Waiting for a game session..."
-msgstr "En attente d'une session de jeu..."
+msgstr ""
 
 #: edrtogglingpanel.py:153
 msgid "Type EDR commands here or via the in-game chat."
-msgstr "Entrez les commandes EDR ici ou dans le chat du jeu."
+msgstr ""
 
 #: edrtogglingpanel.py:230
+#, fuzzy
+#| msgid "Unrecognized materials profile"
 msgid "Unrecognized command"
-msgstr "Commande non reconnue"
+msgstr "Profile matériaux non reconnu"
 
 #: edrtogglingpanel.py:230
 msgid "This doesn't appear to be a recognized command."
-msgstr "Il semble que cette commande n'est pas reconnue."
+msgstr ""
 
 #: edrtogglingpanel.py:230
 msgid "Please verify the prefix and syntax."
-msgstr "Vérifiez le préfixe et la syntaxe."
+msgstr ""
 
 #: edrtogglingpanel.py:230
 msgid "Use the !help command for further info."
-msgstr "Utilisez la commande !help pour plus d'infos."
+msgstr ""
 
 #: edrxzibit.py:75
 #, python-brace-format
@@ -5931,8 +6245,10 @@ msgid "{subsys}{signal}: {hp:.4g}% {delta}"
 msgstr "{subsys}{signal}: {hp:.4g}% {delta}"
 
 #: load.py:94
+#, fuzzy
+#| msgid "{}: not supported."
 msgid "Legacy mode is not supported."
-msgstr "Le mode Legacy n'est pas supporté."
+msgstr "{}: non disponible."
 
 #: load.py:108
 msgid "added to wing: "
