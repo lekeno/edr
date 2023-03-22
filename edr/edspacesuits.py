@@ -322,7 +322,18 @@ class EDGeneticSampler(object):
     @staticmethod
     def __sys_body_id(system_address, body_nb):
         return "S{}-B{}".format(system_address, body_nb)
-
+    
+    def has_samples_from(self, star_system_address, body_nb):
+        if not self.last_system_body:
+            return False
+        
+        if not self.last_system_body["systemAddress"]:
+            return False
+        
+        if not self.last_system_body["bodyNb"]:
+            return False
+        
+        return self.last_system_body["systemAddress"] == star_system_address and self.last_system_body["bodyNb"] == body_nb
 
 class EDSuitFactory(object):
     __suit_classes = {
