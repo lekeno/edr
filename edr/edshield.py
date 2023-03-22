@@ -173,8 +173,8 @@ class EDPowerDistributor(object):
         self.eng = 2
         self.wep = 2
 
-    def shield_boost(self):
-        return (self.sys / 4.0) * 0.6
+    def sys_resistance(self):
+        return pow(self.sys, 0.85) * 0.6 / pow(4, 0.85)
 
 class EDShieldBoosterE(EDShieldBooster):
     def __init__(self):

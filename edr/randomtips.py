@@ -143,7 +143,12 @@ DEFAULT_TIPS = {
         _(u"EDR will automatically add a custom Point of Interest when pointing at something while on foot (current location)."),
         _(u"After scanning a biological with the genetic sampler, EDR will show the value of the specimen, the minimum distance for gene diversity, the distance and heading for the previous samples."),
         _(u"If you stumble upon another species while doing Exobiology research, consider using the 'pointing' gesture to record your current position as a custom Point of Interest so that you can find it back later."),
-        _(u"Custom Point of Interests on planets are not persistent (i.e. will disappear if you close EDMC).")
+        _(u"Custom Point of Interests on planets are not persistent (i.e. will disappear if you close EDMC)."),
+        _(u"Send '!search bio' to find a nearby planet with the right conditions for exobiology."),
+        _(u"Send '!search water' to find a nearby planet with a water atmosphere (rich in exobiology)."),
+        _(u"Send '!search ammonia' to find a nearby planet with an ammonia atmospehere."),
+        _(u"You can use the !search command to find a nearby planet with the right conditions for a given genus, e.g. '!search stratum'"),
+        _(u"You can use the !search command to find a nearby planet with the right conditions for a given species, e.g. '!search stratum tectonicas'")
     ],
     "open": [
         _(u"Never fly what you can't afford to lose. Check your rebuy and credit balance on your right panel."),
@@ -183,7 +188,7 @@ DEFAULT_TIPS = {
         _(u"[Combat] Put all 4 pips to SYS when being fired upon; move them where needed when not fired upon."),
         _(u"[Combat] Don't fly in a straight line, you'll die if you do. Be evasive: combine rolls, turns, thrusters, boost and Fligh Assist Off."),
         _(u"[Combat] When shields drop, target specific modules. In particular: power plant, drives, biweave shields, weapons."),
-        _(u"[Combat] Double shield cell banking: fire first cell, wait for 90% heat, fire heat sink, when heat drops rapidly fire the second cell."),
+        _(u"[Combat] Double shield cell banking: fire first cell, wait for 90 percents heat, fire heat sink, when heat drops rapidly fire the second cell."),
         _(u"[Combat] Railgun with feedback cascade can counter shield cell banking."),
         _(u"[Combat] Best time to fire your shield cell is when you are at 1 / 1.5 ring and right in front of your opponent just as you are about to fly past them."),
         _(u"[Interdicted] Put 4 pips to SYS, 2 to ENG and fly evasive. Hit next route and high wake asap, do not fly in a straight line."),
@@ -194,7 +199,7 @@ DEFAULT_TIPS = {
         _(u"[Community] Most players are just nice folks. Chat with people, make friends. It might come handy."),
         _(u"[Defense] Fit Point Defenses to your ship to destroy missiles and mines"),
         _(u"[Defense] Like the song says you've got to know when to walk away and know when to run."),
-        _(u"[Mining] Limit your cargo (e.g. LTD) to be within 10% of the demand of a market in order to get the highest price.")
+        _(u"[Mining] Limit your cargo (e.g. LTD) to be within 10 percents of the demand of a market in order to get the highest price.")
     ]
 }
 
