@@ -4017,6 +4017,7 @@ msgid "{} {}"
 msgstr "{} {}"
 
 #: edrinventory.py:1257
+
 msgid "Used in: {}"
 msgstr "Utilisé dans: {}"
 
