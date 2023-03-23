@@ -14,7 +14,7 @@ Read the [wiki](https://github.com/lekeno/edr/wiki) to learn about how to instal
 
 # Acknowledgements
 Special thanks to:
- - Fellow Cobra Kai and allies for their help with the initial beta.
+ - Old squadron (Cobra Kai) members and allies for their help with the initial beta.
  - [Ian Norton](https://github.com/inorton/) for EDMC Overlay.
  - Artie for the Inara API.
  - The Elite Dangerous Developers Community.
