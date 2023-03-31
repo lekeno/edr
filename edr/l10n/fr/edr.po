@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
 "POT-Creation-Date: 2023-02-04 16:38+0900\n"
-"PO-Revision-Date: 2023-02-04 16:39+0900\n"
+"PO-Revision-Date: 2023-03-31 12:41+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -6729,7 +6729,7 @@ msgstr "Equipmt:{}   Chantier:{}"
 
 #: ingamemsg.py:534
 msgid "Market:{}   B.Market:{}"
-msgstr "Marché:{}   Marché N.:{}   {}"
+msgstr "Marché:{}   Marché N.:{}"
 
 #: ingamemsg.py:536
 msgid "I.Factor:{}"
