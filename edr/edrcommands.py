@@ -2,6 +2,8 @@ from edrlog import EDRLog
 import random
 import codecs
 
+from edri18n import _
+
 
 class EDRCommands(object):
     
@@ -101,7 +103,7 @@ class EDRCommands(object):
                 resource = better_parts[0].rstrip()
             if resource:
                 self.edr_log.log(u"Search command for {}".format(resource), "INFO")
-                self.edr_client.search_resource(resource, system)
+                self.edr_client.search(resource, system)
         elif command in ["!distance", "!d"] and len(command_parts) >= 2:
             self.edr_log.log(u"Distance command", "INFO")
             systems = " ".join(command_parts[1:]).split(" > ", 1)
@@ -327,11 +329,13 @@ class EDRCommands(object):
                 self.edr_log.log(u"Listing material profiles", "INFO")
         elif command == "!biology":
             self.edr_log.log(u"Biology info", "INFO")
-            target = cmdr.body
+            target = None
             if len(command_parts) >= 2:
-                target = command_parts[1]or cmdr.body
+                target = command_parts[1] or cmdr.body
             if target:
                 self.edr_client.biology_on(target)
+            else:
+                self.edr_client.biology_spots(cmdr.star_system)
         else:
             return False
         return True
