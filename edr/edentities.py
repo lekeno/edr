@@ -959,6 +959,7 @@ class EDPlayerOne(EDPlayer):
         self.engineers = edengineers.EDEngineers()
         self.destination = EDDestination()
         self.remlok_helmet = EDRRemlokHelmet()
+        self.route = None
 
     def __repr__(self):
         return str(self.__dict__)

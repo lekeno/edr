@@ -332,6 +332,25 @@ class EDRCommands(object):
                 target = command_parts[1]or cmdr.body
             if target:
                 self.edr_client.biology_on(target)
+        elif command == "!route":
+            self.edr_log.log(u"Route command", "INFO")
+            # TODO copy fsd_range to clip board (missing: cmdr.mothership.jump_range)
+            if len(command_parts) >= 2:
+                if command_parts[1] == "next":
+                    self.edr_client.route_next()
+                elif command_parts[1] == "previous":
+                    self.edr_client.route_previous()
+                elif command_parts[1] == "clear":
+                    self.edr_client.route_clear()
+                elif command_parts[1] == "fetch":
+                    self.edr_client.route_fetch()
+                elif command_parts[1] == "load":
+                    filename = command_parts[2] if len(command_parts) >= 3 else "route.csv"
+                    self.edr_client.route_load(filename)
+                elif command_parts[1] == "new":
+                    self.edr_client.route_new()
+            else:
+                self.edr_client.route_show()
         else:
             return False
         return True

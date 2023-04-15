@@ -4,13 +4,12 @@ from copy import deepcopy
 import datetime
 import itertools
 from sys import float_repr_style
-import sys
 import time
 import random
 import math
 import re
 import json
-from edrfleetcarrier import EDRFleetCarrier
+import webbrowser
 
 try:
     # for Python2
@@ -24,6 +23,7 @@ import ttkHyperlinkLabel
 import myNotebook as notebook
 from config import config
 
+from edrfleetcarrier import EDRFleetCarrier
 from edrconfig import EDRConfig
 from lrucache import LRUCache
 from edentities import EDFineOrBounty, pretty_print_number
@@ -47,9 +47,10 @@ from edrdiscord import EDRDiscordIntegration
 from edvehicles import EDVehicleFactory
 
 from edri18n import _, _c, _edr, set_language
-from clippy import copy
+from clippy import copy, paste
 from edrfssinsights import EDRFSSInsights
 from edrcommands import EDRCommands
+import edrroutes
 
 EDRLOG = EDRLog()
 
@@ -3286,3 +3287,46 @@ class EDRClient(object):
             if checker.hint():
                 details.append(checker.hint())
         self.__notify(_(u"{} near {}").format(checker.name, reference), details, clear_before = True)
+
+
+    def route_new(self):
+        webbrowser.open(edrroutes.SpanshServer.SPANSH_URL)
+
+    def route_load(self, filename):
+        route = edrroutes.CSVRoute(filename)
+        if route:
+            self.player.route = route
+            return True
+        return False
+
+    def route_fetch(self):
+        spansh = edrroutes.SpanshServer()
+        try:
+            url_from_clipboard = paste()
+            if not url_from_clipboard:
+                return False
+            url_from_clipboard = url_from_clipboard.decode("ascii")
+            route = spansh.get_route_from_url(url_from_clipboard)
+            if route:
+                self.player.route = route
+                return True
+        except:
+            pass
+        return False
+
+    def route_clear(self):
+        self.player.route = None
+        pass
+
+    def route_next(self):
+        if self.player.route is None:
+            return False
+        return self.player.route.next()
+
+    def route_previous(self):
+        if self.player.route is None:
+            return False
+        return self.player.route.previous()
+
+    def route_show(self):
+        pass
