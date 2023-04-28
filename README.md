@@ -5,7 +5,7 @@ Author: LeKeno from [51TH](https://inara.cz/elite/squadron/?param1=185).
 
 ## Video showcase
 [![Playlist showcasing EDR features](https://img.youtube.com/vi/KhWTyeE-s7E/0.jpg)](
-https://youtu.be/?list=PLOYEmG-ofHtNaOegmwXz0uXIQkyAyNsZM)
+https://www.youtube.com/watch?v=KhWTyeE-s7E&list=PLOYEmG-ofHtNaOegmwXz0uXIQkyAyNsZM)
 
 
 # Getting started with EDR
