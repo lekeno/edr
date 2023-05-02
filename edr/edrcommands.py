@@ -2,6 +2,8 @@ from edrlog import EDRLog
 import random
 import codecs
 
+from edri18n import _
+
 
 class EDRCommands(object):
     
@@ -336,10 +338,10 @@ class EDRCommands(object):
             self.edr_log.log(u"Route command", "INFO")
             # TODO copy fsd_range to clip board (missing: cmdr.mothership.jump_range)
             if len(command_parts) >= 2:
-                if command_parts[1] == "next":
-                    self.edr_client.route_next()
-                elif command_parts[1] == "previous":
-                    self.edr_client.route_previous()
+                if command_parts[1] == "forward":
+                    self.edr_client.route_forward()
+                elif command_parts[1] == "rewind":
+                    self.edr_client.route_rewind()
                 elif command_parts[1] == "clear":
                     self.edr_client.route_clear()
                 elif command_parts[1] == "fetch":
@@ -349,8 +351,10 @@ class EDRCommands(object):
                     self.edr_client.route_load(filename)
                 elif command_parts[1] == "new":
                     self.edr_client.route_new()
+                elif command_parts[1] == "overview":
+                    self.edr_client.route_show_overview()
             else:
-                self.edr_client.route_show()
+                self.edr_client.route_smartbehavior()
         else:
             return False
         return True

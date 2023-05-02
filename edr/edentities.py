@@ -20,6 +20,7 @@ import edrfleetcarrier
 import edrminingstats
 import edrbountyhuntingstats
 import edengineers
+from edrroutes import EDRRouteNavigator
 
 import utils2to3
 EDRLOG = EDRLog()
@@ -959,7 +960,7 @@ class EDPlayerOne(EDPlayer):
         self.engineers = edengineers.EDEngineers()
         self.destination = EDDestination()
         self.remlok_helmet = EDRRemlokHelmet()
-        self.route = None
+        self.routenav = EDRRouteNavigator()
 
     def __repr__(self):
         return str(self.__dict__)
@@ -968,6 +969,7 @@ class EDPlayerOne(EDPlayer):
         self.inventory.persist()
         with open(self.EDR_FLEET_CARRIER_CACHE, 'wb') as handle:
             pickle.dump(self.fleet_carrier, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        self.routenav.persist()
 
     def target_pilot(self):
         return self._target

@@ -218,7 +218,7 @@ def handle_carrier_events(ed_player, entry):
     elif entry["event"] == "CarrierJump":
         EDR_CLIENT.edrfssinsights.reset()
         EDR_CLIENT.edrfssinsights.update_system(entry.get("SystemAddress", None), entry["StarSystem"])
-        ed_player.update_star_system_if_obsolete(entry["StarSystem"], entry.get("SystemAddress", None))
+        EDR_CLIENT.update_star_system_if_obsolete(entry["StarSystem"], entry.get("SystemAddress", None))
         ed_player.fleet_carrier.update_from_jump_if_relevant(entry)
     elif entry["event"] == "CarrierTradeOrder":
         EDR_CLIENT.carrier_trade(entry)
@@ -249,8 +249,6 @@ def handle_movement_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         ed_player.wanted = entry.get("Wanted", False)
         ed_player.mothership.fuel_level = entry.get("FuelLevel", ed_player.mothership.fuel_level)
-        EDR_CLIENT.docking_guidance(entry)
-        EDR_CLIENT.noteworthy_about_system(entry)
         ed_player.location.population = entry.get('Population', 0)
         ed_player.location.allegiance = entry.get('SystemAllegiance', 0)
         outcome["reason"] = entry["event"]
@@ -259,6 +257,9 @@ def handle_movement_events(ed_player, entry):
         else:
             ed_player.to_normal_space()
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
+        EDR_CLIENT.docking_guidance(entry)
+        EDR_CLIENT.route_show_overview(passive=True)
+        EDR_CLIENT.noteworthy_about_system(entry)
     elif entry["event"] in ["SupercruiseEntry"]:
         if "SystemAddress" in entry:
             ed_player.star_system_address = entry["SystemAddress"]
@@ -272,6 +273,7 @@ def handle_movement_events(ed_player, entry):
         place = "Hyperspace"
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         outcome["reason"] = "Hyperspace"
+        # TODO show nav route progress annd clear on arrival.
         ed_player.to_hyper_space()
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
         EDR_CLIENT.docking_guidance(entry)
@@ -320,7 +322,7 @@ def handle_change_events(ed_player, entry):
         ed_player.location.population = entry.get("Population", None)
         ed_player.location.allegiance = entry.get("SystemAllegiance", None)
         if "StarSystem" in entry:
-            ed_player.update_star_system_if_obsolete(entry["StarSystem"], entry.get("SystemAddress", None))
+            EDR_CLIENT.update_star_system_if_obsolete(entry["StarSystem"], entry.get("SystemAddress", None))
         EDR_CLIENT.edrfssinsights.update_system(entry.get("SystemAddress", None), entry.get("StarSystem", None))
         outcome["reason"] = "Location event"
         EDR_CLIENT.check_system(entry["StarSystem"], may_create=True, coords=entry.get("StarPos", None))
@@ -715,6 +717,9 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["BookTaxi", "BookDropship", "CancelTaxi", "CancelDropship"]:
         handle_shuttle_events(entry)
     
+    if entry["event"] in ["NavRoute", "NavRouteClear"]:
+        handle_nav_route_events(entry, state)
+
     if entry["event"] in ["SetUserShipName", "SellShipOnRebuy", "ShipyardBuy", "ShipyardNew", "ShipyardSell", "ShipyardTransfer", "ShipyardSwap"]:
         handle_fleet_events(entry)
 
@@ -773,7 +778,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         vehicle = EDVehicleFactory.from_edmc_state(state)
 
     status_outcome["updated"] = ed_player.update_vehicle_if_obsolete(vehicle, piloted=False)
-    status_outcome["updated"] |= ed_player.update_star_system_if_obsolete(system)
+    status_outcome["updated"] |= EDR_CLIENT.update_star_system_if_obsolete(system)
         
     if entry["event"] in ["Location", "Undocked", "Docked", "DockingCancelled", "DockingDenied",
                           "DockingGranted", "DockingRequested", "DockingTimeout"]:
@@ -807,7 +812,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
     if entry["event"] in ["FSSDiscoveryScan"]:
         if "SystemName" in entry:
-            ed_player.update_star_system_if_obsolete(entry["SystemName"], entry.get("SystemAddress", None))
+            EDR_CLIENT.update_star_system_if_obsolete(entry["SystemName"], entry.get("SystemAddress", None))
             # TODO progress not reflected from individual scans
             EDR_CLIENT.reflect_fss_discovery_scan(entry)
             EDR_CLIENT.system_value(entry["SystemName"])
@@ -1599,6 +1604,22 @@ def handle_shuttle_events(entry):
         ed_player.booked_shuttle(entry)
     elif entry["event"] in ["CancelTaxi", "CancelDropship"]:
         ed_player.cancelled_shuttle(entry)
+
+def handle_nav_route_events(entry, state):
+    print("navroute event")
+    print(entry)
+    if entry["event"] not in ["NavRoute", "NavRouteClear"]:
+        print("nope")
+        return
+    
+    print("state content")
+    print(state.get("NavRoute", "Nothing"))
+    if entry["event"] == "NavRouteClear":
+        EDR_CLIENT.nav_route_clear()
+    elif entry["event"] == "NavRoute" and state.get("NavRoute", None):
+        print("setting nav route")
+        EDR_CLIENT.nav_route_set(state["NavRoute"])
+
 
 def handle_fleet_events(entry):
     global LAST_KNOWN_SHIP_NAME
