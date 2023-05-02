@@ -137,5 +137,5 @@ class IGMConfigOnFoot(IGMConfig):
         super(IGMConfigOnFoot, self).__init__(config_file, user_config_file)
         
 class IGMConfigInShip(IGMConfig):
-    def __init__(self, config_file='config/igm_config.v8.ini', user_config_file=['config/user_igm_config.v8.ini', 'config/user_igm_config.v7.ini', 'config/user_igm_config.v6.ini']):
+    def __init__(self, config_file='config/igm_config.v9.ini', user_config_file=['config/user_igm_config.v9.ini', 'config/user_igm_config.v8.ini', 'config/user_igm_config.v7.ini']):
         super(IGMConfigInShip, self).__init__(config_file, user_config_file)
