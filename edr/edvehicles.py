@@ -57,6 +57,7 @@ class EDVehicle(object):
         self.seats = 1
         self.fuel_capacity = None
         self.fuel_level = None
+        self.max_jump_range = None
         self.module_info_timestamp = None
         self.slots_timestamp = None
         self.slots = {}
@@ -297,6 +298,7 @@ class EDVehicle(object):
         self.whole_loadout = True
         self.cargo_capacity = event.get("CargoCapacity", 0)
         self.cargo.update(event)
+        self.max_jump_range = event.get("MaxJumpRange", None)
 
     def update_from_modules_dict(self, modules):
         self.modules = modules
@@ -1529,6 +1531,8 @@ class EDVehicleFactory(object):
             except:
                 pass
         vehicle.fuel_level = event.get('FuelLevel', None)
+        vehicle.max_jump_range = event.get("MaxJumpRange", None)
+
         if not 'Modules' in event:
             return vehicle
 
@@ -1569,6 +1573,7 @@ class EDVehicleFactory(object):
             except:
                 pass
         vehicle.fuel_level = event.get('FuelLevel', None) #missing from loadout event...
+        vehicle.max_jump_range = event.get("MaxJumpRange", None)
         if not 'Modules' in event:
             return vehicle
 

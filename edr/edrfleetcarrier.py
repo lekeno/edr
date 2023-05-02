@@ -23,6 +23,8 @@ class EDRFleetCarrier(object):
         self.sale_orders = {}
         self.market_updated = False
         self.fuel_level = None
+        self.jump_range_current = None
+        self.jump_range_max = None
         self.decommission = False
         self.space_usage = {}
         self.finance = {}
@@ -46,6 +48,8 @@ class EDRFleetCarrier(object):
         self.sale_orders = {}
         self.market_updated = False
         self.fuel_level = None
+        self.jump_range_current = None
+        self.jump_range_max = None
         self.decommission = False
         self.space_usage = {}
         self.finance = {}
@@ -89,6 +93,8 @@ class EDRFleetCarrier(object):
         self.access = fc_stats_event.get("DockingAccess", "none")
         self.allow_notorious = fc_stats_event.get("AllowNotorious", False)
         self.fuel_level = fc_stats_event.get("FuelLevel", None)
+        self.jump_range_current = fc_stats_event.get("JumpRangeCurr", None)
+        self.jump_range_max = fc_stats_event.get("JumpRangeMax", None)
         self.decommission = fc_stats_event.get("PendingDecommission", False)
         self.space_usage = fc_stats_event.get("SpaceUsage", {})
         self.finance = fc_stats_event.get("Finance", {})
