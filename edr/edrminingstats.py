@@ -182,7 +182,7 @@ class EDRMiningStats(object):
         }
         
         for material in materials:
-            cname = material.get("Name", "").lower()
+            cname = material.get("Name", "").lower().replace(" ", "")
             if cname in self.of_interest["names"]:
                 proportion = material.get("Proportion", 0.0)
                 self.stats[cname].prospected(proportion, now)
