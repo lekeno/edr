@@ -1,3 +1,4 @@
+import threading
 import csv
 import pickle
 import requests
@@ -59,28 +60,35 @@ class BidiIterator(object):
             return False
         return True
 
-class SpanshServer(object):
+class SpanshServer(threading.Thread):
     SPANSH_URL = "https://spansh.co.uk"
     SESSION = requests.Session()
 
-    def __init__(self):
+    def __init__(self, url, callback):
         self.api_path = f"{self.SPANSH_URL}/api/results/"
+        self.callback = callback
+        self.url = url
+        super().__init__()
 
-    def recognized_url(self, url):
+    def run(self):
+        result = self.__get_route()
+        if self.callback:
+            self.callback(result)
+
+    @staticmethod
+    def recognized_url(url):
         spansh_regexp = r"^https:\/\/(?:www\.)?spansh\.co\.uk\/(plotter|riches|ammonia|earth|exact-plotter|exobiology|fleet-carrier|tourist)\/results\/.*$"
         return bool(re.match(spansh_regexp, url))
 
-    def get_route_from_url(self, url):
-        if not self.recognized_url(url):
+    def __get_route(self):
+        if not self.url or not self.recognized_url(self.url):
             return None
         
-        print(url)
-        parsed_url = urlparse(url)
+        parsed_url = urlparse(self.url)
         job_id, drop = path.splitext(path.basename(parsed_url.path))
         print(job_id)
         data = self.__get_job(job_id)
         if not data:
-            print("no data")
             return None
         if "plotter" in parsed_url.path:
             return SpanshPlotterRouteJSON(data)
@@ -112,6 +120,9 @@ class SpanshServer(object):
             return None
         print(data)
         return data.get("result", None)
+    
+    def close(self):
+        return None
 
 class GenericRoute(object):
     def __init__(self):

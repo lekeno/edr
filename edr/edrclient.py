@@ -3422,34 +3422,23 @@ class EDRClient(object):
         return False
 
     def route_fetch(self):
-        spansh = edrroutes.SpanshServer()
         try:
             url_from_clipboard = paste()
             print(url_from_clipboard)
             url_from_clipboard = url_from_clipboard.decode("ascii")
             print(url_from_clipboard)
-            if not spansh.recognized_url(url_from_clipboard):
+            if not edrroutes.SpanshServer.recognized_url(url_from_clipboard):
                 details = []
                 details.append(_("No recognized URL in the clipboard."))
                 details.append(_("Visit spansh.co.uk, create a route, copy the URL to the clipboard, then resend the '!route fetch' command"))
                 self.notify_with_details(_("EDR Route"), details, clear_before=True)
                 return False
-            route = spansh.get_route_from_url(url_from_clipboard)
-            print(route)
-            if route:
-                print(route.route_type)
-                self.player.routenav.set(route)
-                self.route_show_overview()
-                return True
+            spansh = edrroutes.SpanshServer(url_from_clipboard, self.__spansh_route_set)
+            spansh.start()
+            return True
         except Exception as e:
             print("exception: {}".format(e))
             pass
-
-        details = []
-        details.append(_("Something went wrong."))
-        details.append(_("Visit spansh.co.uk, create a route, copy the URL to the clipboard, then resend the '!route fetch' command"))        
-        self.notify_with_details(_("EDR Route"), [_("Something went wrong."), _("Visit spansh.co.uk, create a route, copy the URL to the clipboard, then resend the '!route fetch' command.")])
-        return False
 
     def route_clear(self):
         self.player.routenav.clear()
@@ -3463,6 +3452,17 @@ class EDRClient(object):
     def nav_route_set(self, navroute):
         self.player.routenav.set_ingame_route(navroute)
         self.IN_GAME_MSG.navroute(self.player.routenav)
+    
+    def __spansh_route_set(self, route):
+        if not route:
+            details = []
+            details.append(_("Something went wrong."))
+            details.append(_("Visit spansh.co.uk, create a route, copy the URL to the clipboard, then resend the '!route fetch' command"))        
+            self.notify_with_details(_("EDR Route"), [_("Something went wrong."), _("Visit spansh.co.uk, create a route, copy the URL to the clipboard, then resend the '!route fetch' command.")])
+            return False
+        self.player.routenav.set(route)
+        self.route_show_overview()
+        return True
 
     def __describe_waypoint(self):
         if not self.player.routenav or self.player.routenav.no_route():
