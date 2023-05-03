@@ -168,26 +168,6 @@ class EDRInGameNavRoute(GenericRoute):
     
     def trivial(self):
         return self.empty() or self.total_jumps < 5
-    
-    def next_scoopable(self):
-        scoopables = [*"KGBFOAM"]
-        jumps = 1
-        for system in self.jumps.collection[self.jumps.index:]:
-            if system.get("StarClass", "N/A") in scoopables:
-                result = system
-                result["jumps"] = jumps
-                return result
-            jumps += 1
-
-    def previous_scoopable(self):
-        scoopables = [*"KGBFOAM"]
-        jumps = 1
-        for system in reversed(self.jumps.collection[self.jumps.index:]):
-            if system.get("StarClass", "N/A") in scoopables:
-                result = system
-                result["jumps"] = jumps
-                return result
-            jumps += 1
 
 class SpanshPlotterRouteJSON(GenericRoute):
     def __init__(self, data):
@@ -312,11 +292,9 @@ class EDRRouteStatistics(object):
         self.previous_timestamp = now
         self.current = now
         self.travelled_ly = 0
-        # TODO
         self.ship_jump_range = ship_jump_range
     
     def update(self, system, coords):
-        # TODO missing first jump because coords are not set?
         now = EDTime.py_epoch_now()
         self.current = now
         self.jumps_nb += 1
@@ -335,7 +313,6 @@ class EDRRouteStatistics(object):
         self.remaining_jumps -= 1
         jump_duration = now - self.previous_timestamp
         self.intervals.append(jump_duration)
-        print(self.intervals)
         self.previous_timestamp = now
         self.position = system
         self.coords = coords
@@ -445,7 +422,6 @@ class EDRRouteNavigator(object):
             return False
         
         # TODO what iif the player isn't at the start or following point by point...
-        print("current_sys {} == current_wp.get(StarSystem, None) {}".format(current_sys, current_wp.get("StarSystem", None)))
         if current_sys == current_wp.get("StarSystem", None):
             self.ingame_route.reached_wp()
             next_wp = self.ingame_route.next()
@@ -458,13 +434,11 @@ class EDRRouteNavigator(object):
     
     def set(self, route):
         self.route = route
-        # TODO 2 stats obj?
-        self.stats = EDRRouteStatistics(route)
 
     def set_ingame_route(self, navroute):
         self.ingame_route = EDRInGameNavRoute(navroute)
         self.stats = EDRRouteStatistics(self.ingame_route)
-        # TODO hack to get past the starting poinnt which should be the current system
+        # get past the starting poinnt which should be the current system
         self.ingame_route.next()
 
     def clear(self):
@@ -472,6 +446,7 @@ class EDRRouteNavigator(object):
 
     def clear_ingame_route(self):
         self.ingame_route = None
+        self.stats = None
 
     def no_route(self):
         return self.route is None or self.route.empty()

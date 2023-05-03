@@ -3311,7 +3311,6 @@ class EDRClient(object):
         self.notify_with_details(_("EDR Route"), details, clear_before=True)                
 
     def route_load(self, filename):
-        print("route load")
         route = edrroutes.CSVRoute(filename)
         if route:
             self.player.routenav.set(route)
@@ -3323,7 +3322,6 @@ class EDRClient(object):
         return False
 
     def route_fetch(self):
-        print("route fetch")
         spansh = edrroutes.SpanshServer()
         try:
             url_from_clipboard = paste()
@@ -3336,7 +3334,6 @@ class EDRClient(object):
                 details.append(_("Visit spansh.co.uk, create a route, copy the URL to the clipboard, then resend the '!route fetch' command"))
                 self.notify_with_details(_("EDR Route"), details, clear_before=True)
                 return False
-            print("recognized url")
             route = spansh.get_route_from_url(url_from_clipboard)
             print(route)
             if route:
@@ -3355,7 +3352,6 @@ class EDRClient(object):
         return False
 
     def route_clear(self):
-        print("route clear")
         self.player.routenav.clear()
         details = []
         details.append(_("Route successfully cleared."))
@@ -3370,12 +3366,10 @@ class EDRClient(object):
 
     def __describe_waypoint(self):
         if not self.player.routenav or self.player.routenav.no_route():
-            print("fail1")
             return None
         
         current_wp = self.player.routenav.current()
         if not current_wp:
-            print("fail2")
             return None
         
         waypoint_name = current_wp.get("system", "???")
@@ -3396,7 +3390,6 @@ class EDRClient(object):
         return details
 
     def route_forward(self):
-        print("route forward")
         if self.player.routenav.no_route():
             details = []
             details.append(_("No route."))
@@ -3422,7 +3415,6 @@ class EDRClient(object):
 
 
     def route_rewind(self):
-        print("route rewind")
         if self.player.routenav.no_route():
             details = []
             details.append(_("No route."))
@@ -3470,16 +3462,11 @@ class EDRClient(object):
 
     def route_smartbehavior(self):
         if self.player.routenav.no_route():
-            print("no route branch")
             if self.route_fetch():
-                print("fetch success")
                 return True
             if self.route_load("route.csv"):
-                print("load success")
                 return True
-            print("going for new route")
             return self.route_new()
         else:
-            print("route showing overview")
             return self.route_show_overview()
         
