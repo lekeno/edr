@@ -4,6 +4,9 @@ import os
 import sys
 import math
 import json
+from random import choices
+from string import ascii_uppercase, digits
+import re
 
 import igmconfig
 import edrlog
@@ -29,7 +32,7 @@ except ImportError:
 import lrucache
 
 class InGameMsg(object):   
-    MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice", "help", "navigation", "docking", "mining", "bounty-hunting", "target-guidance", "biology"]
+    MESSAGE_KINDS = ["intel", "warning", "sitrep", "notice", "help", "navigation", "docking", "mining", "bounty-hunting", "target-guidance", "biology"]
     LEGAL_KINDS = ["intel", "warning"] 
 
     def __init__(self, standalone=False):
@@ -74,6 +77,7 @@ class InGameMsg(object):
         self.mining_config(conf)
         self.bounty_hunting_config(conf)
         self.target_guidance_config(conf)
+        self.navroute_config(conf)
 
     def reconfigure(self):
         if self.layout_type == "spacelegs":
@@ -196,6 +200,40 @@ class InGameMsg(object):
         }
         if not conf.panel(kind):
             return
+        self.cfg[kind]["panel"] = {
+            "x": conf.x(kind, "panel"),
+            "y": conf.y(kind, "panel"),
+            "x2": conf.x2(kind, "panel"),
+            "y2": conf.y2(kind, "panel"),
+            "ttl": conf.ttl(kind, "panel"),
+            "rgb": conf.rgb(kind, "panel"),
+            "fill": conf.fill(kind, "panel")
+        }
+
+    def navroute_config(self, conf):
+        default_markers = ["circle"]*7
+        default_markers.extend(["cross"]*16)
+        kind = "navroute"
+        self.cfg[kind] = {
+            "enabled": conf._getboolean(kind, "enabled"),
+            "schema": {
+                "x": conf.x(kind, "schema"),
+                "y": conf.y(kind, "schema"),
+                "h": conf.h(kind, "schema"),
+                "w": conf.w(kind, "schema"),
+                "ttl": conf.ttl(kind, "schema"),
+                "rgb": conf.rgb_list(kind, "schema"),
+                "marker": conf.string_list(kind, "schema", "marker", default_markers),
+                "suffix": conf.string_list(kind, "schema", "suffix", None),
+                "intervalx": conf.getint(kind, "schema", "intervalx", 60),
+                "intervaly": conf.getint(kind, "schema", "intervaly", 0),
+                "stoplen": conf.getint(kind, "schema", "stoplen", 25)
+            }
+        }
+    
+        if not conf.panel(kind):
+            return
+        
         self.cfg[kind]["panel"] = {
             "x": conf.x(kind, "panel"),
             "y": conf.y(kind, "panel"),
@@ -1422,6 +1460,135 @@ class InGameMsg(object):
         }
         self.__vect(u"target-guidance", vect)
 
+    def navroute(self, route_navigator):
+        if not self.cfg["navroute"].get("enabled", None):
+            return
+        
+        self.clear_nav_route()
+        
+        navroute = route_navigator.ingame_route
+        if not navroute or navroute.empty() or navroute.trivial():
+            return
+        
+        self.__draw_navroute(route_navigator)
+
+            
+    def __draw_navroute(self, route_navigator):
+        navroute = route_navigator.ingame_route
+        stats = route_navigator.stats
+        
+        cfg = self.cfg["navroute"]
+        if "panel" in cfg:
+            self.__shape("navroute", cfg["panel"])
+            
+        x = cfg["schema"]["x"]
+        y = cfg["schema"]["y"]
+        w = cfg["schema"]["w"]
+        h = cfg["schema"]["h"]
+        rgbs = cfg["schema"]["rgb"]
+        route_rgb = rgbs[0]
+        travelled_rgb = rgbs[1]
+        current_rgb = rgbs[2]
+        star_rgbs = rgbs[3:]
+        vects = {
+            "travelled": {
+                "id": "navroute-schema-travelled",
+                "color": travelled_rgb,
+                "shape": "vect",
+                "ttl": cfg["schema"]["ttl"],
+                "vector": []
+            },
+            "remaining": {
+                "id": "navroute-schema-remaining",
+                "color": route_rgb,
+                "shape": "vect",
+                "ttl": cfg["schema"]["ttl"],
+                "vector": []
+            }
+        }
+
+        star_classes = "o,b,a,f,g,k,m,c*,d*,h*,n,l,t,tts,s,w,x,y,rogueplanet,nebula,stellarremnantnebula,*".split(",")
+        inc_x = w / (len(navroute.jumps.collection)-1)
+        inc_y = h / (len(navroute.jumps.collection)-1)
+        sys_name_len = cfg["schema"]["stoplen"]
+        interval_x = cfg["schema"]["intervalx"]
+        interval_y = cfg["schema"]["intervaly"]
+        prev_x = None
+        prev_y = None
+        last_x = x + w
+        last_y = y + h
+        
+        white_dwarves = "d da dab dao daz dav db dbz dbv do dov dq dc dcv dx".split()
+        carbon_stars = "c c-j cj c-n cn c-hd chd".split()
+        blackholes = "h blackhole supermassiveblackhole".split()
+            
+
+        for i, stop in enumerate(navroute.jumps.collection):
+            star_class = stop.get("StarClass", "N/A").lower()
+            if star_class in white_dwarves:
+                star_class = "d*"
+            elif star_class in carbon_stars:
+                star_class = "c*"
+            elif star_class in blackholes:
+                star_class = "h*"
+
+            if star_class not in star_classes:
+                star_class = "*"
+
+        
+            sc_index = star_classes.index(star_class) if star_class in star_classes else len(star_classes)-1
+            vector = {
+                "x":int(x), 
+                "y":int(y),
+                "marker": cfg["schema"]["marker"][sc_index],
+                "color": star_rgbs[sc_index],
+            }
+
+            system_name = stop.get("StarSystem", None)
+            generic = bool(re.search(r'\d',  system_name))
+            too_close_to_last = (i < len(navroute.jumps.collection)-1) and ((last_x - x) < interval_x or (last_y - y < interval_y))
+            risk_of_overlap = (prev_x and prev_y) and ((((x - prev_x) < interval_x) or ((y - prev_y) < interval_y)) or too_close_to_last)
+            
+            if not risk_of_overlap and system_name and (not generic or i in [0, navroute.jumps.index-1, navroute.jumps.index, len(navroute.jumps.collection)-1]):
+                trunc_label = system_name[:sys_name_len]+"..." if len(system_name) > sys_name_len+2 else system_name
+                label = trunc_label
+                
+                if i == 0 and stats.jumps_nb:
+                    label += "\n{} J; {} LY; {}".format(stats.jumps_nb, round(stats.travelled_ly,1), EDTime.pretty_print_timespan(stats.elapsed_time()))
+                elif i == navroute.jumps.index-1:
+                    vector["color"] = current_rgb
+                    label = "► {}".format(system_name)
+                    if stats.jmp_hr() and stats.ly_hr() and stats.s_jmp():
+                        label += "\n{} sec/J; {} LY/HR".format(stats.s_jmp(), stats.ly_hr())
+                elif i == len(navroute.jumps.collection)-1 and stats.remaining_ly():
+                    if stats.remaining_time():
+                        label += "\n{} J; {} LY; {}".format(stats.remaining_jumps, stats.remaining_ly(), EDTime.pretty_print_timespan(stats.remaining_time()))
+                    else:
+                        label += "\n{} J; {} LY".format(stats.remaining_jumps, stats.remaining_ly())
+                elif sc_index < len(cfg["schema"]["suffix"]) and cfg["schema"]["suffix"][sc_index]:
+                    label += cfg["schema"]["suffix"][sc_index]
+                    
+                vector["text"] = label
+                prev_x = x
+                prev_y = y
+            
+            if i <= navroute.jumps.index-1:
+                vects["travelled"]["vector"].append(vector)
+            else:
+                if not vects["remaining"]["vector"] and vects["travelled"]["vector"]:
+                    previous_stop = vects["travelled"]["vector"][-1]
+                    vects["remaining"]["vector"].append(previous_stop)
+                vects["remaining"]["vector"].append(vector)
+
+            x += inc_x
+            y += inc_y
+
+        if vects["travelled"]["vector"]:
+            self.__vect(u"navroute-map-travelled", vects["travelled"])
+        
+        if vects["remaining"]["vector"]:
+            self.__vect(u"navroute-map-remaining", vects["remaining"])
+
     def clear(self):
         msg_ids = list(self.msg_ids.keys())
         for msg_id in msg_ids:
@@ -1457,7 +1624,10 @@ class InGameMsg(object):
         self.__clear_kind("bounty-hunting")
 
     def clear_target_guidance(self):
-        self.__clear_kind("target-guidance")    
+        self.__clear_kind("target-guidance")  
+
+    def clear_nav_route(self):
+        self.__clear_kind("navroute")    
 
     def __clear_kind(self, kind):
         tag = "EDR-{}".format(kind)
@@ -1584,7 +1754,7 @@ class InGameMsg(object):
         except Exception as e:
             EDRLOG.log(u"In-Game Vect failed with {}.".format(e), "ERROR")
             pass
-
+    
     def __clear(self, msg_id):
         try:
             self._overlay.send_message(msg_id, "", "", 0, 0, 0, 0)

@@ -436,7 +436,6 @@ class EDRSystems(object):
                 return True
         return False
 
-
     def update_fc_presence(self, fc_report):
         star_system = fc_report.get("starSystem", None)
         if star_system is None:
@@ -542,6 +541,26 @@ class EDRSystems(object):
             return the_system
         
         return None
+
+    def system_coords(self, name):
+        system = self.system(name)
+        if not system:
+            return None
+
+        return system[0]["coords"] 
+
+    def system_primary_star_oneliner(self, name, current_system=True):
+        the_system = self.system(name)
+        if not the_system:
+            return None
+        the_system = the_system[0]
+        if not "primaryStar" in the_system:
+            return None
+        
+        star = the_system["primaryStar"]
+        raw_type = star.get("type", "???")
+        star_type = self.__star_type_lut(raw_type)
+        return _("Star: {} [Fuel]").format(star_type) if star.get("isScoopable", False) else _("Star: {}").format(star_type)
 
     def describe_system(self, name, current_system=True):
         the_system = self.system(name)

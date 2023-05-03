@@ -46,6 +46,9 @@ class IGMConfig(object):
     def panel(self, kind):
         return self._getboolean(kind, 'panel', False)
 
+    def getint(self, kind, part, variable, default=0):
+        return self._getint(kind, '{}_{}'.format(part, variable), default)
+    
     def x(self, kind, part):
         return self._getint(kind, '{}_x'.format(part))
 
@@ -83,6 +86,12 @@ class IGMConfig(object):
 
     def fill(self, kind, part):
         return "#{}".format(self._get(kind, '{}_fill'.format(part), "5B260801"))
+    
+    def string_list(self, kind, part, name, fallback):
+        strings = self._get(kind, '{}_{}'.format(part, name), None)
+        if strings:
+            return strings.split(",")
+        return fallback
 
     def size(self, kind, part):
         return self._get(kind, '{}_size'.format(part), "normal")
@@ -137,5 +146,5 @@ class IGMConfigOnFoot(IGMConfig):
         super(IGMConfigOnFoot, self).__init__(config_file, user_config_file)
         
 class IGMConfigInShip(IGMConfig):
-    def __init__(self, config_file='config/igm_config.v8.ini', user_config_file=['config/user_igm_config.v8.ini', 'config/user_igm_config.v7.ini', 'config/user_igm_config.v6.ini']):
+    def __init__(self, config_file='config/igm_config.v9.ini', user_config_file=['config/user_igm_config.v9.ini', 'config/user_igm_config.v8.ini', 'config/user_igm_config.v7.ini']):
         super(IGMConfigInShip, self).__init__(config_file, user_config_file)
