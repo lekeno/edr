@@ -3366,7 +3366,7 @@ class EDRClient(object):
 
     def nav_route_set(self, navroute):
         self.player.routenav.set_ingame_route(navroute)
-		self.IN_GAME_MSG.navroute(self.player.routenav)
+        self.IN_GAME_MSG.navroute(self.player.routenav)
 
     def __describe_waypoint(self):
         if not self.player.routenav or self.player.routenav.no_route():
