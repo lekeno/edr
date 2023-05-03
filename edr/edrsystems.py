@@ -1095,8 +1095,10 @@ class EDRSystems(object):
                 # species.append(_("Brain trees(??)"))
                 Believed to be located near Guardian ruins.
                 Type of planet, temperature, presence of an Earth-like world, or a gas giant with water-based life are also extra factors...
-                '''
+                
+                Overtriggers (more common near the core)
                 self.__maybe_append(species, genuses, _("Sinuous Tubers(?)"), "sinuous tuber", detected_genuses)
+                '''
                     
             self.__add_missing_genuses(species, genuses, detected_genuses)
             return {

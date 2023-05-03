@@ -644,7 +644,7 @@ class EDRClient(object):
             details.append(_(u'{} materials: {}').format(qualifier, ",".join(facts)))
         
         bio_info = self.edrsystems.biology_on(star_system, body_name)
-        if bio_info and "species" in bio_info:
+        if bio_info and bio_info.get("species", None):
             details.append(_("Expected Bio: {}").format(", ".join(bio_info["species"])))
             progress = self.__biome_progress_oneliner(star_system, body_name)
             if progress:
@@ -709,7 +709,7 @@ class EDRClient(object):
                     facts.append(_("Estimated value: {} cr @ {} LS; {}").format(pretty_print_number(value["valueMax"]), pretty_print_number(value["distance"]), flags))
 
         bio_info = self.edrsystems.biology_on(star_system, scan_event["BodyName"])
-        if bio_info and "species" in bio_info:
+        if bio_info and bio_info.get("species", None):
             facts.append(_("Expected Bio: {}").format(", ".join(bio_info["species"])))
             progress = self.__biome_progress_oneliner(star_system, scan_event["BodyName"])
             if progress:
@@ -1051,7 +1051,7 @@ class EDRClient(object):
         if "Genuses" in entry:
             bio_info = self.edrsystems.biology_on(self.player.star_system, body_name)
             # TODO some assessment step => reorder, add credit estimates?
-            if bio_info and "species" in bio_info:
+            if bio_info and bio_info.get("species", None):
                 details.append(_("Expected Bio: {}").format(", ".join(bio_info["species"])))
                 progress = self.__biome_progress_oneliner(self.player.star_system, body_name)
                 if progress:
@@ -3091,7 +3091,7 @@ class EDRClient(object):
         if facts:
             description.extend(facts)
         bio_info = self.edrsystems.biology_on(system_name, body_name)
-        if bio_info and "species" in bio_info:
+        if bio_info and bio_info.get("species", None):
             description.append(_("Expected Bio: {}").format(", ".join(bio_info["species"])))
             progress = self.__biome_progress_oneliner(system_name, body_name)
             if progress:

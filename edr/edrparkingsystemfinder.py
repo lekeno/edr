@@ -52,6 +52,10 @@ class EDRParkingSystemFinder(threading.Thread):
     def __check_system(self, system):
         if not system:
             return False
+		
+        if system.get("distance", 0) == 0 and system.get("name", "N/A") != self.star_system:
+            # Takes care of some odd distant system showing up nearby shinrarta with distance set to 0
+            return False
 
         slots = self.__theoretical_parking_slots(system)
         info = self.__parking_info(system)
@@ -64,7 +68,7 @@ class EDRParkingSystemFinder(threading.Thread):
     def __theoretical_parking_slots(self, system):
         if not system:
             return 0
-        if "bodyCount" not in system:
+        if "bodyCount" not in system or system["bodyCount"] is None:
             bodies = self.edr_systems.bodies(system.get("name", None))
             system["bodyCount"] = len(bodies) if bodies else 1
         return min(128, system["bodyCount"] * 16)
@@ -102,9 +106,20 @@ class EDRParkingSystemFinder(threading.Thread):
         stats["count"] = sum_bodies["all"]
         stars_stats["count"] = sum_bodies["stars"]
         stats["avg"] = sum_dist["all"] / sum_bodies["all"]
-        stars_stats["avg"] = sum_dist["stars"] / sum_bodies["stars"]
-        stats["median"] = distances[len(distances)//2]
-        stars_stats["median"] = stars_distances[len(stars_distances)//2]
+        stars_stats["avg"] = sum_dist["stars"] / (sum_bodies["stars"] or 1)
+        
+        if distances:
+            if len(distances) > 1:
+                stats["median"] = distances[len(distances)//2]
+            else:
+                stats["median"] = distances[0]
+        
+        if stars_distances:
+            if len(stars_distances) > 1:
+                stars_stats["median"] = stars_distances[len(stars_distances)//2]
+            else:
+                stars_stats["median"] = stars_distances[0]
+
         return {"all": {"distances": distances, "stats": stats}, "stars": {"distances": stars_distances, "stats": stars_stats}}
 
 
