@@ -488,7 +488,7 @@ class InGameMsg(object):
         for distance in distances_meters:
             check = u"◌" if distance < ccr else u"●"
             if distance > ccr and distance >= 10000:
-                details.append(_(u"{} Sample #{}: ≥10km  ›{:03}‹").format(check, i, math.floor(distance), bearings[i-1]))
+                details.append(_(u"{} Sample #{}: ≥10km  ›{:03}‹").format(check, i, bearings[i-1]))
             else:
                 details.append(_(u"{} Sample #{}: {}m  ›{:03}‹").format(check, i, math.floor(distance), bearings[i-1]))
             i += 1

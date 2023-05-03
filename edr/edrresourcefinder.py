@@ -198,6 +198,14 @@ class EDRResourceFinder(object):
         if cresource not in self.SUPPORTED_RESOURCES:
             cresource = self.RESOURCE_SYNONYMS.get(cresource, None)
         return cresource
+    
+    def recognized_candidates(self, resource):
+        cresource = resource.lower()
+        keys = list(EDRResourceFinder.SUPPORTED_RESOURCES.keys())
+        keys.extend(list(EDRResourceFinder.RESOURCE_SYNONYMS.keys()))
+        matches = [k for k in keys if cresource in k or k.startswith(cresource)]
+        return matches
+
 
     def resource_near(self, resource, reference_system, callback):
         if not resource:
@@ -606,7 +614,7 @@ class EDRResourceFinder(object):
         # TODO add nav to recommended sites
         if resource != "selenium":
             return False
-        filename = '{}_sel.json'.format(dlc) if self.dlc else 'sel.json' 
+        filename = '{}_sel.json'.format(self.dlc) if self.dlc else 'sel.json'
         candidates = json.loads(open(utils2to3.abspathmaker(__file__, 'data', filename)).read())
         if not candidates:
             return False
