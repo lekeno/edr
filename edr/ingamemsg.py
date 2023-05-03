@@ -32,7 +32,7 @@ except ImportError:
 import lrucache
 
 class InGameMsg(object):   
-    MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice", "help", "navigation", "docking", "mining", "bounty-hunting", "target-guidance", "biology"]
+    MESSAGE_KINDS = ["intel", "warning", "sitrep", "notice", "help", "navigation", "docking", "mining", "bounty-hunting", "target-guidance", "biology"]
     LEGAL_KINDS = ["intel", "warning"] 
 
     def __init__(self, standalone=False):
@@ -211,42 +211,38 @@ class InGameMsg(object):
         }
 
     def navroute_config(self, conf):
-        kinds = ["navroute"]
-        for kind in kinds:
-            self.cfg[kind] = {
-                "enabled": conf._getboolean(kind, "enabled"),
-                "schema": {
-                    "x": conf.x(kind, "schema"),
-                    "y": conf.y(kind, "schema"),
-                    "h": conf.h(kind, "schema"),
-                    "w": conf.w(kind, "schema"),
-                    "ttl": conf.ttl(kind, "schema"),
-                    "rgb": conf.rgb(kind, "schema"), # TODO not really,  except navroute
-                    "fill": conf.fill(kind, "schema"),  # TODO not really
-                },
-                "label": {
-                    "x": conf.x(kind, "label"),
-                    "y": conf.y(kind, "label"),
-                    "rgb": conf.rgb(kind, "label"),
-                    "ttl": conf.ttl(kind, "label"),
-                    "size": conf.size(kind, "label"),
-                    "len": conf.len(kind, "label"),
-                    "align": conf.align(kind, "label"),
-                }
+        default_markers = ["circle"]*7
+        default_markers.extend(["cross"]*16)
+        kind = "navroute"
+        self.cfg[kind] = {
+            "enabled": conf._getboolean(kind, "enabled"),
+            "schema": {
+                "x": conf.x(kind, "schema"),
+                "y": conf.y(kind, "schema"),
+                "h": conf.h(kind, "schema"),
+                "w": conf.w(kind, "schema"),
+                "ttl": conf.ttl(kind, "schema"),
+                "rgb": conf.rgb_list(kind, "schema"),
+                "marker": conf.string_list(kind, "schema", "marker", default_markers),
+                "suffix": conf.string_list(kind, "schema", "suffix", None),
+                "intervalx": conf.getint(kind, "schema", "intervalx", 60),
+                "intervaly": conf.getint(kind, "schema", "intervaly", 0),
+                "stoplen": conf.getint(kind, "schema", "stoplen", 25)
             }
+        }
+    
+        if not conf.panel(kind):
+            return
         
-            if not conf.panel(kind):
-                continue
-            
-            self.cfg[kind]["panel"] = {
-                "x": conf.x(kind, "panel"),
-                "y": conf.y(kind, "panel"),
-                "x2": conf.x2(kind, "panel"),
-                "y2": conf.y2(kind, "panel"),
-                "ttl": conf.ttl(kind, "panel"),
-                "rgb": conf.rgb(kind, "panel"),
-                "fill": conf.fill(kind, "panel")
-            }
+        self.cfg[kind]["panel"] = {
+            "x": conf.x(kind, "panel"),
+            "y": conf.y(kind, "panel"),
+            "x2": conf.x2(kind, "panel"),
+            "y2": conf.y2(kind, "panel"),
+            "ttl": conf.ttl(kind, "panel"),
+            "rgb": conf.rgb(kind, "panel"),
+            "fill": conf.fill(kind, "panel")
+        }
 
     def mining_config(self, conf):
         kind = "mining-graphs" 
@@ -1465,13 +1461,13 @@ class InGameMsg(object):
         self.__vect(u"target-guidance", vect)
 
     def navroute(self, route_navigator):
-        navroute = route_navigator.ingame_route
-        # TODO if not self.cfg["navroute"].get("enabled", None):
-        #    print("disabled")
-        #    return
+        if not self.cfg["navroute"].get("enabled", None):
+            return
+        
         self.clear_nav_route()
+        
+        navroute = route_navigator.ingame_route
         if not navroute or navroute.empty() or navroute.trivial():
-            print("meh route")
             return
         
         self.__draw_navroute(route_navigator)
@@ -1480,9 +1476,7 @@ class InGameMsg(object):
     def __draw_navroute(self, route_navigator):
         navroute = route_navigator.ingame_route
         stats = route_navigator.stats
-        # TODO use the fact that vect can take colored markers (circle, cross) at each points
-        # and optionally have a text attached, which could be the system name.
-        # maybe draw a metro style ux with a line + circles or cross for scoopable/non-scoopable systems?
+        
         cfg = self.cfg["navroute"]
         if "panel" in cfg:
             self.__shape("navroute", cfg["panel"])
@@ -1491,54 +1485,45 @@ class InGameMsg(object):
         y = cfg["schema"]["y"]
         w = cfg["schema"]["w"]
         h = cfg["schema"]["h"]
-
-        vect = {
-            "id": "my-triangle",
-            "color": cfg["schema"]["rgb"],
-            "shape": "vect",
-            "ttl": cfg["schema"]["ttl"],
-            "vector": []
+        rgbs = cfg["schema"]["rgb"]
+        route_rgb = rgbs[0]
+        travelled_rgb = rgbs[1]
+        current_rgb = rgbs[2]
+        star_rgbs = rgbs[3:]
+        vects = {
+            "travelled": {
+                "id": "navroute-schema-travelled",
+                "color": travelled_rgb,
+                "shape": "vect",
+                "ttl": cfg["schema"]["ttl"],
+                "vector": []
+            },
+            "remaining": {
+                "id": "navroute-schema-remaining",
+                "color": route_rgb,
+                "shape": "vect",
+                "ttl": cfg["schema"]["ttl"],
+                "vector": []
+            }
         }
 
-        # TODO parameterize
-        star_class_LUT = {
-            "o": {"marker": "circle", "rgb": "#2423E9", "suffix": ""},
-            "b": {"marker": "circle", "rgb": "#2F2DE3", "suffix": ""},
-            "a": {"marker": "circle", "rgb": "#4C37D2", "suffix": ""},
-            "f": {"marker": "circle", "rgb": "#5C5C93", "suffix": ""},
-            "g": {"marker": "circle", "rgb": "#908E46", "suffix": ""},
-            "k": {"marker": "circle", "rgb": "#CC432A", "suffix": ""},
-            "m": {"marker": "circle", "rgb": "#E9332A", "suffix": ""},
-            "l": {"marker": "cross", "rgb": "#FF2600", "suffix": ""},
-            "t": {"marker": "cross", "rgb": "#4A0000", "suffix": ""},
-            "y": {"marker": "cross", "rgb": "#4A0000", "suffix": ""},
-            "c*": {"marker": "cross", "rgb": "#55552B", "suffix": ""},
-            "d*": {"marker": "cross", "rgb": "#616CE2", "suffix": ""},
-            "s": { "marker": "cross", "rgb": "#3B3B3B", "suffix": ""},
-            "tts": {"marker": "cross", "rgb": "#4A0000", "suffix": ""},
-            "w": {"marker": "cross", "rgb": "#6E6E89", "suffix": " Dwarf"},
-            "n": {"marker": "cross", "rgb": "#3FEFFF", "suffix": " Neutron"},
-            "h*": { "marker": "cross", "rgb": "#808080", "suffix": " Blackhole"},
-            "x": { "marker": "cross", "rgb": "#FF00DC", "suffix": " Exotic"},
-            "rogueplanet": { "marker": "cross", "rgb": "#FF00DC", "suffix": " Rogue"},
-            "nebula": { "marker": "cross", "rgb": "#FF00DC", "suffix": " Nebula"},
-            "stellarremnantnebula": { "marker": "cross", "rgb": "#FF00DC", "suffix": " Nebula"},
-            "*": {"marker": "cross", "rgb": "#4CFF00", "suffix": " ???"}
-        }
+        star_classes = "o,b,a,f,g,k,m,c*,d*,h*,n,l,t,tts,s,w,x,y,rogueplanet,nebula,stellarremnantnebula,*".split(",")
         inc_x = w / (len(navroute.jumps.collection)-1)
         inc_y = h / (len(navroute.jumps.collection)-1)
-        sys_name_len = 25 # TODO cfg["len"]
-        interval_x = 60 # TODO cfg[interval_x"]
-        interval_y = 0 # TODO cfg[interval_y"]
+        sys_name_len = cfg["schema"]["stoplen"]
+        interval_x = cfg["schema"]["intervalx"]
+        interval_y = cfg["schema"]["intervaly"]
         prev_x = None
         prev_y = None
         last_x = x + w
         last_y = y + h
         
+        white_dwarves = "d da dab dao daz dav db dbz dbv do dov dq dc dcv dx".split()
+        carbon_stars = "c c-j cj c-n cn c-hd chd".split()
+        blackholes = "h blackhole supermassiveblackhole".split()
+            
+
         for i, stop in enumerate(navroute.jumps.collection):
-            white_dwarves = "d da dab dao daz dav db dbz dbv do dov dq dc dcv dx".split()
-            carbon_stars = "c c-j cj c-n cn c-hd chd".split()
-            blackholes = "h blackhole supermassiveblackhole".split()
             star_class = stop.get("StarClass", "N/A").lower()
             if star_class in white_dwarves:
                 star_class = "d*"
@@ -1547,15 +1532,16 @@ class InGameMsg(object):
             elif star_class in blackholes:
                 star_class = "h*"
 
-            if star_class not in star_class_LUT:
+            if star_class not in star_classes:
                 star_class = "*"
 
-            schema = star_class_LUT[star_class]
+        
+            sc_index = star_classes.index(star_class) if star_class in star_classes else len(star_classes)-1
             vector = {
                 "x":int(x), 
                 "y":int(y),
-                "marker": schema["marker"],
-                "color": schema["rgb"],
+                "marker": cfg["schema"]["marker"][sc_index],
+                "color": star_rgbs[sc_index],
             }
 
             system_name = stop.get("StarSystem", None)
@@ -1570,7 +1556,7 @@ class InGameMsg(object):
                 if i == 0 and stats.jumps_nb:
                     label += "\n{} J; {} LY; {}".format(stats.jumps_nb, round(stats.travelled_ly,1), EDTime.pretty_print_timespan(stats.elapsed_time()))
                 elif i == navroute.jumps.index-1:
-                    vector["color"] = "#00b3f7" # TODO parameterize
+                    vector["color"] = current_rgb
                     label = "► {}".format(system_name)
                     if stats.jmp_hr() and stats.ly_hr() and stats.s_jmp():
                         label += "\n{} sec/J; {} LY/HR".format(stats.s_jmp(), stats.ly_hr())
@@ -1579,20 +1565,29 @@ class InGameMsg(object):
                         label += "\n{} J; {} LY; {}".format(stats.remaining_jumps, stats.remaining_ly(), EDTime.pretty_print_timespan(stats.remaining_time()))
                     else:
                         label += "\n{} J; {} LY".format(stats.remaining_jumps, stats.remaining_ly())
-                elif schema.get("suffix", None):
-                    label += schema["suffix"]
+                elif sc_index < len(cfg["schema"]["suffix"]) and cfg["schema"]["suffix"][sc_index]:
+                    label += cfg["schema"]["suffix"][sc_index]
                     
                 vector["text"] = label
                 prev_x = x
                 prev_y = y
             
-            
-            vect["vector"].append(vector)
+            if i <= navroute.jumps.index-1:
+                vects["travelled"]["vector"].append(vector)
+            else:
+                if not vects["remaining"]["vector"] and vects["travelled"]["vector"]:
+                    previous_stop = vects["travelled"]["vector"][-1]
+                    vects["remaining"]["vector"].append(previous_stop)
+                vects["remaining"]["vector"].append(vector)
+
             x += inc_x
             y += inc_y
 
-        print(vect)
-        self.__vect(u"navroute-map-{}".format("TODO"), vect)
+        if vects["travelled"]["vector"]:
+            self.__vect(u"navroute-map-travelled", vects["travelled"])
+        
+        if vects["remaining"]["vector"]:
+            self.__vect(u"navroute-map-remaining", vects["remaining"])
 
     def clear(self):
         msg_ids = list(self.msg_ids.keys())
