@@ -296,13 +296,17 @@ def handle_movement_events(ed_player, entry):
         if EDR_CLIENT.noteworthy_about_body(entry["StarSystem"], entry["Body"]) and ed_player.planetary_destination is None:
             poi = EDR_CLIENT.closest_poi_on_body(entry["StarSystem"], entry["Body"], ed_player.attitude)
             ed_player.planetary_destination = EDPlanetaryLocation(poi)
-    elif entry["event"] in ["LeaveBody"]:
+    
+    ed_player.location.from_entry(entry)
+    
+    if entry["event"] in ["LeaveBody"]:
         place = "Supercruise"
         ed_player.planetary_destination = None
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         outcome["updated"] |= ed_player.update_body_if_obsolete(None)
         EDRLOG.log(u"Place changed: {}, body cleared".format(place), "INFO")
         outcome["reason"] = "Leave event"
+
     return outcome
 
 def handle_change_events(ed_player, entry):
@@ -347,6 +351,18 @@ def handle_change_events(ed_player, entry):
             ed_player.reset_stats()
         outcome["reason"] = "Docking events"
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
+    
+    if entry["event"] in ["Touchdown", "Liftoff"]:
+        body = entry.get("Body", "Unknown")
+        outcome["updated"] |= ed_player.update_body_if_obsolete(body)
+        ed_player.to_normal_space()
+        if entry.get("PlayerControlled", False):
+            ed_player.in_mothership()
+            
+        outcome["reason"] = "Touchdown/Liftoff events"
+        EDRLOG.log(u"Body changed: {}".format(body), "INFO")
+
+    ed_player.location.from_entry(entry)
     return outcome
 
 def handle_fc_position_related_events(ed_player, entry):
@@ -643,11 +659,9 @@ def dashboard_entry(cmdr, is_beta, entry):
     if "altitude" in attitude:
         attitude["altitude"] /= 1000.0
     ed_player.update_attitude(attitude)
-    # TODO only if near a body?
     if ed_player.body and ed_player.tracking_organic():
         EDR_CLIENT.biology_guidance()
     elif not ed_player.planetary_destination and ed_player.body and ed_player.star_system:
-        # TODO consider showing custom poi nav if the poi is about the same species and far enough?
         EDR_CLIENT.try_custom_poi()
 
     if ed_player.planetary_destination:
@@ -781,7 +795,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     status_outcome["updated"] |= EDR_CLIENT.update_star_system_if_obsolete(system)
         
     if entry["event"] in ["Location", "Undocked", "Docked", "DockingCancelled", "DockingDenied",
-                          "DockingGranted", "DockingRequested", "DockingTimeout"]:
+                          "DockingGranted", "DockingRequested", "DockingTimeout", "Touchdown", "Liftoff"]:
         outcome = handle_change_events(ed_player, entry)
         handle_fc_position_related_events(ed_player, entry)
         if outcome["updated"]:
@@ -800,12 +814,11 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         depletables = EDRRawDepletables()
         depletables.visit(entry["NearestDestination"])
         
-
     if entry["event"] == "SAAScanComplete":
         EDR_CLIENT.saa_scan_complete(entry)
     
-    if entry["event"] == "SAASignalsFound":
-        EDR_CLIENT.saa_signals_found(entry)
+    if entry["event"] in ["SAASignalsFound", "FSSBodySignals"]:
+        EDR_CLIENT.body_signals_found(entry)
     
     if entry["event"] in ["FSSSignalDiscovered"]:
         EDR_CLIENT.noteworthy_about_signal(entry)
@@ -827,23 +840,15 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] in ["NavBeaconScan"] and entry.get("NumBodies", 0):
         if "SystemAddress" in entry:
             ed_player.star_system_address = entry["SystemAddress"]
-        # TODO new events: ScanBaryCentre, "scan" with scantype:"NavBeaconDetail"
-        # TODO add noteworthy bio info
         EDR_CLIENT.notify_with_details(_(u"System info acquired"), [_(u"Noteworthy material densities will be shown when approaching a planet.")])
 
     if entry["event"] in ["Scan", "ScanOrganic"]:
         EDR_CLIENT.process_scan(entry)
-        # saasignal founds track find vs remaining
-        # use { "timestamp":"2023-01-17T21:48:49Z", "event":"Music", "MusicTrack":"SystemAndSurfaceScanner" } to show the guidance about remaining species?
-        # use codex / analyse event to show progress so far?
-        # add terrain requirements  (Osseus needs rocky area)
-        # move abandonned species' loc into navpoints
         if entry["ScanType"] in ["Detailed", "Basic"]: # removed AutoScan because spammy
             EDR_CLIENT.noteworthy_about_scan(entry)
 
 
     if entry["event"] == "CodexEntry":
-        # TODO don't add (rather show) nav if already tracked
         EDR_CLIENT.process_codex_entry(entry)
         
     if entry["event"] in ["Interdicted", "Died", "EscapeInterdiction", "Interdiction", "PVPKill", "CrimeVictim", "CommitCrime"]:

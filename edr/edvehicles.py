@@ -169,11 +169,11 @@ class EDVehicle(object):
                 gsrp_bonus += g.strength
 
         strength += gsrp_bonus
-        pips_multiplier = 1.0 + self.distro.shield_boost()
-        strength *= pips_multiplier
+        strength *= (1.0 - self.distro.sys_resistance())
         
         return strength
 
+    # TODO verify, cor is doing that differently
     def shield_resistances(self):
         thermal = 1.0
         kinetic = 1.0
