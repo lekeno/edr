@@ -3435,6 +3435,10 @@ class EDRClient(object):
                 return False
             spansh = edrroutes.SpanshServer(url_from_clipboard, self.__spansh_route_set)
             spansh.start()
+            details = []
+            details.append(_("Fetching the route from Spansh."))
+            details.append(_("Please wait..."))
+            self.notify_with_details(_("EDR Route"), details, clear_before=True)
             return True
         except Exception as e:
             print("exception: {}".format(e))
@@ -3462,6 +3466,7 @@ class EDRClient(object):
             return False
         self.player.routenav.set(route)
         self.route_show_overview()
+        # TODO add head to [waypoint] or send !route forward to advance to the next waypoint + placed in clipboard
         return True
 
     def __describe_waypoint(self):
@@ -3472,21 +3477,17 @@ class EDRClient(object):
         if not current_wp:
             return None
         
-        waypoint_name = current_wp.get("system", "???")
-        if waypoint_name != "???":
-            copy(waypoint_name)
+        
         details = []
-        source_system = self.player.star_system
-        star_oneliner = self.edrsystems.system_primary_star_oneliner(waypoint_name) or "{}".format(waypoint_name)
-        if source_system and all([coord in current_wp for coord in ["x", "y", "z"]]):
-            distance = int(self.edrsystems.distance_with_coords(source_system, current_wp))
-            details.append(_("{}: {} LY").format(star_oneliner, pretty_print_number(distance)))
-        else:
-            details.append(_("{}").format(star_oneliner))
-
+        source_coords = self.edrsystems.system_coords(self.player.star_system)
+        descr = self.player.routenav.describe_wp(source_coords)
+        if descr:
+            details.extend(descr)
+        
         stats = self.player.routenav.stats_summary()
         if stats:
             details.extend(stats)
+        
         return details
 
     def route_forward(self):
@@ -3510,7 +3511,7 @@ class EDRClient(object):
             return True
         details = []
         details.append(_("Something went wrong."))
-        self.notify_with_details(_("EDR Route"), details, clear_before=True)
+        self.notify_with_details(_("EDR Route - Current Waypoint"), details, clear_before=True)
         return False
 
 
@@ -3526,7 +3527,7 @@ class EDRClient(object):
             details = []
             details.append(_("Reached the start of the route."))
             details.append(_("Use '!route forward' to go to the next waypoing."))
-            self.notify_with_details(_("EDR Route"), details, clear_before=True)
+            self.notify_with_details(_("EDR Route - Current Waypoint"), details, clear_before=True)
             return False
 
         details = self.__describe_waypoint()
@@ -3545,7 +3546,7 @@ class EDRClient(object):
         
         details = self.__describe_waypoint()
         if details:
-            self.notify_with_details(_("EDR Route"), details, clear_before=True)
+            self.notify_with_details(_("EDR Route - Current Waypoint"), details, clear_before=True)
             return True
         return False
     
