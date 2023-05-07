@@ -298,14 +298,20 @@ class SpanshBodiesRouteJSON(GenericRoute):
         self.start = self.waypoints.collection[0]["name"] if self.waypoints.collection and "name" in self.waypoints.collection[0] else None
         self.destination = self.waypoints.collection[-1]["name"] if self.waypoints.collection and "name" in self.waypoints.collection[-1] else None
         self.total_waypoints = len(self.waypoints.collection)
+        self.total_bodies = sum([len(waypoint.get("bodies", [])) for waypoint in self.waypoints.collection])
+        
 
     def describe(self):
         details = []
         if self.start and self.destination:
             details.append(_("From {} to {}").format(self.start, self.destination))
 
-        if self.total_jumps:
-            details.append(_("{} waypoints").format(self.total_waypoints))
+        if self.total_waypoints:
+            if self.total_bodies:
+                details.append(_("{} waypoints; {} bodies").format(self.total_waypoints, self.total_bodies))
+            else:
+                details.append(_("{} waypoints").format(self.total_waypoints))
+
         return details
     
     def describe_wp(self, source_coords=None):
@@ -363,7 +369,7 @@ class SpanshExactPlotterRouteJSON(GenericRoute):
         
 class SpanshExobiologyRouteJSON(SpanshBodiesRouteJSON):
     def __init__(self, data):
-        super().__init__()
+        super().__init__(data)
         self.route_type = "exobiology"
     
     def describe_wp(self, source_coords=None):
@@ -444,23 +450,23 @@ class SpanshTouristRouteJSON(GenericRoute):
         super().__init__()
         self.route_type = "tourist"
         self.destinations = data.get("destination_systems", [])
-        self.destination = self.destinations[-1] if self.destinations else None
         self.range = data.get("range", None)
         self.start = data.get("source_system", None)
         self.waypoints = BidiIterator(data.get("system_jumps", None))
+        self.destination = self.waypoints.collection[-1].get("system", None) if self.waypoints.collection else None
         self.total_waypoints = len(self.waypoints.collection)
-        self.total_jumps = sum([waypoint.get("jumps", 0) for waypoint in self.waypoints])
+        self.total_jumps = sum([waypoint.get("jumps", 0) for waypoint in self.waypoints.collection])
 
     def describe(self):
         details = []
         if self.start and self.destination:
-            details.append(_("From {} to {}").format(self.start, ", ".join(self.destinations)))
+            details.append(_("From {} to {}").format(self.start, self.destination))
         
         if len(self.destinations) > 1:
-            details.append(_("via: {}").format(self.start, ", ".join(self.destinations[:-1])))
+            details.append(_("via: {}").format(", ".join(self.destinations[:-1])))
 
         if self.total_jumps:
-            details.append(_("{} waypoints; {} jumps)").format(self.total_waypoints, self.total_jumps))
+            details.append(_("{} waypoints; {} jumps").format(self.total_waypoints, self.total_jumps))
         
         return details
 
