@@ -258,7 +258,7 @@ def handle_movement_events(ed_player, entry):
             ed_player.to_normal_space()
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
         EDR_CLIENT.docking_guidance(entry)
-        EDR_CLIENT.route_show_overview(passive=True)
+        EDR_CLIENT.journey_show_overview(passive=True)
         EDR_CLIENT.noteworthy_about_system(entry)
     elif entry["event"] in ["SupercruiseEntry"]:
         if "SystemAddress" in entry:

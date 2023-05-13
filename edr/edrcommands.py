@@ -355,6 +355,8 @@ class EDRCommands(object):
                     self.edr_client.route_new()
                 elif command_parts[1] == "overview":
                     self.edr_client.route_show_overview()
+                elif command_parts[1] == "waypoint":
+                    self.edr_client.route_show_waypoint()
             else:
                 self.edr_client.route_smartbehavior()
         else:

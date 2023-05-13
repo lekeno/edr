@@ -1940,10 +1940,11 @@ class EDRSystems(object):
                     body_values[body_name]["valueMax"] = valueMax
                     body_values[body_name]["valueScanned"] = valueScanned
                 else:
+                    distance = round(body["distanceToArrival"]) if "distanceToArrival" in body else None
                     body_values[body_name] = {
                         "bodyId":body.get("bodyId", None),
                         "bodyName": body_name,
-                        "distance": round(body.get("distanceToArrival", None)),
+                        "distance": distance,
                         "valueMax": valueMax,
                         "valueScanned": valueScanned,
                     }
