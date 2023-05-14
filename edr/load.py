@@ -1334,6 +1334,7 @@ def handle_damage_events(ed_player, entry):
             else:
                 EDRLOG.log("SLF taking hull damage but player has none...", "WARNING")
         else:
+            # TODO this could be the SRV too...
             ed_player.mothership.taking_hull_damage(entry["Health"] * 100.0) # HullDamage's Health is normalized to 0.0 ... 1.0
     elif entry["event"] == "CockpitBreached":
         ed_player.piloted_vehicle.cockpit_breached()
@@ -1344,7 +1345,8 @@ def handle_damage_events(ed_player, entry):
             # TODO on_foot case
             pass
     elif entry["event"] == "UnderAttack":
-        ed_player.attacked(entry["Target"])
+        default = "SRV" # TODO to confirm but it seems to be the case
+        ed_player.attacked(entry.get("Target", default))
     elif entry["event"] == "HeatDamage" and ed_player.piloted_vehicle:
         ed_player.piloted_vehicle.taking_heat_damage()
     elif entry["event"] == "SRVDestroyed":
