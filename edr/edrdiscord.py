@@ -224,7 +224,7 @@ class EDRDiscordIntegration(object):
     def process(self, entry):
         self.afk_detector.process(entry) # TODO move AFK state to player.
 
-        if entry["event"] == "ReceiveText" and entry["Channel"] != "npc":
+        if entry["event"] == "ReceiveText" and entry.get("Channel", "N/A") != "npc":
             return self.__process_incoming(entry)
         elif entry["event"] == "SendText":
             return self.__process_outgoing(entry)
