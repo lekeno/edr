@@ -992,7 +992,6 @@
 "dronecontrol_decontamination_size3_class1": { "name":"decontamination limpet controller (3E)", "shortname": "Decont. L (3E)"},
 "dronecontrol_decontamination_size5_class1": { "name":"decontamination limpet controller (5E)", "shortname": "Decont. L (5E)"},
 "dronecontrol_decontamination_size7_class1": { "name":"decontamination limpet controller (7E)", "shortname": "Decont. L (7E)"},
-
 "krait_mkii_armour_grade1": { "name":"lightweight alloy (1I)", "shortname": "Lightweight (1I)"},
 "krait_mkii_armour_grade2": { "name":"reinforced alloy (1I)", "shortname": "Reinforced (1I)"},
 "krait_mkii_armour_grade3": { "name":"military grade composite (1I)", "shortname": "Military (1I)"},

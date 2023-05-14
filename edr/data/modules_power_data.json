@@ -1487,6 +1487,10 @@
         "powergen": 0,
         "powerdraw": 0.2
     },
+    "hpt_causticsinklauncher_turret_tiny": {
+        "powergen": 0,
+        "powerdraw": 0.6
+    },
     "int_hullreinforcement_size1_class1": {
         "powergen": 0,
         "powerdraw": 0
@@ -3235,6 +3239,10 @@
         "powergen": 0,
         "powerdraw": 0.2
     },
+    "hpt_antiunknownshutdown_tiny_v2": {
+        "powergen": 0,
+        "powerdraw": 0.4
+    },
     "hpt_mining_subsurfdispmisle_fixed_medium": {
         "powergen": 0,
         "powerdraw": 1.01
@@ -3422,5 +3430,10 @@
     "hpt_xenoscanner_basic_tiny": {
         "powergen": 0,
         "powerdraw": 0.2
+    },
+    
+    "hpt_xenoscannermk2_basic_tiny": {
+        "powergen": 0,
+        "powerdraw": 0.4
     }
 }
