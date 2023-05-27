@@ -81,6 +81,22 @@ class BidiWaypointIterator(object):
             return False
         
         return any([self.__get_system_name(waypoint) == system_name for waypoint in self.collection[self.index:]]) or any([self.__get_system_name(waypoint) == system_name for waypoint in self.collection[:self.index]])
+    
+    def get(self, system_name):
+        if not self.collection or not self.system_name:
+            return
+        
+        result = None
+        for wp in self.collection:
+            name = self.__get_system_name(wp)
+            cname = name.lower() if name else None
+            csystem_name = system_name.lower()
+            if cname == csystem_name:
+                result = wp
+                break
+
+        return result
+        
 
 class SpanshServer(threading.Thread):
     SPANSH_URL = "https://spansh.co.uk"
@@ -220,6 +236,15 @@ class GenericRoute(object):
             details = []
             details.append(_("WP#{}/{}: {} @ {} LY").format(self.waypoints.index+1, self.total_waypoints or "?", BidiWaypointIterator.__get_system_name(current_wp), int(distance)))
         return details
+
+    def describe_wp_bodies(self):
+        return None
+
+    def noteworthy_about_body(self, star_system, body_name):
+        return None
+    
+    def leave_body(self, star_system, body_name):
+        return None
     
     @staticmethod
     def __get_coords(waypoint):
@@ -357,30 +382,133 @@ class SpanshBodiesJourneyJSON(GenericRoute):
     def describe_wp(self, source_coords=None):
         details = super().describe_wp(source_coords)
         current_wp = self.current()
-        if "bodies" in current_wp:
-            activities = set()
+        if not current_wp or not "bodies" in current_wp:
+            return False
+        
+        activities = set()
+        value = 0
+        for b in current_wp["bodies"]:
+            if b.get("estimated_scan_value", None):
+                activities.add(_("scan"))
+                value += b["estimated_scan_value"]
+            
+            if b.get("estimated_mapping_value", None):
+                activities.add(_("map"))
+                value += b["estimated_mapping_value"]
+            
+            if b.get("landmark_value", None):
+                activities.add(_("survey"))
+                value += b["landmark_value"]
+
+        if activities:
+            details.append(_("{} bodies to visit; {} for ~{} cr").format(len(current_wp["bodies"]), " + ".join(activities), pretty_print_number(value)))
+        else:
+            details.append(_("{} bodies to visit").format(len(current_wp["bodies"])))
+
+        if "jumps" in current_wp and self.waypoints.index > 0:
+            details.append(_("{} jump(s) from previous waypoint").format(current_wp["jumps"]))
+
+        return details
+    
+    def noteworthy_about_body(self, star_system,  body_name):
+        wp = self.current()
+        if star_system:
+            wp = self.waypoints.get(star_system)
+        
+        if not wp:
+            return
+        
+        return self.__describe_wp_body(wp, body_name)
+    
+    def leave_body(self, star_system,  body_name):
+        wp = self.current()
+        if star_system:
+            wp = self.waypoints.get(star_system)
+        
+        if not wp or not body_name:
+            return
+        
+        return self.__mark_body_as_visited(wp, body_name)
+    
+    def __mark_body_as_visited(self, wp, body_name):
+        if not wp or not "bodies" in wp:
+            return False
+
+        updated = False        
+        for b in wp["bodies"]:
+            if b.get("name", None) != body_name:
+                continue
+
+            b["visited"] = True
+            updated = True
+            break
+
+        return updated
+    
+    def describe_wp_bodies(self):
+        current_wp = self.current()
+        if not current_wp or not "bodies" in current_wp:
+            return
+        
+        details = []
+        for b in current_wp["bodies"]:
+            if b.get("visited", False):
+                continue
+
             value = 0
-            for b in current_wp["bodies"]:
-                if b.get("estimated_scan_value", None):
-                    activities.add(_("scan"))
-                    value += b["estimated_scan_value"]
-                
-                if b.get("estimated_mapping_value", None):
-                    activities.add(_("map"))
-                    value += b["estimated_mapping_value"]
-                
-                if b.get("landmark_value", None):
-                    activities.add(_("survey"))
-                    value += b["landmark_value"]
+            activities = set()         
+            if b.get("estimated_scan_value", None):
+                activities.add(_("scan"))
+                value += b["estimated_scan_value"]
+            
+            if b.get("estimated_mapping_value", None):
+                activities.add(_("map"))
+                value += b["estimated_mapping_value"]
+            
+            if b.get("landmark_value", None):
+                activities.add(_("survey"))
+                value += b["landmark_value"]
+            
+            if value and b.get("name", None):
+                details.append(_("{}: {} cr ({})".format(b["name"], pretty_print_number(value), " + ".join(activities))))
 
-            if activities:
-                details.append(_("{} bodies to visit; {} for ~{} cr").format(len(current_wp["bodies"]), " + ".join(activities), pretty_print_number(value)))
-            else:
-                details.append(_("{} bodies to visit").format(len(current_wp["bodies"])))
+        return details
 
-            if "jumps" in current_wp and self.waypoints.index > 0:
-                details.append(_("{} jump(s) from previous waypoint").format(current_wp["jumps"]))
+    def __describe_wp_body(self, wp, body_name):
+        if not wp or not "bodies" in wp:
+            return
+        
+        details = []
+        value = 0
+        activities = set()    
+        for b in wp["bodies"]:
+            if b.get("name", None) != body_name:
+                continue
+            
+            if b.get("estimated_scan_value", None):
+                activities.add(_("scan"))
+                value += b["estimated_scan_value"]
+            
+            if b.get("estimated_mapping_value", None):
+                activities.add(_("map"))
+                value += b["estimated_mapping_value"]
+            
+            if b.get("landmark_value", None):
+                activities.add(_("survey"))
+                value += b["landmark_value"]
 
+            break
+            
+        distance = pretty_print_number(b["distance_to_arrival"]) if "distance_to_arrival" in b else None
+        oneliner = "{}: ".format(b["name"])
+        if value:
+            oneliner += _("{} cr ({}) ").format(pretty_print_number(value), " + ".join(activities))
+        
+        if distance:
+            oneliner += _("@ {} LY").format(distance)
+        
+        details.append(oneliner)
+        
         return details
 
 class SpanshExactPlotterJourneyJSON(GenericRoute):
@@ -526,31 +654,48 @@ class SpanshTouristJourneyJSON(GenericRoute):
 
         return details
     
-class CSVJourney(object):
+class CSVJourney(GenericRoute):
     def __init__(self, csvfile):
+        self.journey_type = "custom"
         try:
             csvdata = open(csvfile, newline='')
         except:
             csvdata = ""
         # TODO what happens with error cases?
-        self.csvreader = BidiWaypointIterator(csv.DictReader(csvdata, delimiter=",", quotechar='"'))
-        next(self.csvreader)
-    
-    def current(self):
-        return self.csvreader.current()
-    
-    def next(self):
-        return next(self.csvreader)
-    
-    def previous(self):
-        return self.csvreader.previous()
+        self.waypoints = BidiWaypointIterator(csv.DictReader(csvdata, delimiter=",", quotechar='"'))
+        next(self.waypoints)
 
-    def empty(self):
-        return self.csvreader.empty()
+        self.start = self.waypoints.collection[0].get("system", None) if self.waypoints.collection else None
+        self.destination = self.waypoints.collection[-1].get("system", None) if self.waypoints.collection else None
+        self.total_waypoints = len(self.waypoints.collection)
+        self.total_jumps = sum([waypoint.get("jumps", 0) for waypoint in self.waypoints.collection]) or None
     
     def describe(self):
-        # TODO
-        return ["CSV"]
+        details = []
+        if self.start and self.destination:
+            details.append(_("From {} to {}").format(self.start, self.destination))
+        
+        if self.total_jumps:
+            details.append(_("{} waypoints; {} jumps").format(self.total_waypoints, self.total_jumps))
+        else:
+            details.append(_("{} waypoints").format(self.total_waypoints))
+        
+        return details
+
+
+    def describe_wp(self, source_coords=None):
+        details = super().describe_wp(source_coords)
+        current_wp = self.current()
+        
+        if current_wp.get("jumps", 0):
+            details.append(_("{} jumps from previous waypoint").format(current_wp["jumps"]))
+        
+        if self.waypoints.index < self.total_waypoints-1:
+            next_wp = self.waypoints.collection[self.waypoints.index + 1]
+            if next_wp and next_wp.get("jumps", 0):
+                details.append(_("{} jumps to next waypoint").format(next_wp["jumps"]))
+
+        return details
 
 class EDRRouteStatistics(object):
 
@@ -815,3 +960,21 @@ class EDRNavigator(object):
             summary.append("; ".join(elements))
         
         return summary
+    
+    def noteworthy_about_body(self, star_system, body_name):
+        if self.no_route():
+            return False
+        
+        return self.route.noteworthy_about_body(star_system, body_name)
+
+    def leave_body(self, star_system, body_name):
+        if self.no_route():
+            return False
+        
+        return self.route.leave_body(star_system, body_name)
+    
+    def describe_wp_bodies(self):
+        if self.no_route():
+            return False
+        
+        return self.route.describe_wp_bodies()

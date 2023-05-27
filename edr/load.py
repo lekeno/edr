@@ -300,10 +300,9 @@ def handle_movement_events(ed_player, entry):
     ed_player.location.from_entry(entry)
     
     if entry["event"] in ["LeaveBody"]:
-        place = "Supercruise"
-        ed_player.planetary_destination = None
-        outcome["updated"] |= ed_player.update_place_if_obsolete(place)
-        outcome["updated"] |= ed_player.update_body_if_obsolete(None)
+        body_name = entry.get("BodyName", None)
+        star_system = entry.get("StarSystem", None)
+        outcome["updated"] |= EDR_CLIENT.leave_body(star_system, body_name)
         EDRLOG.log(u"Place changed: {}, body cleared".format(place), "INFO")
         outcome["reason"] = "Leave event"
 

@@ -630,15 +630,23 @@ class EDRClient(object):
         return True
 
     def noteworthy_about_body(self, star_system, body_name):
+        route_facts = self.player.routenav.noteworthy_about_body(star_system, body_name)
+        
         pois = self.edrboi.points_of_interest(star_system, body_name)
         if pois:
             facts = [poi["title"] for poi in pois]
+            if route_facts:
+                facts.append(route_facts)
             self.__notify(_(u'Noteworthy about {}: {} sites').format(body_name, len(facts)), facts, clear_before = True)
             return True
+        
         materials_info = self.edrsystems.materials_on(star_system, body_name)
         facts = self.edrresourcefinder.assess_materials_density(materials_info, self.player.inventory)
         header = _("Noteworthy about {}").format(body_name)
         details = []
+
+        if route_facts:
+            details.append(route_facts)
 
         if facts:
             qualifier = self.edrresourcefinder.raw_profile or _("Noteworthy")
@@ -654,7 +662,21 @@ class EDRClient(object):
         if details:
             self.__notify(header, details, clear_before = True)
 
+    def leave_body(self, star_system, body_name):
+        place = "Supercruise"
+        self.player.planetary_destination = None
+        outcome = self.player.update_place_if_obsolete(place)
+        outcome |= self.player.update_body_if_obsolete(None)
+
+        if not self.player.routenav.leave_body(star_system, body_name):
+            return outcome
         
+        details = self.player.routenav.describe_wp_bodies()
+        if details:
+            self.notify_with_details(_("TODO: EDR Route bodies"), details, clear_before=True)
+        return outcome
+        
+
     def __biome_progress_oneliner(self, star_system, body_id_or_name):
         progress = self.edrsystems.analyzed_biome(star_system, body_id_or_name)
         genus_analyzed = progress["genuses"].get("analyzed", None)
@@ -1239,10 +1261,11 @@ class EDRClient(object):
                             summary_for_chat = "'{}'".format(outlaw)
                     copy(summary_for_chat)
             
-            if self.player.routenav.is_waypoint():
-                # TODO
-                # add details
-                details.append("TODO: this is a waypoint")
+            if self.player.routenav.is_waypoint(star_system):
+                coords = self.edrsystems.system_coords(star_system)
+                waypoint_details = self.player.routenav.describe_wp(coords)
+                details.extend(waypoint_details)
+                # TODO is that good? This notification will say Sitrep...
             
             if details:
                 # Translators: this is the heading for the sitrep of a given system {}; shown via the overlay
