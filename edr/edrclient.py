@@ -3607,7 +3607,7 @@ class EDRClient(object):
             return True
         return False
 
-    def journey_smartbehavior(self):
+    def journey_smart_behavior(self):
         if self.player.routenav.no_journey():
             if self.journey_fetch():
                 return True
@@ -3616,4 +3616,19 @@ class EDRClient(object):
             return self.journey_new()
         else:
             return self.journey_show_overview()
+
+    def route_show_bodies(self):
+        if self.player.routenav.no_journey():
+            return False
+         
+        return self.player.routenav.describe_wp_bodies()
+    
+    def route_visit_bodies(self, bodies_names, star_system=None):
+        if self.player.routenav.no_journey():
+            return False
+
+        if star_system is None:
+            star_system = self.player.star_system
+
+        return self.player.routenav.visit_bodies(star_system, bodies_names)
         

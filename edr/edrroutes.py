@@ -972,6 +972,16 @@ class EDRNavigator(object):
             return False
         
         return self.route.leave_body(star_system, body_name)
+
+    def visit_bodies(self, star_system, bodies_names):
+        if self.no_route():
+            return False
+        
+        visited = False
+        for body_name in bodies_names:
+            visited |= self.route.leave_body(star_system, body_name)
+
+        return visited
     
     def describe_wp_bodies(self):
         if self.no_route():

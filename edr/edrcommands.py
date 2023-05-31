@@ -341,24 +341,29 @@ class EDRCommands(object):
             # TODO copy fsd_range to clip board (missing: cmdr.mothership.jump_range)
             if len(command_parts) >= 2:
                 if command_parts[1] == "forward":
-                    self.edr_client.route_forward()
+                    self.edr_client.journey_forward()
                 elif command_parts[1] == "rewind":
-                    self.edr_client.route_rewind()
+                    self.edr_client.journey_rewind()
                 elif command_parts[1] == "clear":
-                    self.edr_client.route_clear()
+                    self.edr_client.journey_clear()
                 elif command_parts[1] == "fetch":
-                    self.edr_client.route_fetch()
+                    self.edr_client.journey_fetch()
                 elif command_parts[1] == "load":
                     filename = command_parts[2] if len(command_parts) >= 3 else "route.csv"
-                    self.edr_client.route_load(filename)
+                    self.edr_client.journey_load(filename)
                 elif command_parts[1] == "new":
-                    self.edr_client.route_new()
+                    self.edr_client.journey_new()
                 elif command_parts[1] == "overview":
-                    self.edr_client.route_show_overview()
+                    self.edr_client.journey_show_overview()
                 elif command_parts[1] == "waypoint":
-                    self.edr_client.route_show_waypoint()
+                    self.edr_client.journey_show_waypoint()
+                elif command_parts[1] == "bodies":
+                    self.edr_client.journey_show_bodies()
+                elif command_parts[1] == "visit" and len(command_parts) >= 3 and command_parts[2]:
+                    bodies_names = list(map(str.strip, command_parts[2].split(",")))
+                    self.edr_client.journey_visit_bodies(bodies_names)
             else:
-                self.edr_client.route_smartbehavior()
+                self.edr_client.journey_smart_behavior()
         else:
             return False
         return True
