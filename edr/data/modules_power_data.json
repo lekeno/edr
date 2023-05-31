@@ -3435,5 +3435,9 @@
     "hpt_xenoscannermk2_basic_tiny": {
         "powergen": 0,
         "powerdraw": 0.4
+    },
+    "hpt_xenoscanner_advanced_tiny": {
+        "powergen": 0,
+        "powerdraw": 1.0
     }
 }

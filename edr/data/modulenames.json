@@ -977,6 +977,7 @@
 "atmulticannon_turret_large": { "name":"ax multi-cannon T (3E)", "shortname": "AX MC T (3E)"},
 "xenoscanner_basic_tiny": { "name":"xeno scanner (0E)", "shortname": "Xeno Scanner (0E)"},
 "xenoscannermk2_basic_tiny": { "name":"xeno scanner mkII (0E)", "shortname": "Xeno Scanner MKII (0E)"},
+"xenoscanner_advanced_tiny": { "name":"xeno scanner pulse wave (0C)", "shortname": "Xeno Scanner P.Wave (0C)"},
 "dronecontrol_unkvesselresearch": { "name":"research limpet controller (1E)", "shortname": "Research (1E)"},
 "metaalloyhullreinforcement_size1_class1": { "name":"meta alloy hull reinforcement (1E)", "shortname": "M. HRP (1E)"},
 "metaalloyhullreinforcement_size1_class2": { "name":"meta alloy hull reinforcement (1D)", "shortname": "M. HRP (1D)"},
