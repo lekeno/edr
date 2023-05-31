@@ -423,7 +423,7 @@ class InGameMsg(object):
 
         self.__clear_if_needed()
         if "panel" in self.cfg["notice"]:
-            self.__shape("notify", self.cfg["notify"]["panel"])
+            self.__shape("notice", self.cfg["notice"]["panel"])
         self.__msg_header("notice", header)
         self.__msg_body("notice", details)
     

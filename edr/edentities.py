@@ -1368,6 +1368,14 @@ class EDPlayerOne(EDPlayer):
                 self.spacesuit.attacked()
             else:
                 self.piloted_vehicle.attacked()
+        elif target == u"SRV":
+            if self.srv:
+                self.srv.attacked()
+            else:
+                EDRLOG.log(u"SRV attacked but player had none", u"WARNING")
+        else:
+            EDRLOG.log(u"Unrecognized target: {}".format(target), u"WARNING")
+
 
     def pips(self, values):
         if self.vehicle:
