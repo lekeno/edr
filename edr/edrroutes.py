@@ -61,10 +61,10 @@ class BidiWaypointIterator(object):
         return True
 
     def current_wp_sysname(self):
-        return self.__get_system_name(self.current)
+        return self.get_system_name(self.current)
 
     @staticmethod
-    def __get_system_name(waypoint):
+    def get_system_name(waypoint):
         if not waypoint:
             return
         
@@ -80,7 +80,7 @@ class BidiWaypointIterator(object):
         if not self.collection:
             return False
         
-        return any([self.__get_system_name(waypoint) == system_name for waypoint in self.collection[self.index:]]) or any([self.__get_system_name(waypoint) == system_name for waypoint in self.collection[:self.index]])
+        return any([self.get_system_name(waypoint) == system_name for waypoint in self.collection[self.index:]]) or any([self.get_system_name(waypoint) == system_name for waypoint in self.collection[:self.index]])
     
     def get(self, system_name):
         if not self.collection or not self.system_name:
@@ -88,7 +88,7 @@ class BidiWaypointIterator(object):
         
         result = None
         for wp in self.collection:
-            name = self.__get_system_name(wp)
+            name = self.get_system_name(wp)
             cname = name.lower() if name else None
             csystem_name = system_name.lower()
             if cname == csystem_name:
@@ -229,12 +229,12 @@ class GenericRoute(object):
             return None
         
         details = []
-        details.append(BidiWaypointIterator.__get_system_name(current_wp))
+        details.append(BidiWaypointIterator.get_system_name(current_wp))
         dest_coords = self.__get_coords(current_wp)
         if source_coords and all([coord in dest_coords for coord in ["x", "y", "z"]]) and all([coord in source_coords for coord in ["x", "y", "z"]]):
             distance = sqrt((dest_coords["x"] - source_coords["x"])**2 + (dest_coords["y"] - source_coords["y"])**2 + (dest_coords["z"] - source_coords["z"])**2)
             details = []
-            details.append(_("WP#{}/{}: {} @ {} LY").format(self.waypoints.index+1, self.total_waypoints or "?", BidiWaypointIterator.__get_system_name(current_wp), int(distance)))
+            details.append(_("WP#{}/{}: {} @ {} LY").format(self.waypoints.index+1, self.total_waypoints or "?", BidiWaypointIterator.get_system_name(current_wp), int(distance)))
         return details
 
     def describe_wp_bodies(self):
@@ -244,7 +244,7 @@ class GenericRoute(object):
         return None
     
     def leave_body(self, star_system, body_name):
-        return None
+        return False
     
     @staticmethod
     def __get_coords(waypoint):
