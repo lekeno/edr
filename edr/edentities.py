@@ -20,7 +20,7 @@ import edrfleetcarrier
 import edrminingstats
 import edrbountyhuntingstats
 import edengineers
-from edrroutes import EDRRouteNavigator
+from edrroutes import EDRNavigator
 
 import utils2to3
 EDRLOG = EDRLog()
@@ -960,7 +960,7 @@ class EDPlayerOne(EDPlayer):
         self.engineers = edengineers.EDEngineers()
         self.destination = EDDestination()
         self.remlok_helmet = EDRRemlokHelmet()
-        self.routenav = EDRRouteNavigator()
+        self.routenav = EDRNavigator()
 
     def __repr__(self):
         return str(self.__dict__)

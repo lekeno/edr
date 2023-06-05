@@ -630,15 +630,23 @@ class EDRClient(object):
         return True
 
     def noteworthy_about_body(self, star_system, body_name):
+        route_facts = self.player.routenav.noteworthy_about_body(star_system, body_name)
+        
         pois = self.edrboi.points_of_interest(star_system, body_name)
         if pois:
             facts = [poi["title"] for poi in pois]
+            if route_facts:
+                facts.append(route_facts)
             self.__notify(_(u'Noteworthy about {}: {} sites').format(body_name, len(facts)), facts, clear_before = True)
             return True
+        
         materials_info = self.edrsystems.materials_on(star_system, body_name)
         facts = self.edrresourcefinder.assess_materials_density(materials_info, self.player.inventory)
         header = _("Noteworthy about {}").format(body_name)
         details = []
+
+        if route_facts:
+            details.append(route_facts)
 
         if facts:
             qualifier = self.edrresourcefinder.raw_profile or _("Noteworthy")
@@ -654,7 +662,21 @@ class EDRClient(object):
         if details:
             self.__notify(header, details, clear_before = True)
 
+    def leave_body(self, star_system, body_name):
+        place = "Supercruise"
+        self.player.planetary_destination = None
+        outcome = self.player.update_place_if_obsolete(place)
+        outcome |= self.player.update_body_if_obsolete(None)
+
+        if not self.player.routenav.leave_body(star_system, body_name):
+            return outcome
         
+        details = self.player.routenav.describe_wp_bodies()
+        if details:
+            self.notify_with_details(_("TODO: EDR Route bodies"), details, clear_before=True)
+        return outcome
+        
+
     def __biome_progress_oneliner(self, star_system, body_id_or_name):
         progress = self.edrsystems.analyzed_biome(star_system, body_id_or_name)
         genus_analyzed = progress["genuses"].get("analyzed", None)
@@ -1238,6 +1260,13 @@ class EDRClient(object):
                         else:
                             summary_for_chat = "'{}'".format(outlaw)
                     copy(summary_for_chat)
+            
+            if self.player.routenav.is_waypoint(star_system):
+                coords = self.edrsystems.system_coords(star_system)
+                waypoint_details = self.player.routenav.describe_wp(coords)
+                details.extend(waypoint_details)
+                # TODO is that good? This notification will say Sitrep...
+            
             if details:
                 # Translators: this is the heading for the sitrep of a given system {}; shown via the overlay
                 header = _(u"SITREP for {}") if self.player.in_open() else _(u"SITREP for {} (Open)")
@@ -3075,8 +3104,14 @@ class EDRClient(object):
             if self.player.piloted_vehicle:
                 self.player.routenav.fsd_range(self.player.piloted_vehicle.max_jump_range)
             coords = self.edrsystems.system_coords(system)
-            if self.player.routenav.update(system, coords):
+            updates = self.player.routenav.update(system, coords)
+            # TODO hacky
+            if updates["route_updated"]:
                 self.IN_GAME_MSG.navroute(self.player.routenav)
+                
+            if updates["journey_updated"]:
+                self.journey_show_waypoint()
+
         return updated
 
     def system_guidance(self, system_name, passive=False):
@@ -3402,7 +3437,7 @@ class EDRClient(object):
         self.__notify(_(u"{} near {}").format(checker.name, reference), details, clear_before = True)
 
 
-    def route_new(self):
+    def journey_new(self):
         webbrowser.open(edrroutes.SpanshServer.SPANSH_URL)
         details = []
         details.append(_("Opened {} in your web browser.").format(edrroutes.SpanshServer.SPANSH_URL))
@@ -3411,178 +3446,192 @@ class EDRClient(object):
             copy(range)
             details.append(_("Placed your fsd range ({} LY) in the clipboard.").format(range))
         details.append(_("Create a route, copy the URL to the clipboard, then send the '!route fetch' command."))
-        self.notify_with_details(_("EDR Route"), details, clear_before=True)                
+        self.notify_with_details(_("EDR Journey"), details, clear_before=True)                
 
-    def route_load(self, filename):
-        print("route load")
-        route = edrroutes.CSVRoute(filename)
+    def journey_load(self, filename):
+        route = edrroutes.CSVJourney(filename)
         if route:
-            self.player.routenav.set(route)
+            self.player.routenav.set_journey(route)
             return True
         details = []
         details.append(_("Failed to load a csv route from {}.".format(filename)))
-        self.notify_with_details(_("EDR Route"), details, clear_before=True)
+        self.notify_with_details(_("EDR Journey"), details, clear_before=True)
 
         return False
 
-    def route_fetch(self):
-        print("route fetch")
-        spansh = edrroutes.SpanshServer()
+    def journey_fetch(self):
         try:
             url_from_clipboard = paste()
             print(url_from_clipboard)
             url_from_clipboard = url_from_clipboard.decode("ascii")
             print(url_from_clipboard)
-            if not spansh.recognized_url(url_from_clipboard):
+            if not edrroutes.SpanshServer.recognized_url(url_from_clipboard):
                 details = []
                 details.append(_("No recognized URL in the clipboard."))
                 details.append(_("Visit spansh.co.uk, create a route, copy the URL to the clipboard, then resend the '!route fetch' command"))
-                self.notify_with_details(_("EDR Route"), details, clear_before=True)
+                self.notify_with_details(_("EDR Journey"), details, clear_before=True)
                 return False
-            print("recognized url")
-            route = spansh.get_route_from_url(url_from_clipboard)
-            print(route)
-            if route:
-                print(route.route_type)
-                self.player.routenav.set(route)
-                self.route_show_overview()
-                return True
+            spansh = edrroutes.SpanshServer(url_from_clipboard, self.__spansh_journey_set)
+            spansh.start()
+            details = []
+            details.append(_("Fetching the route from Spansh."))
+            details.append(_("Please wait..."))
+            self.notify_with_details(_("EDR Journey"), details, clear_before=True)
+            return True
         except Exception as e:
             print("exception: {}".format(e))
             pass
 
-        details = []
-        details.append(_("Something went wrong."))
-        details.append(_("Visit spansh.co.uk, create a route, copy the URL to the clipboard, then resend the '!route fetch' command"))        
-        self.notify_with_details(_("EDR Route"), [_("Something went wrong."), _("Visit spansh.co.uk, create a route, copy the URL to the clipboard, then resend the '!route fetch' command.")])
-        return False
-
-    def route_clear(self):
-        print("route clear")
-        self.player.routenav.clear()
+    def journey_clear(self):
+        self.player.routenav.clear_journey()
         details = []
         details.append(_("Route successfully cleared."))
-        self.notify_with_details(_("EDR Route"), details, clear_before=True)                
+        self.notify_with_details(_("EDR Journey"), details, clear_before=True)                
 
     def nav_route_clear(self):
-        self.player.routenav.clear_ingame_route()
+        self.player.routenav.clear_route()
 
     def nav_route_set(self, navroute):
-        self.player.routenav.set_ingame_route(navroute)
+        self.player.routenav.set_route(navroute)
         self.IN_GAME_MSG.navroute(self.player.routenav)
+    
+    def __spansh_journey_set(self, route):
+        if not route:
+            details = []
+            details.append(_("Something went wrong."))
+            details.append(_("Visit spansh.co.uk, create a route, copy the URL to the clipboard, then resend the '!route fetch' command"))        
+            self.notify_with_details(_("EDR Journey"), [_("Something went wrong."), _("Visit spansh.co.uk, create a route, copy the URL to the clipboard, then resend the '!route fetch' command.")])
+            return False
+        self.player.routenav.set_journey(route)
+        system = self.player.star_system
+        coords = self.edrsystems.system_coords(system)
+        updates = self.player.routenav.update(system, coords)
+        if updates["journey_updated"]:
+            self.journey_show_overview()
+        # TODO add head to [waypoint] or send !route forward to advance to the next waypoint + placed in clipboard
+        return True
 
     def __describe_waypoint(self):
-        if not self.player.routenav or self.player.routenav.no_route():
-            print("fail1")
+        if not self.player.routenav or self.player.routenav.no_journey():
             return None
         
         current_wp = self.player.routenav.current()
         if not current_wp:
-            print("fail2")
             return None
         
-        waypoint_name = current_wp.get("system", "???")
-        if waypoint_name != "???":
-            copy(waypoint_name)
         details = []
-        source_system = self.player.star_system
-        star_oneliner = self.edrsystems.system_primary_star_oneliner(waypoint_name) or "{}".format(waypoint_name)
-        if source_system and all([coord in current_wp for coord in ["x", "y", "z"]]):
-            distance = int(self.edrsystems.distance_with_coords(source_system, current_wp))
-            details.append(_("{}: {} LY").format(star_oneliner, pretty_print_number(distance)))
-        else:
-            details.append(_("{}").format(star_oneliner))
-
+        source_coords = self.edrsystems.system_coords(self.player.star_system)
+        descr = self.player.routenav.describe_wp(source_coords)
+        if descr:
+            details.extend(descr)
+        
         stats = self.player.routenav.stats_summary()
         if stats:
             details.extend(stats)
+        
         return details
 
-    def route_forward(self):
-        print("route forward")
-        if self.player.routenav.no_route():
+    def journey_forward(self):
+        if self.player.routenav.no_journey():
             details = []
             details.append(_("No route."))
             details.append(_("Use '!route new' or '!route load' to create one."))
-            self.notify_with_details(_("EDR Route"), details, clear_before=True)                
+            self.notify_with_details(_("EDR Journey"), details, clear_before=True)                
             return False
         
         if not self.player.routenav.forward():
             details = []
             details.append(_("Reached the end of the route."))
             details.append(_("Use '!route rewind' to go back one step."))
-            self.notify_with_details(_("EDR Route"), details, clear_before=True)        
+            self.notify_with_details(_("EDR Journey"), details, clear_before=True)        
             return False
         
         details = self.__describe_waypoint()
         if details:
-            self.notify_with_details(_("EDR Route"), details, clear_before=True)
+            wp = self.player.routenav.current_wp_sysname()
+            if wp:
+                details.append(_("Copied '{}' into the clipboard".format(wp)))
+                copy(wp)
+            self.notify_with_details(_("EDR Journey"), details, clear_before=True)
             return True
         details = []
         details.append(_("Something went wrong."))
-        self.notify_with_details(_("EDR Route"), details, clear_before=True)
+        self.notify_with_details(_("EDR Journey - Current Waypoint"), details, clear_before=True)
         return False
 
 
-    def route_rewind(self):
-        print("route rewind")
-        if self.player.routenav.no_route():
+    def journey_rewind(self):
+        if self.player.routenav.no_journey():
             details = []
             details.append(_("No route."))
             details.append(_("Use '!route new' or '!route load' to create one."))
-            self.notify_with_details(_("EDR Route"), details, clear_before=True)                
+            self.notify_with_details(_("EDR Journey"), details, clear_before=True)                
             return False
         
         if not self.player.routenav.rewind():
             details = []
             details.append(_("Reached the start of the route."))
             details.append(_("Use '!route forward' to go to the next waypoing."))
-            self.notify_with_details(_("EDR Route"), details, clear_before=True)
+            self.notify_with_details(_("EDR Journey - Current Waypoint"), details, clear_before=True)
             return False
 
         details = self.__describe_waypoint()
         if details:
-            self.notify_with_details(_("EDR Route"), details, clear_before=True)
+            wp = self.player.routenav.current_wp_sysname()
+            if wp:
+                details.append(_("Copied '{}' into the clipboard".format(wp)))
+                copy(wp)
+            self.notify_with_details(_("EDR Journey"), details, clear_before=True)
             return True
         details = []
         details.append(_("Something went wrong."))
-        self.notify_with_details(_("EDR Route"), details, clear_before=True)
+        self.notify_with_details(_("EDR Journey"), details, clear_before=True)
         return False
 
-    def route_show_current(self):
-        if self.player.routenav.no_route():
-            self.notify_with_details(_("EDR Route"), [("No active route."), ("Send '!route new' or '!route load' to define a route.")])
+    def journey_show_waypoint(self):
+        if self.player.routenav.no_journey():
+            self.notify_with_details(_("EDR Journey"), [("No active route."), ("Send '!route new' or '!route load' to define a route.")])
             return False
         
         details = self.__describe_waypoint()
         if details:
-            self.notify_with_details(_("EDR Route"), details, clear_before=True)
+            self.notify_with_details(_("EDR Journey - Current Waypoint"), details, clear_before=True)
             return True
         return False
     
-    def route_show_overview(self, passive=False):
-        if self.player.routenav.no_route() and not passive:
-            self.notify_with_details(_("EDR Route"), [("No active route."), ("Send '!route new' or '!route load' to define a route.")])
+    def journey_show_overview(self, passive=False):
+        if self.player.routenav.no_journey() and not passive:
+            self.notify_with_details(_("EDR Journey"), [("No active route."), ("Send '!route new' or '!route load' to define a route.")])
             return False
         
         details = self.player.routenav.describe()
         if details:
-            self.notify_with_details(_("EDR Route"), details, clear_before=True)
+            self.notify_with_details(_("EDR Journey"), details, clear_before=True)
             return True
         return False
 
-    def route_smartbehavior(self):
-        if self.player.routenav.no_route():
-            print("no route branch")
-            if self.route_fetch():
-                print("fetch success")
+    def journey_smart_behavior(self):
+        if self.player.routenav.no_journey():
+            if self.journey_fetch():
                 return True
-            if self.route_load("route.csv"):
-                print("load success")
+            if self.journey_load("route.csv"):
                 return True
-            print("going for new route")
-            return self.route_new()
+            return self.journey_new()
         else:
-            print("route showing overview")
-            return self.route_show_overview()
+            return self.journey_show_overview()
+
+    def route_show_bodies(self):
+        if self.player.routenav.no_journey():
+            return False
+         
+        return self.player.routenav.describe_wp_bodies()
+    
+    def route_visit_bodies(self, bodies_names, star_system=None):
+        if self.player.routenav.no_journey():
+            return False
+
+        if star_system is None:
+            star_system = self.player.star_system
+
+        return self.player.routenav.visit_bodies(star_system, bodies_names)
         

@@ -227,6 +227,8 @@ class InGameMsg(object):
                 "suffix": conf.string_list(kind, "schema", "suffix", None),
                 "intervalx": conf.getint(kind, "schema", "intervalx", 60),
                 "intervaly": conf.getint(kind, "schema", "intervaly", 0),
+                "symbolintervalx": conf.getint(kind, "schema", "symbolintervalx", 16),
+                "symbolintervaly": conf.getint(kind, "schema", "symbolintervaly", 0),
                 "stoplen": conf.getint(kind, "schema", "stoplen", 25)
             }
         }
@@ -1466,7 +1468,7 @@ class InGameMsg(object):
         
         self.clear_nav_route()
         
-        navroute = route_navigator.ingame_route
+        navroute = route_navigator.route
         if not navroute or navroute.empty() or navroute.trivial():
             return
         
@@ -1474,7 +1476,7 @@ class InGameMsg(object):
 
             
     def __draw_navroute(self, route_navigator):
-        navroute = route_navigator.ingame_route
+        navroute = route_navigator.route
         stats = route_navigator.stats
         
         cfg = self.cfg["navroute"]
@@ -1513,6 +1515,16 @@ class InGameMsg(object):
         sys_name_len = cfg["schema"]["stoplen"]
         interval_x = cfg["schema"]["intervalx"]
         interval_y = cfg["schema"]["intervaly"]
+        symbol_interval_x = cfg["schema"]["symbolintervalx"]
+        symbol_interval_y = cfg["schema"]["symbolintervaly"]
+        inc_steps = 1
+        if inc_x and inc_x < symbol_interval_x:
+            inc_steps = symbol_interval_x / inc_x
+            inc_x = symbol_interval_x
+        elif inc_y and inc_y < symbol_interval_y:
+            inc_steps = symbol_interval_x / inc_x
+            inc_y = symbol_interval_y
+        
         prev_x = None
         prev_y = None
         last_x = x + w
@@ -1523,7 +1535,13 @@ class InGameMsg(object):
         blackholes = "h blackhole supermassiveblackhole".split()
             
 
+        steps = 0
         for i, stop in enumerate(navroute.jumps.collection):
+            steps += 1
+            if steps < inc_steps:
+                print("skipping: {} steps: {} vs {}".format(stop.get("StarSystem", None), steps, inc_steps))
+                continue
+            steps = 0
             star_class = stop.get("StarClass", "N/A").lower()
             if star_class in white_dwarves:
                 star_class = "d*"
