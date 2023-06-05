@@ -17,7 +17,13 @@ class EDRFleetCarrier(object):
         self.access = "none"
         self.allow_notorious = False
         self._position = {"system": None, "body": None}
-        self.departure = {"time": None, "destination": None}
+        self.departure = {
+            "time": None, 
+            "destination": None,
+            "body": None,
+            "requested": None,
+            "lockdown": None
+        }
         self.decommission_time = None
         self.purchase_orders = {}
         self.sale_orders = {}
@@ -114,11 +120,28 @@ class EDRFleetCarrier(object):
         self.__update_position()
         request_time = edtime.EDTime()
         request_time.from_journal_timestamp(jump_request_event["timestamp"])
-        jump_time = request_time.as_py_epoch() + 60*15
-       
+        jump_time = edtime.EDTime()
+        lockdown_time = edtime.EDTime()
+        if "DepartureTime" in jump_request_event:
+            jump_time.from_journal_timestamp(jump_request_event["DepartureTime"])
+            lockdown_time.from_journal_timestamp(jump_request_event["DepartureTime"])
+            lockdown_time.rewind(60*3+20)
+        else:
+            jump_time.from_journal_timestamp(jump_request_event["timestamp"])
+            jump_time.advance(60*15)
+            lockdown_time.from_journal_timestamp(jump_request_event["timestamp"])
+            lockdown_time.advance(60*(15-3)-20)
+        
+        request_time_epoch = request_time.as_py_epoch()
+        jump_time_epoch = jump_time.as_py_epoch()
+        lockdown_time_epoch = jump_time.as_py_epoch()
+
         self.departure = {
-            "time": jump_time,
-            "destination": jump_request_event.get("SystemName", None)
+            "requested": request_time_epoch,
+            "time": jump_time_epoch,
+            "lockdown": lockdown_time_epoch,
+            "destination": jump_request_event.get("SystemName", None),
+            "body": jump_request_event.get("Body", None),
         }
 
     def jump_cancelled(self, jump_cancel_event):
@@ -146,7 +169,13 @@ class EDRFleetCarrier(object):
             return
         
         self._position["system"] = self.departure["destination"]
-        self.departure = {"time": None, "destination": None}
+        self.departure = {
+            "time": None, 
+            "destination": None,
+            "body": None,
+            "requested": None,
+            "lockdown": None
+        }
 
     def update_docking_permissions(self, event):
         if self.id and self.id != event.get("CarrierID", None):
@@ -159,7 +188,13 @@ class EDRFleetCarrier(object):
         if self.id is None or self.id != event.get("MarketID", None):
             return
         self._position = {"system": event.get("StarSystem", None), "body": event.get("Body", None)}
-        self.departure = {"time": None, "destination": None}
+        self.departure = {
+            "time": None, 
+            "destination": None,
+            "body": None,
+            "requested": None,
+            "lockdown": None
+        }
 
     def update_star_system_if_relevant(self, star_system, market_id, station_name):
         if market_id is None and station_name is None:
@@ -210,8 +245,11 @@ class EDRFleetCarrier(object):
             "id": self.id,
             "callsign": self.callsign,
             "name": self.name,
+            "requested": self.departure["requested"] * 1000 if self.departure["requested"] else None,
             "from": self.position,
             "to": self.departure["destination"],
+            "body": self.departure["body"],
+            "lockdown": self.departure["lockdown"] * 1000 if self.departure["lockdown"] else None,
             "at": self.departure["time"] * 1000 if self.departure["time"] else None,
             "access": self.access,
             "allow_notorious": self.allow_notorious
