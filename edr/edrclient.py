@@ -3368,7 +3368,10 @@ class EDRClient(object):
         else:
             matches = EDRGenusCheckerFactory.recognized_candidates(thing)
             matches.extend(self.edrresourcefinder.recognized_candidates(thing))
-            self.__notify(_(u"EDR Search: suggested terms"), [" ;; ".join(matches)], clear_before=True)
+            if matches:
+                self.__notify(_(u"EDR Search: suggested terms"), [" ;; ".join(matches)], clear_before=True)
+            else:
+                self.__notify(_(u"EDR Search"), [_(u"{}: not supported.").format(thing), _(u"To learn how to use the feature, send: !help search")], clear_before = True)
         
 
     def search_resource(self, resource, star_system):
