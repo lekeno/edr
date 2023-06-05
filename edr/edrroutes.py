@@ -68,6 +68,11 @@ class BidiWaypointIterator(object):
         if not waypoint:
             return
         
+        print(waypoint)
+
+        if "StarSystem" in waypoint:
+            return waypoint["StarSystem"]
+        
         if "system" in waypoint:
             return waypoint["system"]
         
@@ -287,12 +292,16 @@ class EDRNavRoute(object):
 
     def update(self, current_system):
         if not self.jumps:
+            print("no jumps")
             return False
         
         if current_system == self.jumps.current_wp_sysname():
             self.position = self.jumps.current
             next_wp = next(self.jumps)
+            print("match, next wp")
             return next_wp is not None
+        else:
+            print("current_system = {}, expected wp: {}".format(current_system, self.jumps.current_wp_sysname()))
         return False
 
     def describe(self):
@@ -962,29 +971,29 @@ class EDRNavigator(object):
         return summary
     
     def noteworthy_about_body(self, star_system, body_name):
-        if self.no_route():
+        if self.no_journey():
             return False
         
-        return self.route.noteworthy_about_body(star_system, body_name)
+        return self.journey.noteworthy_about_body(star_system, body_name)
 
     def leave_body(self, star_system, body_name):
-        if self.no_route():
+        if self.no_journey():
             return False
         
-        return self.route.leave_body(star_system, body_name)
+        return self.journey.leave_body(star_system, body_name)
 
     def visit_bodies(self, star_system, bodies_names):
-        if self.no_route():
+        if self.no_journey():
             return False
         
         visited = False
         for body_name in bodies_names:
-            visited |= self.route.leave_body(star_system, body_name)
+            visited |= self.journey.leave_body(star_system, body_name)
 
         return visited
     
     def describe_wp_bodies(self):
-        if self.no_route():
+        if self.no_journey():
             return False
         
-        return self.route.describe_wp_bodies()
+        return self.journey.describe_wp_bodies()
