@@ -6,6 +6,7 @@ import re
 import edtime
 from edrlog import EDRLog
 from edri18n import _
+from edrbodiesofinterest import EDRBodiesOfInterest
 EDRLOG = EDRLog()
 
 class EDRFleetCarrier(object):
@@ -79,9 +80,11 @@ class EDRFleetCarrier(object):
         self.id = entry.get("MarketID", None)
         self.callsign = entry.get("StationName", None)
         self.name = entry.get("Name", None)
+        star_system = entry.get("StarSystem", None)
+        adjBodyName = EDRBodiesOfInterest.simplified_body_name(star_system, entry.get("Body", None), " 0")
         self._position = {
-            "system": entry.get("StarSystem", None),
-            "body": entry.get("Body", None)
+            "system": star_system,
+            "body": adjBodyName
         }
         # TODO "StationServices":[ "dock", "autodock", "commodities", "contacts", "exploration", "outfitting", "crewlounge", "rearm", "refuel", "repair", "shipyard", "engineer", "flightcontroller", "stationoperations", "stationMenu", "carriermanagement", "carrierfuel", "livery", "voucherredemption", "socialspace", "bartender", "vistagenomics", "pioneersupplies" ],
         return True
@@ -136,12 +139,16 @@ class EDRFleetCarrier(object):
         jump_time_epoch = jump_time.as_py_epoch()
         lockdown_time_epoch = jump_time.as_py_epoch()
 
+        star_system = jump_request_event.get("SystemName", None)
+        body_name = jump_request_event.get("Body", None)
+        adjBodyName = EDRBodiesOfInterest.simplified_body_name(star_system, body_name, " 0")
+
         self.departure = {
             "requested": request_time_epoch,
             "time": jump_time_epoch,
             "lockdown": lockdown_time_epoch,
-            "destination": jump_request_event.get("SystemName", None),
-            "body": jump_request_event.get("Body", None),
+            "destination": star_system,
+            "body": adjBodyName
         }
 
     def jump_cancelled(self, jump_cancel_event):
@@ -187,7 +194,11 @@ class EDRFleetCarrier(object):
     def update_from_jump_if_relevant(self, event):
         if self.id is None or self.id != event.get("MarketID", None):
             return
-        self._position = {"system": event.get("StarSystem", None), "body": event.get("Body", None)}
+        star_system = event.get("StarSystem", None)
+        body_name = event.get("Body", None)
+        adjBodyName = EDRBodiesOfInterest.simplified_body_name(star_system, body_name)
+        
+        self._position = {"system": star_system, "body": adjBodyName}
         self.departure = {
             "time": None, 
             "destination": None,
