@@ -232,6 +232,7 @@ def handle_carrier_events(ed_player, entry):
 
 def handle_movement_events(ed_player, entry):
     outcome = {"updated": False, "reason": None}
+    place = "Unknown"
 
     if entry["event"] in ["SupercruiseExit"]:
         body = entry["Body"]
@@ -304,7 +305,7 @@ def handle_movement_events(ed_player, entry):
         ed_player.planetary_destination = None
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         outcome["updated"] |= ed_player.update_body_if_obsolete(None)
-        EDRLOG.log(u"Place changed: {}, body cleared".format(place), "INFO")
+        EDRLOG.log(u"Place changed: Supercruise, body cleared", "INFO")
         outcome["reason"] = "Leave event"
 
     return outcome

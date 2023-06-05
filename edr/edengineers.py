@@ -269,7 +269,8 @@ class EDEngineers(object):
     def update(self, engineer_progress_event):
         engineers = engineer_progress_event.get("Engineers", [])
         for e in engineers:
-            self.engineers[e["Engineer"].lower()] = EDEngineerFactory.from_engineer_progress_dict(e)
+            if "Engineer" in e:
+                self.engineers[e["Engineer"].lower()] = EDEngineerFactory.from_engineer_progress_dict(e)
 
     def dibs(self, materials):
         dibs_list = []
