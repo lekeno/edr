@@ -1918,6 +1918,8 @@ class EDRSystems(object):
             value = self.edsm_server.system_value(system_name)
             if value:
                 self.edsm_system_values_cache.set(system_name.lower(), value)
+            else:
+                value = {[]}
         bodies = self.bodies(system_name)
         if not bodies:
             bodies = [{}]
