@@ -1477,7 +1477,7 @@ class InGameMsg(object):
             
     def __draw_navroute(self, route_navigator):
         navroute = route_navigator.route
-        stats = route_navigator.stats
+        stats = route_navigator.route_stats
         
         cfg = self.cfg["navroute"]
         if "panel" in cfg:

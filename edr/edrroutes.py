@@ -119,6 +119,21 @@ class SpanshServer(threading.Thread):
             self.callback(result)
 
     @staticmethod
+    def get_url(source, destination, range, genre):
+        genre = genre or "plotter"
+        url = f"{SpanshServer.SPANSH_URL}/{genre}/results/auto?"
+        if source:
+            url += f"from={source.capitalize()}"
+        
+        if destination:
+            url += f"&to={destination.capitalize()}"
+        
+        if range:
+            url += f"&range={range}"
+
+        return url
+
+    @staticmethod
     def recognized_url(url):
         spansh_regexp = r"^https:\/\/(?:www\.)?spansh\.co\.uk\/(plotter|riches|ammonia|earth|exact-plotter|exobiology|fleet-carrier|tourist)\/results\/.*$"
         return bool(re.match(spansh_regexp, url))
@@ -215,9 +230,11 @@ class GenericRoute(object):
             details.append(_("Distance: {} LY").format(int(self.distance)))
         
         if self.total_waypoints:
-            details.append(_("{} waypoints").format(self.total_waypoints))
+            wp_progress = self.waypoints.index+1 if self.waypoints else 0
+            details.append(_("{}/{} waypoints").format(wp_progress, self.total_waypoints))
 
-        if self.total_jumps:
+        if self.total_jumps and self.total_jumps != self.total_waypoints:
+            # TODO progress on jumps
             details.append(_("{} jumps").format(self.total_jumps))
 
         return details
@@ -278,7 +295,9 @@ class EDRNavRoute(object):
         return self.jumps is None or self.total_jumps == 0
     
     def trivial(self):
-        return self.empty() or self.total_jumps < 5
+        # jumps_threshold = 5  # TODO configure
+        jumps_threshold = 3 # TODO maybe still show it if there is a journey?
+        return self.empty() or self.total_jumps < jumps_threshold
     
     def next(self):
         if self.jumps:
@@ -317,22 +336,29 @@ class SpanshPlotterJourneyJSON(GenericRoute):
     def __init__(self, data):
         super().__init__()
         self.journey_type = "plotter"
-        self.destination = data.get("destination_system", None)
+        self.waypoints = BidiWaypointIterator(data.get("system_jumps", None))
+        self.destination_name = data.get("destination_system", None)
+        self.destination = self.waypoints.collection[-1]
         self.via = data.get("via", None)
         self.start = data.get("source_system", None)
+        #self.start = self.waypoints.collection[0]
         self.efficiency = data.get("efficiency", None)
         self.range = data.get("range", None)
         self.distance = data.get("distance", None)
-        self.waypoints = BidiWaypointIterator(data.get("system_jumps", None))
         self.total_jumps = data.get("total_jumps", None)
         self.total_waypoints = len(self.waypoints.collection) if self.waypoints.collection else 0
 
     def describe(self):
         details = []
-        details.append(_("From {} to {}").format(self.start, self.destination))
+        details.append(_("From {} to {}").format(self.start, self.destination_name))
         if self.via:
-            details.append(_("From {} to {} (via {})").format(self.start, self.destination, ", ".join(self.via)))
-        details.append(_("Distance: {} LY; {} waypoints, {} jumps").format(int(self.distance), self.total_waypoints, self.total_jumps))
+            details.append(_("From {} to {} (via {})").format(self.start, self.destination_name, ", ".join(self.via)))
+        
+        wp_progress = self.waypoints.index+1 if self.waypoints else 0
+        if self.total_jumps and self.total_jumps != self.total_waypoints:
+            details.append(_("Distance: {} LY; {}/{} waypoints, {} jumps").format(int(self.distance), wp_progress, self.total_waypoints, self.total_jumps))
+        else:
+            details.append(_("Distance: {} LY; {}/{} waypoints").format(int(self.distance), wp_progress, self.total_waypoints, self.total_jumps))
         details.append(_("Range: {} LY @ {}% efficiency").format(self.range, self.efficiency))
         return details
 
@@ -370,21 +396,24 @@ class SpanshBodiesJourneyJSON(GenericRoute):
         self.journey_type = "bodies"
         self.waypoints = BidiWaypointIterator(data)
         self.start = self.waypoints.collection[0]["name"] if self.waypoints.collection and "name" in self.waypoints.collection[0] else None
-        self.destination = self.waypoints.collection[-1]["name"] if self.waypoints.collection and "name" in self.waypoints.collection[-1] else None
+        self.destination = self.waypoints.collection[-1] if self.waypoints.collection else None
+        self.destination_name = self.waypoints.collection[-1]["name"] if self.waypoints.collection and "name" in self.waypoints.collection[-1] else None
         self.total_waypoints = len(self.waypoints.collection)
         self.total_bodies = sum([len(waypoint.get("bodies", [])) for waypoint in self.waypoints.collection])
         
 
     def describe(self):
         details = []
-        if self.start and self.destination:
-            details.append(_("From {} to {}").format(self.start, self.destination))
+        if self.start and self.destination_name:
+            details.append(_("From {} to {}").format(self.start, self.destination_name))
 
         if self.total_waypoints:
+            wp_progress = self.waypoints.index+1 if self.waypoints else 0
+            # TODO also do body progress?
             if self.total_bodies:
-                details.append(_("{} waypoints; {} bodies").format(self.total_waypoints, self.total_bodies))
+                details.append(_("{}/{} waypoints; {} bodies").format(wp_progress, self.total_waypoints, self.total_bodies))
             else:
-                details.append(_("{} waypoints").format(self.total_waypoints))
+                details.append(_("{}/{} waypoints").format(wp_progress, self.total_waypoints))
 
         return details
     
@@ -524,7 +553,7 @@ class SpanshExactPlotterJourneyJSON(GenericRoute):
     def __init__(self, data):
         super().__init__()
         self.journey_type = "exact-plotter"
-        self.destination = data.get("destination", None)
+        self.destination_name = data.get("destination", None)
         self.start = data.get("source", None)
         self.algorithm = data.get("algorithm", None)
         self.tank_size = data.get("tank_size", 0)
@@ -542,6 +571,7 @@ class SpanshExactPlotterJourneyJSON(GenericRoute):
         self.range_boost = data.get("range_boost", 0)
         self.ship_build = data.get("ship_build", 0)
         self.waypoints = BidiWaypointIterator(data.get("jumps", None))
+        self.destination = self.waypoints.collection[-1] if self.waypoints.collection else None
         self.total_waypoints = len(self.waypoints.collection)
         
 class SpanshExobiologyJourneyJSON(SpanshBodiesJourneyJSON):
@@ -575,7 +605,8 @@ class SpanshFleetCarrierJourneyJSON(GenericRoute):
         self.calc_starting_fuel = data.get("calculate_starting_fuel", False)
         self.capacity_used = data.get("capacity_used", 0)
         self.destinations = data.get("destinations", [])
-        self.destination = self.destinations[-1] if self.destinations else None
+        self.destination_name = self.destinations[-1] if self.destinations else None
+        self.destination = self.waypoints.collection[-1] if self.waypoints.collection else None
         self.fuel_loaded = data.get("fuel_loaded", 0)
         self.refuel_destinations = data.get("refuel_destinations", [])
         self.start = data.get("source", None)
@@ -586,14 +617,15 @@ class SpanshFleetCarrierJourneyJSON(GenericRoute):
 
     def describe(self):
         details = []
-        if self.start and self.destination:
-            details.append(_("From {} to {}").format(self.start, ", ".join(self.destinations)))
+        if self.start and self.destination_name:
+            details.append(_("From {} to {}").format(self.start, self.destination_name))
         
         if len(self.destinations) > 1:
             details.append(_("via: {}").format(self.start, ", ".join(self.destinations[:-1])))
 
         if self.total_waypoints:
-            details.append(_("{} waypoints; {} tritium ({} restocks)").format(self.total_waypoints, self.total_tritium_necessary, len(self.refuel_destinations)))
+            wp_progress = self.waypoints.index+1 if self.waypoints else 0
+            details.append(_("{}/{} waypoints; {} tritium ({} restocks)").format(wp_progress, self.total_waypoints, self.total_tritium_necessary, len(self.refuel_destinations)))
         
         return details
 
@@ -630,20 +662,24 @@ class SpanshTouristJourneyJSON(GenericRoute):
         self.range = data.get("range", None)
         self.start = data.get("source_system", None)
         self.waypoints = BidiWaypointIterator(data.get("system_jumps", None))
-        self.destination = self.waypoints.collection[-1].get("system", None) if self.waypoints.collection else None
+        self.destination_name = self.waypoints.collection[-1].get("system", None) if self.waypoints.collection else None
+        self.destination = self.waypoints.collection[-1] if self.waypoints.collection else None
         self.total_waypoints = len(self.waypoints.collection)
         self.total_jumps = sum([waypoint.get("jumps", 0) for waypoint in self.waypoints.collection])
 
     def describe(self):
         details = []
-        if self.start and self.destination:
-            details.append(_("From {} to {}").format(self.start, self.destination))
+        if self.start and self.destination_name:
+            details.append(_("From {} to {}").format(self.start, self.destination_name))
         
         if len(self.destinations) > 1:
             details.append(_("via: {}").format(", ".join(self.destinations[:-1])))
 
-        if self.total_jumps:
-            details.append(_("{} waypoints; {} jumps").format(self.total_waypoints, self.total_jumps))
+        wp_progress = self.waypoints.index+1 if self.waypoints else 0
+        if self.total_jumps and self.total_jumps != self.total_waypoints:
+            details.append(_("{}/{} waypoints; {} jumps").format(wp_progress, self.total_waypoints, self.total_jumps))
+        else:
+            details.append(_("{}/{} waypoints").format(wp_progress, self.total_waypoints))
         
         return details
 
@@ -675,19 +711,22 @@ class CSVJourney(GenericRoute):
         next(self.waypoints)
 
         self.start = self.waypoints.collection[0].get("system", None) if self.waypoints.collection else None
-        self.destination = self.waypoints.collection[-1].get("system", None) if self.waypoints.collection else None
+        self.destination_name = self.waypoints.collection[-1].get("system", None) if self.waypoints.collection else None
+        self.destination = self.waypoints.collection[-1] if self.waypoints.collection else None
         self.total_waypoints = len(self.waypoints.collection)
         self.total_jumps = sum([waypoint.get("jumps", 0) for waypoint in self.waypoints.collection]) or None
     
     def describe(self):
         details = []
-        if self.start and self.destination:
-            details.append(_("From {} to {}").format(self.start, self.destination))
+        if self.start and self.destination_name:
+            details.append(_("From {} to {}").format(self.start, self.destination_name))
         
-        if self.total_jumps:
-            details.append(_("{} waypoints; {} jumps").format(self.total_waypoints, self.total_jumps))
+        
+        wp_progress = self.waypoints.index+1 if self.waypoints else 0
+        if self.total_jumps and self.total_jumps != self.total_waypoints:
+            details.append(_("{}/{} waypoints; {} jumps").format(wp_progress, self.total_waypoints, self.total_jumps))
         else:
-            details.append(_("{} waypoints").format(self.total_waypoints))
+            details.append(_("{}/{} waypoints").format(wp_progress, self.total_waypoints))
         
         return details
 
@@ -732,17 +771,23 @@ class EDRRouteStatistics(object):
         now = EDTime.py_epoch_now()
         self.current = now
         self.jumps_nb += 1
-        if self.coords:
+        if self.coords and coords:
             distance = sqrt((self.coords["x"] - coords["x"])**2 + (self.coords["y"] - coords["y"])**2 + (self.coords["z"] - coords["z"])**2)
             self.distances.append(distance)
             print(self.distances)
             self.travelled_ly += distance
-        else:
+        elif "StarPos" in self.departure and coords:
             s_pos = self.departure["StarPos"]
             distance = sqrt((s_pos[0] - coords["x"])**2 + (s_pos[1] - coords["y"])**2 + (s_pos[2] - coords["z"])**2)
             self.distances.append(distance)
             print(self.distances)
             self.travelled_ly += distance
+        else:
+            print("no reference point, or no coords => no distance calculated")
+            print(self.departure)
+            print(self.coords)
+            print(coords)
+            
         
         self.remaining_jumps -= 1
         jump_duration = now - self.previous_timestamp
@@ -760,6 +805,8 @@ class EDRRouteStatistics(object):
         return None
 
     def remaining_ly(self):
+        print(self.coords)
+        print(self.destination)
         if self.coords and all([coord in self.coords for coord in ["x", "y", "z"]]):
             if "StarPos" in self.destination:
                 d_pos = self.destination["StarPos"]
@@ -804,16 +851,19 @@ class EDRRouteStatistics(object):
         return None
     
 class EDRNavigator(object):
-    EDR_JOURNEY_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'journey.v1.p')
-
+    EDR_JOURNEY_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'navigator.v1.p')
+    
     def __init__(self):
-        self.stats = None
         self.route = None
+        self.route_stats = None
         self.journey = None
+        self.journey_stats = None
         self.position = None
         try:
             with open(self.EDR_JOURNEY_CACHE, 'rb') as handle:
                 self.journey = pickle.load(handle)
+                if self.journey:
+                    self.journey_stats = EDRRouteStatistics(self.journey)
         except:
             self.journey = None
 
@@ -827,8 +877,11 @@ class EDRNavigator(object):
         job1_success = self.__update_journey(current_sys)
         job2_success = self.__update_route(current_sys)
         
-        if self.stats and (job1_success or job2_success):
-            self.stats.update(current_sys, coords)
+        if self.route_stats and (job1_success or job2_success):
+            self.route_stats.update(current_sys, coords)
+
+        if self.journey_stats and (job1_success):
+            self.journey_stats.update(current_sys, coords)
 
         return {
             "journey_updated": job1_success,
@@ -861,15 +914,16 @@ class EDRNavigator(object):
         return self.route.update(current_sys)
     
     def fsd_range(self, range):
-        if self.stats:
-           self.stats.ship_jump_range = range
+        if self.route_stats:
+           self.route_stats.ship_jump_range = range
     
     def set_journey(self, route):
         self.journey = route
+        self.journey_stats = EDRRouteStatistics(self.journey)
 
     def set_route(self, navroute):
         self.route = EDRNavRoute(navroute)
-        self.stats = EDRRouteStatistics(self.route)
+        self.route_stats = EDRRouteStatistics(self.route)
         # get past the starting poinnt which should be the current system
         self.route.next()
 
@@ -878,7 +932,7 @@ class EDRNavigator(object):
 
     def clear_route(self):
         self.route = None
-        self.stats = None
+        self.route_stats = None
 
     def no_journey(self):
         return self.journey is None or self.journey.empty()
@@ -910,7 +964,11 @@ class EDRNavigator(object):
         if not self.journey:
             return None
         
-        return self.journey.describe()
+        details = self.journey.describe()
+        stats_summary = self.journey_stats_summary()
+        if details and stats_summary:
+            details.extend(stats_summary)
+        return details
     
     def is_waypoint(self, system_name):
         if not self.journey:
@@ -924,19 +982,29 @@ class EDRNavigator(object):
         
         return self.journey.describe_wp(current_coords)
 
-    def stats_summary(self):
-        if not self.stats:
+    def route_stats_summary(self):
+        if not self.route_stats:
             return None
         
-        summary = []
-        remaining_time = self.stats.remaining_time()
-        remaining_ly = self.stats.remaining_ly()
-        remaining_jumps = self.stats.remaining_jumps
+        return self.__stats_summary(self.route_stats)
+    
+    def journey_stats_summary(self):
+        if not self.journey_stats:
+            print("no journey stats")
+            return None
+        
+        return self.__stats_summary(self.journey_stats)
 
-        ly_hr = self.stats.ly_hr()
-        jmp_hr = self.stats.jmp_hr()
-        ly_jmp = self.stats.ly_jmp()
-        s_jmp = self.stats.s_jmp()
+    def __stats_summary(self, stats):
+        summary = []
+        remaining_time = stats.remaining_time()
+        remaining_ly = stats.remaining_ly()
+        remaining_jumps = stats.remaining_jumps
+
+        ly_hr = stats.ly_hr()
+        jmp_hr = stats.jmp_hr()
+        ly_jmp = stats.ly_jmp()
+        s_jmp = stats.s_jmp()
 
         elements = []
         if remaining_time:
