@@ -338,29 +338,34 @@ class EDRCommands(object):
                 self.edr_client.biology_spots(cmdr.star_system)
         elif command == "!route":
             self.edr_log.log(u"Route command", "INFO")
+            better_parts = command_parts[1].split(" ", 1)
+            print(better_parts)
             # TODO copy fsd_range to clip board (missing: cmdr.mothership.jump_range)
-            if len(command_parts) >= 2:
-                if command_parts[1] == "forward":
+            if len(better_parts) >= 1:
+                if better_parts[0] == "forward":
                     self.edr_client.journey_forward()
-                elif command_parts[1] == "rewind":
+                elif better_parts[0] == "rewind":
                     self.edr_client.journey_rewind()
-                elif command_parts[1] == "clear":
+                elif better_parts[0] == "clear":
                     self.edr_client.journey_clear()
-                elif command_parts[1] == "fetch":
+                elif better_parts[0] == "fetch":
                     self.edr_client.journey_fetch()
-                elif command_parts[1] == "load":
-                    filename = command_parts[2] if len(command_parts) >= 3 else "route.csv"
+                elif better_parts[0] == "load":
+                    filename = better_parts[1] if len(better_parts) >= 2 else "route.csv"
                     self.edr_client.journey_load(filename)
-                elif command_parts[1] == "new":
-                    self.edr_client.journey_new()
-                elif command_parts[1] == "overview":
+                elif better_parts[0] == "new":
+                    if len(better_parts) >= 2:
+                        self.edr_client.journey_new_adv(better_parts[1])
+                    else:
+                        self.edr_client.journey_new_adv()
+                elif better_parts[0] == "overview":
                     self.edr_client.journey_show_overview()
-                elif command_parts[1] == "waypoint":
+                elif better_parts[0] == "waypoint":
                     self.edr_client.journey_show_waypoint()
-                elif command_parts[1] == "bodies":
+                elif better_parts[0] == "bodies":
                     self.edr_client.journey_show_bodies()
-                elif command_parts[1] == "visit" and len(command_parts) >= 3 and command_parts[2]:
-                    bodies_names = list(map(str.strip, command_parts[2].split(",")))
+                elif better_parts[0] == "visit" and len(better_parts) >= 2 and better_parts[1]:
+                    bodies_names = list(map(str.strip, better_parts[1].split(",")))
                     self.edr_client.journey_visit_bodies(bodies_names)
             else:
                 self.edr_client.journey_smart_behavior()
