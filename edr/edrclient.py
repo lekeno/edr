@@ -1261,11 +1261,12 @@ class EDRClient(object):
                             summary_for_chat = "'{}'".format(outlaw)
                     copy(summary_for_chat)
             
-            if self.player.routenav.is_waypoint(star_system):
-                coords = self.edrsystems.system_coords(star_system)
-                waypoint_details = self.player.routenav.describe_wp(coords)
-                details.extend(waypoint_details)
-                # TODO is that good? This notification will say Sitrep...
+            #if self.player.routenav.is_waypoint(star_system):
+            #    coords = self.edrsystems.system_coords(star_system)
+            #    waypoint_details = self.player.routenav.describe_wp(coords)
+            #    if waypoint_details:
+            #        waypoint_details.append(_("Next waypoint has been placed in the clipboard."))
+            #        self.__notify(_("EDR Journey"), waypoint_details, clear_before=True)
             
             if details:
                 # Translators: this is the heading for the sitrep of a given system {}; shown via the overlay
@@ -3437,6 +3438,21 @@ class EDRClient(object):
         self.__notify(_(u"{} near {}").format(checker.name, reference), details, clear_before = True)
 
 
+    def journey_new_adv(self, destination=None, genre=None):
+        range = None
+        if self.player.piloted_vehicle and self.player.piloted_vehicle.max_jump_range:
+            range = int(self.player.piloted_vehicle.max_jump_range)
+        source = self.player.star_system
+        url = edrroutes.SpanshServer.get_url(source, destination or source, range or 30, genre)
+        webbrowser.open(url)
+        details = []
+        details.append(_("Opened Spansh in your web browser."))
+        if source and destination and range:
+            details.append(_("Wait for the route to complete, copy the URL to the clipboard, then send the '!route fetch' command."))
+        else:
+            details.append(_("Adjust the source / destination / range, generate and wait for a route, copy the URL to the clipboard, then send the '!route fetch' command."))
+        self.notify_with_details(_("EDR Journey"), details, clear_before=True)
+    
     def journey_new(self):
         webbrowser.open(edrroutes.SpanshServer.SPANSH_URL)
         details = []
@@ -3446,7 +3462,7 @@ class EDRClient(object):
             copy(range)
             details.append(_("Placed your fsd range ({} LY) in the clipboard.").format(range))
         details.append(_("Create a route, copy the URL to the clipboard, then send the '!route fetch' command."))
-        self.notify_with_details(_("EDR Journey"), details, clear_before=True)                
+        self.notify_with_details(_("EDR Journey"), details, clear_before=True)
 
     def journey_load(self, filename):
         route = edrroutes.CSVJourney(filename)
@@ -3525,7 +3541,8 @@ class EDRClient(object):
         if descr:
             details.extend(descr)
         
-        stats = self.player.routenav.stats_summary()
+        stats = self.player.routenav.journey_stats_summary()
+        print(stats)
         if stats:
             details.extend(stats)
         
@@ -3595,6 +3612,10 @@ class EDRClient(object):
         
         details = self.__describe_waypoint()
         if details:
+            wp = self.player.routenav.current_wp_sysname()
+            if wp:
+                details.append(_("Copied '{}' into the clipboard".format(wp)))
+                copy(wp)
             self.notify_with_details(_("EDR Journey - Current Waypoint"), details, clear_before=True)
             return True
         return False
@@ -3606,6 +3627,10 @@ class EDRClient(object):
         
         details = self.player.routenav.describe()
         if details:
+            wp = self.player.routenav.current_wp_sysname()
+            if wp:
+                details.append(_("Copied '{}' into the clipboard".format(wp)))
+                copy(wp)
             self.notify_with_details(_("EDR Journey"), details, clear_before=True)
             return True
         return False
