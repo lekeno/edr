@@ -245,6 +245,8 @@ class EDRBodiesOfInterest(object):
 
     @staticmethod
     def simplified_body_name(star_system, body_name, empty_name_overrider=None):
+        if star_system is None or body_name is None:
+            return None
         if body_name.lower().startswith(star_system.lower()):
             # Example: Pleione A 1 A => a 1 a
             # Remove prefix + space

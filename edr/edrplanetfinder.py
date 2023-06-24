@@ -70,7 +70,7 @@ class EDRPlanetFinder(threading.Thread):
 
         if self.shuffle_systems:
             seed() # TODO messed up with seed somewhere else...
-            print("shuffling systems")
+            EDRLOG.log("Nearby: shuffling systems", "DEBUG")
             shuffle(systems)
 
         candidates = self.__search(systems, candidates)
@@ -159,15 +159,14 @@ class EDRPlanetFinder(threading.Thread):
             if planet and not self.checker.check_planet(planet, system_name):
                 continue
             
-            print("found planet fit")
             if overall == None:
-                print("no candidate so far, setting the one we found: {}".format(planet))
+                EDRLOG.log("Closest planet fit: found first candidate: {}".format(planet), "DEBUG")
                 overall = planet
             elif planet['distanceToArrival'] < overall['distanceToArrival']:
-                print("better candidate, setting the one we found: {}".format(planet))
+                EDRLOG.log("Closest planet fit: found better candidate: {}".format(planet), "DEBUG")
                 overall = planet
             else:
-                print("not better than current candidate")
+                EDRLOG.log("Closest planet fit: worse candidate: {}".format(planet), "DEBUG")
             
         return overall
 
@@ -184,7 +183,7 @@ class EDRPlanetFinder(threading.Thread):
 
         if self.shuffle_planets:
             seed()
-            print("shuffling planets")
+            EDRLOG.log("Nearby: shuffling bodies", "DEBUG")
             shuffle(all_bodies)
 
         return self.closest_planet_fit(all_bodies, system['name'])

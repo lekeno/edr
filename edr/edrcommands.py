@@ -284,8 +284,12 @@ class EDRCommands(object):
             if len(lat_long) != 2:
                 self.edr_log.log(u"Invalid parameters for navigation command", "INFO")
                 return
-            self.edr_log.log(u"Navigation command", "INFO")
-            self.edr_client.navigation(lat_long[0], lat_long[1])
+            try:
+                self.edr_log.log(u"Navigation command", "INFO")
+                self.edr_client.navigation(float(lat_long[0]), float(lat_long[1]))
+            except:
+                self.edr_log.log(u"Couldn't convert parameters for navigation command to lat/long", "INFO")
+                return
         elif command == "!ship" and len(command_parts) == 2:
             name_or_type = command_parts[1]
             self.edr_log.log(u"Ship search command for {}".format(name_or_type), "INFO")
@@ -336,22 +340,20 @@ class EDRCommands(object):
                 self.edr_client.biology_on(target)
             else:
                 self.edr_client.biology_spots(cmdr.star_system)
-        elif command == "!route":
-            self.edr_log.log(u"Route command", "INFO")
-            better_parts = command_parts[1].split(" ", 1)
-            print(better_parts)
-            # TODO copy fsd_range to clip board (missing: cmdr.mothership.jump_range)
-            if len(better_parts) >= 1:
-                if better_parts[0] == "forward":
-                    self.edr_client.journey_forward()
-                elif better_parts[0] == "rewind":
-                    self.edr_client.journey_rewind()
+        elif command == "!journey":
+            self.edr_log.log(u"Journey command", "INFO")
+            if len(command_parts) >= 2:
+                better_parts = command_parts[1].split(" ", 1)
+                if better_parts[0] == "next":
+                    self.edr_client.journey_next()
+                elif better_parts[0] == "previous":
+                    self.edr_client.journey_previous()
                 elif better_parts[0] == "clear":
                     self.edr_client.journey_clear()
                 elif better_parts[0] == "fetch":
                     self.edr_client.journey_fetch()
                 elif better_parts[0] == "load":
-                    filename = better_parts[1] if len(better_parts) >= 2 else "route.csv"
+                    filename = better_parts[1] if len(better_parts) >= 2 else "journey.csv"
                     self.edr_client.journey_load(filename)
                 elif better_parts[0] == "new":
                     if len(better_parts) >= 2:

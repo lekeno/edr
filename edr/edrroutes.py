@@ -12,26 +12,26 @@ from edri18n import _
 import utils2to3
 from edtime import EDTime
 from collections import deque
+from edrbodiesofinterest import EDRBodiesOfInterest
+
+from edrlog import EDRLog
+EDRLOG = EDRLog()
 
 class BidiWaypointIterator(object):
     def __init__(self, collection):
         self.collection = collection
-        self.current = collection[0]
+        self.current = collection[0] if collection else None
         self.index = 0
 
     def __next__(self):
         if self.collection is None:
-            print("no collection")
             return None
         try:
             self.index += 1
             if self.index >= len(self.collection):
-                print("index over bound")
                 raise StopIteration
             self.current = self.collection[self.index]
-            print(self.current)
         except StopIteration:
-            print("stopiteration")
             self.index = len(self.collection)
             self.current = None
         finally:
@@ -68,8 +68,6 @@ class BidiWaypointIterator(object):
         if not waypoint:
             return
         
-        print(waypoint)
-
         if "StarSystem" in waypoint:
             return waypoint["StarSystem"]
         
@@ -88,7 +86,7 @@ class BidiWaypointIterator(object):
         return any([self.get_system_name(waypoint) == system_name for waypoint in self.collection[self.index:]]) or any([self.get_system_name(waypoint) == system_name for waypoint in self.collection[:self.index]])
     
     def get(self, system_name):
-        if not self.collection or not self.system_name:
+        if not self.collection or not system_name:
             return
         
         result = None
@@ -144,19 +142,19 @@ class SpanshServer(threading.Thread):
         
         parsed_url = urlparse(self.url)
         job_id, drop = path.splitext(path.basename(parsed_url.path))
-        print(job_id)
         data = self.__get_job(job_id)
         if not data:
             return None
         if "plotter" in parsed_url.path:
             return SpanshPlotterJourneyJSON(data)
-        elif any([x in parsed_url.path for x in ["riches", "ammnonia", "earth"]]):
+        elif any([x in parsed_url.path for x in ["riches", "ammonia", "earth"]]):
             return SpanshBodiesJourneyJSON(data)
         elif "exact-plotter" in parsed_url.path:
             return SpanshExactPlotterJourneyJSON(data)
         elif "exobiology" in parsed_url.path:
             return SpanshExobiologyJourneyJSON(data)
         elif "fleet-carrier" in parsed_url.path:
+            # TODO fleet carrier failed
             return SpanshFleetCarrierJourneyJSON(data)
         elif "tourist" in parsed_url.path:
             return SpanshTouristJourneyJSON(data)
@@ -165,18 +163,16 @@ class SpanshServer(threading.Thread):
         return None
 
     def __get_job(self, job_id):
-        # TODO async
         url = self.api_path + job_id
         response = SpanshServer.SESSION.get(url)
         if response.status_code != 200:
-            print("not 200: {}".format(response.status_code))
+            EDRLOG.log("SpanshServer status not 200 OK: {}".format(response.status_code), "DEBUG")
             return None
         
         data = json.loads(response.content)
         if not data:
-            print("no data")
+            EDRLOG.log("SpanshServer returned no data", "DEBUG")
             return None
-        print(data)
         return data.get("result", None)
     
     def close(self):
@@ -256,17 +252,40 @@ class GenericRoute(object):
         if source_coords and all([coord in dest_coords for coord in ["x", "y", "z"]]) and all([coord in source_coords for coord in ["x", "y", "z"]]):
             distance = sqrt((dest_coords["x"] - source_coords["x"])**2 + (dest_coords["y"] - source_coords["y"])**2 + (dest_coords["z"] - source_coords["z"])**2)
             details = []
-            details.append(_("WP#{}/{}: {} @ {} LY").format(self.waypoints.index+1, self.total_waypoints or "?", BidiWaypointIterator.get_system_name(current_wp), int(distance)))
+            if distance:
+                details.append(_("WP#{}/{}: {} @ {} LY").format(self.waypoints.index+1, self.total_waypoints or "?", BidiWaypointIterator.get_system_name(current_wp), int(distance)))
+            else:
+                details.append(_("WP#{}/{}: [here]").format(self.waypoints.index+1, self.total_waypoints or "?"))
+        else:
+            details.append(_("WP#{}/{}: {}").format(self.waypoints.index+1, self.total_waypoints or "?", BidiWaypointIterator.get_system_name(current_wp)))
         return details
 
     def describe_wp_bodies(self):
+        return None
+    
+    def wp_bodies_to_survey(self):
         return None
 
     def noteworthy_about_body(self, star_system, body_name):
         return None
     
     def leave_body(self, star_system, body_name):
-        return False
+        return True
+    
+    def visited_body(self, star_system, body_name):
+        return True
+    
+    def surveyed_body(self, star_system, body_name):
+        return True
+
+    def current_wp_surveyed(self):
+        return True
+
+    def remaining_waypoints(self):
+        if not self.waypoints or not self.total_waypoints:
+            return None
+        
+        return self.total_waypoints - self.waypoints.index+1
     
     @staticmethod
     def __get_coords(waypoint):
@@ -282,10 +301,11 @@ class EDRNavRoute(object):
     def __init__(self, navroute):
         self.jumps = BidiWaypointIterator(navroute.get("Route", None))
         self.total_jumps = len(navroute.get("Route", ["dummy"]))-1
+        self.total_waypoints = self.total_jumps
         self.position = None
         if self.jumps:
-            self.start = self.jumps.collection[0]
-            self.destination = self.jumps.collection[-1]
+            self.start = self.jumps.collection[0] if self.jumps.collection else None
+            self.destination = self.jumps.collection[-1] if self.jumps.collection else None
             if (self.start and "StarPos" in self.start) and (self.destination and "StarPos" in self.destination):
                 s_pos = self.start["StarPos"]
                 e_pos = self.destination["StarPos"]
@@ -311,16 +331,12 @@ class EDRNavRoute(object):
 
     def update(self, current_system):
         if not self.jumps:
-            print("no jumps")
             return False
         
         if current_system == self.jumps.current_wp_sysname():
             self.position = self.jumps.current
             next_wp = next(self.jumps)
-            print("match, next wp")
             return next_wp is not None
-        else:
-            print("current_system = {}, expected wp: {}".format(current_system, self.jumps.current_wp_sysname()))
         return False
 
     def describe(self):
@@ -331,6 +347,12 @@ class EDRNavRoute(object):
             details.append(_("Distance: {} LY; {} jumps").format(int(self.distance), self.total_jumps))
 
         return details
+    
+    def remaining_waypoints(self):
+        if not self.jumps or not self.total_waypoints:
+            return None
+        
+        return self.total_waypoints - self.jumps.index+1
 
 class SpanshPlotterJourneyJSON(GenericRoute):
     def __init__(self, data):
@@ -341,7 +363,6 @@ class SpanshPlotterJourneyJSON(GenericRoute):
         self.destination = self.waypoints.collection[-1]
         self.via = data.get("via", None)
         self.start = data.get("source_system", None)
-        #self.start = self.waypoints.collection[0]
         self.efficiency = data.get("efficiency", None)
         self.range = data.get("range", None)
         self.distance = data.get("distance", None)
@@ -399,6 +420,7 @@ class SpanshBodiesJourneyJSON(GenericRoute):
         self.destination = self.waypoints.collection[-1] if self.waypoints.collection else None
         self.destination_name = self.waypoints.collection[-1]["name"] if self.waypoints.collection and "name" in self.waypoints.collection[-1] else None
         self.total_waypoints = len(self.waypoints.collection)
+        # TODO total jumps by iterating on waypoints for "jumps"
         self.total_bodies = sum([len(waypoint.get("bodies", [])) for waypoint in self.waypoints.collection])
         
 
@@ -417,15 +439,24 @@ class SpanshBodiesJourneyJSON(GenericRoute):
 
         return details
     
+    def describe_wp_baseline(self, source_coords=None):
+        return super().describe_wp(source_coords)
+    
     def describe_wp(self, source_coords=None):
-        details = super().describe_wp(source_coords)
+        details = self.describe_wp_baseline(source_coords)
         current_wp = self.current()
         if not current_wp or not "bodies" in current_wp:
             return False
         
         activities = set()
         value = 0
+        remaining_bodies = []
         for b in current_wp["bodies"]:
+            if b.get("visited", False):
+                continue
+
+            remaining_bodies.append(b)
+            
             if b.get("estimated_scan_value", None):
                 activities.add(_("scan"))
                 value += b["estimated_scan_value"]
@@ -438,15 +469,28 @@ class SpanshBodiesJourneyJSON(GenericRoute):
                 activities.add(_("survey"))
                 value += b["landmark_value"]
 
+        if not remaining_bodies:
+            return details
+
         if activities:
-            details.append(_("{} bodies to visit; {} for ~{} cr").format(len(current_wp["bodies"]), " + ".join(activities), pretty_print_number(value)))
+            details.append(_("{} bodies to visit; {} for ~{} cr").format(len(remaining_bodies), " + ".join(activities), pretty_print_number(value)))
         else:
             details.append(_("{} bodies to visit").format(len(current_wp["bodies"])))
 
-        if "jumps" in current_wp and self.waypoints.index > 0:
-            details.append(_("{} jump(s) from previous waypoint").format(current_wp["jumps"]))
-
         return details
+    
+    def update(self, current_system):
+        if not self.jumps:
+            return False
+        
+        if current_system == self.jumps.current_wp_sysname():
+            self.position = self.jumps.current
+            if self.current_wp_surveyed():
+                next_wp = next(self.jumps)
+                return next_wp is not None
+            else:
+                return False
+        return False
     
     def noteworthy_about_body(self, star_system,  body_name):
         wp = self.current()
@@ -468,13 +512,27 @@ class SpanshBodiesJourneyJSON(GenericRoute):
         
         return self.__mark_body_as_visited(wp, body_name)
     
-    def __mark_body_as_visited(self, wp, body_name):
+    def visited_body(self, star_system, body_name):
+        wp = self.current()
+        if star_system:
+            wp = self.waypoints.get(star_system)
+        
+        if not wp or not body_name:
+            return
+        
+        return self.__mark_body_as_visited(wp, star_system, body_name)
+
+    def surveyed_body(self, star_system, body_name):
+        return self.visited_body(star_system, body_name)
+    
+    def __mark_body_as_visited(self, wp, star_system, body_name):
         if not wp or not "bodies" in wp:
             return False
 
-        updated = False        
+        updated = False   
         for b in wp["bodies"]:
-            if b.get("name", None) != body_name:
+            simple_body_name = EDRBodiesOfInterest.simplified_body_name(star_system, b.get("name", "?"))
+            if simple_body_name.lower() != body_name.lower():
                 continue
 
             b["visited"] = True
@@ -482,6 +540,21 @@ class SpanshBodiesJourneyJSON(GenericRoute):
             break
 
         return updated
+    
+    def current_wp_surveyed(self):
+        wp = self.current()
+        
+        if not wp:
+            return False
+        
+        surveyed = True
+        for b in wp["bodies"]:
+            if b.get("visited", False) == False:
+                surveyed = False
+                break
+
+        return surveyed
+        
     
     def describe_wp_bodies(self):
         current_wp = self.current()
@@ -508,9 +581,26 @@ class SpanshBodiesJourneyJSON(GenericRoute):
                 value += b["landmark_value"]
             
             if value and b.get("name", None):
-                details.append(_("{}: {} cr ({})".format(b["name"], pretty_print_number(value), " + ".join(activities))))
+                simple_body_name = EDRBodiesOfInterest.simplified_body_name(self.current_wp_sysname(), b["name"])
+                details.append(_("{}: {} cr ({})".format(simple_body_name, pretty_print_number(value), " + ".join(activities))))
 
         return details
+    
+    def wp_bodies_to_survey(self):
+        current_wp = self.current()
+        if not current_wp or not "bodies" in current_wp:
+            return None
+        
+        remaining_bodies = []
+        for b in current_wp["bodies"]:
+            if b.get("visited", False):
+                continue
+
+            if b.get("name", None):
+                simple_body_name = EDRBodiesOfInterest.simplified_body_name(self.current_wp_sysname(), b["name"])
+                remaining_bodies.append(simple_body_name)
+
+        return remaining_bodies
 
     def __describe_wp_body(self, wp, body_name):
         if not wp or not "bodies" in wp:
@@ -538,7 +628,9 @@ class SpanshBodiesJourneyJSON(GenericRoute):
             break
             
         distance = pretty_print_number(b["distance_to_arrival"]) if "distance_to_arrival" in b else None
-        oneliner = "{}: ".format(b["name"])
+        sys_name = BidiWaypointIterator.get_system_name(wp)
+        simple_body_name = EDRBodiesOfInterest.simplified_body_name(sys_name, b["name"])
+        oneliner = "{}: ".format(simple_body_name)
         if value:
             oneliner += _("{} cr ({}) ").format(pretty_print_number(value), " + ".join(activities))
         
@@ -580,21 +672,23 @@ class SpanshExobiologyJourneyJSON(SpanshBodiesJourneyJSON):
         self.journey_type = "exobiology"
     
     def describe_wp(self, source_coords=None):
-        details = super().describe_wp(source_coords)
+        details = super().describe_wp_baseline(source_coords)
         current_wp = self.current()
         if "bodies" in current_wp:
+            body_names = []
             value = 0
             for b in current_wp["bodies"]:
-                if b.get("landmark_value", None):
+                if b.get("landmark_value", False) and not b.get("visited", False):
                     value += b["landmark_value"]
+                    simple_body_name = EDRBodiesOfInterest.simplified_body_name(self.current_wp_sysname(), b.get("name", None))
+                    if simple_body_name:
+                        body_names.append(simple_body_name)
 
-            if value:
-                details.append(_("{} biomes to survey for ~{} cr").format(len(current_wp["bodies"]), pretty_print_number(value)))
-            else:
-                details.append(_("{} bodies to visit").format(len(current_wp["bodies"])))
-
-            if "jumps" in current_wp:
-                details.append(_("{} jumps from previous waypoint").format(current_wp["jumps"]))
+            if body_names:
+                if value:
+                    details.append(_("biomes to survey (~{} cr): {}").format(pretty_print_number(value), "; ".join(body_names)))
+                else:
+                    details.append(_("biomes to survey: {}").format(body_names))
 
         return details
 
@@ -606,12 +700,12 @@ class SpanshFleetCarrierJourneyJSON(GenericRoute):
         self.capacity_used = data.get("capacity_used", 0)
         self.destinations = data.get("destinations", [])
         self.destination_name = self.destinations[-1] if self.destinations else None
+        self.waypoints = BidiWaypointIterator(data.get("jumps", None))
         self.destination = self.waypoints.collection[-1] if self.waypoints.collection else None
         self.fuel_loaded = data.get("fuel_loaded", 0)
         self.refuel_destinations = data.get("refuel_destinations", [])
         self.start = data.get("source", None)
         self.tritium_stored = data.get("tritium_stored", 0)
-        self.waypoints = BidiWaypointIterator(data.get("jumps", None))
         self.total_waypoints = len(self.waypoints.collection)
         self.total_tritium_necessary = sum([waypoint.get("fuel_used", 0) for waypoint in self.waypoints.collection])
 
@@ -690,8 +784,6 @@ class SpanshTouristJourneyJSON(GenericRoute):
         if current_wp.get("name", "") in self.destinations:
             details.append(_("[Stopover]"))
         
-        if current_wp.get("jumps", 0):
-            details.append(_("{} jumps from previous waypoint").format(current_wp["jumps"]))
         if self.waypoints.index < self.total_waypoints-1:
             next_wp = self.waypoints.collection[self.waypoints.index + 1]
             if next_wp and next_wp.get("jumps", 0):
@@ -735,9 +827,6 @@ class CSVJourney(GenericRoute):
         details = super().describe_wp(source_coords)
         current_wp = self.current()
         
-        if current_wp.get("jumps", 0):
-            details.append(_("{} jumps from previous waypoint").format(current_wp["jumps"]))
-        
         if self.waypoints.index < self.total_waypoints-1:
             next_wp = self.waypoints.collection[self.waypoints.index + 1]
             if next_wp and next_wp.get("jumps", 0):
@@ -756,8 +845,8 @@ class EDRRouteStatistics(object):
         self.position = None
         self.coords = None
         self.total_jumps = route.total_jumps
+        self.remaining_waypoints = route.total_waypoints
         self.jumps_nb = 0
-        self.remaining_jumps = route.total_jumps
         self.distances = deque([], 25)
         self.intervals = deque([], 25)
         now = EDTime.py_epoch_now()
@@ -767,29 +856,24 @@ class EDRRouteStatistics(object):
         self.travelled_ly = 0
         self.ship_jump_range = ship_jump_range
     
-    def update(self, system, coords):
+    def meaningful(self):
+        return len(self.intervals) > 0
+
+    def update(self, system, coords, waypoints_to_go):
         now = EDTime.py_epoch_now()
         self.current = now
+        self.remaining_waypoints = waypoints_to_go
         self.jumps_nb += 1
         if self.coords and coords:
             distance = sqrt((self.coords["x"] - coords["x"])**2 + (self.coords["y"] - coords["y"])**2 + (self.coords["z"] - coords["z"])**2)
             self.distances.append(distance)
-            print(self.distances)
             self.travelled_ly += distance
         elif "StarPos" in self.departure and coords:
             s_pos = self.departure["StarPos"]
             distance = sqrt((s_pos[0] - coords["x"])**2 + (s_pos[1] - coords["y"])**2 + (s_pos[2] - coords["z"])**2)
             self.distances.append(distance)
-            print(self.distances)
             self.travelled_ly += distance
-        else:
-            print("no reference point, or no coords => no distance calculated")
-            print(self.departure)
-            print(self.coords)
-            print(coords)
             
-        
-        self.remaining_jumps -= 1
         jump_duration = now - self.previous_timestamp
         self.intervals.append(jump_duration)
         self.previous_timestamp = now
@@ -799,14 +883,23 @@ class EDRRouteStatistics(object):
     def elapsed_time(self):
         return EDTime.py_epoch_now() - self.start 
 
-    def remaining_time(self):
-        if self.s_jmp():
-            return self.s_jmp() * self.remaining_jumps
-        return None
+    def remaining_time(self, waypoints_based=False):
+        if waypoints_based:
+            jumps = self.remaining_waypoints
+            duration = self.s_jmp()
+            if duration:
+                return int(jumps * duration)
+            else:
+                return None
+        else:
+            remaining_distance = self.remaining_ly()
+            ly_hr_stat = self.ly_hr()
+            if not remaining_distance or not ly_hr_stat:
+                return None
+            return int(remaining_distance / ly_hr_stat * 60 * 60)
+        
 
     def remaining_ly(self):
-        print(self.coords)
-        print(self.destination)
         if self.coords and all([coord in self.coords for coord in ["x", "y", "z"]]):
             if "StarPos" in self.destination:
                 d_pos = self.destination["StarPos"]
@@ -814,7 +907,7 @@ class EDRRouteStatistics(object):
             else:
                 return round(sqrt((self.destination["x"] - self.coords["x"])**2 + (self.destination["y"] - self.coords["y"])**2 + (self.destination["z"] - self.coords["z"])**2))
         else:
-            return round(self.distance)
+            return round(self.distance) if not self.distance is None else None
 
     def ly_hr(self):
         jmp_range = self.ly_jmp()
@@ -838,16 +931,23 @@ class EDRRouteStatistics(object):
         if range:
             return round(range,1)
         return None
+    
+    def remaining_jumps(self):
+        remaining_distance = self.remaining_ly()
+        ly_jmp_stat = self.ly_jmp()
+        if remaining_distance is None or not ly_jmp_stat:
+            return None
+        
+        if remaining_distance == 0:
+            return 0
+        
+        return int(remaining_distance / ly_jmp_stat)
+        
         
     def inferred_range(self):
         total_distance = sum(self.distances)
         if len(self.distances):
             return total_distance / len(self.distances)
-        return None
-    
-    def route_range(self):
-        if self.remaining_jumps:
-            return self.remaining_ly() / self.remaining_jumps
         return None
     
 class EDRNavigator(object):
@@ -873,42 +973,38 @@ class EDRNavigator(object):
     
     def update(self, current_sys, coords):
         self.position = {"system": current_sys, "coords": coords}
-        print(self.position)
-        job1_success = self.__update_journey(current_sys)
-        job2_success = self.__update_route(current_sys)
+        journey_updated = self.__update_journey(current_sys)
+        route_updated = self.__update_route(current_sys)
         
-        if self.route_stats and (job1_success or job2_success):
-            self.route_stats.update(current_sys, coords)
+        if self.route_stats and (journey_updated or route_updated):
+            self.route_stats.update(current_sys, coords, self.route.remaining_waypoints())
 
-        if self.journey_stats and (job1_success):
-            self.journey_stats.update(current_sys, coords)
+        if self.journey_stats and (journey_updated or route_updated):
+            self.journey_stats.update(current_sys, coords, self.journey.remaining_waypoints())
 
         return {
-            "journey_updated": job1_success,
-            "route_updated": job2_success
+            "journey_updated": journey_updated,
+            "route_updated": route_updated
         }
         
     def __update_journey(self, current_sys):
         if self.no_journey():
-            print("no journey")
             return False
         
         current_wp_sysname = self.journey.current_wp_sysname()
         if not current_wp_sysname:
-            print("no current wp")
             return False
         
-        # TODO what iif the player isn't at the start or following point by point...
         if current_sys == current_wp_sysname:
-            print("advance")
-            next_wp = self.journey.next()
-            print("next wp: {}".format(next_wp))
-            return next_wp is not None
+            if self.journey.current_wp_surveyed():
+                next_wp = self.journey.next()
+                return next_wp is not None
+            else:
+                return True
         return False
     
     def __update_route(self, current_sys):
         if self.no_route():
-            print("no route")
             return False
         
         return self.route.update(current_sys)
@@ -940,12 +1036,12 @@ class EDRNavigator(object):
     def no_route(self):
         return self.route is None or self.route.empty()
 
-    def forward(self):
+    def journey_next(self):
         if self.journey:
             return self.journey.next()
         return False
     
-    def rewind(self):
+    def journey_previous(self):
         if self.journey:
             return self.journey.previous()
         return False
@@ -990,16 +1086,17 @@ class EDRNavigator(object):
     
     def journey_stats_summary(self):
         if not self.journey_stats:
-            print("no journey stats")
             return None
         
         return self.__stats_summary(self.journey_stats)
 
     def __stats_summary(self, stats):
+        if not stats.meaningful():
+            return None
         summary = []
         remaining_time = stats.remaining_time()
         remaining_ly = stats.remaining_ly()
-        remaining_jumps = stats.remaining_jumps
+        remaining_jumps = stats.remaining_jumps()
 
         ly_hr = stats.ly_hr()
         jmp_hr = stats.jmp_hr()
@@ -1008,10 +1105,10 @@ class EDRNavigator(object):
 
         elements = []
         if remaining_time:
-            elements.append(_("Time: {}").format(EDTime.pretty_print_timespan(remaining_time)))
+            elements.append(_("ETA: {}").format(EDTime.pretty_print_timespan(remaining_time)))
         
         if remaining_ly:
-            elements.append(_("LY: {}").format(int(remaining_ly)))
+            elements.append(_("Distance: {}").format(int(remaining_ly)))
 
         if remaining_jumps:
             elements.append(_("Jumps: {}").format(int(remaining_jumps)))
@@ -1056,12 +1153,25 @@ class EDRNavigator(object):
         
         visited = False
         for body_name in bodies_names:
-            visited |= self.journey.leave_body(star_system, body_name)
+            visited |= self.journey.visited_body(star_system, body_name)
 
         return visited
+    
+    def surveyed_body(self, star_system, body_name):
+        if self.no_journey():
+            return False
+        
+        return self.journey.surveyed_body(star_system, body_name)
     
     def describe_wp_bodies(self):
         if self.no_journey():
             return False
         
         return self.journey.describe_wp_bodies()
+    
+    def wp_bodies_to_survey(self):
+        if self.no_journey():
+            return None
+        
+        return self.journey.wp_bodies_to_survey()
+        
