@@ -850,7 +850,7 @@ class EDRClient(object):
                 if not genus_togo:
                     surveyed = self.player.routenav.surveyed_body(self.player.star_system, self.player.body)
                     if surveyed:
-                        other_bodies = self.player.routenav.wp_bodies_to_survey() # TODO add star sytem just to be sure
+                        other_bodies = self.player.routenav.wp_bodies_to_survey(self.player.star_system)
                         if other_bodies:
                             details.append(_("To survey: {}").format(", ".join(other_bodies)))
                         else:
@@ -863,6 +863,17 @@ class EDRClient(object):
         
     def __process_space_scan(self, scan_event):
         self.edrsystems.reflect_scan(self.player.star_system, scan_event["BodyName"], scan_event)
+        checked_off = self.player.routenav.mapped_body(self.player.star_system, self.player.body)
+        if checked_off:
+            other_bodies = self.player.routenav.wp_bodies_to_survey(self.player.star_system)
+            details = []
+            if other_bodies:
+                details.append(_("{} bodies to check: {}").format(len(other_bodies), ", ".join(other_bodies)))
+            else:
+                details.append(_("Waypoint completed; Use '!journey next' to advance."))
+                
+            self.__notify(_("Bodies survey progress"), details, clear_before=True)
+        
         if "Materials" not in scan_event:
             return False
         self.edrsystems.materials_info(self.player.star_system, scan_event["BodyName"], scan_event["Materials"])
@@ -3122,7 +3133,7 @@ class EDRClient(object):
                 self.player.routenav.fsd_range(self.player.piloted_vehicle.max_jump_range)
             coords = self.edrsystems.system_coords(system)
             updates = self.player.routenav.update(system, coords)
-            # TODO hacky
+            
             if updates["route_updated"]:
                 self.IN_GAME_MSG.navroute(self.player.routenav)
                 
@@ -3468,17 +3479,6 @@ class EDRClient(object):
         else:
             details.append(_("Adjust the source / destination / range, generate and wait for a route, copy the URL to the clipboard, then send the '!journey fetch' command."))
         self.notify_with_details(_("EDR Journey"), details, clear_before=True)
-    
-    def journey_new(self):
-        webbrowser.open(edrroutes.SpanshServer.SPANSH_URL)
-        details = []
-        details.append(_("Opened {} in your web browser.").format(edrroutes.SpanshServer.SPANSH_URL))
-        if self.player.piloted_vehicle and self.player.piloted_vehicle.max_jump_range:
-            range = int(self.player.piloted_vehicle.max_jump_range)
-            copy(range)
-            details.append(_("Placed your fsd range ({} LY) in the clipboard.").format(range))
-        details.append(_("Create a route, copy the URL to the clipboard, then send the '!journey fetch' command."))
-        self.notify_with_details(_("EDR Journey"), details, clear_before=True)
 
     def journey_load(self, filename):
         route = edrroutes.CSVJourney(filename)
@@ -3655,7 +3655,7 @@ class EDRClient(object):
                 return True
             if self.journey_load("route.csv"):
                 return True
-            return self.journey_new()
+            return self.journey_new_adv()
         else:
             return self.journey_show_overview()
 
@@ -3671,14 +3671,14 @@ class EDRClient(object):
         
         return False
     
-    def journey_visit_bodies(self, bodies_names, star_system=None):
+    def journey_check_bodies(self, bodies_names, star_system=None):
         if self.player.routenav.no_journey():
             return False
 
         if star_system is None:
             star_system = self.player.star_system
 
-        if self.player.routenav.visit_bodies(star_system, bodies_names):
+        if self.player.routenav.check_bodies(star_system, bodies_names):
             self.notify_with_details(_("EDR Journey"), [_("Checked off specified bodies")], clear_before=True)
             return True
         

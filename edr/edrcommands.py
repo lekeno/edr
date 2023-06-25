@@ -366,9 +366,9 @@ class EDRCommands(object):
                     self.edr_client.journey_show_waypoint()
                 elif better_parts[0] == "bodies":
                     self.edr_client.journey_show_bodies()
-                elif better_parts[0] == "visit" and len(better_parts) >= 2 and better_parts[1]:
+                elif better_parts[0] == "check" and len(better_parts) >= 2 and better_parts[1]:
                     bodies_names = list(map(str.strip, better_parts[1].split(",")))
-                    self.edr_client.journey_visit_bodies(bodies_names)
+                    self.edr_client.journey_check_bodies(bodies_names)
             else:
                 self.edr_client.journey_smart_behavior()
         else:

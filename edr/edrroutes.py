@@ -263,7 +263,7 @@ class GenericRoute(object):
     def describe_wp_bodies(self):
         return None
     
-    def wp_bodies_to_survey(self):
+    def wp_bodies_to_survey(self, star_system):
         return None
 
     def noteworthy_about_body(self, star_system, body_name):
@@ -272,10 +272,13 @@ class GenericRoute(object):
     def leave_body(self, star_system, body_name):
         return True
     
-    def visited_body(self, star_system, body_name):
+    def check_body(self, star_system, body_name):
         return True
     
     def surveyed_body(self, star_system, body_name):
+        return True
+    
+    def mapped_body(self, star_system, body_name):
         return True
 
     def current_wp_surveyed(self):
@@ -452,7 +455,7 @@ class SpanshBodiesJourneyJSON(GenericRoute):
         value = 0
         remaining_bodies = []
         for b in current_wp["bodies"]:
-            if b.get("visited", False):
+            if b.get("checked", False):
                 continue
 
             remaining_bodies.append(b)
@@ -473,9 +476,9 @@ class SpanshBodiesJourneyJSON(GenericRoute):
             return details
 
         if activities:
-            details.append(_("{} bodies to visit; {} for ~{} cr").format(len(remaining_bodies), " + ".join(activities), pretty_print_number(value)))
+            details.append(_("{} bodies to check; {} for ~{} cr").format(len(remaining_bodies), " + ".join(activities), pretty_print_number(value)))
         else:
-            details.append(_("{} bodies to visit").format(len(current_wp["bodies"])))
+            details.append(_("{} bodies to check").format(len(current_wp["bodies"])))
 
         return details
     
@@ -510,9 +513,9 @@ class SpanshBodiesJourneyJSON(GenericRoute):
         if not wp or not body_name:
             return
         
-        return self.__mark_body_as_visited(wp, body_name)
+        return self.__mark_body_as_checked(wp, body_name)
     
-    def visited_body(self, star_system, body_name):
+    def check_body(self, star_system, body_name):
         wp = self.current()
         if star_system:
             wp = self.waypoints.get(star_system)
@@ -520,12 +523,15 @@ class SpanshBodiesJourneyJSON(GenericRoute):
         if not wp or not body_name:
             return
         
-        return self.__mark_body_as_visited(wp, star_system, body_name)
+        return self.__mark_body_as_checked(wp, star_system, body_name)
 
     def surveyed_body(self, star_system, body_name):
-        return self.visited_body(star_system, body_name)
+        return self.check_body(star_system, body_name)
     
-    def __mark_body_as_visited(self, wp, star_system, body_name):
+    def mapped_body(self, star_system, body_name):
+        return self.check_body(star_system, body_name)
+    
+    def __mark_body_as_checked(self, wp, star_system, body_name):
         if not wp or not "bodies" in wp:
             return False
 
@@ -535,7 +541,7 @@ class SpanshBodiesJourneyJSON(GenericRoute):
             if simple_body_name.lower() != body_name.lower():
                 continue
 
-            b["visited"] = True
+            b["checked"] = True
             updated = True
             break
 
@@ -549,7 +555,7 @@ class SpanshBodiesJourneyJSON(GenericRoute):
         
         surveyed = True
         for b in wp["bodies"]:
-            if b.get("visited", False) == False:
+            if b.get("checked", False) == False:
                 surveyed = False
                 break
 
@@ -563,7 +569,7 @@ class SpanshBodiesJourneyJSON(GenericRoute):
         
         details = []
         for b in current_wp["bodies"]:
-            if b.get("visited", False):
+            if b.get("checked", False):
                 continue
 
             value = 0
@@ -586,14 +592,18 @@ class SpanshBodiesJourneyJSON(GenericRoute):
 
         return details
     
-    def wp_bodies_to_survey(self):
+    def wp_bodies_to_survey(self, star_system):
         current_wp = self.current()
         if not current_wp or not "bodies" in current_wp:
             return None
         
+        current_wp_sys_name = self.current_wp_sysname()
+        if star_system and current_wp_sys_name and not (star_system.lower() == current_wp_sys_name.lower()):
+            return None
+        
         remaining_bodies = []
         for b in current_wp["bodies"]:
-            if b.get("visited", False):
+            if b.get("checked", False):
                 continue
 
             if b.get("name", None):
@@ -678,7 +688,7 @@ class SpanshExobiologyJourneyJSON(SpanshBodiesJourneyJSON):
             body_names = []
             value = 0
             for b in current_wp["bodies"]:
-                if b.get("landmark_value", False) and not b.get("visited", False):
+                if b.get("landmark_value", False) and not b.get("checked", False):
                     value += b["landmark_value"]
                     simple_body_name = EDRBodiesOfInterest.simplified_body_name(self.current_wp_sysname(), b.get("name", None))
                     if simple_body_name:
@@ -691,6 +701,10 @@ class SpanshExobiologyJourneyJSON(SpanshBodiesJourneyJSON):
                     details.append(_("biomes to survey: {}").format(body_names))
 
         return details
+
+    def mapped_body(self, star_system, body_name):
+        # overriding SpanshBodiesJourneyJSON's behavior since the point is to scan some biology.
+        return True
 
 class SpanshFleetCarrierJourneyJSON(GenericRoute):
     def __init__(self, data):
@@ -1147,15 +1161,15 @@ class EDRNavigator(object):
         
         return self.journey.leave_body(star_system, body_name)
 
-    def visit_bodies(self, star_system, bodies_names):
+    def check_bodies(self, star_system, bodies_names):
         if self.no_journey():
             return False
         
-        visited = False
+        checked = False
         for body_name in bodies_names:
-            visited |= self.journey.visited_body(star_system, body_name)
+            checked |= self.journey.check_body(star_system, body_name)
 
-        return visited
+        return checked
     
     def surveyed_body(self, star_system, body_name):
         if self.no_journey():
@@ -1169,9 +1183,9 @@ class EDRNavigator(object):
         
         return self.journey.describe_wp_bodies()
     
-    def wp_bodies_to_survey(self):
+    def wp_bodies_to_survey(self, star_system):
         if self.no_journey():
             return None
         
-        return self.journey.wp_bodies_to_survey()
+        return self.journey.wp_bodies_to_survey(star_system)
         
