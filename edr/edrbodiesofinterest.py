@@ -7,6 +7,7 @@ import copy
 import utils2to3
 from edsitu import EDPlanetaryLocation
 from edrlog import EDRLog
+from edrutils import simplified_body_name
 
 EDRLOG = EDRLog()
 
@@ -37,7 +38,7 @@ class EDRBodiesOfInterest(object):
         if not star_system or not body_name:
             return None
         c_star_system = star_system.lower()
-        c_body_name = EDRBodiesOfInterest.simplified_body_name(star_system, body_name)
+        c_body_name = simplified_body_name(star_system, body_name)
         return self.boi.get(c_star_system, {}).get(c_body_name, None)
 
     def closest_point_of_interest(self, star_system, body_name, attitude, planet_radius):
@@ -67,7 +68,7 @@ class EDRBodiesOfInterest(object):
             EDRLOG.log("Can't add poi: no system or no body", "WARNING")
             return False
         c_star_system = star_system.lower()
-        c_body_name = EDRBodiesOfInterest.simplified_body_name(star_system, body_name)
+        c_body_name = simplified_body_name(star_system, body_name)
         
         if c_star_system not in self.custom_pois:
             self.custom_pois[c_star_system] = {}
@@ -91,7 +92,7 @@ class EDRBodiesOfInterest(object):
             EDRLOG.log("Can't clear custom POIs, no system or no body: {}, {}".format(star_system, body_name), "WARNING")
             return None
         c_star_system = star_system.lower()
-        c_body_name = EDRBodiesOfInterest.simplified_body_name(star_system, body_name)
+        c_body_name = simplified_body_name(star_system, body_name)
         if c_star_system not in self.custom_pois:
             EDRLOG.log("System has no custom POIs: {}, {}".format(c_star_system, self.custom_pois), "WARNING")
             return
@@ -110,7 +111,7 @@ class EDRBodiesOfInterest(object):
             EDRLOG.log("Can't clear custom POIs, no system or no body: {}, {}".format(star_system, body_name), "WARNING")
             return None
         c_star_system = star_system.lower()
-        c_body_name = EDRBodiesOfInterest.simplified_body_name(star_system, body_name)
+        c_body_name = simplified_body_name(star_system, body_name)
         if c_star_system not in self.custom_pois:
             EDRLOG.log("System has no custom POIs: {}, {}".format(c_star_system, self.custom_pois), "WARNING")
             return
@@ -129,7 +130,7 @@ class EDRBodiesOfInterest(object):
             EDRLOG.log("No star system or body name: {}, {}".format(star_system, body_name), "WARNING")
             return None
         c_star_system = star_system.lower()
-        c_body_name = EDRBodiesOfInterest.simplified_body_name(star_system, body_name)
+        c_body_name = simplified_body_name(star_system, body_name)
         return self.custom_pois.get(c_star_system, {}).get(c_body_name, None)
 
     def closest_custom_point_of_interest(self, star_system, body_name, attitude, planet_radius):
@@ -181,7 +182,7 @@ class EDRBodiesOfInterest(object):
 
     def __get_index_custom_pois(self, star_system, body_name):
         c_star_system = star_system.lower()
-        c_body_name = EDRBodiesOfInterest.simplified_body_name(star_system, body_name)
+        c_body_name = simplified_body_name(star_system, body_name)
         index_system_pois = self.index_custom_pois.get(c_star_system, None)
         if index_system_pois is None:
             return None
@@ -190,7 +191,7 @@ class EDRBodiesOfInterest(object):
         
     def __set_index_custom_pois(self, star_system, body_name, index):
         c_star_system = star_system.lower()
-        c_body_name = EDRBodiesOfInterest.simplified_body_name(star_system, body_name)
+        c_body_name = simplified_body_name(star_system, body_name)
         if c_star_system not in self.index_custom_pois:
             self.index_custom_pois[c_star_system] = {}
         
@@ -202,7 +203,7 @@ class EDRBodiesOfInterest(object):
 
     def __clear_index_custom_pois(self, star_system, body_name):
         c_star_system = star_system.lower()
-        c_body_name = EDRBodiesOfInterest.simplified_body_name(star_system, body_name)
+        c_body_name = simplified_body_name(star_system, body_name)
         if c_star_system not in self.index_custom_pois:
             self.index_custom_pois[c_star_system] = {}
         
@@ -213,7 +214,7 @@ class EDRBodiesOfInterest(object):
 
     def __forward_index_custom_pois(self, star_system, body_name):
         c_star_system = star_system.lower()
-        c_body_name = EDRBodiesOfInterest.simplified_body_name(star_system, body_name)
+        c_body_name = simplified_body_name(star_system, body_name)
         if c_star_system not in self.index_custom_pois:
             self.index_custom_pois[c_star_system] = {}
         
@@ -229,7 +230,7 @@ class EDRBodiesOfInterest(object):
 
     def __rewind_index_custom_pois(self, star_system, body_name):
         c_star_system = star_system.lower()
-        c_body_name = EDRBodiesOfInterest.simplified_body_name(star_system, body_name)
+        c_body_name = simplified_body_name(star_system, body_name)
         if c_star_system not in self.index_custom_pois:
             self.index_custom_pois[c_star_system] = {}
         
@@ -242,13 +243,3 @@ class EDRBodiesOfInterest(object):
             self.index_custom_pois[c_star_system][c_body_name] = (self.index_custom_pois[c_star_system][c_body_name] - 1) % len(self.custom_pois[c_star_system][c_body_name])
 
         return self.index_custom_pois[c_star_system][c_body_name]
-
-    @staticmethod
-    def simplified_body_name(star_system, body_name, empty_name_overrider=None):
-        if star_system is None or body_name is None:
-            return None
-        if body_name.lower().startswith(star_system.lower()):
-            # Example: Pleione A 1 A => a 1 a
-            # Remove prefix + space
-            return body_name[len(star_system)+1:].lower() or (empty_name_overrider if empty_name_overrider else body_name)
-        return body_name.lower()

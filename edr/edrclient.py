@@ -26,7 +26,7 @@ from config import config
 from edrfleetcarrier import EDRFleetCarrier
 from edrconfig import EDRConfig
 from lrucache import LRUCache
-from edentities import EDFineOrBounty, pretty_print_number
+from edentities import EDFineOrBounty
 from edsitu import EDPlanetaryLocation, EDLocation
 from edrserver import EDRServer, CommsJammedError
 from audiofeedback import EDRSoundEffects
@@ -52,6 +52,7 @@ from clippy import copy, paste
 from edrfssinsights import EDRFSSInsights
 from edrcommands import EDRCommands
 import edrroutes
+from edrutils import simplified_body_name, pretty_print_number
 
 EDRLOG = EDRLog()
 
@@ -863,17 +864,6 @@ class EDRClient(object):
         
     def __process_space_scan(self, scan_event):
         self.edrsystems.reflect_scan(self.player.star_system, scan_event["BodyName"], scan_event)
-        checked_off = self.player.routenav.mapped_body(self.player.star_system, self.player.body)
-        if checked_off:
-            other_bodies = self.player.routenav.wp_bodies_to_survey(self.player.star_system)
-            details = []
-            if other_bodies:
-                details.append(_("{} bodies to check: {}").format(len(other_bodies), ", ".join(other_bodies)))
-            else:
-                details.append(_("Waypoint completed; Use '!journey next' to advance."))
-                
-            self.__notify(_("Bodies survey progress"), details, clear_before=True)
-        
         if "Materials" not in scan_event:
             return False
         self.edrsystems.materials_info(self.player.star_system, scan_event["BodyName"], scan_event["Materials"])
@@ -1002,7 +992,7 @@ class EDRClient(object):
             top = 5
             extra_details = []
             for body in valuableBodies:
-                adjBodyName = EDRBodiesOfInterest.simplified_body_name(star_system, body.get("bodyName", "?"), " 0")
+                adjBodyName = simplified_body_name(star_system, body.get("bodyName", "?"), " 0")
                 flags = []
                 if "wasDiscovered" in body and body["wasDiscovered"] == False:
                     first_disco += 1
@@ -1046,6 +1036,22 @@ class EDRClient(object):
     def saa_scan_complete(self, entry):
         self.edrsystems.saa_scan_complete(self.player.star_system, entry)
         self.player.location.from_entry(entry)
+        
+        bodyname = entry.get("BodyName", None)
+        checked_off = self.player.routenav.mapped_body(self.player.star_system, bodyname)
+        if checked_off:
+            other_bodies = self.player.routenav.wp_bodies_to_survey(self.player.star_system)
+            details = []
+            if other_bodies:
+                if len(other_bodies) > 1:
+                    details.append(_("{} bodies to check: {}").format(len(other_bodies), ", ".join(other_bodies)))
+                else:
+                    details.append(_("1 body to check: {}").format(", ".join(other_bodies)))
+            else:
+                details.append(_("Waypoint completed; Use '!journey next' to advance."))
+                
+            self.__notify(_("Bodies survey progress"), details, clear_before=True)
+        
         
     def biology_on(self, body_name, star_system=None):
         star_system = star_system or self.player.star_system
@@ -3270,7 +3276,7 @@ class EDRClient(object):
             distance = result['distance']
             pretty_dist = _(u"{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _(u"{dist}LY").format(dist=int(distance))
             pretty_sc_dist = _(u"{dist}LS").format(dist=int(sc_distance))
-            planet_name = EDRBodiesOfInterest.simplified_body_name(result['name'], result['planet']['name'])
+            planet_name = simplified_body_name(result['name'], result['planet']['name'])
             details.append(_(u"{system}, {dist}").format(system=result['name'], dist=pretty_dist))
             details.append(_(u"{planet} ({type}, {atm}), {sc_dist}").format(planet=planet_name, type=result['planet']['subType'], atm=result['planet']['atmosphereType'], sc_dist=pretty_sc_dist))
             details.append(_(u"as of {date}").format(date=result['planet']['updateTime']))

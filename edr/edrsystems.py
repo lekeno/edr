@@ -20,7 +20,7 @@ import edrlog
 import lrucache
 import edsmserver
 from edentities import EDFineOrBounty
-from edentities import pretty_print_number
+from edrutils import pretty_print_number
 from edri18n import _, _c, _edr
 import edrservicecheck
 import edrsysplacheck

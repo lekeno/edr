@@ -12,7 +12,7 @@ from edri18n import _
 import utils2to3
 from edtime import EDTime
 from collections import deque
-from edrbodiesofinterest import EDRBodiesOfInterest
+from edrutils import pretty_print_number, simplified_body_name
 
 from edrlog import EDRLog
 EDRLOG = EDRLog()
@@ -386,34 +386,6 @@ class SpanshPlotterJourneyJSON(GenericRoute):
         details.append(_("Range: {} LY @ {}% efficiency").format(self.range, self.efficiency))
         return details
 
-# TODO hack, should move this function out of edentities and into something more lightweight
-def pretty_print_number(number):
-    readable = u""
-    if number is None:
-        return _(u"N/A")
-    if number >= 10000000000:
-        # Translators: this is a short representation for a bounty >= 10 000 000 000 credits (b stands for billion)  
-        readable = _(u"{} b").format(number // 1000000000)
-    elif number >= 1000000000:
-        # Translators: this is a short representation for a bounty >= 1 000 000 000 credits (b stands for billion)
-        readable = _(u"{:.1f} b").format(number / 1000000000.0)
-    elif number >= 10000000:
-        # Translators: this is a short representation for a bounty >= 10 000 000 credits (m stands for million)
-        readable = _(u"{} m").format(number // 1000000)
-    elif number >= 1000000:
-        # Translators: this is a short representation for a bounty >= 1 000 000 credits (m stands for million)
-        readable = _(u"{:.1f} m").format(number / 1000000.0)
-    elif number >= 10000:
-        # Translators: this is a short representation for a bounty >= 10 000 credits (k stands for kilo, i.e. thousand)
-        readable = _(u"{} k").format(number // 1000)
-    elif number >= 1000:
-        # Translators: this is a short representation for a bounty >= 1000 credits (k stands for kilo, i.e. thousand)
-        readable = _(u"{:.1f} k").format(number / 1000.0)
-    else:
-        # Translators: this is a short representation for a bounty < 1000 credits (i.e. shows the whole bounty, unabbreviated)
-        readable = _(u"{}").format(number)
-    return readable
-
 class SpanshBodiesJourneyJSON(GenericRoute):
     def __init__(self, data):
         super().__init__()
@@ -476,9 +448,15 @@ class SpanshBodiesJourneyJSON(GenericRoute):
             return details
 
         if activities:
-            details.append(_("{} bodies to check; {} for ~{} cr").format(len(remaining_bodies), " + ".join(activities), pretty_print_number(value)))
+            if len(remaining_bodies) > 1:
+                details.append(_("{} bodies to check; {} for ~{} cr").format(len(remaining_bodies), " + ".join(activities), pretty_print_number(value)))
+            else:
+                details.append(_("1 body to check; {} for ~{} cr").format(" + ".join(activities), pretty_print_number(value)))
         else:
-            details.append(_("{} bodies to check").format(len(current_wp["bodies"])))
+            if len(remaining_bodies) > 1:
+                details.append(_("{} bodies to check").format(len(current_wp["bodies"])))
+            else:
+                details.append(_("1 body to check").format(len(current_wp["bodies"])))
 
         return details
     
@@ -537,7 +515,7 @@ class SpanshBodiesJourneyJSON(GenericRoute):
 
         updated = False   
         for b in wp["bodies"]:
-            simple_body_name = EDRBodiesOfInterest.simplified_body_name(star_system, b.get("name", "?"))
+            simple_body_name = simplified_body_name(star_system, b.get("name", "?"))
             if simple_body_name.lower() != body_name.lower():
                 continue
 
@@ -587,7 +565,7 @@ class SpanshBodiesJourneyJSON(GenericRoute):
                 value += b["landmark_value"]
             
             if value and b.get("name", None):
-                simple_body_name = EDRBodiesOfInterest.simplified_body_name(self.current_wp_sysname(), b["name"])
+                simple_body_name = simplified_body_name(self.current_wp_sysname(), b["name"])
                 details.append(_("{}: {} cr ({})".format(simple_body_name, pretty_print_number(value), " + ".join(activities))))
 
         return details
@@ -607,7 +585,7 @@ class SpanshBodiesJourneyJSON(GenericRoute):
                 continue
 
             if b.get("name", None):
-                simple_body_name = EDRBodiesOfInterest.simplified_body_name(self.current_wp_sysname(), b["name"])
+                simple_body_name = simplified_body_name(self.current_wp_sysname(), b["name"])
                 remaining_bodies.append(simple_body_name)
 
         return remaining_bodies
@@ -639,7 +617,7 @@ class SpanshBodiesJourneyJSON(GenericRoute):
             
         distance = pretty_print_number(b["distance_to_arrival"]) if "distance_to_arrival" in b else None
         sys_name = BidiWaypointIterator.get_system_name(wp)
-        simple_body_name = EDRBodiesOfInterest.simplified_body_name(sys_name, b["name"])
+        simple_body_name = simplified_body_name(sys_name, b["name"])
         oneliner = "{}: ".format(simple_body_name)
         if value:
             oneliner += _("{} cr ({}) ").format(pretty_print_number(value), " + ".join(activities))
@@ -690,7 +668,7 @@ class SpanshExobiologyJourneyJSON(SpanshBodiesJourneyJSON):
             for b in current_wp["bodies"]:
                 if b.get("landmark_value", False) and not b.get("checked", False):
                     value += b["landmark_value"]
-                    simple_body_name = EDRBodiesOfInterest.simplified_body_name(self.current_wp_sysname(), b.get("name", None))
+                    simple_body_name = simplified_body_name(self.current_wp_sysname(), b.get("name", None))
                     if simple_body_name:
                         body_names.append(simple_body_name)
 
@@ -1176,6 +1154,12 @@ class EDRNavigator(object):
             return False
         
         return self.journey.surveyed_body(star_system, body_name)
+    
+    def mapped_body(self, star_system, body_name):
+        if self.no_journey():
+            return False
+        
+        return self.journey.mapped_body(star_system, body_name)
     
     def describe_wp_bodies(self):
         if self.no_journey():

@@ -4,9 +4,9 @@ from pickle import TRUE
 import re
 
 import edtime
+from edrutils import simplified_body_name
 from edrlog import EDRLog
 from edri18n import _
-from edrbodiesofinterest import EDRBodiesOfInterest
 EDRLOG = EDRLog()
 
 class EDRFleetCarrier(object):
@@ -92,7 +92,7 @@ class EDRFleetCarrier(object):
         self.name = entry.get("Name", None)
         star_system = entry.get("StarSystem", None)
         body_name = entry.get("Body", None)
-        adjBodyName = EDRBodiesOfInterest.simplified_body_name(star_system, body_name, " 0")
+        adjBodyName = simplified_body_name(star_system, body_name, " 0")
         self._position = {
             "system": star_system,
             "body": adjBodyName
@@ -154,7 +154,7 @@ class EDRFleetCarrier(object):
 
         star_system = jump_request_event.get("SystemName", None)
         body_name = jump_request_event.get("Body", None)
-        adjBodyName = EDRBodiesOfInterest.simplified_body_name(star_system, body_name, " 0")
+        adjBodyName = simplified_body_name(star_system, body_name, " 0")
 
         self.departure = {
             "requested": request_time_epoch,
@@ -215,7 +215,7 @@ class EDRFleetCarrier(object):
             return
         star_system = event.get("StarSystem", None)
         body_name = event.get("Body", None)
-        adjBodyName = EDRBodiesOfInterest.simplified_body_name(star_system, body_name)
+        adjBodyName = simplified_body_name(star_system, body_name)
         
         self._position = {"system": star_system, "body": adjBodyName}
         self.departure = {

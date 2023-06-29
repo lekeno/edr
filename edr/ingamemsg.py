@@ -14,7 +14,8 @@ import textwrap
 from edri18n import _, _c
 import utils2to3
 from edrlandables import EDRLandables
-from edentities import EDFineOrBounty, pretty_print_number
+from edentities import EDFineOrBounty
+from edrutils import pretty_print_number
 from edtime import EDTime
 
 EDRLOG = edrlog.EDRLog()
