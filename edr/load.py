@@ -259,7 +259,6 @@ def handle_movement_events(ed_player, entry):
             ed_player.to_normal_space()
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
         EDR_CLIENT.docking_guidance(entry)
-        EDR_CLIENT.journey_show_overview(passive=True)
         EDR_CLIENT.noteworthy_about_system(entry)
     elif entry["event"] in ["SupercruiseEntry"]:
         if "SystemAddress" in entry:
@@ -274,8 +273,7 @@ def handle_movement_events(ed_player, entry):
         place = "Hyperspace"
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         outcome["reason"] = "Hyperspace"
-        # TODO show nav route progress annd clear on arrival.
-        ed_player.to_hyper_space()
+        EDR_CLIENT.hyperspace_jump(entry.get("StarSystem", None))
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
         EDR_CLIENT.docking_guidance(entry)
         EDR_CLIENT.check_system(entry["StarSystem"], may_create=True)

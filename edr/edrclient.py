@@ -3132,6 +3132,19 @@ class EDRClient(object):
         
         self.player.fleet_carrier.trade_order(entry)
 
+    def hyperspace_jump(self, system):
+        self.player.to_hyper_space()
+        if self.player.piloted_vehicle:
+            self.player.routenav.fsd_range(self.player.piloted_vehicle.max_jump_range)
+        coords = self.edrsystems.system_coords(system)
+        updates = self.player.routenav.update(system, coords)
+        
+        if updates["route_updated"]:
+            self.IN_GAME_MSG.navroute(self.player.routenav)
+            
+        if updates["journey_updated"]:
+            self.journey_show_waypoint()
+
     def update_star_system_if_obsolete(self, system, address=None):
         updated = self.player.update_star_system_if_obsolete(system, address)
         if updated:
@@ -3140,12 +3153,6 @@ class EDRClient(object):
             coords = self.edrsystems.system_coords(system)
             updates = self.player.routenav.update(system, coords)
             
-            if updates["route_updated"]:
-                self.IN_GAME_MSG.navroute(self.player.routenav)
-                
-            if updates["journey_updated"]:
-                self.journey_show_waypoint()
-
         return updated
 
     def system_guidance(self, system_name, passive=False):
@@ -3545,7 +3552,6 @@ class EDRClient(object):
         updates = self.player.routenav.update(system, coords)
         if updates["journey_updated"]:
             self.journey_show_overview()
-        # TODO add head to [waypoint] or send !journey next to advance to the next waypoint + placed in clipboard
         return True
 
     def __describe_waypoint(self):
