@@ -3680,6 +3680,8 @@ class EDRClient(object):
         if details:
             self.notify_with_details(_("EDR Journey: survey targets"), details, clear_before=True)
             return True
+        else:
+            self.notify_with_details(_("EDR Journey"), [_("Waypoint completed; Use '!journey next' to advance.")], clear_before=True)
         
         return False
     
