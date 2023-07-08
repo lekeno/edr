@@ -1470,7 +1470,7 @@ class InGameMsg(object):
         self.clear_nav_route()
         
         navroute = route_navigator.route
-        if not navroute or navroute.empty() or navroute.trivial():
+        if not navroute or navroute.empty() or navroute.trivial() or navroute.too_complex():
             return
         
         self.__draw_navroute(route_navigator)

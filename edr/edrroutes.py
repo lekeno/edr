@@ -13,6 +13,7 @@ import utils2to3
 from edtime import EDTime
 from collections import deque
 from edrutils import pretty_print_number, simplified_body_name
+from edrconfig import EDR_CONFIG
 
 from edrlog import EDRLog
 EDRLOG = EDRLog()
@@ -313,14 +314,18 @@ class EDRNavRoute(object):
                 s_pos = self.start["StarPos"]
                 e_pos = self.destination["StarPos"]
                 self.distance = sqrt((s_pos[0] - e_pos[0])**2 + (s_pos[1] - e_pos[1])**2 + (s_pos[1] - e_pos[1])**2)
+
+        self.jumps_threshold_min = EDR_CONFIG.navroute_jumps_threshold_to_show()
+        self.jumps_threshold_max = EDR_CONFIG.navroute_jumps_threshold_to_give_up()        
     
     def empty(self):
         return self.jumps is None or self.total_jumps == 0
     
     def trivial(self):
-        # jumps_threshold = 5  # TODO configure
-        jumps_threshold = 3 # TODO maybe still show it if there is a journey?
-        return self.empty() or self.total_jumps < jumps_threshold
+        return self.empty() or self.total_jumps < self.jumps_threshold_min
+    
+    def too_complex(self):
+        return not self.empty() and self.total_jumps > self.jumps_threshold_max
     
     def next(self):
         if self.jumps:
