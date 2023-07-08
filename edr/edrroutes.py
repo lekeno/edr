@@ -457,6 +457,7 @@ class SpanshBodiesJourneyJSON(GenericRoute):
                 details.append(_("{} bodies to check").format(len(current_wp["bodies"])))
             else:
                 details.append(_("1 body to check").format(len(current_wp["bodies"])))
+            details.append(_(u"Send '!journey bodies' to see the list of bodies to check"))
 
         return details
     
@@ -515,8 +516,9 @@ class SpanshBodiesJourneyJSON(GenericRoute):
 
         updated = False   
         for b in wp["bodies"]:
-            simple_body_name = simplified_body_name(star_system, b.get("name", "?"))
-            if simple_body_name.lower() != body_name.lower():
+            full_body_name = b.get("name", "?")
+            simple_body_name = simplified_body_name(star_system, full_body_name)
+            if not body_name.lower() in [simple_body_name.lower(), full_body_name.lower()]:
                 continue
 
             b["checked"] = True
