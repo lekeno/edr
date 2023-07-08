@@ -259,7 +259,6 @@ def handle_movement_events(ed_player, entry):
             ed_player.to_normal_space()
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
         EDR_CLIENT.docking_guidance(entry)
-        EDR_CLIENT.journey_show_overview(passive=True)
         EDR_CLIENT.noteworthy_about_system(entry)
     elif entry["event"] in ["SupercruiseEntry"]:
         if "SystemAddress" in entry:
@@ -274,8 +273,7 @@ def handle_movement_events(ed_player, entry):
         place = "Hyperspace"
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         outcome["reason"] = "Hyperspace"
-        # TODO show nav route progress annd clear on arrival.
-        ed_player.to_hyper_space()
+        EDR_CLIENT.hyperspace_jump(entry.get("StarSystem", None))
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
         EDR_CLIENT.docking_guidance(entry)
         EDR_CLIENT.check_system(entry["StarSystem"], may_create=True)
@@ -301,12 +299,7 @@ def handle_movement_events(ed_player, entry):
     ed_player.location.from_entry(entry)
     
     if entry["event"] in ["LeaveBody"]:
-        # 2.6.0
-        # place = "Supercruise"
-        # ed_player.planetary_destination = None
-        # outcome["updated"] |= ed_player.update_place_if_obsolete(place)
-        # outcome["updated"] |= ed_player.update_body_if_obsolete(None)
-        body_name = entry.get("BodyName", None)
+        body_name = entry.get("Body", None)
         star_system = entry.get("StarSystem", None)
         outcome["updated"] |= EDR_CLIENT.leave_body(star_system, body_name)
         EDRLOG.log(u"Place changed: Supercruise, body cleared", "INFO")
@@ -1618,18 +1611,12 @@ def handle_shuttle_events(entry):
         ed_player.cancelled_shuttle(entry)
 
 def handle_nav_route_events(entry, state):
-    print("navroute event")
-    print(entry)
     if entry["event"] not in ["NavRoute", "NavRouteClear"]:
-        print("nope")
         return
     
-    print("state content")
-    print(state.get("NavRoute", "Nothing"))
     if entry["event"] == "NavRouteClear":
         EDR_CLIENT.nav_route_clear()
     elif entry["event"] == "NavRoute" and state.get("NavRoute", None):
-        print("setting nav route")
         EDR_CLIENT.nav_route_set(state["NavRoute"])
 
 

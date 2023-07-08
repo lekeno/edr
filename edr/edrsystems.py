@@ -20,7 +20,7 @@ import edrlog
 import lrucache
 import edsmserver
 from edentities import EDFineOrBounty
-from edentities import pretty_print_number
+from edrutils import pretty_print_number
 from edri18n import _, _c, _edr
 import edrservicecheck
 import edrsysplacheck
@@ -416,8 +416,7 @@ class EDRSystems(object):
     def near_nebula(self, system_name):
         distanceSol = self.distance("sol", system_name)
         
-        for i in EDRSystems.NEBULAE:
-            nbatch = EDRSystems.NEBULAE[i]
+        for nbatch in EDRSystems.NEBULAE:
             if "rangeSol" in nbatch and abs(distanceSol - nbatch["rangeSol"]) <= 500:
                 for n in nbatch:
                     if self.distance_with_coords(system_name, nbatch[n]["coords"]) < nbatch[n]["range"]:
@@ -666,9 +665,11 @@ class EDRSystems(object):
             "black hole": "Black Hole",
             "supermassive black hole": "Supermassive Black Hole",
         }
+
+        common_star_classes = "o,b,a,f,g,k,m,n,l,t,tts,s,w,x,y,h".split(",")
         
-        if star_type.lower() not in type_lut:
-            print("missing star type:", star_type)
+        if star_type.lower() not in type_lut and star_type.lower() not in common_star_classes:
+            EDRLOG.log(u"Unrecognized star type: {}.".format(star_type), "WARNING")
         return type_lut.get(star_type.lower(), star_type)
         
 
@@ -895,12 +896,12 @@ class EDRSystems(object):
         parent_star = self.__parent_star(system_name, body)
         star_type = "???"
         if not parent_star:
-            print("no parent star: ", body.get("name", "unknown body"))
+            EDRLOG.log("No parent star: {}".format(body.get("name", "unknown body")), "DEBUG")
             return star_type
     
         raw_type = parent_star.get("subType", "???")
         if raw_type == "???":
-            print("weird star:", parent_star)
+            EDRLOG.log("Weird star: {}".format(parent_star), "DEBUG")
         return self.__star_type_lut(raw_type)
 
     def parent_star_distance(self, system_name, body):
@@ -941,7 +942,7 @@ class EDRSystems(object):
             return body.get("name", "Unknown")
         return None
 
-
+    @staticmethod
     def __bio_credits(a_species_int_name):
         cname = a_species_int_name.lower()
         if cname not in EDRSystems.BIOLOGY["species"]:
@@ -1070,7 +1071,7 @@ class EDRSystems(object):
         EDRLOG.log("Temperature: {}".format(mean_temperature), "INFO")
         planet_class = EDRSystems.canonical_planet_class(planet)
         EDRLOG.log("Class: {}".format(planet_class), "INFO")
-        volcanism = planet.get("volcanismType", "").lower()
+        volcanism = planet["volcanismType"].lower() if planet.get("volcanismType", None) else ""
         luminosity = self.parent_star_luminosity(system_name, planet)
         star_type = self.parent_star_type(system_name, planet)
         distance_from_parent_star = self.parent_star_distance(system_name, planet)
@@ -1693,6 +1694,7 @@ class EDRSystems(object):
             return
         biome = self.biology_on(star_system, body_name)
         genuses = planet.get("genuses", [])
+        credits = biome.get("credits", {})
         detected_genuses = len(genuses)
         expected_genuses = len(biome.get("genuses", [])) 
         actual_genuses = set()
@@ -1918,6 +1920,8 @@ class EDRSystems(object):
             value = self.edsm_server.system_value(system_name)
             if value:
                 self.edsm_system_values_cache.set(system_name.lower(), value)
+            else:
+                value = {}
         bodies = self.bodies(system_name)
         if not bodies:
             bodies = [{}]

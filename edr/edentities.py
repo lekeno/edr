@@ -20,6 +20,7 @@ import edrfleetcarrier
 import edrminingstats
 import edrbountyhuntingstats
 import edengineers
+from edrutils import pretty_print_number
 from edrroutes import EDRNavigator
 
 import utils2to3
@@ -202,33 +203,6 @@ class EDFineOrBounty(object):
 
     def pretty_print(self):
         return pretty_print_number(self.value)
-
-def pretty_print_number(number):
-    readable = u""
-    if number is None:
-        return _(u"N/A")
-    if number >= 10000000000:
-        # Translators: this is a short representation for a bounty >= 10 000 000 000 credits (b stands for billion)  
-        readable = _(u"{} b").format(number // 1000000000)
-    elif number >= 1000000000:
-        # Translators: this is a short representation for a bounty >= 1 000 000 000 credits (b stands for billion)
-        readable = _(u"{:.1f} b").format(number / 1000000000.0)
-    elif number >= 10000000:
-        # Translators: this is a short representation for a bounty >= 10 000 000 credits (m stands for million)
-        readable = _(u"{} m").format(number // 1000000)
-    elif number >= 1000000:
-        # Translators: this is a short representation for a bounty >= 1 000 000 credits (m stands for million)
-        readable = _(u"{:.1f} m").format(number / 1000000.0)
-    elif number >= 10000:
-        # Translators: this is a short representation for a bounty >= 10 000 credits (k stands for kilo, i.e. thousand)
-        readable = _(u"{} k").format(number // 1000)
-    elif number >= 1000:
-        # Translators: this is a short representation for a bounty >= 1000 credits (k stands for kilo, i.e. thousand)
-        readable = _(u"{:.1f} k").format(number / 1000.0)
-    else:
-        # Translators: this is a short representation for a bounty < 1000 credits (i.e. shows the whole bounty, unabbreviated)
-        readable = _(u"{}").format(number)
-    return readable
 
 class EDPilot(object):
     def __init__(self, name, rank):
