@@ -388,7 +388,7 @@ class SpanshPlotterJourneyJSON(GenericRoute):
             details.append(_("Distance: {} LY; {}/{} waypoints, {} jumps").format(int(self.distance), wp_progress, self.total_waypoints, self.total_jumps))
         else:
             details.append(_("Distance: {} LY; {}/{} waypoints").format(int(self.distance), wp_progress, self.total_waypoints, self.total_jumps))
-        details.append(_("Range: {} LY @ {}% efficiency").format(self.range, self.efficiency))
+        details.append(_("Range: {} LY @ {}pct efficiency").format(self.range, self.efficiency))
         return details
 
 class SpanshBodiesJourneyJSON(GenericRoute):
