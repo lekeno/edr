@@ -535,7 +535,7 @@ class EDRCommands(object):
                 self.edr_client.mining_guidance()
                 self.edr_client.player.mining_stats.reset()
             else:
-                self.edr_client.player.bounty_hunting_stats.dummify() # TODO
+                self.edr_client.player.bounty_hunting_stats.dummify()
                 self.edr_client.bounty_hunting_guidance() 
                 self.edr_client.player.bounty_hunting_stats.reset()
         elif param == "on":
