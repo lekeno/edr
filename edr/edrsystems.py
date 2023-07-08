@@ -1071,7 +1071,7 @@ class EDRSystems(object):
         EDRLOG.log("Temperature: {}".format(mean_temperature), "INFO")
         planet_class = EDRSystems.canonical_planet_class(planet)
         EDRLOG.log("Class: {}".format(planet_class), "INFO")
-        volcanism = planet.get("volcanismType", "").lower()
+        volcanism = planet["volcanismType"].lower() if planet.get("volcanismType", None) else ""
         luminosity = self.parent_star_luminosity(system_name, planet)
         star_type = self.parent_star_type(system_name, planet)
         distance_from_parent_star = self.parent_star_distance(system_name, planet)
