@@ -1099,7 +1099,9 @@ class EDRClient(object):
         if "Signals" in entry:
             signals = []
             for s in entry["Signals"]:
-                signals.append("{}: {}".format(s["Type_Localised"], s["Count"]))
+                name = s["Type_Localised"] if "Type_Localised" in s else s.get("Type", _("???"))
+                count = s.get("Count", _("???"))
+                signals.append("{}: {}".format(name, count))
 
             if signals:
                details.extend(signals)
