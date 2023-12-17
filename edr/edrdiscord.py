@@ -483,7 +483,7 @@ class EDRDiscordIntegration(object):
         departureTime.from_js_epoch(jump_info["at"])
         lockdownTime = EDTime()
         lockdownTime.from_js_epoch(jump_info["lockdown"])
-        de.description = _("```From     :    {}\nTo       :    {}\nBody:    {}\nTime(UTC):    {}```").format(jump_info["from"], jump_info["to"], departureTime.as_hhmmss())
+        de.description = _("```From     :    {}\nTo       :    {}\nBody     :    {}\nTime(UTC):    {}```").format(jump_info["from"], jump_info["to"], jump_info["body"], departureTime.as_hhmmss())
         de.author = {
             "name": "{} | {}".format(jump_info["name"], jump_info["callsign"]),
             "url": cfg["url"],
@@ -500,7 +500,7 @@ class EDRDiscordIntegration(object):
         }   
 
         if sender_profile:
-            df = EDRDiscordField(_(u"Landing"), _("```Access   :    {}\nNotorious:    {}\nLockdown(UTC):    {}```").format(self.__readable_fc_docking(jump_info["access"]), self.__readable_fc_notorious(jump_info["allow_notorious"], lockdownTime.as_hhmmss())), True)
+            df = EDRDiscordField(_(u"Landing"), _("```Access   :    {}\nNotorious:    {}\nLockdown(UTC):    {}```").format(self.__readable_fc_docking(jump_info["access"]), self.__readable_fc_notorious(jump_info["allow_notorious"]), lockdownTime.as_hhmmss()), True)
             de.fields.append(df)
         
         dm.add_embed(de)
@@ -612,7 +612,6 @@ class EDRDiscordIntegration(object):
     def __default_cfg(self, cmdr_name):
         random.seed(len(cmdr_name))
         style = random.choice(["identicon", "retro", "monsterid", "wavatar", "robohash"])
-        random.seed()
         gravatar_url = u"https://www.gravatar.com/avatar/{}?d={}&f=y".format(md5(cmdr_name.encode('utf-8')).hexdigest(), style)
         default_cfg = {
             "name": cmdr_name,
