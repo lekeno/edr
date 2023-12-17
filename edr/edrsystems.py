@@ -425,6 +425,9 @@ class EDRSystems(object):
         return False
 
     def has_planet_type(self, system_name, planet_types):
+        if not system_name:
+            return False
+
         bodies = self.bodies(system_name)
         if not bodies:
             return False
