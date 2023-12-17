@@ -2082,7 +2082,7 @@ msgid "Reached the start of the route."
 msgstr "Arrivé au début de l'itinéraire."
 
 #: edrclient.py:3617
-msgid "Use '!journey next' to go to the next waypoing."
+msgid "Use '!journey next' to go to the next waypoint."
 msgstr "Utilisez '!journey next' pour aller à la prochaine étape."
 
 #: edrclient.py:3696
