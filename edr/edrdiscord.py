@@ -612,6 +612,7 @@ class EDRDiscordIntegration(object):
     def __default_cfg(self, cmdr_name):
         random.seed(len(cmdr_name))
         style = random.choice(["identicon", "retro", "monsterid", "wavatar", "robohash"])
+        random.seed()
         gravatar_url = u"https://www.gravatar.com/avatar/{}?d={}&f=y".format(md5(cmdr_name.encode('utf-8')).hexdigest(), style)
         default_cfg = {
             "name": cmdr_name,

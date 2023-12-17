@@ -55,3 +55,4 @@ elif os.name == 'linux' or platform.system() == 'Linux':
     clipboard_get = __macGetClipboard
     clipboard_set = __macSetClipboard    
 copy = clipboard_set
+paste = clipboard_get

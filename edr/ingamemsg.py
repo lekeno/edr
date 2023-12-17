@@ -4,6 +4,9 @@ import os
 import sys
 import math
 import json
+from random import choices
+from string import ascii_uppercase, digits
+import re
 
 import igmconfig
 import edrlog
@@ -11,7 +14,8 @@ import textwrap
 from edri18n import _, _c
 import utils2to3
 from edrlandables import EDRLandables
-from edentities import EDFineOrBounty, pretty_print_number
+from edentities import EDFineOrBounty
+from edrutils import pretty_print_number
 from edtime import EDTime
 
 EDRLOG = edrlog.EDRLog()
@@ -29,7 +33,7 @@ except ImportError:
 import lrucache
 
 class InGameMsg(object):   
-    MESSAGE_KINDS = [ "intel", "warning", "sitrep", "notice", "help", "navigation", "docking", "mining", "bounty-hunting", "target-guidance", "biology"]
+    MESSAGE_KINDS = ["intel", "warning", "sitrep", "notice", "help", "navigation", "docking", "mining", "bounty-hunting", "target-guidance", "biology"]
     LEGAL_KINDS = ["intel", "warning"] 
 
     def __init__(self, standalone=False):
@@ -74,6 +78,7 @@ class InGameMsg(object):
         self.mining_config(conf)
         self.bounty_hunting_config(conf)
         self.target_guidance_config(conf)
+        self.navroute_config(conf)
 
     def reconfigure(self):
         if self.layout_type == "spacelegs":
@@ -196,6 +201,42 @@ class InGameMsg(object):
         }
         if not conf.panel(kind):
             return
+        self.cfg[kind]["panel"] = {
+            "x": conf.x(kind, "panel"),
+            "y": conf.y(kind, "panel"),
+            "x2": conf.x2(kind, "panel"),
+            "y2": conf.y2(kind, "panel"),
+            "ttl": conf.ttl(kind, "panel"),
+            "rgb": conf.rgb(kind, "panel"),
+            "fill": conf.fill(kind, "panel")
+        }
+
+    def navroute_config(self, conf):
+        default_markers = ["circle"]*7
+        default_markers.extend(["cross"]*16)
+        kind = "navroute"
+        self.cfg[kind] = {
+            "enabled": conf._getboolean(kind, "enabled"),
+            "schema": {
+                "x": conf.x(kind, "schema"),
+                "y": conf.y(kind, "schema"),
+                "h": conf.h(kind, "schema"),
+                "w": conf.w(kind, "schema"),
+                "ttl": conf.ttl(kind, "schema"),
+                "rgb": conf.rgb_list(kind, "schema"),
+                "marker": conf.string_list(kind, "schema", "marker", default_markers),
+                "suffix": conf.string_list(kind, "schema", "suffix", None),
+                "intervalx": conf.getint(kind, "schema", "intervalx", 60),
+                "intervaly": conf.getint(kind, "schema", "intervaly", 0),
+                "symbolintervalx": conf.getint(kind, "schema", "symbolintervalx", 16),
+                "symbolintervaly": conf.getint(kind, "schema", "symbolintervaly", 0),
+                "stoplen": conf.getint(kind, "schema", "stoplen", 25)
+            }
+        }
+    
+        if not conf.panel(kind):
+            return
+        
         self.cfg[kind]["panel"] = {
             "x": conf.x(kind, "panel"),
             "y": conf.y(kind, "panel"),
@@ -1422,6 +1463,177 @@ class InGameMsg(object):
         }
         self.__vect(u"target-guidance", vect)
 
+    def navroute(self, route_navigator):
+        if not self.cfg["navroute"].get("enabled", None):
+            return
+        
+        self.clear_nav_route()
+        
+        navroute = route_navigator.route
+        if not navroute or navroute.empty() or navroute.trivial() or navroute.too_complex():
+            return
+        
+        self.__draw_navroute(route_navigator)
+
+            
+    def __draw_navroute(self, route_navigator):
+        navroute = route_navigator.route
+        stats = route_navigator.route_stats
+        
+        cfg = self.cfg["navroute"]
+        if "panel" in cfg:
+            self.__shape("navroute", cfg["panel"])
+            
+        x = cfg["schema"]["x"]
+        y = cfg["schema"]["y"]
+        w = cfg["schema"]["w"]
+        h = cfg["schema"]["h"]
+        star_classes = "o,b,a,f,g,k,m,ms,c*,d*,h*,n,l,aebe,t,tts,s,w*,x,y,rogueplanet,nebula,stellarremnantnebula,*".split(",")
+        default_rgbs = "D8793E,00B3F7,00B3F7,2423E9,2F2DE3,4C37D2,5C5C93,908E46,CC432A,E9332A,CC0000,55552B,616CE2,808080,3FEFFF,FF2600,F56A79,4A0000,4A0000,3B3B3B,6E6E89,FF00DC,B16C00,FF00DC,FF00DC,4CFF00,FF00CC".split(",")
+        rgbs = cfg["schema"]["rgb"]
+        if not rgbs or len(rgbs) < len(star_classes)+3:
+            EDRLOG.log("Draw nav route: reverting to default rgbs (length mismatch)", "DEBUG")
+            rgbs = default_rgbs
+        route_rgb = rgbs[0]
+        travelled_rgb = rgbs[1]
+        current_rgb = rgbs[2]
+        star_rgbs = rgbs[3:]
+        
+        default_star_markers = "circle,circle,circle,circle,circle,circle,circle,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross".split(",")
+        star_markers = cfg["schema"]["marker"]
+        if not star_markers or len(star_markers) < len(star_classes):
+            EDRLOG.log("Draw nav route: reverting to default markers (length mismatch)", "DEBUG")
+            star_markers = default_star_markers
+
+        default_suffix = ",,,,,,,,, dwarf, blackhole, neutron,,,,,,, exotic,, rogue, nebula, sr nebula, ???".split(",")
+        star_suffix = cfg["schema"]["suffix"]
+        if not star_suffix or len(star_suffix) < len(star_classes):
+            EDRLOG.log("Draw nav route: reverting to default suffix (length mismatch)", "DEBUG")
+            star_suffix = default_suffix
+
+        
+        # TODO see if the position of the last label can be fixed; seems way off.
+        # TODO overlap on the last-1 step....
+        vects = {
+            "travelled": {
+                "id": "navroute-schema-travelled",
+                "color": travelled_rgb,
+                "shape": "vect",
+                "ttl": cfg["schema"]["ttl"],
+                "vector": []
+            },
+            "remaining": {
+                "id": "navroute-schema-remaining",
+                "color": route_rgb,
+                "shape": "vect",
+                "ttl": cfg["schema"]["ttl"],
+                "vector": []
+            }
+        }
+
+        inc_x = w / (len(navroute.jumps.collection)-1)
+        inc_y = h / (len(navroute.jumps.collection)-1)
+        sys_name_len = cfg["schema"]["stoplen"]
+        interval_x = cfg["schema"]["intervalx"]
+        interval_y = cfg["schema"]["intervaly"]
+        symbol_interval_x = cfg["schema"]["symbolintervalx"]
+        symbol_interval_y = cfg["schema"]["symbolintervaly"]
+        inc_steps = 1
+        if inc_x and inc_x < symbol_interval_x:
+            inc_steps = symbol_interval_x / inc_x
+            inc_x = symbol_interval_x
+        elif inc_y and inc_y < symbol_interval_y:
+            inc_steps = symbol_interval_x / inc_x
+            inc_y = symbol_interval_y
+        
+        prev_x = None
+        prev_y = None
+        last_x = x + w
+        last_y = y + h
+        
+        white_dwarves = "d da dab dao daz dav db dbz dbv do dov dq dc dcv dx".split()
+        carbon_stars = "c c-j cj c-n cn c-hd chd".split()
+        blackholes = "h blackhole supermassiveblackhole".split()
+        wolf_rayet = "w wc wn wnc wo".split()
+            
+
+        steps = 0
+        for i, stop in enumerate(navroute.jumps.collection):
+            steps += 1
+            if steps < inc_steps:
+                EDRLOG.log("skipping: {} steps: {} vs {}".format(stop.get("StarSystem", None), steps, inc_steps), "DEBUG")
+                continue
+            steps = 0
+            star_class = stop.get("StarClass", "N/A").lower()
+            if star_class in white_dwarves:
+                star_class = "d*"
+            elif star_class in carbon_stars:
+                star_class = "c*"
+            elif star_class in blackholes:
+                star_class = "h*"
+            elif star_class in wolf_rayet:
+                star_class = "w*"
+
+            if star_class not in star_classes:
+                star_class = "*"
+
+        
+            sc_index = star_classes.index(star_class) if star_class in star_classes else len(star_classes)-1
+            vector = {
+                "x":int(x), 
+                "y":int(y),
+                "marker": star_markers[sc_index],
+                "color": star_rgbs[sc_index],
+            }
+
+            system_name = stop.get("StarSystem", None)
+            generic = bool(re.search(r'\d',  system_name))
+            too_close_to_last = (i < len(navroute.jumps.collection)-1) and ((last_x - x) < interval_x or (last_y - y < interval_y))
+            risk_of_overlap = (prev_x and prev_y) and ((((x - prev_x) < interval_x) or ((y - prev_y) < interval_y)) or too_close_to_last)
+            
+            if not risk_of_overlap and system_name and (not generic or i in [0, navroute.jumps.index-1, navroute.jumps.index, len(navroute.jumps.collection)-1]):
+                trunc_label = system_name[:sys_name_len]+"..." if len(system_name) > sys_name_len+2 else system_name
+                # TODO further trunc generic name by removing the common part if there is a close one "Eol Prou Px-T D3-1078" => "E... 1078" ?
+                label = trunc_label
+                
+                if i == 0 and stats.jumps_nb:
+                    label += "\n{} J; {} LY; {}".format(stats.jumps_nb, round(stats.travelled_ly,1), EDTime.pretty_print_timespan(stats.elapsed_time()))
+                elif i == navroute.jumps.index-1:
+                    vector["color"] = current_rgb
+                    label = "► {}".format(system_name)
+                    if stats.jmp_hr() and stats.ly_hr() and stats.s_jmp():
+                        label += "\n{} sec/J; {} LY/HR".format(stats.s_jmp(), stats.ly_hr())
+                elif i == len(navroute.jumps.collection)-1 and stats.remaining_ly():
+                    # TODO should be jump based not distance based
+                    remaining_time = stats.remaining_time(True)
+                    if remaining_time:
+                        label += "\n{} J; {} LY; {}".format(stats.remaining_waypoints, stats.remaining_ly(), EDTime.pretty_print_timespan(remaining_time))
+                    else:
+                        label += "\n{} J; {} LY".format(stats.remaining_waypoints, stats.remaining_ly())
+                elif sc_index < len(star_suffix) and star_suffix[sc_index]:
+                    label += star_suffix[sc_index]
+                    
+                vector["text"] = label
+                prev_x = x
+                prev_y = y
+            
+            if i <= navroute.jumps.index-1:
+                vects["travelled"]["vector"].append(vector)
+            else:
+                if not vects["remaining"]["vector"] and vects["travelled"]["vector"]:
+                    previous_stop = vects["travelled"]["vector"][-1]
+                    vects["remaining"]["vector"].append(previous_stop)
+                vects["remaining"]["vector"].append(vector)
+
+            x += inc_x
+            y += inc_y
+
+        if vects["travelled"]["vector"]:
+            self.__vect(u"navroute-map-travelled", vects["travelled"])
+        
+        if vects["remaining"]["vector"]:
+            self.__vect(u"navroute-map-remaining", vects["remaining"])
+
     def clear(self):
         msg_ids = list(self.msg_ids.keys())
         for msg_id in msg_ids:
@@ -1457,7 +1669,10 @@ class InGameMsg(object):
         self.__clear_kind("bounty-hunting")
 
     def clear_target_guidance(self):
-        self.__clear_kind("target-guidance")    
+        self.__clear_kind("target-guidance")  
+
+    def clear_nav_route(self):
+        self.__clear_kind("navroute")    
 
     def __clear_kind(self, kind):
         tag = "EDR-{}".format(kind)
@@ -1584,7 +1799,7 @@ class InGameMsg(object):
         except Exception as e:
             EDRLOG.log(u"In-Game Vect failed with {}.".format(e), "ERROR")
             pass
-
+    
     def __clear(self, msg_id):
         try:
             self._overlay.send_message(msg_id, "", "", 0, 0, 0, 0)

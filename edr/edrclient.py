@@ -4,13 +4,12 @@ from copy import deepcopy
 import datetime
 import itertools
 from sys import float_repr_style
-import sys
 import time
 import random
 import math
 import re
 import json
-from edrfleetcarrier import EDRFleetCarrier
+import webbrowser
 
 try:
     # for Python2
@@ -24,9 +23,10 @@ import ttkHyperlinkLabel
 import myNotebook as notebook
 from config import config
 
+from edrfleetcarrier import EDRFleetCarrier
 from edrconfig import EDRConfig
 from lrucache import LRUCache
-from edentities import EDFineOrBounty, pretty_print_number
+from edentities import EDFineOrBounty
 from edsitu import EDPlanetaryLocation, EDLocation
 from edrserver import EDRServer, CommsJammedError
 from audiofeedback import EDRSoundEffects
@@ -48,9 +48,11 @@ from edvehicles import EDVehicleFactory
 from edrsysplacheck import EDRGenusCheckerFactory
 
 from edri18n import _, _c, _edr, set_language
-from clippy import copy
+from clippy import copy, paste
 from edrfssinsights import EDRFSSInsights
 from edrcommands import EDRCommands
+import edrroutes
+from edrutils import simplified_body_name, pretty_print_number
 
 EDRLOG = EDRLog()
 
@@ -629,15 +631,23 @@ class EDRClient(object):
         return True
 
     def noteworthy_about_body(self, star_system, body_name):
+        route_facts = self.player.routenav.noteworthy_about_body(star_system, body_name)
+        
         pois = self.edrboi.points_of_interest(star_system, body_name)
         if pois:
             facts = [poi["title"] for poi in pois]
+            if route_facts:
+                facts.extend(route_facts)
             self.__notify(_(u'Noteworthy about {}: {} sites').format(body_name, len(facts)), facts, clear_before = True)
             return True
+        
         materials_info = self.edrsystems.materials_on(star_system, body_name)
         facts = self.edrresourcefinder.assess_materials_density(materials_info, self.player.inventory)
         header = _("Noteworthy about {}").format(body_name)
         details = []
+
+        if route_facts:
+            details.extend(route_facts)
 
         if facts:
             qualifier = self.edrresourcefinder.raw_profile or _("Noteworthy")
@@ -653,7 +663,28 @@ class EDRClient(object):
         if details:
             self.__notify(header, details, clear_before = True)
 
+    def leave_body(self, star_system, body_name):
+        place = "Supercruise"
+        self.player.planetary_destination = None
+        outcome = self.player.update_place_if_obsolete(place)
+        outcome |= self.player.update_body_if_obsolete(None)
+
+        if not self.player.routenav.leave_body(star_system, body_name):
+            EDRLOG.log("RouteNav: no update upon leaving a body {} in {}".format(body_name, star_system), "DEBUG")
+            return outcome
         
+        wp_sys_name = self.player.routenav.current_wp_sysname()
+        if not wp_sys_name or wp_sys_name != star_system:
+            EDRLOG.log("RouteNav: updated from leave body but system {} is not the current waypoint {}".format(star_system, wp_sys_name), "DEBUG")
+            return outcome
+        
+        details = self.player.routenav.describe_wp_bodies()
+        EDRLOG.log("RouteNav: waypoint bodies: {}".format(details), "DEBUG")
+        if details:
+            self.notify_with_details(_("EDR Journey: survey targets"), details, clear_before=True)
+        return outcome
+        
+
     def __biome_progress_oneliner(self, star_system, body_id_or_name):
         progress = self.edrsystems.analyzed_biome(star_system, body_id_or_name)
         genus_analyzed = progress["genuses"].get("analyzed", None)
@@ -813,9 +844,18 @@ class EDRClient(object):
                         genuses_credits.append("{} ({} ~ {} cr)".format(genus_togo[g]["localized"], min_value, max_value))
                         
                     details.append(_(" - remaining: {}").format(", ".join(genuses_credits)))
-
+                
                 species_analyzed = progress["species"].get("analyzed", "1+?") # should be at least 1
                 details.append(_("Species: {}").format(species_analyzed))
+
+                if not genus_togo:
+                    surveyed = self.player.routenav.surveyed_body(self.player.star_system, self.player.body)
+                    if surveyed:
+                        other_bodies = self.player.routenav.wp_bodies_to_survey(self.player.star_system)
+                        if other_bodies:
+                            details.append(_("To survey: {}").format(", ".join(other_bodies)))
+                        else:
+                            details.append(_("Waypoint completed; Use '!journey next' to advance."))
                 
                 self.__notify(_("Biome analysis progress"), details, clear_before=True)
             
@@ -952,7 +992,7 @@ class EDRClient(object):
             top = 5
             extra_details = []
             for body in valuableBodies:
-                adjBodyName = EDRBodiesOfInterest.simplified_body_name(star_system, body.get("bodyName", "?"), " 0")
+                adjBodyName = simplified_body_name(star_system, body.get("bodyName", "?"), " 0")
                 flags = []
                 if "wasDiscovered" in body and body["wasDiscovered"] == False:
                     first_disco += 1
@@ -996,6 +1036,22 @@ class EDRClient(object):
     def saa_scan_complete(self, entry):
         self.edrsystems.saa_scan_complete(self.player.star_system, entry)
         self.player.location.from_entry(entry)
+        
+        bodyname = entry.get("BodyName", None)
+        checked_off = self.player.routenav.mapped_body(self.player.star_system, bodyname)
+        if checked_off:
+            other_bodies = self.player.routenav.wp_bodies_to_survey(self.player.star_system)
+            details = []
+            if other_bodies:
+                if len(other_bodies) > 1:
+                    details.append(_("{} bodies to check: {}").format(len(other_bodies), ", ".join(other_bodies)))
+                else:
+                    details.append(_("1 body to check: {}").format(", ".join(other_bodies)))
+            else:
+                details.append(_("Waypoint completed; Use '!journey next' to advance."))
+                
+            self.__notify(_("Bodies survey progress"), details, clear_before=True)
+        
         
     def biology_on(self, body_name, star_system=None):
         star_system = star_system or self.player.star_system
@@ -1237,6 +1293,14 @@ class EDRClient(object):
                         else:
                             summary_for_chat = "'{}'".format(outlaw)
                     copy(summary_for_chat)
+            
+            #if self.player.routenav.is_waypoint(star_system):
+            #    coords = self.edrsystems.system_coords(star_system)
+            #    waypoint_details = self.player.routenav.describe_wp(coords)
+            #    if waypoint_details:
+            #        waypoint_details.append(_("Next waypoint has been placed in the clipboard."))
+            #        self.__notify(_("EDR Journey"), waypoint_details, clear_before=True)
+            
             if details:
                 # Translators: this is the heading for the sitrep of a given system {}; shown via the overlay
                 header = _(u"SITREP for {}") if self.player.in_open() else _(u"SITREP for {} (Open)")
@@ -3068,6 +3132,29 @@ class EDRClient(object):
         
         self.player.fleet_carrier.trade_order(entry)
 
+    def hyperspace_jump(self, system):
+        self.player.to_hyper_space()
+        if self.player.piloted_vehicle:
+            self.player.routenav.fsd_range(self.player.piloted_vehicle.max_jump_range)
+        coords = self.edrsystems.system_coords(system)
+        updates = self.player.routenav.update(system, coords)
+        
+        if updates["route_updated"]:
+            self.IN_GAME_MSG.navroute(self.player.routenav)
+            
+        if updates["journey_updated"]:
+            self.journey_show_waypoint()
+
+    def update_star_system_if_obsolete(self, system, address=None):
+        updated = self.player.update_star_system_if_obsolete(system, address)
+        if updated:
+            if self.player.piloted_vehicle:
+                self.player.routenav.fsd_range(self.player.piloted_vehicle.max_jump_range)
+            coords = self.edrsystems.system_coords(system)
+            updates = self.player.routenav.update(system, coords)
+            
+        return updated
+
     def system_guidance(self, system_name, passive=False):
         description = self.edrsystems.describe_system(system_name, self.player.star_system == system_name)
         if not description:
@@ -3196,7 +3283,7 @@ class EDRClient(object):
             distance = result['distance']
             pretty_dist = _(u"{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _(u"{dist}LY").format(dist=int(distance))
             pretty_sc_dist = _(u"{dist}LS").format(dist=int(sc_distance))
-            planet_name = EDRBodiesOfInterest.simplified_body_name(result['name'], result['planet']['name'])
+            planet_name = simplified_body_name(result['name'], result['planet']['name'])
             details.append(_(u"{system}, {dist}").format(system=result['name'], dist=pretty_dist))
             details.append(_(u"{planet} ({type}, {atm}), {sc_dist}").format(planet=planet_name, type=result['planet']['subType'], atm=result['planet']['atmosphereType'], sc_dist=pretty_sc_dist))
             details.append(_(u"as of {date}").format(date=result['planet']['updateTime']))
@@ -3389,3 +3476,226 @@ class EDRClient(object):
             if checker.hint():
                 details.append(checker.hint())
         self.__notify(_(u"{} near {}").format(checker.name, reference), details, clear_before = True)
+
+
+    def journey_new_adv(self, destination=None, genre=None):
+        range = None
+        if self.player.piloted_vehicle and self.player.piloted_vehicle.max_jump_range:
+            range = int(self.player.piloted_vehicle.max_jump_range)
+        source = self.player.star_system
+        url = edrroutes.SpanshServer.get_url(source, destination or source, range or 30, genre)
+        webbrowser.open(url)
+        details = []
+        details.append(_("Opened Spansh in your web browser."))
+        if source and destination and range:
+            details.append(_("Wait for the route to complete, copy the URL to the clipboard, then send the '!journey fetch' command."))
+        else:
+            details.append(_("Adjust the source / destination / range, generate and wait for a route, copy the URL to the clipboard, then send the '!journey fetch' command."))
+        self.notify_with_details(_("EDR Journey"), details, clear_before=True)
+
+    def journey_load(self, filename):
+        route = edrroutes.CSVJourney(filename)
+        if route:
+            self.player.routenav.set_journey(route)
+            return True
+        details = []
+        details.append(_("Failed to load a csv route from {}.".format(filename)))
+        self.notify_with_details(_("EDR Journey"), details, clear_before=True)
+
+        return False
+
+    def journey_fetch(self):
+        try:
+            url_from_clipboard = paste()
+            url_from_clipboard = url_from_clipboard.decode("ascii")
+            if not edrroutes.SpanshServer.recognized_url(url_from_clipboard):
+                details = []
+                details.append(_("No recognized URL in the clipboard."))
+                details.append(_("Visit spansh.co.uk, create a route, copy the URL to the clipboard, then resend the '!journey fetch' command"))
+                self.notify_with_details(_("EDR Journey"), details, clear_before=True)
+                return False
+            spansh = edrroutes.SpanshServer(url_from_clipboard, self.__spansh_journey_set)
+            spansh.start()
+            details = []
+            details.append(_("Fetching the route from Spansh."))
+            details.append(_("Please wait..."))
+            self.notify_with_details(_("EDR Journey"), details, clear_before=True)
+            return True
+        except Exception as e:
+            EDRLOG.log(u"Journey Fetch failed with exception: {}".format(e), "ERROR")
+            self.notify_with_details(_("EDR Journey"), [_("Something went wrong.")], clear_before=True)
+            pass
+
+    def journey_clear(self):
+        self.player.routenav.clear_journey()
+        details = []
+        details.append(_("Route successfully cleared."))
+        self.notify_with_details(_("EDR Journey"), details, clear_before=True)
+
+    def nav_route_clear(self):
+        self.player.routenav.clear_route()
+
+    def nav_route_set(self, navroute):
+        self.player.routenav.set_route(navroute)
+        self.IN_GAME_MSG.navroute(self.player.routenav)
+    
+    def __spansh_journey_set(self, route):
+        if not route:
+            details = []
+            details.append(_("Something went wrong."))
+            details.append(_("Visit spansh.co.uk, create a route, copy the URL to the clipboard, then resend the '!journey fetch' command"))        
+            self.notify_with_details(_("EDR Journey"), details)
+            return False
+        self.player.routenav.set_journey(route)
+        system = self.player.star_system
+        coords = self.edrsystems.system_coords(system)
+        updates = self.player.routenav.update(system, coords)
+        if updates["journey_updated"]:
+            self.journey_show_overview()
+        return True
+
+    def __describe_waypoint(self):
+        if not self.player.routenav or self.player.routenav.no_journey():
+            return None
+        
+        current_wp = self.player.routenav.current()
+        if not current_wp:
+            return None
+        
+        details = []
+        source_coords = self.edrsystems.system_coords(self.player.star_system)
+        descr = self.player.routenav.describe_wp(source_coords)
+        if descr:
+            details.extend(descr)
+        
+        stats = self.player.routenav.journey_stats_summary()
+        if stats:
+            details.extend(stats)
+        
+        return details
+
+    def journey_next(self):
+        if self.player.routenav.no_journey():
+            details = []
+            details.append(_("No route."))
+            details.append(_("Use '!journey new' or '!journey load' to create one."))
+            self.notify_with_details(_("EDR Journey"), details, clear_before=True)                
+            return False
+        
+        if not self.player.routenav.journey_next():
+            details = []
+            details.append(_("Reached the end of the route."))
+            details.append(_("Use '!journey previous' to go back one step."))
+            self.notify_with_details(_("EDR Journey"), details, clear_before=True)        
+            return False
+        
+        details = self.__describe_waypoint()
+        if details:
+            wp = self.player.routenav.current_wp_sysname()
+            if wp and not self.player.star_system == wp:
+                details.append(_("Copied '{}' into the clipboard".format(wp)))
+                copy(wp)
+            self.notify_with_details(_("EDR Journey"), details, clear_before=True)
+            return True
+        details = []
+        details.append(_("Something went wrong."))
+        self.notify_with_details(_("EDR Journey - Current Waypoint"), details, clear_before=True)
+        return False
+
+
+    def journey_previous(self):
+        if self.player.routenav.no_journey():
+            details = []
+            details.append(_("No route."))
+            details.append(_("Use '!journey new' or '!journey load' to create one."))
+            self.notify_with_details(_("EDR Journey"), details, clear_before=True)                
+            return False
+        
+        if not self.player.routenav.journey_previous():
+            details = []
+            details.append(_("Reached the start of the route."))
+            details.append(_("Use '!journey next' to go to the next waypoing."))
+            self.notify_with_details(_("EDR Journey - Current Waypoint"), details, clear_before=True)
+            return False
+
+        details = self.__describe_waypoint()
+        if details:
+            wp = self.player.routenav.current_wp_sysname()
+            if wp and not self.player.star_system == wp:
+                details.append(_("Copied '{}' into the clipboard".format(wp)))
+                copy(wp)
+            self.notify_with_details(_("EDR Journey"), details, clear_before=True)
+            return True
+        details = []
+        details.append(_("Something went wrong."))
+        self.notify_with_details(_("EDR Journey"), details, clear_before=True)
+        return False
+
+    def journey_show_waypoint(self):
+        if self.player.routenav.no_journey():
+            self.notify_with_details(_("EDR Journey"), [("No active route."), ("Send '!journey new' or '!journey load' to define a route.")])
+            return False
+        
+        details = self.__describe_waypoint()
+        if details:
+            wp = self.player.routenav.current_wp_sysname()
+            if wp and not self.player.star_system == wp:
+                details.append(_("Copied '{}' into the clipboard".format(wp)))
+                copy(wp)
+            self.notify_with_details(_("EDR Journey - Current Waypoint"), details, clear_before=True)
+            return True
+        return False
+    
+    def journey_show_overview(self, passive=False):
+        if self.player.routenav.no_journey() and not passive:
+            self.notify_with_details(_("EDR Journey"), [("No active route."), ("Send '!journey new' or '!journey load' to define a route.")])
+            return False
+        
+        details = self.player.routenav.describe()
+        if details:
+            wp = self.player.routenav.current_wp_sysname()
+            if wp and not self.player.star_system == wp:
+                details.append(_("Copied '{}' into the clipboard".format(wp)))
+                copy(wp)
+            self.notify_with_details(_("EDR Journey"), details, clear_before=True)
+            return True
+        return False
+
+    def journey_smart_behavior(self):
+        if self.player.routenav.no_journey():
+            if self.journey_fetch():
+                return True
+            if self.journey_load("route.csv"):
+                return True
+            return self.journey_new_adv()
+        else:
+            return self.journey_show_overview()
+
+    def journey_show_bodies(self):
+        if self.player.routenav.no_journey():
+            return False
+         
+        details = self.player.routenav.describe_wp_bodies()
+        EDRLOG.log("Journey show bodies: {}".format(details), "INFO")
+        if details:
+            self.notify_with_details(_("EDR Journey: survey targets"), details, clear_before=True)
+            return True
+        else:
+            self.notify_with_details(_("EDR Journey"), [_("Waypoint completed; Use '!journey next' to advance.")], clear_before=True)
+        
+        return False
+    
+    def journey_check_bodies(self, bodies_names, star_system=None):
+        if self.player.routenav.no_journey():
+            return False
+
+        if star_system is None:
+            star_system = self.player.star_system
+
+        if self.player.routenav.check_bodies(star_system, bodies_names):
+            self.notify_with_details(_("EDR Journey"), [_("Checked off specified bodies")], clear_before=True)
+            return True
+        
+        self.notify_with_details(_("EDR Journey"), [_("Specified bodies already checked off or inexistent")], clear_before=True)
+        return False
+        
