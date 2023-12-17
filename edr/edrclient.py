@@ -718,9 +718,9 @@ class EDRClient(object):
         
         # TODO tweak species info with mats coloring
         header = _(u'Noteworthy about {}').format(scan_event["BodyName"])
+        star_system = scan_event.get("StarSystem", self.player.star_system)
         facts = []
         if scan_event["BodyName"]:
-            star_system = scan_event.get("StarSystem", self.player.star_system)
             value = self.edrsystems.body_value(star_system, scan_event["BodyName"])
             if value:
                 flags = [] 
@@ -3616,7 +3616,7 @@ class EDRClient(object):
         if not self.player.routenav.journey_previous():
             details = []
             details.append(_("Reached the start of the route."))
-            details.append(_("Use '!journey next' to go to the next waypoing."))
+            details.append(_("Use '!journey next' to go to the next waypoint."))
             self.notify_with_details(_("EDR Journey - Current Waypoint"), details, clear_before=True)
             return False
 
