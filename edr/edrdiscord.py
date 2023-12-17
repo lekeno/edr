@@ -471,7 +471,7 @@ class EDRDiscordIntegration(object):
             dm.content = "`{}` has cancelled their fleet carrier jump ({} | {}).".format(jump_info["owner"], jump_info["name"], jump_info["callsign"])
             return dm
         
-        dm.content = "`{}` has scheduled a fleet carrier jump from `{}` to `{}`.".format(jump_info["owner"], jump_info["from"], jump_info["to"])
+        dm.content = "`{}` has scheduled a fleet carrier jump from `{}` to `{}` - `{}`.".format(jump_info["owner"], jump_info["from"], jump_info["to"], jump_info["body"])
         
         dm.username = cfg["name"]
         dm.avatar_url = cfg["icon_url"]
@@ -481,7 +481,9 @@ class EDRDiscordIntegration(object):
         de.title = _(u"Flight Plan")
         departureTime = EDTime()
         departureTime.from_js_epoch(jump_info["at"])
-        de.description = _("```From     :    {}\nTo       :    {}\nTime(UTC):    {}```").format(jump_info["from"], jump_info["to"], departureTime.as_hhmmss())
+        lockdownTime = EDTime()
+        lockdownTime.from_js_epoch(jump_info["lockdown"])
+        de.description = _("```From     :    {}\nTo       :    {}\nBody:    {}\nTime(UTC):    {}```").format(jump_info["from"], jump_info["to"], departureTime.as_hhmmss())
         de.author = {
             "name": "{} | {}".format(jump_info["name"], jump_info["callsign"]),
             "url": cfg["url"],
@@ -498,7 +500,7 @@ class EDRDiscordIntegration(object):
         }   
 
         if sender_profile:
-            df = EDRDiscordField(_(u"Landing"), _("```Access   :    {}\nNotorious:    {}```").format(self.__readable_fc_docking(jump_info["access"]), self.__readable_fc_notorious(jump_info["allow_notorious"])), True)
+            df = EDRDiscordField(_(u"Landing"), _("```Access   :    {}\nNotorious:    {}\nLockdown(UTC):    {}```").format(self.__readable_fc_docking(jump_info["access"]), self.__readable_fc_notorious(jump_info["allow_notorious"], lockdownTime.as_hhmmss())), True)
             de.fields.append(df)
         
         dm.add_embed(de)

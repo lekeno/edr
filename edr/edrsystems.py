@@ -1085,7 +1085,7 @@ class EDRSystems(object):
 
             if star_type in ["A", "F", "G", "K", "M", "S"]:
                 if mean_temperature < 273 and distance_from_parent_star > 12000:
-                    conditions = set("earthlike", "ammonia", "gasgiantwithwaterbasedlife", "gasgiantwithammoniabasedlife", "watergiant")
+                    conditions = set(["earthlike", "ammonia", "gasgiantwithwaterbasedlife", "gasgiantwithammoniabasedlife", "watergiant"])
                     if self.has_planet_type(conditions, system_name):
                         self.__maybe_append(species, genuses, _("Crystalline shard"), "crystalline shard", detected_genuses)
 
