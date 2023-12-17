@@ -91,8 +91,9 @@ class EDModule(object):
             power_draw = POWER_DATA[item]["powerdraw"]
         elif item.startswith("modularcargobaydoor"):
             power_draw = 0.6
-        else:
+        elif not(item.startswith(('nameplate_', 'paintjob_', 'voicepack_', 'weaponcustomisation_', 'enginecustomisation_', 'bobble_')) or item.endswith(('_cockpit', '_armour_grade1', '_armour_grade2', '_armour_grade3', '_armour_mirrored', '_armour_reactive'))):
             EDRLOG.log(u"unknown item: {}".format(item), "DEBUG")
+        
         for modifier in modifiers:
             if modifier.get("Label", "").lower() != "powerdraw":
                 continue
