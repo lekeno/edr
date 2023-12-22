@@ -34,6 +34,7 @@ from edrlog import EDRLog
 from ingamemsg import InGameMsg
 from edrtogglingpanel import EDRTogglingPanel
 from edrsystems import EDRSystems
+from edrfactions import EDRFactions
 from edrresourcefinder import EDRResourceFinder
 from edrbodiesofinterest import EDRBodiesOfInterest
 from edrcmdrs import EDRCmdrs
@@ -46,6 +47,7 @@ from edrxzibit import EDRXzibit
 from edrdiscord import EDRDiscordIntegration
 from edvehicles import EDVehicleFactory
 from edrsysplacheck import EDRGenusCheckerFactory
+from edrsyssetlcheck import EDRSettlementCheckerFactory
 
 from edri18n import _, _c, _edr, set_language
 from clippy import copy, paste
@@ -135,7 +137,8 @@ class EDRClient(object):
  
         self.edrsystems = EDRSystems(self.server)
         self.edrboi = EDRBodiesOfInterest()
-        self.edrresourcefinder = EDRResourceFinder(self.edrsystems)
+        self.edrfactions = EDRFactions()
+        self.edrresourcefinder = EDRResourceFinder(self.edrsystems, self.edrfactions)
         self.edrcmdrs = EDRCmdrs(self.server)
         self.edropponents = {
             EDROpponents.OUTLAWS: EDROpponents(self.server, EDROpponents.OUTLAWS, self._realtime_callback),
@@ -442,7 +445,7 @@ class EDRClient(object):
         self.edrcmdrs.persist()
         self.player.persist()
         self.edrsystems.persist()
-        self.edrresourcefinder.persist()
+        self.edrfactions.persist()
         for kind in self.edropponents:
             self.edropponents[kind].persist()
             self.edropponents[kind].shutdown_comms_link()
@@ -3210,6 +3213,22 @@ class EDRClient(object):
             self.status = _(u"Biofit planet: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
+    def search_settlement_near(self, settlement, star_system):
+        if not self.__search_prerequisites(star_system):
+            return
+
+        try:
+            self.edrsystems.search_settlement(star_system, settlement, self.edrfactions, self.__settloi_found)
+            self.searching = True
+            self.status = _(u"Settlement: searching...")
+            self.__notify(_(u"EDR Search"), [_(u"Settlement: searching...")], clear_before = True, sfx=False)
+            if self.audio_feedback:
+                self.SFX.searching()
+        except ValueError:
+            self.searching = False
+            self.status = _(u"Settlement: failed")
+            self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
+
 
     def __staoi_found(self, reference, radius, sc, soi_checker, result):
         self.searching = False
@@ -3257,6 +3276,29 @@ class EDRClient(object):
             if plaoi_checker.hint:
                 details.append(plaoi_checker.hint)
         self.__notify(_(u"{} near {}").format(plaoi_checker.name, reference), details, clear_before = True)
+
+    def __settloi_found(self, reference, radius, sc, settloi_checker, result):
+        self.searching = False
+        details = []
+        if result:
+            sc_distance = result['settlement']['distanceToArrival']
+            distance = result['distance']
+            pretty_dist = _(u"{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _(u"{dist}LY").format(dist=int(distance))
+            pretty_sc_dist = _(u"{dist}LS").format(dist=int(sc_distance))
+            details.append(_(u"{system}, {dist}").format(system=result['name'], dist=pretty_dist))
+            details.append(_(u"{settlement} ({type}), {sc_dist}").format(settlement=result['settlement']['name'], type=result['settlement']['type'], sc_dist=pretty_sc_dist))
+            details.append(_(u"as of {date} {ci}").format(date=result['settlement']['updateTime']['information'],ci=result.get('comment', '')))
+            self.status = u"{item}: {system}, {dist} - {settlement} ({type}), {sc_dist}".format(item=settloi_checker.name, system=result['name'], dist=pretty_dist, settlement=result['settlement']['name'], type=result['settlement']['type'], sc_dist=pretty_sc_dist)
+            copy(result["name"])
+        else:
+            self.status = _(u"{}: nothing within [{}LY, {}LS] of {}").format(settloi_checker.name, int(radius), int(sc), reference)
+            checked = _("checked {} systems").format(settloi_checker.systems_counter) 
+            if settloi_checker.settlements_counter: 
+                checked = _("checked {} systems and {} settlements").format(settloi_checker.systems_counter, settloi_checker.settlements_counter) 
+            details.append(_(u"nothing found within [{}LY, {}LS], {}.").format(int(radius), int(sc), checked))
+            if settloi_checker.hint:
+                details.append(settloi_checker.hint)
+        self.__notify(_(u"{} near {}").format(settloi_checker.name, reference), details, clear_before = True)
 
     def __parking_found(self, reference, radius, rank, result):
         self.searching = False
@@ -3363,11 +3405,14 @@ class EDRClient(object):
         cresource = self.edrresourcefinder.canonical_name(thing)
         if EDRGenusCheckerFactory.recognized_genus(thing):
             self.search_genus_near(thing, star_system)
+        elif EDRSettlementCheckerFactory.recognized_settlement(thing):
+            self.search_settlement_near(thing, star_system)
         elif cresource:
             self.search_resource(thing, star_system)
         else:
             matches = EDRGenusCheckerFactory.recognized_candidates(thing)
             matches.extend(self.edrresourcefinder.recognized_candidates(thing))
+            matches.extend(EDRSettlementCheckerFactory.recognized_candidates(thing))
             if matches:
                 self.__notify(_(u"EDR Search: suggested terms"), [" ;; ".join(matches)], clear_before=True)
             else:
@@ -3429,7 +3474,7 @@ class EDRClient(object):
         else:
             self.status = _(u"{}: nothing within [{}LY] of {}").format(checker.name, int(radius), reference)
             checked = _("checked {} systems").format(checker.systems_counter) 
-            if checker.stations_counter: 
+            if checker.settlements_counter: 
                 checked = _("checked {} systems").format(checker.systems_counter)
             details.append(_(u"nothing found within {}LY, {}.").format(int(radius), checked))
             if checker.hint():

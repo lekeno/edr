@@ -24,9 +24,11 @@ from edentities import pretty_print_number
 from edri18n import _, _c, _edr
 import edrservicecheck
 import edrsysplacheck
+import edrsyssetlcheck
 import edrservicefinder
 import edrparkingsystemfinder
 import edrplanetfinder
+import edrsettlementfinder
 import utils2to3
 
 EDRLOG = edrlog.EDRLog()
@@ -284,6 +286,9 @@ class EDRSystems(object):
         if not star_system:
             return False
         return self.edsm_stations_cache.is_stale(star_system.lower())
+
+    def are_settlements_stale(self, star_system):
+        return self.are_stations_stale(star_system)
         
     def station(self, star_system, station_name, station_type):
         stations = self.stations_in_system(star_system)
@@ -2578,6 +2583,12 @@ class EDRSystems(object):
         if checker:
             self.__search_a_planet(star_system, callback, checker, override_radius, override_sc_distance, permits, shuffle_systems=True, shuffle_planets=True, exclude_center=True)
 
+    def search_settlement(self, star_system, settlement, edrfactions, callback, override_radius = 100, override_sc_distance = 100000, permits = []):
+        override_sc_distance = override_sc_distance or 100000
+        checker = edrsyssetlcheck.EDRSettlementCheckerFactory.get_checker(settlement, self, edrfactions, override_sc_distance)
+        if checker:
+            self.__search_a_settlement(star_system, callback, checker, override_radius, override_sc_distance, permits, shuffle_systems=True, shuffle_planets=True, exclude_center=True)
+
     def __search_a_planet(self, star_system, callback, checker, override_radius = None, override_sc_distance = None, permits = [], shuffle_systems=True, shuffle_planets=True, exclude_center=False):
         sc_distance = override_sc_distance or self.reasonable_sc_distance
         sc_distance = max(250, sc_distance)
@@ -2590,6 +2601,22 @@ class EDRSystems(object):
         finder.permits_in_possesion(permits)
         finder.shuffling(shuffle_systems, shuffle_planets)
         finder.ignore_center(exclude_center)
+        finder.set_dlc(self.dlc_name)
+        finder.start()
+
+    def __search_a_settlement(self, star_system, callback, checker, override_radius = None, override_sc_distance = None, permits = [], shuffle_systems=True, shuffle_planets=True, exclude_center=False, exclude_states=[]):
+        sc_distance = override_sc_distance or self.reasonable_sc_distance
+        sc_distance = max(250, sc_distance)
+        radius = override_radius if override_radius is not None and override_radius >= 0 else self.reasonable_hs_radius
+        radius = min(100, radius)
+
+        finder = edrsettlementfinder.EDRSettlementFinder(star_system, checker, self, callback)
+        finder.within_radius(radius)
+        finder.within_supercruise_distance(sc_distance)
+        finder.permits_in_possesion(permits)
+        finder.shuffling(shuffle_systems, shuffle_planets)
+        finder.ignore_center(exclude_center)
+        finder.ignore_states(exclude_states)
         finder.set_dlc(self.dlc_name)
         finder.start()
     

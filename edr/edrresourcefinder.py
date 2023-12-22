@@ -162,9 +162,9 @@ class EDRResourceFinder(object):
         "ambiguous abbreviation (cc)": "ambiguous_c_c",
     }
 
-    def __init__(self, edr_systems, permits = [], dlc=None):
+    def __init__(self, edr_systems, edr_factions, permits = [], dlc=None):
         self.edr_systems = edr_systems
-        self.edr_factions = EDRFactions()
+        self.edr_factions = edr_factions
         self.radius = 50
         self.permits = permits
         self.raw_profile = None
@@ -172,9 +172,6 @@ class EDRResourceFinder(object):
 
     def set_dlc(self, dlc):
         self.dlc = dlc
-
-    def persist(self):
-        self.edr_factions.persist()
 
     def configure(self, raw_profile):
         if raw_profile is None:
