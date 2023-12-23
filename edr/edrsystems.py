@@ -2587,7 +2587,7 @@ class EDRSystems(object):
         override_sc_distance = override_sc_distance or 100000
         checker = edrsyssetlcheck.EDRSettlementCheckerFactory.get_checker(settlement, self, edrfactions, override_sc_distance)
         if checker:
-            self.__search_a_settlement(star_system, callback, checker, override_radius, override_sc_distance, permits, shuffle_systems=True, shuffle_planets=True, exclude_center=True)
+            self.__search_a_settlement(star_system, edrfactions, callback, checker, override_radius, override_sc_distance, permits, shuffle_systems=True, shuffle_planets=True, exclude_center=True)
 
     def __search_a_planet(self, star_system, callback, checker, override_radius = None, override_sc_distance = None, permits = [], shuffle_systems=True, shuffle_planets=True, exclude_center=False):
         sc_distance = override_sc_distance or self.reasonable_sc_distance
@@ -2604,13 +2604,13 @@ class EDRSystems(object):
         finder.set_dlc(self.dlc_name)
         finder.start()
 
-    def __search_a_settlement(self, star_system, callback, checker, override_radius = None, override_sc_distance = None, permits = [], shuffle_systems=True, shuffle_planets=True, exclude_center=False, exclude_states=[]):
+    def __search_a_settlement(self, star_system, edrfactions, callback, checker, override_radius = None, override_sc_distance = None, permits = [], shuffle_systems=True, shuffle_planets=True, exclude_center=False, exclude_states=[]):
         sc_distance = override_sc_distance or self.reasonable_sc_distance
         sc_distance = max(250, sc_distance)
         radius = override_radius if override_radius is not None and override_radius >= 0 else self.reasonable_hs_radius
         radius = min(100, radius)
 
-        finder = edrsettlementfinder.EDRSettlementFinder(star_system, checker, self, callback)
+        finder = edrsettlementfinder.EDRSettlementFinder(star_system, checker, self, edrfactions, callback)
         finder.within_radius(radius)
         finder.within_supercruise_distance(sc_distance)
         finder.permits_in_possesion(permits)

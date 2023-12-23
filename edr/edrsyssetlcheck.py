@@ -1,6 +1,5 @@
 from edri18n import _, _c, _edr
 import edrlog
-import math
 
 EDRLOG = edrlog.EDRLog()
 
@@ -30,18 +29,24 @@ class EDRSystemSettlementCheck(object):
         return system['distance'] <= self.max_distance
 
     def check_settlement(self, settlement):
+        EDRLOG.log("Checking SysSettl: {}".format(settlement['name']), "DEBUG")
         if not settlement:
+            EDRLOG.log("Failed SysSettlCheck: nothing")
             return False
+        
+        EDRLOG.log("Checking: {}".format(settlement['name']), "DEBUG")
 
+        EDRLOG.log(settlement, "DEBUG")
         if "settlement" not in settlement.get("type", "").lower():
+            EDRLOG.log("no settlement", "DEBUG")
             return False
         
         self.settlements_counter = self.settlements_counter + 1
         if settlement.get('distanceToArrival', None) is None:
+            EDRLOG.log("no distance", "DEBUG")
             return False
 
-        if "odyssey" in settlement.get("type", "").lower() and self.dlc_name != "Odyssey":
-            return False
+        EDRLOG.log("Dist: {} vs {}".format(settlement['distanceToArrival'], self.max_sc_distance), "DEBUG")
         return settlement['distanceToArrival'] < self.max_sc_distance
     
 
@@ -51,12 +56,15 @@ class EDRSystemOdySettlementCheck(EDRSystemSettlementCheck):
         super(EDRSystemOdySettlementCheck, self).__init__()
 
     def check_settlement(self, settlement):
+        EDRLOG.log("Checking SysOdySettl: {}".format(settlement['name']), "DEBUG")
         backup = self.settlements_counter
-        if not super(EDRSystemOdySettlementCheck, self).__init__():
+        if not super(EDRSystemOdySettlementCheck, self).check_settlement(settlement):
+            EDRLOG.log("failed check from SystemOdySettlementCheck", "DEBUG")
             return False
         
         if settlement.get("type", "").lower() != "odyssey settlement":
             self.settlements_counter = backup
+            EDRLOG.log("not an odyssey settlement", "DEBUG")
             return False
     
         return True
@@ -71,15 +79,20 @@ class EDRSettlementEcoCheck(EDRSystemSettlementCheck):
         self.hint = None
 
     def check_settlement(self, settlement):
+        EDRLOG.log("Checking SettlEco: {}".format(settlement['name']), "DEBUG")
         if not super(EDRSettlementEcoCheck, self).check_settlement(settlement):
+            EDRLOG.log("Failed settlementcheck", "DEBUG")
             return False
 
         if not self.economy:
+            EDRLOG.log("success: no condition on economy", "DEBUG")
             return True
 
         if not settlement.get('economy', None):
+            EDRLOG.log("no economy", "DEBUG")
             return False
          
+        EDRLOG.log("Eco: {}".format(settlement['economy']), "DEBUG")
         return self.economy == settlement['economy'].lower()
 
 class EDROdySettlementEcoCheck(EDRSystemOdySettlementCheck):
@@ -97,12 +110,16 @@ class EDRAnarchyOdySettlementCheck(EDROdySettlementEcoCheck):
         self.hint = None
 
     def check_settlement(self, settlement):
+        EDRLOG.log("Checking AnarcOdy: {}".format(settlement['name']), "DEBUG")
         if not super(EDRAnarchyOdySettlementCheck, self).check_settlement(settlement):
+            EDRLOG.log("Failed OdySettlementCheck", "DEBUG")
             return False
 
         if not settlement.get('government', None):
+            EDRLOG.log("No gvt", "DEBUG")
             return False
         
+        EDRLOG.log("GVT: {}".format(settlement['government']), "DEBUG")
         return self.government == settlement['government'].lower()
 
 class EDRAnarchyAgricultureOdySettlementCheck(EDRAnarchyOdySettlementCheck):
@@ -182,4 +199,5 @@ class EDRSettlementCheckerFactory(object):
     @staticmethod
     def get_checker(settlement, edrsystems, edrfactions, override_sc):
         csettlement = settlement.lower()
-        return EDRSettlementCheckerFactory.SETTLEMENTS_LUT.get(csettlement, EDRAnarchyOdySettlementCheck)(edrsystems, edrfactions, override_sc)
+        # return EDRSettlementCheckerFactory.SETTLEMENTS_LUT.get(csettlement, EDRAnarchyOdySettlementCheck)(edrsystems, edrfactions, override_sc)
+        return EDRSettlementCheckerFactory.SETTLEMENTS_LUT.get(csettlement, EDRAnarchyOdySettlementCheck)()

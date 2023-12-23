@@ -167,14 +167,16 @@ class EDRSettlementFinder(threading.Thread):
     def closest_matching_settlement(self, settlements, system_name):
         overall = None
         for settlement in settlements:
+            EDRLOG.log(settlement, "DEBUG")
             if not self.checker.check_settlement(settlement):
                 continue
             
+            EDRLOG.log("match", "DEBUG")
             factionIDName = settlement.get("controllingFaction", { "id": -1, "name": ""})
             factionName = factionIDName.get("name", "")
             faction = self.edr_factions.get(factionName, system_name)
             if faction and faction.state in self.exclude_states:
-                EDRLOG.log("Skipping {} due to bad state for the controlling faction: {}".format(settlement, faction))
+                EDRLOG.log("Skipping {} due to bad state for the controlling faction: {}".format(settlement, faction), "DEBUG")
                 continue
 
             if overall == None:
@@ -191,9 +193,13 @@ class EDRSettlementFinder(threading.Thread):
         if system.get('requirePermit', False) and not system['name'] in self.permits :
             return None
 
+        EDRLOG.log("sys: " + system['name'], "DEBUG")
         all_settlements = self.edr_systems.stations_in_system(system['name']) # also returns settlements
         if not all_settlements or not len(all_settlements):
+            EDRLOG.log("no settlements in " + system['name'], "DEBUG")
             return None
+        
+        EDRLOG.log("settlements: {}".format(all_settlements), "DEBUG")
 
         if self.shuffle_settlements:
             shuffle(all_settlements)
