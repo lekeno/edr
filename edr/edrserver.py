@@ -138,7 +138,7 @@ class EDRServer(object):
                 return EDRServer.SESSION.get(endpoint, params=params, headers=headers)
             except requests.exceptions.RequestException as e:
                 last_connection_exception = e
-                EDRLOG.log(u"ConnectionException {} for GET EDR: attempts={}".format(e, attempts), u"WARNING")
+                EDRLOG.log(u"ConnectionException {} for GET EDR {}: attempts={}".format(e, service, attempts), u"WARNING")
         raise last_connection_exception
 
     def __put(self, endpoint, service, json, params=None, headers=None, attempts=3):
@@ -151,7 +151,7 @@ class EDRServer(object):
                 return EDRServer.SESSION.put(endpoint, params=params, json=json, headers=headers)
             except requests.exceptions.RequestException as e:
                 last_connection_exception = e
-                EDRLOG.log(u"ConnectionException {} for PUT EDR: attempts={}".format(e, attempts), u"WARNING")
+                EDRLOG.log(u"ConnectionException {} for PUT EDR {}: attempts={}".format(e, service, attempts), u"WARNING")
         raise last_connection_exception
     
     def __delete(self, endpoint, service, params=None, attempts=3):
@@ -164,7 +164,7 @@ class EDRServer(object):
                 return EDRServer.SESSION.delete(endpoint, params=params)
             except requests.exceptions.RequestException as e:
                 last_connection_exception = e
-                EDRLOG.log(u"ConnectionException {} for DELETE EDR: attempts={}".format(e, attempts), u"WARNING")
+                EDRLOG.log(u"ConnectionException {} for DELETE EDR {}: attempts={}".format(e, service, attempts), u"WARNING")
         raise last_connection_exception
         
 
@@ -178,7 +178,7 @@ class EDRServer(object):
                 return EDRServer.SESSION.post(endpoint, params=params, json=json)
             except requests.exceptions.RequestException as e:
                 last_connection_exception = e
-                EDRLOG.log(u"ConnectionException {} for POST EDR: attempts={}".format(e, attempts), u"WARNING")
+                EDRLOG.log(u"ConnectionException {} for POST EDR {}: attempts={}".format(e, service, attempts), u"WARNING")
         raise last_connection_exception
         
 
