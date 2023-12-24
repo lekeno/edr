@@ -557,24 +557,41 @@ class InGameMsg(object):
                     t = _c(u"ambiguous tech|T.")
 
         details.append(_(u"I.Factor:{}   {} Broker:{}").format(a,t,b))
+        if "controllingFaction" in station:
+            faction = station["controllingFaction"]
+            details.append(_(u"Faction: {name} ({allegiance}, {government})").format(name=faction.get("name", "???"), allegiance=station.get("allegiance", "???"), government=station.get("government", "???")))
+        
         details.append(_(u"as of {date}").format(date=station['updateTime']['information']))
         return details
 
     def describe_fleet_carrier(self, fc):
         fc_other_services = (fc.get("otherServices", []) or []) 
         details = []
+        
         a = u"●" if fc.get("haveOutfitting", False) else u"◌"
         b = u"●" if fc.get("haveShipyard", False) else u"◌"
         details.append(_(u"Outfit:{}   Shipyard:{}").format(a,b))
+        
         a = u"●" if "Refuel" in fc_other_services else u"◌"
         b = u"●" if "Repair" in fc_other_services else u"◌"
         c = u"●" if "Restock" in fc_other_services else u"◌"
         details.append(_(u"Refuel:{}   Repair:{}   Restock:{}").format(a,b,c))
+        
         a = u"●" if fc.get("haveMarket", False) else u"◌"
         b = u"●" if "Black Market" in fc_other_services else u"◌"
         details.append(_(u"Market:{}   B.Market:{}").format(a,b))
-        a = u"●" if "Interstellar Factors Contact" in fc_other_services else u"◌"
-        details.append(_(u"I.Factor:{}").format(a))
+        
+        a = u"●" if "Universal Cartographics" in fc_other_services else u"◌"
+        b = u"●" if "Vista Genomics" in fc_other_services else u"◌"
+        if a == u"●" or b == u"●":
+             details.append(_(u"U.Cart:{}   Vista G:{}").format(a,b))
+        
+        a = u"●" if "Pioneer Supplies" in fc_other_services else u"◌"
+        b = u"●" if "Contacts" in fc_other_services else u"◌"
+        c = u"●" if "Crew Lounge" in fc_other_services else u"◌"
+        if a == u"●" or b == u"●" or c == u"●":
+            details.append(_(u"Redempt.O:{}   Pioneer S:{}   Lounge:{}").format(a,b,c))
+
         details.append(_(u"as of {date}").format(date=fc['updateTime']['information']))
         return details
 
