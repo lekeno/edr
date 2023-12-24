@@ -101,12 +101,29 @@ class EDROdySettlementEcoCheck(EDRSystemOdySettlementCheck):
         super(EDROdySettlementEcoCheck, self).__init__()
         self.economy = economy
 
+    def check_settlement(self, settlement):
+        EDRLOG.log("Checking OdySettlEco: {}".format(settlement['name']), "DEBUG")
+        if not super(EDROdySettlementEcoCheck, self).check_settlement(settlement):
+            EDRLOG.log("Failed settlementcheck", "DEBUG")
+            return False
+
+        if not self.economy:
+            EDRLOG.log("success: no condition on economy", "DEBUG")
+            return True
+
+        if not settlement.get('economy', None):
+            EDRLOG.log("no economy", "DEBUG")
+            return False
+         
+        EDRLOG.log("Eco: {}".format(settlement['economy']), "DEBUG")
+        return self.economy == settlement['economy'].lower()
+
 class EDRAnarchyOdySettlementCheck(EDROdySettlementEcoCheck):
     
-    def __init__(self):
-        super(EDRAnarchyOdySettlementCheck, self).__init__(None)
+    def __init__(self, economy=None):
+        super(EDRAnarchyOdySettlementCheck, self).__init__(economy)
         self.government = "anarchy"
-        self.name = _("Anarchy Odyssey settlement")
+        self.name = _("Anarchy settlement")
         self.hint = None
 
     def check_settlement(self, settlement):
@@ -126,37 +143,74 @@ class EDRAnarchyAgricultureOdySettlementCheck(EDRAnarchyOdySettlementCheck):
     
     def __init__(self):
         super().__init__("agriculture")
-        self.name = _("Anarchy Agriculture Odyssey settlement")
+        self.name = _("Anarchy Agriculture settlement")
 
 class EDRAnarchyExtractionOdySettlementCheck(EDRAnarchyOdySettlementCheck):
     
     def __init__(self):
         super().__init__("extraction")
-        self.name = _("Anarchy Extraction Odyssey settlement")
+        self.name = _("Anarchy Extraction settlement")
 
 class EDRAnarchyHighTechOdySettlementCheck(EDRAnarchyOdySettlementCheck):
     
     def __init__(self):
         super().__init__("high tech")
-        self.name = _("Anarchy High Tech Odyssey settlement")
+        self.name = _("Anarchy High Tech settlement")
 
 class EDRAnarchyIndustrialOdySettlementCheck(EDRAnarchyOdySettlementCheck):
     
     def __init__(self):
         super().__init__("industrial")
-        self.name = _("Anarchy Industrial Odyssey settlement")
+        self.name = _("Anarchy Industrial settlement")
 
 class EDRAnarchyMilitaryOdySettlementCheck(EDRAnarchyOdySettlementCheck):
     
     def __init__(self):
         super().__init__("military")
-        self.name = _("Anarchy Military Odyssey settlement")
+        self.name = _("Anarchy Military settlement")
 
 class EDRAnarchyTourismOdySettlementCheck(EDRAnarchyOdySettlementCheck):
     
     def __init__(self):
         super().__init__("tourism")
-        self.name = _("Anarchy Tourism Odyssey settlement")
+        self.name = _("Anarchy Tourism settlement")
+
+class EDRAgricultureOdySettlementCheck(EDROdySettlementEcoCheck):
+    
+    def __init__(self):
+        super().__init__("agriculture")
+        self.name = _("Agriculture settlement")
+
+class EDRExtractionOdySettlementCheck(EDROdySettlementEcoCheck):
+    
+    def __init__(self):
+        super().__init__("extraction")
+        self.name = _("Extraction settlement")
+
+class EDRHighTechOdySettlementCheck(EDROdySettlementEcoCheck):
+    
+    def __init__(self):
+        super().__init__("high tech")
+        self.name = _("High Tech settlement")
+
+class EDRIndustrialOdySettlementCheck(EDROdySettlementEcoCheck):
+    
+    def __init__(self):
+        super().__init__("industrial")
+        self.name = _("Industrial settlement")
+
+
+class EDRMilitaryOdySettlementCheck(EDROdySettlementEcoCheck):
+    
+    def __init__(self):
+        super().__init__("military")
+        self.name = _("Military settlement")
+
+class EDRTourismOdySettlementCheck(EDROdySettlementEcoCheck):
+    
+    def __init__(self):
+        super().__init__("tourism")
+        self.name = _("Tourism settlement")
 
 class EDRSettlementCheckerFactory(object):
     SETTLEMENTS_LUT = {
@@ -181,6 +235,13 @@ class EDRSettlementCheckerFactory(object):
         "anarchy high": EDRAnarchyHighTechOdySettlementCheck,
         "anarchy high tech": EDRAnarchyHighTechOdySettlementCheck,
         "anarchy tech": EDRAnarchyHighTechOdySettlementCheck,
+        "anarchy": EDRAnarchyOdySettlementCheck,
+        "agriculture": EDRAgricultureOdySettlementCheck,
+        "extraction": EDRExtractionOdySettlementCheck,
+        "industrial": EDRIndustrialOdySettlementCheck,
+        "military": EDRMilitaryOdySettlementCheck,
+        "tourism": EDRTourismOdySettlementCheck,
+        "anarchy high tech": EDRHighTechOdySettlementCheck,
     }
 
     @staticmethod

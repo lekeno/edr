@@ -3323,15 +3323,24 @@ class EDRClient(object):
     def __settloi_found(self, reference, radius, sc, settloi_checker, result):
         self.searching = False
         details = []
-        if result:
-            sc_distance = result['settlement']['distanceToArrival']
+        if result and 'settlement' in result:
+            settlement = result['settlement']
+            sc_distance = settlement['distanceToArrival']
             distance = result['distance']
             pretty_dist = _(u"{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _(u"{dist}LY").format(dist=int(distance))
             pretty_sc_dist = _(u"{dist}LS").format(dist=int(sc_distance))
             details.append(_(u"{system}, {dist}").format(system=result['name'], dist=pretty_dist))
-            details.append(_(u"{settlement} ({type}), {sc_dist}").format(settlement=result['settlement']['name'], type=result['settlement']['type'], sc_dist=pretty_sc_dist))
-            details.append(_(u"as of {date} {ci}").format(date=result['settlement']['updateTime']['information'],ci=result.get('comment', '')))
-            self.status = u"{item}: {system}, {dist} - {settlement} ({type}), {sc_dist}".format(item=settloi_checker.name, system=result['name'], dist=pretty_dist, settlement=result['settlement']['name'], type=result['settlement']['type'], sc_dist=pretty_sc_dist)
+            if 'body' in settlement:
+                bodyName = settlement['body']['name']
+                adjBodyName = simplified_body_name(result['name'], bodyName, " 0")
+                details.append(_(u"{settlement}, {body}, {sc_dist}").format(settlement=settlement['name'], body=adjBodyName, sc_dist=pretty_sc_dist))                
+            else:
+                details.append(_(u"{settlement}, {sc_dist}").format(settlement=settlement['name'], sc_dist=pretty_sc_dist))
+            
+            if 'controllingFaction' in settlement:
+                details.append(_(u"Faction: {faction} (GVT: {gvt}, ALG: {alg})").format(faction=settlement['controllingFaction']['name'], gvt=settlement['government'], alg=settlement['allegiance']))
+            details.append(_(u"as of {date} {ci}").format(date=settlement['updateTime']['information'],ci=result.get('comment', '')))
+            self.status = u"{item}: {system}, {dist} - {settlement}, {sc_dist}".format(item=settloi_checker.name, system=result['name'], dist=pretty_dist, settlement=settlement['name'], sc_dist=pretty_sc_dist)
             copy(result["name"])
         else:
             self.status = _(u"{}: nothing within [{}LY, {}LS] of {}").format(settloi_checker.name, int(radius), int(sc), reference)
