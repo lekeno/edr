@@ -241,7 +241,7 @@ class EDRSettlementCheckerFactory(object):
         "industrial": EDRIndustrialOdySettlementCheck,
         "military": EDRMilitaryOdySettlementCheck,
         "tourism": EDRTourismOdySettlementCheck,
-        "anarchy high tech": EDRHighTechOdySettlementCheck,
+        "high tech": EDRHighTechOdySettlementCheck,
     }
 
     @staticmethod
