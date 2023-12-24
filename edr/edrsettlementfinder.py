@@ -121,10 +121,9 @@ class EDRSettlementFinder(threading.Thread):
         candidate = self.__settlement_in_system(system)
         if candidate:
             check_sc_distance = candidate['distanceToArrival'] <= self.sc_distance
-            check_landing_pads = self.__check_landing_pads(candidate.get('type', ''))
             ambiguous = False
-            EDRLOG.log(u"System {} has a candidate {}: ambiguous {}, sc_distance {}, landing_pads {}".format(system['name'], candidate['name'], ambiguous, check_sc_distance, check_landing_pads), "DEBUG")
-            if check_sc_distance and check_landing_pads and not ambiguous:
+            EDRLOG.log(u"System {} has a candidate {}: ambiguous {}, sc_distance {}".format(system['name'], candidate['name'], ambiguous, check_sc_distance), "DEBUG")
+            if check_sc_distance and not ambiguous:
                 trialed = system
                 trialed['settlement'] = candidate
                 closest = self.edr_systems.closest_station(trialed, candidates['prime'])
