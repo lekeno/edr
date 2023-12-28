@@ -181,7 +181,7 @@ class EDRSettlementFinder(threading.Thread):
                 EDRLOG.log("Skipping {} due to bad state for the controlling faction: {}".format(settlement, faction), "DEBUG")
                 continue
 
-            if faction and faction.get("state", "None") not in self.include_states:
+            if self.include_states and faction and faction.get("state", "None") not in self.include_states:
                 EDRLOG.log("Skipping {} due to state not matching any of the the required state for the controlling faction: {}".format(settlement, faction), "DEBUG")
                 continue
 
