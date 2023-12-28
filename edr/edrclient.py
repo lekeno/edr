@@ -635,8 +635,17 @@ class EDRClient(object):
         self.__notify(header, facts, clear_before = True)
         return True
 
-    def noteworthy_about_settlement(self, approach_entry):
-        self.edrfactions.process_approach_event(approach_entry, self.player.star_system)
+    def noteworthy_about_settlement(self, entry):
+        self.edrfactions.process_approach_event(entry, self.player.star_system)
+        if "StationFaction" not in entry or "Name" not in entry:
+            return
+        
+        details = []
+        name = entry.get("Name", _("Settlement"))
+        economy = entry.get("StationEconomy_Localised", "ECO?")
+        header = u"{settlementName} ({settlementEconomy})".format(settlementName=name, settlementEconomy=economy)
+        details = self.IN_GAME_MSG.describe_ed_settlement(entry)
+        self.__notify(header, details, clear_before=True)
 
     def docked_at(self, docking_entry):
         self.player.docked_at(docking_entry)
