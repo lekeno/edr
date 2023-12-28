@@ -258,7 +258,6 @@ class EDRSettlementCheckerFactory(object):
 
 
     @staticmethod
-    def get_checker(settlement, edrsystems, edrfactions, override_sc):
+    def get_checker(settlement):
         csettlement = settlement.lower()
-        # return EDRSettlementCheckerFactory.SETTLEMENTS_LUT.get(csettlement, EDRAnarchyOdySettlementCheck)(edrsystems, edrfactions, override_sc)
         return EDRSettlementCheckerFactory.SETTLEMENTS_LUT.get(csettlement, EDRAnarchyOdySettlementCheck)()

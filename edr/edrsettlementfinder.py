@@ -7,7 +7,7 @@ EDRLOG = EDRLog()
 
 class EDRSettlementFinder(threading.Thread):
 
-    def __init__(self, star_system, checker, edr_systems, edr_factions, callback):
+    def __init__(self, star_system, checker, edr_systems, callback):
         self.star_system = star_system
         self.checker = checker
         self.radius = 50
@@ -15,7 +15,6 @@ class EDRSettlementFinder(threading.Thread):
         self.trials = 0
         self.max_trials = 25
         self.edr_systems = edr_systems
-        self.edr_factions = edr_factions
         self.odyssey_settlement = False
         self.callback = callback
         self.permits = []
@@ -23,6 +22,7 @@ class EDRSettlementFinder(threading.Thread):
         self.shuffle_settlements = False
         self.exclude_center = False
         self.exclude_states = []
+        self.include_states = []
         self.checked_systems = []
         super(EDRSettlementFinder, self).__init__()
 
@@ -47,6 +47,9 @@ class EDRSettlementFinder(threading.Thread):
 
     def ignore_states(self, states_to_ignore):
         self.exclude_states = states_to_ignore
+
+    def require_states(self, states_to_require):
+        self.include_states = states_to_require
 
     def set_dlc(self, name):
         self.checker.set_dlc(name)
@@ -173,9 +176,13 @@ class EDRSettlementFinder(threading.Thread):
             EDRLOG.log("match", "DEBUG")
             factionIDName = settlement.get("controllingFaction", { "id": -1, "name": ""})
             factionName = factionIDName.get("name", "")
-            faction = self.edr_factions.get(factionName, system_name)
-            if faction and faction.state in self.exclude_states:
+            faction = self.edr_systems.faction_in_system(factionName, system_name)
+            if faction and faction.get("state", "None") in self.exclude_states:
                 EDRLOG.log("Skipping {} due to bad state for the controlling faction: {}".format(settlement, faction), "DEBUG")
+                continue
+
+            if faction and faction.get("state", "None") not in self.include_states:
+                EDRLOG.log("Skipping {} due to state not matching any of the the required state for the controlling faction: {}".format(settlement, faction), "DEBUG")
                 continue
 
             if overall == None:
