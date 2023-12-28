@@ -563,6 +563,43 @@ class InGameMsg(object):
         
         details.append(_(u"as of {date}").format(date=station['updateTime']['information']))
         return details
+    
+    def describe_ed_settlement(self, entry):
+        details = []
+        if entry["event"] != "ApproachSettlement":
+            return details
+        
+        settlement_services = (entry.get("StationServices", []) or [])
+        
+        a = u"●" if "refuel" in settlement_services else u"◌"
+        b = u"●" if "repair" in settlement_services else u"◌"
+        c = u"●" if "rearm" in settlement_services else u"◌"
+        details.append(_(u"Refuel:{}   Repair:{}   Restock:{}").format(a,b,c))
+        
+        a = u"●" if "commodities" in settlement_services else u"◌"
+        b = u"●" if "blackmarket" in settlement_services else u"◌"
+        c = u"●" if "facilitator" in settlement_services else u"◌"
+        details.append(_(u"Market:{}   B.Market:{}   I.Factor:{}").format(a,b,c))
+        
+        if "StationFaction" in entry:
+            factionName = entry["StationFaction"].get("Name", "???")
+            qualifiers = []
+            if "State" in entry["StationFaction"]:
+                qualifiers.append(entry["StationFaction"]["State"])
+                
+            if "StationGovernment_Localised" in entry:
+                qualifiers.append(entry["StationGovernment_Localised"])
+            
+            if "StationAllegiance" in entry:
+                qualifiers.append(entry["StationAllegiance"])
+
+            if qualifiers:
+                details.append("{name} ({qualifiers})".format(name=factionName, qualifiers=", ".join(qualifiers)))
+            else:
+                details.append("{name}".format(name=factionName))
+            
+        
+        return details
 
     def describe_fleet_carrier(self, fc):
         fc_other_services = (fc.get("otherServices", []) or []) 
