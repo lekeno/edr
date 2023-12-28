@@ -286,6 +286,7 @@ def handle_movement_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_body_if_obsolete(body)        
         EDRLOG.log(u"Place/Body changed: {}, {}".format(place, body), "INFO")
         outcome["reason"] = "Approach event"
+        EDR_CLIENT.noteworthy_about_settlement(entry)
     elif entry["event"] in ["ApproachBody"]:
         body = entry["Body"]
         outcome["updated"] |= ed_player.update_body_if_obsolete(body)
@@ -314,7 +315,7 @@ def handle_change_events(ed_player, entry):
             place = entry["StationName"]
             outcome["updated"] |= ed_player.update_place_if_obsolete(place)
             EDRLOG.log(u"Place changed: {} (location event)".format(place), "INFO")
-            ed_player.docked_at(entry)
+            EDR_CLIENT.docked_at(entry)
         body = entry.get("Body", None)
         outcome["updated"] |= ed_player.update_body_if_obsolete(body)
         EDRLOG.log(u"Body changed: {} (location event)".format(body), "INFO")

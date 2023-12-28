@@ -29,6 +29,7 @@ from lrucache import LRUCache
 from edentities import EDFineOrBounty
 from edsitu import EDPlanetaryLocation, EDLocation
 from edrserver import EDRServer, CommsJammedError
+from edsmserver import EDSMServer
 from audiofeedback import EDRSoundEffects
 from edrlog import EDRLog
 from ingamemsg import InGameMsg
@@ -136,10 +137,11 @@ class EDRClient(object):
             EDROpponents.ENEMIES: self.__get_realtime_params("EDREnemiesAlerts")
         }
  
-        self.edrsystems = EDRSystems(self.server)
-        self.edrboi = EDRBodiesOfInterest()
-        self.edrfactions = EDRFactions()
+        self.edsm_server = EDSMServer()
+        self.edrfactions = EDRFactions(self.edsm_server)
+        self.edrsystems = EDRSystems(self.server, self.edsm_server, self.edrfactions)
         self.edrresourcefinder = EDRResourceFinder(self.edrsystems, self.edrfactions)
+        self.edrboi = EDRBodiesOfInterest()
         self.edrcmdrs = EDRCmdrs(self.server)
         self.edropponents = {
             EDROpponents.OUTLAWS: EDROpponents(self.server, EDROpponents.OUTLAWS, self._realtime_callback),
@@ -633,6 +635,13 @@ class EDRClient(object):
         self.__notify(header, facts, clear_before = True)
         return True
 
+    def noteworthy_about_settlement(self, approach_entry):
+        self.edrfactions.process_approach_event(approach_entry, self.player.star_system)
+
+    def docked_at(self, docking_entry):
+        self.player.docked_at(docking_entry)
+        self.edrfactions.process_docking_event(docking_entry, self.player.star_system)
+        
     def noteworthy_about_body(self, star_system, body_name):
         route_facts = self.player.routenav.noteworthy_about_body(star_system, body_name)
         
@@ -3261,7 +3270,7 @@ class EDRClient(object):
             return
 
         try:
-            self.edrsystems.search_settlement(star_system, settlement, self.edrfactions, self.__settloi_found)
+            self.edrsystems.search_settlement(star_system, settlement, self.__settloi_found)
             self.searching = True
             self.status = _(u"Settlement: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Settlement: searching...")], clear_before = True, sfx=False)
@@ -3333,9 +3342,9 @@ class EDRClient(object):
             if 'body' in settlement:
                 bodyName = settlement['body']['name']
                 adjBodyName = simplified_body_name(result['name'], bodyName, " 0")
-                details.append(_(u"{settlement}, {body}, {sc_dist}").format(settlement=settlement['name'], body=adjBodyName, sc_dist=pretty_sc_dist))                
+                details.append(_(u"{settlement} ({eco}), {body}, {sc_dist}").format(settlement=settlement['name'], eco=settlement["economy"], body=adjBodyName, sc_dist=pretty_sc_dist))                
             else:
-                details.append(_(u"{settlement}, {sc_dist}").format(settlement=settlement['name'], sc_dist=pretty_sc_dist))
+                details.append(_(u"{settlement} ({eco}), {sc_dist}").format(settlement=settlement['name'], eco=settlement["economy"], sc_dist=pretty_sc_dist))
             
             if 'controllingFaction' in settlement:
                 details.append(_(u"Faction: {faction} (GVT: {gvt}, ALG: {alg})").format(faction=settlement['controllingFaction']['name'], gvt=settlement['government'], alg=settlement['allegiance']))
@@ -3350,7 +3359,7 @@ class EDRClient(object):
             details.append(_(u"nothing found within [{}LY, {}LS], {}.").format(int(radius), int(sc), checked))
             if settloi_checker.hint:
                 details.append(settloi_checker.hint)
-        self.__notify(_(u"{} near {}").format(settloi_checker.name, reference), details, clear_before = True)
+        self.__notify(_(u"Settlement near {}").format(reference), details, clear_before = True)
 
     def __parking_found(self, reference, radius, rank, result):
         self.searching = False
