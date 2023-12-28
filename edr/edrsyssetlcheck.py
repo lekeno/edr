@@ -258,6 +258,8 @@ class EDRSettlementCheckerFactory(object):
 
 
     @staticmethod
-    def get_checker(settlement):
+    def get_checker(settlement, override_sc_distance):
         csettlement = settlement.lower()
-        return EDRSettlementCheckerFactory.SETTLEMENTS_LUT.get(csettlement, EDRAnarchyOdySettlementCheck)()
+        checker = EDRSettlementCheckerFactory.SETTLEMENTS_LUT.get(csettlement, EDRAnarchyOdySettlementCheck)()
+        checker.max_sc_distance = override_sc_distance
+        return checker
