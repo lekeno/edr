@@ -216,10 +216,7 @@ def handle_carrier_events(ed_player, entry):
     elif entry["event"] == "CarrierDockingPermission":
         ed_player.fleet_carrier.update_docking_permissions(entry)
     elif entry["event"] == "CarrierJump":
-        EDR_CLIENT.edrfssinsights.reset()
-        EDR_CLIENT.edrfssinsights.update_system(entry.get("SystemAddress", None), entry["StarSystem"])
-        EDR_CLIENT.update_star_system_if_obsolete(entry["StarSystem"], entry.get("SystemAddress", None))
-        ed_player.fleet_carrier.update_from_jump_if_relevant(entry)
+        EDR_CLIENT.fc_jumped(entry)
     elif entry["event"] == "CarrierTradeOrder":
         EDR_CLIENT.carrier_trade(entry)
     elif entry["event"] == "CarrierCrewServices":
@@ -326,9 +323,8 @@ def handle_change_events(ed_player, entry):
         ed_player.location.allegiance = entry.get("SystemAllegiance", None)
         if "StarSystem" in entry:
             EDR_CLIENT.update_star_system_if_obsolete(entry["StarSystem"], entry.get("SystemAddress", None))
-        EDR_CLIENT.edrfssinsights.update_system(entry.get("SystemAddress", None), entry.get("StarSystem", None))
+        EDR_CLIENT.process_location_event(entry)
         outcome["reason"] = "Location event"
-        EDR_CLIENT.check_system(entry["StarSystem"], may_create=True, coords=entry.get("StarPos", None))
 
     if entry["event"] in ["Undocked", "Docked", "DockingCancelled", "DockingDenied",
                           "DockingGranted", "DockingRequested", "DockingTimeout"]:

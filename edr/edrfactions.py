@@ -59,24 +59,30 @@ class EDRFaction(object):
         self.allegiance = info.get("Allegiance", "").lower()
         self.influence = info.get("Influence", 0.0)
         self.state = EDRFaction._simplified_state(info.get("FactionState", "None"))
+        
         self.active_states = set([self.state])
         active_states = info.get("ActiveStates", []) 
         for state in active_states:
             self.active_states.add(EDRFaction._simplified_state(state.get("State", "None")))
+        
         self.pending_states = set()
         pending_states = info.get("PendingStates", []) 
         for state in pending_states:
             self.pending_states.add(EDRFaction._simplified_state(state.get("State", "None")))
             self.pending_states = set()
+        
+        self.recovering_states = set()
         recovering_states = info.get("RecoveringStates", []) 
         for state in recovering_states:
             self.recovering_states.add(EDRFaction._simplified_state(state.get("State", "None")))
+        
         self.governemnt = info.get("Government", None)
         self.isPlayer = None
         edt = EDTime()
         if "timestamp" in info:
             edt.from_journal_timestamp(info["timestamp"])
         self.lastUpdated = edt.as_py_epoch()
+        # TODO happiness
 
     def chance_of_rare_mats(self):
         good_states = self.active_states.intersection(set(['outbreak', 'war', 'boom', 'civil unrest', 'war', 'civil war', 'famine', 'election', 'none']))
@@ -278,21 +284,26 @@ class EDRFactionEDSM(EDRFaction):
         self.allegiance = info_edsm.get("allegiance", "").lower()
         self.influence = info_edsm.get("influence", 0.0)
         self.state = EDRFaction._simplified_state(info_edsm.get("state", "None"))
+        
         self.active_states = set([self.state])
         active_states = info_edsm.get("activeStates", []) 
         for state in active_states:
             self.active_states.add(EDRFaction._simplified_state(state.get("state", "None")))
+        
         self.pending_states = set()
         pending_states = info_edsm.get("pendingStates", []) 
         for state in pending_states:
             self.pending_states.add(EDRFaction._simplified_state(state.get("state", "None")))
+        
         self.recovering_states = set()
         recovering_states = info_edsm.get("recoveringStates", []) 
         for state in recovering_states:
             self.recovering_states.add(EDRFaction._simplified_state(state.get("state", "None")))
+        
         self.governemnt = info_edsm.get("government", None)
         self.isPlayer = info_edsm.get("isPlayer", None)
         self.lastUpdated = info_edsm.get("lastUpdate", EDTime.py_epoch_now())
+        # TODO happiness
 
 class EDRFactions(object):
     EDR_FACTIONS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edr_factions.v1.p')
@@ -342,6 +353,38 @@ class EDRFactions(object):
             factions_in_system[faction["Name"].lower()] = EDRFaction(faction)
         self.factions_cache.set(star_system.lower(), factions_in_system)
 
+    def process_jump_event(self, entry):
+        if not (entry and entry.get("event", "") == "FSDJump"):
+            return
+        
+        factions = entry.get("Factions", [])
+        star_system = entry.get("StarSystem", "")
+        if not (factions and star_system):
+            return
+
+        self.process(factions, star_system)
+
+    def process_fc_jump_event(self, entry):
+        if not (entry and entry.get("event", "") == "CarrierJump"):
+            return
+        
+        factions = entry.get("Factions", [])
+        star_system = entry.get("StarSystem", "")
+        if not (factions and star_system):
+            return
+
+        self.process(factions, star_system)
+
+    def process_location_event(self, entry):
+        if not (entry and entry.get("event", "") == "Location"):
+            return
+        
+        factions = entry.get("Factions", [])
+        star_system = entry.get("StarSystem", "")
+        if not (factions and star_system):
+            return
+
+        self.process(factions, star_system)
     
     def process_approach_event(self, entry, star_system):
         self.__process_station_settlement_event(entry, star_system)
@@ -374,11 +417,15 @@ class EDRFactions(object):
         }
 
         name = entry["StationFaction"].get("Name", "")
+        state = entry["StationFaction"].get("FactionState", "None")
+        
         factions_in_system = self.get_all(star_system)
         if factions_in_system and name.lower() in factions_in_system:
             local_faction = factions_in_system[name.lower()]
             local_faction.government = GVT_LUT.get(entry["StationGovernment"], entry["StationGovernment"])
             local_faction.allegiance = entry["StationAllegiance"]
+            local_faction.state = state
+            local_faction.active_states.add(self.state)
             edt = EDTime()
             edt.from_journal_timestamp(entry["timestamp"])
             local_faction.lastUpdated = edt.as_py_epoch()

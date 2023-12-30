@@ -612,6 +612,7 @@ class EDRClient(object):
         if fsdjump_event["SystemSecurity"]:
             self.player.location_security(fsdjump_event["SystemSecurity"])
         self.edrsystems.system_id(fsdjump_event['StarSystem'], may_create=True, coords=fsdjump_event.get("StarPos", None))
+        self.edrfactions.process_jump_event(fsdjump_event)
         facts = self.edrresourcefinder.assess_jump(fsdjump_event, self.player.inventory)
         header = _('Rare materials in {} (USS-HGE/EE, Mission Rewards)'.format(fsdjump_event['StarSystem']))
         if not facts:
@@ -650,6 +651,14 @@ class EDRClient(object):
     def docked_at(self, docking_entry):
         self.player.docked_at(docking_entry)
         self.edrfactions.process_docking_event(docking_entry, self.player.star_system)
+
+    def process_location_event(self, entry):
+        if not (entry and entry.get("event", "") == "Location"):
+            return
+
+        self.edrfssinsights.update_system(entry.get("SystemAddress", None), entry.get("StarSystem", None))
+        self.edrfactions.process_location_event(entry)
+        self.check_system(entry["StarSystem"], may_create=True, coords=entry.get("StarPos", None))
         
     def noteworthy_about_body(self, star_system, body_name):
         route_facts = self.player.routenav.noteworthy_about_body(star_system, body_name)
@@ -2366,6 +2375,13 @@ class EDRClient(object):
         
         return False
 
+    def fc_jumped(self, entry):
+        self.edrfssinsights.reset()
+        self.edrfssinsights.update_system(entry.get("SystemAddress", None), entry["StarSystem"])
+        self.update_star_system_if_obsolete(entry["StarSystem"], entry.get("SystemAddress", None))
+        self.player.fleet_carrier.update_from_jump_if_relevant(entry)
+        self.edrfactions.process_fc_jump_event(entry)
+
     def fc_materials(self, entry):
         if self.player.last_station == None or self.player.last_station.type != "FleetCarrier":
             self.player.last_station = EDRFleetCarrier()
@@ -3128,6 +3144,10 @@ class EDRClient(object):
                     market["owner"] = self.player.name
                     if self.server.report_fc_market(fc_id, market):
                         details.append(_("Access: all => Market info sent."))
+                    else:
+                        EDRLOG.log("Failed to report FC market update.", "DEBUG")
+                else:
+                    EDRLOG.log("Skip reporting FC market given that the FC is not open to all.", "DEBUG")
                 sale_orders = self.player.fleet_carrier.sale_orders_within(timeframe)
                 purchase_orders = self.player.fleet_carrier.purchase_orders_within(timeframe)
                 summary = self.__summarize_fc_market(sale_orders, purchase_orders)
@@ -3301,7 +3321,7 @@ class EDRClient(object):
             pretty_sc_dist = _(u"{dist}LS").format(dist=int(sc_distance))
             details.append(_(u"{system}, {dist}").format(system=result['name'], dist=pretty_dist))
             details.append(_(u"{station} ({type}), {sc_dist}").format(station=result['station']['name'], type=result['station']['type'], sc_dist=pretty_sc_dist))
-            details.append(_(u"as of {date} {ci}").format(date=result['station']['updateTime']['information'],ci=result.get('comment', '')))
+            details.append(_(u"as of {date} {ci}").format(date=result['station']['updateTime']['information'],ci=result['station'].get('comment', '')))
             self.status = u"{item}: {system}, {dist} - {station} ({type}), {sc_dist}".format(item=soi_checker.name, system=result['name'], dist=pretty_dist, station=result['station']['name'], type=result['station']['type'], sc_dist=pretty_sc_dist)
             copy(result["name"])
         else:
@@ -3342,6 +3362,7 @@ class EDRClient(object):
         self.searching = False
         details = []
         if result and 'settlement' in result:
+            print(result)
             settlement = result['settlement']
             sc_distance = settlement['distanceToArrival']
             distance = result['distance']
@@ -3356,8 +3377,8 @@ class EDRClient(object):
                 details.append(_(u"{settlement} ({eco}), {sc_dist}").format(settlement=settlement['name'], eco=settlement["economy"], sc_dist=pretty_sc_dist))
             
             if 'controllingFaction' in settlement:
-                details.append(_(u"Faction: {faction} (GVT: {gvt}, ALG: {alg})").format(faction=settlement['controllingFaction']['name'], gvt=settlement['government'], alg=settlement['allegiance']))
-            details.append(_(u"as of {date} {ci}").format(date=settlement['updateTime']['information'],ci=result.get('comment', '')))
+                details.append(_(u"{faction} (GVT: {gvt}, ALG: {alg})").format(faction=settlement['controllingFaction']['name'], gvt=settlement['government'], alg=settlement['allegiance']))
+            details.append(_(u"as of {date} {ci}").format(date=settlement['updateTime']['information'],ci=settlement.get('comment', '')))
             self.status = u"{item}: {system}, {dist} - {settlement}, {sc_dist}".format(item=settloi_checker.name, system=result['name'], dist=pretty_dist, settlement=settlement['name'], sc_dist=pretty_sc_dist)
             copy(result["name"])
         else:

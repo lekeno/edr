@@ -124,12 +124,12 @@ class EDRSettlementFinder(threading.Thread):
         candidate = self.__settlement_in_system(system)
         if candidate:
             check_sc_distance = candidate['distanceToArrival'] <= self.sc_distance
-            ambiguous = False
+            ambiguous = self.checker.is_ambiguous(candidate)
             EDRLOG.log(u"System {} has a candidate {}: ambiguous {}, sc_distance {}".format(system['name'], candidate['name'], ambiguous, check_sc_distance), "DEBUG")
             if check_sc_distance and not ambiguous:
                 trialed = system
                 trialed['settlement'] = candidate
-                closest = self.edr_systems.closest_station(trialed, candidates['prime'])
+                closest = self.edr_systems.closest_settlement(trialed, candidates['prime'])
                 EDRLOG.log(u"Prime Trial {}, closest {}".format(system['name'], closest['name']), "DEBUG")
                 candidates['prime'] = closest
             else:
@@ -137,7 +137,7 @@ class EDRSettlementFinder(threading.Thread):
                     candidate['comment'] = _(u"[Confidence: LOW]")
                 trialed = system
                 trialed['settlement'] = candidate
-                closest = self.edr_systems.closest_station(trialed, candidates['alt'])
+                closest = self.edr_systems.closest_settlement(trialed, candidates['alt'])
                 EDRLOG.log(u"Trial {}, closest {}".format(system['name'], closest['name']), "DEBUG")
                 candidates['alt'] = closest
         return candidates
@@ -184,7 +184,7 @@ class EDRSettlementFinder(threading.Thread):
             if self.include_states and faction and faction.get("state", "None") not in self.include_states:
                 EDRLOG.log("Skipping {} due to state not matching any of the the required state for the controlling faction: {}".format(settlement, faction), "DEBUG")
                 continue
-
+            
             if overall == None:
                 overall = settlement
             elif settlement['distanceToArrival'] < overall['distanceToArrival']:

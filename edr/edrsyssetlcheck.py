@@ -1,5 +1,6 @@
 from edri18n import _, _c, _edr
 import edrlog
+from edtime import EDTime
 
 EDRLOG = edrlog.EDRLog()
 
@@ -48,6 +49,27 @@ class EDRSystemSettlementCheck(object):
 
         EDRLOG.log("Dist: {} vs {}".format(settlement['distanceToArrival'], self.max_sc_distance), "DEBUG")
         return settlement['distanceToArrival'] < self.max_sc_distance
+    
+    def is_ambiguous(self, settlement):
+        
+        timestamps = settlement.get("updateTime", None)
+        if not timestamps:
+            print("no timestamp in settlement")
+            return True
+        
+        reference = timestamps.get("information", None)
+        if not reference:
+            print("no info timestamp in settlement")
+            return True
+        
+        limit = EDTime()
+        limit.rewind(60*60*24*5)
+        info = EDTime()
+        info.from_edsm_timestamp(reference)
+        too_old = info <= limit
+        if too_old:
+            print("too old: {}".format(settlement))
+        return too_old
     
 
 class EDRSystemOdySettlementCheck(EDRSystemSettlementCheck):

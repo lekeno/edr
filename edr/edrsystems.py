@@ -2665,6 +2665,9 @@ class EDRSystems(object):
     def closest_planet(self, sysAndPla1, sysAndPla2, override_sc_distance = None):
         return self.__closest_destination("planet", sysAndPla1, sysAndPla2, override_sc_distance)
     
+    def closest_settlement(self, sysAndPla1, sysAndPla2, override_sc_distance = None):
+        return self.__closest_destination("settlement", sysAndPla1, sysAndPla2, override_sc_distance)
+    
     def __closest_destination(self, key, sysAndSta1, sysAndSta2, override_sc_distance = None):
         if not sysAndSta1:
             return sysAndSta2

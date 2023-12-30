@@ -559,7 +559,7 @@ class InGameMsg(object):
         details.append(_(u"I.Factor:{}   {} Broker:{}").format(a,t,b))
         if "controllingFaction" in station:
             faction = station["controllingFaction"]
-            details.append(_(u"Faction: {name} ({allegiance}, {government})").format(name=faction.get("name", "???"), allegiance=station.get("allegiance", "???"), government=station.get("government", "???")))
+            details.append(_(u"{factionName} ({allegiance}, {government})").format(factionName=faction.get("name", "???"), allegiance=station.get("allegiance", "???"), government=station.get("government", "???")))
         
         details.append(_(u"as of {date}").format(date=station['updateTime']['information']))
         return details
@@ -584,8 +584,8 @@ class InGameMsg(object):
         if "StationFaction" in entry:
             factionName = entry["StationFaction"].get("Name", "???")
             qualifiers = []
-            if "State" in entry["StationFaction"]:
-                qualifiers.append(entry["StationFaction"]["State"])
+            if "FactionState" in entry["StationFaction"]:
+                qualifiers.append(entry["StationFaction"]["FactionState"])
                 
             if "StationGovernment_Localised" in entry:
                 qualifiers.append(entry["StationGovernment_Localised"])

@@ -845,7 +845,7 @@ class EDRResourceFinder(object):
         security = fsdjump_event.get('SystemSecurity', '')
         population = fsdjump_event.get('Population', 0)
         factions = fsdjump_event.get('Factions', [])
-        self.edr_factions.process(factions, fsdjump_event["StarSystem"])
+        
         return self.edr_factions.summarize_yields(fsdjump_event["StarSystem"], security, population, inventory)
         
     def assess_signal(self, fsssignal_event, location, inventory):
