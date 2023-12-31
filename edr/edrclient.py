@@ -3505,7 +3505,7 @@ class EDRClient(object):
         cresource = self.edrresourcefinder.canonical_name(thing)
         if EDRGenusCheckerFactory.recognized_genus(thing):
             self.search_genus_near(thing, star_system)
-        elif EDRSettlementCheckerFactory.recognized_settlement(thing):
+        elif EDRSettlementCheckerFactory.recognized_settlement_ex(thing):
             self.search_settlement_near(thing, star_system)
         elif cresource:
             self.search_resource(thing, star_system)

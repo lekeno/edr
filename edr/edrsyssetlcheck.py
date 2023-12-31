@@ -29,7 +29,7 @@ class EDRSystemSettlementCheck(object):
         
         return system['distance'] <= self.max_distance
 
-    def check_settlement(self, settlement):
+    def check_settlement(self, settlement, system_name=None):
         EDRLOG.log("Checking SysSettl: {}".format(settlement['name']), "DEBUG")
         if not settlement:
             EDRLOG.log("Failed SysSettlCheck: nothing")
@@ -77,7 +77,7 @@ class EDRSystemOdySettlementCheck(EDRSystemSettlementCheck):
     def __init__(self):
         super(EDRSystemOdySettlementCheck, self).__init__()
 
-    def check_settlement(self, settlement):
+    def check_settlement(self, settlement, system_name=None):
         EDRLOG.log("Checking SysOdySettl: {}".format(settlement['name']), "DEBUG")
         backup = self.settlements_counter
         if not super(EDRSystemOdySettlementCheck, self).check_settlement(settlement):
@@ -91,6 +91,53 @@ class EDRSystemOdySettlementCheck(EDRSystemSettlementCheck):
     
         return True
     
+class EDROdySettlementCheck(EDRSystemOdySettlementCheck):
+
+    def __init__(self, edrsystems):
+        super().__init__()
+        self.economies = set()
+        self.governments = set()
+        self.bgs_states = set()
+        self.allegiances = set()
+        self.edrsystems = edrsystems
+
+    def check_settlement(self, settlement, system_name=None):
+        EDRLOG.log("Checking OdySettlEco: {}".format(settlement['name']), "DEBUG")
+        if not super().check_settlement(settlement):
+            EDRLOG.log("Failed settlementcheck", "DEBUG")
+            return False
+
+        if self.economies:
+            eco = settlement.get('economy', None)
+            EDRLOG.log("Eco: {}".format(eco), "DEBUG")
+            if not eco or eco.lower() not in self.economies:
+                EDRLOG.log("Eco not matching any required state for the controlling faction: {} with {}".format(settlement, eco), "DEBUG")
+                return False
+    
+        if self.governments:
+            gvt = settlement.get('government', None)
+            EDRLOG.log("GVT: {}".format(gvt), "DEBUG")
+            if not gvt or gvt.lower() not in self.governments:
+                EDRLOG.log("Gvt not matching any required state for the controlling faction: {} with {}".format(settlement, gvt), "DEBUG")
+                return False
+                
+        
+        if self.allegiances:
+            alg = settlement.get('allegiance', None)
+            EDRLOG.log("ALG: {}".format(alg), "DEBUG")
+            if not alg or alg.lower() not in self.allegiances:
+                EDRLOG.log("Alg not matching any required state for the controlling faction: {} with {}".format(settlement, alg), "DEBUG")
+                return False
+        
+        factionIDName = settlement.get("controllingFaction", { "id": -1, "name": ""})
+        factionName = factionIDName.get("name", "")
+        faction = self.edrsystems.faction_in_system(factionName, system_name)
+        if self.bgs_states:
+            if not faction or faction.get("state", "None").lower() not in self.bgs_states:
+                EDRLOG.log("BGS not matching any required state for the controlling faction: {} with {}".format(settlement, faction), "DEBUG")
+                return False
+        
+        return True
     
 class EDRSettlementEcoCheck(EDRSystemSettlementCheck):
 
@@ -100,7 +147,7 @@ class EDRSettlementEcoCheck(EDRSystemSettlementCheck):
         self.name = economy
         self.hint = None
 
-    def check_settlement(self, settlement):
+    def check_settlement(self, settlement, system_name=None):
         EDRLOG.log("Checking SettlEco: {}".format(settlement['name']), "DEBUG")
         if not super(EDRSettlementEcoCheck, self).check_settlement(settlement):
             EDRLOG.log("Failed settlementcheck", "DEBUG")
@@ -123,7 +170,7 @@ class EDROdySettlementEcoCheck(EDRSystemOdySettlementCheck):
         super(EDROdySettlementEcoCheck, self).__init__()
         self.economy = economy
 
-    def check_settlement(self, settlement):
+    def check_settlement(self, settlement, system_name=None):
         EDRLOG.log("Checking OdySettlEco: {}".format(settlement['name']), "DEBUG")
         if not super(EDROdySettlementEcoCheck, self).check_settlement(settlement):
             EDRLOG.log("Failed settlementcheck", "DEBUG")
@@ -148,7 +195,7 @@ class EDRAnarchyOdySettlementCheck(EDROdySettlementEcoCheck):
         self.name = _("Anarchy settlement")
         self.hint = None
 
-    def check_settlement(self, settlement):
+    def check_settlement(self, settlement, system_name=None):
         EDRLOG.log("Checking AnarcOdy: {}".format(settlement['name']), "DEBUG")
         if not super(EDRAnarchyOdySettlementCheck, self).check_settlement(settlement):
             EDRLOG.log("Failed OdySettlementCheck", "DEBUG")
@@ -266,10 +313,61 @@ class EDRSettlementCheckerFactory(object):
         "high tech": EDRHighTechOdySettlementCheck,
     }
 
+    GVT_LUT = {
+        _("anarchy"): "anarchy",
+        _("anar"): "anarchy",
+        _("democracy"): "democracy",
+        _("demo"): "democracy",
+        # TODO is that it?
+    }
+
+    ALG_LUT = {
+        _("alliance"): "alliance",
+        _("federal"): "federal",
+        _("indenpendent"): "independent",
+        _("imperial"): "imperial",
+        _("thargoid"): "thargoid",
+        # TODO is that it?
+    }
+
+    BGS_LUT = {
+        _("bust"): "bust",
+        _("boom"): "boom",
+    }
+
+    ECO_LUT = {
+        _("agriculture"): "agriculture",
+        _("agri"): "agriculture",
+        _("extraction"): "extraction",
+        _("extr"): "extraction",
+        _("industrial"): "industrial",
+        _("indu"): "industrial",
+        _("military"): "military",
+        _("mili"): "military",
+        _("tourism"): "tourism",
+        _("tour"): "tourism",
+        _("hightech"): "hightech",
+        _("high"): "hightech",
+    }
+
     @staticmethod
     def recognized_settlement(settlement):
         csettlement = settlement.lower()
         return csettlement in EDRSettlementCheckerFactory.SETTLEMENTS_LUT
+    
+    @staticmethod
+    def recognized_settlement_ex(settlement_conditions):
+        cconditions = settlement_conditions.lower()
+        all_supported_conditions = {
+            **EDRSettlementCheckerFactory.GVT_LUT,
+            **EDRSettlementCheckerFactory.ALG_LUT,
+            **EDRSettlementCheckerFactory.ECO_LUT,
+            **EDRSettlementCheckerFactory.BGS_LUT
+        }
+        for condition in cconditions:
+            if condition in all_supported_conditions:
+                return True
+        return False
 
     @staticmethod
     def recognized_candidates(settlement):
@@ -284,4 +382,41 @@ class EDRSettlementCheckerFactory(object):
         csettlement = settlement.lower()
         checker = EDRSettlementCheckerFactory.SETTLEMENTS_LUT.get(csettlement, EDRAnarchyOdySettlementCheck)()
         checker.max_sc_distance = override_sc_distance
+        return checker
+    
+
+    @staticmethod
+    def get_checker_ex(words_salad, override_sc_distance):
+        words_salad = words_salad.lower()
+        words = words_salad.split(" ")
+        
+        checker = EDROdySettlementCheck()
+        checker.max_sc_distance = override_sc_distance
+
+        irrelevant_salad = True
+        for word in words:
+            if word in EDRSettlementCheckerFactory.GVT_LUT:
+                checker.governments.add(EDRSettlementCheckerFactory.GVT_LUT(word))
+                irrelevant_salad = False
+                continue
+            
+            if word in EDRSettlementCheckerFactory.ALG_LUT:
+                checker.allegiances.add(EDRSettlementCheckerFactory.ALG_LUT(word))
+                irrelevant_salad = False
+                continue
+
+            if word in EDRSettlementCheckerFactory.BGS_LUT:
+                checker.bgs_states.add(EDRSettlementCheckerFactory.BGS_LUT(word))
+                irrelevant_salad = False
+                continue
+
+            if word in EDRSettlementCheckerFactory.ECO_LUT:
+                checker.economies.add(EDRSettlementCheckerFactory.ECO_LUT(word))
+                irrelevant_salad = False
+                continue
+
+            EDRLOG("unknown qualifier: {}".format(word))
+
+        if irrelevant_salad:
+            return None
         return checker

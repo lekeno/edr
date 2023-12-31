@@ -170,7 +170,7 @@ class EDRSettlementFinder(threading.Thread):
         overall = None
         for settlement in settlements:
             EDRLOG.log(settlement, "DEBUG")
-            if not self.checker.check_settlement(settlement):
+            if not self.checker.check_settlement(settlement, system_name):
                 continue
             
             EDRLOG.log("match", "DEBUG")
