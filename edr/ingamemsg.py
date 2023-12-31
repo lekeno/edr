@@ -651,7 +651,7 @@ class InGameMsg(object):
         details.append(_(u"as of {date}").format(date=fc['updateTime']['information']))
         return details
 
-    def docking(self, system, station, pad):
+    def docking(self, system, station, pad, faction):
         if not self.cfg["docking"].get("enabled", None):
             return
 
@@ -667,7 +667,7 @@ class InGameMsg(object):
         station_type = (station.get("type","N/A") or "N/A").lower()
 
         header = u"{} ({})".format(station["name"], economy)
-        details = self.describe_station(station)
+        details = self.describe_station(station, faction)
         self.__msg_header("docking", header)
         self.__msg_body("docking", details)
 

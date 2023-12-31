@@ -932,7 +932,13 @@ class EDRClient(object):
             return
         if entry["event"] == "DockingGranted":
             station = self.edrsystems.station(self.player.star_system, entry["StationName"], entry["StationType"])
-            summary = self.IN_GAME_MSG.docking(self.player.star_system, station, entry["LandingPad"])
+            faction = None
+            if "controllingFaction" in station:
+                controllingFaction = station["controllingFaction"]
+                factionName = controllingFaction.get("Name", "???")
+                faction = self.edrfactions.get(factionName, self.player.star_system)
+        
+            summary = self.IN_GAME_MSG.docking(self.player.star_system, station, entry["LandingPad"], faction)
             if summary:
                 self.ui.notify(summary["header"], summary["body"])
                 if self.audio_feedback:
@@ -3386,7 +3392,7 @@ class EDRClient(object):
                 details.append(_(u"{settlement} ({eco}), {sc_dist}").format(settlement=settlement['name'], eco=settlement["economy"], sc_dist=pretty_sc_dist))
             
             if 'controllingFaction' in settlement:
-                details.append(_(u"{faction} (GVT: {gvt}, ALG: {alg})").format(faction=settlement['controllingFaction']['name'], gvt=settlement['government'], alg=settlement['allegiance']))
+                details.append(_(u"{faction} ({gvt}, {alg})").format(faction=settlement['controllingFaction']['name'], gvt=settlement['government'], alg=settlement['allegiance'])) # TODO add state?
             details.append(_(u"as of {date} {ci}").format(date=settlement['updateTime']['information'],ci=settlement.get('comment', '')))
             self.status = u"{item}: {system}, {dist} - {settlement}, {sc_dist}".format(item=settloi_checker.name, system=result['name'], dist=pretty_dist, settlement=settlement['name'], sc_dist=pretty_sc_dist)
             copy(result["name"])

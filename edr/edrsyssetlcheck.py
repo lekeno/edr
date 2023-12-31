@@ -316,38 +316,89 @@ class EDRSettlementCheckerFactory(object):
     GVT_LUT = {
         _("anarchy"): "anarchy",
         _("anar"): "anarchy",
+        _("colony"): "colony",
+        _("communism"): "communism",
+        _("confederacy"): "confederacy",
+        _("cooperative"): "cooperative",
+        _("corporate"): "corporate",
         _("democracy"): "democracy",
         _("demo"): "democracy",
-        # TODO is that it?
+        _("dictatorship"): "dictatorship",
+        _("feudal"): "feudal",
+        _("patronage"): "patronage",
+        _("prison"): "prison",
+        _("prison colony"): "prison colony",
+        _("theocracy"): "theocracy",
+        _("engineer"): "engineer",
+        _("privateownership"): "privateownership",
     }
 
     ALG_LUT = {
+        _("independent"): "independent",
         _("alliance"): "alliance",
         _("federal"): "federal",
-        _("indenpendent"): "independent",
         _("imperial"): "imperial",
-        _("thargoid"): "thargoid",
-        # TODO is that it?
+        _("pirate"): "pirate",
+        _("pilotsfederation"): "pilots federation",
+        _("thargoids"): "thargoids",
+        _("guardians"): "guardians",
     }
 
     BGS_LUT = {
+        _("blight"): "blight",
         _("bust"): "bust",
         _("boom"): "boom",
+        _("civilliberty"): "civil liberty",
+        _("civilunrest"): "civil unrest",
+        _("civilwar"): "civil war",
+        _("coldwar"): "cold ward",
+        _("colonisation"): "colonisation",
+        _("drought"): "drought",
+        _("elections"): "elections",
+        _("expansion"): "expansion",
+        _("famine"): "famine",
+        _("historicevent"): "historic event",
+        _("incursion"): "incursion",
+        _("infested"): "infested",
+        _("infrastructurefailure"): "infrastructure failure",
+        _("investment"): "investment",
+        _("lockdown"): "lockdown",
+        _("natural disaster"): "natural disaster",
+        _("outbreak"): "outbreak",
+        _("pirateattack"): "pirate attack",
+        _("publicholiday"): "public holiday",
+        _("retreat"): "retreat",
+        _("revolution"): "revolution",
+        _("technologicalleap"): "technological leap",
+        _("terroristattack"): "terrorist attack",
+        _("tradewar"): "trade war",
+        _("war"): "war",
     }
 
     ECO_LUT = {
         _("agriculture"): "agriculture",
         _("agri"): "agriculture",
+        _("colony"): "colony",
+        _("damaged"): "damaged",
+        _("engineer"): "engineer",
         _("extraction"): "extraction",
         _("extr"): "extraction",
+        _("hightech"): "hightech",
+        _("high"): "hightech",
         _("industrial"): "industrial",
         _("indu"): "industrial",
         _("military"): "military",
         _("mili"): "military",
+        _("prison"): "prison",
+        _("privateenterprise"): "private enterprise",
+        _("refinery"): "refinery",
+        _("repair"): "repair",
+        _("rescue"): "rescue",
+        _("service"): "service",
+        _("terraforming"): "terraforming",
         _("tourism"): "tourism",
         _("tour"): "tourism",
-        _("hightech"): "hightech",
-        _("high"): "hightech",
+        _("underattack"): "under attack",
     }
 
     @staticmethod
@@ -357,14 +408,17 @@ class EDRSettlementCheckerFactory(object):
     
     @staticmethod
     def recognized_settlement_ex(settlement_conditions):
-        cconditions = settlement_conditions.lower()
+        cconditions = settlement_conditions.lower().strip().split(",")
+        print(cconditions)
         all_supported_conditions = {
             **EDRSettlementCheckerFactory.GVT_LUT,
             **EDRSettlementCheckerFactory.ALG_LUT,
             **EDRSettlementCheckerFactory.ECO_LUT,
             **EDRSettlementCheckerFactory.BGS_LUT
         }
+        print(all_supported_conditions)
         for condition in cconditions:
+            print(condition)
             if condition in all_supported_conditions:
                 return True
         return False
@@ -379,43 +433,44 @@ class EDRSettlementCheckerFactory(object):
 
     @staticmethod
     def get_checker(settlement, override_sc_distance):
-        csettlement = settlement.lower()
+        csettlement = settlement.lower().strip()
         checker = EDRSettlementCheckerFactory.SETTLEMENTS_LUT.get(csettlement, EDRAnarchyOdySettlementCheck)()
         checker.max_sc_distance = override_sc_distance
         return checker
     
 
     @staticmethod
-    def get_checker_ex(words_salad, override_sc_distance):
+    def get_checker_ex(words_salad, override_sc_distance, edrsystems):
         words_salad = words_salad.lower()
-        words = words_salad.split(" ")
+
+        words = words_salad.split(",")
         
-        checker = EDROdySettlementCheck()
+        checker = EDROdySettlementCheck(edrsystems)
         checker.max_sc_distance = override_sc_distance
 
         irrelevant_salad = True
         for word in words:
             if word in EDRSettlementCheckerFactory.GVT_LUT:
-                checker.governments.add(EDRSettlementCheckerFactory.GVT_LUT(word))
+                checker.governments.add(EDRSettlementCheckerFactory.GVT_LUT[word])
                 irrelevant_salad = False
                 continue
             
             if word in EDRSettlementCheckerFactory.ALG_LUT:
-                checker.allegiances.add(EDRSettlementCheckerFactory.ALG_LUT(word))
+                checker.allegiances.add(EDRSettlementCheckerFactory.ALG_LUT[word])
                 irrelevant_salad = False
                 continue
 
             if word in EDRSettlementCheckerFactory.BGS_LUT:
-                checker.bgs_states.add(EDRSettlementCheckerFactory.BGS_LUT(word))
+                checker.bgs_states.add(EDRSettlementCheckerFactory.BGS_LUT[word])
                 irrelevant_salad = False
                 continue
 
             if word in EDRSettlementCheckerFactory.ECO_LUT:
-                checker.economies.add(EDRSettlementCheckerFactory.ECO_LUT(word))
+                checker.economies.add(EDRSettlementCheckerFactory.ECO_LUT[word])
                 irrelevant_salad = False
                 continue
 
-            EDRLOG("unknown qualifier: {}".format(word))
+            EDRLOG.log("unknown qualifier: {}".format(word), "DEBUG")
 
         if irrelevant_salad:
             return None
