@@ -601,7 +601,14 @@ class EDRSystems(object):
             
             info = ""
             info += _("Sta: {}  ").format(the_system["information"]["factionState"]) if the_system["information"].get("factionState", None) else ""
-            info += _("Fac: {}  ").format(the_system["information"]["faction"]) if the_system["information"].get("faction", None) else ""
+            factionName = the_system["information"].get("faction", None)
+            if factionName:
+                faction = self.edrfactions.get(factionName, name)
+                if faction and faction.isPlayer:
+                    info += _("Fac: {}  PMF: {}").format(factionName, u"●" if faction.isPlayer else u"◌")
+                else:
+                    info += _("Fac: {}  ").format(factionName)
+            
             if info:
                 details.append(info)
 

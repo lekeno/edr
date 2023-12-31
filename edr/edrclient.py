@@ -645,7 +645,10 @@ class EDRClient(object):
         name = entry.get("Name", _("Settlement"))
         economy = entry.get("StationEconomy_Localised", "ECO?")
         header = u"{settlementName} ({settlementEconomy})".format(settlementName=name, settlementEconomy=economy)
-        details = self.IN_GAME_MSG.describe_ed_settlement(entry)
+        
+        factionName = entry["StationFaction"].get("Name", "???")
+        faction = self.edrfactions.get(factionName, self.player.star_system)
+        details = self.IN_GAME_MSG.describe_ed_settlement(entry, faction)
         self.__notify(header, details, clear_before=True)
 
     def docked_at(self, docking_entry):
@@ -3000,7 +3003,13 @@ class EDRClient(object):
                 
         economy = u"{}/{}".format(station["economy"], station["secondEconomy"]) if station["secondEconomy"] else station["economy"]
         header = u"{} ({})".format(station["name"], economy)
-        details = self.IN_GAME_MSG.describe_station(station)
+
+        faction = None
+        if "controllingFaction" in station:
+            controllingFaction = station["controllingFaction"]
+            factionName = controllingFaction.get("Name", "???")
+            faction = self.edrfactions.get(factionName, self.player.star_system)
+        details = self.IN_GAME_MSG.describe_station(station, faction)
         self.__notify(header, details, clear_before=True)
         return True
 
