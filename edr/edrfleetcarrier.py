@@ -502,6 +502,8 @@ class EDRFleetCarrierBar(object):
 
         items = entry.get("Items", [])
         self.timestamp = edtime.EDTime()
+        if entry.get("timestamp", None):
+            self.timestamp.from_journal_timestamp(entry["timestamp"])
         self.updated = True
         for item in items:
             listing = item
