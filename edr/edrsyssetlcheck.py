@@ -103,7 +103,9 @@ class EDROdySettlementCheck(EDRSystemOdySettlementCheck):
 
         self.bgs_states = set()
         self.exclude_bgs_states = set()
-        self.exclude_bgs_states.add("war") # TODO other states to exclude?
+        # by default, exclude states linked to conflict zones
+        self.exclude_bgs_states.add("war")
+        self.exclude_bgs_states.add("civil war")
 
         self.allegiances = set()
         self.exclude_allegiances = set()
