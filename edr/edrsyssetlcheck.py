@@ -96,9 +96,18 @@ class EDROdySettlementCheck(EDRSystemOdySettlementCheck):
     def __init__(self, edrsystems):
         super().__init__()
         self.economies = set()
+        self.exclude_economies = set()
+        
         self.governments = set()
+        self.exclude_governments = set()
+
         self.bgs_states = set()
+        self.exclude_bgs_states = set()
+        self.exclude_bgs_states.add("war") # TODO other states to exclude?
+
         self.allegiances = set()
+        self.exclude_allegiances = set()
+
         self.edrsystems = edrsystems
 
     def check_settlement(self, settlement, system_name=None):
@@ -107,34 +116,54 @@ class EDROdySettlementCheck(EDRSystemOdySettlementCheck):
             EDRLOG.log("Failed settlementcheck", "DEBUG")
             return False
 
+        eco = settlement.get('economy', None)
+        EDRLOG.log("Eco: {}".format(eco), "DEBUG")
         if self.economies:
-            eco = settlement.get('economy', None)
-            EDRLOG.log("Eco: {}".format(eco), "DEBUG")
             if not eco or eco.lower() not in self.economies:
                 EDRLOG.log("Eco not matching any required state for the controlling faction: {} with {}".format(settlement, eco), "DEBUG")
                 return False
+            
+        if self.exclude_economies:
+            if not eco or eco.lower() in self.exclude_economies:
+                EDRLOG.log("Eco matching an exluded state for the controlling faction: {} with {}".format(settlement, eco), "DEBUG")
+                return False
     
+        gvt = settlement.get('government', None)
+        EDRLOG.log("GVT: {}".format(gvt), "DEBUG")
         if self.governments:
-            gvt = settlement.get('government', None)
-            EDRLOG.log("GVT: {}".format(gvt), "DEBUG")
             if not gvt or gvt.lower() not in self.governments:
                 EDRLOG.log("Gvt not matching any required state for the controlling faction: {} with {}".format(settlement, gvt), "DEBUG")
                 return False
+            
+        if self.exclude_governments:
+            if not gvt or gvt.lower() in self.exclude_governments:
+                EDRLOG.log("Gvt matching an excluded state for the controlling faction: {} with {}".format(settlement, gvt), "DEBUG")
+                return False
                 
-        
+        alg = settlement.get('allegiance', None)
+        EDRLOG.log("ALG: {}".format(alg), "DEBUG")
         if self.allegiances:
-            alg = settlement.get('allegiance', None)
-            EDRLOG.log("ALG: {}".format(alg), "DEBUG")
             if not alg or alg.lower() not in self.allegiances:
                 EDRLOG.log("Alg not matching any required state for the controlling faction: {} with {}".format(settlement, alg), "DEBUG")
+                return False
+            
+        if self.exclude_allegiances:
+            if not alg or alg.lower() in self.exclude_allegiances:
+                EDRLOG.log("Alg matching an excluded state for the controlling faction: {} with {}".format(settlement, alg), "DEBUG")
                 return False
         
         factionIDName = settlement.get("controllingFaction", { "id": -1, "name": ""})
         factionName = factionIDName.get("name", "")
         faction = self.edrsystems.faction_in_system(factionName, system_name)
+        state = faction.get("state", "None").lower()
         if self.bgs_states:
-            if not faction or faction.get("state", "None").lower() not in self.bgs_states:
-                EDRLOG.log("BGS not matching any required state for the controlling faction: {} with {}".format(settlement, faction), "DEBUG")
+            if not faction or state not in self.bgs_states:
+                EDRLOG.log("BGS not matching any required state for the controlling faction: {} with {}".format(settlement, state), "DEBUG")
+                return False
+            
+        if self.exclude_bgs_states:
+            if not faction or state in self.exclude_bgs_states:
+                EDRLOG.log("BGS matching an excluded state for the controlling faction: {} with {}".format(settlement, state), "DEBUG")
                 return False
         
         return True
@@ -282,37 +311,6 @@ class EDRTourismOdySettlementCheck(EDROdySettlementEcoCheck):
         self.name = _("Tourism settlement")
 
 class EDRSettlementCheckerFactory(object):
-    SETTLEMENTS_LUT = {
-        "anarchy": EDRAnarchyOdySettlementCheck,
-        "anarchy a": EDRAnarchyAgricultureOdySettlementCheck,
-        "anarchy agri": EDRAnarchyAgricultureOdySettlementCheck,
-        "anarchy agriculture": EDRAnarchyAgricultureOdySettlementCheck,
-        "anarchy e": EDRAnarchyExtractionOdySettlementCheck,
-        "anarchy extr": EDRAnarchyExtractionOdySettlementCheck,
-        "anarchy extraction": EDRAnarchyExtractionOdySettlementCheck,
-        "anarchy i": EDRAnarchyIndustrialOdySettlementCheck,
-        "anarchy indu": EDRAnarchyIndustrialOdySettlementCheck,
-        "anarchy industrial": EDRAnarchyIndustrialOdySettlementCheck,
-        "anarchy m": EDRAnarchyMilitaryOdySettlementCheck,
-        "anarchy mili": EDRAnarchyMilitaryOdySettlementCheck,
-        "anarchy military": EDRAnarchyMilitaryOdySettlementCheck,
-        "anarchy t": EDRAnarchyTourismOdySettlementCheck,
-        "anarchy tour": EDRAnarchyTourismOdySettlementCheck,
-        "anarchy tourism": EDRAnarchyTourismOdySettlementCheck,
-        "anarchy h": EDRAnarchyHighTechOdySettlementCheck,
-        "anarchy h t": EDRAnarchyHighTechOdySettlementCheck,
-        "anarchy high": EDRAnarchyHighTechOdySettlementCheck,
-        "anarchy high tech": EDRAnarchyHighTechOdySettlementCheck,
-        "anarchy tech": EDRAnarchyHighTechOdySettlementCheck,
-        "anarchy": EDRAnarchyOdySettlementCheck,
-        "agriculture": EDRAgricultureOdySettlementCheck,
-        "extraction": EDRExtractionOdySettlementCheck,
-        "industrial": EDRIndustrialOdySettlementCheck,
-        "military": EDRMilitaryOdySettlementCheck,
-        "tourism": EDRTourismOdySettlementCheck,
-        "high tech": EDRHighTechOdySettlementCheck,
-    }
-
     GVT_LUT = {
         _("anarchy"): "anarchy",
         _("anar"): "anarchy",
@@ -402,45 +400,25 @@ class EDRSettlementCheckerFactory(object):
     }
 
     @staticmethod
-    def recognized_settlement(settlement):
-        csettlement = settlement.lower()
-        return csettlement in EDRSettlementCheckerFactory.SETTLEMENTS_LUT
-    
-    @staticmethod
-    def recognized_settlement_ex(settlement_conditions):
+    def recognized_settlement(settlement_conditions):
         cconditions = settlement_conditions.lower().strip().split(",")
-        print(cconditions)
         all_supported_conditions = {
             **EDRSettlementCheckerFactory.GVT_LUT,
             **EDRSettlementCheckerFactory.ALG_LUT,
             **EDRSettlementCheckerFactory.ECO_LUT,
             **EDRSettlementCheckerFactory.BGS_LUT
         }
-        print(all_supported_conditions)
+        
         for condition in cconditions:
-            print(condition)
             if condition in all_supported_conditions:
                 return True
+            
+            if condition.startswith("-") and condition[1:] in all_supported_conditions:
+                return True
         return False
-
-    @staticmethod
-    def recognized_candidates(settlement):
-        csettlement = settlement.lower()
-        keys = EDRSettlementCheckerFactory.SETTLEMENTS_LUT.keys()
-        matches = [k for k in keys if csettlement in k or k.startswith(csettlement)]
-        return matches
-
-
-    @staticmethod
-    def get_checker(settlement, override_sc_distance):
-        csettlement = settlement.lower().strip()
-        checker = EDRSettlementCheckerFactory.SETTLEMENTS_LUT.get(csettlement, EDRAnarchyOdySettlementCheck)()
-        checker.max_sc_distance = override_sc_distance
-        return checker
     
-
     @staticmethod
-    def get_checker_ex(words_salad, override_sc_distance, edrsystems):
+    def get_checker(words_salad, override_sc_distance, edrsystems):
         words_salad = words_salad.lower()
 
         words = words_salad.split(",")
@@ -452,21 +430,52 @@ class EDRSettlementCheckerFactory(object):
         for word in words:
             if word in EDRSettlementCheckerFactory.GVT_LUT:
                 checker.governments.add(EDRSettlementCheckerFactory.GVT_LUT[word])
+                checker.exclude_governments.discard(EDRSettlementCheckerFactory.GVT_LUT[word])
+                irrelevant_salad = False
+                continue
+
+            if word.startswith("-") and word[1:] in EDRSettlementCheckerFactory.GVT_LUT:
+                checker.exclude_governments.add(EDRSettlementCheckerFactory.GVT_LUT[word[1:]])
+                checker.governments.discard(EDRSettlementCheckerFactory.GVT_LUT[word[1:]])
                 irrelevant_salad = False
                 continue
             
+
             if word in EDRSettlementCheckerFactory.ALG_LUT:
                 checker.allegiances.add(EDRSettlementCheckerFactory.ALG_LUT[word])
+                checker.exclude_allegiances.discard(EDRSettlementCheckerFactory.ALG_LUT[word])
                 irrelevant_salad = False
                 continue
+
+            if word.startswith("-") and word[1:] in EDRSettlementCheckerFactory.ALG_LUT:
+                checker.exclude_allegiances.add(EDRSettlementCheckerFactory.ALG_LUT[word[1:]])
+                checker.allegiances.discard(EDRSettlementCheckerFactory.ALG_LUT[word[1:]])
+                irrelevant_salad = False
+                continue
+
 
             if word in EDRSettlementCheckerFactory.BGS_LUT:
                 checker.bgs_states.add(EDRSettlementCheckerFactory.BGS_LUT[word])
+                checker.exclude_bgs_states.discard(EDRSettlementCheckerFactory.BGS_LUT[word])
                 irrelevant_salad = False
                 continue
 
+            if word.startswith("-") and word[1:] in EDRSettlementCheckerFactory.BGS_LUT:
+                checker.exclude_bgs_states.add(EDRSettlementCheckerFactory.BGS_LUT[word[1:]])
+                checker.bgs_states.discard(EDRSettlementCheckerFactory.BGS_LUT[word[1:]])
+                irrelevant_salad = False
+                continue
+
+
             if word in EDRSettlementCheckerFactory.ECO_LUT:
                 checker.economies.add(EDRSettlementCheckerFactory.ECO_LUT[word])
+                checker.exclude_economies.discard(EDRSettlementCheckerFactory.ECO_LUT[word])
+                irrelevant_salad = False
+                continue
+
+            if word.startswith("-") and word[1:] in EDRSettlementCheckerFactory.ECO_LUT:
+                checker.exclude_economies.add(EDRSettlementCheckerFactory.ECO_LUT[word[1:]])
+                checker.economies.discard(EDRSettlementCheckerFactory.ECO_LUT[word[1:]])
                 irrelevant_salad = False
                 continue
 

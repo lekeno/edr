@@ -465,9 +465,12 @@ class EDRSystems(object):
         if self.__novel_enough_fc_materials(fcid, fc_materials):
             success = self.server.report_fc_materials(fcid, fc_materials)
             if success:
+                print("fc mat report success: {}".format(success))
                 self.fc_materials_cache.set(fcid, fc_materials)
                 self.fc_presence_cache.evict(fcid)
                 return True
+            else:
+                print("fc mat report failure: {}".format(success))
         return False
 
     def __novel_enough_fc_report(self, sid, fc_report):
@@ -2547,7 +2550,7 @@ class EDRSystems(object):
 
     def search_settlement(self, star_system, settlement, callback, override_radius = 100, override_sc_distance = 100000, permits = []):
         override_sc_distance = override_sc_distance or 100000
-        checker = edrsyssetlcheck.EDRSettlementCheckerFactory.get_checker_ex(settlement, override_sc_distance, self)
+        checker = edrsyssetlcheck.EDRSettlementCheckerFactory.get_checker(settlement, override_sc_distance, self)
         if checker:
             self.__search_a_settlement(star_system, callback, checker, override_radius, override_sc_distance, permits, shuffle_systems=True, shuffle_planets=True, exclude_center=False)
 

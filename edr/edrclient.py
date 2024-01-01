@@ -1718,7 +1718,6 @@ class EDRClient(object):
         summary += summary_footer
         return summary
 
-
     def evict_system(self, star_system):
         self.edrsystems.evict(star_system)
 
@@ -3511,7 +3510,7 @@ class EDRClient(object):
         cresource = self.edrresourcefinder.canonical_name(thing)
         if EDRGenusCheckerFactory.recognized_genus(thing):
             self.search_genus_near(thing, star_system)
-        elif EDRSettlementCheckerFactory.recognized_settlement_ex(thing):
+        elif EDRSettlementCheckerFactory.recognized_settlement(thing):
             self.search_settlement_near(thing, star_system)
         elif cresource:
             self.search_resource(thing, star_system)
