@@ -169,150 +169,36 @@ class EDROdySettlementCheck(EDRSystemOdySettlementCheck):
                 return False
         
         return True
-    
-class EDRSettlementEcoCheck(EDRSystemSettlementCheck):
 
-    def __init__(self, economy):
-        super(EDRSettlementEcoCheck, self).__init__()
-        self.economy = economy
-        self.name = economy
-        self.hint = None
+class EDRCZSettlementChecker(EDROdySettlementCheck):
+    def __init__(self, system):
+        self.super().__init__(system)
+        self.bgs_states.add("civil war")
+        self.bgs_states.add("war")
+        self.exlude_bgs_states = set()
 
-    def check_settlement(self, settlement, system_name=None):
-        EDRLOG.log("Checking SettlEco: {}".format(settlement['name']), "DEBUG")
-        if not super(EDRSettlementEcoCheck, self).check_settlement(settlement):
-            EDRLOG.log("Failed settlementcheck", "DEBUG")
-            return False
-
-        if not self.economy:
-            EDRLOG.log("success: no condition on economy", "DEBUG")
-            return True
-
-        if not settlement.get('economy', None):
-            EDRLOG.log("no economy", "DEBUG")
-            return False
-         
-        EDRLOG.log("Eco: {}".format(settlement['economy']), "DEBUG")
-        return self.economy == settlement['economy'].lower()
-
-class EDROdySettlementEcoCheck(EDRSystemOdySettlementCheck):
-
-    def __init__(self, economy):
-        super(EDROdySettlementEcoCheck, self).__init__()
-        self.economy = economy
-
-    def check_settlement(self, settlement, system_name=None):
-        EDRLOG.log("Checking OdySettlEco: {}".format(settlement['name']), "DEBUG")
-        if not super(EDROdySettlementEcoCheck, self).check_settlement(settlement):
-            EDRLOG.log("Failed settlementcheck", "DEBUG")
-            return False
-
-        if not self.economy:
-            EDRLOG.log("success: no condition on economy", "DEBUG")
-            return True
-
-        if not settlement.get('economy', None):
-            EDRLOG.log("no economy", "DEBUG")
-            return False
-         
-        EDRLOG.log("Eco: {}".format(settlement['economy']), "DEBUG")
-        return self.economy == settlement['economy'].lower()
-
-class EDRAnarchyOdySettlementCheck(EDROdySettlementEcoCheck):
-    
-    def __init__(self, economy=None):
-        super(EDRAnarchyOdySettlementCheck, self).__init__(economy)
-        self.government = "anarchy"
-        self.name = _("Anarchy settlement")
-        self.hint = None
-
-    def check_settlement(self, settlement, system_name=None):
-        EDRLOG.log("Checking AnarcOdy: {}".format(settlement['name']), "DEBUG")
-        if not super(EDRAnarchyOdySettlementCheck, self).check_settlement(settlement):
-            EDRLOG.log("Failed OdySettlementCheck", "DEBUG")
-            return False
-
-        if not settlement.get('government', None):
-            EDRLOG.log("No gvt", "DEBUG")
-            return False
-        
-        EDRLOG.log("GVT: {}".format(settlement['government']), "DEBUG")
-        return self.government == settlement['government'].lower()
-
-class EDRAnarchyAgricultureOdySettlementCheck(EDRAnarchyOdySettlementCheck):
-    
-    def __init__(self):
-        super().__init__("agriculture")
-        self.name = _("Anarchy Agriculture settlement")
-
-class EDRAnarchyExtractionOdySettlementCheck(EDRAnarchyOdySettlementCheck):
-    
-    def __init__(self):
-        super().__init__("extraction")
-        self.name = _("Anarchy Extraction settlement")
-
-class EDRAnarchyHighTechOdySettlementCheck(EDRAnarchyOdySettlementCheck):
-    
-    def __init__(self):
-        super().__init__("high tech")
-        self.name = _("Anarchy High Tech settlement")
-
-class EDRAnarchyIndustrialOdySettlementCheck(EDRAnarchyOdySettlementCheck):
-    
-    def __init__(self):
-        super().__init__("industrial")
-        self.name = _("Anarchy Industrial settlement")
-
-class EDRAnarchyMilitaryOdySettlementCheck(EDRAnarchyOdySettlementCheck):
-    
-    def __init__(self):
-        super().__init__("military")
-        self.name = _("Anarchy Military settlement")
-
-class EDRAnarchyTourismOdySettlementCheck(EDRAnarchyOdySettlementCheck):
-    
-    def __init__(self):
-        super().__init__("tourism")
-        self.name = _("Anarchy Tourism settlement")
-
-class EDRAgricultureOdySettlementCheck(EDROdySettlementEcoCheck):
-    
-    def __init__(self):
-        super().__init__("agriculture")
-        self.name = _("Agriculture settlement")
-
-class EDRExtractionOdySettlementCheck(EDROdySettlementEcoCheck):
-    
-    def __init__(self):
-        super().__init__("extraction")
-        self.name = _("Extraction settlement")
-
-class EDRHighTechOdySettlementCheck(EDROdySettlementEcoCheck):
-    
-    def __init__(self):
-        super().__init__("high tech")
-        self.name = _("High Tech settlement")
-
-class EDRIndustrialOdySettlementCheck(EDROdySettlementEcoCheck):
-    
-    def __init__(self):
-        super().__init__("industrial")
-        self.name = _("Industrial settlement")
-
-
-class EDRMilitaryOdySettlementCheck(EDROdySettlementEcoCheck):
-    
-    def __init__(self):
-        super().__init__("military")
-        self.name = _("Military settlement")
-
-class EDRTourismOdySettlementCheck(EDROdySettlementEcoCheck):
-    
-    def __init__(self):
-        super().__init__("tourism")
-        self.name = _("Tourism settlement")
+class EDRRetoreSettlementChecker(EDROdySettlementCheck):
+    def __init__(self, system):
+        self.super().__init__(system)
+        self.bgs_states.add("civil unrest")
+        self.bgs_states.add("lockdown")
+        self.bgs_states.add("natural disaster")
+        self.bgs_states.add("pirate attack")
+        self.bgs_states.add("terrorist attack")
+        self.bgs_states.add("blight")
+        self.bgs_states.add("bust")
+        self.bgs_states.add("famine")
+        self.bgs_states.add("infrastructure failure")
+        self.bgs_states.add("outbreak")
 
 class EDRSettlementCheckerFactory(object):
+    COMBOS_LUT = {
+        _("abandoned"): EDRRetoreSettlementChecker,
+        _("restore"): EDRRetoreSettlementChecker,
+        _("cz"): EDRCZSettlementChecker,
+        _("combatzone"): EDRCZSettlementChecker,
+    }
+    
     GVT_LUT = {
         _("anarchy"): "anarchy",
         _("anar"): "anarchy",
@@ -405,6 +291,7 @@ class EDRSettlementCheckerFactory(object):
     def recognized_settlement(settlement_conditions):
         cconditions = settlement_conditions.lower().strip().split(",")
         all_supported_conditions = {
+            **EDRSettlementCheckerFactory.COMBOS_LUT,
             **EDRSettlementCheckerFactory.GVT_LUT,
             **EDRSettlementCheckerFactory.ALG_LUT,
             **EDRSettlementCheckerFactory.ECO_LUT,
@@ -421,10 +308,14 @@ class EDRSettlementCheckerFactory(object):
     
     @staticmethod
     def get_checker(words_salad, override_sc_distance, edrsystems):
-        words_salad = words_salad.lower()
+        words_salad = words_salad.lower().strip()
 
-        words = words_salad.split(",")
+        if words_salad in EDRSettlementCheckerFactory.COMBOS_LUT:
+            checker = EDRSettlementCheckerFactory.COMBOS_LUT[words_salad]
+            checker.max_sc_distance = override_sc_distance 
+            return checker
         
+        words = words_salad.split(",")
         checker = EDROdySettlementCheck(edrsystems)
         checker.max_sc_distance = override_sc_distance
 
