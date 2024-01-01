@@ -3376,7 +3376,6 @@ class EDRClient(object):
         self.searching = False
         details = []
         if result and 'settlement' in result:
-            print(result)
             settlement = result['settlement']
             sc_distance = settlement['distanceToArrival']
             distance = result['distance']

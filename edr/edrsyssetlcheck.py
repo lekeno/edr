@@ -54,12 +54,10 @@ class EDRSystemSettlementCheck(object):
         
         timestamps = settlement.get("updateTime", None)
         if not timestamps:
-            print("no timestamp in settlement")
             return True
         
         reference = timestamps.get("information", None)
         if not reference:
-            print("no info timestamp in settlement")
             return True
         
         limit = EDTime()
@@ -67,8 +65,6 @@ class EDRSystemSettlementCheck(object):
         info = EDTime()
         info.from_edsm_timestamp(reference)
         too_old = info <= limit
-        if too_old:
-            print("too old: {}".format(settlement))
         return too_old
     
 
@@ -172,14 +168,14 @@ class EDROdySettlementCheck(EDRSystemOdySettlementCheck):
 
 class EDRCZSettlementChecker(EDROdySettlementCheck):
     def __init__(self, system):
-        self.super().__init__(system)
+        super().__init__(system)
         self.bgs_states.add("civil war")
         self.bgs_states.add("war")
         self.exlude_bgs_states = set()
 
 class EDRRetoreSettlementChecker(EDROdySettlementCheck):
     def __init__(self, system):
-        self.super().__init__(system)
+        super().__init__(system)
         self.bgs_states.add("civil unrest")
         self.bgs_states.add("lockdown")
         self.bgs_states.add("natural disaster")
@@ -311,8 +307,8 @@ class EDRSettlementCheckerFactory(object):
         words_salad = words_salad.lower().strip()
 
         if words_salad in EDRSettlementCheckerFactory.COMBOS_LUT:
-            checker = EDRSettlementCheckerFactory.COMBOS_LUT[words_salad]
-            checker.max_sc_distance = override_sc_distance 
+            checker = EDRSettlementCheckerFactory.COMBOS_LUT[words_salad](edrsystems)
+            checker.max_sc_distance = override_sc_distance
             return checker
         
         words = words_salad.split(",")
@@ -377,3 +373,21 @@ class EDRSettlementCheckerFactory(object):
         if irrelevant_salad:
             return None
         return checker
+
+
+    @staticmethod
+    def recognized_candidates(words_salad):
+        words_salad = words_salad.lower().strip()
+
+        keys = list(EDRSettlementCheckerFactory.COMBOS_LUT.keys())
+        matches = [k for k in keys if words_salad in k or k.startswith(words_salad)]
+        
+        words = words_salad.split(",")
+        keys = list(EDRSettlementCheckerFactory.ALG_LUT.keys())
+        keys.extend(list(EDRSettlementCheckerFactory.GVT_LUT.keys()))
+        keys.extend(list(EDRSettlementCheckerFactory.ECO_LUT.keys()))
+        keys.extend(list(EDRSettlementCheckerFactory.BGS_LUT.keys()))
+        for word in words:
+            matches.extend([k for k in keys if word in k or k.startswith(word)])
+    
+        return matches

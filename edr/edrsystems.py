@@ -465,12 +465,9 @@ class EDRSystems(object):
         if self.__novel_enough_fc_materials(fcid, fc_materials):
             success = self.server.report_fc_materials(fcid, fc_materials)
             if success:
-                print("fc mat report success: {}".format(success))
                 self.fc_materials_cache.set(fcid, fc_materials)
                 self.fc_presence_cache.evict(fcid)
                 return True
-            else:
-                print("fc mat report failure: {}".format(success))
         return False
 
     def __novel_enough_fc_report(self, sid, fc_report):

@@ -448,8 +448,10 @@ class EDRFactions(object):
         return None
 
     def get_all(self, star_system):
+        if not star_system:
+            return None
+        
         factions_in_system = self.factions_cache.get(star_system.lower()) or {}
-        print(factions_in_system)
         controlling_faction_for_system = self.controlling_factions_cache.get(star_system.lower())
         if not self.are_factions_stale(star_system):
             return factions_in_system
@@ -460,7 +462,6 @@ class EDRFactions(object):
         edsm_more_recent = True
         edsm_tracked = set()
         for faction in edsm_factions["factions"]:
-            print(faction)
             edsm_tracked.add(faction["name"].lower())
             
             if faction["name"] == edsm_controlling_faction_name:
