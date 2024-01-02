@@ -111,10 +111,10 @@ class EDTime(comparable.ComparableMixin):
         self._datetime = datetime.datetime.fromtimestamp(js_epoch // 1000, datetime.timezone.utc)
 
     def from_journal_timestamp(self, journal_timestamp):
-        self._datetime = datetime.datetime.strptime(journal_timestamp, '%Y-%m-%dT%H:%M:%SZ')
+        self._datetime = datetime.datetime.strptime(journal_timestamp, '%Y-%m-%dT%H:%M:%S%z')
 
     def from_edsm_timestamp(self, edsm_timestamp):
-        self._datetime = datetime.datetime.strptime(edsm_timestamp, '%Y-%m-%d %H:%M:%S')
+        self._datetime = datetime.datetime.strptime(edsm_timestamp+"Z", '%Y-%m-%d %H:%M:%S%z')
     
     def as_js_epoch(self):
         return self.as_py_epoch() * 1000 # JavaScript expects milliseconds while Python uses seconds for Epoch
