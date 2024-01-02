@@ -349,6 +349,18 @@ class EDRFleetCarrier(object):
         since = edtime.EDTime.js_epoch_now()
         if timeframe:
             since -= timeframe*1000
+
+        sale_orders = self.sale_orders_within(timeframe)
+        purchase_orders = self.purchase_orders_within(timeframe)
+
+        for item in sale_orders:
+            if "timestamp" in sale_orders[item]:
+                sale_orders[item]["timestamp"] *= 1000
+
+        for item in purchase_orders:
+            if "timestamp" in purchase_orders[item]:
+                purchase_orders[item]["timestamp"] *= 1000
+
         return {
             "id": self.id,
             "callsign": self.callsign,
@@ -356,8 +368,8 @@ class EDRFleetCarrier(object):
             "location": self._position,
             "access": self.access,
             "allow_notorious": self.allow_notorious,
-            "sales": self.sale_orders_within(timeframe),
-            "purchases": self.purchase_orders_within(timeframe),
+            "sales": sale_orders,
+            "purchases": purchase_orders,
             "timestamp": since
         }
 
