@@ -152,6 +152,7 @@ DEFAULT_TIPS = {
         _(u"You can use the !search command to find a nearby odyssey settlement with specific conditions, e.g. '!search anarchy'"),
         _(u"You can use the !search command to find a nearby odyssey settlement with specific conditions, e.g. '!search anarchy, -military' to find non-military anarchy settlements"),
         _(u"You can use the !search command to find a nearby odyssey settlement likely abandonned / resulting in restore missions, e.g. '!search restore"),
+        _(u"You can use the !search command to find a nearby odyssey settlement likely in a combat zone situation, e.g. '!search combat zone"),
         _(u"EDR will show an overview for non-trivial in-game routes: scoopable stars, stats and ETA"),
         _(u"EDR can help you follow a Spansh journey. Send '!help travel' for more details"),
         _(u"Send '!journey new' to open Spansh for plotting a new journey, e.g. '!journey new colonia'. Then, follow the instructions."),
