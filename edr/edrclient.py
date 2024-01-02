@@ -933,7 +933,7 @@ class EDRClient(object):
         if entry["event"] == "DockingGranted":
             station = self.edrsystems.station(self.player.star_system, entry["StationName"], entry["StationType"])
             faction = None
-            if "controllingFaction" in station:
+            if station and "controllingFaction" in station:
                 controllingFaction = station["controllingFaction"]
                 factionName = controllingFaction.get("Name", "???")
                 faction = self.edrfactions.get(factionName, self.player.star_system)
@@ -3010,7 +3010,7 @@ class EDRClient(object):
         header = u"{} ({})".format(station["name"], economy)
 
         faction = None
-        if "controllingFaction" in station:
+        if station and "controllingFaction" in station:
             controllingFaction = station["controllingFaction"]
             factionName = controllingFaction.get("Name", "???")
             faction = self.edrfactions.get(factionName, self.player.star_system)
