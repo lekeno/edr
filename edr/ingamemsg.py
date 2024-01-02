@@ -499,6 +499,8 @@ class InGameMsg(object):
         self.__msg_body("biology", details)
 
     def describe_station(self, station, faction):
+        if not station:
+            return
         station_type = (station.get("type","N/A") or "N/A").lower()
         station_other_services = (station.get("otherServices", []) or []) 
         station_economy = (station.get('economy', "") or "").lower()
