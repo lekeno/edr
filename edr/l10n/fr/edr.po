@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2024-01-02 10:15+0900\n"
-"PO-Revision-Date: 2024-01-02 10:16+0900\n"
+"POT-Creation-Date: 2024-01-03 13:23+0900\n"
+"PO-Revision-Date: 2024-01-03 13:23+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -5499,64 +5499,56 @@ msgstr ""
 msgid "anar"
 msgstr ""
 
-#: edrsyssetlcheck.py:201 edrsyssetlcheck.py:263
-msgid "colony"
-msgstr ""
-
-#: edrsyssetlcheck.py:202
-msgid "communism"
-msgstr ""
-
-#: edrsyssetlcheck.py:203
+#: edrsyssetlcheck.py:201
 msgid "confederacy"
 msgstr ""
 
-#: edrsyssetlcheck.py:204
+#: edrsyssetlcheck.py:202
 msgid "cooperative"
 msgstr ""
 
-#: edrsyssetlcheck.py:205
+#: edrsyssetlcheck.py:203
 msgid "corporate"
 msgstr ""
 
-#: edrsyssetlcheck.py:206
+#: edrsyssetlcheck.py:204
 msgid "democracy"
 msgstr ""
 
-#: edrsyssetlcheck.py:207
+#: edrsyssetlcheck.py:205
 msgid "demo"
 msgstr ""
 
-#: edrsyssetlcheck.py:208
+#: edrsyssetlcheck.py:206
 msgid "dictatorship"
 msgstr ""
 
-#: edrsyssetlcheck.py:209
+#: edrsyssetlcheck.py:207
 msgid "feudal"
 msgstr ""
 
-#: edrsyssetlcheck.py:210
+#: edrsyssetlcheck.py:208
 msgid "patronage"
 msgstr ""
 
-#: edrsyssetlcheck.py:211 edrsyssetlcheck.py:274
+#: edrsyssetlcheck.py:209 edrsyssetlcheck.py:277
 msgid "prison"
 msgstr ""
 
-#: edrsyssetlcheck.py:212
+#: edrsyssetlcheck.py:210
 msgid "prison colony"
 msgstr ""
 
-#: edrsyssetlcheck.py:213
+#: edrsyssetlcheck.py:211
 msgid "theocracy"
 msgstr ""
 
-#: edrsyssetlcheck.py:214 edrsyssetlcheck.py:265
+#: edrsyssetlcheck.py:212 edrsyssetlcheck.py:268
 msgid "engineer"
 msgstr ""
 
-#: edrsyssetlcheck.py:215
-msgid "privateownership"
+#: edrsyssetlcheck.py:213
+msgid "communism"
 msgstr ""
 
 #: edrsyssetlcheck.py:219
@@ -5572,214 +5564,226 @@ msgid "federal"
 msgstr ""
 
 #: edrsyssetlcheck.py:222
-msgid "imperial"
+msgid "federation"
 msgstr ""
 
 #: edrsyssetlcheck.py:223
-msgid "pirate"
+msgid "imperial"
 msgstr ""
 
 #: edrsyssetlcheck.py:224
-msgid "pilotsfederation"
+msgid "empire"
 msgstr ""
 
 #: edrsyssetlcheck.py:225
-msgid "thargoids"
+msgid "pirate"
 msgstr ""
 
 #: edrsyssetlcheck.py:226
+msgid "pilotsfederation"
+msgstr ""
+
+#: edrsyssetlcheck.py:227
+msgid "thargoids"
+msgstr ""
+
+#: edrsyssetlcheck.py:228
 msgid "guardians"
 msgstr ""
 
-#: edrsyssetlcheck.py:230
+#: edrsyssetlcheck.py:232
 msgid "blight"
 msgstr ""
 
-#: edrsyssetlcheck.py:231
+#: edrsyssetlcheck.py:233
 msgid "bust"
 msgstr ""
 
-#: edrsyssetlcheck.py:232
+#: edrsyssetlcheck.py:234
 msgid "boom"
 msgstr ""
 
-#: edrsyssetlcheck.py:233
+#: edrsyssetlcheck.py:235
 msgid "civilliberty"
 msgstr ""
 
-#: edrsyssetlcheck.py:234
+#: edrsyssetlcheck.py:236
 msgid "civilunrest"
 msgstr ""
 
-#: edrsyssetlcheck.py:235
-msgid "civilwar"
-msgstr ""
-
-#: edrsyssetlcheck.py:236
+#: edrsyssetlcheck.py:237
 msgid "coldwar"
 msgstr ""
 
-#: edrsyssetlcheck.py:237
-msgid "colonisation"
-msgstr ""
-
 #: edrsyssetlcheck.py:238
-msgid "drought"
+msgid "civilwar"
 msgstr ""
 
 #: edrsyssetlcheck.py:239
-msgid "elections"
+msgid "colonisation"
 msgstr ""
 
 #: edrsyssetlcheck.py:240
-msgid "expansion"
+msgid "drought"
 msgstr ""
 
 #: edrsyssetlcheck.py:241
-msgid "famine"
+msgid "elections"
 msgstr ""
 
 #: edrsyssetlcheck.py:242
-msgid "historicevent"
+msgid "expansion"
 msgstr ""
 
 #: edrsyssetlcheck.py:243
-msgid "incursion"
+msgid "famine"
 msgstr ""
 
 #: edrsyssetlcheck.py:244
-msgid "infested"
+msgid "historicevent"
 msgstr ""
 
 #: edrsyssetlcheck.py:245
-msgid "infrastructurefailure"
+msgid "incursion"
 msgstr ""
 
 #: edrsyssetlcheck.py:246
-msgid "investment"
+msgid "infested"
 msgstr ""
 
 #: edrsyssetlcheck.py:247
-msgid "lockdown"
+msgid "infrastructurefailure"
 msgstr ""
 
 #: edrsyssetlcheck.py:248
-msgid "natural disaster"
+msgid "investment"
 msgstr ""
 
 #: edrsyssetlcheck.py:249
-msgid "outbreak"
+msgid "lockdown"
 msgstr ""
 
 #: edrsyssetlcheck.py:250
-msgid "pirateattack"
+msgid "naturaldisaster"
 msgstr ""
 
 #: edrsyssetlcheck.py:251
-msgid "publicholiday"
+msgid "outbreak"
 msgstr ""
 
 #: edrsyssetlcheck.py:252
-msgid "retreat"
+msgid "pirateattack"
 msgstr ""
 
 #: edrsyssetlcheck.py:253
-msgid "revolution"
+msgid "publicholiday"
 msgstr ""
 
 #: edrsyssetlcheck.py:254
-msgid "technologicalleap"
+msgid "retreat"
 msgstr ""
 
 #: edrsyssetlcheck.py:255
-msgid "terroristattack"
+msgid "revolution"
 msgstr ""
 
 #: edrsyssetlcheck.py:256
-msgid "tradewar"
+msgid "technologicalleap"
 msgstr ""
 
 #: edrsyssetlcheck.py:257
+msgid "terroristattack"
+msgstr ""
+
+#: edrsyssetlcheck.py:258
+msgid "tradewar"
+msgstr ""
+
+#: edrsyssetlcheck.py:259
 msgid "war"
 msgstr ""
 
-#: edrsyssetlcheck.py:261
+#: edrsyssetlcheck.py:264
 msgid "agriculture"
 msgstr ""
 
-#: edrsyssetlcheck.py:262
+#: edrsyssetlcheck.py:265
 msgid "agri"
 msgstr ""
 
-#: edrsyssetlcheck.py:264
-msgid "damaged"
-msgstr ""
-
 #: edrsyssetlcheck.py:266
-msgid "extraction"
+msgid "colony"
 msgstr ""
 
 #: edrsyssetlcheck.py:267
-msgid "extr"
-msgstr ""
-
-#: edrsyssetlcheck.py:268
-msgid "hightech"
+msgid "damaged"
 msgstr ""
 
 #: edrsyssetlcheck.py:269
-msgid "high"
+msgid "extraction"
 msgstr ""
 
 #: edrsyssetlcheck.py:270
-msgid "industrial"
+msgid "extr"
 msgstr ""
 
 #: edrsyssetlcheck.py:271
-msgid "indu"
+msgid "hightech"
 msgstr ""
 
 #: edrsyssetlcheck.py:272
-msgid "military"
+msgid "high"
 msgstr ""
 
 #: edrsyssetlcheck.py:273
-msgid "mili"
+msgid "industrial"
+msgstr ""
+
+#: edrsyssetlcheck.py:274
+msgid "indu"
 msgstr ""
 
 #: edrsyssetlcheck.py:275
-msgid "privateenterprise"
+msgid "military"
 msgstr ""
 
 #: edrsyssetlcheck.py:276
-msgid "refinery"
-msgstr ""
-
-#: edrsyssetlcheck.py:277
-msgid "repair"
+msgid "mili"
 msgstr ""
 
 #: edrsyssetlcheck.py:278
-msgid "rescue"
+msgid "privateenterprise"
 msgstr ""
 
 #: edrsyssetlcheck.py:279
-msgid "service"
+msgid "refinery"
 msgstr ""
 
 #: edrsyssetlcheck.py:280
-msgid "terraforming"
+msgid "repair"
 msgstr ""
 
 #: edrsyssetlcheck.py:281
-msgid "tourism"
+msgid "rescue"
 msgstr ""
 
 #: edrsyssetlcheck.py:282
-msgid "tour"
+msgid "service"
 msgstr ""
 
 #: edrsyssetlcheck.py:283
+msgid "terraforming"
+msgstr ""
+
+#: edrsyssetlcheck.py:284
+msgid "tourism"
+msgstr ""
+
+#: edrsyssetlcheck.py:285
+msgid "tour"
+msgstr ""
+
+#: edrsyssetlcheck.py:286
 msgid "underattack"
 msgstr ""
 
