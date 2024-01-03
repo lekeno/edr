@@ -453,8 +453,6 @@ class EDRFactions(object):
         
         factions_in_system = self.factions_cache.get(star_system.lower()) or {}
         controlling_faction_for_system = self.controlling_factions_cache.get(star_system.lower())
-        if not self.are_factions_stale(star_system):
-            return factions_in_system
         
         edsm_factions = self.__get_all_from_edsm(star_system)
         edsm_controlling_faction_name = edsm_factions["controllingFaction"]["name"] if "controllingFaction" in edsm_factions else None
@@ -471,6 +469,8 @@ class EDRFactions(object):
                     if edsm_last_update > local_last_update:
                         EDRLOG.log("Updating controlling faction with EDSM info: {}".format(faction["name"]), "DEBUG")
                         self.controlling_factions_cache.set(star_system.lower(), EDRFactionEDSM(faction))
+                    else:
+                        controlling_faction_for_system.isPlayer = faction["isPlayer"] if "isPlayer" in faction else None
                 else:
                     EDRLOG.log("Setting controlling faction with EDSM info: {}".format(faction["name"]), "DEBUG")
                     self.controlling_factions_cache.set(star_system.lower(), EDRFactionEDSM(faction))
@@ -481,6 +481,7 @@ class EDRFactions(object):
                 edsm_last_update = faction["lastUpdate"]
                 if edsm_last_update <= local_last_update:
                     edsm_more_recent = False
+                    factions_in_system[faction["name"].lower()].isPlayer = faction["isPlayer"] if "isPlayer" in faction else None
                     EDRLOG.log("Skipping faction update from EDSM info: {} (timestamps: edsm={}, local={})".format(faction["name"], edsm_last_update, local_last_update), "DEBUG")
                     continue
             
