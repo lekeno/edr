@@ -3012,7 +3012,7 @@ class EDRClient(object):
         faction = None
         if station and "controllingFaction" in station:
             controllingFaction = station["controllingFaction"]
-            factionName = controllingFaction.get("Name", "???")
+            factionName = controllingFaction.get("name", "???")
             faction = self.edrfactions.get(factionName, self.player.star_system)
         details = self.IN_GAME_MSG.describe_station(station, faction)
         self.__notify(header, details, clear_before=True)
