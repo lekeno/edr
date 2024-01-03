@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2024-01-01 16:30+0900\n"
-"PO-Revision-Date: 2024-01-01 16:37+0900\n"
+"POT-Creation-Date: 2024-01-02 10:15+0900\n"
+"PO-Revision-Date: 2024-01-02 10:16+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -1847,7 +1847,7 @@ msgstr "{} proche de {}"
 msgid "{planet} ({type}, {atm}), {sc_dist}"
 msgstr "{planet} ({type}, {atm}), {sc_dist}"
 
-#: edrclient.py:3362 ingamemsg.py:580 ingamemsg.py:651
+#: edrclient.py:3362 ingamemsg.py:582 ingamemsg.py:653
 #, python-brace-format
 msgid "as of {date}"
 msgstr "date des infos: {date}"
@@ -2372,11 +2372,11 @@ msgstr "USS-HGE"
 msgid "Private Data Beacon"
 msgstr ""
 
-#: edrfleetcarrier.py:384
+#: edrfleetcarrier.py:396
 msgid "Fleet Carrier [{}] - {}"
 msgstr "Porte-vaisseaux [{}] - {}"
 
-#: edrfleetcarrier.py:385
+#: edrfleetcarrier.py:397
 msgid ""
 "Location:  \t{}\n"
 "Access:    \t{}\n"
@@ -2386,27 +2386,27 @@ msgstr ""
 "Accès:    \t{}\n"
 "Notoires: \t{}"
 
-#: edrfleetcarrier.py:385
+#: edrfleetcarrier.py:397
 msgid "allowed"
 msgstr "permis"
 
-#: edrfleetcarrier.py:385
+#: edrfleetcarrier.py:397
 msgid "disallowed"
 msgstr "refusé"
 
-#: edrfleetcarrier.py:409
+#: edrfleetcarrier.py:421
 msgid "[Selling]\n"
 msgstr "[Ventes]\n"
 
-#: edrfleetcarrier.py:410 edrfleetcarrier.py:416
+#: edrfleetcarrier.py:422 edrfleetcarrier.py:428
 msgid "{\"Quantity\": >8} {\"Item\": <30} {\"Price (cr)\": >10}\n"
 msgstr "{\"Quantité\": >8} {\"Produit\": <30} {\"Prix(cr)\": >10}\n"
 
-#: edrfleetcarrier.py:415
+#: edrfleetcarrier.py:427
 msgid "[Buying]\n"
 msgstr "[Achats]\n"
 
-#: edrfleetcarrier.py:421
+#: edrfleetcarrier.py:433
 msgid ""
 "\n"
 " ----===<<  As of {}   -   Info provided by ED Recon  >>===----"
@@ -7625,192 +7625,192 @@ msgstr "{} Échantillon #{} : ≥10 km ›{:03}‹"
 msgid "{} Sample #{}: {}m  ›{:03}‹"
 msgstr "{} Échantillon #{}: {}m  ›{:03}‹"
 
-#: ingamemsg.py:510
+#: ingamemsg.py:512
 msgid "LG. Pad:{}   Outfit:{}   Shipyard:{}"
 msgstr "LG. Pad:{}   Equipmt:{}   Chantier:{}"
 
-#: ingamemsg.py:514 ingamemsg.py:593 ingamemsg.py:634
+#: ingamemsg.py:516 ingamemsg.py:595 ingamemsg.py:636
 msgid "Refuel:{}   Repair:{}   Restock:{}"
 msgstr "Fuel:{}   Réparer:{}   Ravitailler:{}"
 
-#: ingamemsg.py:518
+#: ingamemsg.py:520
 msgid "material trader|M."
 msgstr "M."
 
-#: ingamemsg.py:523
+#: ingamemsg.py:525
 msgid "RAW"
 msgstr "BRU"
 
-#: ingamemsg.py:525
+#: ingamemsg.py:527
 msgid "R/M"
 msgstr "B/M"
 
-#: ingamemsg.py:527
+#: ingamemsg.py:529
 msgid "R/E"
 msgstr "B/E"
 
-#: ingamemsg.py:530
+#: ingamemsg.py:532
 msgid "MAN"
 msgstr "FAB"
 
-#: ingamemsg.py:532
+#: ingamemsg.py:534
 msgid "M/R"
 msgstr "M/B"
 
-#: ingamemsg.py:534
+#: ingamemsg.py:536
 msgid "M/E"
 msgstr "M/E"
 
-#: ingamemsg.py:537
+#: ingamemsg.py:539
 msgid "ENC"
 msgstr "ENC"
 
-#: ingamemsg.py:539
+#: ingamemsg.py:541
 msgid "E/R"
 msgstr "E/B"
 
-#: ingamemsg.py:541
+#: ingamemsg.py:543
 msgid "E/M"
 msgstr "E/M"
 
-#: ingamemsg.py:542
+#: ingamemsg.py:544
 msgid "Market:{}   B.Market:{}   {} Trad:{}"
 msgstr "Marché:{}   Marché N.:{}   {} Commerce:{}"
 
-#: ingamemsg.py:544
+#: ingamemsg.py:546
 msgid "tech broker|T."
 msgstr "T."
 
-#: ingamemsg.py:550
+#: ingamemsg.py:552
 msgid "guardian tech|GT."
 msgstr "GT."
 
-#: ingamemsg.py:552 ingamemsg.py:557
+#: ingamemsg.py:554 ingamemsg.py:559
 msgid "ambiguous tech|T."
 msgstr "T."
 
-#: ingamemsg.py:555
+#: ingamemsg.py:557
 msgid "human tech|HT."
 msgstr "HT."
 
-#: ingamemsg.py:559
+#: ingamemsg.py:561
 msgid "I.Factor:{}   {} Broker:{}"
 msgstr "I.Factor:{}   Courtier {}:{}"
 
-#: ingamemsg.py:573 ingamemsg.py:613
+#: ingamemsg.py:575 ingamemsg.py:615
 msgid "PMF: {}"
 msgstr ""
 
-#: ingamemsg.py:598
+#: ingamemsg.py:600
 msgid "Market:{}   B.Market:{}   I.Factor:{}"
 msgstr "Marché:{}   Marché N.:{}   {} I.Factor:{}"
 
-#: ingamemsg.py:629
+#: ingamemsg.py:631
 msgid "Outfit:{}   Shipyard:{}"
 msgstr "Equipmt:{}   Chantier:{}"
 
-#: ingamemsg.py:638
+#: ingamemsg.py:640
 msgid "Market:{}   B.Market:{}"
 msgstr "Marché:{}   Marché N.:{}"
 
-#: ingamemsg.py:643
+#: ingamemsg.py:645
 msgid "U.Cart:{}   Vista G:{}"
 msgstr ""
 
-#: ingamemsg.py:649
+#: ingamemsg.py:651
 msgid "Redempt.O:{}   Pioneer S:{}   Lounge:{}"
 msgstr ""
 
-#: ingamemsg.py:1056
+#: ingamemsg.py:1058
 msgid "Mining Stats"
 msgstr "Stats minage"
 
-#: ingamemsg.py:1061
+#: ingamemsg.py:1063
 msgid "Mining Stats - MNR: {}"
 msgstr "Stats minage - MNR: {}"
 
-#: ingamemsg.py:1062
+#: ingamemsg.py:1064
 msgid "MNR %: {:>6.2f}  [{}/{}; {}]"
 msgstr "MNR %: {:>6.2f}  [{}/{}; {}]"
 
-#: ingamemsg.py:1063
+#: ingamemsg.py:1065
 msgid "MAX %: {:>6.2f}"
 msgstr "MAX %: {:>6.2f}"
 
-#: ingamemsg.py:1064
+#: ingamemsg.py:1066
 msgid "AVG %: {:>6.2f}"
 msgstr "MOY %: {:>6.2f}"
 
-#: ingamemsg.py:1067
+#: ingamemsg.py:1069
 msgid ">> DEPLETED <<"
 msgstr ">> APPAUVRI <<"
 
-#: ingamemsg.py:1071
+#: ingamemsg.py:1073
 msgid ">> WORTHLESS <<"
 msgstr ">> SANS VALEUR <<"
 
-#: ingamemsg.py:1075
+#: ingamemsg.py:1077
 msgid "ITM/H: {:>6.0f} [TGT: {:.0f}]"
 msgstr "MNR/H: {:>6.0f} [OBJ: {:.0f}]"
 
-#: ingamemsg.py:1076
+#: ingamemsg.py:1078
 msgid "ITM #: {:>6}"
 msgstr "MNT #: {:>6}"
 
-#: ingamemsg.py:1217
+#: ingamemsg.py:1219
 msgid "Bounty Hunting Stats"
 msgstr "Stats Chasses à la Prime"
 
-#: ingamemsg.py:1225
+#: ingamemsg.py:1227
 msgid "BOUNTY: {} cr [{}]"
 msgstr "PRIME: {} cr [{}]"
 
-#: ingamemsg.py:1226
+#: ingamemsg.py:1228
 msgid "MAX B.: {} cr"
 msgstr "MAX P.: {} cr"
 
-#: ingamemsg.py:1227
+#: ingamemsg.py:1229
 msgid "AVG B.: {} cr"
 msgstr "MOY P.: {} cr"
 
-#: ingamemsg.py:1228
+#: ingamemsg.py:1230
 msgid "CR / H: {} [TGT: {}]"
 msgstr "CR / H: {} [TGT: {}]"
 
-#: ingamemsg.py:1229
+#: ingamemsg.py:1231
 msgid "TOTALS: {} cr [{} rewards]"
 msgstr "TOTAL: {} cr [{} reçu]"
 
-#: ingamemsg.py:1351
+#: ingamemsg.py:1353
 #, python-brace-format
 msgid "{prefix}{cmdr} ({ship})"
 msgstr "{prefix}{cmdr} ({ship})"
 
-#: ingamemsg.py:1351
+#: ingamemsg.py:1353
 msgid "CMDR "
 msgstr "CMDT "
 
-#: ingamemsg.py:1362
+#: ingamemsg.py:1364
 msgid "[{} to 100%/UP]"
 msgstr "[{} pour 100%/UP]"
 
-#: ingamemsg.py:1366 ingamemsg.py:1381 ingamemsg.py:1396
+#: ingamemsg.py:1368 ingamemsg.py:1383 ingamemsg.py:1398
 msgid "[{} to   0%]"
 msgstr "[{} pour   0%]"
 
-#: ingamemsg.py:1367
+#: ingamemsg.py:1369
 msgid "SHLD{}: {}% {}"
 msgstr "SHLD{}: {}% {}"
 
-#: ingamemsg.py:1377 ingamemsg.py:1392
+#: ingamemsg.py:1379 ingamemsg.py:1394
 msgid "[{} to 100%]"
 msgstr "[{} pour 100%]"
 
-#: ingamemsg.py:1382
+#: ingamemsg.py:1384
 msgid "HULL{}: {}% {}"
 msgstr "HULL{}: {}% {}"
 
-#: ingamemsg.py:1397
+#: ingamemsg.py:1399
 #, python-brace-format
 msgid "{subsys}{signal}: {hp:.4g}% {delta}"
 msgstr "{subsys}{signal}: {hp:.4g}% {delta}"
@@ -8980,13 +8980,21 @@ msgstr ""
 
 #: randomtips.py:155
 msgid ""
+"You can use the !search command to find a nearby odyssey settlement likely "
+"in a combat zone situation, e.g. '!search combat zone"
+msgstr ""
+"Vous pouvez utiliser la commande !search pour trouver une colonie "
+"vraisemblablement en état de conflit, ex: '!search combat zone'"
+
+#: randomtips.py:156
+msgid ""
 "EDR will show an overview for non-trivial in-game routes: scoopable stars, "
 "stats and ETA"
 msgstr ""
 "EDR affichera un aperçu des itinéraires non triviaux dans le jeu: étoiles "
-"avec fuel, statistiques et temps d'arrivée."
+"avec fuel, statistiques et temps d'arrivée"
 
-#: randomtips.py:156
+#: randomtips.py:157
 msgid ""
 "EDR can help you follow a Spansh journey. Send '!help travel' for more "
 "details"
@@ -8994,7 +9002,7 @@ msgstr ""
 "EDR peut vous aider à suivre un itinéraire Spansh. Envoyez '!help travel' "
 "pour plus de détails"
 
-#: randomtips.py:157
+#: randomtips.py:158
 msgid ""
 "Send '!journey new' to open Spansh for plotting a new journey, e.g. '!"
 "journey new colonia'. Then, follow the instructions."
@@ -9002,7 +9010,7 @@ msgstr ""
 "Envoyez '!journey new' pour ouvrir Spansh afin de créer un nouveau "
 "itinéraire, par ex. '!journey new colonia'. Ensuite, suivez les instructions."
 
-#: randomtips.py:158
+#: randomtips.py:159
 msgid ""
 "Send '!journey fetch' to fetch a Spansh journey from its URL (copy it to the "
 "clipboard beforehand)"
@@ -9010,7 +9018,7 @@ msgstr ""
 "Envoyez '!journey fetch' pour récupérer un itinéraire Spansh à partir de son "
 "URL (copiez l'URL au préalable dans le presse-papiers)"
 
-#: randomtips.py:159
+#: randomtips.py:160
 msgid ""
 "Send '!journey bodies' to see list of bodies to survey when using a Spansh "
 "route for exobiology or mapping (e.g. exomastery, road to riches)"
@@ -9019,7 +9027,7 @@ msgstr ""
 "l'utilisation d'un itinéraire espagnol pour l'exobiologie ou la cartographie "
 "(par exemple, exomastery, road to riches)"
 
-#: randomtips.py:160
+#: randomtips.py:161
 msgid ""
 "Send '!journey next', '!journey previous' to manually change the target "
 "waypoint of an active Spansh journey."
@@ -9027,7 +9035,7 @@ msgstr ""
 "Envoyez '!journey next', '!journey previous' pour ajuster l'étape d'un "
 "itinéraire Spansh."
 
-#: randomtips.py:161
+#: randomtips.py:162
 msgid ""
 "Send '!journey check 1 a 1, 1 a 2' to manually clear-off bodies (1 a 1, and "
 "1 a 2), off the list for an active Spansh journey"
@@ -9035,7 +9043,7 @@ msgstr ""
 "Envoyer '!journey check 1 a 1, 1 a 2' pour rayer des planètes (1 a 1 et 1 a "
 "2) de la liste d'un itinéraire Spansh"
 
-#: randomtips.py:164
+#: randomtips.py:165
 msgid ""
 "Never fly what you can't afford to lose. Check your rebuy and credit balance "
 "on your right panel."
@@ -9044,7 +9052,7 @@ msgstr ""
 "d'accident. Vérifiez votre coût de rachat et votre solde dans le panneau à "
 "droite."
 
-#: randomtips.py:165
+#: randomtips.py:166
 msgid ""
 "Never combat log in Open. If you aren't willing to accept the risk, don't "
 "bother with Open, Google 'Mobius PVE'."
@@ -9053,7 +9061,7 @@ msgstr ""
 "pas prêt à courir le risque de perdre votre vaisseau, ne jouer pas en mode "
 "ouvert."
 
-#: randomtips.py:166
+#: randomtips.py:167
 msgid ""
 "Hit Ctrl+B to display a bandwidth meter. You are not alone if it goes over "
 "1000 B/s."
@@ -9061,14 +9069,14 @@ msgstr ""
 "Ctrl + B permet d'afficher un moniteur de bande passante. Vous n'êtes pas "
 "seul s'il affiche plus de 1000 B/s."
 
-#: randomtips.py:167
+#: randomtips.py:168
 msgid ""
 "Regularly check your contact history in the top panel for known threats."
 msgstr ""
 "Vérifiez régulièrement l'historique des contacts dans le panneau haut afin "
 "de repérer des ennemis."
 
-#: randomtips.py:168
+#: randomtips.py:169
 msgid ""
 "[Planet] Dismiss your ship immediately after boarding your SRV. Outlaws will "
 "destroy it in seconds otherwise."
@@ -9077,7 +9085,7 @@ msgstr ""
 "vaisseau au sol ne survivra pas suffisamment longtemps face à la puissance "
 "de feu d'un bandit."
 
-#: randomtips.py:169
+#: randomtips.py:170
 msgid ""
 "[Planet] Switch your SRV lights off if an outlaw shows up. Run far away "
 "before calling back your ship."
@@ -9085,7 +9093,7 @@ msgstr ""
 "[Planète] Si un bandit arrive, éteignez les phares de votre SRV et roulez à "
 "fond le plus loi possible avant de rappeler votre vaisseau."
 
-#: randomtips.py:170
+#: randomtips.py:171
 msgid ""
 "[Planet] For new discoveries, land a bit away from the area of interest and "
 "dismiss your ship asap."
@@ -9093,7 +9101,7 @@ msgstr ""
 "[Planète] Pour les nouvelles découvertes, atterrissez assez loin afin "
 "d'avoir le temps de renvoyer votre vaisseau malgré la présence d'hors la loi."
 
-#: randomtips.py:171
+#: randomtips.py:172
 msgid ""
 "[Explorers] Don't trust anyone, check a contact's loadout in your left panel "
 "before banding to take selfies."
@@ -9101,7 +9109,7 @@ msgstr ""
 "[Explorateurs] Ne faites confiance à personne, vérifiez l'équipement d'un "
 "contact avant de passer à la séance selfie."
 
-#: randomtips.py:172
+#: randomtips.py:173
 msgid ""
 "[Explorers] On your trip back to the bubble, reach out to Iridium Wing for "
 "an escort."
@@ -9109,7 +9117,7 @@ msgstr ""
 "[Explorateurs] Pour revenir vers la bulle en sécurité, demandez une escorte "
 "à l'Iridium Wing."
 
-#: randomtips.py:173
+#: randomtips.py:174
 msgid ""
 "[Explorers] Throttle down to 0% when your jump completes to avoid bad "
 "surprises (e.g. neutron star, 2 stars close to each other)"
@@ -9117,14 +9125,14 @@ msgstr ""
 "[Explorateurs] Réduisez la poussée à chaque saut pour parer à toutes "
 "éventualités (e.g. étoile à neutrons)"
 
-#: randomtips.py:174
+#: randomtips.py:175
 msgid ""
 "[Traders] Don't be greedy, use your biggest slot for a shield not for cargo!"
 msgstr ""
 "[Marchands] Ne privilégiez jamais le profit avant votre sécurité: mettez un "
 "bouclier conséquent!"
 
-#: randomtips.py:175
+#: randomtips.py:176
 msgid ""
 "[Traders] Pledge for 4 weeks to Aisling Duval in order to get the stronger "
 "'prismatic shields'."
@@ -9132,7 +9140,7 @@ msgstr ""
 "[Marchands] Alignez vous avec Aisling Duval pendant 4 semaines pour obtenir "
 "des boucliers plus robustes dits prismatiques."
 
-#: randomtips.py:176
+#: randomtips.py:177
 msgid ""
 "[Traders] Engineer regular shields with Thermal Resistance, shield boosters "
 "with Heavy Duty."
@@ -9140,7 +9148,7 @@ msgstr ""
 "[Marchands] Améliorer vos boucliers avec une modification de résistance "
 "thermale, et vos survolteurs de boucliers avec une modification 'lourde'."
 
-#: randomtips.py:177
+#: randomtips.py:178
 msgid ""
 "[Traders] Engineer prismatic shields with Reinforced, even resistance % with "
 "Augmented Resistance on your shield boosters."
@@ -9149,7 +9157,7 @@ msgstr ""
 "renforcement, et égalez les résistances sur vos survolteurs avec résistance "
 "augmentée."
 
-#: randomtips.py:178
+#: randomtips.py:179
 msgid ""
 "[Traders] Rares are special goods (e.g. Hutton Mug, Sothis Gold). The "
 "further you take them from where you buy them (up to 200ly) the more you get "
@@ -9158,7 +9166,7 @@ msgstr ""
 "[Marchands] Les Rares sont des marchandises uniques dont le bénéfice accroit "
 "avec la distance, jusqu'à 200 années lumière, e.g. Hutton Mug, Sothis Gold."
 
-#: randomtips.py:179
+#: randomtips.py:180
 msgid ""
 "[Suicide trap] At busy stations, stay below 100 m/s or you will get killed "
 "by the station for colliding into a 'suicide eagle'."
@@ -9167,7 +9175,7 @@ msgstr ""
 "s pour éviter de faire les frais d'une collision volontaire contre un "
 "vaisseau suicide, e.g. un Eagle avec quelques % de coque."
 
-#: randomtips.py:180
+#: randomtips.py:181
 msgid ""
 "[Suicide trap] Advanced trap: force shells may push you over the 100m/s safe "
 "speed limit. Watch out for wings/duo and cannons loadouts."
@@ -9176,7 +9184,7 @@ msgstr ""
 "peuvent vous poussez au dessus des 100 m/s. Vérifiez qui est dans votre "
 "instance."
 
-#: randomtips.py:181
+#: randomtips.py:182
 msgid ""
 "[Anti-suicide trap] Buy an eagle, remove its shield, ram the suicide eagle "
 "before they destroy another ship."
@@ -9185,7 +9193,7 @@ msgstr ""
 "entrez en collision avec l'Eagle suicidaire avant qu'il n'est le temps de "
 "faire de même."
 
-#: randomtips.py:182
+#: randomtips.py:183
 msgid ""
 "[Anti-suicide trap] Stay under 100 m/s and ram the suicide eagle before they "
 "destroy another ship."
@@ -9193,7 +9201,7 @@ msgstr ""
 "[Contre-mesure piège suicide] Restez en dessous de 100 m/s et entrez en "
 "collision avec l'Eagle suicidaire pour lui dénier son opportunité."
 
-#: randomtips.py:183
+#: randomtips.py:184
 msgid ""
 "[Anti-suicide trap] Warn other commanders about the presence of a 'suicide "
 "eagle' as they approach or leave the station."
@@ -9202,7 +9210,7 @@ msgstr ""
 "présence d'un Eagle suicidaire lorsqu'ils approchent ou quittent le "
 "spatioport."
 
-#: randomtips.py:184
+#: randomtips.py:185
 msgid ""
 "[Powerplay hunters] Watch out for powerplay hunters at stations in enemy "
 "territory: fighting back will get you wanted."
@@ -9211,7 +9219,7 @@ msgstr ""
 "particulier aux abords d'un spatioport. Vous risquez de devenir recherché si "
 "vous essayez de vous défendre."
 
-#: randomtips.py:185
+#: randomtips.py:186
 msgid ""
 "[Anarchy] Watch for suspicious pilots, they can safely hunt/ram you even if "
 "you are clean (station and security won't retaliate)."
@@ -9219,7 +9227,7 @@ msgstr ""
 "[Anarchie] Dans un système anarchiste, ne comptez pas sur les statioports "
 "pour vous défendre en cas d'attaque par un autre commandant."
 
-#: randomtips.py:186
+#: randomtips.py:187
 msgid ""
 "[Station] The station fires back when hit. Use that to your advantage: stay "
 "close to the structure, chaff, etc."
@@ -9228,7 +9236,7 @@ msgstr ""
 "cela à votre avantage en restant près de la structure et en lançant des "
 "pailletes."
 
-#: randomtips.py:187
+#: randomtips.py:188
 msgid ""
 "[Station] The no-fire zone is a misnomer: players can and will fire at you "
 "at the cost of a small fine."
@@ -9237,7 +9245,7 @@ msgstr ""
 "Les autres commandants peuvent toujours vous tirez dessus pour une modique "
 "amende."
 
-#: randomtips.py:188
+#: randomtips.py:189
 msgid ""
 "[Escape] Bind a key/button to 'select next route' to quickly target your "
 "escape route."
@@ -9245,7 +9253,7 @@ msgstr ""
 "[S'échapper] Configurez la commande qui permet cibler le prochain système de "
 "l'itinéraire."
 
-#: randomtips.py:189
+#: randomtips.py:190
 msgid ""
 "[Escape] It is safer and faster to jump to a different system than going "
 "back to supercruise (i.e. 'high waking' is not subject to mass lock)."
@@ -9253,7 +9261,7 @@ msgstr ""
 "[S'échapper] Sauter vers un autre système est plus rapide et sur (i.e. vous "
 "ne serez pas affecté par les effets de masse)."
 
-#: randomtips.py:190
+#: randomtips.py:191
 msgid ""
 "[Interdiction] Do NOT attempt to win a player interdiction, instead submit "
 "to get a faster FSD cooldown."
@@ -9261,7 +9269,7 @@ msgstr ""
 "[Interdiction] N'essayez pas de gagner une interdiction à tout prix. En vous "
 "soumettant à une interdiction votre FSD se rechargera plus vite."
 
-#: randomtips.py:191
+#: randomtips.py:192
 msgid ""
 "[Interdiction] Type-7's have a high yaw rate which comes handy when fighting "
 "interdictions."
@@ -9269,7 +9277,7 @@ msgstr ""
 "[Interdiction] Le lacet des Type-7 est très utile pour combattre les "
 "interdictions."
 
-#: randomtips.py:192
+#: randomtips.py:193
 msgid ""
 "[Community Goal] Consider setting camp at a nearby system with a decent "
 "station instead of going straight for the CG system/station"
@@ -9278,7 +9286,7 @@ msgstr ""
 "un système voisin au lieu d'aller directement au système théâtre de "
 "l'opération communautaire"
 
-#: randomtips.py:193
+#: randomtips.py:194
 msgid ""
 "[Community Goal] Drop just before being interdicted, throttle to zero, "
 "charge your FSD, boost when the player shows up. Repeat."
@@ -9287,7 +9295,7 @@ msgstr ""
 "espace normal, mettez la poussée à zéro, chargez votre FSD, accélérez dès "
 "que l'autre commandant se pointe. Répétez jusqu'à votre arrivée."
 
-#: randomtips.py:194
+#: randomtips.py:195
 msgid ""
 "[Supercruise] Don't supercruise straight to the station, take a curve above "
 "the plane: faster and safer."
@@ -9296,7 +9304,7 @@ msgstr ""
 "navigation. Prenez une courbe au dessus du plan, c'est au final plus rapide "
 "et plus sur."
 
-#: randomtips.py:195
+#: randomtips.py:196
 msgid ""
 "[Supercruise] Go around planets and other stellar objects as they will slow "
 "you down."
@@ -9304,7 +9312,7 @@ msgstr ""
 "[Super-navigation] Utilisez les champs de gravitation pour décélérer plus "
 "rapidement."
 
-#: randomtips.py:196
+#: randomtips.py:197
 msgid ""
 "[Supercruise] 'Ride the 6': keep max speed until the countdown reaches 6 "
 "seconds, then middle of the blue zone."
@@ -9312,7 +9320,7 @@ msgstr ""
 "[Super-navigation] 'Surfez le 6': lorsque le temps d'arrivée atteint 6 "
 "secondes, réduisez votre vitesse jusqu'au milieu de la zone bleue."
 
-#: randomtips.py:197
+#: randomtips.py:198
 msgid ""
 "[Supercruise] If your destination is near a planet, have the planet behind "
 "you and use its gravity well to slow you down."
@@ -9320,7 +9328,7 @@ msgstr ""
 "[Super-navigation] Si votre destination se situe près d'une planète, faîtes "
 "en sort que la planète soit derrière vous afin de ralentir plus rapidement."
 
-#: randomtips.py:198
+#: randomtips.py:199
 msgid ""
 "[Combat] Put all 4 pips to SYS when being fired upon; move them where needed "
 "when not fired upon."
@@ -9328,7 +9336,7 @@ msgstr ""
 "[Combat] Répartissez 4 pips dans SYS si vous êtes sous le feu, répartissez "
 "suivant les besoins lorsque vous n'êtes pas la cible principale."
 
-#: randomtips.py:199
+#: randomtips.py:200
 msgid ""
 "[Combat] Don't fly in a straight line, you'll die if you do. Be evasive: "
 "combine rolls, turns, thrusters, boost and Fligh Assist Off."
@@ -9336,7 +9344,7 @@ msgstr ""
 "[Combat] Ne volez pas en ligne droite. Faîtes des manœuvres évasives: "
 "roulis, tangage, poussée latérale et verticale, boost, etc."
 
-#: randomtips.py:200
+#: randomtips.py:201
 msgid ""
 "[Combat] When shields drop, target specific modules. In particular: power "
 "plant, drives, biweave shields, weapons."
@@ -9344,7 +9352,7 @@ msgstr ""
 "[Combat] Après avoir supprimé le bouclier, ciblez des module spécifiques: "
 "générateur, moteurs, générateur de bouclier, armes."
 
-#: randomtips.py:201
+#: randomtips.py:202
 msgid ""
 "[Combat] Double shield cell banking: fire first cell, wait for 90 percents "
 "heat, fire heat sink, when heat drops rapidly fire the second cell."
@@ -9353,13 +9361,13 @@ msgstr ""
 "première cellule, 90 pourcents en température, dissipateur, chute rapide de "
 "la température, deuxième cellule."
 
-#: randomtips.py:202
+#: randomtips.py:203
 msgid "[Combat] Railgun with feedback cascade can counter shield cell banking."
 msgstr ""
 "[Combat] Les cannons électriques avec l'effet cascade peuvent nullifier "
 "l'apport des cellules de boucliers."
 
-#: randomtips.py:203
+#: randomtips.py:204
 msgid ""
 "[Combat] Best time to fire your shield cell is when you are at 1 / 1.5 ring "
 "and right in front of your opponent just as you are about to fly past them."
@@ -9367,7 +9375,7 @@ msgstr ""
 "[Combat] Le meilleur moment pour utiliser une cellule c'est lorsque vous "
 "êtes à 1 ou 1.5 anneaux de bouclier et lors d'une passe."
 
-#: randomtips.py:204
+#: randomtips.py:205
 msgid ""
 "[Interdicted] Put 4 pips to SYS, 2 to ENG and fly evasive. Hit next route "
 "and high wake asap, do not fly in a straight line."
@@ -9375,12 +9383,12 @@ msgstr ""
 "[Interdiction] Mettez 4 pips dans SYS, 2 dans MOT et volez en mode évasif. "
 "Sélectionner un autre système et faîtes un saut hyper-espace."
 
-#: randomtips.py:205
+#: randomtips.py:206
 msgid "[Pirates] Follow their instructions and you will avoid a certain death."
 msgstr ""
 "[Pirates] Suivez leurs instructions et vous éviterez une mort certaine."
 
-#: randomtips.py:206
+#: randomtips.py:207
 msgid ""
 "[Fuel] Mnemonics for fuel scoopable stars: KGB FOAM or 'Oh Be A Fine Girl "
 "Kiss Me'."
@@ -9388,13 +9396,13 @@ msgstr ""
 "[Fuel] Mnémonique pour les étoiles de ravitaillement: KGB FOAM ou 'Oh Be A "
 "Fine Girl Kiss Me'."
 
-#: randomtips.py:207
+#: randomtips.py:208
 msgid "[Fuel] Out of fuel? Call the fuel rats (https://fuelrats.com/)."
 msgstr ""
 "[Carburant] Plus de carburant? Appelez les 'fuel rats' à la rescousse: "
 "https://fuelrats.com/."
 
-#: randomtips.py:208
+#: randomtips.py:209
 msgid ""
 "[Bounty hunting] Don't steal kills. Instead, ask to join a wing: everyone "
 "will get the same bounty and way faster."
@@ -9402,7 +9410,7 @@ msgstr ""
 "[Chasse à la prime] N'hésitez pas à demander de rejoindre une esquadrille: "
 "tous les membres recevront la prime en entier mais plus rapidement."
 
-#: randomtips.py:209
+#: randomtips.py:210
 msgid ""
 "[Community] Most players are just nice folks. Chat with people, make "
 "friends. It might come handy."
@@ -9410,19 +9418,19 @@ msgstr ""
 "[Communauté] La plupart des pilotes sont sympa, n'hésitez pas à chatter et "
 "vous faire des amis."
 
-#: randomtips.py:210
+#: randomtips.py:211
 msgid "[Defense] Fit Point Defenses to your ship to destroy missiles and mines"
 msgstr ""
 "[Défenses] Equipez des défenses ponctuelles afin de détruire les mines et "
 "missiles"
 
-#: randomtips.py:211
+#: randomtips.py:212
 msgid ""
 "[Defense] Like the song says you've got to know when to walk away and know "
 "when to run."
 msgstr "[Défense] Sachez quand il vaut mieux prendre la poudre d'escampette."
 
-#: randomtips.py:212
+#: randomtips.py:213
 msgid ""
 "[Mining] Limit your cargo (e.g. LTD) to be within 10 percents of the demand "
 "of a market in order to get the highest price."
