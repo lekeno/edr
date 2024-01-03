@@ -102,7 +102,7 @@ class EDTime(comparable.ComparableMixin):
             return d + (datetime.date(d.year + EDTime.immersive_delta(), 1, 1) - datetime.date(d.year, 1, 1))
 
     def __init__(self):
-        self._datetime = datetime.datetime.now()
+        self._datetime = datetime.datetime.now(datetime.timezone.utc)
 
     def from_datetime(self, datetimestamp):
         self._datetime = datetimestamp
