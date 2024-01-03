@@ -198,8 +198,6 @@ class EDRSettlementCheckerFactory(object):
     GVT_LUT = {
         _("anarchy"): "anarchy",
         _("anar"): "anarchy",
-        _("colony"): "colony",
-        _("communism"): "communism",
         _("confederacy"): "confederacy",
         _("cooperative"): "cooperative",
         _("corporate"): "corporate",
@@ -211,15 +209,19 @@ class EDRSettlementCheckerFactory(object):
         _("prison"): "prison",
         _("prison colony"): "prison colony",
         _("theocracy"): "theocracy",
-        _("engineer"): "engineer",
-        _("privateownership"): "privateownership",
+        _("engineer"): "workshop (engineer)", # not "engineer",
+        _("communism"): "communism",
+        # _("privateownership"): "fleetcarrier"
+        # _("colony"): "colony", # Does not exist
     }
 
     ALG_LUT = {
         _("independent"): "independent",
         _("alliance"): "alliance",
-        _("federal"): "federal",
-        _("imperial"): "imperial",
+        _("federal"): "federation",
+        _("federation"): "federation",
+        _("imperial"): "empire",
+        _("empire"): "empire",
         _("pirate"): "pirate",
         _("pilotsfederation"): "pilots federation",
         _("thargoids"): "thargoids",
@@ -232,55 +234,56 @@ class EDRSettlementCheckerFactory(object):
         _("boom"): "boom",
         _("civilliberty"): "civil liberty",
         _("civilunrest"): "civil unrest",
+        _("coldwar"): "cold war", # may not exist
         _("civilwar"): "civil war",
-        _("coldwar"): "cold ward",
-        _("colonisation"): "colonisation",
+        _("colonisation"): "colonisation", # may not exist
         _("drought"): "drought",
         _("elections"): "elections",
         _("expansion"): "expansion",
         _("famine"): "famine",
-        _("historicevent"): "historic event",
-        _("incursion"): "incursion",
-        _("infested"): "infested",
+        _("historicevent"): "historic event", # may not exist
+        _("incursion"): "incursion", # may not exist
+        _("infested"): "infested", # may not exist
         _("infrastructurefailure"): "infrastructure failure",
         _("investment"): "investment",
         _("lockdown"): "lockdown",
-        _("natural disaster"): "natural disaster",
+        _("naturaldisaster"): "natural disaster",
         _("outbreak"): "outbreak",
         _("pirateattack"): "pirate attack",
         _("publicholiday"): "public holiday",
         _("retreat"): "retreat",
-        _("revolution"): "revolution",
-        _("technologicalleap"): "technological leap",
+        _("revolution"): "revolution", # may not exist
+        _("technologicalleap"): "technological leap", # may not exist
         _("terroristattack"): "terrorist attack",
-        _("tradewar"): "trade war",
+        _("tradewar"): "trade war", # may not exist
         _("war"): "war",
     }
 
+    # TODO
     ECO_LUT = {
         _("agriculture"): "agriculture",
         _("agri"): "agriculture",
         _("colony"): "colony",
-        _("damaged"): "damaged",
+        _("damaged"): "damaged", # may not exist
         _("engineer"): "engineer",
         _("extraction"): "extraction",
         _("extr"): "extraction",
-        _("hightech"): "hightech",
-        _("high"): "hightech",
+        _("hightech"): "high tech",
+        _("high"): "high tech",
         _("industrial"): "industrial",
         _("indu"): "industrial",
         _("military"): "military",
         _("mili"): "military",
         _("prison"): "prison",
-        _("privateenterprise"): "private enterprise",
+        _("privateenterprise"): "fleet carrier",
         _("refinery"): "refinery",
-        _("repair"): "repair",
+        _("repair"): "repair", #  may not exist
         _("rescue"): "rescue",
         _("service"): "service",
         _("terraforming"): "terraforming",
         _("tourism"): "tourism",
         _("tour"): "tourism",
-        _("underattack"): "under attack",
+        _("underattack"): "under attack", # may not exist
     }
 
     @staticmethod
