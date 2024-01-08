@@ -323,7 +323,9 @@ class EDRSettlementCheckerFactory(object):
 
     @staticmethod
     def recognized_settlement(settlement_conditions):
-        cconditions = settlement_conditions.lower().strip().split(",")
+        cconditions = settlement_conditions.lower().strip().replace(" ", "")
+        cconditions = cconditions.split(",")
+
         all_supported_conditions = {
             **EDRSettlementCheckerFactory.COMBOS_LUT,
             **EDRSettlementCheckerFactory.GVT_LUT,
