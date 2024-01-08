@@ -124,7 +124,7 @@ class EDRSettlementFinder(threading.Thread):
         candidate = self.__settlement_in_system(system)
         if candidate:
             check_sc_distance = candidate['distanceToArrival'] <= self.sc_distance
-            ambiguous = self.checker.is_ambiguous(candidate)
+            ambiguous = self.checker.is_ambiguous(candidate, system['name'])
             EDRLOG.log(u"System {} has a candidate {}: ambiguous {}, sc_distance {}".format(system['name'], candidate['name'], ambiguous, check_sc_distance), "DEBUG")
             if check_sc_distance and not ambiguous:
                 trialed = system
@@ -177,11 +177,11 @@ class EDRSettlementFinder(threading.Thread):
             factionIDName = settlement.get("controllingFaction", { "id": -1, "name": ""})
             factionName = factionIDName.get("name", "")
             faction = self.edr_systems.faction_in_system(factionName, system_name)
-            if faction and faction.get("state", "None") in self.exclude_states:
+            if faction and faction.state in self.exclude_states:
                 EDRLOG.log("Skipping {} due to bad state for the controlling faction: {}".format(settlement, faction), "DEBUG")
                 continue
 
-            if self.include_states and faction and faction.get("state", "None") not in self.include_states:
+            if self.include_states and faction and faction.state not in self.include_states:
                 EDRLOG.log("Skipping {} due to state not matching any of the the required state for the controlling faction: {}".format(settlement, faction), "DEBUG")
                 continue
             
