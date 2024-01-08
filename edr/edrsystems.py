@@ -604,8 +604,8 @@ class EDRSystems(object):
             factionName = the_system["information"].get("faction", None)
             if factionName:
                 faction = self.factions.get(factionName, name)
-                if faction and faction.isPlayer:
-                    info += _("Fac: {}  PMF: {}").format(factionName, u"●" if faction.isPlayer else u"◌")
+                if faction and faction.isPMF:
+                    info += _("Fac: {}  PMF: {}").format(factionName, u"●" if faction.isPMF else u"◌")
                 else:
                     info += _("Fac: {}  ").format(factionName)
             
@@ -831,7 +831,8 @@ class EDRSystems(object):
             pass
 
         if "updateTime" in the_body:
-            details.append(_("as of {}  ").format(the_body["updateTime"]))
+            updated= EDTime.from_edsm_timestamp(the_body["updateTime"])
+            details.append(_("as of {}  ").format(updated.as_local_timestamp()))
         
         return details
 
@@ -2073,7 +2074,7 @@ class EDRSystems(object):
         return value
 
     def faction_in_system(self, name, star_system):
-        return self.factions.faction_in_system(name, star_system)
+        return self.factions.get(name, star_system)
 
 
     def system_allegiance(self, star_system):
