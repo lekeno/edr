@@ -571,15 +571,20 @@ class InGameMsg(object):
             if "government" in station:
                 qualifiers.append(station["government"])
             
-            if faction and faction.isPlayer != None:
-                qualifiers.append(_("PMF: {}").format(u"●" if faction.isPlayer else u"◌"))
+            if faction:
+                if faction.state != None and faction.state.lower() != "none":
+                    qualifiers.append(faction.state)
+
+                if faction.isPMF != None:
+                    qualifiers.append(_("PMF: {}").format(u"●" if faction.isPMF else u"◌"))
 
             if qualifiers:
                 details.append("{name} ({qualifiers})".format(name=controllingFactionName, qualifiers=", ".join(qualifiers)))
             else:
                 details.append("{name}".format(name=controllingFactionName))
-                
-        details.append(_(u"as of {date}").format(date=station['updateTime']['information']))
+
+        updated = EDTime.from_edsm_timestamp(station['updateTime']['information'])
+        details.append(_(u"as of {date}").format(date=updated.as_local_timestamp()))
         return details
     
     def describe_ed_settlement(self, entry, faction):
@@ -602,18 +607,20 @@ class InGameMsg(object):
         if "StationFaction" in entry:
             factionName = entry["StationFaction"].get("Name", "???")
             qualifiers = []
-            if "FactionState" in entry["StationFaction"]:
-                qualifiers.append(entry["StationFaction"]["FactionState"])
-                
-            if "StationGovernment_Localised" in entry:
-                qualifiers.append(entry["StationGovernment_Localised"])
-            
             if "StationAllegiance" in entry:
                 qualifiers.append(entry["StationAllegiance"])
 
-            if faction and faction.isPlayer != None:
-                qualifiers.append(_("PMF: {}").format(u"●" if faction.isPlayer else u"◌"))
+            if "StationGovernment_Localised" in entry:
+                qualifiers.append(entry["StationGovernment_Localised"])
+            
+            if faction and faction.isPMF != None:
+                qualifiers.append(_("PMF: {}").format(u"●" if faction.isPMF else u"◌"))
 
+            if entry["StationFaction"].get("FactionState", "").lower() not in ["", "none"]:
+                qualifiers.append(entry["StationFaction"]["FactionState"])
+            elif faction and faction.state and faction.state.lower() != "none":
+                qualifiers.append(faction.state)
+                
             if qualifiers:
                 details.append("{name} ({qualifiers})".format(name=factionName, qualifiers=", ".join(qualifiers)))
             else:
@@ -650,7 +657,8 @@ class InGameMsg(object):
         if a == u"●" or b == u"●" or c == u"●":
             details.append(_(u"Redempt.O:{}   Pioneer S:{}   Lounge:{}").format(a,b,c))
 
-        details.append(_(u"as of {date}").format(date=fc['updateTime']['information']))
+        updated= EDTime.from_edsm_timestamp(fc['updateTime']['information'])
+        details.append(_(u"as of {date}").format(date=updated.as_local_timestamp()))
         return details
 
     def docking(self, system, station, pad, faction):
