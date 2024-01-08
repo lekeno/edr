@@ -50,7 +50,7 @@ class EDRSystemSettlementCheck(object):
         EDRLOG.log("Dist: {} vs {}".format(settlement['distanceToArrival'], self.max_sc_distance), "DEBUG")
         return settlement['distanceToArrival'] < self.max_sc_distance
     
-    def is_ambiguous(self, settlement):
+    def is_ambiguous(self, settlement, system_name=None):
         
         timestamps = settlement.get("updateTime", None)
         if not timestamps:
@@ -109,69 +109,105 @@ class EDROdySettlementCheck(EDRSystemOdySettlementCheck):
         self.edrsystems = edrsystems
 
     def check_settlement(self, settlement, system_name=None):
-        EDRLOG.log("Checking OdySettlEco: {}".format(settlement['name']), "DEBUG")
+        EDRLOG.log("Checking Odyssey Settlement {}; details: {}".format(settlement['name'], settlement), "DEBUG")
         if not super().check_settlement(settlement):
-            EDRLOG.log("Failed settlementcheck", "DEBUG")
+            EDRLOG.log("Failed basic checks", "DEBUG")
             return False
 
         eco = settlement.get('economy', None)
-        EDRLOG.log("Eco: {}".format(eco), "DEBUG")
         if self.economies:
             if not eco or eco.lower() not in self.economies:
-                EDRLOG.log("Eco not matching any required state for the controlling faction: {} with {}".format(settlement, eco), "DEBUG")
+                EDRLOG.log("Eco not matching any required state for the controlling faction: {} vs. {}".format(eco, self.economies), "DEBUG")
                 return False
             
         if self.exclude_economies:
             if not eco or eco.lower() in self.exclude_economies:
-                EDRLOG.log("Eco matching an exluded state for the controlling faction: {} with {}".format(settlement, eco), "DEBUG")
+                EDRLOG.log("Eco matching an exluded state for the controlling faction: {} vs. {}".format(eco, self.exclude_economies), "DEBUG")
                 return False
     
         gvt = settlement.get('government', None)
-        EDRLOG.log("GVT: {}".format(gvt), "DEBUG")
         if self.governments:
             if not gvt or gvt.lower() not in self.governments:
-                EDRLOG.log("Gvt not matching any required state for the controlling faction: {} with {}".format(settlement, gvt), "DEBUG")
+                EDRLOG.log("Gvt not matching any required state for the controlling faction: {} vs. {}".format(gvt, self.governments), "DEBUG")
                 return False
             
         if self.exclude_governments:
             if not gvt or gvt.lower() in self.exclude_governments:
-                EDRLOG.log("Gvt matching an excluded state for the controlling faction: {} with {}".format(settlement, gvt), "DEBUG")
+                EDRLOG.log("Gvt matching an excluded state for the controlling faction: {} vs. {}".format(gvt, self.exclude_governments), "DEBUG")
                 return False
                 
         alg = settlement.get('allegiance', None)
-        EDRLOG.log("ALG: {}".format(alg), "DEBUG")
         if self.allegiances:
             if not alg or alg.lower() not in self.allegiances:
-                EDRLOG.log("Alg not matching any required state for the controlling faction: {} with {}".format(settlement, alg), "DEBUG")
+                EDRLOG.log("Alg not matching any required state for the controlling faction: {} vs. {}".format(alg, self.allegiances), "DEBUG")
                 return False
             
         if self.exclude_allegiances:
             if not alg or alg.lower() in self.exclude_allegiances:
-                EDRLOG.log("Alg matching an excluded state for the controlling faction: {} with {}".format(settlement, alg), "DEBUG")
+                EDRLOG.log("Alg matching an excluded state for the controlling faction: {} vs. {}".format(alg, self.exclude_allegiances), "DEBUG")
                 return False
         
         factionIDName = settlement.get("controllingFaction", { "id": -1, "name": ""})
         factionName = factionIDName.get("name", "")
         faction = self.edrsystems.faction_in_system(factionName, system_name)
-        state = faction.get("state", "None").lower()
+        EDRLOG.log("Checking faction: {}".format(faction), "DEBUG")
+        state = faction.state if faction else None
+        
         if self.bgs_states:
-            if not faction or state not in self.bgs_states:
-                EDRLOG.log("BGS not matching any required state for the controlling faction: {} with {}".format(settlement, state), "DEBUG")
+            if not faction:
+                EDRLOG.log("No faction info => can't match against BGS conditions", "DEBUG")
+                return False
+            
+            if state not in self.bgs_states:
+                EDRLOG.log("BGS not matching any required state for the controlling faction: {} vs. {}".format(state, self.bgs_states), "DEBUG")
                 return False
             
         if self.exclude_bgs_states:
-            if not faction or state in self.exclude_bgs_states:
-                EDRLOG.log("BGS matching an excluded state for the controlling faction: {} with {}".format(settlement, state), "DEBUG")
+            if not faction:
+                EDRLOG.log("No faction info => can't match against BGS exclusions", "DEBUG")
+                return False
+            
+            if state in self.exclude_bgs_states:
+                EDRLOG.log("BGS matching an excluded state for the controlling faction: {} vs. {}".format(state, self.exclude_bgs_states), "DEBUG")
                 return False
         
         return True
+    
+    def is_ambiguous(self, settlement, system_name=None):
+        if super().is_ambiguous(settlement):
+            return True
+        
+        if not system_name:
+            return True
+        
+        factionIDName = settlement.get("controllingFaction", { "id": -1, "name": ""})
+        factionName = factionIDName.get("name", "")
+        faction = self.edrsystems.faction_in_system(factionName, system_name)
+        if not faction:
+            return True
+        
+        reference = faction.timestamps["state"]
+        if not reference:
+            EDRLOG.log("Faction {} is ambiguous because its BGS state is unknown (no update timestamp)".format(factionName), "DEBUG")
+            return True
+        
+        limit_BGS = EDTime()
+        limit_BGS.rewind(60*60*24)
+        too_old = reference <= limit_BGS.as_py_epoch()
+        if too_old:
+            EDRLOG.log("Faction {} is ambiguous because its last known BGS state is too old: {}".format(EDTime.t_minus_py(reference)), "DEBUG")
+            return True
+        
+        return False
+        
+
 
 class EDRCZSettlementChecker(EDROdySettlementCheck):
     def __init__(self, system):
         super().__init__(system)
         self.bgs_states.add("civil war")
         self.bgs_states.add("war")
-        self.exlude_bgs_states = set()
+        self.exclude_bgs_states = set()
 
 class EDRRetoreSettlementChecker(EDROdySettlementCheck):
     def __init__(self, system):
@@ -259,7 +295,6 @@ class EDRSettlementCheckerFactory(object):
         _("war"): "war",
     }
 
-    # TODO
     ECO_LUT = {
         _("agriculture"): "agriculture",
         _("agri"): "agriculture",
