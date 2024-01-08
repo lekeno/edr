@@ -76,7 +76,7 @@ class EDRFaction(object):
         for state in recovering_states:
             self.recovering_states.add(EDRFaction._simplified_state(state.get("State", "None")))
         
-        self.government = info.get("Government", None)
+        self.government = info.get("Government", "").lower()
         self.isPMF = None
         
         edt = EDTime()
