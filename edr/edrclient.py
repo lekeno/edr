@@ -3333,9 +3333,10 @@ class EDRClient(object):
             distance = result['distance']
             pretty_dist = _(u"{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _(u"{dist}LY").format(dist=int(distance))
             pretty_sc_dist = _(u"{dist}LS").format(dist=int(sc_distance))
+            updated = EDTime.from_edsm_timestamp(result['station']['updateTime']['information'])
             details.append(_(u"{system}, {dist}").format(system=result['name'], dist=pretty_dist))
             details.append(_(u"{station} ({type}), {sc_dist}").format(station=result['station']['name'], type=result['station']['type'], sc_dist=pretty_sc_dist))
-            details.append(_(u"as of {date} {ci}").format(date=result['station']['updateTime']['information'],ci=result['station'].get('comment', '')))
+            details.append(_(u"as of {date} {ci}").format(date=updated.as_local_timestamp(),ci=result['station'].get('comment', '')))
             self.status = u"{item}: {system}, {dist} - {station} ({type}), {sc_dist}".format(item=soi_checker.name, system=result['name'], dist=pretty_dist, station=result['station']['name'], type=result['station']['type'], sc_dist=pretty_sc_dist)
             copy(result["name"])
         else:
@@ -3357,9 +3358,10 @@ class EDRClient(object):
             pretty_dist = _(u"{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _(u"{dist}LY").format(dist=int(distance))
             pretty_sc_dist = _(u"{dist}LS").format(dist=int(sc_distance))
             planet_name = simplified_body_name(result['name'], result['planet']['name'])
+            updated = EDTime.from_edsm_timestamp(result['planet']['updateTime'])
             details.append(_(u"{system}, {dist}").format(system=result['name'], dist=pretty_dist))
             details.append(_(u"{planet} ({type}, {atm}), {sc_dist}").format(planet=planet_name, type=result['planet']['subType'], atm=result['planet']['atmosphereType'], sc_dist=pretty_sc_dist))
-            details.append(_(u"as of {date}").format(date=result['planet']['updateTime']))
+            details.append(_(u"as of {date}").format(date=updated.as_local_timestamp()))
             self.status = u"{item}: {system}, {dist} - {planet}, {sc_dist}".format(item=plaoi_checker.name, system=result['name'], dist=pretty_dist, planet=planet_name, sc_dist=pretty_sc_dist)
             copy(result["name"])
         else:
@@ -3381,6 +3383,7 @@ class EDRClient(object):
             distance = result['distance']
             pretty_dist = _(u"{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _(u"{dist}LY").format(dist=int(distance))
             pretty_sc_dist = _(u"{dist}LS").format(dist=int(sc_distance))
+            updated = EDTime.from_edsm_timestamp(settlement['updateTime']['information'])
             details.append(_(u"{system}, {dist}").format(system=result['name'], dist=pretty_dist))
             if 'body' in settlement:
                 bodyName = settlement['body']['name']
@@ -3390,9 +3393,20 @@ class EDRClient(object):
                 details.append(_(u"{settlement} ({eco}), {sc_dist}").format(settlement=settlement['name'], eco=settlement["economy"], sc_dist=pretty_sc_dist))
             
             if 'controllingFaction' in settlement:
-                details.append(_(u"{faction} ({gvt}, {alg})").format(faction=settlement['controllingFaction']['name'], gvt=settlement['government'], alg=settlement['allegiance'])) # TODO add state?
-            details.append(_(u"as of {date} {ci}").format(date=settlement['updateTime']['information'],ci=settlement.get('comment', '')))
-            self.status = u"{item}: {system}, {dist} - {settlement}, {sc_dist}".format(item=settloi_checker.name, system=result['name'], dist=pretty_dist, settlement=settlement['name'], sc_dist=pretty_sc_dist)
+                faction = self.edrfactions.get(result["name"], settlement['controllingFaction']['name'])
+                if faction:
+                    updated = faction.lastUpdated
+                    if faction.state != None:
+                        details.append(_(u"{faction} ({bgs}, {gvt}, {alg})").format(faction=faction.name, bgs=faction.state, gvt=faction.government, alg=faction.allegiance))
+                    else:
+                        details.append(_(u"{faction} ({gvt}, {alg})").format(faction=settlement['controllingFaction']['name'], gvt=settlement['government'], alg=settlement['allegiance']))
+                else:
+                    if 'state' in settlement["controllingFaction"]:
+                        details.append(_(u"{faction} ({bgs}, {gvt}, {alg})").format(faction=settlement['controllingFaction']['name'], bgs=settlement['controllingFaction']['state'], gvt=settlement['government'], alg=settlement['allegiance']))
+                    else:
+                        details.append(_(u"{faction} ({gvt}, {alg})").format(faction=settlement['controllingFaction']['name'], gvt=settlement['government'], alg=settlement['allegiance']))
+            details.append(_(u"as of {date} {ci}").format(date=updated.as_local_timestamp(),ci=settlement.get('comment', '')))
+            self.status = u"{system}, {dist} - {settlement}, {sc_dist}".format(system=result['name'], dist=pretty_dist, settlement=settlement['name'], sc_dist=pretty_sc_dist)
             copy(result["name"])
         else:
             self.status = _(u"{}: nothing within [{}LY, {}LS] of {}").format(settloi_checker.name, int(radius), int(sc), reference)
@@ -3570,7 +3584,7 @@ class EDRClient(object):
             edt = EDTime()
             if 'updateTime' in result:
                 edt.from_js_epoch(result['updateTime'] * 1000)
-                details.append(_(u"as of {}").format(edt.as_date()))
+                details.append(_(u"as of {}").format(edt.as_local_timestamp()))
             if checker.hint():
                 details.append(checker.hint())
             self.status = u"{}: {} ({}LY)".format(checker.name, result['name'], pretty_dist)
