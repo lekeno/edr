@@ -110,6 +110,9 @@ class EDTime(comparable.ComparableMixin):
     def from_js_epoch(self, js_epoch):
         self._datetime = datetime.datetime.fromtimestamp(js_epoch // 1000, datetime.timezone.utc)
 
+    def from_py_epoch(self, py_epoch):
+        self._datetime = datetime.datetime.fromtimestamp(py_epoch, datetime.timezone.utc)
+
     def from_journal_timestamp(self, journal_timestamp):
         self._datetime = datetime.datetime.strptime(journal_timestamp, '%Y-%m-%dT%H:%M:%S%z')
 
@@ -127,9 +130,18 @@ class EDTime(comparable.ComparableMixin):
 
     def as_journal_timestamp(self):
         return self._datetime.strftime('%Y-%m-%dT%H:%M:%SZ')
+    
+    def as_timestamp(self):
+        return self._datetime.strftime('%Y-%m-%dT%H:%M:%S')
+    
+    def as_local_timestamp(self):
+        return self._datetime.astimezone().strftime('%Y-%m-%dT%H:%M:%S')
 
     def as_date(self):
         return self._datetime.strftime('%Y-%m-%d')
+
+    def as_local_date(self):
+        return self._datetime.astimezone().strftime('%Y-%m-%d')
         
     def as_immersive_date(self):
         immersive_datetime = self.__immmersive()
