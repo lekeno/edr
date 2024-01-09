@@ -135,7 +135,7 @@ class EDTime(comparable.ComparableMixin):
         return self._datetime.strftime('%Y-%m-%dT%H:%M:%S')
     
     def as_local_timestamp(self):
-        return self._datetime.astimezone().strftime('%Y-%m-%dT%H:%M:%S')
+        return self._datetime.astimezone().strftime('%Y-%m-%d %H:%M:%S')
 
     def as_date(self):
         return self._datetime.strftime('%Y-%m-%d')
