@@ -109,7 +109,7 @@ class EDRFaction(object):
             self.influence = faction_info["Influence"]
             self.timestamps["influence"] = self.lastUpdated
         
-        if "FactionStates" in faction_info:
+        if "FactionState" in faction_info:
             self.state = EDRFaction._simplified_state(faction_info["FactionState"])
             self.timestamps["state"] = self.lastUpdated
         
@@ -216,7 +216,7 @@ class EDRFaction(object):
         details.append("Sta: {} @ {}".format(self.state, self.timestamps["state"]))
         details.append("Inf: {} @ {}".format(self.influence, self.timestamps["influence"]))
         details.append("PMF: {} @ {}".format(self.isPMF, self.timestamps["isPMF"]))
-        return details.join("; ")
+        return "; ".join(details)
 
     def chance_of_rare_mats(self):
         good_states = self.active_states.intersection(set(['outbreak', 'war', 'boom', 'civil unrest', 'war', 'civil war', 'famine', 'election', 'none']))
@@ -498,12 +498,12 @@ class EDRFactions(object):
             cname = faction["Name"].lower()
             tracked.add(cname)
             if cname in factions_in_system:
-                EDRLOG.log("Updating faction in {}: before= {}".format(star_system, factions_in_system[cname]))
+                EDRLOG.log("Updating faction in {}: before= {}".format(star_system, factions_in_system[cname]), "DEBUG")
                 factions_in_system[cname].updateFromED(faction)
-                EDRLOG.log("Updating faction in {}: after= {}".format(star_system, factions_in_system[cname]))
+                EDRLOG.log("Updating faction in {}: after= {}".format(star_system, factions_in_system[cname]), "DEBUG")
             else:
                 new_faction = EDRFaction(faction)
-                EDRLOG.log("Adding faction for {}: {}".format(star_system, new_faction))
+                EDRLOG.log("Adding faction for {}: {}".format(star_system, new_faction), "DEBUG")
                 factions_in_system[cname] = new_faction
 
         if tracked != factions_in_system.keys():
@@ -629,6 +629,10 @@ class EDRFactions(object):
         controlling_faction_for_system = self.controlling_factions_cache.get(star_system.lower())
         
         edsm_factions = self.__get_all_from_edsm(star_system)
+        if not edsm_factions:
+            EDRLOG.log("No factions from EDSM for {}".format(star_system), "DEBUG")
+            return None
+        
         edsm_controlling_faction_name = edsm_factions["controllingFaction"]["name"] if "controllingFaction" in edsm_factions else None
         
         edsm_more_recent = True
