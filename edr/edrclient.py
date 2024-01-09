@@ -82,7 +82,10 @@ class EDRClient(object):
             "parking": { "advertised": False, "ad": [_(u"You may want to give a shot to the !parking command next time."), _(u"It will help you find a parking slot for your Fleet Carrier near busy systems.")]}
         }
 
-        self.searching = False
+        self.searching = {
+            "active": False,
+            "timestamp": EDTime.py_epoch_now()
+        }
 
         self.blips_cache = LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
         self.cognitive_blips_cache = LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
@@ -2810,7 +2813,7 @@ class EDRClient(object):
         if not star_system:
             return False
 
-        if self.searching:
+        if self.__is_searching_recently():
             self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True, sfx=False)
             if self.audio_feedback:
                 self.SFX.searching()
@@ -2829,13 +2832,13 @@ class EDRClient(object):
 
         try:
             self.edrsystems.search_interstellar_factors(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
-            self.searching = True
+            self.__searching()
             self.status = _(u"I.Factors: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Interstellar Factors: searching...")], clear_before = True, sfx=False)
             if self.audio_feedback:
                 self.SFX.searching()
         except ValueError:
-            self.searching = False
+            self.__searching(False)
             self.status = _(u"I.Factors: failed")
             self.notify_with_details(_(u"EDR Search"), [_(u"Unknown system")])
 
@@ -2845,13 +2848,13 @@ class EDRClient(object):
 
         try:
             self.edrsystems.search_raw_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
-            self.searching = True
+            self.__searching()
             self.status = _(u"Raw mat. trader: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Raw material trader: searching...")], clear_before = True, sfx=False)
             if self.audio_feedback:
                 self.SFX.searching()
         except ValueError:
-            self.searching = False
+            self.__searching(False)
             self.status = _(u"Raw mat. trader: failed")
             self.notify_with_details(_(u"EDR Search"), [_(u"Unknown system")])
         
@@ -2861,13 +2864,13 @@ class EDRClient(object):
 
         try:
             self.edrsystems.search_encoded_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
-            self.searching = True
+            self.__searching()
             self.status = _(u"Encoded data trader: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Encoded data trader: searching...")], clear_before = True, sfx=False)
             if self.audio_feedback:
                 self.SFX.searching()
         except ValueError:
-            self.searching = False
+            self.__searching(False)
             self.status = _(u"Encoded data trader: failed")
             self.notify_with_details(_(u"EDR Search"), [_(u"Unknown system")])
 
@@ -2878,13 +2881,13 @@ class EDRClient(object):
         
         try:
             self.edrsystems.search_manufactured_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
-            self.searching = True
+            self.__searching()
             self.status = _(u"Manufactured mat. trader: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Manufactured material trader: searching...")], clear_before = True, sfx=False)
             if self.audio_feedback:
                 self.SFX.searching()
         except ValueError:
-            self.searching = False
+            self.__searching(False)
             self.status = _(u"Manufactured mat. trader: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
@@ -2895,13 +2898,13 @@ class EDRClient(object):
 
         try:
             self.edrsystems.search_staging_station(star_system, self.__staoi_found, override_sc_distance=override_sc_distance)
-            self.searching = True
+            self.__searching()
             self.status = _(u"Staging station: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Staging station: searching...")], clear_before = True, sfx=False)
             if self.audio_feedback:
                 self.SFX.searching()
         except ValueError:
-            self.searching = False
+            self.__searching(False)
             self.status = _(u"Staging station: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
@@ -2914,13 +2917,13 @@ class EDRClient(object):
 
         try:
             self.edrsystems.search_parking_system(star_system, self.__parking_found, override_rank=override_rank)
-            self.searching = True
+            self.__searching()
             self.status = _(u"Parking system: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Parking system: searching...")], clear_before = True, sfx=False)
             if self.audio_feedback:
                 self.SFX.searching()
         except ValueError:
-            self.searching = False
+            self.__searching(False)
             self.status = _(u"Parking system: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
@@ -2930,7 +2933,7 @@ class EDRClient(object):
 
         try:
             self.edrsystems.search_rrr_fc(star_system, self.__staoi_found, override_radius=override_radius)
-            self.searching = True
+            self.__searching()
             self.status = _(u"RRR Fleet Carrier: searching...")
             details = [_(u"RRR Fleet Carrier: searching in {}...").format(star_system), _(u"If there are no results, try: !rrrfc {} < 15").format(star_system)]
             if override_radius:
@@ -2939,7 +2942,7 @@ class EDRClient(object):
             if self.audio_feedback:
                 self.SFX.searching()
         except ValueError:
-            self.searching = False
+            self.__searching(False)
             self.status = _(u"RRR Fleet Carrier: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
@@ -2949,7 +2952,7 @@ class EDRClient(object):
 
         try:
             self.edrsystems.search_rrr(star_system, self.__staoi_found, override_radius=override_radius)
-            self.searching = True
+            self.__searching()
             self.status = _(u"RRR Station: searching...")
             details = [_(u"RRR Station: searching in {}...").format(star_system), _(u"If there are no results, try: !rrr {} < 15").format(star_system)]
             if override_radius:
@@ -2958,7 +2961,7 @@ class EDRClient(object):
             if self.audio_feedback:
                 self.SFX.searching()
         except ValueError:
-            self.searching = False
+            self.__searching(False)
             self.status = _(u"RRR Station: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
@@ -3250,13 +3253,13 @@ class EDRClient(object):
 
         try:
             self.edrsystems.search_human_tech_broker(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
-            self.searching = True
+            self.__searching()
             self.status = _(u"Human tech broker: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Human tech broker: searching...")], clear_before = True, sfx=False)
             if self.audio_feedback:
                 self.SFX.searching()
         except ValueError:
-            self.searching = False
+            self.__searching(False)
             self.status = _(u"Human tech broker: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
     
@@ -3266,13 +3269,13 @@ class EDRClient(object):
 
         try:
             self.edrsystems.search_guardian_tech_broker(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
-            self.searching = True
+            self.__searching()
             self.status = _(u"Guardian tech broker: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Guardian tech broker: searching...")], clear_before = True, sfx=False)
             if self.audio_feedback:
                 self.SFX.searching()
         except ValueError:
-            self.searching = False
+            self.__searching(False)
             self.status = _(u"Guardian tech broker: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
@@ -3282,13 +3285,13 @@ class EDRClient(object):
 
         try:
             self.edrsystems.search_offbeat_station(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
-            self.searching = True
+            self.__searching()
             self.status = _(u"Offbeat station: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Offbeat station: searching...")], clear_before = True, sfx=False)
             if self.audio_feedback:
                 self.SFX.searching()
         except ValueError:
-            self.searching = False
+            self.__searching(False)
             self.status = _(u"Offbeat station: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
@@ -3298,13 +3301,13 @@ class EDRClient(object):
 
         try:
             self.edrsystems.search_planet_with_genus(star_system, genus, self.__plaoi_found)
-            self.searching = True
+            self.__searching()
             self.status = _(u"Biofit planet: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Biofit planet: searching...")], clear_before = True, sfx=False)
             if self.audio_feedback:
                 self.SFX.searching()
         except ValueError:
-            self.searching = False
+            self.__searching(False)
             self.status = _(u"Biofit planet: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
@@ -3314,26 +3317,27 @@ class EDRClient(object):
 
         try:
             self.edrsystems.search_settlement(star_system, settlement, self.__settloi_found)
-            self.searching = True
+            self.__searching()
             self.status = _(u"Settlement: searching...")
             self.__notify(_(u"EDR Search"), [_(u"Settlement: searching...")], clear_before = True, sfx=False)
             if self.audio_feedback:
                 self.SFX.searching()
         except ValueError:
-            self.searching = False
+            self.__searching(False)
             self.status = _(u"Settlement: failed")
             self.__notify(_(u"EDR Search"), [_(u"Unknown system")], clear_before = True)
 
 
     def __staoi_found(self, reference, radius, sc, soi_checker, result):
-        self.searching = False
+        self.__searching(False)
         details = []
         if result:
             sc_distance = result['station']['distanceToArrival']
             distance = result['distance']
             pretty_dist = _(u"{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _(u"{dist}LY").format(dist=int(distance))
             pretty_sc_dist = _(u"{dist}LS").format(dist=int(sc_distance))
-            updated = EDTime.from_edsm_timestamp(result['station']['updateTime']['information'])
+            updated = EDTime()
+            updated.from_edsm_timestamp(result['station']['updateTime']['information'])
             details.append(_(u"{system}, {dist}").format(system=result['name'], dist=pretty_dist))
             details.append(_(u"{station} ({type}), {sc_dist}").format(station=result['station']['name'], type=result['station']['type'], sc_dist=pretty_sc_dist))
             details.append(_(u"as of {date} {ci}").format(date=updated.as_local_timestamp(),ci=result['station'].get('comment', '')))
@@ -3350,7 +3354,7 @@ class EDRClient(object):
         self.__notify(_(u"{} near {}").format(soi_checker.name, reference), details, clear_before = True)
 
     def __plaoi_found(self, reference, radius, sc, plaoi_checker, result):
-        self.searching = False
+        self.__searching(False)
         details = []
         if result:
             sc_distance = result['planet']['distanceToArrival']
@@ -3358,7 +3362,8 @@ class EDRClient(object):
             pretty_dist = _(u"{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _(u"{dist}LY").format(dist=int(distance))
             pretty_sc_dist = _(u"{dist}LS").format(dist=int(sc_distance))
             planet_name = simplified_body_name(result['name'], result['planet']['name'])
-            updated = EDTime.from_edsm_timestamp(result['planet']['updateTime'])
+            updated = EDTime()
+            updated.from_edsm_timestamp(result['planet']['updateTime'])
             details.append(_(u"{system}, {dist}").format(system=result['name'], dist=pretty_dist))
             details.append(_(u"{planet} ({type}, {atm}), {sc_dist}").format(planet=planet_name, type=result['planet']['subType'], atm=result['planet']['atmosphereType'], sc_dist=pretty_sc_dist))
             details.append(_(u"as of {date}").format(date=updated.as_local_timestamp()))
@@ -3375,7 +3380,7 @@ class EDRClient(object):
         self.__notify(_(u"{} near {}").format(plaoi_checker.name, reference), details, clear_before = True)
 
     def __settloi_found(self, reference, radius, sc, settloi_checker, result):
-        self.searching = False
+        self.__searching(False)
         details = []
         if result and 'settlement' in result:
             settlement = result['settlement']
@@ -3383,7 +3388,8 @@ class EDRClient(object):
             distance = result['distance']
             pretty_dist = _(u"{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _(u"{dist}LY").format(dist=int(distance))
             pretty_sc_dist = _(u"{dist}LS").format(dist=int(sc_distance))
-            updated = EDTime.from_edsm_timestamp(settlement['updateTime']['information'])
+            updated = EDTime()
+            updated.from_edsm_timestamp(settlement['updateTime']['information'])
             details.append(_(u"{system}, {dist}").format(system=result['name'], dist=pretty_dist))
             if 'body' in settlement:
                 bodyName = settlement['body']['name']
@@ -3419,7 +3425,7 @@ class EDRClient(object):
         self.__notify(_(u"Settlement near {}").format(reference), details, clear_before = True)
 
     def __parking_found(self, reference, radius, rank, result):
-        self.searching = False
+        self.__searching(False)
         details = []
         if result:
             distance = result['distance']
@@ -3499,7 +3505,7 @@ class EDRClient(object):
                 else:
                     details.append(_(u"Try !parking {} #{}").format(reference, int(rank-1), int(rank-1)))
         self.__notify(_(u"FC Parking near {}").format(reference), details, clear_before = True)
-        self.searching = False
+        self.__searching(False)
 
     def configure_resourcefinder(self, raw_profile):
         canonical_raw_profile = raw_profile.lower()
@@ -3519,6 +3525,22 @@ class EDRClient(object):
         profiles = self.edrresourcefinder.profiles()
         self.__notify(_(u"Available materials profiles"), [" ;; ".join(profiles)], clear_before=True)
 
+    def __searching(self, active=True):
+        self.searching["active"] = active
+        self.searching["timestamp"] = EDTime.py_epoch_now()
+    
+    def __is_searching_recently(self):
+        if not self.searching["active"] or not self.searching["timestamp"]:
+            return False
+        
+        threshold = 60*60*5
+        if EDTime.py_epoch_now() - self.searching["timestamp"] < threshold:
+            return self.searching["active"]
+
+        EDRLOG.log("Resetting searching state due to no completion in {} seconds".format(threshold), "DEBUG")
+        self.__searching(False)
+        return False
+        
     def search(self, thing, star_system):
         cresource = self.edrresourcefinder.canonical_name(thing)
         if EDRGenusCheckerFactory.recognized_genus(thing):
@@ -3541,7 +3563,7 @@ class EDRClient(object):
         if not star_system:
             return
         
-        if self.searching:
+        if self.__is_searching_recently():
             self.__notify(_(u"EDR Search"), [_(u"Already searching for something, please wait...")], clear_before = True)
             return
 
@@ -3558,7 +3580,7 @@ class EDRClient(object):
         try:
             outcome = self.edrresourcefinder.resource_near(resource, star_system, self.__resource_found)
             if outcome == True:
-                self.searching = True
+                self.__searching()
                 self.status = _(u"{}: searching...").format(cresource)
                 self.__notify(_(u"EDR Search"), [_(u"{}: searching...").format(cresource)], clear_before = True, sfx=False)
                 if self.audio_feedback:
@@ -3570,12 +3592,12 @@ class EDRClient(object):
                 self.status = _(u"{}: found").format(cresource)
                 self.__notify(u"{}".format(cresource), outcome, clear_before = True)
         except ValueError:
-            self.searching = False
+            self.__searching(False)
             self.status = _(u"{}: failed...").format(cresource)
             self.__notify(_(u"EDR Search"), [_(u"{}: failed...").format(cresource), _(u"To learn how to use the feature, send: !help search")], clear_before = True)
 
     def __resource_found(self, resource, reference, radius, checker, result, grade):
-        self.searching = False
+        self.__searching(False)
         details = []
         if result:
             distance = result['distance']
