@@ -583,7 +583,8 @@ class InGameMsg(object):
             else:
                 details.append("{name}".format(name=controllingFactionName))
 
-        updated = EDTime.from_edsm_timestamp(station['updateTime']['information'])
+        updated = EDTime()
+        updated.from_edsm_timestamp(station['updateTime']['information'])
         details.append(_(u"as of {date}").format(date=updated.as_local_timestamp()))
         return details
     
@@ -657,7 +658,8 @@ class InGameMsg(object):
         if a == u"●" or b == u"●" or c == u"●":
             details.append(_(u"Redempt.O:{}   Pioneer S:{}   Lounge:{}").format(a,b,c))
 
-        updated= EDTime.from_edsm_timestamp(fc['updateTime']['information'])
+        updated= EDTime()
+        updated.from_edsm_timestamp(fc['updateTime']['information'])
         details.append(_(u"as of {date}").format(date=updated.as_local_timestamp()))
         return details
 
