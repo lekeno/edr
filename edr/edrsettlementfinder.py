@@ -173,7 +173,6 @@ class EDRSettlementFinder(threading.Thread):
             if not self.checker.check_settlement(settlement, system_name):
                 continue
             
-            EDRLOG.log("match", "DEBUG")
             factionIDName = settlement.get("controllingFaction", { "id": -1, "name": ""})
             factionName = factionIDName.get("name", "")
             faction = self.edr_systems.faction_in_system(factionName, system_name)
