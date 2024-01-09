@@ -831,7 +831,8 @@ class EDRSystems(object):
             pass
 
         if "updateTime" in the_body:
-            updated= EDTime.from_edsm_timestamp(the_body["updateTime"])
+            updated= edtime.EDTime()
+            updated.from_edsm_timestamp(the_body["updateTime"])
             details.append(_("as of {}  ").format(updated.as_local_timestamp()))
         
         return details
