@@ -14,7 +14,8 @@ import textwrap
 from edri18n import _, _c
 import utils2to3
 from edrlandables import EDRLandables
-from edentities import EDFineOrBounty, pretty_print_number
+from edentities import EDFineOrBounty
+from edrutils import pretty_print_number
 from edtime import EDTime
 
 EDRLOG = edrlog.EDRLog()
@@ -497,7 +498,9 @@ class InGameMsg(object):
         self.__msg_header("biology", header)
         self.__msg_body("biology", details)
 
-    def describe_station(self, station):
+    def describe_station(self, station, faction):
+        if not station:
+            return
         station_type = (station.get("type","N/A") or "N/A").lower()
         station_other_services = (station.get("otherServices", []) or []) 
         station_economy = (station.get('economy', "") or "").lower()
@@ -556,28 +559,111 @@ class InGameMsg(object):
                     t = _c(u"ambiguous tech|T.")
 
         details.append(_(u"I.Factor:{}   {} Broker:{}").format(a,t,b))
-        details.append(_(u"as of {date}").format(date=station['updateTime']['information']))
+        if "controllingFaction" in station:
+            controllingFaction = station["controllingFaction"]
+            controllingFactionName=controllingFaction.get("name", "???")
+
+            qualifiers = []
+
+            if "allegiance" in station:
+                qualifiers.append(station["allegiance"])
+
+            if "government" in station:
+                qualifiers.append(station["government"])
+            
+            if faction:
+                if faction.state != None and faction.state.lower() != "none":
+                    qualifiers.append(faction.state)
+
+                if faction.isPMF != None:
+                    qualifiers.append(_("PMF: {}").format(u"●" if faction.isPMF else u"◌"))
+
+            if qualifiers:
+                details.append("{name} ({qualifiers})".format(name=controllingFactionName, qualifiers=", ".join(qualifiers)))
+            else:
+                details.append("{name}".format(name=controllingFactionName))
+
+        updated = EDTime()
+        updated.from_edsm_timestamp(station['updateTime']['information'])
+        details.append(_(u"as of {date}").format(date=updated.as_local_timestamp()))
+        return details
+    
+    def describe_ed_settlement(self, entry, faction):
+        details = []
+        if entry["event"] != "ApproachSettlement":
+            return details
+        
+        settlement_services = (entry.get("StationServices", []) or [])
+        
+        a = u"●" if "refuel" in settlement_services else u"◌"
+        b = u"●" if "repair" in settlement_services else u"◌"
+        c = u"●" if "rearm" in settlement_services else u"◌"
+        details.append(_(u"Refuel:{}   Repair:{}   Restock:{}").format(a,b,c))
+        
+        a = u"●" if "commodities" in settlement_services else u"◌"
+        b = u"●" if "blackmarket" in settlement_services else u"◌"
+        c = u"●" if "facilitator" in settlement_services else u"◌"
+        details.append(_(u"Market:{}   B.Market:{}   I.Factor:{}").format(a,b,c))
+        
+        if "StationFaction" in entry:
+            factionName = entry["StationFaction"].get("Name", "???")
+            qualifiers = []
+            if "StationAllegiance" in entry:
+                qualifiers.append(entry["StationAllegiance"])
+
+            if "StationGovernment_Localised" in entry:
+                qualifiers.append(entry["StationGovernment_Localised"])
+            
+            if faction and faction.isPMF != None:
+                qualifiers.append(_("PMF: {}").format(u"●" if faction.isPMF else u"◌"))
+
+            if entry["StationFaction"].get("FactionState", "").lower() not in ["", "none"]:
+                qualifiers.append(entry["StationFaction"]["FactionState"])
+            elif faction and faction.state and faction.state.lower() != "none":
+                qualifiers.append(faction.state)
+                
+            if qualifiers:
+                details.append("{name} ({qualifiers})".format(name=factionName, qualifiers=", ".join(qualifiers)))
+            else:
+                details.append("{name}".format(name=factionName))
+            
+        
         return details
 
     def describe_fleet_carrier(self, fc):
         fc_other_services = (fc.get("otherServices", []) or []) 
         details = []
+        
         a = u"●" if fc.get("haveOutfitting", False) else u"◌"
         b = u"●" if fc.get("haveShipyard", False) else u"◌"
         details.append(_(u"Outfit:{}   Shipyard:{}").format(a,b))
+        
         a = u"●" if "Refuel" in fc_other_services else u"◌"
         b = u"●" if "Repair" in fc_other_services else u"◌"
         c = u"●" if "Restock" in fc_other_services else u"◌"
         details.append(_(u"Refuel:{}   Repair:{}   Restock:{}").format(a,b,c))
+        
         a = u"●" if fc.get("haveMarket", False) else u"◌"
         b = u"●" if "Black Market" in fc_other_services else u"◌"
         details.append(_(u"Market:{}   B.Market:{}").format(a,b))
-        a = u"●" if "Interstellar Factors Contact" in fc_other_services else u"◌"
-        details.append(_(u"I.Factor:{}").format(a))
-        details.append(_(u"as of {date}").format(date=fc['updateTime']['information']))
+        
+        a = u"●" if "Universal Cartographics" in fc_other_services else u"◌"
+        b = u"●" if "Vista Genomics" in fc_other_services else u"◌"
+        if a == u"●" or b == u"●":
+             details.append(_(u"U.Cart:{}   Vista G:{}").format(a,b))
+        
+        a = u"●" if "Pioneer Supplies" in fc_other_services else u"◌"
+        b = u"●" if "Contacts" in fc_other_services else u"◌"
+        c = u"●" if "Crew Lounge" in fc_other_services else u"◌"
+        if a == u"●" or b == u"●" or c == u"●":
+            details.append(_(u"Redempt.O:{}   Pioneer S:{}   Lounge:{}").format(a,b,c))
+
+        updated= EDTime()
+        updated.from_edsm_timestamp(fc['updateTime']['information'])
+        details.append(_(u"as of {date}").format(date=updated.as_local_timestamp()))
         return details
 
-    def docking(self, system, station, pad):
+    def docking(self, system, station, pad, faction):
         if not self.cfg["docking"].get("enabled", None):
             return
 
@@ -593,7 +679,7 @@ class InGameMsg(object):
         station_type = (station.get("type","N/A") or "N/A").lower()
 
         header = u"{} ({})".format(station["name"], economy)
-        details = self.describe_station(station)
+        details = self.describe_station(station, faction)
         self.__msg_header("docking", header)
         self.__msg_body("docking", details)
 
@@ -1469,7 +1555,7 @@ class InGameMsg(object):
         self.clear_nav_route()
         
         navroute = route_navigator.route
-        if not navroute or navroute.empty() or navroute.trivial():
+        if not navroute or navroute.empty() or navroute.trivial() or navroute.too_complex():
             return
         
         self.__draw_navroute(route_navigator)
@@ -1477,7 +1563,7 @@ class InGameMsg(object):
             
     def __draw_navroute(self, route_navigator):
         navroute = route_navigator.route
-        stats = route_navigator.stats
+        stats = route_navigator.route_stats
         
         cfg = self.cfg["navroute"]
         if "panel" in cfg:
@@ -1487,11 +1573,32 @@ class InGameMsg(object):
         y = cfg["schema"]["y"]
         w = cfg["schema"]["w"]
         h = cfg["schema"]["h"]
+        star_classes = "o,b,a,f,g,k,m,ms,c*,d*,h*,n,l,aebe,t,tts,s,w*,x,y,rogueplanet,nebula,stellarremnantnebula,*".split(",")
+        default_rgbs = "D8793E,00B3F7,00B3F7,2423E9,2F2DE3,4C37D2,5C5C93,908E46,CC432A,E9332A,CC0000,55552B,616CE2,808080,3FEFFF,FF2600,F56A79,4A0000,4A0000,3B3B3B,6E6E89,FF00DC,B16C00,FF00DC,FF00DC,4CFF00,FF00CC".split(",")
         rgbs = cfg["schema"]["rgb"]
+        if not rgbs or len(rgbs) < len(star_classes)+3:
+            EDRLOG.log("Draw nav route: reverting to default rgbs (length mismatch)", "DEBUG")
+            rgbs = default_rgbs
         route_rgb = rgbs[0]
         travelled_rgb = rgbs[1]
         current_rgb = rgbs[2]
         star_rgbs = rgbs[3:]
+        
+        default_star_markers = "circle,circle,circle,circle,circle,circle,circle,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross".split(",")
+        star_markers = cfg["schema"]["marker"]
+        if not star_markers or len(star_markers) < len(star_classes):
+            EDRLOG.log("Draw nav route: reverting to default markers (length mismatch)", "DEBUG")
+            star_markers = default_star_markers
+
+        default_suffix = ",,,,,,,,, dwarf, blackhole, neutron,,,,,,, exotic,, rogue, nebula, sr nebula, ???".split(",")
+        star_suffix = cfg["schema"]["suffix"]
+        if not star_suffix or len(star_suffix) < len(star_classes):
+            EDRLOG.log("Draw nav route: reverting to default suffix (length mismatch)", "DEBUG")
+            star_suffix = default_suffix
+
+        
+        # TODO see if the position of the last label can be fixed; seems way off.
+        # TODO overlap on the last-1 step....
         vects = {
             "travelled": {
                 "id": "navroute-schema-travelled",
@@ -1509,7 +1616,6 @@ class InGameMsg(object):
             }
         }
 
-        star_classes = "o,b,a,f,g,k,m,c*,d*,h*,n,l,t,tts,s,w,x,y,rogueplanet,nebula,stellarremnantnebula,*".split(",")
         inc_x = w / (len(navroute.jumps.collection)-1)
         inc_y = h / (len(navroute.jumps.collection)-1)
         sys_name_len = cfg["schema"]["stoplen"]
@@ -1533,13 +1639,14 @@ class InGameMsg(object):
         white_dwarves = "d da dab dao daz dav db dbz dbv do dov dq dc dcv dx".split()
         carbon_stars = "c c-j cj c-n cn c-hd chd".split()
         blackholes = "h blackhole supermassiveblackhole".split()
+        wolf_rayet = "w wc wn wnc wo".split()
             
 
         steps = 0
         for i, stop in enumerate(navroute.jumps.collection):
             steps += 1
             if steps < inc_steps:
-                print("skipping: {} steps: {} vs {}".format(stop.get("StarSystem", None), steps, inc_steps))
+                EDRLOG.log("skipping: {} steps: {} vs {}".format(stop.get("StarSystem", None), steps, inc_steps), "DEBUG")
                 continue
             steps = 0
             star_class = stop.get("StarClass", "N/A").lower()
@@ -1549,6 +1656,8 @@ class InGameMsg(object):
                 star_class = "c*"
             elif star_class in blackholes:
                 star_class = "h*"
+            elif star_class in wolf_rayet:
+                star_class = "w*"
 
             if star_class not in star_classes:
                 star_class = "*"
@@ -1558,7 +1667,7 @@ class InGameMsg(object):
             vector = {
                 "x":int(x), 
                 "y":int(y),
-                "marker": cfg["schema"]["marker"][sc_index],
+                "marker": star_markers[sc_index],
                 "color": star_rgbs[sc_index],
             }
 
@@ -1569,6 +1678,7 @@ class InGameMsg(object):
             
             if not risk_of_overlap and system_name and (not generic or i in [0, navroute.jumps.index-1, navroute.jumps.index, len(navroute.jumps.collection)-1]):
                 trunc_label = system_name[:sys_name_len]+"..." if len(system_name) > sys_name_len+2 else system_name
+                # TODO further trunc generic name by removing the common part if there is a close one "Eol Prou Px-T D3-1078" => "E... 1078" ?
                 label = trunc_label
                 
                 if i == 0 and stats.jumps_nb:
@@ -1579,12 +1689,14 @@ class InGameMsg(object):
                     if stats.jmp_hr() and stats.ly_hr() and stats.s_jmp():
                         label += "\n{} sec/J; {} LY/HR".format(stats.s_jmp(), stats.ly_hr())
                 elif i == len(navroute.jumps.collection)-1 and stats.remaining_ly():
-                    if stats.remaining_time():
-                        label += "\n{} J; {} LY; {}".format(stats.remaining_jumps, stats.remaining_ly(), EDTime.pretty_print_timespan(stats.remaining_time()))
+                    # TODO should be jump based not distance based
+                    remaining_time = stats.remaining_time(True)
+                    if remaining_time:
+                        label += "\n{} J; {} LY; {}".format(stats.remaining_waypoints, stats.remaining_ly(), EDTime.pretty_print_timespan(remaining_time))
                     else:
-                        label += "\n{} J; {} LY".format(stats.remaining_jumps, stats.remaining_ly())
-                elif sc_index < len(cfg["schema"]["suffix"]) and cfg["schema"]["suffix"][sc_index]:
-                    label += cfg["schema"]["suffix"][sc_index]
+                        label += "\n{} J; {} LY".format(stats.remaining_waypoints, stats.remaining_ly())
+                elif sc_index < len(star_suffix) and star_suffix[sc_index]:
+                    label += star_suffix[sc_index]
                     
                 vector["text"] = label
                 prev_x = x

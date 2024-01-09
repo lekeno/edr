@@ -28,6 +28,7 @@ class HelpContent(object):
                 _(u" - !help search: find the best spots to obtain engineering resources or exobiology"),
                 _(u" - !help ship: find out where you've parked your ships, evaluate your build, find a fleet carrier parking slot"),
                 _(u" - !help odyssey: evaluate your storage of materials, know if a material is useful or not"),
+                _(u" - !help travel: spansh companion, in-game route overview"),
                 _(u" - !help config: configuration options"),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
@@ -241,10 +242,27 @@ class HelpContent(object):
                 _(u" - '!search thing @system' to specify the system to search around, e.g. !search cadmium @deciat"),
                 _(u" - Abbreviations consist of the first three letters of a one-word resource, or the first letters of each words separated by a space:"),
                 _(u" - 'cad' for cadmium, 'a e c d' for abnormal compact emission data."),
+                _(u" - !search can also be used to look for specific odyssey settlements: !search anarchy, military, -alliance"),
                 _(u" - Use the command with a few letters to see the supported keywords that contain these letters, e.g. '!search strat"),
                 _(u" - Some manufactured materials may not always return a result. Use the hints and Elite's galaxy map to find a good spot."),
                 _(u" - Finally, when jumping into a system, EDR will tell you if it has the right conditions for specific materials, e.g. Imperial Shielding (USS-HGE, +++++)."),
                 _(u" - The more '+', the higher the chances."),
+                u"⚶",
+                _(u"Send !clear in chat to clear everything on the overlay.")
+            ]
+        },
+        "travel": {
+            "header": _(u"Spansh companion and in-game route overview"),
+            "details": [
+                _(u" - EDR will show an overview for non-trivial in-game routes: scoopable stars, stats and ETA"),
+                _(u" - EDR also supports Spansh and will place the next waypoint in the clipboard for your convenience, and automatically clear-off surveyed bodies (all species scanned or leaving the body)"),
+                _(u" - '!journey new <optional destination>' to open Spansh for plotting a new journey, e.g. !journey new colonia"),
+                _(u" - '!journey fetch' to fetch a Spansh journey from its URL (copy it to the clipboard beforehand)"),
+                _(u" - '!journey overview', '!journey waypoint', '!journey bodies' to show info about the journey, the current waypoint or bodies to survey"),
+                _(u" - '!journey next', '!journey previous' to manually change the target waypoint"),
+                _(u" -  '!journey check <comma separated bodies>' to manually check-off one or more bodies as visited/surveyed, e.g. !journey check 1 a 1, 1 a 2"), 
+                _(u" - '!journey clear' to clear a currently active journey"),
+                _(u" - '!journey load <optional filename>' to load a local journey saved in a csv file ()'journey.csv' by default), e.g. !journey load myjourney.csv"),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
             ]

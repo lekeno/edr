@@ -1,11 +1,11 @@
 import threading
-from random import shuffle, seed
+from random import shuffle
 from edri18n import _
 from edrlog import EDRLog
 
 EDRLOG = EDRLog()
 
-class EDRPlanetFinder(threading.Thread):
+class EDRSettlementFinder(threading.Thread):
 
     def __init__(self, star_system, checker, edr_systems, callback):
         self.star_system = star_system
@@ -15,14 +15,20 @@ class EDRPlanetFinder(threading.Thread):
         self.trials = 0
         self.max_trials = 25
         self.edr_systems = edr_systems
+        self.odyssey_settlement = False
         self.callback = callback
         self.permits = []
         self.shuffle_systems = False
-        self.shuffle_planets = False
+        self.shuffle_settlements = False
         self.exclude_center = False
+        self.exclude_states = []
+        self.include_states = []
         self.checked_systems = []
-        super(EDRPlanetFinder, self).__init__()
+        super(EDRSettlementFinder, self).__init__()
 
+    def for_odyssey(self, required):
+        self.odyssey_settlement = required
+    
     def within_radius(self, radius):
         self.radius = radius
 
@@ -32,12 +38,18 @@ class EDRPlanetFinder(threading.Thread):
     def permits_in_possesion(self, permits):
         self.permits = permits
 
-    def shuffling(self, shuffle_systems, shuffle_planets):
+    def shuffling(self, shuffle_systems, shuffle_settlements):
         self.shuffle_systems = shuffle_systems
-        self.shuffle_planets = shuffle_planets
+        self.shuffle_settlements = shuffle_settlements
 
     def ignore_center(self, exclude_center):
         self.exclude_center = exclude_center
+
+    def ignore_states(self, states_to_ignore):
+        self.exclude_states = states_to_ignore
+
+    def require_states(self, states_to_require):
+        self.include_states = states_to_require
 
     def set_dlc(self, name):
         self.checker.set_dlc(name)
@@ -49,11 +61,11 @@ class EDRPlanetFinder(threading.Thread):
             self.callback(self.star_system, self.radius, self.sc_distance, self.checker, results)
 
     def nearby(self):
-        servicePrime = None
-        serviceAlt = None
+        settlementPrime = None
+        settlementAlt = None
         self.checked_systems = []
 
-        candidates = {'prime': servicePrime, 'alt': serviceAlt}
+        candidates = {'prime': settlementPrime, 'alt': settlementAlt}
         
         system = self.edr_systems.system(self.star_system)
         if system and not self.exclude_center:
@@ -69,8 +81,6 @@ class EDRPlanetFinder(threading.Thread):
             return candidates
 
         if self.shuffle_systems:
-            seed() # TODO should no longer be necessary
-            EDRLOG.log("Nearby: shuffling systems", "DEBUG")
             shuffle(systems)
 
         candidates = self.__search(systems, candidates)
@@ -92,10 +102,10 @@ class EDRPlanetFinder(threading.Thread):
                     break
 
         if candidates:
-            serviceAlt = candidates.get('alt', None)
-            servicePrime = candidates.get('prime', None)
+            settlementAlt = candidates.get('alt', None)
+            settlementPrime = candidates.get('prime', None)
 
-        return servicePrime if servicePrime else serviceAlt
+        return settlementPrime if settlementPrime else settlementAlt
 
     def __check_system(self, system, candidates):
         if not system:
@@ -108,23 +118,26 @@ class EDRPlanetFinder(threading.Thread):
         if not possibility or not accessible:
             return candidates
 
-        if self.edr_systems.are_bodies_stale(system['name']):
+        if self.edr_systems.are_settlements_stale(system['name']):
             self.trials += 1
         
-        candidate = self.__planet_in_system(system)
+        candidate = self.__settlement_in_system(system)
         if candidate:
             check_sc_distance = candidate['distanceToArrival'] <= self.sc_distance
-            EDRLOG.log(u"System {} has a candidate {}: sc_distance {}".format(system['name'], candidate['name'], check_sc_distance), "DEBUG")
-            if check_sc_distance:
+            ambiguous = self.checker.is_ambiguous(candidate, system['name'])
+            EDRLOG.log(u"System {} has a candidate {}: ambiguous {}, sc_distance {}".format(system['name'], candidate['name'], ambiguous, check_sc_distance), "DEBUG")
+            if check_sc_distance and not ambiguous:
                 trialed = system
-                trialed['planet'] = candidate
-                closest = self.edr_systems.closest_planet(trialed, candidates['prime'])
+                trialed['settlement'] = candidate
+                closest = self.edr_systems.closest_settlement(trialed, candidates['prime'])
                 EDRLOG.log(u"Prime Trial {}, closest {}".format(system['name'], closest['name']), "DEBUG")
                 candidates['prime'] = closest
             else:
+                if ambiguous:
+                    candidate['comment'] = _(u"[Confidence: LOW]")
                 trialed = system
-                trialed['planet'] = candidate
-                closest = self.edr_systems.closest_planet(trialed, candidates['alt'])
+                trialed['settlement'] = candidate
+                closest = self.edr_systems.closest_settlement(trialed, candidates['alt'])
                 EDRLOG.log(u"Trial {}, closest {}".format(system['name'], closest['name']), "DEBUG")
                 candidates['alt'] = closest
         return candidates
@@ -153,40 +166,50 @@ class EDRPlanetFinder(threading.Thread):
 
         return candidates        
 
-    def closest_planet_fit(self, bodies, system_name):
+    def closest_matching_settlement(self, settlements, system_name):
         overall = None
-        for planet in bodies:
-            if planet and not self.checker.check_planet(planet, system_name):
+        for settlement in settlements:
+            EDRLOG.log(settlement, "DEBUG")
+            if not self.checker.check_settlement(settlement, system_name):
+                continue
+            
+            factionIDName = settlement.get("controllingFaction", { "id": -1, "name": ""})
+            factionName = factionIDName.get("name", "")
+            faction = self.edr_systems.faction_in_system(factionName, system_name)
+            if faction and faction.state in self.exclude_states:
+                EDRLOG.log("Skipping {} due to bad state for the controlling faction: {}".format(settlement, faction), "DEBUG")
+                continue
+
+            if self.include_states and faction and faction.state not in self.include_states:
+                EDRLOG.log("Skipping {} due to state not matching any of the the required state for the controlling faction: {}".format(settlement, faction), "DEBUG")
                 continue
             
             if overall == None:
-                EDRLOG.log("Closest planet fit: found first candidate: {}".format(planet), "DEBUG")
-                overall = planet
-            elif planet['distanceToArrival'] < overall['distanceToArrival']:
-                EDRLOG.log("Closest planet fit: found better candidate: {}".format(planet), "DEBUG")
-                overall = planet
-            else:
-                EDRLOG.log("Closest planet fit: worse candidate: {}".format(planet), "DEBUG")
+                overall = settlement
+            elif settlement['distanceToArrival'] < overall['distanceToArrival']:
+                overall = settlement
             
         return overall
 
-    def __planet_in_system(self, system):
+    def __settlement_in_system(self, system):
         if not system:
             return None
             
         if system.get('requirePermit', False) and not system['name'] in self.permits :
             return None
 
-        all_bodies = self.edr_systems.bodies(system['name'])
-        if not all_bodies or not len(all_bodies):
+        EDRLOG.log("sys: " + system['name'], "DEBUG")
+        all_settlements = self.edr_systems.stations_in_system(system['name']) # also returns settlements
+        if not all_settlements or not len(all_settlements):
+            EDRLOG.log("no settlements in " + system['name'], "DEBUG")
             return None
+        
+        EDRLOG.log("settlements: {}".format(all_settlements), "DEBUG")
 
-        if self.shuffle_planets:
-            seed() # TODO should no longer be necessary
-            EDRLOG.log("Nearby: shuffling bodies", "DEBUG")
-            shuffle(all_bodies)
+        if self.shuffle_settlements:
+            shuffle(all_settlements)
 
-        return self.closest_planet_fit(all_bodies, system['name'])
+        return self.closest_matching_settlement(all_settlements, system['name'])
 
     def close(self):
         return None

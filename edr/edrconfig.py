@@ -245,5 +245,11 @@ class EDRConfig(object):
     
     def hpp_history_max_span(self):
         return int(self.config.get('hpp', 'history_max_span'))
+    
+    def navroute_jumps_threshold_to_show(self):
+        return int(self.config.get('navroute', 'jumps_threshold_to_show'))
+    
+    def navroute_jumps_threshold_to_give_up(self):
+        return int(self.config.get('navroute', 'jumps_threshold_to_give_up'))
 
 EDR_CONFIG = EDRConfig()

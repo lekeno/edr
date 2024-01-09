@@ -216,10 +216,7 @@ def handle_carrier_events(ed_player, entry):
     elif entry["event"] == "CarrierDockingPermission":
         ed_player.fleet_carrier.update_docking_permissions(entry)
     elif entry["event"] == "CarrierJump":
-        EDR_CLIENT.edrfssinsights.reset()
-        EDR_CLIENT.edrfssinsights.update_system(entry.get("SystemAddress", None), entry["StarSystem"])
-        EDR_CLIENT.update_star_system_if_obsolete(entry["StarSystem"], entry.get("SystemAddress", None))
-        ed_player.fleet_carrier.update_from_jump_if_relevant(entry)
+        EDR_CLIENT.fc_jumped(entry)
     elif entry["event"] == "CarrierTradeOrder":
         EDR_CLIENT.carrier_trade(entry)
     elif entry["event"] == "CarrierCrewServices":
@@ -259,7 +256,6 @@ def handle_movement_events(ed_player, entry):
             ed_player.to_normal_space()
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
         EDR_CLIENT.docking_guidance(entry)
-        EDR_CLIENT.journey_show_overview(passive=True)
         EDR_CLIENT.noteworthy_about_system(entry)
     elif entry["event"] in ["SupercruiseEntry"]:
         if "SystemAddress" in entry:
@@ -274,8 +270,7 @@ def handle_movement_events(ed_player, entry):
         place = "Hyperspace"
         outcome["updated"] |= ed_player.update_place_if_obsolete(place)
         outcome["reason"] = "Hyperspace"
-        # TODO show nav route progress annd clear on arrival.
-        ed_player.to_hyper_space()
+        EDR_CLIENT.hyperspace_jump(entry.get("StarSystem", None))
         EDRLOG.log(u"Place changed: {}".format(place), "INFO")
         EDR_CLIENT.docking_guidance(entry)
         EDR_CLIENT.check_system(entry["StarSystem"], may_create=True)
@@ -288,6 +283,7 @@ def handle_movement_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_body_if_obsolete(body)        
         EDRLOG.log(u"Place/Body changed: {}, {}".format(place, body), "INFO")
         outcome["reason"] = "Approach event"
+        EDR_CLIENT.noteworthy_about_settlement(entry)
     elif entry["event"] in ["ApproachBody"]:
         body = entry["Body"]
         outcome["updated"] |= ed_player.update_body_if_obsolete(body)
@@ -301,12 +297,7 @@ def handle_movement_events(ed_player, entry):
     ed_player.location.from_entry(entry)
     
     if entry["event"] in ["LeaveBody"]:
-        # 2.6.0
-        # place = "Supercruise"
-        # ed_player.planetary_destination = None
-        # outcome["updated"] |= ed_player.update_place_if_obsolete(place)
-        # outcome["updated"] |= ed_player.update_body_if_obsolete(None)
-        body_name = entry.get("BodyName", None)
+        body_name = entry.get("Body", None)
         star_system = entry.get("StarSystem", None)
         outcome["updated"] |= EDR_CLIENT.leave_body(star_system, body_name)
         EDRLOG.log(u"Place changed: Supercruise, body cleared", "INFO")
@@ -321,7 +312,7 @@ def handle_change_events(ed_player, entry):
             place = entry["StationName"]
             outcome["updated"] |= ed_player.update_place_if_obsolete(place)
             EDRLOG.log(u"Place changed: {} (location event)".format(place), "INFO")
-            ed_player.docked_at(entry)
+            EDR_CLIENT.docked_at(entry)
         body = entry.get("Body", None)
         outcome["updated"] |= ed_player.update_body_if_obsolete(body)
         EDRLOG.log(u"Body changed: {} (location event)".format(body), "INFO")
@@ -332,9 +323,8 @@ def handle_change_events(ed_player, entry):
         ed_player.location.allegiance = entry.get("SystemAllegiance", None)
         if "StarSystem" in entry:
             EDR_CLIENT.update_star_system_if_obsolete(entry["StarSystem"], entry.get("SystemAddress", None))
-        EDR_CLIENT.edrfssinsights.update_system(entry.get("SystemAddress", None), entry.get("StarSystem", None))
+        EDR_CLIENT.process_location_event(entry)
         outcome["reason"] = "Location event"
-        EDR_CLIENT.check_system(entry["StarSystem"], may_create=True, coords=entry.get("StarPos", None))
 
     if entry["event"] in ["Undocked", "Docked", "DockingCancelled", "DockingDenied",
                           "DockingGranted", "DockingRequested", "DockingTimeout"]:
@@ -1618,18 +1608,12 @@ def handle_shuttle_events(entry):
         ed_player.cancelled_shuttle(entry)
 
 def handle_nav_route_events(entry, state):
-    print("navroute event")
-    print(entry)
     if entry["event"] not in ["NavRoute", "NavRouteClear"]:
-        print("nope")
         return
     
-    print("state content")
-    print(state.get("NavRoute", "Nothing"))
     if entry["event"] == "NavRouteClear":
         EDR_CLIENT.nav_route_clear()
     elif entry["event"] == "NavRoute" and state.get("NavRoute", None):
-        print("setting nav route")
         EDR_CLIENT.nav_route_set(state["NavRoute"])
 
 

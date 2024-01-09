@@ -4,9 +4,9 @@ from pickle import TRUE
 import re
 
 import edtime
+from edrutils import simplified_body_name
 from edrlog import EDRLog
 from edri18n import _
-from edrbodiesofinterest import EDRBodiesOfInterest
 EDRLOG = EDRLog()
 
 class EDRFleetCarrier(object):
@@ -49,7 +49,13 @@ class EDRFleetCarrier(object):
         self.access = "none"
         self.allow_notorious = False
         self._position = {"system": None, "body": None}
-        self.departure = {"time": None, "destination": None}
+        self.departure = {
+            "time": None, 
+            "destination": None,
+            "body": None,
+            "requested": None,
+            "lockdown": None
+        }
         self.decommission_time = None
         self.purchase_orders = {}
         self.sale_orders = {}
@@ -85,7 +91,8 @@ class EDRFleetCarrier(object):
         self.callsign = entry.get("StationName", None)
         self.name = entry.get("Name", None)
         star_system = entry.get("StarSystem", None)
-        adjBodyName = EDRBodiesOfInterest.simplified_body_name(star_system, entry.get("Body", None), " 0")
+        body_name = entry.get("Body", None)
+        adjBodyName = simplified_body_name(star_system, body_name, " 0")
         self._position = {
             "system": star_system,
             "body": adjBodyName
@@ -143,11 +150,11 @@ class EDRFleetCarrier(object):
         
         request_time_epoch = request_time.as_py_epoch()
         jump_time_epoch = jump_time.as_py_epoch()
-        lockdown_time_epoch = jump_time.as_py_epoch()
+        lockdown_time_epoch = lockdown_time.as_py_epoch()
 
         star_system = jump_request_event.get("SystemName", None)
         body_name = jump_request_event.get("Body", None)
-        adjBodyName = EDRBodiesOfInterest.simplified_body_name(star_system, body_name, " 0")
+        adjBodyName = simplified_body_name(star_system, body_name, " 0")
 
         self.departure = {
             "requested": request_time_epoch,
@@ -161,7 +168,13 @@ class EDRFleetCarrier(object):
         if self.id and self.id != jump_cancel_event.get("CarrierID", None):
             self.__reset()
         self.id = jump_cancel_event.get("CarrierID", None)
-        self.departure = {"time": None, "destination": None}
+        self.departure = {
+            "time": None, 
+            "destination": None,
+            "body": None,
+            "requested": None,
+            "lockdown": None
+        }
         self.__update_position()
 
     @property
@@ -202,7 +215,7 @@ class EDRFleetCarrier(object):
             return
         star_system = event.get("StarSystem", None)
         body_name = event.get("Body", None)
-        adjBodyName = EDRBodiesOfInterest.simplified_body_name(star_system, body_name)
+        adjBodyName = simplified_body_name(star_system, body_name)
         
         self._position = {"system": star_system, "body": adjBodyName}
         self.departure = {
@@ -262,12 +275,12 @@ class EDRFleetCarrier(object):
             "id": self.id,
             "callsign": self.callsign,
             "name": self.name,
-            "requested": self.departure["requested"] * 1000 if self.departure["requested"] else None,
+            "requested": self.departure["requested"] * 1000 if self.departure.get("requested", None) else None,
             "from": self.position,
             "to": self.departure["destination"],
             "body": self.departure["body"],
-            "lockdown": self.departure["lockdown"] * 1000 if self.departure["lockdown"] else None,
-            "at": self.departure["time"] * 1000 if self.departure["time"] else None,
+            "lockdown": self.departure["lockdown"] * 1000 if self.departure.get("lockdown", None) else None,
+            "at": self.departure["time"] * 1000 if self.departure.get("time", None) else None,
             "access": self.access,
             "allow_notorious": self.allow_notorious
         }
@@ -336,6 +349,18 @@ class EDRFleetCarrier(object):
         since = edtime.EDTime.js_epoch_now()
         if timeframe:
             since -= timeframe*1000
+
+        sale_orders = self.sale_orders_within(timeframe)
+        purchase_orders = self.purchase_orders_within(timeframe)
+
+        for item in sale_orders:
+            if "timestamp" in sale_orders[item]:
+                sale_orders[item]["timestamp"] *= 1000
+
+        for item in purchase_orders:
+            if "timestamp" in purchase_orders[item]:
+                purchase_orders[item]["timestamp"] *= 1000
+
         return {
             "id": self.id,
             "callsign": self.callsign,
@@ -343,8 +368,8 @@ class EDRFleetCarrier(object):
             "location": self._position,
             "access": self.access,
             "allow_notorious": self.allow_notorious,
-            "sales": self.sale_orders_within(timeframe),
-            "purchases": self.purchase_orders_within(timeframe),
+            "sales": sale_orders,
+            "purchases": purchase_orders,
             "timestamp": since
         }
 
@@ -489,6 +514,8 @@ class EDRFleetCarrierBar(object):
 
         items = entry.get("Items", [])
         self.timestamp = edtime.EDTime()
+        if entry.get("timestamp", None):
+            self.timestamp.from_journal_timestamp(entry["timestamp"])
         self.updated = True
         for item in items:
             listing = item

@@ -135,13 +135,16 @@ class EDRFleet(object):
         
         market_id = buy_event.get("MarketID", None)
         if buy_event.get("StoreShipID", None):
-            storing_ship_id = buy_event["StoreShipID"]
-            ship_type = buy_event["StoreOldShip"].lower()
-            localised = EDVehicleFactory.canonicalize(ship_type)
-            self.db.execute('''INSERT INTO ships(id, type, localised, name, star_system, ship_market_id, value, hot)
-                        VALUES(?,?,?,?,?,?,?,?)''', (storing_ship_id, ship_type, localised, storing_ship_name, star_system, market_id, 0, 0))
-            self.db.execute('DELETE from transits WHERE ship_id=?', (storing_ship_id, ))
-            self.db.commit()
+            try:
+                storing_ship_id = buy_event["StoreShipID"]
+                ship_type = buy_event["StoreOldShip"].lower()
+                localised = EDVehicleFactory.canonicalize(ship_type)
+                self.db.execute('''INSERT INTO ships(id, type, localised, name, star_system, ship_market_id, value, hot)
+                            VALUES(?,?,?,?,?,?,?,?)''', (storing_ship_id, ship_type, localised, storing_ship_name, star_system, market_id, 0, 0))
+                self.db.execute('DELETE from transits WHERE ship_id=?', (storing_ship_id, ))
+                self.db.commit()
+            except sqlite3.IntegrityError:
+                pass
         elif buy_event.get("SellShipID", None):
             self.__sold(buy_event["SellShipID"])
 
@@ -189,13 +192,17 @@ class EDRFleet(object):
         if "SellShipID" in swap_event:
             self.__sold(swap_event["SellShipID"])
         else:
-            storing_ship_id = swap_event.get("StoreShipID", None)
-            ship_type = swap_event.get("StoreOldShip", None).lower()
-            localised = EDVehicleFactory.canonicalize(ship_type)
-            market_id = swap_event.get("MarketID", None)
-            self.db.execute('''INSERT INTO ships(id, type, localised, name, star_system, ship_market_id, value, hot)
-                        VALUES(?,?,?,?,?,?,?,?)''', (storing_ship_id, ship_type, localised, storing_ship_name, star_system, market_id, 0, 0))
-            self.db.execute('DELETE from transits WHERE ship_id=?', (storing_ship_id, ))
+            try:
+                storing_ship_id = swap_event.get("StoreShipID", None)
+                ship_type = swap_event.get("StoreOldShip", None).lower()
+                localised = EDVehicleFactory.canonicalize(ship_type)
+                market_id = swap_event.get("MarketID", None)
+                self.db.execute('''INSERT INTO ships(id, type, localised, name, star_system, ship_market_id, value, hot)
+                            VALUES(?,?,?,?,?,?,?,?)''', (storing_ship_id, ship_type, localised, storing_ship_name, star_system, market_id, 0, 0))
+                self.db.execute('DELETE from transits WHERE ship_id=?', (storing_ship_id, ))
+            except sqlite3.IntegrityError:
+                # TODO edge case after using Apex?
+                pass
         
         piloting_ship_id = swap_event.get("ShipID", None)
         self.db.execute('UPDATE ships SET ship_market_id="", star_system="", piloted=1, eta=0 WHERE id=?', (piloting_ship_id,))

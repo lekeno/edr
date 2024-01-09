@@ -102,7 +102,7 @@ class EDTime(comparable.ComparableMixin):
             return d + (datetime.date(d.year + EDTime.immersive_delta(), 1, 1) - datetime.date(d.year, 1, 1))
 
     def __init__(self):
-        self._datetime = datetime.datetime.now()
+        self._datetime = datetime.datetime.now(datetime.timezone.utc)
 
     def from_datetime(self, datetimestamp):
         self._datetime = datetimestamp
@@ -110,26 +110,38 @@ class EDTime(comparable.ComparableMixin):
     def from_js_epoch(self, js_epoch):
         self._datetime = datetime.datetime.fromtimestamp(js_epoch // 1000, datetime.timezone.utc)
 
+    def from_py_epoch(self, py_epoch):
+        self._datetime = datetime.datetime.fromtimestamp(py_epoch, datetime.timezone.utc)
+
     def from_journal_timestamp(self, journal_timestamp):
-        self._datetime = datetime.datetime.strptime(journal_timestamp, '%Y-%m-%dT%H:%M:%SZ')
+        self._datetime = datetime.datetime.strptime(journal_timestamp, '%Y-%m-%dT%H:%M:%S%z')
 
     def from_edsm_timestamp(self, edsm_timestamp):
-        self._datetime = datetime.datetime.strptime(edsm_timestamp, '%Y-%m-%d %H:%M:%S')
+        self._datetime = datetime.datetime.strptime(edsm_timestamp+"Z", '%Y-%m-%d %H:%M:%S%z')
     
     def as_js_epoch(self):
-        return int(calendar.timegm(self._datetime.timetuple()) * 1000) # JavaScript expects milliseconds while Python uses seconds for Epoch
-
+        return self.as_py_epoch() * 1000 # JavaScript expects milliseconds while Python uses seconds for Epoch
+        
     def as_py_epoch(self):
-        return int(calendar.timegm(self._datetime.timetuple()))
+        return int(self._datetime.timestamp())
 
     def as_datetime(self):
         return self._datetime
 
     def as_journal_timestamp(self):
         return self._datetime.strftime('%Y-%m-%dT%H:%M:%SZ')
+    
+    def as_timestamp(self):
+        return self._datetime.strftime('%Y-%m-%dT%H:%M:%S')
+    
+    def as_local_timestamp(self):
+        return self._datetime.astimezone().strftime('%Y-%m-%d %H:%M:%S')
 
     def as_date(self):
         return self._datetime.strftime('%Y-%m-%d')
+
+    def as_local_date(self):
+        return self._datetime.astimezone().strftime('%Y-%m-%d')
         
     def as_immersive_date(self):
         immersive_datetime = self.__immmersive()
