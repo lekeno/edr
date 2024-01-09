@@ -32,7 +32,7 @@ class EDRSystemSettlementCheck(object):
     def check_settlement(self, settlement, system_name=None):
         EDRLOG.log("Checking SysSettl: {}".format(settlement['name']), "DEBUG")
         if not settlement:
-            EDRLOG.log("Failed SysSettlCheck: nothing")
+            EDRLOG.log("Failed SysSettlCheck: nothing", "DEBUG")
             return False
         
         EDRLOG.log("Checking: {}".format(settlement['name']), "DEBUG")
@@ -195,7 +195,7 @@ class EDROdySettlementCheck(EDRSystemOdySettlementCheck):
         limit_BGS.rewind(60*60*24)
         too_old = reference <= limit_BGS.as_py_epoch()
         if too_old:
-            EDRLOG.log("Faction {} is ambiguous because its last known BGS state is too old: {}".format(EDTime.t_minus_py(reference)), "DEBUG")
+            EDRLOG.log("Faction {} is ambiguous because its last known BGS state is too old: {}".format(factionName, EDTime.t_minus_py(reference)), "DEBUG")
             return True
         
         return False
@@ -344,7 +344,7 @@ class EDRSettlementCheckerFactory(object):
     
     @staticmethod
     def get_checker(words_salad, override_sc_distance, edrsystems):
-        words_salad = words_salad.lower().strip()
+        words_salad = words_salad.lower().strip().replace(" ","")
 
         if words_salad in EDRSettlementCheckerFactory.COMBOS_LUT:
             checker = EDRSettlementCheckerFactory.COMBOS_LUT[words_salad](edrsystems)
