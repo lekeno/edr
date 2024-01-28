@@ -249,43 +249,39 @@ class EDRCommands(object):
         elif command == "!nav":
             if len(command_parts) < 2:
                 self.edr_log.log(u"Not enough parameters for navigation command", "INFO")
-                return
+                return False
             if command_parts[1].lower() == "off":
                 self.edr_log.log(u"Clearing destination", "INFO")
                 self.edr_client.player.planetary_destination = None
-                return
             elif command_parts[1].lower() == "set" and self.edr_client.player.attitude.valid():
                 self.edr_log.log(u"Setting destination", "INFO")
                 attitude = self.edr_client.player.attitude
                 name = command_parts[2:].lower() if len(command_parts) > 2 else "Navpoint"
                 self.edr_client.navigation(attitude.latitude, attitude.longitude, name)
-                return
             elif command_parts[1].lower() == "next":
                 self.edr_log.log(u"Next custom POI", "INFO")
                 self.edr_client.player.planetary_destination = None
                 self.edr_client.next_custom_poi()
-                return
             elif command_parts[1].lower() == "previous":
                 self.edr_log.log(u"Previous custom POI", "INFO")
                 self.edr_client.player.planetary_destination = None
                 self.edr_client.previous_custom_poi()
-                return
             elif command_parts[1].lower() == "clear":
                 self.edr_log.log(u"Clearing POI", "INFO")
                 self.edr_client.player.planetary_destination = None
                 self.edr_client.clear_current_custom_poi()
-                return
             elif command_parts[1].lower() == "reset":
                 self.edr_log.log(u"Reset POIs", "INFO")
                 self.edr_client.player.planetary_destination = None
                 self.edr_client.reset_custom_pois()
-                return
-            lat_long = command_parts[1].split(" ")
-            if len(lat_long) != 2:
-                self.edr_log.log(u"Invalid parameters for navigation command", "INFO")
-                return
-            self.edr_log.log(u"Navigation command", "INFO")
-            self.edr_client.navigation(lat_long[0], lat_long[1])
+            else:
+                lat_long = command_parts[1].split(" ")
+                if len(lat_long) == 2:
+                    self.edr_log.log(u"Navigation command", "INFO")
+                    self.edr_client.navigation(lat_long[0], lat_long[1])
+                else:
+                    self.edr_log.log(u"Invalid parameters for navigation command", "INFO")
+                    return False
         elif command == "!ship" and len(command_parts) == 2:
             name_or_type = command_parts[1]
             self.edr_log.log(u"Ship search command for {}".format(name_or_type), "INFO")
