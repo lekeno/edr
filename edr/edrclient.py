@@ -697,7 +697,7 @@ class EDRClient(object):
         
         details = self.player.routenav.describe_wp_bodies()
         if details:
-            self.notify_with_details(_("TODO: EDR Route bodies"), details, clear_before=True)
+            self.notify_with_details(_("EDR Route bodies"), details, clear_before=True)
         return outcome
         
 
@@ -3595,7 +3595,7 @@ class EDRClient(object):
         if not self.player.routenav.rewind():
             details = []
             details.append(_("Reached the start of the route."))
-            details.append(_("Use '!route forward' to go to the next waypoing."))
+            details.append(_("Use '!route forward' to go to the next waypoint."))
             self.notify_with_details(_("EDR Journey - Current Waypoint"), details, clear_before=True)
             return False
 
