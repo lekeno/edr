@@ -40,7 +40,7 @@ class EDRServer(object):
         self.version = edrconfig.EDRConfig().edr_version()
         self._throttle_until_timestamp = None
         self.anonymous_reports = None
-		self.crimes_reporting = None
+        self.crimes_reporting = None
         self.fc_jump_psa = None
         self.backoff = {"EDR": backoff.Backoff(u"EDR"), "Inara": backoff.Backoff(u"Inara") }
         self.INARA_API_KEY = config.inara_api_key()
