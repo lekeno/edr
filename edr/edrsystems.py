@@ -24,9 +24,11 @@ from edrutils import pretty_print_number
 from edri18n import _, _c, _edr
 import edrservicecheck
 import edrsysplacheck
+import edrsyssetlcheck
 import edrservicefinder
 import edrparkingsystemfinder
 import edrplanetfinder
+import edrsettlementfinder
 import utils2to3
 
 EDRLOG = edrlog.EDRLog()
@@ -38,7 +40,6 @@ class EDRSystems(object):
     EDSM_SYSTEMS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_systems.v3.p')
     EDSM_STATIONS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_stations.v1.p')
     EDSM_SYSTEMS_WITHIN_RADIUS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_systems_radius.v2.p')
-    EDSM_FACTIONS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_factions.v1.p')
     EDSM_TRAFFIC_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_traffic.v1.p')
     EDSM_DEATHS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_deaths.v1.p')
     EDSM_MARKETS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_markets.v1.p')
@@ -56,7 +57,7 @@ class EDRSystems(object):
     NEBULAE = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'nebulae.json')).read())
     BIOLOGY = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'biology.json')).read())
 
-    def __init__(self, server):
+    def __init__(self, server, edsm_server, factions):
         self.reasonable_sc_distance = 1500
         self.reasonable_hs_radius = 50
         edr_config = edrconfig.EDRConfig()
@@ -153,13 +154,6 @@ class EDRSystems(object):
                                                   edr_config.edsm_stations_max_age())
 
         try:
-            with open(self.EDSM_FACTIONS_CACHE, 'rb') as handle:
-                self.edsm_factions_cache = pickle.load(handle)
-        except:
-            self.edsm_factions_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                                  edr_config.edsm_factions_max_age())
-        
-        try:
             with open(self.EDSM_SYSTEMS_WITHIN_RADIUS_CACHE, 'rb') as handle:
                 self.edsm_systems_within_radius_cache = pickle.load(handle)
         except:
@@ -215,7 +209,8 @@ class EDRSystems(object):
         self.timespan = edr_config.sitreps_timespan()
         self.timespan_notams = edr_config.notams_timespan()
         self.server = server
-        self.edsm_server = edsmserver.EDSMServer()
+        self.edsm_server = edsm_server
+        self.factions = factions
         self.dlc_name = None
 
     def set_dlc(self, name):
@@ -284,6 +279,9 @@ class EDRSystems(object):
         if not star_system:
             return False
         return self.edsm_stations_cache.is_stale(star_system.lower())
+
+    def are_settlements_stale(self, star_system):
+        return self.are_stations_stale(star_system)
         
     def station(self, star_system, station_name, station_type):
         stations = self.stations_in_system(star_system)
@@ -384,9 +382,6 @@ class EDRSystems(object):
         with open(self.EDSM_SYSTEMS_WITHIN_RADIUS_CACHE, 'wb') as handle:
             pickle.dump(self.edsm_systems_within_radius_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        with open(self.EDSM_FACTIONS_CACHE, 'wb') as handle:
-            pickle.dump(self.edsm_factions_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
         with open(self.EDSM_TRAFFIC_CACHE, 'wb') as handle:
             pickle.dump(self.edsm_traffic_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -425,6 +420,9 @@ class EDRSystems(object):
         return False
 
     def has_planet_type(self, system_name, planet_types):
+        if not system_name:
+            return False
+
         bodies = self.bodies(system_name)
         if not bodies:
             return False
@@ -603,7 +601,14 @@ class EDRSystems(object):
             
             info = ""
             info += _("Sta: {}  ").format(the_system["information"]["factionState"]) if the_system["information"].get("factionState", None) else ""
-            info += _("Fac: {}  ").format(the_system["information"]["faction"]) if the_system["information"].get("faction", None) else ""
+            factionName = the_system["information"].get("faction", None)
+            if factionName:
+                faction = self.factions.get(factionName, name)
+                if faction and faction.isPMF:
+                    info += _("Fac: {}  PMF: {}").format(factionName, u"●" if faction.isPMF else u"◌")
+                else:
+                    info += _("Fac: {}  ").format(factionName)
+            
             if info:
                 details.append(info)
 
@@ -826,7 +831,9 @@ class EDRSystems(object):
             pass
 
         if "updateTime" in the_body:
-            details.append(_("as of {}  ").format(the_body["updateTime"]))
+            updated= edtime.EDTime()
+            updated.from_edsm_timestamp(the_body["updateTime"])
+            details.append(_("as of {}  ").format(updated.as_local_timestamp()))
         
         return details
 
@@ -1871,48 +1878,11 @@ class EDRSystems(object):
     def are_factions_stale(self, star_system):
         if not star_system:
             return False
-        return self.edsm_factions_cache.is_stale(star_system.lower())
-
-    def __factions(self, star_system):
-        if not star_system:
-            return None
-        factions = self.edsm_factions_cache.get(star_system.lower())
-        cached = self.edsm_factions_cache.has_key(star_system.lower())
-        if cached or factions:
-            EDRLOG.log(u"Factions for system {} are in the cache.".format(star_system), "DEBUG")
-            return factions
-
-        EDRLOG.log(u"Factions for system {} are NOT in the cache.".format(star_system), "DEBUG")
-        factions = self.edsm_server.factions_in_system(star_system)
-        if factions:
-            self.edsm_factions_cache.set(star_system.lower(), factions)
-            EDRLOG.log(u"Cached {}'s factions".format(star_system), "DEBUG")
-            return factions
-
-        self.edsm_factions_cache.set(star_system.lower(), None)
-        EDRLOG.log(u"No match on EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
-        return None
+        return self.factions.is_stale(star_system.lower())
+    
 
     def system_state(self, star_system):
-        factions = self.__factions(star_system)
-        if not factions:
-            return (None, None)
-        
-        if not factions.get('controllingFaction', None) or not factions.get('factions', None):
-            EDRLOG.log(u"Badly formed factions data for system {}.".format(star_system), "INFO")
-            return (None, None)
-
-        controlling_faction_id = factions['controllingFaction']['id']
-        all_factions = factions['factions']
-        state = None
-        updated = None
-        for faction in all_factions:
-            if faction['id'] == controlling_faction_id:
-                state = faction['state']
-                updated = faction['lastUpdate']
-                break
-
-        return (state, updated)
+        return self.factions.getControllingFactionState(star_system)
 
     def system_value(self, system_name):
         value = self.edsm_system_values_cache.get(system_name.lower())
@@ -2104,17 +2074,12 @@ class EDRSystems(object):
         value = round(value)
         return value
 
+    def faction_in_system(self, name, star_system):
+        return self.factions.get(name, star_system)
+
 
     def system_allegiance(self, star_system):
-        factions = self.__factions(star_system)
-        if not factions:
-            return None
-        
-        if not factions.get('controllingFaction', None):
-            EDRLOG.log(u"Badly formed factions data for system {}.".format(star_system), "INFO")
-            return None
-
-        return factions['controllingFaction'].get('allegiance', None)
+        return self.factions.getControllingFactionAllegiance(star_system)
 
     def transfer_time(self, origin, destination):
         dist = self.distance(origin, destination)
@@ -2582,6 +2547,12 @@ class EDRSystems(object):
         if checker:
             self.__search_a_planet(star_system, callback, checker, override_radius, override_sc_distance, permits, shuffle_systems=True, shuffle_planets=True, exclude_center=True)
 
+    def search_settlement(self, star_system, settlement, callback, override_radius = 100, override_sc_distance = 100000, permits = []):
+        override_sc_distance = override_sc_distance or 100000
+        checker = edrsyssetlcheck.EDRSettlementCheckerFactory.get_checker(settlement, override_sc_distance, self)
+        if checker:
+            self.__search_a_settlement(star_system, callback, checker, override_radius, override_sc_distance, permits, shuffle_systems=True, shuffle_planets=True, exclude_center=False)
+
     def __search_a_planet(self, star_system, callback, checker, override_radius = None, override_sc_distance = None, permits = [], shuffle_systems=True, shuffle_planets=True, exclude_center=False):
         sc_distance = override_sc_distance or self.reasonable_sc_distance
         sc_distance = max(250, sc_distance)
@@ -2594,6 +2565,23 @@ class EDRSystems(object):
         finder.permits_in_possesion(permits)
         finder.shuffling(shuffle_systems, shuffle_planets)
         finder.ignore_center(exclude_center)
+        finder.set_dlc(self.dlc_name)
+        finder.start()
+
+    def __search_a_settlement(self, star_system, callback, checker, override_radius = None, override_sc_distance = None, permits = [], shuffle_systems=True, shuffle_planets=True, exclude_center=False, exclude_states=[], include_states=[]):
+        sc_distance = override_sc_distance or self.reasonable_sc_distance
+        sc_distance = max(250, sc_distance)
+        radius = override_radius if override_radius is not None and override_radius >= 0 else self.reasonable_hs_radius
+        radius = min(100, radius)
+
+        finder = edrsettlementfinder.EDRSettlementFinder(star_system, checker, self, callback)
+        finder.within_radius(radius)
+        finder.within_supercruise_distance(sc_distance)
+        finder.permits_in_possesion(permits)
+        finder.shuffling(shuffle_systems, shuffle_planets)
+        finder.ignore_center(exclude_center)
+        finder.ignore_states(exclude_states)
+        finder.require_states(include_states)
         finder.set_dlc(self.dlc_name)
         finder.start()
     
@@ -2685,6 +2673,9 @@ class EDRSystems(object):
 
     def closest_planet(self, sysAndPla1, sysAndPla2, override_sc_distance = None):
         return self.__closest_destination("planet", sysAndPla1, sysAndPla2, override_sc_distance)
+    
+    def closest_settlement(self, sysAndPla1, sysAndPla2, override_sc_distance = None):
+        return self.__closest_destination("settlement", sysAndPla1, sysAndPla2, override_sc_distance)
     
     def __closest_destination(self, key, sysAndSta1, sysAndSta2, override_sc_distance = None):
         if not sysAndSta1:

@@ -1159,6 +1159,7 @@ class EDPlayerOne(EDPlayer):
         self.piloted_vehicle = self.mothership
         self.slf = None
         self.srv = None
+        self.location = EDLocation()
         self._touch()
 
     def add_to_crew(self, member):

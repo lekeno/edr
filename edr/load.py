@@ -216,10 +216,7 @@ def handle_carrier_events(ed_player, entry):
     elif entry["event"] == "CarrierDockingPermission":
         ed_player.fleet_carrier.update_docking_permissions(entry)
     elif entry["event"] == "CarrierJump":
-        EDR_CLIENT.edrfssinsights.reset()
-        EDR_CLIENT.edrfssinsights.update_system(entry.get("SystemAddress", None), entry["StarSystem"])
-        EDR_CLIENT.update_star_system_if_obsolete(entry["StarSystem"], entry.get("SystemAddress", None))
-        ed_player.fleet_carrier.update_from_jump_if_relevant(entry)
+        EDR_CLIENT.fc_jumped(entry)
     elif entry["event"] == "CarrierTradeOrder":
         EDR_CLIENT.carrier_trade(entry)
     elif entry["event"] == "CarrierCrewServices":
@@ -286,6 +283,7 @@ def handle_movement_events(ed_player, entry):
         outcome["updated"] |= ed_player.update_body_if_obsolete(body)        
         EDRLOG.log(u"Place/Body changed: {}, {}".format(place, body), "INFO")
         outcome["reason"] = "Approach event"
+        EDR_CLIENT.noteworthy_about_settlement(entry)
     elif entry["event"] in ["ApproachBody"]:
         body = entry["Body"]
         outcome["updated"] |= ed_player.update_body_if_obsolete(body)
@@ -314,7 +312,7 @@ def handle_change_events(ed_player, entry):
             place = entry["StationName"]
             outcome["updated"] |= ed_player.update_place_if_obsolete(place)
             EDRLOG.log(u"Place changed: {} (location event)".format(place), "INFO")
-            ed_player.docked_at(entry)
+            EDR_CLIENT.docked_at(entry)
         body = entry.get("Body", None)
         outcome["updated"] |= ed_player.update_body_if_obsolete(body)
         EDRLOG.log(u"Body changed: {} (location event)".format(body), "INFO")
@@ -325,9 +323,8 @@ def handle_change_events(ed_player, entry):
         ed_player.location.allegiance = entry.get("SystemAllegiance", None)
         if "StarSystem" in entry:
             EDR_CLIENT.update_star_system_if_obsolete(entry["StarSystem"], entry.get("SystemAddress", None))
-        EDR_CLIENT.edrfssinsights.update_system(entry.get("SystemAddress", None), entry.get("StarSystem", None))
+        EDR_CLIENT.process_location_event(entry)
         outcome["reason"] = "Location event"
-        EDR_CLIENT.check_system(entry["StarSystem"], may_create=True, coords=entry.get("StarPos", None))
 
     if entry["event"] in ["Undocked", "Docked", "DockingCancelled", "DockingDenied",
                           "DockingGranted", "DockingRequested", "DockingTimeout"]:

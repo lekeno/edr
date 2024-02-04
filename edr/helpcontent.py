@@ -242,6 +242,7 @@ class HelpContent(object):
                 _(u" - '!search thing @system' to specify the system to search around, e.g. !search cadmium @deciat"),
                 _(u" - Abbreviations consist of the first three letters of a one-word resource, or the first letters of each words separated by a space:"),
                 _(u" - 'cad' for cadmium, 'a e c d' for abnormal compact emission data."),
+                _(u" - !search can also be used to look for specific odyssey settlements: !search anarchy, military, -alliance"),
                 _(u" - Use the command with a few letters to see the supported keywords that contain these letters, e.g. '!search strat"),
                 _(u" - Some manufactured materials may not always return a result. Use the hints and Elite's galaxy map to find a good spot."),
                 _(u" - Finally, when jumping into a system, EDR will tell you if it has the right conditions for specific materials, e.g. Imperial Shielding (USS-HGE, +++++)."),
