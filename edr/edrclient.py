@@ -117,9 +117,12 @@ class EDRClient(object):
 
         audio = 1 if config.get_str("EDRAudioFeedback") == "True" else 0
         self._audio_feedback = tk.IntVar(value=audio)
-
+        
         self.server = EDRServer()
-
+        crimes_reporting = 1 if config.get_str("EDRCrimesReporting") == "True" else 0
+        self.server.crimes_reporting = bool(crimes_reporting)
+        self._crimes_reporting = tk.IntVar(value=crimes_reporting)
+        
         anonymous_reports = _(u"Auto")
         self.server.anonymous_reports = None
         if config.get_str("EDRRedactMyInfo") in [_(u"Always"), _(U"Never")]:
@@ -154,7 +157,6 @@ class EDRClient(object):
 
         self.mandatory_update = False
         self.autoupdate_pending = False
-        self.crimes_reporting = True
         self.motd = []
         self.tips = RandomTips()
         self.help_content = HelpContent()
@@ -206,6 +208,7 @@ class EDRClient(object):
         c_audio_feedback = config.get_str("EDRAudioFeedback")
         c_audio_volume = config.get_str("EDRAudioFeedbackVolume")
         c_redact_my_info = config.get_str("EDRRedactMyInfo")
+        c_crimes_reporting = config.get_str("EDRCrimesReporting")
         c_fc_jump_announcements = config.get_str("EDRFCJumpPSA")
 
         if c_email is None:
@@ -239,6 +242,11 @@ class EDRClient(object):
             self.anonymous_reports = _(u"Auto")
         elif c_redact_my_info in [_(u"Always"), _(u"Never")]:
             self.anonymous_reports = c_redact_my_info
+
+        if c_crimes_reporting is None or c_crimes_reporting == "True":
+            self._crimes_reporting.set(1)
+        else:
+            self._crimes_reporting.set(0)
 
         if c_fc_jump_announcements is None:
             self.fc_jump_psa = _(u"Never")
@@ -353,6 +361,14 @@ class EDRClient(object):
             self.server.anonymous_reports = (new_value == _(u"Always")) 
 
     @property
+    def crimes_reporting(self):
+        return self._crimes_reporting.get() == 1
+
+    @crimes_reporting.setter
+    def crimes_reporting(self, new_value):
+        self._crimes_reporting.set(new_value)
+
+    @property
     def fc_jump_psa(self):
         return self._fc_jump_psa.get()
 
@@ -427,8 +443,9 @@ class EDRClient(object):
 
     def warmup(self):
         EDRLOG.log(u"Warming up client.", "INFO")
-        # Translators: this is shown when EDR warms-up via the overlay
-        details = [_(u"Check that Elite still has the focus!")]
+        details = []
+        if not self.crimes_reporting:
+            details.append(_(u"Crimes reporting is off (!crimes on to re-enable)"))
         if self.mandatory_update:
             # Translators: this is shown when EDR warms-up via the overlay if there is a mandatory update pending
             details = [_(u"Mandatory update!")]
@@ -507,25 +524,30 @@ class EDRClient(object):
 
         notebook.Label(frame, text=_(u'Broadcasts')).grid(padx=10, row=14, sticky=tk.W)
         ttk.Separator(frame, orient=tk.HORIZONTAL).grid(columnspan=2, padx=10, pady=2, sticky=tk.EW)
-        notebook.Label(frame, text=_("Redact my info in Sitreps")).grid(padx=10, row = 16, sticky=tk.W)
+        notebook.Checkbutton(frame, text=_(u"Report crimes"),
+                             variable=self._crimes_reporting).grid(padx=10, row=16, sticky=tk.W)
+        notebook.Label(frame, text=_("Redact my info in Sitreps")).grid(padx=10, row = 17, sticky=tk.W)
         choices = { _(u'Auto'),_(u'Always'),_(u'Never')}
         popupMenu = notebook.OptionMenu(frame, self._anonymous_reports, self.anonymous_reports, *choices)
-        popupMenu.grid(padx=10, row=16, column=1, sticky=tk.EW)
+        popupMenu.grid(padx=10, row=17, column=1, sticky=tk.EW)
         popupMenu["menu"].configure(background="white", foreground="black")
 
-        notebook.Label(frame, text=_(u"Announce my Fleet Carrier's jump schedule")).grid(padx=10, row = 17, sticky=tk.W)
+        notebook.Label(frame, text=_(u"Announce my Fleet Carrier's jump schedule")).grid(padx=10, row = 18, sticky=tk.W)
         choices = { _(u'Never'),_(u'Public'),_(u'Private'), _(u'Direct')}
         popupMenu = notebook.OptionMenu(frame, self._fc_jump_psa, self.fc_jump_psa, *choices, command=self.__toggle_fc_links)
-        popupMenu.grid(padx=10, row=17, column=1, sticky=tk.EW)
+        popupMenu.grid(padx=10, row=18, column=1, sticky=tk.EW)
         popupMenu["menu"].configure(background="white", foreground="black")
         self._private_fc_link = ttkHyperlinkLabel.HyperlinkLabel(frame, text=_(u"Configure your private channel (managed by EDR)"), background=notebook.Label().cget('background'), url="https://forms.gle/7pntJRpDgRBcbcfp8", underline=True)
         self._direct_fc_link = notebook.Label(frame, text=_(u"Configure your Fleet Carrier channel in config/user_config.ini"))
-        self._private_fc_link.grid(padx=10, row=18, column=1, sticky=tk.EW)
-        self._direct_fc_link.grid(padx=10, row=19, column=1, sticky=tk.EW)
+        self._private_fc_link.grid(padx=10, row=19, column=1, sticky=tk.EW)
+        self._direct_fc_link.grid(padx=10, row=20, column=1, sticky=tk.EW)
         if self.fc_jump_psa == _(u'Private'):
             self._direct_fc_link.grid_remove()
         elif self.fc_jump_psa == _(u'Direct'):
             self._private_fc_link.grid_remove()
+        else:
+            self._private_fc_link.grid_remove()
+            self._direct_fc_link.grid_remove()
 
         if self.server.is_authenticated():
             if self.is_anonymous():
@@ -536,10 +558,10 @@ class EDRClient(object):
             self.status = _(u"not authenticated.")
 
         # Translators: this is shown in the preferences panel as a heading for feedback options (e.g. overlay, audio cues)
-        notebook.Label(frame, text=_(u"EDR Feedback:")).grid(padx=10, row=20, sticky=tk.W)
+        notebook.Label(frame, text=_(u"EDR Feedback:")).grid(padx=10, row=21, sticky=tk.W)
         ttk.Separator(frame, orient=tk.HORIZONTAL).grid(columnspan=2, padx=10, pady=2, sticky=tk.EW)
         
-        notebook.Label(frame, text=_(u"Overlay")).grid(padx=10, row = 22, sticky=tk.W)
+        notebook.Label(frame, text=_(u"Overlay")).grid(padx=10, row = 23, sticky=tk.W)
         choices = { _(u"Enabled"),_(u"Standalone (for VR or multi-display)"), _(u'Disabled')}
         popupMenu = notebook.OptionMenu(frame, self._visual_feedback_type, self.visual_feedback_type, *choices)
         popupMenu.grid(padx=10, row=23, column=1, sticky=tk.EW)
@@ -598,10 +620,12 @@ class EDRClient(object):
         self.visual_feedback_type = visual_feedback_type
         config.set("EDRAudioFeedback", "True" if self.audio_feedback else "False")
         config.set("EDRRedactMyInfo", self.anonymous_reports)
+        config.set("EDRCrimesReporting", "True" if self.crimes_reporting else "False")
         config.set("EDRFCJumpPSA", self.fc_jump_psa)
         EDRLOG.log(u"Audio cues: {}, {}".format(config.get_str("EDRAudioFeedback"),
                                                 config.get_str("EDRAudioFeedbackVolume")), "DEBUG")
         EDRLOG.log(u"Anonymous reports: {}".format(config.get_str("EDRRedactMyInfo")), "DEBUG")
+        EDRLOG.log(u"Crimes reporting: {}".format(config.get_str("EDRCrimesReporting")), "DEBUG")
         self.ui.refresh_theme()
         self.login()
 
