@@ -436,7 +436,9 @@ class EDRClient(object):
     def warmup(self):
         EDRLOG.log(u"Warming up client.", "INFO")
         # Translators: this is shown when EDR warms-up via the overlay
-        details = [_(u"Check that Elite still has the focus!")]
+        details = []
+        if not self.crimes_reporting:
+            details.append(_(u"Crimes reporting is off (!crimes on to re-enable)"))
         if self.mandatory_update:
             # Translators: this is shown when EDR warms-up via the overlay if there is a mandatory update pending
             details = [_(u"Mandatory update!")]
