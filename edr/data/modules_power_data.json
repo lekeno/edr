@@ -173,7 +173,7 @@
     },
     "hpt_atdumbfiremissile_fixed_medium_v2": {
         "powergen": 0,
-        "powerdraw": 1.2
+        "powerdraw": 1.44
     },
     "hpt_atdumbfiremissile_turret_medium": {
         "powergen": 0,
@@ -189,7 +189,7 @@
     },
     "hpt_atdumbfiremissile_fixed_large_v2": {
         "powergen": 0,
-        "powerdraw": 1.62
+        "powerdraw": 1.94
     },
     "hpt_atdumbfiremissile_turret_large": {
         "powergen": 0,
@@ -233,7 +233,7 @@
     },
     "hpt_atventdisruptorpylon_fixed_large": {
         "powergen": 0,
-        "powerdraw": 0.64
+        "powerdraw": 0.70
     },
     "hpt_beamlaser_fixed_small": {
         "powergen": 0,
