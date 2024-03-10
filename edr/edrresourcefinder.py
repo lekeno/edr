@@ -506,25 +506,36 @@ class EDRResourceFinder(object):
 
     def recommend_prospecting_planet(self, resource, reference_system, callback):
         planets_lut = {
-            'tellurium': [ { 'name': 'HIP 36601', 'planet': 'C 3 b', 'gravity': 0.04, 'distanceToArrival': 153683, 'type': 'crystals'}],
-            'ruthenium': [{ 'name': 'HIP 36601', 'planet': 'C 1 d', 'gravity': 0.08, 'distanceToArrival': 154104, 'type': 'crystals'}
+            'tellurium': [ {'name': 'HIP 36601', 'planet': 'C 3 b', 'gravity': 0.04, 'distanceToArrival': 153683, 'type': 'crystals'},
+                           {'name': 'Kappa-1 Volantis', 'planet': 'B 7 c a', 'gravity': 0.17, 'distanceToArrival': 4386, 'type': 'brain tree site'},
             ],
-            'antimony': [ { 'name': 'Outotz LS-K D8-3', 'planet': 'B 5 c', 'gravity': 0.07, 'distanceToArrival': 310673, 'type': 'crystals'}],
+            'ruthenium': [ {'name': 'HIP 36601', 'planet': 'C 1 d', 'gravity': 0.08, 'distanceToArrival': 154104, 'type': 'crystals'},
+                           {'name': 'IC 2602 sector bv-x b1-6', 'planet': '1', 'gravity': 0.1743, 'distanceToArrival': 7, 'type': 'brain tree site'},
+            ],
+            'antimony': [ {'name': 'Outotz LS-K D8-3', 'planet': 'B 5 c', 'gravity': 0.07, 'distanceToArrival': 310673, 'type': 'crystals'},
+                          {'name': 'Outotz JI-J D9-4', 'planet': 'B 7 b', 'gravity': 0.11, 'distanceToArrival': 156856, 'type': 'crystals'},
+                          {'name': 'V518 Carinae', 'planet': '2 a', 'gravity': 0.0163, 'distanceToArrival': 2802, 'type': 'brain tree site'},
+            ],
             'polonium': [ {'name': 'HIP 59646', 'planet': '1', 'concentration':	0.013, 'gravity': 1.35, 'distanceToArrival': 66, 'type': 'rocks'},
                           {'name': 'Tiris', 'planet': '1 c', 'concentration': 0.012, 'gravity': 0.13, 'distanceToArrival': 17, 'type': 'rocks'},
                           {'name': 'LTT 6705', 'planet': 'A 2', 'concentration': 0.012, 'gravity': 0.93, 'distanceToArrival': 25, 'type': 'rocks'},
                           {'name': 'HIP 22286', 'planet': '2', 'concentration': 0.013, 'gravity': 1.49, 'distanceToArrival': 16, 'type': 'rocks'},
-                          { 'name': 'HIP 36601', 'planet': 'C 1 a', 'gravity': 0.09, 'distanceToArrival': 154099, 'type': 'crystals'}
+                          {'name': 'HIP 36601', 'planet': 'C 1 a', 'gravity': 0.09, 'distanceToArrival': 154099, 'type': 'crystals'},
+                          {'name': 'Synuefe by-f d12-39', 'planet': 'A 2', 'gravity': 0.1, 'distanceToArrival': 58, 'type': 'brain tree site'},
             ],
             'technetium': [ {'name': 'HIP 108602', 'planet': 'B 2', 'concentration': 0.015, 'gravity': 0.10, 'distanceToArrival': 468, 'type': 'rocks'},
                             {'name': 'Kadaren', 'planet': '2', 'concentration':	0.015, 'gravity': 1.23, 'distanceToArrival': 26, 'type': 'rocks'},
                             {'name': 'Nihal', 'planet': '1', 'concentration': 0.014, 'gravity': 1.29, 'distanceToArrival': 335, 'type': 'rocks'},
-                            { 'name': 'HIP 36601', 'planet': 'C 5 a', 'gravity': 0.03, 'distanceToArrival': 154093, 'type': 'crystals'}
+                            {'name': 'HIP 36601', 'planet': 'C 5 a', 'gravity': 0.03, 'distanceToArrival': 154093, 'type': 'crystals'},
+                            {'name': 'Synuefe lx-g b44-11', 'planet': 'B 2', 'gravity': 0.05, 'distanceToArrival': 340, 'type': 'brain tree site'}
             ],
             'yttrium':    [ {'name': 'Mse', 'planet': 'B 1', 'concentration': 0.026, 'gravity': 0.29, 'distanceToArrival': 962, 'type': 'rocks'},
                             {'name': 'Epsilon Ceti', 'planet': 'A 1', 'concentration':	0.025, 'gravity': 1.92, 'distanceToArrival': 85, 'type': 'rocks'},
                             {'name': 'Hip 20485', 'planet': 'A 1', 'concentration': 0.025, 'gravity': 0.24, 'distanceToArrival': 11, 'type': 'rocks'},
-                            { 'name': 'Outotz LS-K D8-3', 'planet': 'B 5 a', 'gravity': 0.09, 'distanceToArrival': 310675, 'type': 'crystals'}
+                            {'name': 'Outotz LS-K D8-3', 'planet': 'B 5 a', 'gravity': 0.09, 'distanceToArrival': 310675, 'type': 'crystals'},
+                            {'name': 'Outotz GZ-M C21-0', 'planet': 'B 3 c', 'gravity': 0.08, 'distanceToArrival': 19328, 'type': 'crystals'},
+                            {'name': 'Synuefe an-h d11-101', 'planet': 'AB 1 c', 'gravity': 0.09, 'distanceToArrival': 1571, 'type': 'brain tree site'},
+                            
             ],
             'cadmium':    [ {'name': 'Anca', 'planet': 'A 1', 'concentration': 0.033, 'gravity': 0.09, 'distanceToArrival': 6, 'type': 'rocks'},
                             {'name': 'Tiris', 'planet': '1 C', 'concentration':	0.033, 'gravity': 0.13, 'distanceToArrival': 17, 'type': 'rocks'},
@@ -599,6 +610,13 @@ class EDRResourceFinder(object):
                 _(u"Bring: detailed surface scanner, SRV, synth materials for SRV fuel and ammo."),
                 _(u"Surface scan the planet to find biological sites."),
                 _(u"Land, deploy SRV to break crystalline shards, scoop grade 4 materials.")
+            ]
+        elif best.get("type", None) == "brain tree site":
+            return [
+                _(u'{} ({}LY), Planet {} ({}LS, {}G), {} @ brain tree site').format(best['name'], pretty_dist, best['planet'], best['distanceToArrival'], best['gravity'], resource),
+                _(u"Bring: detailed surface scanner, SRV, synth materials for SRV fuel and ammo."),
+                _(u"Approach the planet to get navigation guidance to the brain tree site(s)."),
+                _(u"Land, deploy SRV to break brain trees, scoop grade 4 materials.")
             ]            
         else:
             return [
