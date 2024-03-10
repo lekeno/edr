@@ -597,6 +597,8 @@ class EDRResourceFinder(object):
         best_distance = None
         best = None
         for planet in candidates:
+            if planet['name'] == "brain tree site" and (not self.dlc or self.dlc.lower() != "odyssey"):
+                continue
             distance = self.edr_systems.distance(reference_system, planet['name'])
             if best_distance is None or distance < best_distance:
                 best_distance = distance
