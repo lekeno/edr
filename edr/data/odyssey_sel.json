@@ -2783,7 +2783,7 @@
     },
     {
         "name": "CPD-51 3323",
-        "planet": " 1 d a",
+        "planet": "1 d a",
         "gravity": 0.04,
         "concentration": 0.0489,
         "distanceToArrival": 675,
@@ -2793,5 +2793,20 @@
             "z": 16.1875
         },
         "type": "geological"
+    },
+    {
+        "name": "HR 3230",
+        "planet": "3 a a",
+        "gravity": 0.06,
+        "concentration": 0.0,
+        "distanceToArrival": 1695,
+        "coords": {
+            "x": 394.15625,
+            "y": 19.25,
+            "z": -152.375
+        },
+        "type": "brain tree site",
+        "latitude": 52.6,
+        "longitude":  -165.8786
     }
 ]
