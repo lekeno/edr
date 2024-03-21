@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
 "POT-Creation-Date: 2024-03-18 11:09+0100\n"
-"PO-Revision-Date: 2024-03-21 13:06+0100\n"
+"PO-Revision-Date: 2024-03-22 00:29+0100\n"
 "Last-Translator: GLWine\n"
 "Language-Team: GWine\n"
 "Language: it_IT\n"
@@ -7625,7 +7625,7 @@ msgstr "Lon: {:.4f}"
 
 #: ingamemsg.py:468
 msgid "Head: > {:03} <"
-msgstr ""
+msgstr "Head: > {:03} <"
 
 #: ingamemsg.py:471
 msgid "Alt: {}km"
@@ -8318,180 +8318,244 @@ msgid ""
 "Sending '@# <cmdrname> memo=<memo>' will attach a custom note with <memo> on "
 "<cmdrname> in your commanders index."
 msgstr ""
+"Inviando '@# <cmdrname> memo=<memo>' allegherà una nota personalizzata con "
+"<memo> su <cmdrname> nell'indice dei tuoi comandanti."
 
 #: randomtips.py:68
 msgid ""
 "Send '-@' to a contact to remove any attached note in your commanders index."
 msgstr ""
+"Invia '-@' a un contatto per rimuovere qualsiasi nota allegata nell'indice "
+"dei tuoi comandanti."
 
 #: randomtips.py:69
 msgid ""
 "Send '-@ <cmdrname>' to remove the note attached to <cmdrname> in your "
 "commanders index."
 msgstr ""
+"Invia '-@ <cmdrname>' per rimuovere la nota allegata a <cmdrname> "
+"nell'indice dei tuoi comandanti."
 
 #: randomtips.py:70
 msgid ""
 "In an Intel response, [!70% ?20% +10%] shows the percentage of outlaw (!), "
 "neutral (?) and enforcer (+) tags set by other EDR users."
 msgstr ""
+"In una risposta Intel, [!70% ?20% +10%] mostra la percentuale di tag "
+"fuorilegge (!), neutrali (?) ed esecutori (+) impostati da altri utenti EDR."
 
 #: randomtips.py:71
 msgid ""
 "In an Intel response, [!3 ?0 +0] shows the number of outlaw (!), neutral (?) "
 "and enforcer (+) tags set by other EDR users."
 msgstr ""
+"In una risposta Intel, [!3 ?0 +0] mostra il numero di tag fuorilegge (!), "
+"neutrali (?) ed esecutori (+) impostati da altri utenti EDR."
 
 #: randomtips.py:72
 msgid ""
 "Have a suggestion for a tip? File an issue at https://github.com/lekeno/edr/"
 "issues"
 msgstr ""
+"Hai un suggerimento per un suggerimento? Invia un problema su https://github."
+"com/lekeno/edr/issues"
 
 #: randomtips.py:73
 msgid "Found a bug? File an issue at https://github.com/lekeno/edr/issues"
 msgstr ""
+"Trovato un bug? Invia un problema su https://github.com/lekeno/edr/issues"
 
 #: randomtips.py:74
 msgid ""
 "Have a feature request? File an issue at https://github.com/lekeno/edr/issues"
 msgstr ""
+"Hai una richiesta di funzionalità? Invia un problema su https://github.com/"
+"lekeno/edr/issues"
 
 #: randomtips.py:75
 msgid ""
 "Do you like EDR? Consider supporting its development and hosting costs at "
 "https://patreon.com/lekeno"
 msgstr ""
+"Ti piace EDR? Considera la possibilità di sostenere i costi di sviluppo e "
+"hosting su https://patreon.com/lekeno"
 
 #: randomtips.py:76
 msgid ""
 "Send '!where <cmdrname>' to find out where an outlaw/enemy was last sighted"
 msgstr ""
+"Invia '!where <cmdrname>' per scoprire dove è stato avvistato l'ultima volta "
+"un fuorilegge/nemico"
 
 #: randomtips.py:77
 msgid "Send '!outlaws' to find out where outlaws were last sighted"
 msgstr ""
+"Invia '!outlaws' per scoprire dove sono stati avvistati i fuorilegge "
+"l'ultima volta"
 
 #: randomtips.py:78
 msgid "Send '?outlaws on': to enable realtime alerts for sighted outlaws."
 msgstr ""
+"Invia '?outlaws on': per abilitare avvisi in tempo reale per i fuorilegge "
+"avvistati."
 
 #: randomtips.py:79
 msgid "Send '?outlaws off': to disable realtime alerts for sighted outlaws."
 msgstr ""
+"Invia '?outlaws off': per disattivare gli avvisi in tempo reale per i "
+"fuorilegge avvistati."
 
 #: randomtips.py:80
 msgid ""
 "Send '?outlaws': to check the state and configuration of the realtime alerts "
 "for sighted outlaws."
 msgstr ""
+"Invia '?outlaws': per verificare lo stato e la configurazione degli avvisi "
+"in tempo reale per i fuorilegge avvistati."
 
 #: randomtips.py:81
 msgid ""
 "Send '?outlaws ly 150': to configure a maximal distance of 150 ly for the "
 "outlaws realtime alerts."
 msgstr ""
+"Invia '?outlaws ly 150': per configurare una distanza massima di 150 ly per "
+"gli avvisi in tempo reale dei fuorilegge."
 
 #: randomtips.py:82
 msgid ""
 "Send '?outlaws cr 10000': to configure a minimal bounty of 10k cr for the "
 "outlaws realtime alerts."
 msgstr ""
+"Invia '?outlaws cr 10000': per configurare una taglia minima di 10k cr per "
+"gli avvisi in tempo reale dei fuorilegge."
 
 #: randomtips.py:83
 msgid ""
 "Send '?outlaws cr -': to remove the minimal bounty for the realtime alerts."
 msgstr ""
+"Invia '?outlaws cr -': per rimuovere la taglia minima per gli avvisi in "
+"tempo reale."
 
 #: randomtips.py:84
 msgid ""
 "Send '?outlaws ly -': to remove the maximal distance for the realtime alerts."
 msgstr ""
+"Invia '?outlaws ly -': per rimuovere la distanza massima per gli avvisi in "
+"tempo reale."
 
 #: randomtips.py:85
 msgid "Send '!clear' to clear everything on EDR's overlay"
-msgstr ""
+msgstr "Invia '!clear' per cancellare tutto sull'overlay di EDR"
 
 #: randomtips.py:86
 msgid "Send '!enemies' to find out where enemies were last sighted"
 msgstr ""
+"Invia '!enemies' per scoprire dove sono stati avvistati i nemici l'ultima "
+"volta"
 
 #: randomtips.py:87
 msgid "Send '?enemies on': to enable realtime alerts for sighted enemies."
 msgstr ""
+"Invia '?enemies on': per abilitare avvisi in tempo reale per i nemici "
+"avvistati."
 
 #: randomtips.py:88
 msgid "Send '?enemies off': to disable realtime alerts for sighted enemies."
 msgstr ""
+"Invia '?enemies off': per disattivare gli avvisi in tempo reale per i nemici "
+"avvistati."
 
 #: randomtips.py:89
 msgid ""
 "Send '?enemies': to check the state and configuration of the realtime alerts "
 "for sighted enemies."
 msgstr ""
+"Invia '?enemies': per verificare lo stato e la configurazione degli avvisi "
+"in tempo reale per i nemici avvistati."
 
 #: randomtips.py:90
 msgid ""
 "Send '?enemies ly 150': to configure a maximal distance of 150 ly for the "
 "enemies realtime alerts."
 msgstr ""
+"Invia '?enemies ly 150': per configurare una distanza massima di 150 ly per "
+"gli avvisi in tempo reale dei nemici."
 
 #: randomtips.py:91
 msgid ""
 "Send '?enemies cr 10000': to configure a minimal bounty of 10k cr for the "
 "enemies realtime alerts."
 msgstr ""
+"Invia '?enemies cr 10000': per configurare una taglia minima di 10k cr per "
+"gli avvisi in tempo reale dei nemici."
 
 #: randomtips.py:92
 msgid ""
 "Send '?enemies cr -': to remove the minimal bounty for the realtime alerts."
 msgstr ""
+"Invia '?enemies cr -': per rimuovere la taglia minima per gli avvisi in "
+"tempo reale."
 
 #: randomtips.py:93
 msgid ""
 "Send '?enemies ly -': to remove the maximal distance for the realtime alerts."
 msgstr ""
+"Invia '?enemies ly -': per rimuovere la distanza massima per gli avvisi in "
+"tempo reale."
 
 #: randomtips.py:94
 msgid ""
 "Send '!distance <system>' or '!d <system>': shows the distance to <system>."
 msgstr ""
+"Invia '!distance <system>' o '!d <system>': mostra la distanza da <system>."
 
 #: randomtips.py:95
 msgid ""
 "Send '!distance Lave > Eravate' or '!d Lave > Eravate': shows the distance "
 "from Lave to Eravate."
 msgstr ""
+"Invia '!distance Lave > Eravate' o '!d Lave > Eravate': mostra la distanza "
+"da Lave a Eravate."
 
 #: randomtips.py:96
 msgid ""
 "Send '!search resource name', e.g. '!search cadmium', to find the closest "
 "hotspot for rare resources."
 msgstr ""
+"Invia '!search nome_risorsa', ad es. '!search cadmium', per trovare "
+"l'hotspot più vicino per risorse rare."
 
 #: randomtips.py:97
 msgid ""
 "Send '!if' or '!if Lave' to find an Interstellar Factors near your position "
 "or a specific system."
 msgstr ""
+"Invia '!if' o '!if Lave' per trovare un Interstellar Factors vicino alla tua "
+"posizione o un sistema specifico."
 
 #: randomtips.py:98
 msgid ""
 "Send '!raw' or '!raw Lave' to find a Raw Material Trader near your position "
 "or a specific system."
 msgstr ""
+"Invia '!raw' o '!raw Lave' per trovare un Material Trader di Raw vicino alla "
+"tua posizione o a un sistema specifico."
 
 #: randomtips.py:99
 msgid ""
 "Send '!encoded', !enc' or '!enc Lave' to find an Encoded Data Trader near "
 "your position or a specific system."
 msgstr ""
+"Invia '!encoded', !enc' o '!enc Lave' per trovare un Encoded Data Trader "
+"vicino alla tua posizione o ad un sistema specifico."
 
 #: randomtips.py:100
 msgid ""
 "Send '!manufactured', '!man' or '!man Lave' to find a Manufactured Material "
 "Trader near your position or a specific system."
 msgstr ""
+"Invia '!manufactured', '!man' o '!man Lave' per trovare un Manufactured "
+"Material Trader vicino alla tua posizione o a un sistema specifico."
 
 #: randomtips.py:101
 msgid ""
@@ -8499,30 +8563,41 @@ msgid ""
 "position or a specific system, i.e. large pads, shipyard, outfitting, repair/"
 "rearm/refuel."
 msgstr ""
+"Invia '!staging' o '!staging Lave' per trovare una buona stazione di sosta "
+"vicino alla tua posizione o un sistema specifico, ad esempio piattaforme di "
+"grandi dimensioni, hangar, outfitting, riparazione/riarmo/rifornimento."
 
 #: randomtips.py:102
 msgid ""
 "Send '!htb', '!humantechbroker' or '!htb Lave' to find a Human Tech Broker "
 "near your position or a specific system"
 msgstr ""
+"Invia '!htb', '!humantechbroker' o '!htb Lave' per trovare un Human Tech "
+"Broker vicino alla tua posizione o ad un sistema specifico"
 
 #: randomtips.py:103
 msgid ""
 "Send '!gtb', '!guardiantechbroker' or '!gtb Lave' to find a Guardian Tech "
 "Broker near your position or a specific system"
 msgstr ""
+"Invia '!gtb', '!guardiantechbroker' o '!gtb Lave' per trovare un Guardian "
+"Tech Broker vicino alla tua posizione o ad un sistema specifico"
 
 #: randomtips.py:104
 msgid ""
 "Send '!edr optional message' to dispatch a generic message to EDR Central's "
 "discord server (be mindful)."
 msgstr ""
+"Invia '!edr messaggio opzionale' per inviare un messaggio generico al server "
+"Discord di EDR Central (stai attento)."
 
 #: randomtips.py:105
 msgid ""
 "Send '!911 optional message' to dispatch a law enforcer request to EDR "
 "Central's discord server (be mindful)."
 msgstr ""
+"Invia '!911 messaggio_facoltativo' per inviare una richiesta delle forze "
+"dell'ordine al server Discord di EDR Central (stai attento)."
 
 #: randomtips.py:106
 msgid ""
@@ -8530,6 +8605,9 @@ msgid ""
 "discord server (be mindful). Also, check the UI in EDMC for Fuel Rats/Corgis "
 "instructions."
 msgstr ""
+"Invia '!fuel messaggio_facoltativo' per inviare una richiesta di carburante "
+"al server Discord di EDR Central (stai attento). Inoltre, controlla "
+"l'interfaccia utente in EDMC per le istruzioni su Fuel Rats/Corgis."
 
 #: randomtips.py:107
 msgid ""
@@ -8537,83 +8615,114 @@ msgid ""
 "Central's discord server (be mindful). Also, check the UI in EDMC for Repair "
 "Corgis instructions."
 msgstr ""
+"Invia '!repair messaggio_opzionale' per inviare una richiesta di riparazione "
+"al server Discord di EDR Central (stai attento). Inoltre, controlla "
+"l'interfaccia utente in EDMC per le istruzioni di riparazione di Corgis."
 
 #: randomtips.py:108
 msgid ""
 "Send '!nav 45.3 -3.5' for getting planetary guidance to a specific location, "
 "e.g. 45.3 longitude, -3.5 latitude."
 msgstr ""
+"Invia '!nav 45.3 -3.5' per ottenere la guida planetaria verso una posizione "
+"specifica, ad es. 45,3 longitudine, -3,5 latitudine."
 
 #: randomtips.py:109
 msgid "Send '!nav off' to clear the navigation data."
-msgstr ""
+msgstr "Invia '!nav off' per cancellare i dati di navigazione."
 
 #: randomtips.py:110
 msgid ""
 "Send '!nav set' to mark your current location as your navigation target."
 msgstr ""
+"Invia '!nav set' per contrassegnare la tua posizione corrente come "
+"destinazione di navigazione."
 
 #: randomtips.py:111
 msgid "Send '!ship fdl' to find out where you've parked your Fer-de-Lance."
 msgstr ""
+"Invia '!ship fdl' per sapere dove hai parcheggiato il tuo Fer-de-Lance."
 
 #: randomtips.py:112
 msgid ""
 "Send '!ship In Front Of Things' to find out where you've parked your ship "
 "named 'In Front of Things'."
 msgstr ""
+"Invia '!ship In Front Of Things' per scoprire dove hai parcheggiato la tua "
+"nave denominata 'In Front of Things'."
 
 #: randomtips.py:113
 msgid "Send '!eval power' to get an assessment of your power priorities."
 msgstr ""
+"Invia '!eval power' per ottenere una valutazione delle priorità del sistema "
+"di alimentazione."
 
 #: randomtips.py:114
 msgid ""
 "[Odyssey] Send '!eval backpack' to get an assessment of items in your "
 "backpack."
 msgstr ""
+"[Odyssey] Invia '!eval backpack' per ottenere una valutazione degli oggetti "
+"nel tuo zaino."
 
 #: randomtips.py:115
 msgid ""
 "[Odyssey] Send '!eval locker' to get an assessment of items in your ship "
 "locker."
 msgstr ""
+"[Odyssey] Invia '!eval locker' per ottenere una valutazione degli oggetti "
+"nel tuo armadietto della nave."
 
 #: randomtips.py:116
 msgid ""
 "[Odyssey] Send '!eval bar' to get an assessment of items on sale from the "
 "last visited bar on a fleet carrier."
 msgstr ""
+"[Odyssey] Invia '!eval bar' per ottenere una valutazione degli articoli in "
+"vendita dall'ultimo bar visitato su una fleet carrier."
 
 #: randomtips.py:117
 msgid ""
 "[Odyssey] Send '!eval bar demand' to get an assessment of items in demand at "
 "the last visited bar on a fleet carrier."
 msgstr ""
+"[Odyssey] Invia '!eval bar demand' per ottenere una valutazione degli "
+"articoli richiesti nell'ultimo bar visitato su una fleet carrier."
 
 #: randomtips.py:118
 msgid ""
 "Send '!offbeat' to get a station whose info hasn't been updated recently and "
 "has a higher chance of carrying premium weapons/suits."
 msgstr ""
+"Invia '!offbeat' per ottenere una stazione di cui le informazioni non sono "
+"state aggiornate recentemente e ha una maggiore probabilità di avere armi e "
+"tute premium."
 
 #: randomtips.py:119
 msgid ""
 "Send '!materials' to get a list of material profiles supported by EDR (e.g. "
 "synthesis for FSD, etc.)"
 msgstr ""
+"Invia '!materials' per ottenere un elenco dei profili di materiali "
+"supportati da EDR (ad esempio, sintesi per il FSD, ecc.)"
 
 #: randomtips.py:120
 msgid ""
 "Send '!rrrfc' to get a fleet carrier with repair, rearm, refuel in the "
 "current system. Double check docking access before proceeding."
 msgstr ""
+"Invia \"!rrrfc\" per ottenere una portaerei con riparazione, riarmo e "
+"rifornimento nel sistema attuale. Ricontrolla l'accesso all'attracco prima "
+"di procedere."
 
 #: randomtips.py:121
 msgid ""
 "Send '!rrrfc < 15' to get a fleet carrier with repair, rearm, refuel within "
 "15 LY of the current system. Double check docking access before proceeding."
 msgstr ""
+"Invia '!rrrfc < 15' per ottenere una portaerei con riparazione, riarmo e "
+"rifornimento entro 15 LY dal sistema attuale. Ricontrolla l'accesso "
+"all'attracco prima di procedere."
 
 #: randomtips.py:122
 msgid ""
@@ -8621,131 +8730,177 @@ msgid ""
 "within the specified system (e.g. Deciat). Double check docking access "
 "before proceeding."
 msgstr ""
+"Invia '!rrrfc deciat' per ottenere una fleet carrier con riparazione, "
+"riarmo, rifornimento all'interno del sistema specificato (ad esempio "
+"Deciat). Ricontrolla l'accesso all'attracco prima di procedere."
 
 #: randomtips.py:123
 msgid ""
 "Send '!rrr' to get a station with repair, rearm, refuel in the current "
 "system."
 msgstr ""
+"Invia \"!rrr\" per ottenere una stazione con riparazione, riarmo e "
+"rifornimento nel sistema attuale."
 
 #: randomtips.py:124
 msgid ""
 "Send '!rrr < 15' to get a station with repair, rearm, refuel within 15 LY of "
 "the current system."
 msgstr ""
+"Invia '!rrr < 15' per ottenere una stazione con riparazione, riarmo e "
+"rifornimento entro 15 LY dal sistema attuale."
 
 #: randomtips.py:125
 msgid ""
 "Send '!rrr deciat' to get a station with repair, rearm, refuel within the "
 "specified system (e.g. Deciat)."
 msgstr ""
+"Invia '!rrr deciat' per ottenere una stazione con riparazione, riarmo, "
+"rifornimento all'interno del sistema specificato (es. Deciat)."
 
 #: randomtips.py:126
 msgid ""
 "Send 'When using EDR's search features, the system name will be placed in "
 "the clipboard. Hit Ctrl+V to paste the result."
 msgstr ""
+"Quando si utilizzano le funzionalità di ricerca di EDR, il nome del sistema "
+"verrà inserito negli appunti. Premi Ctrl+V per incollare il risultato."
 
 #: randomtips.py:127
 msgid ""
 "Send '!parking' to check for fleet carrier parking slots in the current "
 "system."
 msgstr ""
+"Invia '!parking' per verificare la disponibilità di parcheggi per le fleet "
+"carrier nel sistema attuale."
 
 #: randomtips.py:128
 msgid ""
 "Send '!parking #1' to check for fleet carrier parking slots in the first "
 "system near your location."
 msgstr ""
+"Invia '!parking #1' per verificare la disponibilità di parcheggi per le "
+"fleet carrier nel primo sistema vicino alla tua posizione."
 
 #: randomtips.py:129
 msgid ""
 "Send '!parking deciat' to check for fleet carrier parking slots in Deciat."
 msgstr ""
+"Invia '!parking deciat' per verificare la disponibilità di parcheggi per le "
+"fleet carrier a Deciat."
 
 #: randomtips.py:130
 msgid ""
 "Send '!parking deciat #3' to check for fleet carrier parking slots in the "
 "third closest system to Deciat."
 msgstr ""
+"Invia '!parking deciat #3' per verificare la disponibilità di parcheggi per "
+"le fleet carrier nel terzo sistema più vicino a Deciat."
 
 #: randomtips.py:131
 msgid ""
 "Send '!fc J6B' to display info for a local fleet carrier whose callsign or "
 "name contains J6B."
 msgstr ""
+"Invia '!fc J6B' per visualizzare le informazioni su una fleet carrier locale "
+"il cui nominativo o nome contiene J6B."
 
 #: randomtips.py:132
 msgid ""
 "Send '!station Jameson' to display info for a local station/outpost/... "
 "whose name contains Jameson."
 msgstr ""
+"Invia '!station Jameson' per visualizzare informazioni su una stazione "
+"locale/avamposto/... il cui nome contiene Jameson."
 
 #: randomtips.py:133
 msgid ""
 "Point at materials with the emote gesture to identify them and have EDR "
 "share some info about how useful the material is."
 msgstr ""
+"Indica i materiali con l'emote per identificarli e chiedi a EDR di "
+"condividere alcune informazioni sull'utilità del materiale."
 
 #: randomtips.py:134
 msgid ""
 "Point at, or salute other players with the emote gestures to show their EDR "
 "and Inara profile."
 msgstr ""
+"Punta o saluta gli altri giocatori con l'emote per mostrare il loro profilo "
+"EDR e Inara."
 
 #: randomtips.py:135
 msgid ""
 "When visiting a bar on a fleet carrier, EDR will list the most useful "
 "Odyssey items that are on sale if any."
 msgstr ""
+"Quando si visita un bar su una fleet carrier, EDR elencherà gli articoli "
+"Odyssey più utili in vendita, se presenti."
 
 #: randomtips.py:136
 msgid ""
 "When visiting a bar on a fleet carrier with no items on sale, EDR will list "
 "the least useful Odyssey items that can be sold if any."
 msgstr ""
+"Quando si visita un bar su una fleet carrier senza articoli in vendita, EDR "
+"elencherà gli oggetti Odyssey meno utili che possono essere venduti, se "
+"presenti."
 
 #: randomtips.py:137
 msgid ""
 "Send !tip for a random advice; Send '!tip edr' for an EDR related advice, or "
 "'!tip open' for an advice about playing in Open"
 msgstr ""
+"Invia '!tip' per un consiglio a caso; Invia '!tip edr' per un consiglio "
+"relativo all'EDR o '!tip open' per un consiglio su come giocare in Open"
 
 #: randomtips.py:138
 msgid ""
 "Send '!nav next' or '!nav previous' when near/on a planet to select the next/"
 "previous custom Point of Interest."
 msgstr ""
+"Invia '!nav next' o '!nav previous' quando sei vicino/su un pianeta per "
+"selezionare il punto di interesse personalizzato successivo/precedente."
 
 #: randomtips.py:139
 msgid ""
 "Send '!nav clear' or the 'stop' gesture when near/on a planet to clear the "
 "current custom Point of Interest."
 msgstr ""
+"Invia '!nav clear' o il gesto 'stop' quando sei vicino/su un pianeta per "
+"cancellare l'attuale Punto di interesse personalizzato."
 
 #: randomtips.py:140
 msgid ""
 "Send '!nav reset' when near/on a planet to clear all the custom Point of "
 "Interests."
 msgstr ""
+"Invia '!nav reset' quando sei vicino/su un pianeta per cancellare tutti i "
+"punti di interesse personalizzati."
 
 #: randomtips.py:141
 msgid ""
 "When targeting or approaching a planet, EDR will provide exobiology insights "
 "if the planet is suitable."
 msgstr ""
+"Quando si prende di mira o ci si avvicina a un pianeta, EDR fornirà "
+"approfondimenti di esobiologia se il pianeta è adatto."
 
 #: randomtips.py:142
 msgid ""
 "EDR will automatically add a custom Point of Interest when scanning "
 "biological element with the composition scanner."
 msgstr ""
+"EDR aggiungerà automaticamente un punto di interesse personalizzato durante "
+"la scansione di un elemento biologico con lo scanner della composizione."
 
 #: randomtips.py:143
 msgid ""
 "EDR will automatically add a custom Point of Interest when pointing at "
 "something while on foot (current location)."
 msgstr ""
+"EDR aggiungerà automaticamente un punto di interesse personalizzato quando "
+"si indica qualcosa mentre si è a piedi (posizione corrente)."
 
 #: randomtips.py:144
 msgid ""
@@ -8753,6 +8908,9 @@ msgid ""
 "value of the specimen, the minimum distance for gene diversity, the distance "
 "and heading for the previous samples."
 msgstr ""
+"Dopo aver scansionato un biologico con il campionatore genetico, EDR "
+"mostrerà il valore del campione, la distanza minima per la diversità "
+"genetica, la distanza e la direzione per i campioni precedenti."
 
 #: randomtips.py:145
 msgid ""
@@ -8760,47 +8918,66 @@ msgid ""
 "consider using the 'pointing' gesture to record your current position as a "
 "custom Point of Interest so that you can find it back later."
 msgstr ""
+"Se ti imbatti in un'altra specie mentre fai ricerche sull'esobiologia, "
+"valuta la possibilità di utilizzare il gesto di 'puntamento' per registrare "
+"la tua posizione attuale come punto di interesse personalizzato in modo da "
+"poterlo ritrovare in seguito."
 
 #: randomtips.py:146
 msgid ""
 "Custom Point of Interests on planets are not persistent (i.e. will disappear "
 "if you close EDMC)."
 msgstr ""
+"I Punti di Interesse Personalizzati sui pianeti non sono persistenti (ovvero "
+"scompariranno se chiudi EDMC)."
 
 #: randomtips.py:147
 msgid ""
 "Send '!search bio' to find a nearby planet with the right conditions for "
 "exobiology."
 msgstr ""
+"Invia \"'!search bio' per trovare un pianeta vicino con le giuste condizioni "
+"per l'esobiologia."
 
 #: randomtips.py:148
 msgid ""
 "Send '!search water' to find a nearby planet with a water atmosphere (rich "
 "in exobiology)."
 msgstr ""
+"Invia '!search water' per trovare un pianeta vicino con un'atmosfera "
+"acquatica (ricca di esobiologia)."
 
 #: randomtips.py:149
 msgid ""
 "Send '!search ammonia' to find a nearby planet with an ammonia atmospehere."
 msgstr ""
+"Invia '!search ammonia' per trovare un pianeta vicino con un'atmosfera di "
+"ammoniaca."
 
 #: randomtips.py:150
 msgid ""
 "You can use the !search command to find a nearby planet with the right "
 "conditions for a given genus, e.g. '!search stratum'"
 msgstr ""
+"Puoi usare il comando !search per trovare un pianeta vicino con le giuste "
+"condizioni per un dato genere, ad es. '!search stratum'"
 
 #: randomtips.py:151
 msgid ""
 "You can use the !search command to find a nearby planet with the right "
 "conditions for a given species, e.g. '!search stratum tectonicas'"
 msgstr ""
+"Puoi utilizzare il comando !search per trovare un pianeta vicino con le "
+"giuste condizioni per una determinata specie, ad es. '!search stratum "
+"tectonicas'"
 
 #: randomtips.py:152
 msgid ""
 "You can use the !search command to find a nearby odyssey settlement with "
 "specific conditions, e.g. '!search anarchy'"
 msgstr ""
+"Puoi utilizzare il comando !search per trovare un insediamento odyssey nelle "
+"vicinanze con condizioni specifiche, ad es. '!search anarchy'"
 
 #: randomtips.py:153
 msgid ""
@@ -8808,142 +8985,195 @@ msgid ""
 "specific conditions, e.g. '!search anarchy, -military' to find non-military "
 "anarchy settlements"
 msgstr ""
+"Puoi utilizzare il comando !search per trovare un insediamento odyssey nelle "
+"vicinanze con condizioni specifiche, ad es. '!search anarchy, -military' per "
+"trovare insediamenti anarchici non militari"
 
 #: randomtips.py:154
 msgid ""
 "You can use the !search command to find a nearby odyssey settlement likely "
 "abandonned / resulting in restore missions, e.g. '!search restore"
 msgstr ""
+"Puoi utilizzare il comando !search per trovare un vicino insediamento "
+"odyssey probabilmente abbandonato/con conseguente missioni di ripristino, ad "
+"es. '!search restore'"
 
 #: randomtips.py:155
 msgid ""
 "You can use the !search command to find a nearby odyssey settlement likely "
 "in a combat zone situation, e.g. '!search combat zone"
 msgstr ""
+"Puoi utilizzare il comando !search per trovare un insediamento dell'Odissea "
+"nelle vicinanze, probabilmente in una situazione di zona di combattimento, "
+"ad es. '!search combat zone'"
 
 #: randomtips.py:156
 msgid ""
 "EDR will show an overview for non-trivial in-game routes: scoopable stars, "
 "stats and ETA"
 msgstr ""
+"EDR mostrerà una panoramica per le rotte in-game rilevanti: stelle di cui è "
+"possibile fare rifornimento, statistiche e stime di tempo di arrivo"
 
 #: randomtips.py:157
 msgid ""
 "EDR can help you follow a Spansh journey. Send '!help travel' for more "
 "details"
 msgstr ""
+"EDR può aiutarti a seguire un viaggio con Spansh . Invia '!help travel' per "
+"maggiori dettagli"
 
 #: randomtips.py:158
 msgid ""
 "Send '!journey new' to open Spansh for plotting a new journey, e.g. '!"
 "journey new colonia'. Then, follow the instructions."
 msgstr ""
+"Invia '!journey new' per aprire lo spagnolo per pianificare un nuovo "
+"viaggio, ad es. '!journey new colonia'. Quindi, seguire le istruzioni."
 
 #: randomtips.py:159
 msgid ""
 "Send '!journey fetch' to fetch a Spansh journey from its URL (copy it to the "
 "clipboard beforehand)"
 msgstr ""
+"Invia '!journey fetch' per recuperare un viaggio di Spansh dal suo URL "
+"(copialo prima negli appunti)"
 
 #: randomtips.py:160
 msgid ""
 "Send '!journey bodies' to see list of bodies to survey when using a Spansh "
 "route for exobiology or mapping (e.g. exomastery, road to riches)"
 msgstr ""
+"Invia '!journey bodies' per visualizzare l'elenco dei corpi da esaminare "
+"quando si utilizza un percorso spagnolo per l'esobiologia o la mappatura (ad "
+"esempio exomastery, road to riches)"
 
 #: randomtips.py:161
 msgid ""
 "Send '!journey next', '!journey previous' to manually change the target "
 "waypoint of an active Spansh journey."
 msgstr ""
+"Invia '!journey next', '!journey previous' per modificare manualmente il "
+"punto di destinazione di un viaggio Spansh attivo."
 
 #: randomtips.py:162
 msgid ""
 "Send '!journey check 1 a 1, 1 a 2' to manually clear-off bodies (1 a 1, and "
 "1 a 2), off the list for an active Spansh journey"
 msgstr ""
+"Invia '!journey check 1 a 1, 1 a 2' per eliminare manualmente i corpi (1 a 1 "
+"e 1 a 2), dall'elenco per un viaggio spagnolo attivo"
 
 #: randomtips.py:165
 msgid ""
 "Never fly what you can't afford to lose. Check your rebuy and credit balance "
 "on your right panel."
 msgstr ""
+"Non volare mai con ciò che non puoi permetterti di perdere. Controlla il tuo "
+"rebuy e il saldo del credito sul pannello di destra."
 
 #: randomtips.py:166
 msgid ""
 "Never combat log in Open. If you aren't willing to accept the risk, don't "
 "bother with Open, Google 'Mobius PVE'."
 msgstr ""
+"Non combattere mai l'accesso a Open. Se non sei disposto ad accettare il "
+"rischio, non preoccuparti di Open, Google 'Mobius PVE'."
 
 #: randomtips.py:167
 msgid ""
 "Hit Ctrl+B to display a bandwidth meter. You are not alone if it goes over "
 "1000 B/s."
 msgstr ""
+"Premi Ctrl+B per visualizzare un misuratore di larghezza di banda. Non sei "
+"solo se supera i 1000 B/s."
 
 #: randomtips.py:168
 msgid ""
 "Regularly check your contact history in the top panel for known threats."
 msgstr ""
+"Controlla regolarmente la cronologia dei contatti nel pannello superiore per "
+"individuare eventuali minacce note."
 
 #: randomtips.py:169
 msgid ""
 "[Planet] Dismiss your ship immediately after boarding your SRV. Outlaws will "
 "destroy it in seconds otherwise."
 msgstr ""
+"[Pianeta] Manda via la tua nave immediatamente dopo essere salito a bordo "
+"del tuo SRV. Altrimenti i fuorilegge lo distruggeranno in pochi secondi."
 
 #: randomtips.py:170
 msgid ""
 "[Planet] Switch your SRV lights off if an outlaw shows up. Run far away "
 "before calling back your ship."
 msgstr ""
+"[Pianeta] Spegni le luci del tuo SRV se si presenta un fuorilegge. Scappa "
+"lontano prima di richiamare la tua nave."
 
 #: randomtips.py:171
 msgid ""
 "[Planet] For new discoveries, land a bit away from the area of interest and "
 "dismiss your ship asap."
 msgstr ""
+"[Pianeta] Per nuove scoperte, atterra un po' lontano dall'area di interesse "
+"e manda via la tua nave il prima possibile."
 
 #: randomtips.py:172
 msgid ""
 "[Explorers] Don't trust anyone, check a contact's loadout in your left panel "
 "before banding to take selfies."
 msgstr ""
+"[Esploratori] Non fidarti di nessuno, controlla il caricamento di un "
+"contatto nel pannello di sinistra prima di unirti per scattare selfie."
 
 #: randomtips.py:173
 msgid ""
 "[Explorers] On your trip back to the bubble, reach out to Iridium Wing for "
 "an escort."
 msgstr ""
+"[Esploratori] Durante il viaggio di ritorno verso la bolla, contatta il team "
+"di Iridium per una scorta."
 
 #: randomtips.py:174
 msgid ""
 "[Explorers] Throttle down to 0% when your jump completes to avoid bad "
 "surprises (e.g. neutron star, 2 stars close to each other)"
 msgstr ""
+"[Esploratori] Riduci la velocità allo 0% una volta completato il salto per "
+"evitare brutte sorprese (ad esempio stella di neutroni, 2 stelle vicine "
+"l'una all'altra)"
 
 #: randomtips.py:175
 msgid ""
 "[Traders] Don't be greedy, use your biggest slot for a shield not for cargo!"
 msgstr ""
+"[Commercianti] Non essere avido, usa lo slot più grande per uno scudo, non "
+"per il carico!"
 
 #: randomtips.py:176
 msgid ""
 "[Traders] Pledge for 4 weeks to Aisling Duval in order to get the stronger "
 "'prismatic shields'."
 msgstr ""
+"[Commercianti] Impegno per 4 settimane con Aisling Duval per ottenere i più "
+"forti 'prismatic shields'."
 
 #: randomtips.py:177
 msgid ""
 "[Traders] Engineer regular shields with Thermal Resistance, shield boosters "
 "with Heavy Duty."
 msgstr ""
+"[Commercianti] Progetta scudi normali con resistenza termica, potenziatori "
+"di scudi con servizio pesante."
 
 #: randomtips.py:178
 msgid ""
 "[Traders] Engineer prismatic shields with Reinforced, even resistance % with "
 "Augmented Resistance on your shield boosters."
 msgstr ""
+"[Commercianti] Ingegnerizza i prismatic shields con Reinforced e resistance "
+"% con Augmented Resistance sui tuoi shield boosters."
 
 #: randomtips.py:179
 msgid ""
@@ -8951,199 +9181,278 @@ msgid ""
 "further you take them from where you buy them (up to 200ly) the more you get "
 "for them."
 msgstr ""
+"[Commercianti] Le Rares Goods sono beni speciali (ad esempio, la Hutton Mug, "
+"Sothis Gold). Più le porti lontano da dove le hai acquistate (fino a 200 "
+"anni luce), più guadagnerai vendendole."
 
 #: randomtips.py:180
 msgid ""
 "[Suicide trap] At busy stations, stay below 100 m/s or you will get killed "
 "by the station for colliding into a 'suicide eagle'."
 msgstr ""
+"[Trappola suicida] Nelle stazioni trafficate, rimani al di sotto dei 100 m/s "
+"o verrai ucciso dalla stazione per esserti scontrato con un'\"aquila "
+"suicida\"."
 
 #: randomtips.py:181
 msgid ""
 "[Suicide trap] Advanced trap: force shells may push you over the 100m/s safe "
 "speed limit. Watch out for wings/duo and cannons loadouts."
 msgstr ""
+"[Trappola suicida] Trappola avanzata: i proiettili a spinta possono "
+"spingerti oltre il limite di velocità di sicurezza di 100 m/s. Fai "
+"attenzione agli attacchi di squadra e ai cannoni."
 
 #: randomtips.py:182
 msgid ""
 "[Anti-suicide trap] Buy an eagle, remove its shield, ram the suicide eagle "
 "before they destroy another ship."
 msgstr ""
+"[Trappola anti-suicidio] Compra un'eagle, rimuovi il suo scudo, sperona "
+"l'eagle suicida prima che distrugga un'altra nave."
 
 #: randomtips.py:183
 msgid ""
 "[Anti-suicide trap] Stay under 100 m/s and ram the suicide eagle before they "
 "destroy another ship."
 msgstr ""
+"[Trappola anti-suicidio] Rimani sotto i 100 m/s e sperona l'eagle suicida "
+"prima che distrugga un'altra nave."
 
 #: randomtips.py:184
 msgid ""
 "[Anti-suicide trap] Warn other commanders about the presence of a 'suicide "
 "eagle' as they approach or leave the station."
 msgstr ""
+"[Trappola anti-suicidio] Avvertire gli altri comandanti della presenza di "
+"un'eaglesuicida' mentre si avvicinano o lasciano la stazione."
 
 #: randomtips.py:185
 msgid ""
 "[Powerplay hunters] Watch out for powerplay hunters at stations in enemy "
 "territory: fighting back will get you wanted."
 msgstr ""
+"[Cacciatori del Powerplay] Stai attento ai cacciatori del Powerplay nelle "
+"stazioni in territorio nemico: reagire con la forza ti renderà ricercato."
 
 #: randomtips.py:186
 msgid ""
 "[Anarchy] Watch for suspicious pilots, they can safely hunt/ram you even if "
 "you are clean (station and security won't retaliate)."
 msgstr ""
+"[Anarchia] Fai attenzione ai piloti sospetti, possono darti la caccia/"
+"speronarti in tutta sicurezza anche se sei pulito (la stazione e la "
+"sicurezza non reagiranno)."
 
 #: randomtips.py:187
 msgid ""
 "[Station] The station fires back when hit. Use that to your advantage: stay "
 "close to the structure, chaff, etc."
 msgstr ""
+"[Stazione] La stazione risponde al fuoco ricevuto. Usa questo a tuo "
+"vantaggio: resta vicino alla struttura, usa il chaff, ecc."
 
 #: randomtips.py:188
 msgid ""
 "[Station] The no-fire zone is a misnomer: players can and will fire at you "
 "at the cost of a small fine."
 msgstr ""
+"[Stazione] La no-fire zone è un termine fuorviante: i giocatori possono e lo "
+"faranno, sparando a te, a costo di una piccola multa."
 
 #: randomtips.py:189
 msgid ""
 "[Escape] Bind a key/button to 'select next route' to quickly target your "
 "escape route."
 msgstr ""
+"[Fuga] Associa un tasto/pulsante a 'select next route' per mirare "
+"rapidamente alla tua rotta di fuga."
 
 #: randomtips.py:190
 msgid ""
 "[Escape] It is safer and faster to jump to a different system than going "
 "back to supercruise (i.e. 'high waking' is not subject to mass lock)."
 msgstr ""
+"[Fuga] È più sicuro e veloce saltare in un sistema diverso piuttosto che "
+"tornare al supercruise (cioè, 'high waking' non è soggetto a blocco di "
+"massa)."
 
 #: randomtips.py:191
 msgid ""
 "[Interdiction] Do NOT attempt to win a player interdiction, instead submit "
 "to get a faster FSD cooldown."
 msgstr ""
+"[Interdizione] NON cercare di vincere un'interdizione con un giocatore, "
+"invece sottomettiti per ottenere un tempo di ricarica più veloce del FSD."
 
 #: randomtips.py:192
 msgid ""
 "[Interdiction] Type-7's have a high yaw rate which comes handy when fighting "
 "interdictions."
 msgstr ""
+"[Interdizione] I Type-7 hanno un'elevata velocità di virata che risulta "
+"utile durante le interdizioni."
 
 #: randomtips.py:193
 msgid ""
 "[Community Goal] Consider setting camp at a nearby system with a decent "
 "station instead of going straight for the CG system/station"
 msgstr ""
+"[Community Goal] Valuta l'opzione di stabilire un campo base in un sistema "
+"vicino con una stazione decente anziché recarti direttamente nel sistema/"
+"stazione dell'Obiettivo della Comunità"
 
 #: randomtips.py:194
 msgid ""
 "[Community Goal] Drop just before being interdicted, throttle to zero, "
 "charge your FSD, boost when the player shows up. Repeat."
 msgstr ""
+"[Community Goal] Interrompi il salto appena prima di essere interdetto, "
+"metti l'acceleratore a zero, ricarica il tuo FSD, accelera quando il "
+"giocatore compare. Ripeti il procedimento."
 
 #: randomtips.py:195
 msgid ""
 "[Supercruise] Don't supercruise straight to the station, take a curve above "
 "the plane: faster and safer."
 msgstr ""
+"[Supercruise] Non viaggiare direttamente verso la stazione in supercruise, "
+"invece prendi una traiettoria curva sopra il piano: è più veloce e sicuro."
 
 #: randomtips.py:196
 msgid ""
 "[Supercruise] Go around planets and other stellar objects as they will slow "
 "you down."
 msgstr ""
+"[Supercruise] Evita di passare attraverso pianeti e altri oggetti stellari "
+"poiché rallenteranno la tua velocità."
 
 #: randomtips.py:197
 msgid ""
 "[Supercruise] 'Ride the 6': keep max speed until the countdown reaches 6 "
 "seconds, then middle of the blue zone."
 msgstr ""
+"[Supercruise] 'Ride the 6': mantieni la massima velocità fino a quando il "
+"conto alla rovescia raggiunge 6 secondi, poi posizionati nel mezzo della "
+"zona blu."
 
 #: randomtips.py:198
 msgid ""
 "[Supercruise] If your destination is near a planet, have the planet behind "
 "you and use its gravity well to slow you down."
 msgstr ""
+"[Supercruise] Se la tua destinazione è vicina a un pianeta, posiziona il "
+"pianeta dietro di te e usa il suo campo gravitazionale per rallentare."
 
 #: randomtips.py:199
 msgid ""
 "[Combat] Put all 4 pips to SYS when being fired upon; move them where needed "
 "when not fired upon."
 msgstr ""
+"[Combattimento] Imposta tutti e 4 i pips a SYS quando sei sotto tiro; "
+"spostali dove necessario quando non sei sotto tiro."
 
 #: randomtips.py:200
 msgid ""
 "[Combat] Don't fly in a straight line, you'll die if you do. Be evasive: "
 "combine rolls, turns, thrusters, boost and Fligh Assist Off."
 msgstr ""
+"[Combattimento] Non volare in linea retta, morirai se lo fai. Sii evasivo: "
+"combina rotazioni, virate, propulsori, spinta e Flight Assist Off."
 
 #: randomtips.py:201
 msgid ""
 "[Combat] When shields drop, target specific modules. In particular: power "
 "plant, drives, biweave shields, weapons."
 msgstr ""
+"[Combattimento] Quando gli scudi crollano, mira a moduli specifici. In "
+"particolare: power plant, drives, biweave shields, weapons."
 
 #: randomtips.py:202
 msgid ""
 "[Combat] Double shield cell banking: fire first cell, wait for 90 percents "
 "heat, fire heat sink, when heat drops rapidly fire the second cell."
 msgstr ""
+"[Combattimento] Doppia attivazione delle shield cell banking: spara la prima "
+"cella, attendi fino al 90% di calore, attiva il heat sink, quando il calore "
+"diminuisce rapidamente, spara la seconda cella."
 
 #: randomtips.py:203
 msgid "[Combat] Railgun with feedback cascade can counter shield cell banking."
 msgstr ""
+"[Combattimento] Una Railgun con 'feedback cascade' può contrastare "
+"l'utilizzo delle shield cell banking."
 
 #: randomtips.py:204
 msgid ""
 "[Combat] Best time to fire your shield cell is when you are at 1 / 1.5 ring "
 "and right in front of your opponent just as you are about to fly past them."
 msgstr ""
+"[Combattimento] Il momento migliore per attivare la tua cella di scudo è "
+"quando sei a 1 / 1,5 dell'anello e direttamente di fronte al tuo avversario, "
+"proprio mentre stai per oltrepassarlo."
 
 #: randomtips.py:205
 msgid ""
 "[Interdicted] Put 4 pips to SYS, 2 to ENG and fly evasive. Hit next route "
 "and high wake asap, do not fly in a straight line."
 msgstr ""
+"[Interdizione] Assegna 4 punti a SYS, 2 a ENG e vola in modo evasivo. "
+"Seleziona subito la prossima rotta e effettua il salto ad'alta velocità il "
+"prima possibile, evitando di volare in linea retta."
 
 #: randomtips.py:206
 msgid "[Pirates] Follow their instructions and you will avoid a certain death."
-msgstr ""
+msgstr "[Pirati] Segui le loro istruzioni e eviterai una morte certa."
 
 #: randomtips.py:207
 msgid ""
 "[Fuel] Mnemonics for fuel scoopable stars: KGB FOAM or 'Oh Be A Fine Girl "
 "Kiss Me'."
 msgstr ""
+"[Carburante] Mnemonicha per le stelle da cui è possibile fare rifornimento: "
+"KGB FOAM o 'Oh Be A Fine Girl Kiss Me'."
 
 #: randomtips.py:208
 msgid "[Fuel] Out of fuel? Call the fuel rats (https://fuelrats.com/)."
 msgstr ""
+"[Carburante] Sei senza carburante? Chiama i Fuel Rats (https://fuelrats."
+"com/)."
 
 #: randomtips.py:209
 msgid ""
 "[Bounty hunting] Don't steal kills. Instead, ask to join a wing: everyone "
 "will get the same bounty and way faster."
 msgstr ""
+"[Caccia di taglie] Evita di rubare le uccisioni. Piuttosto, chiedi di unirti "
+"al team: tutti otterranno la stessa taglia e in modo molto più rapido."
 
 #: randomtips.py:210
 msgid ""
 "[Community] Most players are just nice folks. Chat with people, make "
 "friends. It might come handy."
 msgstr ""
+"[Comunità] La maggior parte dei giocatori sono persone gentili. Chatta con "
+"loro, fai amicizia. Potrebbe tornarti utile."
 
 #: randomtips.py:211
 msgid "[Defense] Fit Point Defenses to your ship to destroy missiles and mines"
 msgstr ""
+"[Difesa] Installa Point Defenses sulla tua nave per distruggere missili e "
+"mine"
 
 #: randomtips.py:212
 msgid ""
 "[Defense] Like the song says you've got to know when to walk away and know "
 "when to run."
 msgstr ""
+"[Difesa] Come dice la canzone, devi sapere quando arrenderti e quando "
+"scappare."
 
 #: randomtips.py:213
 msgid ""
 "[Mining] Limit your cargo (e.g. LTD) to be within 10 percents of the demand "
 "of a market in order to get the highest price."
 msgstr ""
+"[Estrazione] Limita il tuo carico (ad esempio, LTD) in modo che sia entro il "
+"10% della domanda del mercato per ottenere il prezzo più elevato."
