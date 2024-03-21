@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
 "POT-Creation-Date: 2024-03-18 11:09+0100\n"
-"PO-Revision-Date: 2024-03-18 18:41+0100\n"
+"PO-Revision-Date: 2024-03-21 13:06+0100\n"
 "Last-Translator: GLWine\n"
 "Language-Team: GWine\n"
 "Language: it_IT\n"
@@ -4767,7 +4767,7 @@ msgstr "{}/{} waypoints; {} corpi"
 
 #: edrroutes.py:441 edrroutes.py:563 edrroutes.py:612
 msgid "scan"
-msgstr "Scan"
+msgstr "scan"
 
 #: edrroutes.py:445 edrroutes.py:567 edrroutes.py:616
 msgid "map"
@@ -5867,7 +5867,7 @@ msgstr "Scoperto {}/{} {}%"
 
 #: edrsystems.py:836
 msgid "as of {}  "
-msgstr "a partire dal {}"
+msgstr "a partire dal {}  "
 
 #: edrsystems.py:853
 msgid "{}/{}  "
@@ -6414,7 +6414,7 @@ msgstr "%Y-%m-%d"
 
 #: helpcontent.py:15
 msgid "Help sections"
-msgstr "Sezioni Help "
+msgstr "Sezioni Help"
 
 #: helpcontent.py:17
 msgid " - !help about: what is EDR, who is behind it, etc"
@@ -6567,12 +6567,12 @@ msgid ""
 " - Contributions by : Juniper Nomi'Tar [UGC], Tomski [bbFA], Jason Hill and "
 "MonkasteR"
 msgstr ""
-"- Contributi di: Juniper Nomi'Tar [UGC], Tomski [bbFA], Jason Hill e "
+" - Contributi di: Juniper Nomi'Tar [UGC], Tomski [bbFA], Jason Hill e "
 "MonkasteR"
 
 #: helpcontent.py:53
 msgid "Getting started with EDR"
-msgstr "primi passi con EDR"
+msgstr "Primi passi con EDR"
 
 #: helpcontent.py:55
 msgid ""
@@ -6778,8 +6778,8 @@ msgid ""
 " - Point at, or salute another player with the emote gestures to show their "
 "EDR and Inara profile."
 msgstr ""
-"- Punta o saluta un altro giocatore con i gesti emoticon per mostrare il suo "
-"profilo EDR e Inara."
+" - Punta o saluta un altro giocatore con i gesti emoticon per mostrare il "
+"suo profilo EDR e Inara."
 
 #: helpcontent.py:111
 msgid "These commands will show the following information:"
@@ -6789,8 +6789,8 @@ msgstr "Questi comandi mostreranno le seguenti informazioni:"
 msgid ""
 " - EDR alignment: outlaw, ambiguous, lawful with grades, e.g. outlaw ++++."
 msgstr ""
-"- Allineamento EDR: fuorilegge, ambiguo, legale con gradi, ad es. fuorilegge+"
-"+++."
+" - Allineamento EDR: fuorilegge, ambiguo, legale con gradi, ad es. "
+"fuorilegge++++."
 
 #: helpcontent.py:113
 msgid ""
@@ -7005,7 +7005,7 @@ msgid ""
 " - '?enemies [cr|ly] -': to remove the [minimal bounty|maximal distance] for "
 "the realtime alerts."
 msgstr ""
-"- '?enemies [cr|ly] -': per rimuovere la [taglia minima|distanza massima] "
+" - '?enemies [cr|ly] -': per rimuovere la [taglia minima|distanza massima] "
 "per gli avvisi in tempo reale."
 
 #: helpcontent.py:164
@@ -7295,62 +7295,82 @@ msgid ""
 " - '!rrr', '!rrr Lave < 10' to find a station with repair/rearm/refuel near "
 "your position or within 10 LY of Lave"
 msgstr ""
+" - '!rrr', '!rrr Lave < 10' per trovare una stazione di riparazione/riarmo/"
+"rifornimento vicino alla tua posizione o entro 10 LY da Lave"
 
 #: helpcontent.py:232
 msgid ""
 " - '!fc J6B', '!fc Recon' to display information about a local fleet carrier "
 "with a callsign or name that contains J6B or Recon"
 msgstr ""
+" - '!fc J6B', '!fc Recon' per visualizzare informazioni su una fleet carrier "
+"locale con un nominativo o un nome che contiene J6B o Recon"
 
 #: helpcontent.py:233
 msgid ""
 " - '!station Jameson' to display information about a local station/"
 "outpost/... with a name that contains Jameson"
 msgstr ""
+" - '!station Jameson' per visualizzare informazioni su una stazione locale/"
+"avamposto/... con un nome che contiene Jameson"
 
 #: helpcontent.py:239
 msgid "Find the best spots for resources and exobiology"
-msgstr ""
+msgstr "Trova i posti migliori per risorse ed esobiologia"
 
 #: helpcontent.py:241
 msgid ""
 " - '!search thing' where thing is either the full name or an abbreviation, e."
 "g. !search cadmium"
 msgstr ""
+" - '!search cosa' dove cosa è il nome completo o un'abbreviazione, ad es. !"
+"search cadmium"
 
 #: helpcontent.py:242
 msgid ""
 " - '!search thing @system' to specify the system to search around, e.g. !"
 "search cadmium @deciat"
 msgstr ""
+" - '!search cosa @sistema' per specificare il sistema in cui effettuare la "
+"ricerca, ad es. !search cadmium @deciat"
 
 #: helpcontent.py:243
 msgid ""
 " - Abbreviations consist of the first three letters of a one-word resource, "
 "or the first letters of each words separated by a space:"
 msgstr ""
+" - Le abbreviazioni sono costituite dalle prime tre lettere di una risorsa "
+"di una parola, o dalle prime lettere di ogni parola separate da uno spazio:"
 
 #: helpcontent.py:244
 msgid " - 'cad' for cadmium, 'a e c d' for abnormal compact emission data."
 msgstr ""
+" - \"cad\" per cadmium, \"a e c d\" per abnormal compact emission data."
 
 #: helpcontent.py:245
 msgid ""
 " - !search can also be used to look for specific odyssey settlements: !"
 "search anarchy, military, -alliance"
 msgstr ""
+" - !search può essere utilizzato anche per cercare specifici insediamenti "
+"odyssey: !search anarchy, military, -alliance"
 
 #: helpcontent.py:246
 msgid ""
 " - Use the command with a few letters to see the supported keywords that "
 "contain these letters, e.g. '!search strat"
 msgstr ""
+" - Utilizza il comando con poche lettere per visualizzare le parole chiave "
+"supportate che contengono queste lettere, ad es. '!search strat'"
 
 #: helpcontent.py:247
 msgid ""
 " - Some manufactured materials may not always return a result. Use the hints "
 "and Elite's galaxy map to find a good spot."
 msgstr ""
+" - Alcuni manufactured materials potrebbero non restituire sempre un "
+"risultato. Usa i suggerimenti e la mappa galattica di Elite per trovare un "
+"buon posto."
 
 #: helpcontent.py:248
 msgid ""
@@ -7358,20 +7378,25 @@ msgid ""
 "right conditions for specific materials, e.g. Imperial Shielding (USS-HGE, ++"
 "+++)."
 msgstr ""
+" - Infine, quando entri in un sistema, EDR ti dirà se ha le giuste "
+"condizioni per materiali specifici, ad es. Imperial Shielding (USS-HGE, ++++"
+"+)."
 
 #: helpcontent.py:249
 msgid " - The more '+', the higher the chances."
-msgstr ""
+msgstr " - molti '+', maggiori sono le possibilità di trovarla."
 
 #: helpcontent.py:255
 msgid "Spansh companion and in-game route overview"
-msgstr ""
+msgstr "Spansh companion e panoramica del percorso nel gioco"
 
 #: helpcontent.py:257
 msgid ""
 " - EDR will show an overview for non-trivial in-game routes: scoopable "
 "stars, stats and ETA"
 msgstr ""
+" - EDR mostrerà una panoramica delle rotte in-game più complesse: stelle da "
+"cui è possibile rifornirsi, statistiche e stime di tempo d'arrivo"
 
 #: helpcontent.py:258
 msgid ""
@@ -7379,69 +7404,90 @@ msgid ""
 "clipboard for your convenience, and automatically clear-off surveyed bodies "
 "(all species scanned or leaving the body)"
 msgstr ""
+" - EDR supporta anche Spansh e posizionerà il waypoint successivo negli "
+"appunti per la tua comodità e cancellerà automaticamente i corpi esaminati "
+"(tutte le specie scansionate o che lasciano il body)"
 
 #: helpcontent.py:259
 msgid ""
 " - '!journey new <optional destination>' to open Spansh for plotting a new "
 "journey, e.g. !journey new colonia"
 msgstr ""
+" - '!journey new <destinazione opzionale>' per aprire Spansh per tracciare "
+"un nuovo viaggio, ad es. !journey new colonia"
 
 #: helpcontent.py:260
 msgid ""
 " - '!journey fetch' to fetch a Spansh journey from its URL (copy it to the "
 "clipboard beforehand)"
 msgstr ""
+" - '!journey fetch' per recuperare un viaggio da Spansh dal suo URL (copialo "
+"prima negli appunti)"
 
 #: helpcontent.py:261
 msgid ""
 " - '!journey overview', '!journey waypoint', '!journey bodies' to show info "
 "about the journey, the current waypoint or bodies to survey"
 msgstr ""
+" - '!journey overview', '!journey waypoint', '!journey bodies' per mostrare "
+"informazioni sul viaggio, il waypoint corrente o i corpi da rilevare"
 
 #: helpcontent.py:262
 msgid ""
 " - '!journey next', '!journey previous' to manually change the target "
 "waypoint"
 msgstr ""
+" - '!journey next', '!journey previous' per modificare manualmente il "
+"waypoint di destinazione"
 
 #: helpcontent.py:263
 msgid ""
 " -  '!journey check <comma separated bodies>' to manually check-off one or "
 "more bodies as visited/surveyed, e.g. !journey check 1 a 1, 1 a 2"
 msgstr ""
+" - '!journey check <corpi separati da virgola>' per spuntare manualmente uno "
+"o più corpi come visitati/scansionati, ad es. !journey check 1 a 1, 1 a 2"
 
 #: helpcontent.py:264
 msgid " - '!journey clear' to clear a currently active journey"
-msgstr ""
+msgstr " - '!journey clear' per cancellare un viaggio attualmente attivo"
 
 #: helpcontent.py:265
 msgid ""
 " - '!journey load <optional filename>' to load a local journey saved in a "
 "csv file ()'journey.csv' by default), e.g. !journey load myjourney.csv"
 msgstr ""
+" - '!journey load <nome file opzionale>' per caricare un viaggio locale "
+"salvato in un file CSV ()'journey.csv' per impostazione predefinita), ad "
+"es. !journey load myjourney.csv"
 
 #: helpcontent.py:271
 msgid "Find where you parked your ship, evaluate your build"
-msgstr ""
+msgstr "Scopri dove hai parcheggiato la tua nave, valuta la tua build"
 
 #: helpcontent.py:273
 msgid ""
 " - '!ship name_or_type' where name_or_type is either a ship name or type."
-msgstr ""
+msgstr " - '!ship nome_o_tipo' dove nome_o_tipo è il nome o il tipo di nave."
 
 #: helpcontent.py:274
 msgid " - '!ship fdl' will show where your Fer-de-Lance ships are parked."
 msgstr ""
+" - '!ship fdl' mostrerà dove sono parcheggiate le tue navi Fer-de-Lance."
 
 #: helpcontent.py:275
 msgid ""
 " - '!ship In Front of Things' will show where your ship(s) named 'In Front "
 "of Things' are."
 msgstr ""
+" - '!ship In Front of Things' mostrerà dove si trovano le tue navi "
+"denominate 'In Front of Things'."
 
 #: helpcontent.py:276
 msgid " - '!eval power' to get an assessment of your power priorities."
 msgstr ""
+" - \"!eval power\" per ottenere una valutazione delle priorità del sistema "
+"di alimentazione."
 
 #: helpcontent.py:278
 msgid ""
@@ -7449,48 +7495,62 @@ msgid ""
 "carrier parking slots in the current system, Deciat, or the second closest "
 "system to Deciat."
 msgstr ""
+" - '!parking', '!parking deciat', '!parking deciat #1' per verificare gli "
+"spazi di parcheggio delle fleet carrier nel sistema attuale, Deciat, o nel "
+"secondo sistema più vicino a Deciat."
 
 #: helpcontent.py:284
 msgid "Configuration options"
-msgstr ""
+msgstr "Opzioni di configurazione"
 
 #: helpcontent.py:286
 msgid "EDR offers the following configuration options:"
-msgstr ""
+msgstr "EDR offre le seguenti opzioni di configurazione:"
 
 #: helpcontent.py:287
 msgid ""
 " - !crimes [off|on]: to disable/enable crime and fight reporting, e.g. '!"
 "crimes off' before an agreed upon duel."
 msgstr ""
+" - !crimes [off|on]: per disabilitare o abilitare il sistema di rilevamento "
+"dei crimini e il reporting di un fight , ad esempio, '!crimes off' prima di "
+"un duello concordato."
 
 #: helpcontent.py:288
 msgid ""
 " - !audiocue [on|off|loud|soft] to control the audio cues, e.g. '!audiocue "
 "soft' for soft cues."
 msgstr ""
+" - !audiocue [on|off|loud|soft] per controllare i segnali audio, ad es. '!"
+"audiocue soft' per segnali soft."
 
 #: helpcontent.py:289
 msgid ""
 " - !overlay [on|off|] to enable/disable or verify the overlay, e.g. '!"
 "overlay' to check if it is enabled/working."
 msgstr ""
+" - !overlay [on|off|] per abilitare/disabilitare o verificare l'overlay, ad "
+"es. '!overlay' per verificare se è abilitato/funzionante."
 
 #: helpcontent.py:290
 msgid ""
 " - check the instructions in config/igm_config.v9.ini to customize the "
 "layout and timeouts."
 msgstr ""
+" - controlla le istruzioni in config/igm_config.v9.ini per personalizzare il "
+"layout e i timeout."
 
 #: helpcontent.py:296
 msgid "Odyssey"
-msgstr ""
+msgstr "Odyssey"
 
 #: helpcontent.py:298
 msgid ""
 "EDR offers the following features to help you make sense of Odyssey "
 "materials, engineers and exobiology:"
 msgstr ""
+"EDR offre le seguenti funzionalità per aiutarti a dare un senso ai "
+"materiali, agli ingegneri e all'esobiologia di Odyssey:"
 
 #: helpcontent.py:299
 msgid ""
@@ -7498,6 +7558,9 @@ msgid ""
 "ship locker or backpack, e.g. '!eval locker'. Useful when selling stuff at "
 "the bar, or via your fleet carrier."
 msgstr ""
+" - !eval [locker|backpack]: per valutare l'utilità dei materiali "
+"nell'armadietto o nello zaino della nave, ad es. '!eval locker'. Utile "
+"quando vendi articoli al bar o tramite la tua fleet carrier."
 
 #: helpcontent.py:300
 msgid ""
@@ -7505,12 +7568,17 @@ msgid ""
 "material, e.g. '!eval surveillance equipment'. Useful to assess a reward "
 "before accepting a mission."
 msgstr ""
+" - !eval [nome del materiale] per valutare l'utilità di un materiale "
+"specifico, ad es. '!eval surveillance equipment'. Utile per valutare una "
+"ricompensa prima di accettare una missione."
 
 #: helpcontent.py:301
 msgid ""
 " - Point at materials while on foot with the emote gesture to get EDR to "
 "identify it and provide info about its usefulness."
 msgstr ""
+" - Indica i materiali mentre sei a piedi con l'emote per fare in modo che "
+"EDR lo identifichi e fornisca informazioni sulla sua utilità."
 
 #: helpcontent.py:302
 msgid ""
@@ -7518,34 +7586,42 @@ msgid ""
 "the last visited bar on a fleet carrier, e.g. '!eval bar demand'. Useful to "
 "know which items to buy / sale."
 msgstr ""
+" - !eval [bar|bar demand] per valutare gli articoli in vendita (o richiesti) "
+"nell'ultimo bar visitato su una fleet carrier, ad es. '!eval bar demand'. "
+"Utile per sapere quali articoli acquistare/vendere."
 
 #: helpcontent.py:303
 msgid ""
 " - Visit the bar on a fleet carrier to get a list of most useful items on "
 "sale, or least useful items in demand."
 msgstr ""
+" - Visita il bar di una fleet carrier per ottenere un elenco degli articoli "
+"più utili in vendita o degli articoli meno utili richiesti."
 
 #: helpcontent.py:304
 msgid ""
 " - Exobiology hints and progress tracking when targeting a planet, being in "
 "its orbit or by sending the '!biology' command (e.g. '!biology 1 A'"
 msgstr ""
+" - Suggerimenti di esobiologia e monitoraggio dei progressi quando si "
+"targetta un pianeta, si è nella sua orbita o si invia il comando '!biology' "
+"command (e.g. '!biology 1 A')"
 
 #: ingamemsg.py:462
 msgid "Dis: {}km"
-msgstr ""
+msgstr "Dis: {}km"
 
 #: ingamemsg.py:464
 msgid "Dis: {}m"
-msgstr ""
+msgstr "Dis: {}m"
 
 #: ingamemsg.py:465
 msgid "Lat: {:.4f}"
-msgstr ""
+msgstr "Lat: {:.4f}"
 
 #: ingamemsg.py:466
 msgid "Lon: {:.4f}"
-msgstr ""
+msgstr "Lon: {:.4f}"
 
 #: ingamemsg.py:468
 msgid "Head: > {:03} <"
@@ -7553,606 +7629,689 @@ msgstr ""
 
 #: ingamemsg.py:471
 msgid "Alt: {}km"
-msgstr ""
+msgstr "Alt: {}km"
 
 #: ingamemsg.py:473
 msgid "Alt: {}m"
-msgstr ""
+msgstr "Alt: {}m"
 
 #: ingamemsg.py:488
 msgid "Value: {} credits"
-msgstr ""
+msgstr "Valore: {} crediti"
 
 #: ingamemsg.py:489
 msgid "Gene diversity: +{}m"
-msgstr ""
+msgstr "Diversità genetica: +{}m"
 
 #: ingamemsg.py:494
 msgid "{} Sample #{}: ≥10km  ›{:03}‹"
-msgstr ""
+msgstr "{} Campione #{}: ≥10km  ›{:03}‹"
 
 #: ingamemsg.py:496
 msgid "{} Sample #{}: {}m  ›{:03}‹"
-msgstr ""
+msgstr "{} Campione #{}: {}m  ›{:03}‹"
 
 #: ingamemsg.py:512
 msgid "LG. Pad:{}   Outfit:{}   Shipyard:{}"
-msgstr ""
+msgstr "LG. Pad:{}   Outfit:{}   Hangar:{}"
 
 #: ingamemsg.py:516 ingamemsg.py:601 ingamemsg.py:644
 msgid "Refuel:{}   Repair:{}   Restock:{}"
-msgstr ""
+msgstr "Rifornimento:{}   Riparazione:{}   Riarmo:{}"
 
 #: ingamemsg.py:520
 msgid "material trader|M."
-msgstr ""
+msgstr "material trader|M."
 
 #: ingamemsg.py:525
 msgid "RAW"
-msgstr ""
+msgstr "RAW"
 
 #: ingamemsg.py:527
 msgid "R/M"
-msgstr ""
+msgstr "R/M"
 
 #: ingamemsg.py:529
 msgid "R/E"
-msgstr ""
+msgstr "R/E"
 
 #: ingamemsg.py:532
 msgid "MAN"
-msgstr ""
+msgstr "MAN"
 
 #: ingamemsg.py:534
 msgid "M/R"
-msgstr ""
+msgstr "M/R"
 
 #: ingamemsg.py:536
 msgid "M/E"
-msgstr ""
+msgstr "M/E"
 
 #: ingamemsg.py:539
 msgid "ENC"
-msgstr ""
+msgstr "ENC"
 
 #: ingamemsg.py:541
 msgid "E/R"
-msgstr ""
+msgstr "E/R"
 
 #: ingamemsg.py:543
 msgid "E/M"
-msgstr ""
+msgstr "E/M"
 
 #: ingamemsg.py:544
 msgid "Market:{}   B.Market:{}   {} Trad:{}"
-msgstr ""
+msgstr "Mercato:{}   M.Nero:{}   {} Trad:{}"
 
 #: ingamemsg.py:546
 msgid "tech broker|T."
-msgstr ""
+msgstr "tech broker|T."
 
 #: ingamemsg.py:552
 msgid "guardian tech|GT."
-msgstr ""
+msgstr "guardian tech|GT."
 
 #: ingamemsg.py:554 ingamemsg.py:559
 msgid "ambiguous tech|T."
-msgstr ""
+msgstr "ambiguous tech|T."
 
 #: ingamemsg.py:557
 msgid "human tech|HT."
-msgstr ""
+msgstr "human tech|HT."
 
 #: ingamemsg.py:561
 msgid "I.Factor:{}   {} Broker:{}"
-msgstr ""
+msgstr "I.Factor:{}   {} Broker:{}"
 
 #: ingamemsg.py:579 ingamemsg.py:618
 msgid "PMF: {}"
-msgstr ""
+msgstr "PMF: {}"
 
 #: ingamemsg.py:606
 msgid "Market:{}   B.Market:{}   I.Factor:{}"
-msgstr ""
+msgstr "Mercato:{}   M.Nero:{}   I.Factor:{}"
 
 #: ingamemsg.py:639
 msgid "Outfit:{}   Shipyard:{}"
-msgstr ""
+msgstr "Outfit:{}   Hangar:{}"
 
 #: ingamemsg.py:648
 msgid "Market:{}   B.Market:{}"
-msgstr ""
+msgstr "Mercato:{}   M.Nero:{}"
 
 #: ingamemsg.py:653
 msgid "U.Cart:{}   Vista G:{}"
-msgstr ""
+msgstr "U.Cart:{}   Vista G:{}"
 
 #: ingamemsg.py:659
 msgid "Redempt.O:{}   Pioneer S:{}   Lounge:{}"
-msgstr ""
+msgstr "Redempt.O:{}   Pioneer S:{}   Lounge:{}"
 
 #: ingamemsg.py:1068
 msgid "Mining Stats"
-msgstr ""
+msgstr "Statistiche estrattive"
 
 #: ingamemsg.py:1073
 msgid "Mining Stats - MNR: {}"
-msgstr ""
+msgstr "Statistiche estrattive - MNR: {}"
 
 #: ingamemsg.py:1074
 msgid "MNR %: {:>6.2f}  [{}/{}; {}]"
-msgstr ""
+msgstr "MNR %: {:>6.2f}  [{}/{}; {}]"
 
 #: ingamemsg.py:1075
 msgid "MAX %: {:>6.2f}"
-msgstr ""
+msgstr "MAX %: {:>6.2f}"
 
 #: ingamemsg.py:1076
 msgid "AVG %: {:>6.2f}"
-msgstr ""
+msgstr "Media %: {:>6.2f}"
 
 #: ingamemsg.py:1079
 msgid ">> DEPLETED <<"
-msgstr ""
+msgstr ">> ESAURITO <<"
 
 #: ingamemsg.py:1083
 msgid ">> WORTHLESS <<"
-msgstr ""
+msgstr ">> SENZA VALORE <<"
 
 #: ingamemsg.py:1087
 msgid "ITM/H: {:>6.0f} [TGT: {:.0f}]"
-msgstr ""
+msgstr "ITM/H: {:>6.0f} [TGT: {:.0f}]"
 
 #: ingamemsg.py:1088
 msgid "ITM #: {:>6}"
-msgstr ""
+msgstr "ITM #: {:>6}"
 
 #: ingamemsg.py:1229
 msgid "Bounty Hunting Stats"
-msgstr ""
+msgstr "Statistiche sulla caccia alle taglie"
 
 #: ingamemsg.py:1237
 msgid "BOUNTY: {} cr [{}]"
-msgstr ""
+msgstr "TAGLIA: {} cr [{}]"
 
 #: ingamemsg.py:1238
 msgid "MAX B.: {} cr"
-msgstr ""
+msgstr "MAX B.: {} cr"
 
 #: ingamemsg.py:1239
 msgid "AVG B.: {} cr"
-msgstr ""
+msgstr "MEDIA B.: {} cr"
 
 #: ingamemsg.py:1240
 msgid "CR / H: {} [TGT: {}]"
-msgstr ""
+msgstr "CR / H: {} [TGT: {}]"
 
 #: ingamemsg.py:1241
 msgid "TOTALS: {} cr [{} rewards]"
-msgstr ""
+msgstr "TOTALI: {} cr [{} ricompensa]"
 
 #: ingamemsg.py:1363
 #, python-brace-format
 msgid "{prefix}{cmdr} ({ship})"
-msgstr ""
+msgstr "{prefix}{cmdr} ({ship})"
 
 #: ingamemsg.py:1363
 msgid "CMDR "
-msgstr ""
+msgstr "CMDR "
 
 #: ingamemsg.py:1374
 msgid "[{} to 100%/UP]"
-msgstr ""
+msgstr "[{} al 100%/UP]"
 
 #: ingamemsg.py:1378 ingamemsg.py:1393 ingamemsg.py:1408
 msgid "[{} to   0%]"
-msgstr ""
+msgstr "[{} al   0%]"
 
 #: ingamemsg.py:1379
 msgid "SHLD{}: {}% {}"
-msgstr ""
+msgstr "SCUDO{}: {}% {}"
 
 #: ingamemsg.py:1389 ingamemsg.py:1404
 msgid "[{} to 100%]"
-msgstr ""
+msgstr "[{} al 100%]"
 
 #: ingamemsg.py:1394
 msgid "HULL{}: {}% {}"
-msgstr ""
+msgstr "SCAFO{}: {}% {}"
 
 #: ingamemsg.py:1409
 #, python-brace-format
 msgid "{subsys}{signal}: {hp:.4g}% {delta}"
-msgstr ""
+msgstr "{subsys}{signal}: {hp:.4g}% {delta}"
 
 #: load.py:94
 msgid "Legacy mode is not supported."
-msgstr ""
+msgstr "La modalità legacy non è supportata."
 
 #: load.py:108
 msgid "added to wing: "
-msgstr ""
+msgstr "aggiunto al team: "
 
 #: load.py:114
 msgid "joined wing."
-msgstr ""
+msgstr "unito al team."
 
 #: load.py:118
 msgid "left wing."
-msgstr ""
+msgstr "unscito dal team."
 
 #: load.py:122
 msgid "wing invite from: "
-msgstr ""
+msgstr "invito al team da: "
 
 #: load.py:132
 msgid "added to crew: "
-msgstr ""
+msgstr "aggiunto alla crew: "
 
 #: load.py:142
 msgid "{} left the crew."
-msgstr ""
+msgstr "{} lascia la crew."
 
 #: load.py:160
 msgid "joined a crew."
-msgstr ""
+msgstr "unito alla crew."
 
 #: load.py:180
 msgid "left crew."
-msgstr ""
+msgstr "esce dalla crew."
 
 #: load.py:200
 msgid "crew disbanded."
-msgstr ""
+msgstr "crew sciolta."
 
 #: load.py:342 load.py:486
 msgid "Restock reminder"
-msgstr ""
+msgstr "Promemoria restock"
 
 #: load.py:342 load.py:486
 msgid "Don't forget to restock on limpets before heading out."
-msgstr ""
+msgstr "Non dimenticare di rifornirti di limpets prima di uscire."
 
 #: load.py:342 load.py:486
 msgid "Limpets: {}/{}"
-msgstr ""
+msgstr "Limpets: {}/{}"
 
 #: load.py:451
 msgid "initialized."
-msgstr ""
+msgstr "inizializzato."
 
 #: load.py:637 load.py:643
 msgid "Fight reporting disabled"
-msgstr ""
+msgstr "Segnalazione combattimenti disabilitata"
 
 #: load.py:637
 msgid "Looks like you are safe, and disengaged."
-msgstr ""
+msgstr "Sembra che tu sia al sicuro e disingaggiato."
 
 #: load.py:643
 msgid "Flash your lights twice to re-enable."
-msgstr ""
+msgstr "Fai lampeggiare le luci due volte per riattivarle."
 
 #: load.py:838
 msgid "System info acquired"
-msgstr ""
+msgstr "Informazioni sistema acquisite"
 
 #: load.py:838
 msgid "Noteworthy material densities will be shown when approaching a planet."
 msgstr ""
+"Densità materiali rilevanti verranno mostrate quando ci si avvicina a un "
+"pianeta."
 
 #: load.py:933
 msgid "blip failed."
-msgstr ""
+msgstr "blip fallito."
 
 #: load.py:948 load.py:1001
 msgid "Crime reporting disabled in solo/private modes."
-msgstr ""
+msgstr "Segnalazione dei crimini disabilitata in modalità solo/private."
 
 #: load.py:987 load.py:1046
 msgid "failed to report crime."
-msgstr ""
+msgstr "segnalazione crimine fallita."
 
 #: load.py:1052
 msgid "Fight reporting disabled in solo/private modes."
-msgstr ""
+msgstr "Segnalazione combattimenti disabilitata in modalità solo/private."
 
 #: load.py:1096
 msgid "failed to report contact."
-msgstr ""
+msgstr "segnalazione del contatto fallita."
 
 #: load.py:1150
 msgid "Traffic reporting disabled in solo/private modes."
-msgstr ""
+msgstr "Segnalazione del traffico disabilitata in modalità solo/private."
 
 #: load.py:1158
 msgid "failed to report traffic."
-msgstr ""
+msgstr "segnalazione del traffico fallita."
 
 #: load.py:1164
 msgid "Multicrew reporting disabled in private mode."
-msgstr ""
+msgstr "Segnalazione multicrew disabilitata in modalità private."
 
 #: load.py:1168
 msgid "failed to report multicrew session."
-msgstr ""
+msgstr "segnalazione della sessione multicrew fallita."
 
 #: randomtips.py:15
 msgid ""
 "Situation reports (SITREPs) provide a summary of recent activity at a "
 "location."
 msgstr ""
+"I rapporti sulla situazione (SITREP) forniscono un riepilogo delle attività "
+"recenti in un luogo."
 
 #: randomtips.py:16
 msgid "Send !sitreps in chat to get a list of systems with recent activity."
 msgstr ""
+"Invia !sitreps in chat per ottenere un elenco di sistemi con attività "
+"recenti."
 
 #: randomtips.py:17
 msgid ""
 "Send !sitrep <system> in chat to get a SITREP for <system>, e.g. !sitrep "
 "Lave."
 msgstr ""
+"Invia !sitrep <system> in chat per ottenere un SITREP per <system>, ad es. !"
+"sitrep Lave."
 
 #: randomtips.py:18
 msgid ""
 "A Notice to Airmen (NOTAM) warns pilots about potential hazards at a "
 "location."
 msgstr ""
+"Un avviso ai piloti (NOTAM) avverte i piloti dei potenziali pericoli in un "
+"luogo."
 
 #: randomtips.py:19
 msgid ""
 "Send '!notams' in chat to get a list of systems with Notice to Airmen, i.e. "
 "NOTAM."
 msgstr ""
+"Invia '!notams' in chat per ottenere un elenco di sistemi con Avviso ai "
+"piloti, ovvero NOTAM."
 
 #: randomtips.py:20
 msgid ""
 "Send '!notam <system>' in chat to see the NOTAMs associated with a given "
 "system, e.g. !notam Lave."
 msgstr ""
+"Invia '!notam <system>' in chat per vedere i NOTAM associati a un "
+"determinato sistema, ad es. !notam Lave."
 
 #: randomtips.py:21
 msgid "EDR does NOT report crimes committed in Anarchy or Lawless systems."
-msgstr ""
+msgstr "EDR NON segnala i crimini commessi in sistemi anarchici o senza legge."
 
 #: randomtips.py:22
 msgid ""
 "Scans of SRV are not reported by Elite Dangerous. So, direct message an o7 "
 "to run a profile lookup on SRV contacts."
 msgstr ""
+"Le scansioni del SRV non vengono segnalate da Elite Dangerous. Quindi, invia "
+"un messaggio diretto a un o7 per eseguire una ricerca del profilo sui "
+"contatti SRV."
 
 #: randomtips.py:23
 msgid "EDR disables itself in Solo, Private Groups and Beta."
-msgstr ""
+msgstr "EDR si disabilita in modalità Solo, Private Groups e Beta."
 
 #: randomtips.py:24
 msgid ""
 "Send '!crimes off' in chat to disable EDR's crime reporting, e.g. arranged "
 "duel."
 msgstr ""
+"Invia '!crimes off' in chat per disabilitare la segnalazione dei crimini di "
+"EDR, ad es. per un duello organizzato."
 
 #: randomtips.py:25
 msgid "Send '!crimes on' in chat to re-enable EDR's crime reporting."
 msgstr ""
+"Invia '!crimes on' in chat per riattivare la segnalazione dei crimini ad EDR."
 
 #: randomtips.py:26
 msgid "Send '!audiocue soft' in chat if the audio cues are too loud."
-msgstr ""
+msgstr "Invia '!audiocue soft' in chat se i segnali audio sono troppo forti."
 
 #: randomtips.py:27
 msgid "Send '!audiocue loud' in chat if the audio cues are too soft."
 msgstr ""
+"Invia '!audiocue high' nella chat se i segnali audio sono troppo deboli."
 
 #: randomtips.py:28
 msgid "Send '!audiocue off' in chat to disable the audio cues."
-msgstr ""
+msgstr "Invia '!audiocue off' in chat per disabilitare i segnali audio."
 
 #: randomtips.py:29
 msgid "Send '!audiocue on' in chat to enable the audio cues."
-msgstr ""
+msgstr "Invia '!audiocue on' in chat per abilitare i segnali audio."
 
 #: randomtips.py:30
 msgid "Report suspicious contacts by sending them a direct message."
-msgstr ""
+msgstr "Segnala i contatti sospetti inviando loro un messaggio diretto."
 
 #: randomtips.py:31
 msgid ""
 "Send an 'o7' to a contact to learn more about them (i.e. inara profile, EDR "
 "insights)."
 msgstr ""
+"Invia un 'o7' a un contatto per saperne di più su di lui (ad esempio profilo "
+"Inara, approfondimenti EDR)."
 
 #: randomtips.py:32
 msgid ""
 "EDR will automatically report interdictions and deaths to help bounty "
 "hunters and law enforcers."
 msgstr ""
+"EDR segnalerà automaticamente interdizioni e morti per aiutare i cacciatori "
+"di taglie e le forze dell'ordine."
 
 #: randomtips.py:33
 msgid ""
 "Send '!who <cmdrname> in chat to learn more about <cmdrname>, e.g. !who "
 "lekeno"
 msgstr ""
+"Invia '!who <cmdrname>' in chat per saperne di più su <cmdrname>, ad es. !"
+"who lekeno"
 
 #: randomtips.py:34
 msgid "Send '!overlay off' in chat to disable the in-game overlay."
-msgstr ""
+msgstr "Invia '!overlay off' in chat per disattivare l'overlay nel gioco."
 
 #: randomtips.py:35
 msgid "Send '!overlay on' in chat to enable the in-game overlay."
-msgstr ""
+msgstr "Invia '!overlay on' in chat per abilitare l'overlay nel gioco."
 
 #: randomtips.py:36
 msgid "Send '!overlay' in chat to check the status of the in-game overlay."
 msgstr ""
+"Invia '!overlay' in chat per verificare lo stato dell'overlay nel gioco."
 
 #: randomtips.py:37
 msgid "Follow the instructions in igm_config.ini to customize EDR's layout."
 msgstr ""
+"Segui le istruzioni in igm_config.ini per personalizzare il layout di EDR."
 
 #: randomtips.py:38
 msgid ""
 "EDR will automatically report other commanders if they say something on "
 "local chat."
 msgstr ""
+"EDR segnalerà automaticamente gli altri comandanti se dicono qualcosa nella "
+"chat locale."
 
 #: randomtips.py:39
 msgid ""
 "EDR will automatically report other commanders if they direct message you "
 "(unless they are on your friends list)."
 msgstr ""
+"EDR segnalerà automaticamente altri comandanti se ti inviano un messaggio "
+"diretto (a meno che non siano nella tua lista di amici)."
 
 #: randomtips.py:40
 msgid ""
 "EDR will warn you about outlaws if they reveal themselves or if you report "
 "them"
-msgstr ""
+msgstr "EDR ti avviserà dei fuorilegge se si rivelano o se li denunci"
 
 #: randomtips.py:41
 msgid ""
 "Your EDR account is tied to your cmdr name, do NOT share your credentials "
 "with someone else or a different cmdr account."
 msgstr ""
+"Il tuo account EDR è legato al tuo nome cmdr, NON condividere le tue "
+"credenziali con qualcun altro o con un account cmdr diverso."
 
 #: randomtips.py:42
 msgid "Sending '-#' to a contact will remove them from your commanders index."
 msgstr ""
+"Inviando '-#' ad un contatto lo rimuoverà dall'indice dei tuoi comandanti."
 
 #: randomtips.py:43
 msgid "Send '-# <cmdrname>' to remove <cmdrname> from your commanders index."
 msgstr ""
+"Invia '-# <cmdrname>' per rimuovere <cmdrname> dall'indice dei tuoi "
+"comandanti."
 
 #: randomtips.py:44
 msgid ""
 "Sending '#!' or '#outlaw' to a contact will tag them as an outlaw in your "
 "commanders index."
 msgstr ""
+"Inviando '#!' o '#outlaw' ad un contatto, questo lo taggherà come fuorilegge "
+"nell'indice dei tuoi comandanti."
 
 #: randomtips.py:45
 msgid ""
 "Send '#! <cmdrname>' or '#outlaw <cmdrname>' to tag <cmdrname> as an outlaw "
 "in your commanders index."
 msgstr ""
+"Invia '#! <cmdrname>' o '#outlaw <cmdrname>' per contrassegnare <cmdrname> "
+"come fuorilegge nell'indice dei tuoi comandanti."
 
 #: randomtips.py:46
 msgid ""
 "Sending '#?' or '#neutral' to a contact will tag them as neutral in your "
 "commanders index."
 msgstr ""
+"Inviando '#?' o '#neutral' ad un contatto, questo lo taggerà come neutrale "
+"nell'indice dei tuoi comandanti."
 
 #: randomtips.py:47
 msgid ""
 "Send '#? <cmdrname>' or '#neutral <cmdrname>' to tag <cmdrname> as neutral "
 "in your commanders index."
 msgstr ""
+"Invia '#? <cmdrname>' o '#neutral <cmdrname>' per contrassegnare <cmdrname> "
+"come neutrale nell'indice dei tuoi comandanti."
 
 #: randomtips.py:48
 msgid ""
 "Sending '#+' or '#enforcer' to a contact will tag them as an enforcer in "
 "your commanders index."
 msgstr ""
+"Inviando '#+' o '#enforcer' ad un contatto lo contrassegnerà come Enforcer "
+"nel tuo indice dei comandanti."
 
 #: randomtips.py:49
 msgid ""
 "Send '#+ <cmdrname>' or '#enforcer <cmdrname>' to tag <cmdrname> as an "
 "enforcer in your commanders index."
 msgstr ""
+"Invia '#+ <cmdrname>' o '#enforcer <cmdrname>' per taggare <cmdrname> come "
+"Enforcer nel tuo indice dei comandanti."
 
 #: randomtips.py:50
 msgid ""
 "Sending '#=' or '#friend' to a contact will tag them as a friend in your "
 "commanders index."
 msgstr ""
+"Inviando '#=' o '#friend' ad un contatto lo taggerai come amico nel tuo "
+"indice dei comandanti."
 
 #: randomtips.py:51
 msgid ""
 "Send '#= <cmdrname>' or '#friend <cmdrname>' to tag <cmdrname> as a friend "
 "in your commanders index."
 msgstr ""
+"Invia '#= <cmdrname>' o '#friend <cmdrname>' per taggare <cmdrname> come "
+"amico nell'indice dei tuoi comandanti."
 
 #: randomtips.py:52
 msgid ""
 "Sending '#<tag>' to a contact will tag them as <tag> in your commanders "
 "index."
 msgstr ""
+"Inviando '#<tag>' ad un contatto lo taggerà come <tag> nell'indice dei tuoi "
+"comandanti."
 
 #: randomtips.py:53
 msgid ""
 "Send '#<tag> <cmdrname>' to tag <cmdrname> as <tag> in your commanders index."
 msgstr ""
+"Invia '#<tag> <cmdrname>' per taggare <cmdrname> come <tag> nell'indice dei "
+"tuoi comandanti."
 
 #: randomtips.py:54
 msgid ""
 "Sending '#s!' or '#enemy' to a contact will tag them as an enemy for your "
 "Inara squadron."
 msgstr ""
+"Inviando \"#s!\" o '#enemy' ad un contatto lo contrassegnerà come nemico per "
+"il tuo squadrone Inara."
 
 #: randomtips.py:55
 msgid ""
 "Send '#s! <cmdrname>' or '#enemy <cmdrname>' to tag <cmdrname> as an enemy "
 "for your Inara squadron."
 msgstr ""
+"Invia \"#\"! <cmdrname>' o '#enemy <cmdrname>' per contrassegnare <cmdrname> "
+"come nemico per il tuo squadrone Inara."
 
 #: randomtips.py:56
 msgid ""
 "Sending '#s+' or '#ally' to a contact will tag them as an ally for your "
 "Inara squadron."
 msgstr ""
+"Inviando \"#s+\" o \"#ally\" ad un contatto lo taggerai come alleato per il "
+"tuo squadrone Inara."
 
 #: randomtips.py:57
 msgid ""
 "Send '#s+ <cmdrname>' or '#ally <cmdrname>' to tag <cmdrname> as an ally for "
 "your Inara squadron."
 msgstr ""
+"Invia '#s+ <cmdrname>' o '#ally <cmdrname>' per taggare <cmdrname> come "
+"alleato per il tuo squadrone Inara."
 
 #: randomtips.py:58
 msgid ""
 "EDR will use the friend tag to infer a social graph for upcoming features."
 msgstr ""
+"EDR utilizzerà il tag amico per dedurre un grafico sociale per le "
+"funzionalità imminenti."
 
 #: randomtips.py:59
 msgid ""
 "Your commanders index is personal. EDR will only show aggregate stats to "
 "other EDR users."
 msgstr ""
+"L'indice dei tuoi comandanti è personale. EDR mostrerà le statistiche "
+"aggregate solo agli altri utenti EDR."
 
 #: randomtips.py:60
 msgid ""
 "Tag a commander with an outlaw tag if you witness them going after a clean "
 "and non-enemy power commander."
 msgstr ""
+"Tagga un comandante con un tag outlaw se lo vedi inseguire un comandante "
+"pulito e non nemico."
 
 #: randomtips.py:61
 msgid ""
 "Tag a pirate with an outlaw tag if you witness them destroying a co-"
 "operating ship."
 msgstr ""
+"Tagga un pirata con un tag outlaw se lo vedi distruggere una nave cooperante."
 
 #: randomtips.py:62
 msgid ""
 "Tag a commander with an enforcer tag if you have seen them going after an "
 "outlaw."
 msgstr ""
+"Tagga un comandante con un tag enforcer se lo hai visto inseguire un "
+"fuorilegge."
 
 #: randomtips.py:63
 msgid ""
 "Tag a commander with a neutral tag if you disagree with EDR's classification."
 msgstr ""
+"Tagga un comandante con un tag neutral se non sei d'accordo con la "
+"classificazione dell'EDR."
 
 #: randomtips.py:64
 msgid ""
 "Tag a commander with a friend tag if you are like-minded and/or fly often "
 "together."
 msgstr ""
+"Tagga un comandante con il tag friend se avete la stessa mentalità e/o "
+"volate spesso insieme."
 
 #: randomtips.py:65
 msgid "Tag a commander with a custom tag for your own needs, e.g. #pirate."
 msgstr ""
+"Tagga un comandante con un tag personalizzato per le tue esigenze, ad es. "
+"#pirata."
 
 #: randomtips.py:66
 msgid ""
 "Sending '@# <memo>' to a contact will attach a custom note with <memo> in "
 "your commanders index."
 msgstr ""
+"Inviando '@# <memo>' ad un contatto allegherà una nota personalizzata con "
+"<memo> nell'indice dei tuoi comandanti."
 
 #: randomtips.py:67
 msgid ""
