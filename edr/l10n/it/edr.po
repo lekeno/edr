@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
 "POT-Creation-Date: 2024-03-18 11:09+0100\n"
-"PO-Revision-Date: 2024-03-22 00:29+0100\n"
+"PO-Revision-Date: 2024-03-22 01:27+0100\n"
 "Last-Translator: GLWine\n"
 "Language-Team: GWine\n"
 "Language: it_IT\n"
@@ -1819,7 +1819,7 @@ msgstr "{station} ({type}), {sc_dist}"
 #: edrclient.py:3367 edrclient.py:3438
 #, python-brace-format
 msgid "as of {date} {ci}"
-msgstr "a partire dal {date} {ci}"
+msgstr "aggiornato al {date} {ci}"
 
 #: edrclient.py:3371 edrclient.py:3397 edrclient.py:3442
 msgid "{}: nothing within [{}LY, {}LS] of {}"
@@ -1850,7 +1850,7 @@ msgstr "{planet} ({type}, {atm}), {sc_dist}"
 #: edrclient.py:3393 ingamemsg.py:588 ingamemsg.py:663
 #, python-brace-format
 msgid "as of {date}"
-msgstr "a partire dal {date}"
+msgstr "aggiornato al {date}"
 
 #: edrclient.py:3400
 msgid "checked {} systems and {} planets"
@@ -2025,7 +2025,7 @@ msgstr "{} ({}LY, {})"
 
 #: edrclient.py:3633
 msgid "as of {}"
-msgstr "a partire dal {}"
+msgstr "aggiornato al {}"
 
 #: edrclient.py:3639
 msgid "{}: nothing within [{}LY] of {}"
@@ -5859,7 +5859,7 @@ msgstr "Fac: {}  "
 
 #: edrsystems.py:624 edrsystems.py:690 edrsystems.py:883
 msgid "Max value: {} cr @ {} LS"
-msgstr "Valor massimo: {} cr @ {} LS"
+msgstr "Valore massimo: {} cr @ {} LS"
 
 #: edrsystems.py:704
 msgid "Discovered {}/{} {}%"
@@ -5867,7 +5867,7 @@ msgstr "Scoperto {}/{} {}%"
 
 #: edrsystems.py:836
 msgid "as of {}  "
-msgstr "a partire dal {}  "
+msgstr "aggiornato al {}  "
 
 #: edrsystems.py:853
 msgid "{}/{}  "
