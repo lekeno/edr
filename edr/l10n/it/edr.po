@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
 "POT-Creation-Date: 2024-03-18 11:09+0100\n"
-"PO-Revision-Date: 2024-03-22 01:27+0100\n"
+"PO-Revision-Date: 2024-03-23 00:49+0100\n"
 "Last-Translator: GLWine\n"
 "Language-Team: GWine\n"
 "Language: it_IT\n"
@@ -37,7 +37,7 @@ msgid ""
 "It will help you find a parking slot for your Fleet Carrier near busy "
 "systems."
 msgstr ""
-"Ti aiuterà a trovare un parcheggio per il tuo Fleet Carrier vicino a sistemi "
+"Ti aiuterà a trovare un parcheggio per la tua Fleet Carrier vicino a sistemi "
 "occupati."
 
 #. Translators: this is shown on the EDMC's status line
@@ -185,7 +185,7 @@ msgid ""
 "If the overlay hurts your FPS, try turning VSYNC off in Elite's graphics "
 "options."
 msgstr ""
-"Se l'overlay diminuisci i tui FPS, prova a disattivare VSYNC nelle opzioni "
+"Se l'overlay diminuisce i tui FPS, prova a disattivare VSYNC nelle opzioni "
 "grafiche di Elite."
 
 #: edrclient.py:498
@@ -287,7 +287,7 @@ msgstr "Corpi stellari interessanti in {}"
 
 #: edrclient.py:653
 msgid "Bio-suitable: {} [{} among {} known bodies]"
-msgstr "Bio-idoneo: {} [{} tra {} corpi conosciuti]"
+msgstr "Bio-idoneo: {} [{} tra {} bodies conosciuti]"
 
 #: edrclient.py:658
 msgid "Anarchy system"
@@ -529,7 +529,7 @@ msgstr "Nessun Bio rilevato"
 
 #: edrclient.py:1157
 msgid "[among {} known bodies]"
-msgstr "[tra {} corpi conosciuti]"
+msgstr "[tra {} bodies conosciuti]"
 
 #: edrclient.py:1168 edrclient.py:1169 edrroutes.py:81
 msgid "???"
@@ -871,24 +871,25 @@ msgstr "{} avvisi già attivi"
 msgid ""
 "Request an EDR account to access enemy alerts (https://edrecon.com/account)"
 msgstr ""
-"Richiedi un account EDR per accedere agli avvisi sui nemici (https://edrecon."
-"com/account)"
+"Richiedi un account EDR per accedere alle allerte sui nemici (https://"
+"edrecon.com/account)"
 
 #: edrclient.py:1888
 msgid "Pledge to a power to access enemy alerts"
-msgstr "Sostieni un power per accedere agli avvisi dei nemici"
+msgstr "Sostieni una power per accedere alle allerte sui nemici"
 
 #: edrclient.py:1890
 msgid "Remain loyal for at least {} days to access enemy alerts"
-msgstr "Rimani fedele per almeno {} giorni per accedere agli avvisi sui nemici"
+msgstr ""
+"Rimani fedele per almeno {} giorni per accedere alle allerte sui nemici "
 
 #: edrclient.py:1892
 msgid "Enabling Enemy alerts"
-msgstr "Abilitazione degli avvisi sui Nemici"
+msgstr "Abilità le allerte sui Nemici"
 
 #: edrclient.py:1892
 msgid "Couldn't enable Enemy alerts"
-msgstr "Impossibile abilitare gli avvisi sui nemici"
+msgstr "Impossibile abilitare le allerte sui nemici"
 
 #: edrclient.py:1894
 #, python-brace-format
@@ -4528,7 +4529,7 @@ msgstr "Scansiona la superficie del pianeta per trovare siti biologici."
 #: edrresourcefinder.py:614
 msgid "Land, deploy SRV to break crystalline shards, scoop grade 4 materials."
 msgstr ""
-"Atterra, utilizza un SRV per frantumare schegge cristalline, raccogli "
+"Atterra, utilizza un SRV per frantumare crystalline shards, raccogli "
 "materiali di grado 4."
 
 #: edrresourcefinder.py:618
@@ -7216,8 +7217,8 @@ msgid ""
 " - '!manufactured', '!man' or '!man Lave' to find a Manufactured Material "
 "Trader near your position or Lave"
 msgstr ""
-" - '!manufactured', '!man' o '!man Lave' per trovare un commerciante di "
-"materiali manifatturieri vicino alla tua posizione o a Lave"
+" - '!manufactured', '!man' o '!man Lave' per trovare un Manufactured "
+"Material Trader vicino alla tua posizione o a Lave"
 
 #: helpcontent.py:217
 msgid ""
@@ -7625,7 +7626,7 @@ msgstr "Lon: {:.4f}"
 
 #: ingamemsg.py:468
 msgid "Head: > {:03} <"
-msgstr "Head: > {:03} <"
+msgstr "Rotta: > {:03} <"
 
 #: ingamemsg.py:471
 msgid "Alt: {}km"
