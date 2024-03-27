@@ -36,16 +36,18 @@ Passaggi:
 ### ED RECON (AKA EDR)
 Passaggi:
 1.	[Scarica l'ultima versione di EDR](https://github.com/lekeno/EDR/releases/latest) (il file EDR.v#.#.#.zip dove #.#.# è il numero di versione, es. 2.7.5 nello screenshot seguente)
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/EDR_2.7.5_Black.png?raw=true">
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/EDR_2.7.5_White.png?raw=true">
-  <img alt="Shows an illustrated sun in light mode and a moon with stars in dark mode." src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/EDR_2.7.5_White.png?raw=true">
-</picture>
+    <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/EDR_2.7.5_Black.png?raw=true">
+        <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/EDR_2.7.5_White.png?raw=true">
+        <img alt="Screenshot sito edr, pagina rilascio 2.7.5" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/EDR_2.7.5_White.png?raw=true">
+    </picture>
 
 2.	Avvia EDMC.
 3.	Fare clic su File, poi su Impostazioni.
-  
+    <img alt="Immgaine pagina iniziale EDMC" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_01-02_it.png?raw=true">
+
 4.	Clicca sulla scheda Plugin, quindi fare clic su Sfoglia.
+    <img alt="Immgaine pagina iniziale EDMC" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_03-04_it.png?raw=true">
   
 5.	Crea una sotto cartella denominata EDR nella cartella dei plugins.
  
