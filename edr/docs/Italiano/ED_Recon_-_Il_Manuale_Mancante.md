@@ -115,4 +115,5 @@ Traghettare un altro giocatore svelerà il loro profilo EDR. Per gli utenti con 
 - Inviando **`!who nome_cmdr`** o **`!w nome_cmdr`** tramite la chat in gioco (qualsiasi canale: locale, squadrone, team, sistema, ecc.), oppure tramite il campo di input EDR nella finestra di EDMC. Esempio: **`!w lekeno`**
 
 EDR mostrerà anche informazioni chiave (HP, dimensione/classe, tendenze) sulla nave/veicolo del tuo bersaglio e sul sottomodulo selezionato, se presente:
- <img alt="Immgaine pagina iniziale EDMC" src="https://dummyimage.com/900x400/ced4da/6c757d.jpg">
+
+<img alt="Immgaine pagina iniziale EDMC" src="https://dummyimage.com/900x400/ced4da/6c757d.jpg">
