@@ -178,14 +178,22 @@ After getting your credentials, open the EDR settings (`File` menu, `Settings`, 
 
 If everything goes according to plan, you should see “authenticated” in the EDR status line.
 
-<img alt="Location where it is indicated whether the login was successful" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_09_White.png?raw=true">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_09_Black.png?raw=true">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_09_White.png?raw=true">
+  <img alt="Location where it is indicated whether the login was successful" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_09_White.png?raw=true">
+</picture>
 
 # <a name="_1fob9te"></a><a name="_toc162390237"></a>**EDR in a nutshell**
 EDR offers a wide range of features designed to ease and augment your experience in Elite Dangerous: profile of players based on in-game reports, finding rare materials, assessing the value of odyssey materials, etc. 
 
 These features either trigger automatically depending on what’s happening in the game, or can be triggered by sending EDR commands (e.g. `!who lekeno`) via the in-game chat (any channel), or via the EDR input field in the EDMC window:
 
-<img alt="Alterative position from where to send EDR commands in EDMC" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_10_White.png?raw=true">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_10_Black.png?raw=true">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_10_White.png?raw=true">
+  <img alt="Alterative position from where to send EDR commands in EDMC" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_10_White.png?raw=true">
+</picture>
 
 ### <a name="_ld9uhtijx1hr"></a><a name="_toc162390238"></a>Output
 EDR shows various useful information via a graphical overlay and a text UI in the EDMC window. 
