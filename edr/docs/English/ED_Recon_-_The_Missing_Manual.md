@@ -1,6 +1,9 @@
-﻿<h1 align="center"><a href="https://edrecon.com"><b>ED Recon</b></a>
-<br>
-The Missing Manual</h1>
+﻿<div align="center">
+  <img Alt="Logo_ED_Recon" src="https://edrecon.com/img/icon-192x192.8422df55.png">
+  <h1><a href="https://edrecon.com"><b>ED Recon</b></a>
+  <br>
+  The Missing Manual</h1>
+</div>
 <p align=right>Draft by CMDR Lekeno</p>
 <p align=right>Translation by CMDR FrostBit</p>
 
@@ -109,33 +112,57 @@ ED Recon is offered as a plugin for Elite Dangerous Market Connector, a great th
 Steps:
 
 1. Read [EDMC’s privacy policy](https://github.com/EDCD/EDMarketConnector/wiki/Privacy-Policy). If you disagree with anything or don’t understand it all, do NOT proceed any further.
-1. [Download EDMC’s latest release](https://github.com/EDCD/EDMarketConnector/releases/latest) (the .msi file)
-1. Double-click on the downloaded file to install it.
-   1. Windows may warn you about the file. Click on more info then Run anyway. If you are concerned, feel free to run an antivirus scan on the downloaded file beforehand.
-1. Run Elite Dangerous Market Connector from the Start Menu or Start Screen.
-1. Optional: allow EDMC to access Frontier’s API on your behalf (**EDR does NOT use the Frontier API, so feel free to ignore this authentication request**).
+2. [Download EDMC’s latest release](https://github.com/EDCD/EDMarketConnector/releases/latest) (the .msi file)
+3. Double-click on the downloaded file to install it.
+   - Windows may warn you about the file. Click on more info then Run anyway. If you are concerned, feel free to run an antivirus scan on the downloaded file beforehand.
+4. Run Elite Dangerous Market Connector from the Start Menu or Start Screen.
+5. Optional: allow EDMC to access Frontier’s API on your behalf (**EDR does NOT use the Frontier API, so feel free to ignore this authentication request**).
 ## <a name="_v721darz3ctv"></a><a name="_toc162390235"></a>ED Recon (aka EDR)
 Steps:
 
-1. [Download EDR’s latest release](https://github.com/lekeno/EDR/releases/latest) (the EDR.v#.#.#.zip file where #.#.# is the version number, e.g. 0.9.5 in the screenshot below)
+1. [Download EDR’s latest release](https://github.com/lekeno/EDR/releases/latest) (the EDR.v#.#.#.zip file where #.#.# is the version number, e.g. 2.7.5 in the screenshot below)
 
-1. Launch EDMC.
-1. Click on File then Settings.
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/EDR_2.7.5_Black.png?raw=true">
+      <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/EDR_2.7.5_White.png?raw=true">
+      <img alt="Screenshot of the release page of EDR 2.7.5" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/EDR_2.7.5_White.png?raw=true">
+    </picture>
 
-1. Click on the Plugins tab, then click on Open.
+2. Launch EDMC.
+3. Click on File then Settings.
 
-1. Create a sub-folder named EDR in the plugins folder.
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_01-02_Black.png?raw=true">
+      <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_01-02_White.png?raw=true">
+      <img alt="How to open EDMC settings" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_01-02_White.png?raw=true">
+    </picture>
 
-1. Extract the content of the Zip file you downloaded at step 2 under this EDR sub-folder.
+4. Click on the Plugins tab, then click on Open.
 
-1. Relaunch EDMC.
-1. You should see an EDR status line (e.g. EDR: authenticated (guest)) at the bottom of EDMC:
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_03-04_Black.png?raw=true">
+      <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_03-04_White.png?raw=true">
+      <img alt="How to go to the plugin tab" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_03-04_White.png?raw=true">
+    </picture>
 
-1. Launch Elite, start a new game.
-1. You should see an intro message (e.g. EDR V0.9.5 […]) overlayed on top of Elite.
-- On Windows 10: the overlay should work for all the modes (Fullscreen, Borderless, Windowed).
-- On Windows 7: the overlay does NOT work in Fullscreen, use Borderless or Windowed instead.
-- If the overlay does not work, see the [troubleshooting](#_2l7rqborubf8) section.
+5. Create a sub-folder named EDR in the plugins folder.
+
+    <img alt="How to go to the plugin tab" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_05_White.png?raw=true">
+
+6. Extract the content of the Zip file you downloaded at step 2 under this EDR sub-folder.
+
+    <img alt="How to go to the plugin tab" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_06_White.png?raw=true">
+
+7. Relaunch EDMC.
+8. You should see an EDR status line (e.g. EDR: authenticated (guest)) at the bottom of EDMC:
+
+    <img alt="How to go to the plugin tab" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_07_White.png?raw=true">
+
+9. Launch Elite, start a new game.
+10. You should see an intro message (e.g. EDR V0.9.5 […]) overlayed on top of Elite.
+    - On Windows 10: the overlay should work for all the modes (Fullscreen, Borderless, Windowed).
+    - On Windows 7: the overlay does NOT work in Fullscreen, use Borderless or Windowed instead.
+    - If the overlay does not work, see the [troubleshooting](#_2l7rqborubf8) section.
 ## <a name="_7fegmlsbibv6"></a><a name="_toc162390236"></a>EDR account
 EDR works out of the box without any account. However, if you want to contribute information back to EDR and its users, e.g. sending sightings of outlaws, you will need to [apply for an account](https://edrecon.com/account).
 
@@ -147,14 +174,18 @@ Important remarks:
 
 After getting your credentials, open the EDR settings (File menu, Settings, EDR tab) fill up the email and password fields accordingly, and click OK.
 
+<img alt="How to go to the plugin tab" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_08_White.png?raw=true">
 
 If everything goes according to plan, you should see “authenticated” in the EDR status line.
 
+<img alt="How to go to the plugin tab" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_09_White.png?raw=true">
 
 # <a name="_1fob9te"></a><a name="_toc162390237"></a>**EDR in a nutshell**
 EDR offers a wide range of features designed to ease and augment your experience in Elite Dangerous: profile of players based on in-game reports, finding rare materials, assessing the value of odyssey materials, etc. 
 
 These features either trigger automatically depending on what’s happening in the game, or can be triggered by sending EDR commands (e.g. !who lekeno) via the in-game chat (any channel), or via the EDR input field in the EDMC window:
+
+<img alt="How to go to the plugin tab" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_10_White.png?raw=true">
 
 ### <a name="_ld9uhtijx1hr"></a><a name="_toc162390238"></a>Output
 EDR shows various useful information via a graphical overlay and a text UI in the EDMC window. 
@@ -165,7 +196,7 @@ EDR shows various useful information via a graphical overlay and a text UI in th
 When starting a new game session, EDR will show a random tip either about the game or EDR itself. 
 
 - Consider sending !help to get short and sweet guidance about the various EDR commands.
-- You can also request a random tip by sending the !tip command, or !tip edr for tips about EDR, and !tip open for tips about playing in Open.
+- You can also request a random tip by sending the `!tip` command, or `!tip edr` for tips about EDR, and `!tip open` for tips about playing in Open.
 # <a name="_mwwuek580u2s"></a><a name="_toc162390240"></a>**Commander Features**
 ## <a name="_3znysh7"></a><a name="_toc162390241"></a>Automatic Commander Profiles
 If EDR detects the presence of a potentially dangerous commander (e.g. outlaw), it will automatically show that commander's profile. 
@@ -178,10 +209,12 @@ Examples:
 ## <a name="_2et92p0"></a><a name="_toc162390242"></a>Manual Commander Profiles
 Targeting another player will reveal their EDR profile. For users with an account, completing a scan will result in submitting the info to the EDR server for the benefit of other EDR users. Alternatively, you can trigger an EDR + Inara cmdr profile lookup by: 
 
-- Sending **o7** to the cmdr you are wondering about (direct message).
-- Sending **!who *cmdrname*** or **!w *cmdrname*** via the in-game chat (any channel: local, squadron, wing, system, etc.), or via the EDR input field on the EDMC window. Example: **!w lekeno**
+- Sending `**o7**` to the cmdr you are wondering about (direct message).
+- Sending `**!who *cmdrname***` or `**!w *cmdrname***` via the in-game chat (any channel: local, squadron, wing, system, etc.), or via the EDR input field on the EDMC window. Example: `**!w lekeno**`
 
 EDR will also show key info (hit points, size/class, trends) about your target’s ship/vehicle and the selected submodule if any:
+
+<img alt="How to go to the plugin tab" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_11.png?raw=true">
 
 ## <a name="_tyjcwt"></a><a name="_toc162390243"></a>Annotations on other commanders
 You can build your own personalized Commander Index (CmdrDex) to customize your EDR experience and help other EDR users make informed guesses about other commanders' intent. Your CmdrDex is personal, EDR will only show aggregated stats for the alignment tags, e.g. 79% outlaw, 25% neutral, 5% enforcer (abbreviated as [!70% ?25%? +5%] in-game).
