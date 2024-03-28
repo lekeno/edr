@@ -97,7 +97,7 @@
 
 <br><br><br>
 
-# <a name="_e0h8qpx2dod0">**Install**</a><a name="_toc162390232">**Install**</a>
+# <a name="_e0h8qpx2dod0"></a><a name="_toc162390232">**Install**</a>
 If you get stuck or have any questions, feel free to join [EDR central](https://discord.gg/meZFZPj), the community server for EDR with access to the bot, real-time alerts and troubleshooting support.
 ## <a name="_n4ae7s2jprh0"></a><a name="_toc162390233"></a>Pre-requisites
 - Windows
@@ -112,7 +112,7 @@ ED Recon is offered as a plugin for Elite Dangerous Market Connector, a great th
 Steps:
 
 1. Read [EDMC’s privacy policy](https://github.com/EDCD/EDMarketConnector/wiki/Privacy-Policy). If you disagree with anything or don’t understand it all, do NOT proceed any further.
-2. [Download EDMC’s latest release](https://github.com/EDCD/EDMarketConnector/releases/latest) (the .msi file)
+2. [Download EDMC’s latest release](https://github.com/EDCD/EDMarketConnector/releases/latest) (the .exe file)
 3. Double-click on the downloaded file to install it.
    - Windows may warn you about the file. Click on `more info` then `Run anyway`. If you are concerned, feel free to run an antivirus scan on the downloaded file beforehand.
 4. Run Elite Dangerous Market Connector from the Start Menu or Start Screen.
@@ -147,16 +147,16 @@ Steps:
 
 5. Create a sub-folder named `EDR` in the `plugins folder`.
 
-    <img alt="How to go to the plugin tab" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_05_White.png?raw=true">
+    <img alt="How to access the tab and then the plugins folder" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_05_White.png?raw=true">
 
 6. Extract the content of the Zip file you downloaded at step 2 under this EDR sub-folder.
 
-    <img alt="How to go to the plugin tab" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_06_White.png?raw=true">
+    <img alt="EDR folder creation" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_06_White.png?raw=true">
 
 7. Relaunch EDMC.
 8. You should see an EDR status line (e.g. `EDR: authenticated (guest)`) at the bottom of EDMC:
 
-    <img alt="How to go to the plugin tab" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_07_White.png?raw=true">
+    <img alt="Location and folder structure of EDR" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_07_White.png?raw=true">
 
 9. Launch Elite, start a new game.
 10. You should see an intro message (e.g. `EDR V2.7.5 […]`) overlayed on top of Elite.
@@ -174,18 +174,18 @@ Important remarks:
 
 After getting your credentials, open the EDR settings (`File` menu, `Settings`, `EDR` tab) fill up the email and password fields accordingly, and click OK.
 
-<img alt="How to go to the plugin tab" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_08_White.png?raw=true">
+<img alt="Where to write email and password in EDMC settings for EDR" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_08_White.png?raw=true">
 
 If everything goes according to plan, you should see “authenticated” in the EDR status line.
 
-<img alt="How to go to the plugin tab" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_09_White.png?raw=true">
+<img alt="Location where it is indicated whether the login was successful" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_09_White.png?raw=true">
 
 # <a name="_1fob9te"></a><a name="_toc162390237"></a>**EDR in a nutshell**
 EDR offers a wide range of features designed to ease and augment your experience in Elite Dangerous: profile of players based on in-game reports, finding rare materials, assessing the value of odyssey materials, etc. 
 
 These features either trigger automatically depending on what’s happening in the game, or can be triggered by sending EDR commands (e.g. `!who lekeno`) via the in-game chat (any channel), or via the EDR input field in the EDMC window:
 
-<img alt="How to go to the plugin tab" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_10_White.png?raw=true">
+<img alt="Alterative position from where to send EDR commands in EDMC" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_10_White.png?raw=true">
 
 ### <a name="_ld9uhtijx1hr"></a><a name="_toc162390238"></a>Output
 EDR shows various useful information via a graphical overlay and a text UI in the EDMC window. 
@@ -209,22 +209,22 @@ Examples:
 ## <a name="_2et92p0"></a><a name="_toc162390242"></a>Manual Commander Profiles
 Targeting another player will reveal their EDR profile. For users with an account, completing a scan will result in submitting the info to the EDR server for the benefit of other EDR users. Alternatively, you can trigger an EDR + Inara cmdr profile lookup by: 
 
-- Sending `**o7**` to the cmdr you are wondering about (direct message).
-- Sending `**!who *cmdrname***` or `**!w *cmdrname***` via the in-game chat (any channel: local, squadron, wing, system, etc.), or via the EDR input field on the EDMC window. Example: `**!w lekeno**`
+- Sending **`o7`** to the cmdr you are wondering about (direct message).
+- Sending **<tt>!who *cmdrname*</tt>** or **<tt>!w *cmdrname*</tt>** via the in-game chat (any channel: local, squadron, wing, system, etc.), or via the EDR input field on the EDMC window. Example: **`!w lekeno`**
 
 EDR will also show key info (hit points, size/class, trends) about your target’s ship/vehicle and the selected submodule if any:
 
-<img alt="How to go to the plugin tab" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_11.png?raw=true">
+<img alt="Interface integrity and hull and shield of the opponent" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_11.png?raw=true">
 
 ## <a name="_tyjcwt"></a><a name="_toc162390243"></a>Annotations on other commanders
 You can build your own personalized Commander Index (CmdrDex) to customize your EDR experience and help other EDR users make informed guesses about other commanders' intent. Your CmdrDex is personal, EDR will only show aggregated stats for the alignment tags, e.g. 79% outlaw, 25% neutral, 5% enforcer (abbreviated as [!70% ?25%? +5%] in-game).
 ### <a name="_3dy6vkm"></a><a name="_toc162390244"></a>Generic commands
 - `#=` or `#friend` to tag a contact as a friend.
-- <tt>#= <i>cmdrname</i></tt> or <tt>friend <i>cmdrname</i></tt> to tag a specific commander as a friend.
-- -#= or -#friend *cmdrname* to remove a friend tag from a contact or a specific commander in your commander index.
-- #tag or #tag *cmdrname* to tag a contact or *cmdrname* with a custom tag in your commander index (e.g. #pirate jack sparrow).
-- -# or -# *cmdrname* to untag (remove) a contact or *cmdrname* from your commander index. (e.g. -# jack sparrow).
-- -#tag or -#tag *cmdrname* to remove a specific tag from a contact or cmdrname in your commander index, (e.g. -#pirate jack sparrow).
+- <tt>#= *cmdrname*</tt> or <tt>friend *cmdrname*</tt> to tag a specific commander as a friend.
+- `-#=` or <tt>-#friend *cmdrname*</tt> to remove a friend tag from a contact or a specific commander in your commander index.
+- `#tag` or <tt>#tag *cmdrname*</tt> to tag a contact or *cmdrname* with a custom tag in your commander index (e.g. `#pirate jack sparrow`).
+- `-#` or <tt>-# *cmdrname*</tt> to untag (remove) a contact or *cmdrname* from your commander index. (e.g. `-# jack sparrow`).
+- `-#tag` or <tt>-#tag *cmdrname*</tt> to remove a specific tag from a contact or cmdrname in your commander index, (e.g. `-#pirate jack sparrow`).
 ### <a name="_1t3h5sf"></a><a name="_toc162390245"></a>Alignment tags
 You can tag a commander with an alignment tag, and help other EDR users make an informed guess about other players.
 
@@ -234,21 +234,21 @@ You can tag a commander with an alignment tag, and help other EDR users make an 
 
 Commands:
 
-- #outlaw** or #! to tag a contact with an outlaw tag. 
-- #outlaw *cmdrname* or #! *cmdrname* to tag a specific commander with an outlaw tag (e.g. #! Vicious RDCS).
-- #neutral or #? to tag a contact with a neutral tag.
-- #neutral *cmdrname* or #? *cmdrname* to tag a specific commander with a neutral tag (e.g. #? filthy neutral jr).
-- #enforcer or #+ to tag a contact with an enforcer tag.
-- #enforcer *cmdrname* or #+ *cmdrname* to tag a specific commander with an enforcer tag (e.g. #+ lekeno).
-- -#*alignment-tag* or -#*alignment-tag cmdrname* to remove the *alignment-tag* from a contact or specific commander in your commander index (e.g. -#+ lekeno).
+- `#outlaw` or `#!` to tag a contact with an outlaw tag. 
+- <tt>#outlaw *cmdrname*</tt> or <tt>#! *cmdrname*</tt> to tag a specific commander with an outlaw tag (e.g. `#! Vicious RDCS`).
+- `#neutral` or `#?` to tag a contact with a neutral tag.
+- <tt>#neutral *cmdrname*</tt> or <tt>#? *cmdrname*</tt> to tag a specific commander with a neutral tag (e.g. `#? filthy neutral jr`).
+- `#enforcer` or `#+` to tag a contact with an enforcer tag.
+- <tt>#enforcer *cmdrname*</tt> or <tt>#+ *cmdrname*</tt> to tag a specific commander with an enforcer tag (e.g. `#+ lekeno`).
+- <tt>-#*alignment-tag*</tt> or <tt>-#*alignment-tag cmdrname*</tt> to remove the *alignment-tag* from a contact or specific commander in your commander index (e.g. `-#+ lekeno`).
 ### <a name="_vppxm7d89cyd"></a><a name="_toc162390246"></a>Memo
 You can attach a memo (short reminder) to a commander. This can be handy to remember how you met them or who they are.
 
 Commands:
 
-- @# “something very important to remember” to attach a custom note to a contact.
-- @# *cmdrname* memo=“distant worlds 2” to attach a custom note to a specific commander.
-- -@# or -@# cmdrname* to remove the custom note from a contact or a specific commander.
+- `@# “something very important to remember”` to attach a custom note to a contact.
+- `@# *cmdrname* memo=“distant worlds 2”` to attach a custom note to a specific commander.
+- `-@#` or <tt>-@# *cmdrname*</tt> to remove the custom note from a contact or a specific commander.
 ## <a name="_4d34og8"></a><a name="_toc162390247"></a>How to read the profile information
 The profile includes some graphs showing historical data for 12 months. The current month is on the right edge, and the axis goes back in time from there (i.e. previous month is the bar on the left side of the last bar on the right).
 
@@ -258,6 +258,8 @@ The upper section contains a combined view (same scale) of clean and wanted scan
 - [Bottom] Number of wanted scans:  the lower the bar / the redder the bar, the more wanted scans have been reported.
 
 The lower section shows the commander's largest reported bounty for any given month. The height of the bar is relative to other reported bounties (i.e. tallest bar = overall max bounty, half-height bar = 50% of the overall max bounty). The amount of the bounty is reflected in the color of the bar: the hotter the color, the higher the bounty amount. 
+
+<img alt="Framing interface of a graphical box commander" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_12.png?raw=true">
 
 The text profile includes information from EDR and Inara.
 
@@ -269,6 +271,8 @@ The EDR sections provide various signals to help you make an informed opinion ab
 - **Misc.:** EDR will also show other types of information if relevant (e.g. your custom tags if any) .
 
 The Inara section shows information such as role, squadron, allegiance, etc.
+
+<img alt="Framing interface of a commander" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_13.png?raw=true">
 
 # <a name="_2s8eyo1"></a><a name="_toc162390248"></a>**EDR Karma**
 ## <a name="_17dp8vu"></a><a name="_toc162390249"></a>What is the EDR Karma?
@@ -305,23 +309,23 @@ Information can include the following:
 
 Commands:
 
-- !sitreps to display a list of star systems with recent activity (good candidates for a !sitrep command).
-- !sitrep to display the sitrep for the current system.
-- !sitrep *system name* to display the sitrep of a given star system (e.g. !sitrep deciat).
-- !notams to display a list of star systems with active NOTAMs.
-- !notam *system name* to display the NOTAM of a given star system (e.g. !notam san tu).
+- `!sitreps` to display a list of star systems with recent activity (good candidates for a `!sitrep` command).
+- `!sitrep` to display the sitrep for the current system.
+- <tt>!sitrep *system name*</tt> to display the sitrep of a given star system (e.g. `!sitrep deciat`).
+- `!notams` to display a list of star systems with active NOTAMs.
+- <tt>!notam *system name*</tt> to display the NOTAM of a given star system (e.g. `!notam san tu`).
 ## <a name="_1ksv4uv"></a><a name="_toc162390254"></a>Distance 
 EDR can calculate distances between your position and another system, or between 2 arbitrary systems, as long as they are already known by the community. 
 
 Commands: 
 
-- !distance *system name* shows the distance between your location and *system name* (e.g. !distance deciat) 
-- !distance *origin* > *destination* shows the distance between *origin* and *destination* (e.g. !distance deciat > borann)
+- <tt>!distance *system name*</tt> shows the distance between your location and *system name* (e.g. !distance deciat) 
+- <tt>!distance *origin* > *destination*</tt> shows the distance between *origin* and *destination* (e.g. `!distance deciat > borann`)
 ## <a name="_44sinio"></a><a name="_toc162390255"></a>Known signals
 EDR can show an overview of known signals for the current system (e.g. resource extraction sites, combat zones, fleet carrier, stations, etc.)
 
 - The overview is automatically shown when looking at a system map.
-- Sending the !signals command will manually trigger the overview
+- Sending the `!signals` command will manually trigger the overview
 ## <a name="_2jxsxqh"></a><a name="_toc162390256"></a>Information about your destination
 **Odyssey only:** EDR will show key information about your next destination (station, fleet carrier, system). For station or fleet carriers, EDR will show the list of available services, as well as information about the controlling faction (BGS state, government, allegiance and whether the faction is a **P**layer **M**inor **F**action).
 ## <a name="_6du7k5kxmtsl"></a><a name="_toc162390257"></a>Current system
@@ -334,9 +338,9 @@ Manual navigation is also supported (shown when approaching a body or when on th
 
 Commands:
 
-- !nav 123.21 -32.21 to set the destination based on its Latitude and Longitude.
-- !nav off to disable the navigation feature
-- !nav set to set your current Latitude, Longitude as the reference point for the navigation feature.
+- `!nav 123.21 -32.21` to set the destination based on its Latitude and Longitude.
+- `!nav off` to disable the navigation feature
+- `!nav set` to set your current Latitude, Longitude as the reference point for the navigation feature.
 ## <a name="_3j2qqm3"></a><a name="_toc162390261"></a>Noteworthy Materials
 When approaching a body, EDR will show a list of noteworthy materials (i.e. materials with a density higher than what's typical across the galaxy). Note: this requires prior actions such as scanning the navigation beacon or analyzing the system with the Full Spectrum Scanner, etc.
 
@@ -346,49 +350,49 @@ EDR can help you find services near you or near a specific system.
 
 Commands
 
-- !if or !if Lave to find an Interstellar Factors near your position or Lave.
-- !raw or !raw Lave to find a Raw Material Trader near your position or Lave.
-- !encoded, !enc or !enc Lave to find an Encoded Data Trader near your position or Lave.
-- !manufactured, !man or !man Lave to find a Manufactured Material Trader near your position or Lave.
-- !staging or !staging Lave to find a good staging station near your position or Lave, i.e. large pads, shipyard, outfitting, repair/rearm/refuel.
-- !htb, !humantechbroker or !htb Lave to find a Human Tech Broker near your position or Lave.
-- !gtb, !guardiantechbroker or !gtb Lave to find a Guardian Tech Broker near your position or Lave.
-- !offbeat, !offbeat Lave to find a station that hasn't been visited recently near your position or Lave (useful to find pre-engineered/pre-upgraded spacesuits & weapons in Odyssey).
-- !rrr, !rrr Lave, !rrr Lave < 10 to find a station with repair, rearm and refuel near your position, or lave, or within a 10 LY radius of Lave.
-- !rrrfc, !rrrfc Lave, !rrrfc Lave < 10 to find a fleet carrier with repair, rearm and refuel near your position, or lave, or within a 10 LY radius of Lave. Please, double check docking access before heading there!
-- !fc J6B, !fc recon, !station Jameson to display information about services at local Fleet Carrier or Stations with a callsign/name containing J6B, Recon, Jameson respectively.
+- `!if` or `!if Lave` to find an Interstellar Factors near your position or Lave.
+- `!raw` or `!raw Lave` to find a Raw Material Trader near your position or Lave.
+- `!encoded`, `!enc` or `!enc Lave` to find an Encoded Data Trader near your position or Lave.
+- `!manufactured`, `!man` or `!man Lave` to find a Manufactured Material Trader near your position or Lave.
+- `!staging` or `!staging Lave` to find a good staging station near your position or Lave, i.e. large pads, shipyard, outfitting, repair/rearm/refuel.
+- `!htb`, `!humantechbroker` or `!htb Lave` to find a Human Tech Broker near your position or Lave.
+- `!gtb`, `!guardiantechbroker` or `!gtb Lave` to find a Guardian Tech Broker near your position or Lave.
+- `!offbeat`, `!offbeat Lave` to find a station that hasn't been visited recently near your position or Lave (useful to find pre-engineered/pre-upgraded spacesuits & weapons in Odyssey).
+- `!rrr`, `!rrr Lave`, ``!rrr Lave < 10`` to find a station with repair, rearm and refuel near your position, or lave, or within a 10 LY radius of Lave.
+- `!rrrfc`, `!rrrfc Lave`, `!rrrfc Lave < 10` to find a fleet carrier with repair, rearm and refuel near your position, or lave, or within a 10 LY radius of Lave. Please, double check docking access before heading there!
+- `!fc J6B`, `!fc recon`, `!station Jameson` to display information about services at local Fleet Carrier or Stations with a callsign/name containing J6B, Recon, Jameson respectively.
 # <a name="_4i7ojhp"></a><a name="_toc162390263"></a>**Materials Features**
 ## <a name="_2xcytpi"></a><a name="_toc162390264"></a>BGS state dependent materials
 When arriving in a new system, EDR will sometimes show a list of materials with estimated likelihoods (mostly from signal sources). If your current inventory is low on a particular material and the likelihood is relatively high, you may want to look for a High Grade Emission source and farm it until you are full (after collecting the mats, exit the game, relaunch, go to supercruise at 0 speed, jump back into the signal, repeat until the timer runs out).
 ## <a name="_1ci93xb"></a><a name="_toc162390265"></a>Searching for specific materials
-Send !search *resource* to find a good spot for farming a specific resource (e.g. !search selenium). You can use the full name of the resource, or an abbreviation. Most very rare, rare and standard resources (data, raw, manufactured) are supported. Exception: guardian technology related resources. Pro-tip: The name of the system will be copied to the clipboard.
+Send <tt>!search *resource*</tt> to find a good spot for farming a specific resource (e.g. `!search selenium`). You can use the full name of the resource, or an abbreviation. Most very rare, rare and standard resources (data, raw, manufactured) are supported. Exception: guardian technology related resources. Pro-tip: The name of the system will be copied to the clipboard.
 
 Abbreviations:
 
-- The first 3 letters of a single word resource, e.g. !search cad for cadmium, 
-- The first letters of each word, separated by spaces for multi-words resources, e.g. !search c d c for Core Dynamic Composites.
+- The first 3 letters of a single word resource, e.g. `!search cad` for cadmium, 
+- The first letters of each word, separated by spaces for multi-words resources, e.g. `!search c d c` for Core Dynamic Composites.
 
 State dependent resources are best effort, please double check for stale info by looking at the date and state via the galaxy map.
 
 Searching around a specific system can be done by sending a command like such (notice the @systemname bit at the end):
 
-- !search selenium @deciat
+- `!search selenium @deciat`
 ## <a name="_3whwml4"></a><a name="_toc162390266"></a>Raw materials
 When approaching a landable body, EDR will show noteworthy raw materials (high grade) present on a planet if the density exceeds the galactic median (the more +, the better).
 ### <a name="_gdtgvskllkcx"></a><a name="_toc162390267"></a>Profiles
 If you are looking for lower grade raw materials or something specific then you may find that the default raw material notifications are not as useful. You can switch to a different set of materials by sending the !materials command.
 
-For instance, if you are looking for materials to supercharge your FSD, send !materials fsd. This will customize the notifications to only show the materials that are used for synthesis FSD injections.
+For instance, if you are looking for materials to supercharge your FSD, send `!materials fsd`. This will customize the notifications to only show the materials that are used for synthesis FSD injections.
 
 Other commands:
 
-- !materials to see the list of profiles available.
-- !materials default to revert to the default profile (i.e. high grade raw materials)
+- `!materials` to see the list of profiles available.
+- `!materials default` to revert to the default profile (i.e. high grade raw materials)
 #### <a name="_7z80x1k2z0uo"></a>*Custom material profiles*
 You can also add your own raw material profiles:
 
-1. Make a copy of the raw\_profiles.json file (see EDR's data folder)
-1. Rename it user\_raw\_profiles.json
+1. Make a copy of the `raw_profiles.json` file (see EDR's data folder)
+1. Rename it `user_raw_profiles.json`
 1. Edit and rename the profiles to your needs.
 1. Save the file.
 ## <a name="_2bn6wsx"></a><a name="_toc162390268"></a>Odyssey materials
@@ -398,7 +402,9 @@ EDR will show a quick assessment of odyssey materials on the following events:
 - Taking a mission with a mission specific item.
 - Pointing at a material with the game’s gesture system (how many blueprints/upgrades/synthesis/techbroker, rarity, typical locations, required by engineers & whether you still need it, …). This also works for Horizons materials.
 
-- Sending a !eval backpack, !eval locker, or !eval *name of the material* command (e.g. !eval air quality reports).
+<img alt="On-foot material analysis interface" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_14.png?raw=true">
+
+- Sending a `!eval backpack`, `!eval locker`, or <tt>!eval *name of the material*</tt> command (e.g. `!eval air quality reports`).
 - Setting a purchase or sale order for a material at the fleet carrier bar.
 
 Furthermore, EDR will show an evaluation of the odyssey materials in the player’s backpack or storage on the following events:
@@ -419,8 +425,10 @@ If a bar has nothing on sale, or nothing useful on sale, then EDR might show a l
 
 You can also trigger these assessments for the last fleet carrier bar that you have visited with the following in-game chat command:
 
-- !eval bar or !eval bar stock to evaluate items on sale.
-- !eval bar demand to evaluate items sought by the owner of the fleet carrier.
+- `!eval bar` or `!eval bar stock` to evaluate items on sale.
+- `!eval bar demand` to evaluate items sought by the owner of the fleet carrier.
+
+    <img alt="Example of the interface and materials for the bar" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_15.png?raw=true">
 
 # <a name="_qsh70q"></a><a name="_toc162390271"></a>**Ship Features**
 ## <a name="_3as4poj"></a><a name="_toc162390272"></a>Where did I park my ship?
