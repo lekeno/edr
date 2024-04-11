@@ -97,7 +97,7 @@
 
 <br><br><br>
 
-# <a name="_e0h8qpx2dod0"></a><a name="_toc162390232">**Install**</a>
+# <a name="_e0h8qpx2dod0"></a><a name="_toc162390232"></a>**Install**
 If you get stuck or have any questions, feel free to join [EDR central](https://discord.gg/meZFZPj), the community server for EDR with access to the bot, real-time alerts and troubleshooting support.
 ## <a name="_n4ae7s2jprh0"></a><a name="_toc162390233"></a>Pre-requisites
 - Windows
