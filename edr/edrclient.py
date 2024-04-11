@@ -2129,6 +2129,8 @@ class EDRClient(object):
         success = self.server.blip(cmdr_id, blip)
         if success:
             self.blips_cache.set(cmdr_id, blip)
+        else:
+            EDRLOG.log("Blip failed (server side) for {} with {}".format(cmdr_id, blip), "DEBUG")
 
         return success
 
