@@ -4,7 +4,7 @@
   <br>
   The Missing Manual</h1>
 </div>
-<p align=right>Draft by CMDR Lekeno</p>
+<p align=right>Draft by <b>CMDR Lekeno</b></p>
 
 # Summary
 - [Install](#install)
@@ -31,7 +31,7 @@
   - [Sitreps](#sitreps)
   - [Distance](#distance)
   - [Known signals](#known-signals)
-  - [Information about your destination](#informatio-about-your-destination)
+  - [Information about your destination](#information-about-your-destination)
   - [Current system](#current-system)
 - [Planet Features](#planet-features)
   - [Point of Interest](#point-of-interest)
@@ -56,7 +56,7 @@
   - [Squadron enemies and allies](#squadron-enemies-and-allies)
     - [Tags](#tags)
 - [Bounty Hunting Features](#bounty-hunting-features)
-  - [Real-time alerts](#real-timealerts)
+  - [Real-time alerts](#real-time-alerts)
   - [Bounty Hunting Stats & Graphs](#bounty-hunting-stats--graphs)
 - [Powerplay features](#powerplay-features)
   - [Powerplay hunting](#powerplay-hunting)
@@ -80,7 +80,7 @@
   - [Sending your Fleet Carrier’s Flight plan to Discord](#sending-your-fleet-carriers-buysell-orders-for-commodities-and-odyssey-materials)
   - [Sending your Fleet Carrier’s buy/sell orders for commodities and odyssey materials](#sending-your-fleet-carriers-buysell-orders-for-commodities-and-odyssey-materials)
 - [Overlay](#overlay)
-  - [Multi-monitors & VR setups](#multi-monitors—vr-setups)
+  - [Multi-monitors & VR setups](#multi-monitors--vr-setups)
     - [VR placement with SteamVR](#vr-placement-with-steamvr)
   - [Custom overlay](#custom-overlay)
 - [Crimes reporting](#crimes-reporting)
@@ -110,7 +110,7 @@ If you get stuck or have any questions, feel free to join [EDR central](https://
 - Elite Dangerous Market Connector (see section A)
 - Read and understood EDR's [privacy policy](https://edrecon.com/privacy-policy) and [terms of services](https://edrecon.com/tos). **Proceeding any further implies that you understand and agree to the privacy policy and the terms of services.**
 ## Elite Dangerous Market Connector
-**If you already have installed Elite Dangerous Market Connector (EDMC), [skip to the next section](#_v721darz3ctv).**
+**If you already have installed Elite Dangerous Market Connector (EDMC), [skip to the next section](#ed-recon-aka-edr).**
 
 ED Recon is offered as a plugin for Elite Dangerous Market Connector, a great third-party tool for Elite: Dangerous. Check the [official instructions](https://github.com/EDCD/EDMarketConnector/wiki/Installation-&-Setup) if the explanations below are not enough.
 
@@ -128,43 +128,43 @@ Steps:
 1. [Download EDR’s latest release](https://github.com/lekeno/EDR/releases/latest) (the EDR.v#.#.#.zip file where #.#.# is the version number, e.g. 2.7.5 in the screenshot below)
 
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/EDR_2.7.5_Black.png?raw=true">
-      <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/EDR_2.7.5_White.png?raw=true">
-      <img alt="Screenshot of the release page of EDR 2.7.5" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/EDR_2.7.5_White.png?raw=true">
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/EDR_2.7.7_Black.png?raw=true">
+      <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/EDR_2.7.7_White.png?raw=true">
+      <img alt="Screenshot of the release page of EDR 2.7.7" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/EDR_2.7.7_White.png?raw=true">
     </picture>
 
 2. Launch EDMC.
 3. Click on File then Settings.
 
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_01-02_Black.png?raw=true">
-      <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_01-02_White.png?raw=true">
-      <img alt="How to open EDMC settings" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_01-02_White.png?raw=true">
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_01-02_Black.png?raw=true">
+      <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_01-02_White.png?raw=true">
+      <img alt="How to open EDMC settings" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_01-02_White.png?raw=true">
     </picture>
 
 4. Click on the Plugins tab, then click on Open.
 
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_03-04_Black.png?raw=true">
-      <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_03-04_White.png?raw=true">
-      <img alt="How to go to the plugin tab" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_03-04_White.png?raw=true">
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_03-04_Black.png?raw=true">
+      <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_03-04_White.png?raw=true">
+      <img alt="How to go to the plugin tab" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_03-04_White.png?raw=true">
     </picture>
 
 5. Create a sub-folder named `EDR` in the `plugins folder`.
 
-    <img alt="How to access the tab and then the plugins folder" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_05_White.png?raw=true">
+    <img alt="How to access the tab and then the plugins folder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_05_White.png?raw=true">
 
 6. Extract the content of the Zip file you downloaded at step 2 under this EDR sub-folder.
 
-    <img alt="EDR folder creation" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_06_White.png?raw=true">
+    <img alt="EDR folder creation" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_06_White.png?raw=true">
 
 7. Relaunch EDMC.
 8. You should see an EDR status line (e.g. `EDR: authenticated (guest)`) at the bottom of EDMC:
 
-    <img alt="Location and folder structure of EDR" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_07_White.png?raw=true">
+    <img alt="Location and folder structure of EDR" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_07_White.png?raw=true">
 
 9. Launch Elite, start a new game.
-10. You should see an intro message (e.g. `EDR V2.7.5 […]`) overlayed on top of Elite.
+10. You should see an intro message (e.g. `EDR V2.7.7 […]`) overlayed on top of Elite.
     - On Windows 10: the overlay should work for all the modes (Fullscreen, Borderless, Windowed).
     - On Windows 7: the overlay does NOT work in Fullscreen, use Borderless or Windowed instead.
     - If the overlay does not work, see the [troubleshooting](#troubleshooting) section.
@@ -179,14 +179,14 @@ Important remarks:
 
 After getting your credentials, open the EDR settings (`File` menu, `Settings`, `EDR` tab) fill up the email and password fields accordingly, and click OK.
 
-<img alt="Where to write email and password in EDMC settings for EDR" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_08_White.png?raw=true">
+<img alt="Where to write email and password in EDMC settings for EDR" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_08_White.png?raw=true">
 
 If everything goes according to plan, you should see “authenticated” in the EDR status line.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_09_Black.png?raw=true">
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_09_White.png?raw=true">
-  <img alt="Location where it is indicated whether the login was successful" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_09_White.png?raw=true">
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_09_Black.png?raw=true">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_09_White.png?raw=true">
+  <img alt="Location where it is indicated whether the login was successful" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_09_White.png?raw=true">
 </picture>
 
 # EDR in a nutshell
@@ -195,9 +195,9 @@ EDR offers a wide range of features designed to ease and augment your experience
 These features either trigger automatically depending on what’s happening in the game, or can be triggered by sending EDR commands (e.g. `!who lekeno`) via the in-game chat (any channel), or via the EDR input field in the EDMC window:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_10_Black.png?raw=true">
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_10_White.png?raw=true">
-  <img alt="Alterative position from where to send EDR commands in EDMC" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_10_White.png?raw=true">
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_10_Black.png?raw=true">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_10_White.png?raw=true">
+  <img alt="Alterative position from where to send EDR commands in EDMC" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_10_White.png?raw=true">
 </picture>
 
 ### Output
@@ -227,7 +227,7 @@ Targeting another player will reveal their EDR profile. For users with an accoun
 
 EDR will also show key info (hit points, size/class, trends) about your target’s ship/vehicle and the selected submodule if any:
 
-<img alt="Interface integrity and hull and shield of the opponent" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_11.png?raw=true">
+<img alt="Interface integrity and hull and shield of the opponent" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_11.png?raw=true">
 
 ## Annotations on other commanders
 You can build your own personalized Commander Index (CmdrDex) to customize your EDR experience and help other EDR users make informed guesses about other commanders' intent. Your CmdrDex is personal, EDR will only show aggregated stats for the alignment tags, e.g. 79% outlaw, 25% neutral, 5% enforcer (abbreviated as [!70% ?25%? +5%] in-game).
@@ -268,24 +268,24 @@ The profile includes some graphs showing historical data for 12 months. The curr
 The upper section contains a combined view (same scale) of clean and wanted scans:
 
 - [Top] Number of clean scans in shades of green: the higher the bar / the greener the bar, the more clean scans have been reported.
-- [Bottom] Number of wanted scans:  the lower the bar / the redder the bar, the more wanted scans have been reported.
+- [Bottom] Number of wanted scans: the lower the bar / the redder the bar, the more wanted scans have been reported.
 
 The lower section shows the commander's largest reported bounty for any given month. The height of the bar is relative to other reported bounties (i.e. tallest bar = overall max bounty, half-height bar = 50% of the overall max bounty). The amount of the bounty is reflected in the color of the bar: the hotter the color, the higher the bounty amount. 
 
-<img alt="Framing interface of a graphical box commander" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_12.png?raw=true">
+<img alt="Framing interface of a graphical box commander" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_12.png?raw=true">
 
 The text profile includes information from EDR and Inara.
 
 The EDR sections provide various signals to help you make an informed opinion about other commanders. Ultimately, it remains your interpretation and opinion. **As such, always use your best judgment and take full responsibility for your behavior and actions.**
 
-- **EDR Karma:** a value between -1000 and 1000 calculated out of a commander's history of scans & bounties as reported by other EDR users. For convenience the karma value is translated into three labels (Outlaw, Ambiguous +/-, Lawful) with + symbols to indicate the level within a category. Outlaw indicates that this commander has been scanned with a significant bounty, Ambiguous indicates a lack of data or both positive/negative signals, Lawful indicates a streak of clean scans. See [edr-karma](#_2s8eyo1) for more details.
+- **EDR Karma:** a value between -1000 and 1000 calculated out of a commander's history of scans & bounties as reported by other EDR users. For convenience the karma value is translated into three labels (Outlaw, Ambiguous +/-, Lawful) with + symbols to indicate the level within a category. Outlaw indicates that this commander has been scanned with a significant bounty, Ambiguous indicates a lack of data or both positive/negative signals, Lawful indicates a streak of clean scans. See [edr-karma](#edr-karma) for more details.
 - **Karma tags:** EDR users can tag other commanders with predefined (or custom) tags. This section shows a number (or percentage) of tags for the following predefined categories: outlaw (represented as !), neutral (?), enforcer (represented as +). If you see a commander with misleading user tags, let *Cmdr lekeno* know about it.
 - **90 days summary:** summary of scans and bounties as reported by EDR users. Includes the number of clean scans, number of wanted scans, and largest reported bounty.
 - **Misc.:** EDR will also show other types of information if relevant (e.g. your custom tags if any) .
 
 The Inara section shows information such as role, squadron, allegiance, etc.
 
-<img alt="Framing interface of a commander" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_13.png?raw=true">
+<img alt="Framing interface of a commander" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_13.png?raw=true">
 
 # EDR Karma
 ## What is the EDR Karma?
@@ -357,7 +357,7 @@ Commands:
 ## Noteworthy Materials
 When approaching a body, EDR will show a list of noteworthy materials (i.e. materials with a density higher than what's typical across the galaxy). Note: this requires prior actions such as scanning the navigation beacon or analyzing the system with the Full Spectrum Scanner, etc.
 
-See more in [Materials Features](#_4i7ojhp).
+See more in [Materials Features](#materials-features).
 # Finding Services
 EDR can help you find services near you or near a specific system.
 
@@ -415,7 +415,7 @@ EDR will show a quick assessment of odyssey materials on the following events:
 - Taking a mission with a mission specific item.
 - Pointing at a material with the game’s gesture system (how many blueprints/upgrades/synthesis/techbroker, rarity, typical locations, required by engineers & whether you still need it, …). This also works for Horizons materials.
 
-<img alt="On-foot material analysis interface" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_14.png?raw=true">
+<img alt="On-foot material analysis interface" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_14.png?raw=true">
 
 - Sending a `!eval backpack`, `!eval locker`, or <tt>!eval *name of the material*</tt> command (e.g. `!eval air quality reports`).
 - Setting a purchase or sale order for a material at the fleet carrier bar.
@@ -441,7 +441,7 @@ You can also trigger these assessments for the last fleet carrier bar that you h
 - `!eval bar` or `!eval bar stock` to evaluate items on sale.
 - `!eval bar demand` to evaluate items sought by the owner of the fleet carrier.
 
-    <img alt="Example of the interface and materials for the bar" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_15.png?raw=true">
+    <img alt="Example of the interface and materials for the bar" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_15.png?raw=true">
 
 # Ship Features
 ## Where did I park my ship?
@@ -449,9 +449,9 @@ EDR allows you to find where you have parked your ships.
 
 Commands:
 
-- !ship *shiptype* to find ships of a certain type (e.g. !ship mamba)
-- !ship *shipname* to find ships with a certain ship name (e.g. !ship Indestructible II)
-- !ship *shipid* to find ships with a certain ship ID (e.g. !ship EDR-001)
+- <tt>!ship *shiptype*</tt> to find ships of a certain type (e.g. `!ship mamba`)
+- <tt>!ship *shipname*</tt> to find ships with a certain ship name (e.g. `!ship Indestructible II`)
+- <tt>!ship *shipid*</tt> to find ships with a certain ship ID (e.g. `!ship EDR-001`)
 
 Note: this feature should also tell you the ETA for a ship to arrive at its destination if you have initiated a transfer.
 ## Power Priorities
@@ -459,19 +459,27 @@ EDR can assess how good your power priorities are for maximal survival. Note: th
 
 Command:
 
-- !eval power to get an assessment of your power priorities.
+- `!eval power` to get an assessment of your power priorities.
 - If it doesn't work, look at your right hand side panel, fiddle with the power priorities back and forth and try again.
 ## Finding a parking slot for your Fleet Carrier
-The !parking command is here to help you find a parking slot for your fleet carrier.
+The `!parking` command is here to help you find a parking slot for your fleet carrier.
 
-- Send !parking to get information about the parking slots at your current location.
-- Try nearby systems by sending !parking #1,  !parking #2, etc, to get information about the parking slots at #1, #2, ... system near your current location.
-- Send !parking Deciat or !parking Deciat #3 to look up parking slots in or near Deciat (or a system of your choice).
+- Send `!parking` to get information about the parking slots at your current location.
+- Try nearby systems by sending `!parking #1`, `!parking #2`, etc, to get information about the parking slots at #1, #2, ... system near your current location.
+- Send `!parking Deciat` or `!parking Deciat #3` to look up parking slots in or near Deciat (or a system of your choice).
 
 As always, EDR will copy the system info into your clipboard, so that you can quickly search for it in the galaxy map.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_16_Black.png?raw=true">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_16_White.png?raw=true">
+  <img alt="Screenshot of the release page of EDR 2.7.5" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_16_White.png?raw=true">
+</picture>
+
 ## Landing
 EDR will show key info about at a station when docking, as well as the location of the landing pad for coriolis, orbis, fleet carriers, and some specific planetary locations.
+
+<img alt="placeholder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_17.png?raw=true">
 
 # Squadron Features
 ## Squadron enemies and allies
@@ -481,78 +489,90 @@ If you are part of a squadron on Inara, you can use EDR to tag other players as 
 - Write access: wingman and above.
 - Updating/Removing a tag: same or higher rank than the person who tagged the player
 ### Tags
-Send the following commands to tag another player (e.g. #ally David Braben) or your target (e.g. #ally) as an enemy or ally of your squadron:
+Send the following commands to tag another player (e.g. `#ally David Braben`) or your target (e.g. `#ally`) as an enemy or ally of your squadron:
 
-- #ally or #s+ to tag a commander as an ally.
-- #enemy or #s! to tag a commander as an enemy.
-- -#ally or -#s+ to remove an ally tag off a commander.
-- -#enemy or -#s! to remove an enemy tag off a commander.
+- `#ally` or `#s+` to tag a commander as an ally.
+- `#enemy` or `#s!` to tag a commander as an enemy.
+- `-#ally` or `-#s+` to remove an ally tag off a commander.
+- `-#enemy` or `-#s!` to remove an enemy tag off a commander.
 # Bounty Hunting Features
 Send the following command via the in-game chat to get intel about outlaws:
 
-- !outlaws to display a list of most recently sighted outlaws and their locations.
-- !where *cmdrname* to display the last sighting of *cmdrname* provided that EDR considers them as outlaws.
+- `!outlaws` to display a list of most recently sighted outlaws and their locations.
+- <tt>!where *cmdrname*</tt> to display the last sighting of *cmdrname* provided that EDR considers them as outlaws.
 ## Real-time alerts
 Send the following command via the in-game chat to control the real-time alerts about outlaws:
 
-- ?outlaws on to enable the real-time alerts about outlaws.
-- ?outlaws off to disable the real-time alerts about outlaws.
-- ?outlaws cr 10000 to set a minimum bounty of 10k credits.
-- ?outlaws ly 120 to set a maximum distance of 120 light years from your location.
-- ?outlaws cr - to remove the minimum bounty condition.
-- ?outlaws ly - to remove the maximum distance condition.
+- `?outlaws on` to enable the real-time alerts about outlaws.
+- `?outlaws off` to disable the real-time alerts about outlaws.
+- `?outlaws cr 10000` to set a minimum bounty of 10k credits.
+- `?outlaws ly 120` to set a maximum distance of 120 light years from your location.
+- `?outlaws cr -` to remove the minimum bounty condition.
+- `?outlaws ly -` to remove the maximum distance condition.
 ## Bounty Hunting Stats & Graphs
 TODO
 # Powerplay features
 ## Powerplay hunting
 If you have been pledged long enough to a power, you can use the following commands to get intel about powerplay enemies:
 
-- !enemies to display a list of most recently sighted enemies and their locations.
-- !where cmdrname to display the last sighting of cmdrname provided that EDR considers them as powerplay enemy.
+- `!enemies` to display a list of most recently sighted enemies and their locations.
+- `!where cmdrname` to display the last sighting of cmdrname provided that EDR considers them as powerplay enemy.
 # Mining features
 EDR shows various stats and info to help you mine more efficiently (see [this video](https://www.youtube.com/watch?v=1bp_Q3JgW3o) for details):
+
+<img alt="placeholder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_18.png?raw=true">
 
 In addition, EDR will remind you to restock on limpets before leaving the station.
 # Exobiology features
 ## Biome insights
 ### System wide info
-EDR will indicate if a system has planets with the right conditions for Exobiology. The info will show up when jumping into a system, after a discovery honk, or by sending the !biology command without any parameters. Note that the info is a best guess, double check the system map for the presence of biology signals, and consider scanning the system and/or perform a planetary scan for good measure.
+EDR will indicate if a system has planets with the right conditions for Exobiology. The info will show up when jumping into a system, after a discovery honk, or by sending the `!biology` command without any parameters. Note that the info is a best guess, double check the system map for the presence of biology signals, and consider scanning the system and/or perform a planetary scan for good measure.
 ### Planet specific info
 EDR can estimate which biological species one might find on a planet depending on its atmospheric conditions and type. The info is shown in the following scenarios:
 
-- When targeting a planet (see the “Expected bio” and “Progress” lines), or by sending the !biology command for a given planet (e.g. !biology A 1): 
+- When targeting a planet (see the “Expected bio” and “Progress” lines), or by sending the !biology command for a given planet (e.g. `!biology A 1`): 
+
+  <img alt="placeholder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_19.png?raw=true">
 
 - After mapping the whole planet, EDR will update the “Expected bio” info to reflect the actual genuses that you can find on the planet. Note: the species are still EDR’s best guesses.
+
+  <img alt="placeholder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_20.png?raw=true">
 
 ## Navigation and progress tracking
 To improve your efficiency with Exobiology activities, EDR provides the following features:
 
 - Key info for the currently tracked species:
 
-From top to bottom:
+  <img alt="placeholder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_21.png?raw=true">
 
-- Name of the species.
-- Credit value of the species.
-- Minimum distance required for gene diversity.
-- Distance and heading angle from previous samples (if the circle is filled, it means that there is enough distance from a given sample).
+  From top to bottom:
+
+  - Name of the species.
+  - Credit value of the species.
+  - Minimum distance required for gene diversity.
+  - Distance and heading angle from previous samples (if the circle is filled, it means that there is enough distance from a given sample).
 
 - After successfully sampling a species (3 samples), EDR will show your progress so far:
 
-- Number of genus analyzed vs. total number of known genuses.
-- Name of the genuses analyzed.
-- Number of species analyzed.
+  <img alt="placeholder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_22.png?raw=true">
+
+  - Number of genus analyzed vs. total number of known genuses.
+  - Name of the genuses analyzed.
+  - Number of species analyzed.
 - If you encounter other species along the way, you can record their positions for later. This can be done either via the composition scanner (ship, srv), or by using the “pointing” gesture while on foot. 
-  - These custom POIs can be cycled through/recalled by sending !nav next or !nav previous commands. 
-  - You can also clear the current POI by sending the !nav clear command, and clear all the custom POIs by sending the !nav reset command.
+  - These custom POIs can be cycled through/recalled by sending `!nav next` or `!nav previous` commands. 
+  - You can also clear the current POI by sending the `!nav clear` command, and clear all the custom POIs by sending the !nav reset command.
   - Note: these custom POIs are ephemeral (e.g. wiped out when EDMC is closed).
 
-- At the top: heading angle to aim for to be on track.
-- Name of the waypoint, time at which the waypoint was recorded.
-- Distance.
-- Latitude and longitude
-- Heading angle at the time the waypoint was recorded.
+    <img alt="placeholder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_23.png?raw=true">
+
+  - At the top: heading angle to aim for to be on track.
+  - Name of the waypoint, time at which the waypoint was recorded.
+  - Distance.
+  - Latitude and longitude
+  - Heading angle at the time the waypoint was recorded.
 ## Searching for an auspicious planet for Exobiology
-Send !search genus to find a nearby planet with known conditions for a given genus (eg !search stratum). You can also use the full species name (eg !search stratum tectonicas), or certain types of planets (eg !search water !search ammonia or !search biology). Tip: send !search with the first letters of a species, genus (or engineering resource).
+Send `!search genus` to find a nearby planet with known conditions for a given genus (eg `!search stratum`). You can also use the full species name (eg `!search stratum tectonicas`), or certain types of planets (eg `!search water`, `!search ammonia` or `!search biology`). Tip: send `!search` with the first letters of a species, genus (or engineering resource).
 # Route HUD
 EDR will show an overview of a route plotted on the galaxy map as long as it’s not trivial (less than 3 jumps) or too complex (more than 50 jumps). This “Route HUD” will also be shown when jumping to the next waypoint of the route.
 
@@ -562,6 +582,8 @@ The HUD provides the following information:
 - Non generic names of systems along the way (e.g. system with a bunch of numbers are only shown if they are among the current, next or last system in the route).
 - A visual symbol representing whether a system’s primary star is scoopable (circle), or not (cross). Note: the color of the symbol represents the type of the primary star (note that the current waypoint is always in blue).
 
+    <img alt="placeholder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_24.png?raw=true">
+
 - Unique or dangerous stars are noted by a descriptive prefix after the name of the system (e.g. Neutron, White Dwarf, Black Hole, etc).
 - Stats about the route and your progress.
   - On the starting system, you will find the following information:
@@ -569,19 +591,25 @@ The HUD provides the following information:
     - Distance from the start.
     - Elapsed time.
 
-- On the next system, you will find the following information:
-  - an average of the duration between each jump (e.g. 18 sec/j = 18 seconds per jump).
-  - an estimation of your jump speed (e.g. 1780 LY/HR = 1780 light years per hour).
+        <img alt="placeholder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_25.png?raw=true">
 
+  - On the next system, you will find the following information:
+    - an average of the duration between each jump (e.g. 18 sec/j = 18 seconds per jump).
+    - an estimation of your jump speed (e.g. 1780 LY/HR = 1780 light years per hour).
 
+       <img alt="placeholder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_26.png?raw=true">
 
-- On the destination system, you will find the following information:
-  - How many remaining jumps to reach the destination.
-  - Remaining distance to the destination.
-  - Estimated remaining time to reach the destination
+  - On the destination system, you will find the following information:
+    - How many remaining jumps to reach the destination.
+    - Remaining distance to the destination.
+    - Estimated remaining time to reach the destination
+
+        <img alt="placeholder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_27.png?raw=true">
 
 # Spansh companion
 EDR integrates a set of features to make the most of [Spansh](https://spansh.co.uk/), which is a website offering various routing tools, and help you understand how much progress you’ve been making as shown below:
+
+<img alt="placeholder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_28.png?raw=true">
 
 - Start and destination systems.
 - Current waypoint and total number of waypoints.
@@ -591,37 +619,37 @@ EDR integrates a set of features to make the most of [Spansh](https://spansh.co.
 
 Key features:
 
-- Send !journey new to start creating a Spansh route with pre-filled information (e.g. your jump range, your current location). Note that you can also specify a destination (e.g. !journey new colonia).
-- Sending !journey fetch will attempt to download a Spansh route from its address/URL. **Note that the address/URL needs to be copied into the clipboard first!**).
+- Send `!journey new` to start creating a Spansh route with pre-filled information (e.g. your jump range, your current location). Note that you can also specify a destination (e.g. `!journey new colonia`).
+- Sending `!journey fetch` will attempt to download a Spansh route from its address/URL. (**Note that the address/URL needs to be copied into the clipboard first!**).
 - EDR will automatically advance the route as you make your way to the current waypoint and will place the next waypoint in the clipboard for your convenience (i.e. making it easy to plot the route to the next waypoint).
-- For more advanced Spansh routes (e.g. road to riches, exomastery), EDR also provides information about which bodies to check at each waypoint. Send !journey bodies to get the detailed list. 
+- For more advanced Spansh routes (e.g. road to riches, exomastery), EDR also provides information about which bodies to check at each waypoint. Send `!journey bodies` to get the detailed list. 
   - EDR will automatically mark a body as done (e.g. mapped for road to riches, fully surveyed or upon leaving for exomastery).
-  - You can also manually mark a list of bodies as done by sending the !journey check command (e.g. !journey check 1 A, or !journey check 1 A, 1 B, 2 D)
+  - You can also manually mark a list of bodies as done by sending the !journey check command (e.g. `!journey check 1 A`, or `!journey check 1 A, 1 B, 2 D`)
 - Send !journey next or !journey previous to manually adjust the current waypoint.
 - If you quit the game midway through a journey, EDR will resume the journey where you left it at the next session.
 
 Other commands:
 
-- !journey overview to display key information about the journey.
-- !journey waypoint to display key information about the current waypoint.
-- !journey load to manually load a journey from a csv file (journey.csv by default if no parameter is provided).
-- !journey clear to tell EDR to no longer follow the journey if any
-- Sending !journey without any parameter will attempt to do the right thing each time it’s called:
+- `!journey overview` to display key information about the journey.
+- `!journey waypoint` to display key information about the current waypoint.
+- `!journey load` to manually load a journey from a csv file (journey.csv by default if no parameter is provided).
+- `!journey clear` to tell EDR to no longer follow the journey if any
+- Sending `!journey` without any parameter will attempt to do the right thing each time it’s called:
   - If there is no journey: fetch a Spansh journey from the clipboard if any, or load a local journey if any, or start a new Spansh journey otherwise.
   - If there is a journey, show an overview.
 # Odyssey settlements
 You can use the !search command to find specific odyssey settlements. Here are some examples:
 
-- !search anarchy will find the nearest anarchy settlement around your current position.
-- !search anarchy @ Lave will find the nearest anarchy settlement around Lave.
-- All known types of government are supported (e.g. !search democracy)
+- `!search anarchy` will find the nearest anarchy settlement around your current position.
+- `!search anarchy @ Lave will` find the nearest anarchy settlement around Lave.
+- All known types of government are supported (e.g. `!search democracy`)
 - Other supported conditions:
-  - BGS states (e.g. !search bust)
-  - Allegiances (e.g. !search imperial)
-  - Economies (e.g. !search tourism)
-- Multiple conditions can be combined to restrict the search (e.g. !search anarchy, military)
-- Finally, conditions can also be excluded. For instance, !search anarchy, -military will find the nearest non-military anarchy settlement. Note: by default, EDR excludes war and civil war states but you can revert this by adding these conditions to your command (e.g. !search war, civil war will find the nearest settlement whose state is believed to be either war or civil war).
-- Two handy shortcuts are also provided: !search cz to find the nearest settlement that’s likely a combat zone, and !search restore to find the nearest settlement that’s likely abandoned.
+  - BGS states (e.g. `!search bust`)
+  - Allegiances (e.g. `!search imperial`)
+  - Economies (e.g. `!search tourism`)
+- Multiple conditions can be combined to restrict the search (e.g. `!search anarchy, military`)
+- Finally, conditions can also be excluded. For instance, `!search anarchy, -military` will find the nearest non-military anarchy settlement. Note: by default, EDR excludes war and civil war states but you can revert this by adding these conditions to your command (e.g. `!search war, civil war` will find the nearest settlement whose state is believed to be either war or civil war).
+- Two handy shortcuts are also provided: `!search cz` to find the nearest settlement that’s likely a combat zone, and `!search restore` to find the nearest settlement that’s likely abandoned.
 
 **Important**: due to the dynamic nature of Elite Dangerous’ BGS, it’s not 100% guaranteed that the search feature always returns perfect results. Use the info shown by EDR when approaching the settlement to confirm that the actual conditions match what you were expecting.
 # Discord Integration
@@ -651,26 +679,26 @@ The discord integration offer the following features:
 - Ability to configure if and how messages are forwarded for each channel and for specific commanders. See customization options below.
 - Ability to forward direct messages sent while you are AFK to a discord server and channel of your choice.
 #### *Outgoing messages*
-- Ability to send specific messages to a discord server and channel of your choice via the !discord in-game chat command (e.g. !discord about to cash in a wing mission, anyone interested in some free credits?)
+- Ability to send specific messages to a discord server and channel of your choice via the `!discord` in-game chat command (e.g. `!discord about to cash in a wing mission, anyone interested in some free credits?`)
 - Ability to forward messages sent over any of the in-game channels (e.g. local, system, wing, squadron, squadron leaders, crew) to a discord server and channel of your choice (configurable per channel).
 
 Customization options
 
 You can define a set of baseline conditions for forwarding by EDR. These conditions can be altered for specific channels, and specific commanders.
 
-- blocked: boolean. If set to true, blocks forwarding.
-- matching: list of regular expressions. Use this to limit forwarding to messages that match at least one of those regular expressions.
-- mismatching: list of regular expressions. Use this to limit forwarding to messages that match none of those regular expressions.
-- min\_karma: number between -1000 and 1000. Use this to limit forwarding to messages whose author's EDR karma is more than the value set.
-- max\_karma: number between -1000 and 1000. Use this to limit forwarding to messages whose author's EDR karma is less than the value set.
-- name: to replace the cmdr name with something of your choice.
-- color: to replace the color of the embed showing extra info (RGB in decimal such as 8421246; default: red to green depending on the cmdr's EDR karma).
-- url: to replace the link of the embed (default: Inara profile if any).
-- icon\_url: to replace the icon in the embed (default: Inara profile picture if any, or an automatically generated unique icon; expects a URL for an image).
-- image: use this to force an image in the embed (default: no image; expects a URL for an image).
-- thumbnail: use this to force a thumbnail in the embed (default: no thumbnail; expects a URL for an image).
-- tts: discord's text-to-speech feature (set to true if you want discord to read this commander's message aloud; need to be on the right discord channel to hear it).
-- spoiler: set to true if you want to hide this commander's messages behind a spoiler tag (requires a click to reveal the content).
+- `blocked`: boolean. If set to true, blocks forwarding.
+- `matching`: list of regular expressions. Use this to limit forwarding to messages that match at least one of those regular expressions.
+- `mismatching`: list of regular expressions. Use this to limit forwarding to messages that match none of those regular expressions.
+- `min_karma`: number between -1000 and 1000. Use this to limit forwarding to messages whose author's EDR karma is more than the value set.
+- `max_karma`: number between -1000 and 1000. Use this to limit forwarding to messages whose author's EDR karma is less than the value set.
+- `name`: to replace the cmdr name with something of your choice.
+- `color`: to replace the color of the embed showing extra info (RGB in decimal such as 8421246; default: red to green depending on the cmdr's EDR karma).
+- `url`: to replace the link of the embed (default: Inara profile if any).
+- `icon_url`: to replace the icon in the embed (default: Inara profile picture if any, or an automatically generated unique icon; expects a URL for an image).
+- `image`: use this to force an image in the embed (default: no image; expects a URL for an image).
+- `thumbnail`: use this to force a thumbnail in the embed (default: no thumbnail; expects a URL for an image).
+- `tts`: discord's text-to-speech feature (set to true if you want discord to read this commander's message aloud; need to be on the right discord channel to hear it).
+- `spoiler`: set to true if you want to hide this commander's messages behind a spoiler tag (requires a click to reveal the content).
 
 Example of a [good configuration file](https://imgur.com/a/2fflOo0). Explanation:
 
@@ -680,22 +708,26 @@ Example of a [good configuration file](https://imgur.com/a/2fflOo0). Explanation
 - a commander named Chatty Plantain with a renaming rule to force “[NPC] Chatty Plantain” as the cmdr's name, as well as hiding the messages behind a spoiler tag.
 - per channel overrides (e.g. player, wing, squadron, squad leaders, crew) which removes the mismatching and karma restrictions.
 
-See the user\_discord\_players.txt file in the config folder for further instructions (your custom file should be named user\_discord\_players.json and should not contain any comments, i.e. no line starting with ;).
+See the `user_discord_players.txt` file in the config folder for further instructions (your custom file should be named `user_discord_players.json` and should not contain any comments, i.e. no line starting with `;`).
 ## Sending your Fleet Carrier’s Flight plan to discord.
 You can either send your Flight Plans to EDR's fc-jumps or to a discord channel of your choosing. For the former, select Public in EDR's options (section: Broadcasts). For the latter, you have 2 options:
 
-- (Preferable) Select Direct in EDR's options to have your flight plan go directly to Discord. Check the rest of the instructions in the user\_config\_sample.ini file found in the config folder of EDR.
+- (Preferable) Select Direct in EDR's options to have your flight plan go directly to Discord. Check the rest of the instructions in the `user_config_sample.ini` file found in the config folder of EDR.
 - Select Private in EDR's options to have your flight plan go to EDR first, and then to discord. This can be useful in case the server owners don't want to directly share the webhook URL to prevent abuse (i.e. abusers can be kicked out of the forwarding logic on the EDR server). Open [this form](https://forms.gle/7pntJRpDgRBcbcfp8) and follow the steps below:
 1. [Create a webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks#:~:text=making%20a%20webhook) for the channel in which you want to see the flight plans.
 1. Copy the address of this webhook and submit it via [the form](https://forms.gle/7pntJRpDgRBcbcfp8).
 1. Wait for a few days / a week. Ping *lekeno* if nothing happens after a week or so.
 ## Sending your Fleet Carrier’s buy/sell orders for commodities and odyssey materials
-You can send your buy/sale orders for commodities and odyssey materials to a discord channel of your choice. Check the rest of the instructions in the user\_config\_sample.ini file found in the config folder of EDR.
+You can send your buy/sale orders for commodities and odyssey materials to a discord channel of your choice. Check the rest of the instructions in the `user_config_sample.ini` file found in the config folder of EDR.
+
+<img alt="placeholder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_29.png?raw=true">
 
 EDR will also place a copy-pastable summary of recent sale/purchase orders at your fleet carrier after you've made changes to your market and/or bar.
 # Overlay
 ## Multi-monitors & VR setups
 If you have a multi-monitors setup, or a VR headset, you may want to set the overlay to standalone (File menu, Settings, EDR tab, Overlay dropdown). The overlay will appear as a separate window with a few controls:
+
+<img alt="placeholder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_30.png?raw=true">
 
 - **Top left corner**: drag and drop to move the overlay, double click to maximize / restore.
 - **Bottom left corner**: hover to make the overlay transparent.
@@ -705,18 +737,20 @@ If you have a multi-monitors setup, or a VR headset, you may want to set the ove
 - **Red square in the bottom middle**: hover to have the overlay be a regular window (not always on top).
 ### VR placement with SteamVR
 1. Launch EDMC
-1. Configure EDR settings (EDMC File menu, Settings, EDR tab) with the overlay set to "Standalone"
-1. Launch the game in VR
-1. Launch a game session
-1. The overlay should start automatically, adjust its size and position as needed (outside of VR)
-1. Launch SteamVR's dash menu, select "Desktops", and then select the right desktop if multiple exists
-1. Click on the +, select EDMCOverlay V1.1.0.0
-1. Adjust the position and size in VR
-1. Close SteamVR's dash
+2. Configure EDR settings (EDMC File menu, Settings, EDR tab) with the overlay set to "Standalone"
+3. Launch the game in VR
+4. Launch a game session
+5. The overlay should start automatically, adjust its size and position as needed (outside of VR)
+6. Launch SteamVR's dash menu, select "Desktops", and then select the right desktop if multiple exists
+7. Click on the +, select `EDMCOverlay V1.1.0.0`
+8. Adjust the position and size in VR
+9. Close SteamVR's dash
+
+    <img alt="placeholder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_31.png?raw=true">
 
 Also see [these SteamVR patch notes](https://steamcommunity.com/games/250820/announcements/detail/2969548216412141657) for more details.
 ## Custom overlay
-To customize the overlay, make a copy of the igm\_config.v7.ini and igm\_config\_spacelegs.v7.ini, found in the config folder, and rename them to user\_igm\_config.v7.ini and user\_igm\_config\_spacelegs.v7.ini (note if there are higher versions than v7, then use these version numbers instead).
+To customize the overlay, make a copy of the `igm_config.v7.ini` and `igm_config_spacelegs.v7.ini`, found in the config folder, and rename them to `user_igm_config.v7.ini` and `user_igm_config_spacelegs.v7.ini` (note if there are higher versions than v7, then use these version numbers instead).
 
 The first file is for configuring the overlay when in a ship or srv, while the second file is for configuring the overlay when on foot.
 
@@ -724,16 +758,16 @@ Follow the instructions in each file to tweak the colors, and positions of vario
 # Crimes reporting
 If you don’t want to report interactions or fights (e.g. agreed upon PvP), you may want to disable crimes reporting. Note that EDR will continue to report sightings and scans.
 
-- To disable crimes reporting, send !crimes off, or uncheck the “Crimes reporting” option in EDR’s settings panel.
-- To enable crimes reporting, send !crimes on, or check the “Crimes reporting” option in EDR’s settings panel.
-- You can confirm the current configuration by sending !crimes. 
+- To disable crimes reporting, send `!crimes off`, or uncheck the “Crimes reporting” option in EDR’s settings panel.
+- To enable crimes reporting, send `!crimes on`, or check the “Crimes reporting” option in EDR’s settings panel.
+- You can confirm the current configuration by sending `!crimes`. 
 # Sounds Effects
 ## Commands and options
-Sound effects can be disabled or enabled from the EDR options in EDMC (File menu, Settings, EDR tab, Feedback section, Sound checkbox)
+Sound effects can be disabled or enabled from the EDR options in EDMC (`File` menu, `Settings`, EDR tab, `Feedback` section, `Sound` checkbox)
 ## Customization
-To customize the sound effects, make a copy of the sfx\_config.v1.ini file, found in the config folder, and rename it user\_sfx\_config.v1.ini
+To customize the sound effects, make a copy of the `sfx_config.v1.ini` file, found in the config folder, and rename it `user_sfx_config.v1.ini`
 
-There are 2 sections, one called [SFX] and another one called [SFX\_SOFT]. The first one is for sounds when EDR's sound effects are set to loud (via !audiocue loud), the second one is for when EDR is set to soft (via !audiocue soft)
+There are 2 sections, one called `[SFX]` and another one called `[SFX_SOFT]`. The first one is for sounds when EDR's sound effects are set to loud (via `!audiocue loud`), the second one is for when EDR is set to soft (via !audiocue soft)
 
 - Each line represents a particular kind of EDR event.
 - To mute an event, leave the value blank.
@@ -742,21 +776,21 @@ Place your custom sounds (wav format only) into the custom sub folder of the sou
 
 Then edit the line for the related event to specify your custom sound, including the custom/ prefix.
 #### *Type of events*
-- startup: when EDR starts at the beginning of a session
-- intel: when EDR shows the profile of a neutral/lawful player
-- warning: when EDR shows the profile of an outlaw player
-- sitrep: when EDR shows a summary of activity for a system (or all systems)
-- notify: when EDR shows some info in response to other commands (e.g. !eval, etc)
-- help: when EDR shows the help interface via !help
-- navigation: when EDR shows/update the navigation UX
-- docking: when EDR shows docking guidance
-- mining: when EDR shows mining guidance
-- bounty-hunting: when EDR shows bounty hunting guidance
-- target: when EDR shows information about a target (i.e. shield/hull, sub-module hit points)
-- searching: when EDR starts a search for a service or a rare material
-- failed: when EDR encounters an error
-- jammed: when the EDR servers are too busy to handle your requests
-- biology: when EDR shows navigation information for Exobiology activities
+- `startup`: when EDR starts at the beginning of a session
+- `intel`: when EDR shows the profile of a neutral/lawful player
+- `warning`: when EDR shows the profile of an outlaw player
+- `sitrep`: when EDR shows a summary of activity for a system (or all systems)
+- `notify`: when EDR shows some info in response to other commands (e.g. !eval, etc)
+- `help`: when EDR shows the help interface via !help
+- `navigation`: when EDR shows/update the navigation UX
+- `docking`: when EDR shows docking guidance
+- `mining`: when EDR shows mining guidance
+- `bounty-hunting`: when EDR shows bounty hunting guidance
+- `target`: when EDR shows information about a target (i.e. shield/hull, sub-module hit points)
+- `searching`: when EDR starts a search for a service or a rare material
+- `failed`: when EDR encounters an error
+- `jammed`: when the EDR servers are too busy to handle your requests
+- `biology`: when EDR shows navigation information for Exobiology activities
 
 
 # Appendix
@@ -768,11 +802,13 @@ Make sure that you haven’t disabled the overlay by mistake.
 Steps:
 
 1. Launch EDMC.
-1. Click File, then Settings.
-1. Click on the EDR tab.
-1. Check the overlay box.
+2. Click File, then Settings.
+3. Click on the EDR tab.
+4. Check the overlay box.
 
-1. In Elite, go back to the main menu and start a new game.
+    <img alt="placeholder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_32.png?raw=true">
+
+5. In Elite, go back to the main menu and start a new game.
 
 Still nothing? Check the next section.
 #### *Allow the overlay to run*
@@ -783,36 +819,50 @@ Recommendation: scan the executable, and allow it to run after confirming that i
 Steps:
 
 1. Launch EDMC.
-1. Click File, then Settings.
-1. Click on the Plugins tab, then click on Open.
-1. Go inside the EDR sub-folder, and then inside the EDMCOverlay folder.
-1. Right click on the edmcoverlay.exe file, select your antivirus scan option.
+2. Click File, then Settings.
+3. Click on the Plugins tab, then click on Open.
+4. Go inside the `EDR` sub-folder, and then inside the `EDMCOverlay` folder.
+5. Right click on the `edmcoverlay.exe` file, select your antivirus scan option.
 
-1. If your antivirus doesn’t complain, double click on the edmcoverlay.exe file and allow it to run if your antivirus prompts you for a confirmation.
+    <img alt="placeholder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_33.png?raw=true">
+
+6. If your antivirus doesn’t complain, double click on the edmcoverlay.exe file and allow it to run if your antivirus prompts you for a confirmation.
 ## Frame rate has dropped significantly
 Before trying any of the options below, make sure that your graphics drivers are up-to-date then confirm that the issue still exists.
 ### Option 1: turn off Vsync
 1. Go to Elite’s in-game Options:
 
-1. Select the Graphics options:
+    <img alt="placeholder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_34.png?raw=true">
 
-1. Find Vertical Vsync, under the Display section, and turn it OFF:
+2. Select the Graphics options:
 
-1. Retest EDR
+    <img alt="placeholder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_35.png?raw=true">
+
+3. Find Vertical Vsync, under the Display section, and turn it OFF:
+
+    <img alt="placeholder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_36.png?raw=true">
+
+4. Retest EDR
 ### Option 2: try borderless / windowed / fullscreen
 1. Go to Elite’s in-game Options
-1. Select the Graphics options
-1. Under the Display section, try the different modes, e.g. Borderless / Windowed / Fullscreen, and see if there is one that works better.
+2. Select the Graphics options
+3. Under the Display section, try the different modes, e.g. Borderless / Windowed / Fullscreen, and see if there is one that works better.
 ### Option 3: try EDR’s alternative UI
 1. On the right edge of the EDR status, tick the checkbox to reveal EDR’s alternative UI:
 
-1. Info that would have been displayed via the overlay will be displayed in this area
-1. Go to EDMC’s settings from the File menu, then the EDR tab
-1. Disable the overlay
-1. Optional: if you want to superimpose EDMC 
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_37.png?raw=true">
+      <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_37.png?raw=true">
+      <img alt="Screenshot of the release page of EDR 2.7.7" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_37.png?raw=true">
+    </picture>
+
+2. Info that would have been displayed via the overlay will be displayed in this area
+3. Go to EDMC’s settings from the File menu, then the EDR tab
+4. Disable the overlay
+5. Optional: if you want to superimpose EDMC 
    1. Go to the Appearance tab, select Always on top.
-   1. Enable the transparent theme if you want
-   1. Go to Elite’s graphics options and select borderless or windowed.
+   2. Enable the transparent theme if you want
+   3. Go to Elite’s graphics options and select borderless or windowed.
 ## Other issues, not resolved?
 Feel free to join [EDR central](https://edrecon.com/discord), the community server for EDR with access to the bot, real-time alerts and troubleshooting support. You might also want to share your EDMC log file with LeKeno#8484 over Discord, see below for instructions.
 
@@ -820,11 +870,15 @@ Steps:
 
 1. Simultaneously hit your Windows key and the R key.
 
-1. Type %tmp% (or %temp%) and hit the Enter key.
-1. Find the file named EDMarketConnector.log
+    <img alt="placeholder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_38.png?raw=true">
 
-1. Review and edit its content with notepad (double clicking should open it with notepad) if needed.
-1. Share it with LeKeno#8484 over discord.
+2. Type `%tmp%` (or `%temp%`) and hit the Enter key.
+3. Find the file named `EDMarketConnector.log`
+
+    <img alt="placeholder" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/IMG_39.png?raw=true">
+
+4. Review and edit its content with notepad (double clicking should open it with notepad) if needed.
+5. Share it with LeKeno over discord.
 ## Privacy Considerations
 If you are curious about how EDR works and what it does, you can check the [source code](https://github.com/lekeno/edr/), and since it’s written in Python you can also scrutinize the running code and confirm that it’s identical to the source code published on GitHub. Frontier also [reviewed and praised EDR](https://forums.frontier.co.uk/threads/flying-in-open-last-night-edr-saved-my-life-it-could-save-yours-too.388696/page-15#post-6118053), confirming that its use of the player journal API is within their rules and terms of services.
 
