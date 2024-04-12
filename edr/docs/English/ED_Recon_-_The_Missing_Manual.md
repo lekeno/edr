@@ -31,74 +31,80 @@
   - [Sitreps](#sitreps)
   - [Distance](#distance)
   - [Known signals](#known-signals)
-  - [Information about your destination](#_toc162390256)
-  - [Current system](#_toc162390257)
-- [Planet Features](#_toc162390258)
-  - [Point of Interest](#_toc162390259)
-  - [Navigation](#_toc162390260)
-  - [Noteworthy Materials](#_toc162390261)
-- [Finding Services](#_toc162390262)
-- [Materials Features](#_toc162390263)
-  - [BGS state dependent materials](#_toc162390264)
-  - [Searching for specific materials](#_toc162390265)
-  - [Raw materials](#_toc162390266)
-    - [Profiles](#_toc162390267)
-  - [Odyssey materials](#_toc162390268)
-    - [Assessment](#_toc162390269)
-    - [Fleet Carrier Bars](#_toc162390270)
-- [Ship Features](#_toc162390271)
-  - [Where did I park my ship?](#_toc162390272)
-  - [Power Priorities](#_toc162390273)
-  - [Finding a parking slot for your Fleet Carrier](#_toc162390274)
-  - [Landing](#_toc162390275)
-- [Squadron Features](#_toc162390276)
-  - [Squadron enemies and allies](#_toc162390277)
-    - [Tags](#_toc162390278)
-- [Bounty Hunting Features](#_toc162390279)
-  - [Real-time alerts](#_toc162390280)
-  - [Bounty Hunting Stats & Graphs](#_toc162390281)
-- [Powerplay features](#_toc162390282)
-  - [Powerplay hunting](#_toc162390283)
-- [Mining features](#_toc162390284)
-- [Exobiology features](#_toc162390285)
-  - [Biome insights](#_toc162390286)
-    - [System wide info](#_toc162390287)
-    - [Planet specific info](#_toc162390288)
-  - [Navigation and progress tracking](#_toc162390289)
-  - [Searching for an auspicious planet for Exobiology](#_toc162390290)
-- [Route HUD](#_toc162390291)
-- [Spansh companion](#_toc162390292)
-- [Odyssey settlements](#_toc162390293)
-- [Discord Integration](#_toc162390294)
-  - [Forwarding in-game chat messages](#_toc162390295)
-    - [Pre-requisites](#_toc162390296)
-    - [Configuring the Discord channels (webhooks)](#_toc162390297)
-    - [Features](#_toc162390298)
-  - [Sending your Fleet Carrier’s Flight plan to Discord](#_toc162390299)
-  - [Sending your Fleet Carrier’s buy/sell orders for commodities and odyssey materials](#_toc162390300)
-- [Overlay](#_toc162390301)
-  - [Multi-monitors & VR setups](#_toc162390302)
-    - [VR placement with SteamVR](#_toc162390303)
-  - [Custom overlay](#_toc162390304)
-- [Crimes reporting](#_toc162390305)
-- [Sounds Effects](#_toc162390306)
-  - [Commands and options](#_toc162390307)
-  - [Customization](#_toc162390308)
-- [Appendix](#_toc162390309)
-  - [Troubleshooting](#_toc162390310)
-    - [Nothing is displayed / Overlay does not work](#_toc162390311)
-  - [Frame rate has dropped significantly](#_toc162390312)
-    - [Option 1: turn off Vsync](#_toc162390313)
-    - [Option 2: try borderless / windowed / fullscreen](#_toc162390314)
-    - [Option 3: try EDR’s alternative UI](#_toc162390315)
-  - [Other issues, not resolved?](#_toc162390316)
-  - [Privacy Considerations](#_toc162390317)
+  - [Information about your destination](#informatio-about-your-destination)
+  - [Current system](#current-system)
+- [Planet Features](#planet-features)
+  - [Point of Interest](#point-of-interest)
+  - [Navigation](#navigation)
+  - [Noteworthy Materials](#noteworthy-materials)
+- [Finding Services](#finding-services)
+- [Materials Features](#materials-features)
+  - [BGS state dependent materials](#bgs-state-dependent-materials)
+  - [Searching for specific materials](#searching-for-specific-materials)
+  - [Raw materials](#raw-materials)
+    - [Profiles](#profiles)
+      - [*Custom material profiles*](#custom-material-profiles)
+  - [Odyssey materials](#odyssey-materials)
+    - [Assessment](#assessment)
+    - [Fleet Carrier Bars](#fleet-carrier-bars)
+- [Ship Features](#ship-features)
+  - [Where did I park my ship?](#where-did-i-park-my-ship)
+  - [Power Priorities](#power-priorities)
+  - [Finding a parking slot for your Fleet Carrier](#finding-a-parking-slot-for-your-fleet-carrier)
+  - [Landing](#landing)
+- [Squadron Features](#squadron-features)
+  - [Squadron enemies and allies](#squadron-enemies-and-allies)
+    - [Tags](#tags)
+- [Bounty Hunting Features](#bounty-hunting-features)
+  - [Real-time alerts](#real-timealerts)
+  - [Bounty Hunting Stats & Graphs](#bounty-hunting-stats--graphs)
+- [Powerplay features](#powerplay-features)
+  - [Powerplay hunting](#powerplay-hunting)
+- [Mining features](#mining-features)
+- [Exobiology features](#exobiology-features)
+  - [Biome insights](#biome-insights)
+    - [System wide info](#system-wide-info)
+    - [Planet specific info](#planet-specific-info)
+  - [Navigation and progress tracking](#navigation-and-progress-tracking)
+  - [Searching for an auspicious planet for Exobiology](#searching-for-an-auspicious-planet-for-exobiology)
+- [Route HUD](#route-hud)
+- [Spansh companion](#spansh-companion)
+- [Odyssey settlements](#odyssey-settlements)
+- [Discord Integration](#discord-integration)
+  - [Forwarding in-game chat messages](#forwarding-in-game-chat-messages)
+    - [Pre-requisites](#pre-requisites)
+    - [Configuring the Discord channels (webhooks)](#configuring-the-discord-channels-webhooks)
+    - [Features](#features)
+      - [*Incoming messages*](#incoming-messages)
+      - [*Outgoing messages*](#outgoing-messages)
+  - [Sending your Fleet Carrier’s Flight plan to Discord](#sending-your-fleet-carriers-buysell-orders-for-commodities-and-odyssey-materials)
+  - [Sending your Fleet Carrier’s buy/sell orders for commodities and odyssey materials](#sending-your-fleet-carriers-buysell-orders-for-commodities-and-odyssey-materials)
+- [Overlay](#overlay)
+  - [Multi-monitors & VR setups](#multi-monitors—vr-setups)
+    - [VR placement with SteamVR](#vr-placement-with-steamvr)
+  - [Custom overlay](#custom-overlay)
+- [Crimes reporting](#crimes-reporting)
+- [Sounds Effects](#sounds-effects)
+  - [Commands and options](#commands-and-options)
+  - [Customization](#customization)
+    - [*Type of events*](#type-of-events)
+- [Appendix](#appendix)
+  - [Troubleshooting](#troubleshooting)
+    - [Nothing is displayed / Overlay does not work](#nothing-is-displayed--overlay-does-not-work)
+      - [*Check your settings*](#check-your-settings)
+      - [*Allow the overlay to run*](#allow-the-overlay-to-run)
+  - [Frame rate has dropped significantly](#frame-rate-has-dropped-significantly)
+    - [Option 1: turn off Vsync](#option-1-turn-off-vsync)
+    - [Option 2: try borderless / windowed / fullscreen](#option-2-try-borderless--windowed--fullscreen)
+    - [Option 3: try EDR’s alternative UI](#option-3-try-edrs-alternative-ui)
+  - [Other issues, not resolved?](#other-issues-not-resolved)
+  - [Privacy Considerations](#privacy-considerations)
 
 <br><br><br>
 
 # Install
 If you get stuck or have any questions, feel free to join [EDR central](https://discord.gg/meZFZPj), the community server for EDR with access to the bot, real-time alerts and troubleshooting support.
-##  Pre-requisites
+## Pre-requisites
 - Windows
 - Elite: Dangerous
 - Elite Dangerous Market Connector (see section A)
@@ -161,7 +167,7 @@ Steps:
 10. You should see an intro message (e.g. `EDR V2.7.5 […]`) overlayed on top of Elite.
     - On Windows 10: the overlay should work for all the modes (Fullscreen, Borderless, Windowed).
     - On Windows 7: the overlay does NOT work in Fullscreen, use Borderless or Windowed instead.
-    - If the overlay does not work, see the [troubleshooting](#_2l7rqborubf8) section.
+    - If the overlay does not work, see the [troubleshooting](#troubleshooting) section.
 ## EDR account
 EDR works out of the box without any account. However, if you want to contribute information back to EDR and its users, e.g. sending sightings of outlaws, you will need to [apply for an account](https://edrecon.com/account).
 
@@ -183,7 +189,7 @@ If everything goes according to plan, you should see “authenticated” in the 
   <img alt="Location where it is indicated whether the login was successful" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_09_White.png?raw=true">
 </picture>
 
-# **EDR in a nutshell**
+# EDR in a nutshell
 EDR offers a wide range of features designed to ease and augment your experience in Elite Dangerous: profile of players based on in-game reports, finding rare materials, assessing the value of odyssey materials, etc. 
 
 These features either trigger automatically depending on what’s happening in the game, or can be triggered by sending EDR commands (e.g. `!who lekeno`) via the in-game chat (any channel), or via the EDR input field in the EDMC window:
@@ -204,7 +210,7 @@ When starting a new game session, EDR will show a random tip either about the ga
 
 - Consider sending `!help` to get short and sweet guidance about the various EDR commands.
 - You can also request a random tip by sending the `!tip` command, or `!tip edr` for tips about EDR, and `!tip open` for tips about playing in Open.
-# **Commander Features**
+# Commander Features
 ## Automatic Commander Profiles
 If EDR detects the presence of a potentially dangerous commander (e.g. outlaw), it will automatically show that commander's profile. 
 Examples: 
@@ -248,7 +254,7 @@ Commands:
 - `#enforcer` or `#+` to tag a contact with an enforcer tag.
 - <tt>#enforcer *cmdrname*</tt> or <tt>#+ *cmdrname*</tt> to tag a specific commander with an enforcer tag (e.g. `#+ lekeno`).
 - <tt>-#*alignment-tag*</tt> or <tt>-#*alignment-tag cmdrname*</tt> to remove the *alignment-tag* from a contact or specific commander in your commander index (e.g. `-#+ lekeno`).
-### <a name="_vppxm7d89cyd"></a><a name="_toc162390246"></a>Memo
+### Memo
 You can attach a memo (short reminder) to a commander. This can be handy to remember how you met them or who they are.
 
 Commands:
@@ -256,7 +262,7 @@ Commands:
 - `@# “something very important to remember”` to attach a custom note to a contact.
 - `@# *cmdrname* memo=“distant worlds 2”` to attach a custom note to a specific commander.
 - `-@#` or <tt>-@# *cmdrname*</tt> to remove the custom note from a contact or a specific commander.
-## <a name="_4d34og8"></a><a name="_toc162390247"></a>How to read the profile information
+## How to read the profile information
 The profile includes some graphs showing historical data for 12 months. The current month is on the right edge, and the axis goes back in time from there (i.e. previous month is the bar on the left side of the last bar on the right).
 
 The upper section contains a combined view (same scale) of clean and wanted scans:
@@ -281,10 +287,10 @@ The Inara section shows information such as role, squadron, allegiance, etc.
 
 <img alt="Framing interface of a commander" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_13.png?raw=true">
 
-# <a name="_2s8eyo1"></a><a name="_toc162390248"></a>**EDR Karma**
-## <a name="_17dp8vu"></a><a name="_toc162390249"></a>What is the EDR Karma?
+# EDR Karma
+## What is the EDR Karma?
 It's a value between -1000 and 1000 meant to provide a **hint** about how law-abiding or law-breaking a commander has been. This is merely a hint to inform your opinion, in combination with other hints or signals in the game (e.g. seen chasing clean commanders, flying a wanted meta FdL in a mining CG, etc.). **So, always use your best judgment, and take full responsibility for your behavior and actions.**
-## <a name="_3rdcrjn"></a><a name="_toc162390250"></a>How is it calculated?
+## How is it calculated?
 The EDR karma is currently computed on the basis of the value of scans & bounties reported by other EDR users (i.e. one's own legal status or bounties are not taken into account; someone else has to report your legal status or bounty to be taken into account).
 
 At a high level: 
@@ -295,7 +301,7 @@ At a high level:
 - if a commander is scanned but hadn't been seen in a while, before reflecting the new information from the scan, they will see their karma decay: 
   - get the benefit of the doubt with a karma boost toward Ambiguous if they had an Outlaw karma. 
   - get a conservative adjustment with a karma decrease toward Ambiguous if they had a Lawful karma.
-### <a name="_26in1rg"></a><a name="_toc162390251"></a>Extra Details
+### Extra Details
 The amount of karma increase / decrease from clean / wanted scan isn't uniform: - The amount is smaller at the edges of the karma scale. In other words, it's harder to get the fourth +, than the third +, and so on. This is meant to put a lot more weight behind each + than it would be possible with a linear scale. 
 
 A bounty report can bring the karma further down, depending on the amount:
@@ -304,8 +310,8 @@ A bounty report can bring the karma further down, depending on the amount:
 - Each grade (including Lawful karma) has an associated bounty threshold. 
 
 If a commander is scanned with a bounty that exceeds this threshold, they will be re-assigned to a more appropriate karma range (i.e. Outlaw+++ instead of Outlaw++). This also applies to commanders with a lawful karma, to prevent trolling incidents, while also avoiding having Lawful++++ commanders abuse their karma to go on a rampage. For commanders who got scanned after being under the radar for a while, EDR will make their Karma decay by an amount that depends on how much time went by since the previous scan (i.e. the longer they went silent, the bigger the decay). There are other subtleties such as time thresholds between scans / bounties reports, or caching aspects on the client side that may affect the computation or reflecting the latest karma value.
-# <a name="_lnxbz9"></a><a name="_toc162390252"></a>**System Features**
-## <a name="_35nkun2"></a><a name="_toc162390253"></a>Sitreps
+# System Features
+## Sitreps
 EDR will show a situation report (aka sitrep) when starting a new session or after jumping to a new system.
 
 Information can include the following:
@@ -321,26 +327,26 @@ Commands:
 - <tt>!sitrep *system name*</tt> to display the sitrep of a given star system (e.g. `!sitrep deciat`).
 - `!notams` to display a list of star systems with active NOTAMs.
 - <tt>!notam *system name*</tt> to display the NOTAM of a given star system (e.g. `!notam san tu`).
-## <a name="_1ksv4uv"></a><a name="_toc162390254"></a>Distance 
+## Distance 
 EDR can calculate distances between your position and another system, or between 2 arbitrary systems, as long as they are already known by the community. 
 
 Commands: 
 
 - <tt>!distance *system name*</tt> shows the distance between your location and *system name* (e.g. !distance deciat) 
 - <tt>!distance *origin* > *destination*</tt> shows the distance between *origin* and *destination* (e.g. `!distance deciat > borann`)
-## <a name="_44sinio"></a><a name="_toc162390255"></a>Known signals
+## Known signals
 EDR can show an overview of known signals for the current system (e.g. resource extraction sites, combat zones, fleet carrier, stations, etc.)
 
 - The overview is automatically shown when looking at a system map.
 - Sending the `!signals` command will manually trigger the overview
-## <a name="_2jxsxqh"></a><a name="_toc162390256"></a>Information about your destination
+## Information about your destination
 **Odyssey only:** EDR will show key information about your next destination (station, fleet carrier, system). For station or fleet carriers, EDR will show the list of available services, as well as information about the controlling faction (BGS state, government, allegiance and whether the faction is a **P**layer **M**inor **F**action).
-## <a name="_6du7k5kxmtsl"></a><a name="_toc162390257"></a>Current system
+## Current system
 EDR will show estimated exploration value and key information for stars, planets and systems. This feature triggers on: Discovery Scanner honk, Full Spectrum Scan, and Detailed Surface Scan.
-# <a name="_h155t7n0y7jz"></a><a name="_toc162390258"></a>**Planet Features**
-## <a name="_z337ya"></a><a name="_toc162390259"></a>Point of Interest
+# Planet Features
+## Point of Interest
 EDR has a list of Points of Interest (e.g. crashed ships, abandoned bases, etc). Guidance will be shown automatically when entering a system with PoI’s, as well as when approaching a body with PoI’s. This includes a navigation feature (heading, distance, altitude, pitch) to help you land near a PoI.
-## <a name="_a637l9k80gq9"></a><a name="_toc162390260"></a>Navigation
+## Navigation
 Manual navigation is also supported (shown when approaching a body or when on the surface of a body).
 
 Commands:
@@ -348,11 +354,11 @@ Commands:
 - `!nav 123.21 -32.21` to set the destination based on its Latitude and Longitude.
 - `!nav off` to disable the navigation feature
 - `!nav set` to set your current Latitude, Longitude as the reference point for the navigation feature.
-## <a name="_3j2qqm3"></a><a name="_toc162390261"></a>Noteworthy Materials
+## Noteworthy Materials
 When approaching a body, EDR will show a list of noteworthy materials (i.e. materials with a density higher than what's typical across the galaxy). Note: this requires prior actions such as scanning the navigation beacon or analyzing the system with the Full Spectrum Scanner, etc.
 
 See more in [Materials Features](#_4i7ojhp).
-# <a name="_1y810tw"></a><a name="_toc162390262"></a>**Finding Services**
+# Finding Services
 EDR can help you find services near you or near a specific system.
 
 Commands
@@ -368,10 +374,10 @@ Commands
 - `!rrr`, `!rrr Lave`, ``!rrr Lave < 10`` to find a station with repair, rearm and refuel near your position, or lave, or within a 10 LY radius of Lave.
 - `!rrrfc`, `!rrrfc Lave`, `!rrrfc Lave < 10` to find a fleet carrier with repair, rearm and refuel near your position, or lave, or within a 10 LY radius of Lave. Please, double check docking access before heading there!
 - `!fc J6B`, `!fc recon`, `!station Jameson` to display information about services at local Fleet Carrier or Stations with a callsign/name containing J6B, Recon, Jameson respectively.
-# <a name="_4i7ojhp"></a><a name="_toc162390263"></a>**Materials Features**
-## <a name="_2xcytpi"></a><a name="_toc162390264"></a>BGS state dependent materials
+# Materials Features
+## BGS state dependent materials
 When arriving in a new system, EDR will sometimes show a list of materials with estimated likelihoods (mostly from signal sources). If your current inventory is low on a particular material and the likelihood is relatively high, you may want to look for a High Grade Emission source and farm it until you are full (after collecting the mats, exit the game, relaunch, go to supercruise at 0 speed, jump back into the signal, repeat until the timer runs out).
-## <a name="_1ci93xb"></a><a name="_toc162390265"></a>Searching for specific materials
+## Searching for specific materials
 Send <tt>!search *resource*</tt> to find a good spot for farming a specific resource (e.g. `!search selenium`). You can use the full name of the resource, or an abbreviation. Most very rare, rare and standard resources (data, raw, manufactured) are supported. Exception: guardian technology related resources. Pro-tip: The name of the system will be copied to the clipboard.
 
 Abbreviations:
@@ -384,9 +390,9 @@ State dependent resources are best effort, please double check for stale info by
 Searching around a specific system can be done by sending a command like such (notice the @systemname bit at the end):
 
 - `!search selenium @deciat`
-## <a name="_3whwml4"></a><a name="_toc162390266"></a>Raw materials
+## Raw materials
 When approaching a landable body, EDR will show noteworthy raw materials (high grade) present on a planet if the density exceeds the galactic median (the more +, the better).
-### <a name="_gdtgvskllkcx"></a><a name="_toc162390267"></a>Profiles
+### Profiles
 If you are looking for lower grade raw materials or something specific then you may find that the default raw material notifications are not as useful. You can switch to a different set of materials by sending the !materials command.
 
 For instance, if you are looking for materials to supercharge your FSD, send `!materials fsd`. This will customize the notifications to only show the materials that are used for synthesis FSD injections.
@@ -395,15 +401,15 @@ Other commands:
 
 - `!materials` to see the list of profiles available.
 - `!materials default` to revert to the default profile (i.e. high grade raw materials)
-#### <a name="_7z80x1k2z0uo"></a>*Custom material profiles*
+#### *Custom material profiles*
 You can also add your own raw material profiles:
 
 1. Make a copy of the `raw_profiles.json` file (see EDR's data folder)
 1. Rename it `user_raw_profiles.json`
 1. Edit and rename the profiles to your needs.
 1. Save the file.
-## <a name="_2bn6wsx"></a><a name="_toc162390268"></a>Odyssey materials
-### <a name="_6zdzd86kcgy0"></a><a name="_toc162390269"></a>Assessment
+## Odyssey materials
+### Assessment
 EDR will show a quick assessment of odyssey materials on the following events:
 
 - Taking a mission with a mission specific item.
@@ -420,7 +426,7 @@ Furthermore, EDR will show an evaluation of the odyssey materials in the player�
 - Throwing away some material.
 
 These features are handy because there are **lots** of useless odyssey materials…
-### <a name="_lif1gmn9njms"></a><a name="_toc162390270"></a>Fleet Carrier Bars
+### Fleet Carrier Bars
 When visiting a bar with materials on sale, EDR will show you a list of the most useful materials that you might want to consider buying. Each item is followed by a series of letter+number to give further insights into how worthwhile each item is:
 
 - B: number of blueprints using that item
@@ -437,8 +443,8 @@ You can also trigger these assessments for the last fleet carrier bar that you h
 
     <img alt="Example of the interface and materials for the bar" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_15.png?raw=true">
 
-# <a name="_qsh70q"></a><a name="_toc162390271"></a>**Ship Features**
-## <a name="_3as4poj"></a><a name="_toc162390272"></a>Where did I park my ship?
+# Ship Features
+## Where did I park my ship?
 EDR allows you to find where you have parked your ships.
 
 Commands:
@@ -448,14 +454,14 @@ Commands:
 - !ship *shipid* to find ships with a certain ship ID (e.g. !ship EDR-001)
 
 Note: this feature should also tell you the ETA for a ship to arrive at its destination if you have initiated a transfer.
-## <a name="_1pxezwc"></a><a name="_toc162390273"></a>Power Priorities
+## Power Priorities
 EDR can assess how good your power priorities are for maximal survival. Note: this feature is a bit flaky due to a bunch of bugs/caveats in Fdev's implementation.
 
 Command:
 
 - !eval power to get an assessment of your power priorities.
 - If it doesn't work, look at your right hand side panel, fiddle with the power priorities back and forth and try again.
-## <a name="_49x2ik5"></a><a name="_toc162390274"></a>Finding a parking slot for your Fleet Carrier
+## Finding a parking slot for your Fleet Carrier
 The !parking command is here to help you find a parking slot for your fleet carrier.
 
 - Send !parking to get information about the parking slots at your current location.
@@ -464,29 +470,29 @@ The !parking command is here to help you find a parking slot for your fleet carr
 
 As always, EDR will copy the system info into your clipboard, so that you can quickly search for it in the galaxy map.
 
-## <a name="_2p2csry"></a><a name="_toc162390275"></a>Landing
+## Landing
 EDR will show key info about at a station when docking, as well as the location of the landing pad for coriolis, orbis, fleet carriers, and some specific planetary locations.
 
-# <a name="_h5qlvi1myggd"></a><a name="_toc162390276"></a>**Squadron Features**
-## <a name="_147n2zr"></a><a name="_toc162390277"></a>Squadron enemies and allies
+# Squadron Features
+## Squadron enemies and allies
 If you are part of a squadron on Inara, you can use EDR to tag other players as enemies or allies of your squadron. You will need to be an active member of a squadron on [Inara](https://inara.cz/) and have a sufficiently high rank.
 
 - Read access: Co-pilot and above. 
 - Write access: wingman and above.
 - Updating/Removing a tag: same or higher rank than the person who tagged the player
-### <a name="_1h5xf180ukij"></a><a name="_toc162390278"></a>Tags
+### Tags
 Send the following commands to tag another player (e.g. #ally David Braben) or your target (e.g. #ally) as an enemy or ally of your squadron:
 
 - #ally or #s+ to tag a commander as an ally.
 - #enemy or #s! to tag a commander as an enemy.
 - -#ally or -#s+ to remove an ally tag off a commander.
 - -#enemy or -#s! to remove an enemy tag off a commander.
-# <a name="_3o7alnk"></a><a name="_toc162390279"></a>**Bounty Hunting Features**
+# Bounty Hunting Features
 Send the following command via the in-game chat to get intel about outlaws:
 
 - !outlaws to display a list of most recently sighted outlaws and their locations.
 - !where *cmdrname* to display the last sighting of *cmdrname* provided that EDR considers them as outlaws.
-## <a name="_23ckvvd"></a><a name="_toc162390280"></a>Real-time alerts
+## Real-time alerts
 Send the following command via the in-game chat to control the real-time alerts about outlaws:
 
 - ?outlaws on to enable the real-time alerts about outlaws.
@@ -495,30 +501,30 @@ Send the following command via the in-game chat to control the real-time alerts 
 - ?outlaws ly 120 to set a maximum distance of 120 light years from your location.
 - ?outlaws cr - to remove the minimum bounty condition.
 - ?outlaws ly - to remove the maximum distance condition.
-## <a name="_27rhbnov5p09"></a><a name="_toc162390281"></a>Bounty Hunting Stats & Graphs
+## Bounty Hunting Stats & Graphs
 TODO
-# <a name="_ihv636"></a><a name="_toc162390282"></a>**Powerplay features**
-## <a name="_32hioqz"></a><a name="_toc162390283"></a>Powerplay hunting
+# Powerplay features
+## Powerplay hunting
 If you have been pledged long enough to a power, you can use the following commands to get intel about powerplay enemies:
 
 - !enemies to display a list of most recently sighted enemies and their locations.
 - !where cmdrname to display the last sighting of cmdrname provided that EDR considers them as powerplay enemy.
-# <a name="_1hmsyys"></a><a name="_toc162390284"></a>**Mining features**
+# Mining features
 EDR shows various stats and info to help you mine more efficiently (see [this video](https://www.youtube.com/watch?v=1bp_Q3JgW3o) for details):
 
 In addition, EDR will remind you to restock on limpets before leaving the station.
-# <a name="_ibheb5s99hbe"></a><a name="_toc162390285"></a>**Exobiology features**
-## <a name="_c03djfza2kkw"></a><a name="_toc162390286"></a>Biome insights
-### <a name="_3ovq1rcl2cs1"></a><a name="_toc162390287"></a>System wide info
+# Exobiology features
+## Biome insights
+### System wide info
 EDR will indicate if a system has planets with the right conditions for Exobiology. The info will show up when jumping into a system, after a discovery honk, or by sending the !biology command without any parameters. Note that the info is a best guess, double check the system map for the presence of biology signals, and consider scanning the system and/or perform a planetary scan for good measure.
-### <a name="_7rht61plf9r9"></a><a name="_toc162390288"></a>Planet specific info
+### Planet specific info
 EDR can estimate which biological species one might find on a planet depending on its atmospheric conditions and type. The info is shown in the following scenarios:
 
 - When targeting a planet (see the “Expected bio” and “Progress” lines), or by sending the !biology command for a given planet (e.g. !biology A 1): 
 
 - After mapping the whole planet, EDR will update the “Expected bio” info to reflect the actual genuses that you can find on the planet. Note: the species are still EDR’s best guesses.
 
-## <a name="_js51te3wo932"></a><a name="_toc162390289"></a>Navigation and progress tracking
+## Navigation and progress tracking
 To improve your efficiency with Exobiology activities, EDR provides the following features:
 
 - Key info for the currently tracked species:
@@ -545,9 +551,9 @@ From top to bottom:
 - Distance.
 - Latitude and longitude
 - Heading angle at the time the waypoint was recorded.
-## <a name="_c0j9tgvek1tg"></a><a name="_toc162390290"></a>Searching for an auspicious planet for Exobiology
+## Searching for an auspicious planet for Exobiology
 Send !search genus to find a nearby planet with known conditions for a given genus (eg !search stratum). You can also use the full species name (eg !search stratum tectonicas), or certain types of planets (eg !search water !search ammonia or !search biology). Tip: send !search with the first letters of a species, genus (or engineering resource).
-# <a name="_dcck8a8ifxz0"></a><a name="_toc162390291"></a>**Route HUD**
+# Route HUD
 EDR will show an overview of a route plotted on the galaxy map as long as it’s not trivial (less than 3 jumps) or too complex (more than 50 jumps). This “Route HUD” will also be shown when jumping to the next waypoint of the route.
 
 The HUD provides the following information:
@@ -574,7 +580,7 @@ The HUD provides the following information:
   - Remaining distance to the destination.
   - Estimated remaining time to reach the destination
 
-# <a name="_bh23qed33q2l"></a><a name="_toc162390292"></a>**Spansh companion**
+# Spansh companion
 EDR integrates a set of features to make the most of [Spansh](https://spansh.co.uk/), which is a website offering various routing tools, and help you understand how much progress you’ve been making as shown below:
 
 - Start and destination systems.
@@ -603,7 +609,7 @@ Other commands:
 - Sending !journey without any parameter will attempt to do the right thing each time it’s called:
   - If there is no journey: fetch a Spansh journey from the clipboard if any, or load a local journey if any, or start a new Spansh journey otherwise.
   - If there is a journey, show an overview.
-# <a name="_75mdemgkcjb8"></a><a name="_toc162390293"></a>**Odyssey settlements**
+# Odyssey settlements
 You can use the !search command to find specific odyssey settlements. Here are some examples:
 
 - !search anarchy will find the nearest anarchy settlement around your current position.
@@ -618,37 +624,37 @@ You can use the !search command to find specific odyssey settlements. Here are s
 - Two handy shortcuts are also provided: !search cz to find the nearest settlement that’s likely a combat zone, and !search restore to find the nearest settlement that’s likely abandoned.
 
 **Important**: due to the dynamic nature of Elite Dangerous’ BGS, it’s not 100% guaranteed that the search feature always returns perfect results. Use the info shown by EDR when approaching the settlement to confirm that the actual conditions match what you were expecting.
-# <a name="_3hxun3c7voz"></a><a name="_toc162390294"></a>**Discord Integration**
+# Discord Integration
 Current discord integration features:
 
 - Forwarding in-game chat messages to a discord channel of your choice.
 - Sending Fleet Carrier flight plans to a discord channel of your choice.
 - Sending Fleet Carrier Market Orders (buy/sell) for commodities and odyssey materials.
-## <a name="_2grqrue"></a><a name="_toc162390295"></a>Forwarding in-game chat messages
+## Forwarding in-game chat messages
 You can setup EDR to directly forward in-game chat messages to a discord server and channel of your choice. Please note the following:
 
 - This needs to be configured by you. By default EDR does not forward anything at all.
 - If you configure it, then the EDR EDMC plugin will directly send the messages to your discord server/channel. 
 - The EDR backend (server) is NOT involved at all. **In other words, your messages are never shared with EDR, nor sent to EDR servers.** 
 - *Did I mention that the messages you receive and send remain private? I did? OK, good!*
-### <a name="_hykl4r4kebzp"></a><a name="_toc162390296"></a>Pre-requisites
+### Pre-requisites
 The discord integration requires the following:
 
 - Having [D](http://discord.com)[iscord](http://discord.com), and a personal Discord server (or a server that you can administer or can ask an admin to follow the instructions).
 - Read about [webhooks in Discord](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks).
-### <a name="_lsz3jqogllfv"></a><a name="_toc162390297"></a>Configuring the Discord channels (webhooks)
+### Configuring the Discord channels (webhooks)
 In the config folder, look for a file named user\_config\_sample.ini and follow the instructions.
-### <a name="_sfs4blgzqvlj"></a><a name="_toc162390298"></a>Features
+### Features
 The discord integration offer the following features:
-#### <a name="_u64yp7f4ad8y"></a>*Incoming messages*
+#### *Incoming messages*
 - Ability to forward messages received over any of the in-game channels (e.g. local, system, wing, squadron, squadron leaders, crew) to a discord server and channel of your choice (configurable per channel). 
 - Ability to configure if and how messages are forwarded for each channel and for specific commanders. See customization options below.
 - Ability to forward direct messages sent while you are AFK to a discord server and channel of your choice.
-#### <a name="_bww4z7pnredf"></a>*Outgoing messages*
+#### *Outgoing messages*
 - Ability to send specific messages to a discord server and channel of your choice via the !discord in-game chat command (e.g. !discord about to cash in a wing mission, anyone interested in some free credits?)
 - Ability to forward messages sent over any of the in-game channels (e.g. local, system, wing, squadron, squadron leaders, crew) to a discord server and channel of your choice (configurable per channel).
 
-<a name="_ppf0jr3anjme"></a>Customization options
+Customization options
 
 You can define a set of baseline conditions for forwarding by EDR. These conditions can be altered for specific channels, and specific commanders.
 
@@ -675,7 +681,7 @@ Example of a [good configuration file](https://imgur.com/a/2fflOo0). Explanation
 - per channel overrides (e.g. player, wing, squadron, squad leaders, crew) which removes the mismatching and karma restrictions.
 
 See the user\_discord\_players.txt file in the config folder for further instructions (your custom file should be named user\_discord\_players.json and should not contain any comments, i.e. no line starting with ;).
-## <a name="_vx1227"></a><a name="_toc162390299"></a>Sending your Fleet Carrier’s Flight plan to discord.
+## Sending your Fleet Carrier’s Flight plan to discord.
 You can either send your Flight Plans to EDR's fc-jumps or to a discord channel of your choosing. For the former, select Public in EDR's options (section: Broadcasts). For the latter, you have 2 options:
 
 - (Preferable) Select Direct in EDR's options to have your flight plan go directly to Discord. Check the rest of the instructions in the user\_config\_sample.ini file found in the config folder of EDR.
@@ -683,12 +689,12 @@ You can either send your Flight Plans to EDR's fc-jumps or to a discord channel 
 1. [Create a webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks#:~:text=making%20a%20webhook) for the channel in which you want to see the flight plans.
 1. Copy the address of this webhook and submit it via [the form](https://forms.gle/7pntJRpDgRBcbcfp8).
 1. Wait for a few days / a week. Ping *lekeno* if nothing happens after a week or so.
-## <a name="_3fwokq0"></a><a name="_toc162390300"></a>Sending your Fleet Carrier’s buy/sell orders for commodities and odyssey materials
+## Sending your Fleet Carrier’s buy/sell orders for commodities and odyssey materials
 You can send your buy/sale orders for commodities and odyssey materials to a discord channel of your choice. Check the rest of the instructions in the user\_config\_sample.ini file found in the config folder of EDR.
 
 EDR will also place a copy-pastable summary of recent sale/purchase orders at your fleet carrier after you've made changes to your market and/or bar.
-# <a name="_1v1yuxt"></a><a name="_toc162390301"></a>**Overlay**
-## <a name="_4f1mdlm"></a><a name="_toc162390302"></a>Multi-monitors & VR setups
+# Overlay
+## Multi-monitors & VR setups
 If you have a multi-monitors setup, or a VR headset, you may want to set the overlay to standalone (File menu, Settings, EDR tab, Overlay dropdown). The overlay will appear as a separate window with a few controls:
 
 - **Top left corner**: drag and drop to move the overlay, double click to maximize / restore.
@@ -697,7 +703,7 @@ If you have a multi-monitors setup, or a VR headset, you may want to set the ove
 - **Top right corner**: hover to make the overlay opaque.
 - **Green square in the top middle**: hover to have the overlay be always on top.
 - **Red square in the bottom middle**: hover to have the overlay be a regular window (not always on top).
-### <a name="_ucucu4xw87pk"></a><a name="_toc162390303"></a>VR placement with SteamVR
+### VR placement with SteamVR
 1. Launch EDMC
 1. Configure EDR settings (EDMC File menu, Settings, EDR tab) with the overlay set to "Standalone"
 1. Launch the game in VR
@@ -709,22 +715,22 @@ If you have a multi-monitors setup, or a VR headset, you may want to set the ove
 1. Close SteamVR's dash
 
 Also see [these SteamVR patch notes](https://steamcommunity.com/games/250820/announcements/detail/2969548216412141657) for more details.
-## <a name="_19c6y18"></a><a name="_toc162390304"></a>Custom overlay
+## Custom overlay
 To customize the overlay, make a copy of the igm\_config.v7.ini and igm\_config\_spacelegs.v7.ini, found in the config folder, and rename them to user\_igm\_config.v7.ini and user\_igm\_config\_spacelegs.v7.ini (note if there are higher versions than v7, then use these version numbers instead).
 
 The first file is for configuring the overlay when in a ship or srv, while the second file is for configuring the overlay when on foot.
 
 Follow the instructions in each file to tweak the colors, and positions of various elements / messages. You can also disable specific types of messages. As you make tweaks to the overlay config file, send the !overlay command to reread the layout, display some test data to make further adjustments.
-# <a name="_7ykm03m9mvv5"></a><a name="_toc162390305"></a>**Crimes reporting**
+# Crimes reporting
 If you don’t want to report interactions or fights (e.g. agreed upon PvP), you may want to disable crimes reporting. Note that EDR will continue to report sightings and scans.
 
 - To disable crimes reporting, send !crimes off, or uncheck the “Crimes reporting” option in EDR’s settings panel.
 - To enable crimes reporting, send !crimes on, or check the “Crimes reporting” option in EDR’s settings panel.
 - You can confirm the current configuration by sending !crimes. 
-# <a name="_px07t36ipq8x"></a><a name="_toc162390306"></a>**Sounds Effects**
-## <a name="_2ne505w68iuv"></a><a name="_toc162390307"></a>Commands and options
+# Sounds Effects
+## Commands and options
 Sound effects can be disabled or enabled from the EDR options in EDMC (File menu, Settings, EDR tab, Feedback section, Sound checkbox)
-## <a name="_eq01mflmbzsh"></a><a name="_toc162390308"></a>Customization
+## Customization
 To customize the sound effects, make a copy of the sfx\_config.v1.ini file, found in the config folder, and rename it user\_sfx\_config.v1.ini
 
 There are 2 sections, one called [SFX] and another one called [SFX\_SOFT]. The first one is for sounds when EDR's sound effects are set to loud (via !audiocue loud), the second one is for when EDR is set to soft (via !audiocue soft)
@@ -735,7 +741,7 @@ There are 2 sections, one called [SFX] and another one called [SFX\_SOFT]. The f
 Place your custom sounds (wav format only) into the custom sub folder of the sounds folder. 
 
 Then edit the line for the related event to specify your custom sound, including the custom/ prefix.
-#### <a name="_2u6wntf"></a>*Type of events*
+#### *Type of events*
 - startup: when EDR starts at the beginning of a session
 - intel: when EDR shows the profile of a neutral/lawful player
 - warning: when EDR shows the profile of an outlaw player
@@ -753,10 +759,10 @@ Then edit the line for the related event to specify your custom sound, including
 - biology: when EDR shows navigation information for Exobiology activities
 
 
-# <a name="_99k37ackwpqt"></a><a name="_toc162390309"></a>**Appendix**
-## <a name="_2l7rqborubf8"></a><a name="_toc162390310"></a>Troubleshooting
-### <a name="_9hpl7g4822xh"></a><a name="_toc162390311"></a>Nothing is displayed / Overlay does not work
-#### <a name="_f4n3blkhb3rd"></a>*Check your settings*
+# Appendix
+## Troubleshooting
+### Nothing is displayed / Overlay does not work
+#### *Check your settings*
 Make sure that you haven’t disabled the overlay by mistake.
 
 Steps:
@@ -769,7 +775,7 @@ Steps:
 1. In Elite, go back to the main menu and start a new game.
 
 Still nothing? Check the next section.
-#### <a name="_hjx7y79gl36e">*Allow the overlay to run*</a>
+#### *Allow the overlay to run*
 Your antivirus might be preventing the overlay from running by precaution. 
 
 Recommendation: scan the executable, and allow it to run after confirming that it presents no threat.
@@ -783,9 +789,9 @@ Steps:
 1. Right click on the edmcoverlay.exe file, select your antivirus scan option.
 
 1. If your antivirus doesn’t complain, double click on the edmcoverlay.exe file and allow it to run if your antivirus prompts you for a confirmation.
-## <a name="_mi3ku75gk1th"></a><a name="_toc162390312"></a>Frame rate has dropped significantly
+## Frame rate has dropped significantly
 Before trying any of the options below, make sure that your graphics drivers are up-to-date then confirm that the issue still exists.
-### <a name="_if27b778i6er"></a><a name="_toc162390313"></a>Option 1: turn off Vsync
+### Option 1: turn off Vsync
 1. Go to Elite’s in-game Options:
 
 1. Select the Graphics options:
@@ -793,11 +799,11 @@ Before trying any of the options below, make sure that your graphics drivers are
 1. Find Vertical Vsync, under the Display section, and turn it OFF:
 
 1. Retest EDR
-### <a name="_38ptisgtkp43"></a><a name="_toc162390314"></a>Option 2: try borderless / windowed / fullscreen
+### Option 2: try borderless / windowed / fullscreen
 1. Go to Elite’s in-game Options
 1. Select the Graphics options
 1. Under the Display section, try the different modes, e.g. Borderless / Windowed / Fullscreen, and see if there is one that works better.
-### <a name="_wfcag5nkbun2"></a><a name="_toc162390315"></a>Option 3: try EDR’s alternative UI
+### Option 3: try EDR’s alternative UI
 1. On the right edge of the EDR status, tick the checkbox to reveal EDR’s alternative UI:
 
 1. Info that would have been displayed via the overlay will be displayed in this area
@@ -819,7 +825,7 @@ Steps:
 
 1. Review and edit its content with notepad (double clicking should open it with notepad) if needed.
 1. Share it with LeKeno#8484 over discord.
-## <a name="_8ygra6p0k28j"></a><a name="_toc162390317"></a>Privacy Considerations
+## Privacy Considerations
 If you are curious about how EDR works and what it does, you can check the [source code](https://github.com/lekeno/edr/), and since it’s written in Python you can also scrutinize the running code and confirm that it’s identical to the source code published on GitHub. Frontier also [reviewed and praised EDR](https://forums.frontier.co.uk/threads/flying-in-open-last-night-edr-saved-my-life-it-could-save-yours-too.388696/page-15#post-6118053), confirming that its use of the player journal API is within their rules and terms of services.
 
 The first time that you run EDMC while playing the game, you will be redirected to [Frontier's authentication website](https://auth.frontierstore.net/) and prompted for your Elite: Dangerous username and password. This has **nothing to do with EDR**, and **can be outright ignored.** EDR does NOT use Frontier’s authentication API, instead it uses Frontier’s [player journal API](https://forums.frontier.co.uk/threads/commanders-log-manual-and-data-sample.275151/) which only contains information about what is happening in the game and does NOT contain any personal information.
