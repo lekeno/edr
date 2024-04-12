@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
 "POT-Creation-Date: 2024-04-11 17:11+0200\n"
-"PO-Revision-Date: 2024-04-11 17:55+0200\n"
+"PO-Revision-Date: 2024-04-12 00:36+0200\n"
 "Last-Translator: GLWine\n"
 "Language-Team: GWine\n"
 "Language: it_IT\n"
@@ -397,7 +397,7 @@ msgstr "Informazioni sui segnali (risultati potenziali)"
 #: edrclient.py:862
 #, python-brace-format
 msgid "Known signals in {system}"
-msgstr "Segnali conosciuti nel {system}"
+msgstr "Segnali conosciuti in {system}"
 
 #: edrclient.py:881 edrclient.py:883
 msgid "Genus: {}/{}"
