@@ -128,9 +128,9 @@ Steps:
 1. [Download EDR’s latest release](https://github.com/lekeno/EDR/releases/latest) (the EDR.v#.#.#.zip file where #.#.# is the version number, e.g. 2.7.5 in the screenshot below)
 
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/EDR_2.7.7_Black.png?raw=true">
-      <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/EDR_2.7.7_White.png?raw=true">
-      <img alt="Screenshot of the release page of EDR 2.7.7" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/EDR_2.7.7_White.png?raw=true">
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/EDR_2.7.5_Black.png?raw=true">
+      <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/EDR_2.7.5_White.png?raw=true">
+      <img alt="Screenshot of the release page of EDR 2.7.7" src="https://github.com/GLWine/edr/blob/2.7.7/edr/docs/Assets/EDR_2.7.5_White.png?raw=true">
     </picture>
 
 2. Launch EDMC.
