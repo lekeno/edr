@@ -5,33 +5,32 @@
   The Missing Manual</h1>
 </div>
 <p align=right>Draft by CMDR Lekeno</p>
-<p align=right>Translation by CMDR FrostBit</p>
 
 # Summary
-- [Install](#_toc162390232)
-  - [Pre-requisites](#_toc162390233)
-  - [Elite Dangerous Market Connector](#_toc162390234)
-  - [ED Recon (aka EDR)](#_toc162390235)
-  - [EDR account](#_toc162390236)
-- [EDR in a nutshell](#_toc162390237)
-  - [Output](#_toc162390238)
-  - [Tips & Help](#_toc162390239)
-- [Commander Features](#_toc162390240)
-  - [Automatic Commander Profiles](#_toc162390241)
-  - [Manual Commander Profiles](#_toc162390242)
-  - [Annotations on other commanders](#_toc162390243)
-    - [Generic commands](#_toc162390244)
-    - [Alignment tags](#_toc162390245)
-    - [Memo](#_toc162390246)
-  - [How to read the profile information](#_toc162390247)
-- [EDR Karma](#_toc162390248)
-  - [What is the EDR Karma?](#_toc162390249)
-  - [How is it calculated?](#_toc162390250)
-    - [Extra Details](#_toc162390251)
-- [System Features](#_toc162390252)
-  - [Sitreps](#_toc162390253)
-  - [Distance](#_toc162390254)
-  - [Known signals](#_toc162390255)
+- [Install](#install)
+  - [Pre-requisites](#pre-requisites)
+  - [Elite Dangerous Market Connector](#elite-dangerous-market-connector)
+  - [ED Recon (aka EDR)](#ed-recon-aka-edr)
+  - [EDR account](#edr-account)
+- [EDR in a nutshell](#edr-in-a-nutshell)
+  - [Output](#output)
+  - [Tips & Help](#tips--help)
+- [Commander Features](#commander-features)
+  - [Automatic Commander Profiles](#automatic-commander-profiles)
+  - [Manual Commander Profiles](#manual-commander-profiles)
+  - [Annotations on other commanders](#annotations-on-other-commanders)
+    - [Generic commands](#generic-commands)
+    - [Alignment tags](#alignment-tags)
+    - [Memo](#memo)
+  - [How to read the profile information](#how-to-read-the-profile-information)
+- [EDR Karma](#edr-karma)
+  - [What is the EDR Karma?](#what-is-the-edr-karma)
+  - [How is it calculated?](#how-is-it-calculated)
+    - [Extra Details](#extra-details)
+- [System Features](#system-features)
+  - [Sitreps](#sitreps)
+  - [Distance](#distance)
+  - [Known signals](#known-signals)
   - [Information about your destination](#_toc162390256)
   - [Current system](#_toc162390257)
 - [Planet Features](#_toc162390258)
@@ -97,14 +96,14 @@
 
 <br><br><br>
 
-# <a name="_e0h8qpx2dod0"></a><a name="_toc162390232"></a>**Install**
+# Install
 If you get stuck or have any questions, feel free to join [EDR central](https://discord.gg/meZFZPj), the community server for EDR with access to the bot, real-time alerts and troubleshooting support.
-## <a name="_n4ae7s2jprh0"></a><a name="_toc162390233"></a>Pre-requisites
+##  Pre-requisites
 - Windows
 - Elite: Dangerous
 - Elite Dangerous Market Connector (see section A)
 - Read and understood EDR's [privacy policy](https://edrecon.com/privacy-policy) and [terms of services](https://edrecon.com/tos). **Proceeding any further implies that you understand and agree to the privacy policy and the terms of services.**
-## <a name="_202t4w1sq2jx"></a><a name="_toc162390234"></a>Elite Dangerous Market Connector
+## Elite Dangerous Market Connector
 **If you already have installed Elite Dangerous Market Connector (EDMC), [skip to the next section](#_v721darz3ctv).**
 
 ED Recon is offered as a plugin for Elite Dangerous Market Connector, a great third-party tool for Elite: Dangerous. Check the [official instructions](https://github.com/EDCD/EDMarketConnector/wiki/Installation-&-Setup) if the explanations below are not enough.
@@ -117,7 +116,7 @@ Steps:
    - Windows may warn you about the file. Click on `more info` then `Run anyway`. If you are concerned, feel free to run an antivirus scan on the downloaded file beforehand.
 4. Run Elite Dangerous Market Connector from the Start Menu or Start Screen.
 5. Optional: allow EDMC to access Frontier’s API on your behalf (**EDR does NOT use the Frontier API, so feel free to ignore this authentication request**).
-## <a name="_v721darz3ctv"></a><a name="_toc162390235"></a>ED Recon (aka EDR)
+## ED Recon (aka EDR)
 Steps:
 
 1. [Download EDR’s latest release](https://github.com/lekeno/EDR/releases/latest) (the EDR.v#.#.#.zip file where #.#.# is the version number, e.g. 2.7.5 in the screenshot below)
@@ -163,7 +162,7 @@ Steps:
     - On Windows 10: the overlay should work for all the modes (Fullscreen, Borderless, Windowed).
     - On Windows 7: the overlay does NOT work in Fullscreen, use Borderless or Windowed instead.
     - If the overlay does not work, see the [troubleshooting](#_2l7rqborubf8) section.
-## <a name="_7fegmlsbibv6"></a><a name="_toc162390236"></a>EDR account
+## EDR account
 EDR works out of the box without any account. However, if you want to contribute information back to EDR and its users, e.g. sending sightings of outlaws, you will need to [apply for an account](https://edrecon.com/account).
 
 Important remarks:
@@ -184,7 +183,7 @@ If everything goes according to plan, you should see “authenticated” in the 
   <img alt="Location where it is indicated whether the login was successful" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_09_White.png?raw=true">
 </picture>
 
-# <a name="_1fob9te"></a><a name="_toc162390237"></a>**EDR in a nutshell**
+# **EDR in a nutshell**
 EDR offers a wide range of features designed to ease and augment your experience in Elite Dangerous: profile of players based on in-game reports, finding rare materials, assessing the value of odyssey materials, etc. 
 
 These features either trigger automatically depending on what’s happening in the game, or can be triggered by sending EDR commands (e.g. `!who lekeno`) via the in-game chat (any channel), or via the EDR input field in the EDMC window:
@@ -195,18 +194,18 @@ These features either trigger automatically depending on what’s happening in t
   <img alt="Alterative position from where to send EDR commands in EDMC" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_10_White.png?raw=true">
 </picture>
 
-### <a name="_ld9uhtijx1hr"></a><a name="_toc162390238"></a>Output
+### Output
 EDR shows various useful information via a graphical overlay and a text UI in the EDMC window. 
 
 - The overlay can also be configured as a standalone window for multi-monitors or VR setups (`File` menu, `Settings`, `EDR` tab, `Overlay` set to `standalone`).
 - The text UI can be expanded or collapsed with the checkbox on the right side of the EDR status line in EDMC.
-### <a name="_6bupzy6m76jg"></a><a name="_toc162390239"></a>Tips & Help
+### Tips & Help
 When starting a new game session, EDR will show a random tip either about the game or EDR itself. 
 
 - Consider sending `!help` to get short and sweet guidance about the various EDR commands.
 - You can also request a random tip by sending the `!tip` command, or `!tip edr` for tips about EDR, and `!tip open` for tips about playing in Open.
-# <a name="_mwwuek580u2s"></a><a name="_toc162390240"></a>**Commander Features**
-## <a name="_3znysh7"></a><a name="_toc162390241"></a>Automatic Commander Profiles
+# **Commander Features**
+## Automatic Commander Profiles
 If EDR detects the presence of a potentially dangerous commander (e.g. outlaw), it will automatically show that commander's profile. 
 Examples: 
 
@@ -214,7 +213,7 @@ Examples:
 - Being interdicted by an outlaw.
 - Joining / forming a wing with an outlaw. 
 - Having an outlaw join a multicrew session.
-## <a name="_2et92p0"></a><a name="_toc162390242"></a>Manual Commander Profiles
+## Manual Commander Profiles
 Targeting another player will reveal their EDR profile. For users with an account, completing a scan will result in submitting the info to the EDR server for the benefit of other EDR users. Alternatively, you can trigger an EDR + Inara cmdr profile lookup by: 
 
 - Sending **`o7`** to the cmdr you are wondering about (direct message).
@@ -224,16 +223,16 @@ EDR will also show key info (hit points, size/class, trends) about your target�
 
 <img alt="Interface integrity and hull and shield of the opponent" src="https://github.com/GLWine/edr/blob/2.7.5/edr/docs/Assets/IMG_11.png?raw=true">
 
-## <a name="_tyjcwt"></a><a name="_toc162390243"></a>Annotations on other commanders
+## Annotations on other commanders
 You can build your own personalized Commander Index (CmdrDex) to customize your EDR experience and help other EDR users make informed guesses about other commanders' intent. Your CmdrDex is personal, EDR will only show aggregated stats for the alignment tags, e.g. 79% outlaw, 25% neutral, 5% enforcer (abbreviated as [!70% ?25%? +5%] in-game).
-### <a name="_3dy6vkm"></a><a name="_toc162390244"></a>Generic commands
+### Generic commands
 - `#=` or `#friend` to tag a contact as a friend.
 - <tt>#= *cmdrname*</tt> or <tt>friend *cmdrname*</tt> to tag a specific commander as a friend.
 - `-#=` or <tt>-#friend *cmdrname*</tt> to remove a friend tag from a contact or a specific commander in your commander index.
 - `#tag` or <tt>#tag *cmdrname*</tt> to tag a contact or *cmdrname* with a custom tag in your commander index (e.g. `#pirate jack sparrow`).
 - `-#` or <tt>-# *cmdrname*</tt> to untag (remove) a contact or *cmdrname* from your commander index. (e.g. `-# jack sparrow`).
 - `-#tag` or <tt>-#tag *cmdrname*</tt> to remove a specific tag from a contact or cmdrname in your commander index, (e.g. `-#pirate jack sparrow`).
-### <a name="_1t3h5sf"></a><a name="_toc162390245"></a>Alignment tags
+### Alignment tags
 You can tag a commander with an alignment tag, and help other EDR users make an informed guess about other players.
 
 - Outlaw tag if you see them going after a clean and non-enemy power commander.
@@ -808,7 +807,7 @@ Before trying any of the options below, make sure that your graphics drivers are
    1. Go to the Appearance tab, select Always on top.
    1. Enable the transparent theme if you want
    1. Go to Elite’s graphics options and select borderless or windowed.
-## <a name="_jtlk7zcvsk5j"></a><a name="_toc162390316"></a>Other issues, not resolved?
+## Other issues, not resolved?
 Feel free to join [EDR central](https://edrecon.com/discord), the community server for EDR with access to the bot, real-time alerts and troubleshooting support. You might also want to share your EDMC log file with LeKeno#8484 over Discord, see below for instructions.
 
 Steps:
