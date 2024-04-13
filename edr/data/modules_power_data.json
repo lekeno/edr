@@ -171,7 +171,15 @@
         "powergen": 0,
         "powerdraw": 1.2
     },
+    "hpt_atdumbfiremissile_fixed_medium_v2": {
+        "powergen": 0,
+        "powerdraw": 1.2
+    },
     "hpt_atdumbfiremissile_turret_medium": {
+        "powergen": 0,
+        "powerdraw": 1.2
+    },
+    "hpt_atdumbfiremissile_turret_medium_v2": {
         "powergen": 0,
         "powerdraw": 1.2
     },
@@ -179,7 +187,15 @@
         "powergen": 0,
         "powerdraw": 1.62
     },
+    "hpt_atdumbfiremissile_fixed_large_v2": {
+        "powergen": 0,
+        "powerdraw": 1.62
+    },
     "hpt_atdumbfiremissile_turret_large": {
+        "powergen": 0,
+        "powerdraw": 1.75
+    },
+    "hpt_atdumbfiremissile_turret_large_v2": {
         "powergen": 0,
         "powerdraw": 1.75
     },
@@ -187,7 +203,15 @@
         "powergen": 0,
         "powerdraw": 0.46
     },
+    "hpt_atmulticannon_fixed_medium_v2": {
+        "powergen": 0,
+        "powerdraw": 0.46
+    },
     "hpt_atmulticannon_turret_medium": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "hpt_atmulticannon_turret_medium_v2": {
         "powergen": 0,
         "powerdraw": 0.5
     },
@@ -195,7 +219,19 @@
         "powergen": 0,
         "powerdraw": 0.64
     },
+    "hpt_atmulticannon_fixed_large_v2": {
+        "powergen": 0,
+        "powerdraw": 0.64
+    },
     "hpt_atmulticannon_turret_large": {
+        "powergen": 0,
+        "powerdraw": 0.64
+    },
+    "hpt_atmulticannon_turret_large_v2": {
+        "powergen": 0,
+        "powerdraw": 0.64
+    },
+    "hpt_atventdisruptorpylon_fixed_large": {
         "powergen": 0,
         "powerdraw": 0.64
     },

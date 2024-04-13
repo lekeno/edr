@@ -3638,7 +3638,7 @@ class EDRClient(object):
         else:
             self.status = _(u"{}: nothing within [{}LY] of {}").format(checker.name, int(radius), reference)
             checked = _("checked {} systems").format(checker.systems_counter) 
-            if checker.settlements_counter: 
+            if checker.systems_counter: 
                 checked = _("checked {} systems").format(checker.systems_counter)
             details.append(_(u"nothing found within {}LY, {}.").format(int(radius), checked))
             if checker.hint():
