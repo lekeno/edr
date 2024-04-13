@@ -44,7 +44,7 @@ class HelpContent(object):
                 _(u" - Got feedback or questions? Please file bugs, feature requests or questions at https://github.com/lekeno/edr/issues/"),
                 u"⚶",
                 _(u"Translations (see https://github.com/lekeno/edr/issues/135)."),
-                _(u" - Contributions by : Juniper Nomi'Tar [UGC], Tomski [bbFA], Jason Hill and MonkasteR"),
+                _(u" - Contributions by : Juniper Nomi'Tar [UGC], Tomski [bbFA], Jason Hill, MonkasteR, FrostBit"),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
             ]
