@@ -831,6 +831,30 @@
         "powergen": 0,
         "powerdraw": 0.3
     },
+    "hyperdrive_overcharge_size2_class3": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "hyperdrive_overcharge_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 0.3
+    },
+    "hyperdrive_overcharge_size4_class3": {
+        "powergen": 0,
+        "powerdraw": 0.3
+    },
+    "hyperdrive_overcharge_size5_class3": {
+        "powergen": 0,
+        "powerdraw": 0.45
+    },
+    "hyperdrive_overcharge_size6_class3": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "hyperdrive_overcharge_size7_class3": {
+        "powergen": 0,
+        "powerdraw": 0.68
+    },
     "int_fsdinterdictor_size1_class1": {
         "powergen": 0,
         "powerdraw": 0.14
