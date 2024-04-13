@@ -40,6 +40,7 @@ class EDRServer(object):
         self.version = edrconfig.EDRConfig().edr_version()
         self._throttle_until_timestamp = None
         self.anonymous_reports = None
+        self.crimes_reporting = None
         self.fc_jump_psa = None
         self.backoff = {"EDR": backoff.Backoff(u"EDR"), "Inara": backoff.Backoff(u"Inara") }
         self.INARA_API_KEY = config.inara_api_key()
@@ -416,6 +417,8 @@ class EDRServer(object):
         params = { "auth" : self.auth_token()}
         if self.anonymous_reports != None:
             json_payload["anonymous"] = self.anonymous_reports
+        if self.crimes_reporting != None:
+            json_payload["creporting"] = self.crimes_reporting
         endpoint = "{server}{endpoint}.json".format(server=self.EDR_SERVER, endpoint=endpoint)
         EDRLOG.log(u"Post JSON {} to {}".format(json_payload, endpoint), "DEBUG")
         resp = self.__post(endpoint, "EDR", params=params, json=json_payload)

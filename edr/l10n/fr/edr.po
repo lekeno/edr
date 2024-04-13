@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2024-01-03 13:23+0900\n"
-"PO-Revision-Date: 2024-01-03 13:23+0900\n"
+"POT-Creation-Date: 2024-02-05 06:32+0900\n"
+"PO-Revision-Date: 2024-02-05 06:32+0900\n"
 "Last-Translator: \n"
 "Language-Team: Alpha\n"
 "Language: fr_FR\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 3.3.2\n"
+"X-Generator: Poedit 3.4.2\n"
 "X-Poedit-Basepath: ../..\n"
 "X-Poedit-KeywordsList: _;_c\n"
 "X-Poedit-Flags-xgettext: --add-comments=Translators: --from-code=utf-8\n"
@@ -43,117 +43,116 @@ msgstr ""
 
 #. Translators: this is shown on the EDMC's status line
 #. Translators: this is shown on EDMC's status bar when the authentication fails
-#: edrclient.py:98 edrclient.py:416 edrclient.py:533
+#: edrclient.py:101 edrclient.py:435 edrclient.py:558
 msgid "not authenticated."
 msgstr "identité non confirmée."
 
-#: edrclient.py:100 edrclient.py:201 edrclient.py:540
+#: edrclient.py:103 edrclient.py:206 edrclient.py:565
 msgid "Enabled"
 msgstr "Activé"
 
-#: edrclient.py:100 edrclient.py:105 edrclient.py:201 edrclient.py:371
-#: edrclient.py:540
+#: edrclient.py:103 edrclient.py:108 edrclient.py:206 edrclient.py:390
+#: edrclient.py:565
 msgid "Disabled"
 msgstr "Désactivé"
 
-#: edrclient.py:104 edrclient.py:315 edrclient.py:378 edrclient.py:540
+#: edrclient.py:107 edrclient.py:326 edrclient.py:397 edrclient.py:565
 msgid "Standalone (for VR or multi-display)"
 msgstr "Séparé (pour VR ou multi-moniteur)"
 
-#: edrclient.py:120 edrclient.py:236 edrclient.py:347 edrclient.py:508
+#: edrclient.py:126 edrclient.py:242 edrclient.py:358 edrclient.py:530
 msgid "Auto"
 msgstr "Automatique"
 
-#: edrclient.py:122 edrclient.py:124 edrclient.py:237 edrclient.py:349
-#: edrclient.py:350 edrclient.py:508
+#: edrclient.py:128 edrclient.py:130 edrclient.py:243 edrclient.py:360
+#: edrclient.py:361 edrclient.py:530
 msgid "Always"
 msgstr "Toujours"
 
-#: edrclient.py:122 edrclient.py:127 edrclient.py:237 edrclient.py:241
-#: edrclient.py:349 edrclient.py:359 edrclient.py:508 edrclient.py:514
-#: edrclient.py:2336 edrclient.py:2363
+#: edrclient.py:128 edrclient.py:133 edrclient.py:243 edrclient.py:252
+#: edrclient.py:360 edrclient.py:378 edrclient.py:530 edrclient.py:536
+#: edrclient.py:2363 edrclient.py:2390
 msgid "Never"
 msgstr "Jamais"
 
-#: edrclient.py:129 edrclient.py:131 edrclient.py:242 edrclient.py:361
-#: edrclient.py:362 edrclient.py:514 edrclient.py:2342 edrclient.py:2349
-#: edrclient.py:2370
+#: edrclient.py:135 edrclient.py:137 edrclient.py:253 edrclient.py:380
+#: edrclient.py:381 edrclient.py:536 edrclient.py:2369 edrclient.py:2376
+#: edrclient.py:2397
 msgid "Public"
 msgstr "Publique"
 
-#: edrclient.py:129 edrclient.py:242 edrclient.py:361 edrclient.py:514
-#: edrclient.py:522 edrclient.py:552 edrclient.py:2342 edrclient.py:2370
+#: edrclient.py:135 edrclient.py:253 edrclient.py:380 edrclient.py:536
+#: edrclient.py:544 edrclient.py:577 edrclient.py:2369 edrclient.py:2397
 msgid "Private"
 msgstr "Privée"
 
-#: edrclient.py:129 edrclient.py:361 edrclient.py:514 edrclient.py:524
-#: edrclient.py:555 edrclient.py:2354 edrclient.py:2379 edrdiscord.py:326
+#: edrclient.py:135 edrclient.py:380 edrclient.py:536 edrclient.py:546
+#: edrclient.py:580 edrclient.py:2381 edrclient.py:2406 edrdiscord.py:326
 #: edrdiscord.py:327 edrdiscord.py:389 edrdiscord.py:390
 msgid "Direct"
 msgstr "Direct"
 
 #. Translators: this is shown on EDMC's status bar when a user enables loud audio cues
-#: edrclient.py:190
+#: edrclient.py:195
 msgid "loud audio cues."
 msgstr "retour audio à fond."
 
 #. Translators: this is shown on EDMC's status bar when a user enables soft audio cues
-#: edrclient.py:196
+#: edrclient.py:201
 msgid "soft audio cues."
 msgstr "retour audio subtile."
 
 #. Translators: this is shown on EDMC's status bar when the version check fails
-#: edrclient.py:252
+#: edrclient.py:263
 msgid "check for version update has failed."
 msgstr "impossible de vérifier la mise à jour."
 
 #. Translators: this is shown on EDMC's status bar when the authentication succeeds
-#: edrclient.py:413 edrclient.py:529
+#: edrclient.py:432 edrclient.py:554
 msgid "authenticated (guest)."
 msgstr "identité confirmée (invité)."
 
-#: edrclient.py:413 edrclient.py:531
+#: edrclient.py:432 edrclient.py:556
 msgid "authenticated."
 msgstr "identité confirmée."
 
-#. Translators: this is shown when EDR warms-up via the overlay
-#: edrclient.py:428
-msgid "Check that Elite still has the focus!"
-msgstr "Vérifiez qu'Elite a le focus!"
+#: edrclient.py:448 edrclient.py:2254 edrclient.py:2286
+msgid "Crimes reporting is off (!crimes on to re-enable)"
+msgstr "Rapport de crimes désactivé (envoyez '!crimes on' pour activer)"
 
 #. Translators: this is shown when EDR warms-up via the overlay if there is a mandatory update pending
-#: edrclient.py:431
+#: edrclient.py:451
 msgid "Mandatory update!"
 msgstr "Mise à jour obligatoire!"
 
-#: edrclient.py:435
+#: edrclient.py:455
 msgid "Standalone overlay requires EDMCOverlay Version >= 1.1."
 msgstr ""
 "Le mode séparé pour l'écran superposé ne fonctionne qu'avec EDMCOverlay "
 "Version >= 1.1."
 
-#: edrclient.py:436
+#: edrclient.py:456
 msgid "Try to disable / upgrade the global EDMCOverlay module."
 msgstr "Essayez de désactiver ou d'upgrader le module global EDMCOverlay."
 
-#: edrclient.py:438
+#: edrclient.py:458
 msgid "-- Feeling lost? Send !help via the in-game chat --"
 msgstr "-- Un peu perdu? Envoyer !help dans le chat --"
 
 #. Translators: this is shown when EDR warms-up via the overlay
-#: edrclient.py:441
+#: edrclient.py:461
 msgid "EDR v{} by LeKeno"
 msgstr "EDR v{} par LeKeno"
 
-#: edrclient.py:470
+#: edrclient.py:490
 msgid "Troubleshooting"
 msgstr "En cas de problème"
 
-#: edrclient.py:471
+#: edrclient.py:491
 msgid "If the overlay doesn't show up, try one of the following:"
 msgstr "Si l'écran superposé n'apparait pas, essayez ce qui suit:"
 
-#: edrclient.py:472
+#: edrclient.py:492
 msgid ""
 " - In E:D Market Connector: click on the File menu, then Settings, EDR, and "
 "select the Overlay checkbox."
@@ -161,13 +160,13 @@ msgstr ""
 " - Depuis EDMC: cliquez sur le menu Fichier, ensuite Préférences, EDR, et "
 "sélectionnez l'option Overlay."
 
-#: edrclient.py:473
+#: edrclient.py:493
 msgid " - In Elite: go to graphics options, and select Borderless or Windowed."
 msgstr ""
 " - Dans les options graphiques d'Elite, sélectionnez Sans bordures ou "
 "Fenêtré."
 
-#: edrclient.py:474
+#: edrclient.py:494
 msgid ""
 " - With Elite and EDR launched, check that EDMCOverlay.exe is running in the "
 "task manager."
@@ -175,7 +174,7 @@ msgstr ""
 " - Avec Elite et EDR lancés, vérifiez la présence de EDMCOverlay.exe dans le "
 "gestionnaire de tâches."
 
-#: edrclient.py:475
+#: edrclient.py:495
 msgid ""
 "   If it's not running, then you may have to manually run it once (look in "
 "the plugins folder for 'EDMCOverlay.exe'."
@@ -183,7 +182,7 @@ msgstr ""
 "   Si celui ci n'est pas en cours d'exécution, veuillez lancer le programme "
 "manuellement (cherchez le fichier EDMCOverlay.exe dans le dossier Plugins)."
 
-#: edrclient.py:476
+#: edrclient.py:496
 msgid ""
 "If the overlay hurts your FPS, try turning VSYNC off in Elite's graphics "
 "options."
@@ -191,370 +190,374 @@ msgstr ""
 "Si les performances graphiques diminuent, essayez de désactiver VSYNC dans "
 "les options graphiques d'Elite."
 
-#: edrclient.py:478
+#: edrclient.py:498
 msgid "Join https://edrecon.com/discord for further technical support."
 msgstr ""
 "Rejoignez https://edrecon.com/discord pour recevoir de l'aide technique "
 "supplémentaire."
 
 #. Translators: this is shown in the preferences panel
-#: edrclient.py:487
+#: edrclient.py:507
 msgid "EDR website"
 msgstr "Site web pour EDR"
 
-#: edrclient.py:488
+#: edrclient.py:508
 msgid "EDR community"
 msgstr "Communauté EDR"
 
 #. Translators: this is shown in the preferences panel
-#: edrclient.py:491
+#: edrclient.py:511
 msgid "Credentials"
 msgstr "Identifiants"
 
 #. Translators: this is shown in the preferences panel
-#: edrclient.py:494
+#: edrclient.py:514
 msgid ""
 "Log in with your EDR account for full access (https://edrecon.com/account)"
 msgstr ""
 "Identifiez-vous avec un compte EDR pour un accès complet (https://edrecon."
 "com/account)"
 
-#: edrclient.py:497
+#: edrclient.py:517
 msgid "Email"
 msgstr "Email"
 
-#: edrclient.py:501
+#: edrclient.py:521
 msgid "Password"
 msgstr "Mot de passe"
 
-#: edrclient.py:505
+#: edrclient.py:525
 msgid "Broadcasts"
 msgstr "Annonces"
 
-#: edrclient.py:507
+#: edrclient.py:527
+msgid "Report crimes"
+msgstr "Signalement des crimes"
+
+#: edrclient.py:529
 msgid "Redact my info in Sitreps"
 msgstr "Supprimer mes infos dans les rapports de situation"
 
-#: edrclient.py:513
+#: edrclient.py:535
 msgid "Announce my Fleet Carrier's jump schedule"
 msgstr "Annoncer l'itinéraire de mon porte-vaisseaux"
 
-#: edrclient.py:518
+#: edrclient.py:540
 msgid "Configure your private channel (managed by EDR)"
 msgstr "Configurez votre channel privé (administré par EDR)"
 
-#: edrclient.py:519
+#: edrclient.py:541
 msgid "Configure your Fleet Carrier channel in config/user_config.ini"
 msgstr ""
 "Configurer le canal discord pour votre Porte Vaisseau dans config/"
 "user_config.ini"
 
 #. Translators: this is shown in the preferences panel as a heading for feedback options (e.g. overlay, audio cues)
-#: edrclient.py:536
+#: edrclient.py:561
 msgid "EDR Feedback:"
 msgstr "Retour EDR:"
 
-#: edrclient.py:539
+#: edrclient.py:564
 msgid "Overlay"
 msgstr "Écran superposé"
 
-#: edrclient.py:545
+#: edrclient.py:570
 msgid "Sound"
 msgstr "Audio"
 
-#: edrclient.py:565
+#: edrclient.py:590
 msgid "mandatory update pending (relaunch EDMC)"
 msgstr "mise à jour d'EDR obligatoire (redémarrez EDMC)"
 
-#: edrclient.py:565
+#: edrclient.py:590
 msgid "update pending (relaunch EDMC to apply)"
 msgstr "veuillez mettre à jour EDR (redémarrez EDMC)!"
 
 #. Translators: this is shown in EDMC's status
-#: edrclient.py:568
+#: edrclient.py:593
 msgid "mandatory EDR update!"
 msgstr "mise à jour d'EDR obligatoire!"
 
-#: edrclient.py:568
+#: edrclient.py:593
 msgid "please update EDR!"
 msgstr "veuillez mettre à jour EDR!"
 
-#: edrclient.py:617
+#: edrclient.py:644
 msgid "Rare materials in {} (USS-HGE/EE, Mission Rewards)"
 msgstr "Matériaux rares à {} (USS-HGE/EE, Récompenses de Mission)"
 
-#: edrclient.py:620
+#: edrclient.py:647
 msgid "Noteworthy stellar bodies in {}"
 msgstr "Planètes intéressantes"
 
-#: edrclient.py:626
+#: edrclient.py:653
 msgid "Bio-suitable: {} [{} among {} known bodies]"
 msgstr "Bio-propice: {} [{} parmi {} corps connus]"
 
-#: edrclient.py:631
+#: edrclient.py:658
 msgid "Anarchy system"
 msgstr "Système anarchiste"
 
-#: edrclient.py:632
+#: edrclient.py:659
 msgid "Crimes will not be reported."
 msgstr "Les crimes ne seront pas rapportés."
 
-#: edrclient.py:645
+#: edrclient.py:672
 msgid "Settlement"
 msgstr "Colonie"
 
-#: edrclient.py:674
+#: edrclient.py:701
 msgid "Noteworthy about {}: {} sites"
 msgstr "Points d'intérêt sur {}: {} sites"
 
-#: edrclient.py:679 edrclient.py:753
+#: edrclient.py:706 edrclient.py:780
 msgid "Noteworthy about {}"
 msgstr "Faits notables pour {}"
 
-#: edrclient.py:686
+#: edrclient.py:713
 msgid "Noteworthy"
 msgstr "Notable"
 
-#: edrclient.py:687
+#: edrclient.py:714
 msgid "{} materials: {}"
 msgstr "{} matériaux: {}"
 
-#: edrclient.py:691 edrclient.py:777 edrclient.py:1115 edrclient.py:1152
-#: edrclient.py:3239
+#: edrclient.py:718 edrclient.py:804 edrclient.py:1142 edrclient.py:1179
+#: edrclient.py:3266
 msgid "Expected Bio: {}"
 msgstr "Bio attendue: {}"
 
-#: edrclient.py:717 edrclient.py:3789
+#: edrclient.py:744 edrclient.py:3849
 msgid "EDR Journey: survey targets"
 msgstr "Itinéraire EDR : cibles à sonder"
 
-#: edrclient.py:730
+#: edrclient.py:757
 msgid "genus {}/{};  analyzed: {}"
 msgstr "genre {}/{};  analysés: {}"
 
-#: edrclient.py:732
+#: edrclient.py:759
 msgid "genus {}/{}?;  analyzed: {}"
 msgstr "genre {}/{}?;  analysés: {}"
 
-#: edrclient.py:734
+#: edrclient.py:761
 msgid "genus {}/???;  analyzed: {}"
 msgstr "genre {}/???;  analysés: {}"
 
-#: edrclient.py:739
+#: edrclient.py:766
 msgid "; species {}"
 msgstr "; espèces {}"
 
-#: edrclient.py:743
+#: edrclient.py:770
 msgid "Progress: {}{}"
 msgstr "Progrès: {}{}"
 
-#: edrclient.py:761
+#: edrclient.py:788
 msgid "[KNOWN]"
 msgstr "[CONNU]"
 
-#: edrclient.py:761
+#: edrclient.py:788
 msgid "[FIRST DISCOVERED]"
 msgstr "[DECOUVERTE]"
 
-#: edrclient.py:764
+#: edrclient.py:791
 msgid "[CHARTED]"
 msgstr "[CARTOGRAPHIÉ]"
 
-#: edrclient.py:764 edrclient.py:1044
+#: edrclient.py:791 edrclient.py:1071
 msgid "[UNCHARTED]"
 msgstr "[INEXPLORÉ]"
 
-#: edrclient.py:767
+#: edrclient.py:794
 msgid "[EFF. BONUS]"
 msgstr "[BONUS EFF.]"
 
-#: edrclient.py:771
+#: edrclient.py:798
 msgid "Estimated value: {} cr (mapped: {}) @ {} LS; {}"
 msgstr "Valeur estimée: {} cr (cartographié: {}) @ {} AL; {}"
 
-#: edrclient.py:773
+#: edrclient.py:800
 msgid "Estimated value: {} cr @ {} LS; {}"
 msgstr "Valeur estimée: {} cr @ {} AL; {}"
 
-#: edrclient.py:788
+#: edrclient.py:815
 msgid "Noteworthy about {} ({} mats)"
 msgstr "Faits notables pour {} ({} matériaux)"
 
-#: edrclient.py:799
+#: edrclient.py:826
 msgid "Skipped FC report for consistency reasons (fix: leave and come back)"
 msgstr ""
 "Rapport FC ignoré pour des raisons de cohérence (quitter le système et "
 "revenez dessus pour rétablir)"
 
-#: edrclient.py:814
+#: edrclient.py:841
 msgid "Reported {} fleet carrier in system {}"
 msgstr "{} porte-vaisseaux signalé dans le système {}"
 
-#: edrclient.py:816
+#: edrclient.py:843
 msgid "Reported {} fleet carriers in system {}"
 msgstr "{} porte-vaisseaux signalés dans le système {}"
 
-#: edrclient.py:823
+#: edrclient.py:850
 msgid "Signal Insights (potential outcomes)"
 msgstr "Analyse du Signal (prévisions)"
 
-#: edrclient.py:835
+#: edrclient.py:862
 #, python-brace-format
 msgid "Known signals in {system}"
 msgstr "Signaux disponibles à {system}"
 
-#: edrclient.py:854 edrclient.py:856
+#: edrclient.py:881 edrclient.py:883
 msgid "Genus: {}/{}"
 msgstr "Genre: {}/{}"
 
-#: edrclient.py:858
+#: edrclient.py:885
 msgid "Genus: {}/???"
 msgstr "Genre: {}/???"
 
-#: edrclient.py:861
+#: edrclient.py:888
 msgid " - analyzed: {}"
 msgstr " - analysés: {}"
 
-#: edrclient.py:879
+#: edrclient.py:906
 msgid " - remaining: {}"
 msgstr " - restant : {}"
 
-#: edrclient.py:882
+#: edrclient.py:909
 msgid "Species: {}"
 msgstr "Espèces: {}"
 
-#: edrclient.py:889
+#: edrclient.py:916
 msgid "To survey: {}"
 msgstr "A sonder: {}"
 
-#: edrclient.py:891 edrclient.py:1090 edrclient.py:3792
+#: edrclient.py:918 edrclient.py:1117 edrclient.py:3852
 msgid "Waypoint completed; Use '!journey next' to advance."
 msgstr "Waypoint terminé; Utilisez '!journey next' pour avancer."
 
-#: edrclient.py:893
+#: edrclient.py:920
 msgid "Biome analysis progress"
 msgstr "Progrès de l'analyse du biome"
 
-#: edrclient.py:924 edrclient.py:927
+#: edrclient.py:951 edrclient.py:954
 msgid "Assisted Navigation"
 msgstr "Navigation assistée"
 
-#: edrclient.py:924
+#: edrclient.py:951
 msgid "Destination set to {} | {}"
 msgstr "Destination enregistrée: {} | {}"
 
-#: edrclient.py:924
+#: edrclient.py:951
 msgid "Guidance will be shown when approaching a stellar body"
 msgstr "Le guidage s'affichera lors d'une approche planétaire"
 
-#: edrclient.py:924
+#: edrclient.py:951
 msgid "Destination added to the clipboard"
 msgstr "Destination copiée dans le presse papier"
 
-#: edrclient.py:927
+#: edrclient.py:954
 msgid "Invalid destination"
 msgstr "Destination invalide"
 
-#: edrclient.py:1023 edrsystems.py:697
+#: edrclient.py:1050 edrsystems.py:697
 msgid "Scanned: {}, Mapped: {}"
 msgstr "Scannés: {}, Cartographiés: {}"
 
-#: edrclient.py:1025 edrsystems.py:699
+#: edrclient.py:1052 edrsystems.py:699
 msgid "Scanned: {}"
 msgstr "Scannés: {}"
 
-#: edrclient.py:1039
+#: edrclient.py:1066
 msgid "[FIRST SCAN]"
 msgstr "[PREMIER SCAN]"
 
-#: edrclient.py:1039
+#: edrclient.py:1066
 msgid "[UNKNOWN]"
 msgstr "[INCONNU]"
 
-#: edrclient.py:1044
+#: edrclient.py:1071
 msgid "[FIRST MAP]"
 msgstr "[PREMIÈRE CARTE]"
 
-#: edrclient.py:1051
+#: edrclient.py:1078
 msgid "{}: {} (mapped: {}) @ {} LS    {}"
 msgstr "{}: {} (cartographié: {}) @ {} AL    {}"
 
-#: edrclient.py:1053
+#: edrclient.py:1080
 msgid "{}: {} @ {} LS    {}"
 msgstr "{}: {} @ {} AL    {}"
 
-#: edrclient.py:1059
+#: edrclient.py:1086
 msgid "Unknown: {}, Uncharted: {}"
 msgstr "Inconnus: {}, Inexplorés: {}"
 
-#: edrclient.py:1061
+#: edrclient.py:1088
 msgid "Unknown: {}"
 msgstr "Inconnus: {}"
 
-#: edrclient.py:1063
+#: edrclient.py:1090
 msgid "Uncharted: {}"
 msgstr "Inexplorés: {}"
 
-#: edrclient.py:1068
+#: edrclient.py:1095
 msgid "Discovered {}/{} {}%    {}"
 msgstr "Découvertes {}/{} {}%    {}"
 
-#: edrclient.py:1073
+#: edrclient.py:1100
 msgid "Estimated value of {}"
 msgstr "Valeur estimée de {}"
 
-#: edrclient.py:1086
+#: edrclient.py:1113
 msgid "{} bodies to check: {}"
 msgstr "{} planètes à vérifier: {}"
 
-#: edrclient.py:1088
+#: edrclient.py:1115
 msgid "1 body to check: {}"
 msgstr "1 planète à sonder: {}"
 
-#: edrclient.py:1092
+#: edrclient.py:1119
 msgid "Bodies survey progress"
 msgstr "Progrès des sondages planétaires"
 
-#: edrclient.py:1102
+#: edrclient.py:1129
 msgid "Biome assessment for {}"
 msgstr "Évaluation du biome pour {}"
 
-#: edrclient.py:1111
+#: edrclient.py:1138
 msgid "Expected Bio: none"
 msgstr "Bio attendue: aucune"
 
-#: edrclient.py:1124
+#: edrclient.py:1151
 msgid "Bodies suitable for exobiology in {}"
 msgstr "Planétes adaptées à l'exobiologie dans {}"
 
-#: edrclient.py:1129
+#: edrclient.py:1156
 msgid "None detected"
 msgstr "Aucune planète propice détectée"
 
-#: edrclient.py:1130
+#: edrclient.py:1157
 msgid "[among {} known bodies]"
 msgstr "[parmi {} corps connus]"
 
-#: edrclient.py:1141 edrclient.py:1142 edrroutes.py:81
+#: edrclient.py:1168 edrclient.py:1169 edrroutes.py:81
 msgid "???"
 msgstr ""
 
-#: edrclient.py:1158
+#: edrclient.py:1185
 msgid "Signals on {}"
 msgstr "Signaux sur {}"
 
-#: edrclient.py:1198 edrclient.py:3083
+#: edrclient.py:1225 edrclient.py:3110
 msgid "Added a point of interest at the current position."
 msgstr "Ajout d'un point d'intérêt à la position actuelle."
 
-#: edrclient.py:1199 edrclient.py:3084
+#: edrclient.py:1226 edrclient.py:3111
 msgid ""
 "Use the '!nav next' or '!nav previous! to select the next or previous POI."
 msgstr ""
 "Utilisez '!nav next' ou '!nav previous! pour sélectionner le POI suivant ou "
 "précédent."
 
-#: edrclient.py:1200 edrclient.py:3085
+#: edrclient.py:1227 edrclient.py:3112
 msgid ""
 "Use the 'stop' gesture or '!nav clear' to clear the current point of "
 "interest."
@@ -562,433 +565,433 @@ msgstr ""
 "Utilisez le geste 'stop' ou '!nav clear' pour enlever le point d'intérêt "
 "actuel."
 
-#: edrclient.py:1201 edrclient.py:3086
+#: edrclient.py:1228 edrclient.py:3113
 msgid "Use the '!nav reset' to reset all custom POI for the current planet."
 msgstr ""
 "Utilisez '!nav reset' pour réinitialiser tous les POI personnalisés de la "
 "planète actuelle."
 
-#: edrclient.py:1203
+#: edrclient.py:1230
 msgid "EDR Navigation (comp. scanner)"
 msgstr "Navigation EDR (scanner de composition)"
 
-#: edrclient.py:1241
+#: edrclient.py:1268
 msgid "> {:03} < for Lat:{:.4f} Lon:{:.4f}"
 msgstr "> {:03} < pour Lat:{:.4f} Lon:{:.4f}"
 
-#: edrclient.py:1297
+#: edrclient.py:1324
 #, python-brace-format
 msgid " [{loc_index}]: {dist}m  >{head:03}<"
 msgstr " [{loc_index}]: {dist}m  >{head:03}<"
 
-#: edrclient.py:1305
+#: edrclient.py:1332
 msgid "Value: {} cr; Gene diversity: +{}m => {}"
 msgstr "Valeur : {} cr ; Diversité génétique : +{}m => {}"
 
 #. Translators: this is shown via the overlay if the system of interest is an Anarchy (current system or !sitrep <system>)
-#: edrclient.py:1320
+#: edrclient.py:1347
 msgid "Sitrep|Anarchy: not all crimes are reported."
 msgstr "Anarchie: les crimes ne seront pas tous rapportés."
 
 #. Translators: this is the heading for the sitrep of a given system {}; shown via the overlay
-#: edrclient.py:1347
+#: edrclient.py:1374
 msgid "SITREP for {}"
 msgstr "SITREP pour {}"
 
-#: edrclient.py:1347
+#: edrclient.py:1374
 msgid "SITREP for {} (Open)"
 msgstr "SITREP pour {} (Open)"
 
-#: edrclient.py:1359
+#: edrclient.py:1386
 msgid "[Yield: {:.2f}%]   [Items: {} ({:.0f}/hour)]"
 msgstr "[Prod: {:.2f}%]   [Items: {} ({:.0f}/heure)]"
 
-#: edrclient.py:1372
+#: edrclient.py:1399
 msgid "[Last: {} cr [{}]]   [Totals: {} cr/hour ({} awarded)]"
 msgstr "[Dernier: {} cr [{}]]   [Total: {} cr/heure ({} reçu)]"
 
-#: edrclient.py:1396
+#: edrclient.py:1423
 msgid "S/H %: {}/{} - {} %: {:.4g}"
 msgstr "S/H %: {}/{} - {} %: {:.4g}"
 
-#: edrclient.py:1398
+#: edrclient.py:1425
 msgid "S/H %: {}/{}"
 msgstr "S/H %: {}/{}"
 
 #. Translators: this shows a ist of systems {} with active NOtice To Air Men via the overlay
-#: edrclient.py:1410
+#: edrclient.py:1437
 msgid "Active NOTAMs for: {}"
 msgstr "NOTAMs en vigueur pour: {}"
 
 #. Translators: this is the heading for the active NOTAMs overlay
-#: edrclient.py:1412 edrclient.py:1414
+#: edrclient.py:1439 edrclient.py:1441
 msgid "NOTAMs"
 msgstr "NOTAMs"
 
-#: edrclient.py:1414 edrclient.py:1423
+#: edrclient.py:1441 edrclient.py:1450
 msgid "No active NOTAMs."
 msgstr "Aucun NOTAM en vigueur."
 
 #. Translators: this is the heading to show any active NOTAM for a given system {}
-#: edrclient.py:1421 edrclient.py:1423
+#: edrclient.py:1448 edrclient.py:1450
 msgid "NOTAM for {}"
 msgstr "NOTAM pour {}"
 
-#: edrclient.py:1432
+#: edrclient.py:1459
 msgid "SITREPS"
 msgstr "SITREPS"
 
-#: edrclient.py:1432
+#: edrclient.py:1459
 msgid "SITREPS (Open)"
 msgstr "SITREPS (Open)"
 
-#: edrclient.py:1471
+#: edrclient.py:1498
 msgid "Mission Eval"
 msgstr "Évaluation de mission"
 
-#: edrclient.py:1471 edrclient.py:1497
+#: edrclient.py:1498 edrclient.py:1524
 msgid "Nothing noteworthy to share"
 msgstr "Rien d'intéressant"
 
-#: edrclient.py:1476
+#: edrclient.py:1503
 msgid "Eval of mission item : {}"
 msgstr "Évaluation d'un objet pour la mission: {}"
 
-#: edrclient.py:1478
+#: edrclient.py:1505
 msgid "Eval of mission item"
 msgstr "Évaluation d'un objet pour la mission"
 
-#: edrclient.py:1495 edrclient.py:1497
+#: edrclient.py:1522 edrclient.py:1524
 msgid "Mission rewards eval"
 msgstr "Évaluation de la récompense de mission"
 
-#: edrclient.py:1511 edrclient.py:1513
+#: edrclient.py:1538 edrclient.py:1540
 msgid "EDR Evals"
 msgstr "Evaluations EDR"
 
-#: edrclient.py:1513
+#: edrclient.py:1540
 msgid "Yo dawg, I don't do evals for '{}'"
 msgstr "Yo , mon gros, j'évalue pas '{}'"
 
-#: edrclient.py:1513
+#: edrclient.py:1540
 msgid "Try {} instead."
 msgstr "Essaie ça plutôt: {}."
 
-#: edrclient.py:1513
+#: edrclient.py:1540
 msgid "Or specific materials (e.g. '!eval surveillance equipment')."
 msgstr "Ou des matériaux spécifiques (e.g. '!eval surveillance equipment')."
 
-#: edrclient.py:1529
+#: edrclient.py:1556
 msgid "Loadout information is stale"
 msgstr "Les informations ne sont pas à jour"
 
-#: edrclient.py:1529
+#: edrclient.py:1556
 msgid "Congrats, you've found a bug in Elite!"
 msgstr "Félicitations! Vous avez trouvé un bug dans Elite!"
 
-#: edrclient.py:1529
+#: edrclient.py:1556
 msgid "The modules info isn't updated right away :("
 msgstr "Les informations de vos modules ne sont pas mises à jour de suite :("
 
-#: edrclient.py:1529
+#: edrclient.py:1556
 msgid "Try again after moving around or relog and check your modules."
 msgstr ""
 "Essayez plus tard après avoir bougé ou reloguez et regardez vos modules."
 
-#: edrclient.py:1534 edrclient.py:1538 edrclient.py:1544
+#: edrclient.py:1561 edrclient.py:1565 edrclient.py:1571
 msgid "Basic Power Assessment"
 msgstr "Evaluation de base sur la puissance"
 
-#: edrclient.py:1534
+#: edrclient.py:1561
 msgid "Yo dawg, U sure that you got modules on this?"
 msgstr "Yo, gros, t'es sure que t'as des modules dans ton zinc?"
 
-#: edrclient.py:1538
+#: edrclient.py:1565
 msgid "Yo dawg, the info I got from FDev might be stale."
 msgstr "Yo, mon gars, les infos que j'ai eu de Fdev sont trop old school."
 
-#: edrclient.py:1538
+#: edrclient.py:1565
 msgid "Try again later after a bunch of random actions."
 msgstr "Essaie encore après d'autres actions."
 
-#: edrclient.py:1538
+#: edrclient.py:1565
 msgid "Or try this: relog, look at your modules, try again."
 msgstr "Ou alors, essaie après un relogage et un coup d'oeil aux modules."
 
-#: edrclient.py:1544
+#: edrclient.py:1571
 msgid "Yo dawg, sorry but I can't help with dat."
 msgstr "Yo, mon p'tit gars, j'peux pas t'aider avec ça."
 
-#: edrclient.py:1550
+#: edrclient.py:1577
 msgid "⚡: {}"
 msgstr ""
 
-#: edrclient.py:1551
+#: edrclient.py:1578
 msgid "{}: {}\t{}"
 msgstr ""
 
-#: edrclient.py:1552
+#: edrclient.py:1579
 msgid "   ⚑: {}"
 msgstr ""
 
-#: edrclient.py:1553
+#: edrclient.py:1580
 msgid "  ✓: {}"
 msgstr ""
 
-#: edrclient.py:1554 edrresourcefinder.py:747
+#: edrclient.py:1581 edrresourcefinder.py:747
 msgid "{}{}"
 msgstr ""
 
-#: edrclient.py:1555
+#: edrclient.py:1582
 msgid "Basic Power Assessment (β; oddities? relog, look at your modules)"
 msgstr ""
 "Evaluation Basique de Puissance (β; bizarreries? relogue et regarde tes "
 "modules)"
 
-#: edrclient.py:1562 edrclient.py:1564 edrclient.py:1566
+#: edrclient.py:1589 edrclient.py:1591 edrclient.py:1593
 msgid "Backpack assessment"
 msgstr "Evaluation du sac-à-dos"
 
-#: edrclient.py:1564 edrclient.py:1575
+#: edrclient.py:1591 edrclient.py:1602
 msgid "Nothing superfluous"
 msgstr "Rien de superflu"
 
-#: edrclient.py:1566
+#: edrclient.py:1593
 msgid "Empty backpack?"
 msgstr "Sac à dos vide?"
 
-#: edrclient.py:1573 edrclient.py:1575 edrclient.py:1577
+#: edrclient.py:1600 edrclient.py:1602 edrclient.py:1604
 msgid "Storage assessment"
 msgstr "Evaluation du stockage"
 
-#: edrclient.py:1577
+#: edrclient.py:1604
 msgid "Empty ship locker?"
 msgstr "Conteneur vide?"
 
-#: edrclient.py:1580
+#: edrclient.py:1607
 msgid "Bar: stock assessment"
 msgstr "Bar: évaluation du stock"
 
-#: edrclient.py:1580
+#: edrclient.py:1607
 msgid "Bar: demand assessment"
 msgstr "Bar: évaluation de la demande"
 
-#: edrclient.py:1582
+#: edrclient.py:1609
 msgid "Unexpected state: either no fleet carrier, or no bar?"
 msgstr "État inattendu : pas de porte-flotte, ou pas de bar?"
 
-#: edrclient.py:1590
+#: edrclient.py:1617
 msgid "Kind: best items (b=blueprint, u=upgrades, x=trading, e=eng. unlocks)"
 msgstr ""
 "Type : meilleurs éléments (b=blueprint, u=upgrades, x=trade, e=accès ingé)"
 
-#: edrclient.py:1590
+#: edrclient.py:1617
 msgid "Kind: worst items (b=blueprint, u=upgrades, x=trading, e=eng. unlocks)"
 msgstr "Type : pires éléments (b=blueprint, u=upgrades, x=trade, e=accès ingé)"
 
-#: edrclient.py:1594
+#: edrclient.py:1621
 msgid "Nothing noteworthy"
 msgstr "Rien d'intéressant"
 
-#: edrclient.py:1604 load.py:1577
+#: edrclient.py:1631 load.py:1577
 msgid "Useless: {}"
 msgstr "Inutile : {}"
 
-#: edrclient.py:1606 load.py:1579
+#: edrclient.py:1633 load.py:1579
 msgid "Unnecessary: {}"
 msgstr "Pas nécessaire: {}"
 
-#: edrclient.py:1620
+#: edrclient.py:1647
 msgid "Unlocks: {}"
 msgstr "Débloquage: {}"
 
-#: edrclient.py:1622 edrclient.py:1641
+#: edrclient.py:1649 edrclient.py:1668
 msgid "Assets: {}"
 msgstr "Resources : {}"
 
-#: edrclient.py:1624 edrclient.py:1643
+#: edrclient.py:1651 edrclient.py:1670
 msgid "Goods: {}"
 msgstr "Biens: {}"
 
-#: edrclient.py:1626 edrclient.py:1645
+#: edrclient.py:1653 edrclient.py:1672
 msgid "Data: {}"
 msgstr "Données: {}"
 
-#: edrclient.py:1628 edrclient.py:1647
+#: edrclient.py:1655 edrclient.py:1674
 msgid "Unlocked: {}"
 msgstr "Débloqué: {}"
 
-#: edrclient.py:1676
+#: edrclient.py:1703
 msgid ""
 "{\"Units\": >5} {\"Item\": <21} {\"Credits\": >7} {\"Worthiness*\": >15}\n"
 msgstr ""
 "{\"Unité\": >5} {\"Article\": <21} {\"Crédits\": >7} {\"Valeur*\": >15}\n"
 
-#: edrclient.py:1677
+#: edrclient.py:1704
 msgid "{\" [Selling] \":-^50}\n"
 msgstr "{\" [En vente] \":-^50}\n"
 
-#: edrclient.py:1684 edrclient.py:1687
+#: edrclient.py:1711 edrclient.py:1714
 msgid "{\" [Buying] \":-^50}\n"
 msgstr "{\" [En achats] \":-^50}\n"
 
-#: edrclient.py:1686
+#: edrclient.py:1713
 msgid "{\"Units\": >5} {\"Item\": <15} {\"Credits\": >7}\n"
 msgstr "{\"Unité\": >5} {\"Article\": <15} {\"Crédits\": >7}\n"
 
-#: edrclient.py:1838
+#: edrclient.py:1865
 msgid "{} alerts enabled"
 msgstr "Alertes {} activées"
 
-#: edrclient.py:1838
+#: edrclient.py:1865
 msgid "{} alerts disabled"
 msgstr "Alertes {} désactivées"
 
-#: edrclient.py:1840 edrclient.py:1870
+#: edrclient.py:1867 edrclient.py:1897
 #, python-brace-format
 msgid " <={max_distance}ly"
 msgstr " <={max_distance}al"
 
-#: edrclient.py:1842 edrclient.py:1872
+#: edrclient.py:1869 edrclient.py:1899
 #, python-brace-format
 msgid " >={min_bounty}cr"
 msgstr " >={min_bounty}cr"
 
-#: edrclient.py:1843 edrclient.py:1873 edrclient.py:1891 edrclient.py:1904
-#: edrclient.py:1906 edrclient.py:1909 edrclient.py:1928 edrclient.py:1930
-#: edrclient.py:1950
+#: edrclient.py:1870 edrclient.py:1900 edrclient.py:1918 edrclient.py:1931
+#: edrclient.py:1933 edrclient.py:1936 edrclient.py:1955 edrclient.py:1957
+#: edrclient.py:1977
 msgid "EDR Alerts"
 msgstr "Alertes EDR"
 
-#: edrclient.py:1856
+#: edrclient.py:1883
 msgid "{} alerts already enabled"
 msgstr "alertes {} déjà activées"
 
-#: edrclient.py:1859
+#: edrclient.py:1886
 msgid ""
 "Request an EDR account to access enemy alerts (https://edrecon.com/account)"
 msgstr ""
 "Demandez un compte EDR afin d'accéder aux alertes d'ennemis (https://edrecon."
 "com/account)"
 
-#: edrclient.py:1861
+#: edrclient.py:1888
 msgid "Pledge to a power to access enemy alerts"
 msgstr "Prêter allégeance à une puissance afin d'accéder aux alertes d'ennemis"
 
-#: edrclient.py:1863
+#: edrclient.py:1890
 msgid "Remain loyal for at least {} days to access enemy alerts"
 msgstr ""
 "Vous devez avoir au moins {} jours de loyauté à votre puissance afin "
 "d'accéder aux alertes d'ennemis"
 
-#: edrclient.py:1865
+#: edrclient.py:1892
 msgid "Enabling Enemy alerts"
 msgstr "Activation des alertes temps-réel"
 
-#: edrclient.py:1865
+#: edrclient.py:1892
 msgid "Couldn't enable Enemy alerts"
 msgstr "Impossible d'activer les alerts temps-réel"
 
-#: edrclient.py:1867
+#: edrclient.py:1894
 #, python-brace-format
 msgid "Enabling {kind} alerts"
 msgstr "Activation des alertes {kind}"
 
-#: edrclient.py:1867
+#: edrclient.py:1894
 #, python-brace-format
 msgid "Couldn't enable {kind} alerts"
 msgstr "Impossible d'activer les alertes {kind}"
 
-#: edrclient.py:1887
+#: edrclient.py:1914
 msgid "Disabling {} alerts"
 msgstr "Désactivation des alertes {}"
 
-#: edrclient.py:1889
+#: edrclient.py:1916
 msgid "{} alerts already disabled"
 msgstr "alertes {} déjà désactivées"
 
-#: edrclient.py:1904
+#: edrclient.py:1931
 #, python-brace-format
 msgid "minimum bounty set to {min_bounty} cr for {kind}"
 msgstr "prime minimale de {min_bounty} cr pour {kind}"
 
-#: edrclient.py:1906
+#: edrclient.py:1933
 msgid "invalid value for minimum bounty"
 msgstr "entrée invalide pour la prime minimale"
 
-#: edrclient.py:1909
+#: edrclient.py:1936
 msgid "no minimum bounty required"
 msgstr "aucune prime minimale requise"
 
-#: edrclient.py:1928
+#: edrclient.py:1955
 #, python-brace-format
 msgid "maximum distance set to {max_distance} ly for {kind}"
 msgstr "distance maximale de {max_distance} al pour {kind}"
 
-#: edrclient.py:1930
+#: edrclient.py:1957
 msgid "invalid value, removing maximal distance"
 msgstr "suppression de la distance maximale"
 
-#: edrclient.py:1933
+#: edrclient.py:1960
 msgid "Outlaws Alerts"
 msgstr "Alertes Bandits"
 
-#: edrclient.py:1933
+#: edrclient.py:1960
 msgid "no limits on distance"
 msgstr "sans distance maximale"
 
-#: edrclient.py:1946
+#: edrclient.py:1973
 msgid "Comms link interrupted. Send '?{} on' to re-establish."
 msgstr "Liaison interrompue. Envoyez '?{}' pour rétablir la liaison."
 
-#: edrclient.py:1989
+#: edrclient.py:2016
 #, python-brace-format
 msgid "{cmdr} ({ship}) sighted in {location}"
 msgstr "{cmdr} ({ship}) repéré à {location}"
 
-#: edrclient.py:1991
+#: edrclient.py:2018
 #, python-brace-format
 msgid "Enemy {cmdr} ({ship}) sighted in {location}"
 msgstr "Ennemi {cmdr} ({ship}) repéré à {location}"
 
-#: edrclient.py:1993
+#: edrclient.py:2020
 #, python-brace-format
 msgid "Outlaw {cmdr} ({ship}) sighted in {location}"
 msgstr "Bandit {cmdr} ({ship}) repéré à {location}"
 
-#: edrclient.py:1997
+#: edrclient.py:2024
 #, python-brace-format
 msgid " [{distance:.3g} ly]"
 msgstr " [{distance:.3g} al]"
 
-#: edrclient.py:1997
+#: edrclient.py:2024
 #, python-brace-format
 msgid " [{distance} ly]"
 msgstr " [{distance} al]"
 
-#: edrclient.py:2000
+#: edrclient.py:2027
 #, python-brace-format
 msgid " wanted for {bounty} cr"
 msgstr " recherché pour {bounty} cr"
 
-#: edrclient.py:2002
+#: edrclient.py:2029
 msgid " wanted somewhere"
 msgstr " recherché quelque part"
 
-#: edrclient.py:2014 edrclient.py:2575
+#: edrclient.py:2041 edrclient.py:2602
 msgid "got info about {}"
 msgstr "profile reçu pour {}"
 
-#: edrclient.py:2020 edrclient.py:2023 edrclient.py:2152 edrclient.py:2576
-#: edrclient.py:2581
+#: edrclient.py:2047 edrclient.py:2050 edrclient.py:2179 edrclient.py:2603
+#: edrclient.py:2608
 msgid "Intel about {}"
 msgstr "Renseignements sur {}"
 
-#: edrclient.py:2023
+#: edrclient.py:2050
 msgid "No info"
 msgstr "Aucune info"
 
-#: edrclient.py:2036 edrresourcefinder.py:257 edrresourcefinder.py:265
+#: edrclient.py:2063 edrresourcefinder.py:257 edrresourcefinder.py:265
 #: edrresourcefinder.py:275 edrresourcefinder.py:301 edrresourcefinder.py:312
 #: edrresourcefinder.py:320 edrresourcefinder.py:344 edrresourcefinder.py:367
 #: edrresourcefinder.py:378 edrresourcefinder.py:424 edrresourcefinder.py:594
@@ -998,7 +1001,7 @@ msgstr "Aucune info"
 msgid "{distance:.3g}"
 msgstr "{distance:.3g}"
 
-#: edrclient.py:2036 edrresourcefinder.py:257 edrresourcefinder.py:265
+#: edrclient.py:2063 edrresourcefinder.py:257 edrresourcefinder.py:265
 #: edrresourcefinder.py:275 edrresourcefinder.py:301 edrresourcefinder.py:312
 #: edrresourcefinder.py:320 edrresourcefinder.py:344 edrresourcefinder.py:367
 #: edrresourcefinder.py:378 edrresourcefinder.py:424 edrresourcefinder.py:594
@@ -1008,178 +1011,174 @@ msgstr "{distance:.3g}"
 msgid "{distance}"
 msgstr "{distance}"
 
-#: edrclient.py:2037
+#: edrclient.py:2064
 #, python-brace-format
 msgid "{dist}ly from {from_sys} to {to_sys}"
 msgstr "{dist}al entre {from_sys} et {to_sys}"
 
-#: edrclient.py:2041
+#: edrclient.py:2068
 msgid "Taxi time ({}LY): {}"
 msgstr "Trajet en Taxi ({}LY): {}"
 
-#: edrclient.py:2042
+#: edrclient.py:2069
 msgid "Transfer time: {}"
 msgstr "Temps de transfert: {}"
 
-#: edrclient.py:2043
+#: edrclient.py:2070
 #, python-brace-format
 msgid "distance: {dist}ly"
 msgstr "distance: {dist}al"
 
-#: edrclient.py:2045
+#: edrclient.py:2072
 msgid "distance failed"
 msgstr "échec de la fonction 'distance'"
 
-#: edrclient.py:2046
+#: edrclient.py:2073
 msgid "Couldn't calculate a distance. Invalid or unknown system names?"
 msgstr "Impossible de calculer la distance. Systèmes inconnus ou non valides?"
 
-#: edrclient.py:2047
+#: edrclient.py:2074
 msgid "Distance"
 msgstr "Distance"
 
-#: edrclient.py:2057
+#: edrclient.py:2084
 msgid "no cmdr id (contact)."
 msgstr "pas de cmdr id (contact)."
 
 #. Translators: this is shown via EDMC's EDR status line upon contact with a known outlaw
-#: edrclient.py:2065 edrclient.py:2128
+#: edrclient.py:2092 edrclient.py:2155
 msgid "{} is bad news."
 msgstr "{} est une mauvaise nouvelle."
 
-#: edrclient.py:2071
+#: edrclient.py:2098
 msgid "Signal: local comms"
 msgstr "Signal: comms locale"
 
-#: edrclient.py:2072 edrclient.py:2075
+#: edrclient.py:2099 edrclient.py:2102
 msgid "Signal: direct comms"
 msgstr "Signal: comms directe"
 
-#: edrclient.py:2073
+#: edrclient.py:2100
 msgid "Signal: system comms"
 msgstr "Signal: comms système"
 
-#: edrclient.py:2074
+#: edrclient.py:2101
 msgid "Signal: emote"
 msgstr "Signal: geste"
 
-#: edrclient.py:2076
+#: edrclient.py:2103
 msgid "Signal: targeted"
 msgstr "Signal: cible"
 
-#: edrclient.py:2077
+#: edrclient.py:2104
 msgid "Signal: multicrew captain"
 msgstr "Signal: capitaine multicrew"
 
-#: edrclient.py:2078
+#: edrclient.py:2105
 msgid "Signal: multicrew member"
 msgstr "Signal: équipier multicrew"
 
-#: edrclient.py:2083 edrclient.py:2141
+#: edrclient.py:2110 edrclient.py:2168
 msgid "[Caution!] Intel about {}"
 msgstr "[Attention!] Renseignements sur {}"
 
 #. Translators: this is shown to users who don't yet have an EDR account
-#: edrclient.py:2087 edrclient.py:2155
+#: edrclient.py:2114 edrclient.py:2182
 msgid "You could have helped other EDR users by reporting this outlaw."
 msgstr ""
 "Vous auriez pu aider d'autres utilisateurs EDR en rapportant ce bandit."
 
-#: edrclient.py:2089
+#: edrclient.py:2116
 msgid "You could have helped other EDR users by reporting this enemy."
 msgstr ""
 "Vous auriez pu aider d'autres utilisateurs EDR en rapportant cet ennemi."
 
-#: edrclient.py:2111
+#: edrclient.py:2138
 msgid "failed to report scan."
 msgstr "scan non rapporté (échec)."
 
-#: edrclient.py:2116
+#: edrclient.py:2143
 msgid "cmdr unknown to EDR."
 msgstr "cmd inconnu des services EDR."
 
-#: edrclient.py:2132
+#: edrclient.py:2159
 msgid "PP Enemy (weapons free). "
 msgstr "Ennemi PP (feu à volonté). "
 
-#: edrclient.py:2134 edrclient.py:2147
+#: edrclient.py:2161 edrclient.py:2174
 msgid "Wanted for {} cr"
 msgstr "Recherché pour {} cr"
 
-#: edrclient.py:2136
+#: edrclient.py:2163
 msgid "Wanted somewhere. A Kill-Warrant-Scan will reveal their highest bounty."
 msgstr "Recherché par une autorité. Un scan révèlera la plus grosse prime."
 
-#: edrclient.py:2144
+#: edrclient.py:2171
 msgid "Intel for cmdr {}."
 msgstr "Renseignements sur {}."
 
-#: edrclient.py:2149
+#: edrclient.py:2176
 msgid "Wanted somewhere but it could be minor offenses."
 msgstr "Recherché par une autorité. Possibilité d'un délit mineur."
 
 #. Translators: this is shown to users who don't yet have an EDR account
-#: edrclient.py:2158
+#: edrclient.py:2185
 #, python-brace-format
 msgid "You could have helped other {power} pledges by reporting this enemy."
 msgstr "Vous auriez pu aider les alliés de {power} en rapportant cet ennemi."
 
-#: edrclient.py:2162
+#: edrclient.py:2189
 msgid "not novel enough (scan)."
 msgstr "situation pas assez nouvelle (scan)"
 
-#: edrclient.py:2173
+#: edrclient.py:2200
 msgid "Scan reporting disabled in solo/private modes."
 msgstr "Rapport de scan désactivé en mode Solo/Privé."
 
-#: edrclient.py:2182
+#: edrclient.py:2209
 msgid "scan reported for {}."
 msgstr "scan de {} rapport."
 
-#: edrclient.py:2199
+#: edrclient.py:2226
 msgid "not novel enough (traffic)."
 msgstr "situation pas assez nouvelle (trafic)"
 
-#: edrclient.py:2211
+#: edrclient.py:2238
 msgid "traffic reported."
 msgstr "trafic rapport."
 
-#: edrclient.py:2227 edrclient.py:2259
-msgid "Crimes reporting is off (!crimes on to re-enable)"
-msgstr "Rapport de crimes désactivé (envoyez '!crimes on' pour activer)"
-
-#: edrclient.py:2232
+#: edrclient.py:2259
 msgid "Anarchy system (crimes not reported)."
 msgstr "Anarchie (crimes non rapportés)"
 
-#: edrclient.py:2238
+#: edrclient.py:2265
 msgid ""
 "You could have helped other EDR users or get help by reporting this crime!"
 msgstr ""
 "Vous auriez pu aider d'autres utilisateurs EDR ou alerter les vigiles en "
 "rapportant ce crime!"
 
-#: edrclient.py:2248
+#: edrclient.py:2275
 msgid "crime reported!"
 msgstr "crime rapporté!"
 
-#: edrclient.py:2264
+#: edrclient.py:2291
 msgid "Anarchy system (fights not reported)."
 msgstr "Anarchie (combats non rapportés)"
 
-#: edrclient.py:2275 helpcontent.py:122 load.py:637 load.py:641 load.py:643
+#: edrclient.py:2302 helpcontent.py:122 load.py:637 load.py:641 load.py:643
 msgid "EDR Central"
 msgstr "EDR Central"
 
-#: edrclient.py:2275 load.py:641
+#: edrclient.py:2302 load.py:641
 msgid "Fight reporting enabled"
 msgstr "Rapport de combat activé"
 
-#: edrclient.py:2275
+#: edrclient.py:2302
 msgid "Reason: presence of outlaws"
 msgstr "Raison: présence d'hors-la-loi"
 
-#: edrclient.py:2275 load.py:641
+#: edrclient.py:2302 load.py:641
 msgid ""
 "Turn it off: flash your lights twice, or leave this area, or escape danger "
 "and retract hardpoints."
@@ -1187,26 +1186,26 @@ msgstr ""
 "Désactiver: flashez vos phares deux fois, quittez cet endroit, ou mettez "
 "vous en sécurité et désactivez vos armes."
 
-#: edrclient.py:2279
+#: edrclient.py:2306
 msgid "Need assistance?"
 msgstr "Besoin de renforts?"
 
-#: edrclient.py:2279
+#: edrclient.py:2306
 msgid "Flash your lights twice to report a PvP fight to enforcers."
 msgstr ""
 "Flashez vos phares pour rapporter un combat PvP aux forces de sécurité."
 
-#: edrclient.py:2279
+#: edrclient.py:2306
 msgid "Send '!crimes off' to make EDR go silent."
 msgstr ""
 "Envoyez '!crimes off' dans le chat pour désactiver ces alertes et ignorer "
 "les crimes."
 
-#: edrclient.py:2299
+#: edrclient.py:2326
 msgid "fight reported!"
 msgstr "combat rapporté!"
 
-#: edrclient.py:2315
+#: edrclient.py:2342
 msgid ""
 "You could have helped other EDR users by reporting this problematic crew "
 "member!"
@@ -1214,207 +1213,207 @@ msgstr ""
 "Vous auriez pu aider d'autres utilisateurs EDR en rapportant ce membre "
 "d'équipage problématique!"
 
-#: edrclient.py:2320
+#: edrclient.py:2347
 msgid "{} is unknown to EDR."
 msgstr "{} n'est pas connu par les services EDR."
 
-#: edrclient.py:2325
+#: edrclient.py:2352
 #, python-brace-format
 msgid "multicrew session reported (cmdr {name})."
 msgstr "succès du rapport d'équipage (cmd {name})."
 
-#: edrclient.py:2338 edrclient.py:2365
+#: edrclient.py:2365 edrclient.py:2392
 msgid "Skipped FC jump announcement."
 msgstr "Itinéraire du porte-vaisseaux ignoré."
 
-#: edrclient.py:2345 edrclient.py:2373
+#: edrclient.py:2372 edrclient.py:2400
 msgid "Skipped Public/Private FC jump announcement (EDR account needed)."
 msgstr "Itinéraire du porte-vaisseaux ignoré (compte EDR requis)."
 
-#: edrclient.py:2350
+#: edrclient.py:2377
 msgid "Sent PSA for FC jump schedule."
 msgstr "Itinéraire du porte-vaisseaux annoncé (public)."
 
-#: edrclient.py:2352
+#: edrclient.py:2379
 msgid "Sent Private PSA for FC jump schedule."
 msgstr "Itinéraire du porte-vaisseaux annoncé (public)."
 
-#: edrclient.py:2356
+#: edrclient.py:2383
 msgid "Sent Direct PSA for FC jump schedule."
 msgstr "Itinéraire du porte-vaisseaux annoncé (directement)."
 
-#: edrclient.py:2377 edrclient.py:2381
+#: edrclient.py:2404 edrclient.py:2408
 msgid "Cancelled FC jump schedule."
 msgstr "Itinéraire du porte-vaisseaux annulé."
 
-#: edrclient.py:2428
+#: edrclient.py:2455
 msgid "Reported bartender resources"
 msgstr "Ressources au bar signalées"
 
-#: edrclient.py:2440 edrclient.py:2484 edrclient.py:2510 edrclient.py:2525
-#: edrclient.py:2540 edrclient.py:2618 edrclient.py:2632 edrclient.py:2642
-#: edrclient.py:2681
+#: edrclient.py:2467 edrclient.py:2511 edrclient.py:2537 edrclient.py:2552
+#: edrclient.py:2567 edrclient.py:2645 edrclient.py:2659 edrclient.py:2669
+#: edrclient.py:2708
 msgid "Sorry, this feature only works with an EDR account."
 msgstr "Désolé, cette fonctionnalité nécessite un compte EDR."
 
-#: edrclient.py:2445
+#: edrclient.py:2472
 #, python-brace-format
 msgid "Message not sent. Try again in {duration}."
 msgstr "Message refusé. Essayez encore dans {duration}."
 
-#: edrclient.py:2446 edrclient.py:2476
+#: edrclient.py:2473 edrclient.py:2503
 msgid "EDR central"
 msgstr "Centrale EDR"
 
-#: edrclient.py:2460
+#: edrclient.py:2487
 msgid "Message sent with codeword '{}'."
 msgstr "Message envoyé avec le code '{}'."
 
-#: edrclient.py:2460
+#: edrclient.py:2487
 msgid "Ask the codeword to identify trusted commanders."
 msgstr "Demandez le code afin d'identifier votre interlocuteur."
 
-#: edrclient.py:2463
+#: edrclient.py:2490
 msgid "For good measure, also reach out to these folks with the info below:"
 msgstr ""
 "Pour plus d'efficacité, veuillez aussi contacter le groupe ci dessous avec "
 "les infos:"
 
-#: edrclient.py:2470
+#: edrclient.py:2497
 msgid "Check ED Market Connector for instructions about other options"
 msgstr ""
 "Regardez l'interface utilisateur d'ED Market Connector pour des instructions "
 "complémentaires"
 
-#: edrclient.py:2471
+#: edrclient.py:2498
 msgid "Sent to EDR central - Also try: {}"
 msgstr "Envoyé à EDR Central"
 
-#: edrclient.py:2475
+#: edrclient.py:2502
 msgid "Message sent to EDR central"
 msgstr "Message envoyé à EDR Central"
 
-#: edrclient.py:2490 edrclient.py:2494 edrclient.py:2498 edrclient.py:2546
-#: edrclient.py:2550 edrclient.py:2554
+#: edrclient.py:2517 edrclient.py:2521 edrclient.py:2525 edrclient.py:2573
+#: edrclient.py:2577 edrclient.py:2581
 msgid "Squadron Dex"
 msgstr "Dex Escadron"
 
-#: edrclient.py:2490 edrclient.py:2546
+#: edrclient.py:2517 edrclient.py:2573
 msgid "You need to join a squadron on https://inara.cz to use this feature."
 msgstr ""
 "Vous devez rejoindre un escadron sur https://inara.cz pour utiliser cette "
 "fonctionnalité."
 
-#: edrclient.py:2490 edrclient.py:2546
+#: edrclient.py:2517 edrclient.py:2573
 msgid "Then, reboot EDR to reflect these changes."
 msgstr "Ensuite, relancez EDR pour appliquer les changements."
 
-#: edrclient.py:2494 edrclient.py:2550
+#: edrclient.py:2521 edrclient.py:2577
 msgid "You need to reach {} to tag enemies or allies."
 msgstr "Vous devez être au moins {} afin de taggé des ennemis ou alliés."
 
-#: edrclient.py:2498 edrclient.py:2515 edrclient.py:2517 edrclient.py:2530
-#: edrclient.py:2532 edrclient.py:2554
+#: edrclient.py:2525 edrclient.py:2542 edrclient.py:2544 edrclient.py:2557
+#: edrclient.py:2559 edrclient.py:2581
 msgid "Cmdr Dex"
 msgstr "Dex Commandants"
 
-#: edrclient.py:2500
+#: edrclient.py:2527
 #, python-brace-format
 msgid "Successfully tagged cmdr {name} with {tag}"
 msgstr "Cmdr {name} a bien été tagué avec {tag}"
 
-#: edrclient.py:2502
+#: edrclient.py:2529
 #, python-brace-format
 msgid "Could not tag cmdr {name} with {tag}"
 msgstr "Impossible de tagguer Cmdr {name} avec {tag}"
 
-#: edrclient.py:2515
+#: edrclient.py:2542
 msgid "Successfully attached a memo to cmdr {}"
 msgstr "Le mémo à-propos du cmd {} a bien été enregistré"
 
-#: edrclient.py:2517
+#: edrclient.py:2544
 msgid "Failed to attach a memo to cmdr {}"
 msgstr "Impossible d'enregistrer le mémo à-propos du cmd {}"
 
-#: edrclient.py:2530
+#: edrclient.py:2557
 msgid "Successfully removed memo from cmdr {}"
 msgstr "Le mémo à-propos du cmd {} a bien été supprimé"
 
-#: edrclient.py:2532
+#: edrclient.py:2559
 msgid "Failed to remove memo from cmdr {}"
 msgstr "Impossible de supprimer le mémo à-propos du cmd {}"
 
-#: edrclient.py:2557
+#: edrclient.py:2584
 msgid "Successfully removed all tags from cmdr {}"
 msgstr "Tous les tags ont bien été supprimés pour le cmd {}"
 
-#: edrclient.py:2559
+#: edrclient.py:2586
 msgid "Successfully removed tag {} from cmdr {}"
 msgstr "Le tag {} a bien été supprimé pour le cmd {}"
 
-#: edrclient.py:2561
+#: edrclient.py:2588
 msgid "Could not remove tag(s) from cmdr {}"
 msgstr "Impossible de supprimer les tags pour le cmd {}"
 
-#: edrclient.py:2576 edrclient.py:2581
+#: edrclient.py:2603 edrclient.py:2608
 msgid "Intel about {} (Open)"
 msgstr "Renseignements sur {} (Open)"
 
-#: edrclient.py:2580
+#: edrclient.py:2607
 msgid "no info about {}"
 msgstr "aucune info sur {}"
 
-#: edrclient.py:2582
+#: edrclient.py:2609
 msgid "Not recently sighted or not an outlaw."
 msgstr "Aucun récent contact, ou non recherché."
 
-#: edrclient.py:2593
+#: edrclient.py:2620
 msgid " @ {}"
 msgstr " @ {}"
 
 #. Translators: this is a short representation for a bounty < 1000 credits (i.e. shows the whole bounty, unabbreviated)
-#: edrclient.py:2594 edrutils.py:25
+#: edrclient.py:2621 edrutils.py:25
 msgid "{}"
 msgstr "{}"
 
-#: edrclient.py:2597
+#: edrclient.py:2624
 msgid " {} ({})"
 msgstr " {} ({})"
 
-#: edrclient.py:2599
+#: edrclient.py:2626
 msgid "'{}' ({}): {}{}"
 msgstr "'{}' ({}): {}{}"
 
-#: edrclient.py:2601
+#: edrclient.py:2628
 msgid "{}: {}{}"
 msgstr "{}: {}{}"
 
-#: edrclient.py:2605 edrclient.py:2607 edrclient.py:2611
+#: edrclient.py:2632 edrclient.py:2634 edrclient.py:2638
 msgid "Ship locator"
 msgstr "Recherche de vaisseau"
 
-#: edrclient.py:2607
+#: edrclient.py:2634
 msgid "No info about your fleet."
 msgstr "Aucune info sur votre flotille."
 
-#: edrclient.py:2607
+#: edrclient.py:2634
 msgid "Visit a shipyard to update your fleet info."
 msgstr "Visitez un shipyard pour mettre à jour votre flotte."
 
-#: edrclient.py:2611
+#: edrclient.py:2638
 msgid "Couldn't find anything"
 msgstr "Rien trouvé"
 
-#: edrclient.py:2623 edrclient.py:2626 edrclient.py:2636 edrclient.py:2649
-#: edrclient.py:2651 edrclient.py:2657 edrclient.py:2660
+#: edrclient.py:2650 edrclient.py:2653 edrclient.py:2663 edrclient.py:2676
+#: edrclient.py:2678 edrclient.py:2684 edrclient.py:2687
 msgid "Kill Rewards"
 msgstr "Prime"
 
-#: edrclient.py:2623
+#: edrclient.py:2650
 msgid "{} on Cmdr {}"
 msgstr "{} sur Cmdt {}"
 
-#: edrclient.py:2625
+#: edrclient.py:2652
 msgid ""
 "Send '!contract example $$$ 10' in chat to set a reward of 10 million "
 "credits on Cmdr 'example'"
@@ -1422,31 +1421,31 @@ msgstr ""
 "Envoyez '!contract example $$$ 10' dans le chat pour placer un contrat de 10 "
 "million de crédits pour la destruction du Cmdt 'example'."
 
-#: edrclient.py:2626
+#: edrclient.py:2653
 msgid "You haven't set any contract yet"
 msgstr "Vous n'avez pas encore placé de contrat"
 
-#: edrclient.py:2636 edrclient.py:2649
+#: edrclient.py:2663 edrclient.py:2676
 msgid "Reward of {} for a kill on Cmdr {}"
 msgstr "Prime de {} pour la destruction de Cmdt {}"
 
-#: edrclient.py:2649
+#: edrclient.py:2676
 msgid "Send '!contract {} $$$ 0' in chat to remove the kill reward"
 msgstr "Envoyez '!contract {} $$$ 0' dans le chat pour supprimer votre contrat"
 
-#: edrclient.py:2651
+#: edrclient.py:2678
 msgid "Failed to place a reward for a kill on Cmdr {}"
 msgstr "Impossible de placer un contrat sur Cmdt {}"
 
-#: edrclient.py:2651
+#: edrclient.py:2678
 msgid "You may have too many active contracts."
 msgstr "Vous avez peut-être trop de contrats actifs."
 
-#: edrclient.py:2651
+#: edrclient.py:2678
 msgid "Send '!contracts' to see all your contracts."
 msgstr "Envoyez '!contracts' pour voir tous vos contrats."
 
-#: edrclient.py:2655
+#: edrclient.py:2682
 #, python-brace-format
 msgid ""
 "Send '!contract {cmdr} $$$ 10' in chat to set a reward of 10 million credits "
@@ -1455,51 +1454,51 @@ msgstr ""
 "Envoyez '!contract {cmdr} $$$ 10' dans le chat pour placer un contrat de 10 "
 "million de crédits pour la destruction du Cmdt '{cmdr}'."
 
-#: edrclient.py:2657
+#: edrclient.py:2684
 msgid "Removed reward for a kill on Cmdr {}"
 msgstr "Prime de {} pour la destruction de Cmdt {}"
 
-#: edrclient.py:2660
+#: edrclient.py:2687
 msgid "Failed to remove reward for a kill on Cmdr {} (not even set?)"
 msgstr "Impossible de supprimer votre contrat sur Cmdt {} (n'existe pas?)"
 
-#: edrclient.py:2685 edrclient.py:2692 edrclient.py:2698
+#: edrclient.py:2712 edrclient.py:2719 edrclient.py:2725
 #, python-brace-format
 msgid "Recently Sighted {kind}"
 msgstr "{kind} récemment repérés"
 
-#: edrclient.py:2685
+#: edrclient.py:2712
 msgid "You need to be pledged to a power."
 msgstr "Vous devez prêter allégeance à un pouvoir."
 
-#: edrclient.py:2692 edrclient.py:2698
+#: edrclient.py:2719 edrclient.py:2725
 #, python-brace-format
 msgid "Recently Sighted {kind} (Open)"
 msgstr "{kind} récemment repérés (Open)"
 
-#: edrclient.py:2693
+#: edrclient.py:2720
 #, python-brace-format
 msgid "No {kind} sighted in the last {timespan}"
 msgstr "Pas de contact avec des {kind} depuis {timespan}"
 
-#: edrclient.py:2696
+#: edrclient.py:2723
 #, python-brace-format
 msgid "recently sighted {kind}"
 msgstr "{kind} récemment repérés"
 
-#: edrclient.py:2723 edrclient.py:2727 edrclient.py:2805
+#: edrclient.py:2750 edrclient.py:2754 edrclient.py:2832
 msgid "EDR pro-tips"
 msgstr "EDR conseils de pro"
 
-#: edrclient.py:2780
+#: edrclient.py:2807
 msgid "Comms Link Error"
 msgstr "Erreur de Liaison Comms"
 
-#: edrclient.py:2780
+#: edrclient.py:2807
 msgid "EDR Central can't be reached at the moment"
 msgstr "Impossible de joindre le central EDR"
 
-#: edrclient.py:2780
+#: edrclient.py:2807
 msgid ""
 "Try again later. Join https://edrecon.com/discord or contact Cmdr LeKeno if "
 "it keeps failing"
@@ -1507,171 +1506,171 @@ msgstr ""
 "Essayez plus tard, rejoignez https://edrecon.com/discord ou contactez Cmdt "
 "LeKeno si cela persiste"
 
-#: edrclient.py:2797
+#: edrclient.py:2824
 msgid "EDR needs you!"
 msgstr "EDR a besoin de vous!"
 
-#: edrclient.py:2797
+#: edrclient.py:2824
 msgid "Apply for an account at https://edrecon.com/account"
 msgstr "Demandez un compte EDR depuis https://edrecon.com/account"
 
-#: edrclient.py:2797
+#: edrclient.py:2824
 msgid "It's free, no strings attached."
 msgstr "C'est gratuit et sans obligations."
 
-#: edrclient.py:2814 edrclient.py:2820 edrclient.py:2834 edrclient.py:2840
-#: edrclient.py:2850 edrclient.py:2856 edrclient.py:2866 edrclient.py:2872
-#: edrclient.py:2883 edrclient.py:2889 edrclient.py:2900 edrclient.py:2906
-#: edrclient.py:2919 edrclient.py:2925 edrclient.py:2938 edrclient.py:2944
-#: edrclient.py:2957 edrclient.py:2963 edrclient.py:3255 edrclient.py:3261
-#: edrclient.py:3271 edrclient.py:3277 edrclient.py:3287 edrclient.py:3293
-#: edrclient.py:3303 edrclient.py:3309 edrclient.py:3319 edrclient.py:3325
-#: edrclient.py:3523 edrclient.py:3531 edrclient.py:3535 edrclient.py:3541
-#: edrclient.py:3549 edrclient.py:3554 edrclient.py:3561
+#: edrclient.py:2841 edrclient.py:2847 edrclient.py:2861 edrclient.py:2867
+#: edrclient.py:2877 edrclient.py:2883 edrclient.py:2893 edrclient.py:2899
+#: edrclient.py:2910 edrclient.py:2916 edrclient.py:2927 edrclient.py:2933
+#: edrclient.py:2946 edrclient.py:2952 edrclient.py:2965 edrclient.py:2971
+#: edrclient.py:2984 edrclient.py:2990 edrclient.py:3282 edrclient.py:3288
+#: edrclient.py:3298 edrclient.py:3304 edrclient.py:3314 edrclient.py:3320
+#: edrclient.py:3330 edrclient.py:3336 edrclient.py:3346 edrclient.py:3352
+#: edrclient.py:3583 edrclient.py:3591 edrclient.py:3595 edrclient.py:3601
+#: edrclient.py:3609 edrclient.py:3614 edrclient.py:3621
 msgid "EDR Search"
 msgstr "Recherche EDR"
 
-#: edrclient.py:2814 edrclient.py:3531
+#: edrclient.py:2841 edrclient.py:3591
 msgid "Already searching for something, please wait..."
 msgstr "Recherche en cours, veuillez patienter..."
 
-#: edrclient.py:2820 edrclient.py:3535
+#: edrclient.py:2847 edrclient.py:3595
 msgid "Search features only work in the bubble or Colonia."
 msgstr ""
 "Désolé, cette fonctionnalité ne fonctionne que dans la bulle ou à Colonia."
 
-#: edrclient.py:2833
+#: edrclient.py:2860
 msgid "I.Factors: searching..."
 msgstr "I. Factors: recherche en cours..."
 
-#: edrclient.py:2834
+#: edrclient.py:2861
 msgid "Interstellar Factors: searching..."
 msgstr "Interstellar Factors: recherche en cours..."
 
-#: edrclient.py:2839
+#: edrclient.py:2866
 msgid "I.Factors: failed"
 msgstr "I. Factors: échec"
 
-#: edrclient.py:2840 edrclient.py:2856 edrclient.py:2872 edrclient.py:2889
-#: edrclient.py:2906 edrclient.py:2925 edrclient.py:2944 edrclient.py:2963
-#: edrclient.py:3261 edrclient.py:3277 edrclient.py:3293 edrclient.py:3309
-#: edrclient.py:3325
+#: edrclient.py:2867 edrclient.py:2883 edrclient.py:2899 edrclient.py:2916
+#: edrclient.py:2933 edrclient.py:2952 edrclient.py:2971 edrclient.py:2990
+#: edrclient.py:3288 edrclient.py:3304 edrclient.py:3320 edrclient.py:3336
+#: edrclient.py:3352
 msgid "Unknown system"
 msgstr "Système inconnu"
 
-#: edrclient.py:2849
+#: edrclient.py:2876
 msgid "Raw mat. trader: searching..."
 msgstr "Marchand de mat. premières: recherche en cours..."
 
-#: edrclient.py:2850
+#: edrclient.py:2877
 msgid "Raw material trader: searching..."
 msgstr "Marchand de matières premières: recherche en cours..."
 
-#: edrclient.py:2855
+#: edrclient.py:2882
 msgid "Raw mat. trader: failed"
 msgstr "Marchand de mat. premières: échec"
 
-#: edrclient.py:2865 edrclient.py:2866
+#: edrclient.py:2892 edrclient.py:2893
 msgid "Encoded data trader: searching..."
 msgstr "Marchand de données encodées: recherche en cours..."
 
-#: edrclient.py:2871
+#: edrclient.py:2898
 msgid "Encoded data trader: failed"
 msgstr "Marchand de données encodées: échec"
 
-#: edrclient.py:2882
+#: edrclient.py:2909
 msgid "Manufactured mat. trader: searching..."
 msgstr "Marchand de d. encodées: recherche en cours..."
 
-#: edrclient.py:2883
+#: edrclient.py:2910
 msgid "Manufactured material trader: searching..."
 msgstr "Marchand de fabrications: recherche en cours..."
 
-#: edrclient.py:2888
+#: edrclient.py:2915
 msgid "Manufactured mat. trader: failed"
 msgstr "Marchand de fabrications: échec"
 
-#: edrclient.py:2899 edrclient.py:2900
+#: edrclient.py:2926 edrclient.py:2927
 msgid "Staging station: searching..."
 msgstr "Spatioport en retrait: recherche en cours..."
 
-#: edrclient.py:2905
+#: edrclient.py:2932
 msgid "Staging station: failed"
 msgstr "Spatioport en retrait: échec"
 
-#: edrclient.py:2918 edrclient.py:2919
+#: edrclient.py:2945 edrclient.py:2946
 msgid "Parking system: searching..."
 msgstr "Parking pour porte-vaisseaux: recherche en cours..."
 
-#: edrclient.py:2924
+#: edrclient.py:2951
 msgid "Parking system: failed"
 msgstr "Parking pour porte-vaisseaux: échec"
 
-#: edrclient.py:2934
+#: edrclient.py:2961
 msgid "RRR Fleet Carrier: searching..."
 msgstr "Porte-vaisseaux avec RRR: recherche en cours..."
 
-#: edrclient.py:2935
+#: edrclient.py:2962
 msgid "RRR Fleet Carrier: searching in {}..."
 msgstr "Porte-vaisseaux avec RRR: recherche autour de {}..."
 
-#: edrclient.py:2935
+#: edrclient.py:2962
 msgid "If there are no results, try: !rrrfc {} < 15"
 msgstr "S'il n'y a aucun résultat, essayez: !rrrfc {} < 15"
 
-#: edrclient.py:2937
+#: edrclient.py:2964
 msgid "RRR Fleet Carrier: searching within {} LY of {}..."
 msgstr ""
 "Porte-vaisseaux avec RRR: recherche dans un rayon de {} AL autour de {}..."
 
-#: edrclient.py:2943
+#: edrclient.py:2970
 msgid "RRR Fleet Carrier: failed"
 msgstr "Porte-vaisseaux avec RRR: échec"
 
-#: edrclient.py:2953
+#: edrclient.py:2980
 msgid "RRR Station: searching..."
 msgstr "Spatioport avec RRR: recherche en cours..."
 
-#: edrclient.py:2954
+#: edrclient.py:2981
 msgid "RRR Station: searching in {}..."
 msgstr "Spatioport avec RRR: recherche autour de {}..."
 
-#: edrclient.py:2954
+#: edrclient.py:2981
 msgid "If there are no results, try: !rrr {} < 15"
 msgstr "S'il n'y a aucun résultat, essayez: !rrrfc {} < 15"
 
-#: edrclient.py:2956
+#: edrclient.py:2983
 msgid "RRR Station: searching within {} LY of {}..."
 msgstr "Spatioport avec RRR: recherche dans un rayon de [{}LY] autour de {}"
 
-#: edrclient.py:2962
+#: edrclient.py:2989
 msgid "RRR Station: failed"
 msgstr "Spatioport avec RRR: échec"
 
-#: edrclient.py:2973 edrclient.py:2978 edrclient.py:2983
+#: edrclient.py:3000 edrclient.py:3005 edrclient.py:3010
 msgid "EDR Fleet Carrier Local Search"
 msgstr "EDR recherche locale de porte-vaisseaux"
 
-#: edrclient.py:2973
+#: edrclient.py:3000
 msgid "{} fleet carriers have {} in their callsign or name"
 msgstr "{} porte-vaisseaux ont {} dans leur indicatif d'appel ou leur nom"
 
-#: edrclient.py:2973
+#: edrclient.py:3000
 msgid "Try something more specific, or the full callsign."
 msgstr ""
 "Essayez quelque chose de plus spécifique, ou l’indicatif d’appel complet."
 
-#: edrclient.py:2978
+#: edrclient.py:3005
 msgid "Couldn't find a fleet carrier with {} in its callsign or name"
 msgstr ""
 "Impossible de trouver un porte-vaisseaux avec {} dans son indicatif d’appel "
 "ou son nom"
 
-#: edrclient.py:2978
+#: edrclient.py:3005
 msgid "{} is not a valid callsign"
 msgstr "{} n’est pas un indicatif d’appel valide"
 
-#: edrclient.py:2978
+#: edrclient.py:3005
 msgid ""
 "Try a more specific term, the full callsign, or honk your discovery scanner "
 "first."
@@ -1679,364 +1678,369 @@ msgstr ""
 "Essayez un terme plus spécifique, l’indicatif d’appel complet, ou klaxonnez "
 "d’abord votre scanner de découverte."
 
-#: edrclient.py:2983
+#: edrclient.py:3010
 msgid "No info on fleet carrier with {} callsign"
 msgstr "Aucune information sur le porte-vaisseaux avec indicatif d’appel {}"
 
-#: edrclient.py:2994 edrclient.py:3000 edrclient.py:3004
+#: edrclient.py:3021 edrclient.py:3027 edrclient.py:3031
 msgid "EDR Station Local Search"
 msgstr "EDR recherche locale de Station"
 
-#: edrclient.py:2994
+#: edrclient.py:3021
 msgid "No info on Station with {} in its name"
 msgstr "Pas d’info à propos d'une Station avec {} dans son nom"
 
-#: edrclient.py:3000
+#: edrclient.py:3027
 msgid "{} stations have {} in their name"
 msgstr "{} stations ont {} dans leur nom"
 
-#: edrclient.py:3000
+#: edrclient.py:3027
 msgid "Try something more specific, or the full name."
 msgstr "Essayez quelque chose de plus spécifique, ou le nom complet."
 
-#: edrclient.py:3004
+#: edrclient.py:3031
 msgid "No Station with {} in their name"
 msgstr "Pas d’info à propos d'une Station avec {} dans son nom"
 
-#: edrclient.py:3035
+#: edrclient.py:3062
 msgid "Remlok Insights"
 msgstr "Remlok Info"
 
-#: edrclient.py:3088
+#: edrclient.py:3115
 msgid "EDR Navigation (pointing gesture)"
 msgstr "Navigation EDR (geste de pointage)"
 
-#: edrclient.py:3150
+#: edrclient.py:3177
 msgid "{} sale orders"
 msgstr "{} offres de vente"
 
-#: edrclient.py:3152
+#: edrclient.py:3179
 msgid "{} purchase orders"
 msgstr "{} offres d'achat"
 
-#: edrclient.py:3160
+#: edrclient.py:3187
 msgid "Access: all => Market info sent."
 msgstr "Accés libre => Info du marché rapporté."
 
-#: edrclient.py:3170
+#: edrclient.py:3197
 msgid "Sent FC trading info to your discord channel."
 msgstr "Info commerce FC envoyé vers votre canal discord."
 
-#: edrclient.py:3176
+#: edrclient.py:3203
 msgid "Summary placed in the clipboard"
 msgstr "Rapport copié dans le presse papier"
 
-#: edrclient.py:3177
+#: edrclient.py:3204
 msgid "Fleet Carrier status summary"
 msgstr "Rapport du porte-vaisseaux"
 
-#: edrclient.py:3188
+#: edrclient.py:3215
 msgid "Trading Insights for {}"
 msgstr "Trading Info pour {}"
 
-#: edrclient.py:3219 edrclient.py:3230
+#: edrclient.py:3246 edrclient.py:3257
 msgid "EDR System Search"
 msgstr "Recherche Système EDR"
 
-#: edrclient.py:3219
+#: edrclient.py:3246
 msgid "No info on System called {}"
 msgstr "Pas d'info sur le système appelé {}"
 
-#: edrclient.py:3230
+#: edrclient.py:3257
 msgid "No info on Body called {}"
 msgstr "Pas d'info sur l'objet céleste {}"
 
-#: edrclient.py:3254 edrclient.py:3255
+#: edrclient.py:3281 edrclient.py:3282
 msgid "Human tech broker: searching..."
 msgstr "Courtier en technologie humaine: recherche en cours..."
 
-#: edrclient.py:3260
+#: edrclient.py:3287
 msgid "Human tech broker: failed"
 msgstr "Courtier en technologie humaine: échec"
 
-#: edrclient.py:3270 edrclient.py:3271
+#: edrclient.py:3297 edrclient.py:3298
 msgid "Guardian tech broker: searching..."
 msgstr "Courtier en technologie Gardien: recherche en cours..."
 
-#: edrclient.py:3276
+#: edrclient.py:3303
 msgid "Guardian tech broker: failed"
 msgstr "Courtier en technologie gardien: échec"
 
-#: edrclient.py:3286 edrclient.py:3287
+#: edrclient.py:3313 edrclient.py:3314
 msgid "Offbeat station: searching..."
 msgstr "Spatioport pas visité récemment: recherche en cours..."
 
-#: edrclient.py:3292
+#: edrclient.py:3319
 msgid "Offbeat station: failed"
 msgstr "Spatioport pas visité récemment: échec"
 
-#: edrclient.py:3302 edrclient.py:3303
+#: edrclient.py:3329 edrclient.py:3330
 msgid "Biofit planet: searching..."
 msgstr "Planète propice pour bio: recherche en cours..."
 
-#: edrclient.py:3308
+#: edrclient.py:3335
 msgid "Biofit planet: failed"
 msgstr "Planète propice pour bio: échec"
 
-#: edrclient.py:3318 edrclient.py:3319
+#: edrclient.py:3345 edrclient.py:3346
 msgid "Settlement: searching..."
 msgstr "Colonie: recherche en cours..."
 
-#: edrclient.py:3324
+#: edrclient.py:3351
 msgid "Settlement: failed"
 msgstr "Colonie: échec"
 
-#: edrclient.py:3334 edrclient.py:3357 edrclient.py:3382 edrclient.py:3414
+#: edrclient.py:3361 edrclient.py:3386 edrclient.py:3413 edrclient.py:3458
 #, python-brace-format
 msgid "{dist:.3g}LY"
 msgstr "{dist:.3g}AL"
 
-#: edrclient.py:3334 edrclient.py:3357 edrclient.py:3382 edrclient.py:3414
+#: edrclient.py:3361 edrclient.py:3386 edrclient.py:3413 edrclient.py:3458
 #, python-brace-format
 msgid "{dist}LY"
 msgstr "{dist}AL"
 
-#: edrclient.py:3335 edrclient.py:3358 edrclient.py:3383
+#: edrclient.py:3362 edrclient.py:3387 edrclient.py:3414
 #, python-brace-format
 msgid "{dist}LS"
 msgstr "{dist}LS"
 
-#: edrclient.py:3336 edrclient.py:3360 edrclient.py:3384
+#: edrclient.py:3365 edrclient.py:3391 edrclient.py:3417
 #, python-brace-format
 msgid "{system}, {dist}"
 msgstr "{system}, {dist}"
 
-#: edrclient.py:3337
+#: edrclient.py:3366
 #, python-brace-format
 msgid "{station} ({type}), {sc_dist}"
 msgstr "{station} ({type}), {sc_dist}"
 
-#: edrclient.py:3338 edrclient.py:3394
+#: edrclient.py:3367 edrclient.py:3438
 #, python-brace-format
 msgid "as of {date} {ci}"
 msgstr "date des infos: {date} {ci}"
 
-#: edrclient.py:3342 edrclient.py:3366 edrclient.py:3398
+#: edrclient.py:3371 edrclient.py:3397 edrclient.py:3442
 msgid "{}: nothing within [{}LY, {}LS] of {}"
 msgstr "{}: rien dans un rayon de [{}LY, {}LS] autour de {}"
 
-#: edrclient.py:3343 edrclient.py:3367 edrclient.py:3399 edrclient.py:3580
-#: edrclient.py:3582
+#: edrclient.py:3372 edrclient.py:3398 edrclient.py:3443 edrclient.py:3640
+#: edrclient.py:3642
 msgid "checked {} systems"
 msgstr "{} systèmes dans la recherche"
 
-#: edrclient.py:3345
+#: edrclient.py:3374
 msgid "checked {} systems and {} stations"
 msgstr "{} systèmes et {} statioports dans la recherche"
 
-#: edrclient.py:3346 edrclient.py:3370 edrclient.py:3402
+#: edrclient.py:3375 edrclient.py:3401 edrclient.py:3446
 msgid "nothing found within [{}LY, {}LS], {}."
 msgstr "rien dans un rayon de [{}LY, {}LS], {}."
 
-#: edrclient.py:3349 edrclient.py:3373 edrclient.py:3586
+#: edrclient.py:3378 edrclient.py:3404 edrclient.py:3646
 msgid "{} near {}"
 msgstr "{} proche de {}"
 
-#: edrclient.py:3361
+#: edrclient.py:3392
 #, python-brace-format
 msgid "{planet} ({type}, {atm}), {sc_dist}"
 msgstr "{planet} ({type}, {atm}), {sc_dist}"
 
-#: edrclient.py:3362 ingamemsg.py:582 ingamemsg.py:653
+#: edrclient.py:3393 ingamemsg.py:588 ingamemsg.py:663
 #, python-brace-format
 msgid "as of {date}"
 msgstr "date des infos: {date}"
 
-#: edrclient.py:3369
+#: edrclient.py:3400
 msgid "checked {} systems and {} planets"
 msgstr "{} systèmes et {} planètes dans la recherche"
 
-#: edrclient.py:3388
+#: edrclient.py:3421
 #, python-brace-format
 msgid "{settlement} ({eco}), {body}, {sc_dist}"
 msgstr "{settlement} ({eco}), {body}, {sc_dist}"
 
-#: edrclient.py:3390
+#: edrclient.py:3423
 #, python-brace-format
 msgid "{settlement} ({eco}), {sc_dist}"
 msgstr "{settlement} ({eco}), {sc_dist}"
 
-#: edrclient.py:3393
+#: edrclient.py:3430 edrclient.py:3435
+#, python-brace-format
+msgid "{faction} ({bgs}, {gvt}, {alg})"
+msgstr "{faction} ({bgs}, {gvt}, {alg})"
+
+#: edrclient.py:3432 edrclient.py:3437
 #, python-brace-format
 msgid "{faction} ({gvt}, {alg})"
 msgstr "{faction} ({gvt}, {alg})"
 
-#: edrclient.py:3401
+#: edrclient.py:3445
 msgid "checked {} systems and {} settlements"
 msgstr "{} systèmes et {} colonies dans la recherche"
 
-#: edrclient.py:3405
+#: edrclient.py:3449
 msgid "Settlement near {}"
 msgstr "Colonie prés de {}"
 
-#: edrclient.py:3415
+#: edrclient.py:3459
 #, python-brace-format
 msgid "{system}, {dist} from {ref} [#{rank}]"
 msgstr "{system}, {dist} de {ref} [#{rank}]"
 
-#: edrclient.py:3417
+#: edrclient.py:3461
 #, python-brace-format
 msgid "{system} [#{rank}]"
 msgstr "{system} [#{rank}]"
 
-#: edrclient.py:3449
+#: edrclient.py:3493
 msgid "Slots ≈ {} ({}) / {} (as of {})"
 msgstr "Places ≈ {} ({}) / {} (date {})"
 
-#: edrclient.py:3451
+#: edrclient.py:3495
 msgid "Slots ≈ {} / {} (as of {})"
 msgstr "Places ≈ {} / {} (date {})"
 
-#: edrclient.py:3453
+#: edrclient.py:3497
 msgid "Slots: ???/{} (no intel)"
 msgstr "Places ???/{} (pas d'info)"
 
-#: edrclient.py:3457
+#: edrclient.py:3501
 #, python-brace-format
 msgid "{nb} bodies"
 msgstr "{nb} corps céleste"
 
-#: edrclient.py:3457
+#: edrclient.py:3501
 #, python-brace-format
 msgid "{nb} body"
 msgstr "{nb} corp céleste"
 
-#: edrclient.py:3461 edrclient.py:3468
+#: edrclient.py:3505 edrclient.py:3512
 msgid "{} (LS): median={}, avg={}, max={}"
 msgstr "{} (AL): médiane={}, moy={}, max={}"
 
-#: edrclient.py:3463
+#: edrclient.py:3507
 #, python-brace-format
 msgid "{nb} stars"
 msgstr "{nb} étoiles"
 
-#: edrclient.py:3470
+#: edrclient.py:3514
 msgid "1 star (no gravity well)"
 msgstr "1 étoile (sans puit de gravité)"
 
-#: edrclient.py:3473
+#: edrclient.py:3517
 msgid "If full, try the next one with !parking #{}."
 msgstr ""
 "S'il n'y a plus de place, essayez le prochain système avec !parking #{}."
 
-#: edrclient.py:3475
+#: edrclient.py:3519
 msgid "If full, try the next one with !parking {} #{}."
 msgstr ""
 "S'il n'y a plus de place, essayez le prochain système avec !parking {} #{}."
 
-#: edrclient.py:3480
+#: edrclient.py:3524
 msgid "FC Parking: no #{} system within [{}LY] of {}"
 msgstr "Parking FC: pas de système #{} dans un rayon de [{}LY] autour de {}"
 
-#: edrclient.py:3481
+#: edrclient.py:3525
 msgid "No #{} system found within [{}LY]."
 msgstr "Pas de système #{} dans un rayon de [{}LY]."
 
-#: edrclient.py:3484
+#: edrclient.py:3528
 msgid "Try !parking #{}"
 msgstr "Essayez !parking #{}"
 
-#: edrclient.py:3486
+#: edrclient.py:3530
 msgid "Try !parking {} #{}"
 msgstr "Essayez !parking {} #{}"
 
-#: edrclient.py:3487
+#: edrclient.py:3531
 msgid "FC Parking near {}"
 msgstr "Parking porte-vaisseaux autour de {}"
 
-#: edrclient.py:3495
+#: edrclient.py:3539
 msgid "Unrecognized materials profile"
 msgstr "Profile matériaux non reconnu"
 
-#: edrclient.py:3495
+#: edrclient.py:3539
 msgid "To see a list of profiles, send: !materials"
 msgstr "Envoyez !materials pour voir la liste des profiles"
 
-#: edrclient.py:3499
+#: edrclient.py:3543
 msgid "Using materials profile '{}'"
 msgstr "Profile {} utilisé"
 
-#: edrclient.py:3499
+#: edrclient.py:3543
 msgid "Revert to default profile by sending: !materials default"
 msgstr "Pour revenir au profile de base, envoyez: !materials default"
 
-#: edrclient.py:3501
+#: edrclient.py:3545
 msgid "Using default materials profile"
 msgstr "Utilisation du profile de base"
 
-#: edrclient.py:3501
+#: edrclient.py:3545
 msgid "See the list of profiles by sending: !materials"
 msgstr "Pour voir la liste des profiles, envoyez: !materials"
 
-#: edrclient.py:3506
+#: edrclient.py:3550
 msgid "Available materials profiles"
 msgstr "Liste des profiles disponibles"
 
-#: edrclient.py:3521
+#: edrclient.py:3581
 msgid "EDR Search: suggested terms"
 msgstr "Recherche EDR : mots-clés suggérés"
 
-#: edrclient.py:3523 edrclient.py:3540 edrclient.py:3541
+#: edrclient.py:3583 edrclient.py:3600 edrclient.py:3601
 msgid "{}: not supported."
 msgstr "{}: non disponible."
 
-#: edrclient.py:3523 edrclient.py:3541 edrclient.py:3554 edrclient.py:3561
+#: edrclient.py:3583 edrclient.py:3601 edrclient.py:3614 edrclient.py:3621
 msgid "To learn how to use the feature, send: !help search"
 msgstr "Pour afficher l'aide, envoyez: !help search"
 
-#: edrclient.py:3548 edrclient.py:3549
+#: edrclient.py:3608 edrclient.py:3609
 msgid "{}: searching..."
 msgstr "{}: recherche en cours..."
 
-#: edrclient.py:3553 edrclient.py:3554 edrclient.py:3560 edrclient.py:3561
+#: edrclient.py:3613 edrclient.py:3614 edrclient.py:3620 edrclient.py:3621
 msgid "{}: failed..."
 msgstr "{}: échec..."
 
-#: edrclient.py:3556
+#: edrclient.py:3616
 msgid "{}: found"
 msgstr "{}: succès"
 
-#: edrclient.py:3568
+#: edrclient.py:3628
 #, python-brace-format
 msgid "{dist:.3g}"
 msgstr "{dist:.3g}"
 
-#: edrclient.py:3568
+#: edrclient.py:3628
 #, python-brace-format
 msgid "{dist}"
 msgstr "{dist}"
 
-#: edrclient.py:3569
+#: edrclient.py:3629
 msgid "{} ({}LY, {})"
 msgstr "{} ({}AL, {})"
 
-#: edrclient.py:3573
+#: edrclient.py:3633
 msgid "as of {}"
 msgstr "date des infos: {}"
 
-#: edrclient.py:3579
+#: edrclient.py:3639
 msgid "{}: nothing within [{}LY] of {}"
 msgstr "{}: rien dans un rayon de [{}LY] autour de {}"
 
-#: edrclient.py:3583
+#: edrclient.py:3643
 msgid "nothing found within {}LY, {}."
 msgstr "rien dans un rayon de {}LY, {}."
 
-#: edrclient.py:3597
+#: edrclient.py:3657
 msgid "Opened Spansh in your web browser."
 msgstr "Ouvert Spansh dans votre navigateur Web."
 
-#: edrclient.py:3599
+#: edrclient.py:3659
 msgid ""
 "Wait for the route to complete, copy the URL to the clipboard, then send the "
 "'!journey fetch' command."
@@ -2044,7 +2048,7 @@ msgstr ""
 "Attendez que la route soit terminée, copiez l'URL dans le presse-papiers, "
 "puis envoyez la commande '!journey fetch'."
 
-#: edrclient.py:3601
+#: edrclient.py:3661
 msgid ""
 "Adjust the source / destination / range, generate and wait for a route, copy "
 "the URL to the clipboard, then send the '!journey fetch' command."
@@ -2053,23 +2057,23 @@ msgstr ""
 "route, copiez l'URL dans le presse-papiers, puis envoyez la commande '!"
 "journey fetch'."
 
-#: edrclient.py:3602 edrclient.py:3611 edrclient.py:3623 edrclient.py:3630
-#: edrclient.py:3634 edrclient.py:3641 edrclient.py:3655 edrclient.py:3690
-#: edrclient.py:3697 edrclient.py:3706 edrclient.py:3719 edrclient.py:3735
-#: edrclient.py:3739 edrclient.py:3744 edrclient.py:3759 edrclient.py:3768
-#: edrclient.py:3792 edrclient.py:3804 edrclient.py:3807
+#: edrclient.py:3662 edrclient.py:3671 edrclient.py:3683 edrclient.py:3690
+#: edrclient.py:3694 edrclient.py:3701 edrclient.py:3715 edrclient.py:3750
+#: edrclient.py:3757 edrclient.py:3766 edrclient.py:3779 edrclient.py:3795
+#: edrclient.py:3799 edrclient.py:3804 edrclient.py:3819 edrclient.py:3828
+#: edrclient.py:3852 edrclient.py:3864 edrclient.py:3867
 msgid "EDR Journey"
 msgstr "EDR Itinéraire"
 
-#: edrclient.py:3610
+#: edrclient.py:3670
 msgid "Failed to load a csv route from {}."
 msgstr "Échec du chargement d'un itinéraire format csv à partir de {}."
 
-#: edrclient.py:3621
+#: edrclient.py:3681
 msgid "No recognized URL in the clipboard."
 msgstr "Aucune URL reconnue dans le presse-papiers."
 
-#: edrclient.py:3622 edrclient.py:3654
+#: edrclient.py:3682 edrclient.py:3714
 msgid ""
 "Visit spansh.co.uk, create a route, copy the URL to the clipboard, then "
 "resend the '!journey fetch' command"
@@ -2077,60 +2081,60 @@ msgstr ""
 "Visitez spansh.co.uk, créez un itinéraire, copiez l'URL dans le presse-"
 "papiers, puis renvoyez la commande '! Journey fetch'"
 
-#: edrclient.py:3628
+#: edrclient.py:3688
 msgid "Fetching the route from Spansh."
 msgstr "Récupération de l'itinéraire depuis Spansh."
 
-#: edrclient.py:3629
+#: edrclient.py:3689
 msgid "Please wait..."
 msgstr "Veuillez patienter..."
 
-#: edrclient.py:3634 edrclient.py:3653 edrclient.py:3709 edrclient.py:3738
+#: edrclient.py:3694 edrclient.py:3713 edrclient.py:3769 edrclient.py:3798
 msgid "Something went wrong."
 msgstr "Une erreur s'est produite."
 
-#: edrclient.py:3640
+#: edrclient.py:3700
 msgid "Route successfully cleared."
 msgstr "Itinéraire effacée avec succès."
 
-#: edrclient.py:3688 edrclient.py:3717
+#: edrclient.py:3748 edrclient.py:3777
 msgid "No route."
 msgstr "Pas d'itinéraire."
 
-#: edrclient.py:3689 edrclient.py:3718
+#: edrclient.py:3749 edrclient.py:3778
 msgid "Use '!journey new' or '!journey load' to create one."
 msgstr ""
 "Utilisez '!journey new' ou '!journey load' pour en créer un itinéraire."
 
-#: edrclient.py:3695
+#: edrclient.py:3755
 msgid "Reached the end of the route."
 msgstr "Arrivé au bout de l'itinéraire."
 
-#: edrclient.py:3696
+#: edrclient.py:3756
 msgid "Use '!journey previous' to go back one step."
 msgstr "Utilisez '!journey previous' pour revenir en arrière d'une étape."
 
-#: edrclient.py:3704 edrclient.py:3733 edrclient.py:3751 edrclient.py:3766
+#: edrclient.py:3764 edrclient.py:3793 edrclient.py:3811 edrclient.py:3826
 msgid "Copied '{}' into the clipboard"
 msgstr "Copié {} dans le presse papier"
 
-#: edrclient.py:3710 edrclient.py:3726 edrclient.py:3753
+#: edrclient.py:3770 edrclient.py:3786 edrclient.py:3813
 msgid "EDR Journey - Current Waypoint"
 msgstr "Itinéraire EDR - Étape en cours"
 
-#: edrclient.py:3724
+#: edrclient.py:3784
 msgid "Reached the start of the route."
 msgstr "Arrivé au début de l'itinéraire."
 
-#: edrclient.py:3725
+#: edrclient.py:3785
 msgid "Use '!journey next' to go to the next waypoint."
 msgstr "Utilisez '!journey next' pour aller à la prochaine étape."
 
-#: edrclient.py:3804
+#: edrclient.py:3864
 msgid "Checked off specified bodies"
 msgstr "Les planétes spécifiées ont été rayées de la liste."
 
-#: edrclient.py:3807
+#: edrclient.py:3867
 msgid "Specified bodies already checked off or inexistent"
 msgstr ""
 "Les planètes spécifiées sont déjà rayées de la liste ou elles n'existent pas."
@@ -2268,7 +2272,7 @@ msgstr "Équipier"
 msgid "Voice"
 msgstr "Vocal"
 
-#: edrdiscord.py:336 edrdiscord.py:399 edrfactions.py:103
+#: edrdiscord.py:336 edrdiscord.py:399 edrfactions.py:237
 msgid "Unknown"
 msgstr "Non reconnu"
 
@@ -2368,7 +2372,7 @@ msgstr ""
 msgid "USS-HGE"
 msgstr "USS-HGE"
 
-#: edrfactions.py:110
+#: edrfactions.py:244
 msgid "Private Data Beacon"
 msgstr ""
 
@@ -5070,20 +5074,20 @@ msgstr ""
 msgid "Aleoida"
 msgstr ""
 
-#: edrsysplacheck.py:156 edrsystems.py:1322 edrsystems.py:1385
+#: edrsysplacheck.py:156 edrsystems.py:1324 edrsystems.py:1387
 msgid "Aleoida Arcus"
 msgstr ""
 
-#: edrsysplacheck.py:168 edrsystems.py:1324 edrsystems.py:1387
+#: edrsysplacheck.py:168 edrsystems.py:1326 edrsystems.py:1389
 msgid "Aleoida Coronamus"
 msgstr ""
 
-#: edrsysplacheck.py:180 edrsystems.py:1362 edrsystems.py:1364
-#: edrsystems.py:1389
+#: edrsysplacheck.py:180 edrsystems.py:1364 edrsystems.py:1366
+#: edrsystems.py:1391
 msgid "Aleoida Gravis"
 msgstr ""
 
-#: edrsysplacheck.py:192 edrsystems.py:1256 edrsystems.py:1287
+#: edrsysplacheck.py:192 edrsystems.py:1258 edrsystems.py:1289
 msgid "Aleoida Laminiae"
 msgstr ""
 
@@ -5091,15 +5095,15 @@ msgstr ""
 msgid "Aleoida Spica"
 msgstr ""
 
-#: edrsysplacheck.py:211 edrsystems.py:1004
+#: edrsysplacheck.py:211 edrsystems.py:1006
 msgid "Bacterium"
 msgstr ""
 
-#: edrsysplacheck.py:218 edrsystems.py:1184
+#: edrsysplacheck.py:218 edrsystems.py:1186
 msgid "Bacterium Nebulus"
 msgstr ""
 
-#: edrsysplacheck.py:225 edrsystems.py:1194
+#: edrsysplacheck.py:225 edrsystems.py:1196
 msgid "Bacterium Acies"
 msgstr ""
 
@@ -5115,32 +5119,32 @@ msgstr ""
 msgid "Bacterium Verrata"
 msgstr ""
 
-#: edrsysplacheck.py:256 edrsystems.py:1230
+#: edrsysplacheck.py:256 edrsystems.py:1232
 msgid "Bacterium Bullaris"
 msgstr ""
 
-#: edrsysplacheck.py:263 edrsystems.py:1210
+#: edrsysplacheck.py:263 edrsystems.py:1212
 msgid "Bacterium Vesicula"
 msgstr ""
 
-#: edrsysplacheck.py:270 edrsystems.py:1240
+#: edrsysplacheck.py:270 edrsystems.py:1242
 msgid "Bacterium Informem"
 msgstr ""
 
-#: edrsysplacheck.py:277 edrsystems.py:1247
+#: edrsysplacheck.py:277 edrsystems.py:1249
 msgid "Bacterium Volu"
 msgstr ""
 
-#: edrsysplacheck.py:284 edrsystems.py:1272 edrsystems.py:1283
+#: edrsysplacheck.py:284 edrsystems.py:1274 edrsystems.py:1285
 msgid "Bacterium Alcyoneum"
 msgstr ""
 
-#: edrsysplacheck.py:291 edrsystems.py:1302 edrsystems.py:1379
+#: edrsysplacheck.py:291 edrsystems.py:1304 edrsystems.py:1381
 msgid "Bacterium Aurasus"
 msgstr ""
 
-#: edrsysplacheck.py:298 edrsystems.py:1147 edrsystems.py:1441
-#: edrsystems.py:1451
+#: edrsysplacheck.py:298 edrsystems.py:1149 edrsystems.py:1443
+#: edrsystems.py:1453
 msgid "Bacterium Cerbrus"
 msgstr ""
 
@@ -5152,8 +5156,8 @@ msgstr ""
 msgid "Cactoida"
 msgstr ""
 
-#: edrsysplacheck.py:333 edrsystems.py:1325 edrsystems.py:1326
-#: edrsystems.py:1338 edrsystems.py:1392
+#: edrsysplacheck.py:333 edrsystems.py:1327 edrsystems.py:1328
+#: edrsystems.py:1340 edrsystems.py:1394
 msgid "Cactoida Cortexum"
 msgstr ""
 
@@ -5161,7 +5165,7 @@ msgstr ""
 msgid "Cactoida Pullulanta"
 msgstr ""
 
-#: edrsysplacheck.py:357 edrsystems.py:1259 edrsystems.py:1290
+#: edrsysplacheck.py:357 edrsystems.py:1261 edrsystems.py:1292
 msgid "Cactoida Lapis"
 msgstr ""
 
@@ -5169,11 +5173,11 @@ msgstr ""
 msgid "Cactoida Peperatis"
 msgstr ""
 
-#: edrsysplacheck.py:377 edrsystems.py:1156
+#: edrsysplacheck.py:377 edrsystems.py:1158
 msgid "Cactoida Vermis"
 msgstr ""
 
-#: edrsysplacheck.py:387 edrsystems.py:1008
+#: edrsysplacheck.py:387 edrsystems.py:1010
 msgid "Clypeus"
 msgstr ""
 
@@ -5193,33 +5197,33 @@ msgstr ""
 msgid "Concha"
 msgstr ""
 
-#: edrsysplacheck.py:438 edrsystems.py:1262 edrsystems.py:1293
+#: edrsysplacheck.py:438 edrsystems.py:1264 edrsystems.py:1295
 msgid "Concha Aureolas"
 msgstr ""
 
-#: edrsysplacheck.py:447 edrsystems.py:1239
+#: edrsysplacheck.py:447 edrsystems.py:1241
 msgid "Concha Biconcavis"
 msgstr ""
 
-#: edrsysplacheck.py:456 edrsystems.py:1306 edrsystems.py:1407
+#: edrsysplacheck.py:456 edrsystems.py:1308 edrsystems.py:1409
 msgid "Concha Labiata"
 msgstr ""
 
-#: edrsysplacheck.py:466 edrsystems.py:1151 edrsystems.py:1398
+#: edrsysplacheck.py:466 edrsystems.py:1153 edrsystems.py:1400
 msgid "Concha Renibus"
 msgstr ""
 
-#: edrsysplacheck.py:484 edrsystems.py:1010
+#: edrsysplacheck.py:484 edrsystems.py:1012
 msgid "Electricae"
 msgstr ""
 
-#: edrsysplacheck.py:509 edrsystems.py:1191 edrsystems.py:1208
-#: edrsystems.py:1226
+#: edrsysplacheck.py:509 edrsystems.py:1193 edrsystems.py:1210
+#: edrsystems.py:1228
 msgid "Electricae Pluma"
 msgstr ""
 
-#: edrsysplacheck.py:516 edrsystems.py:1189 edrsystems.py:1206
-#: edrsystems.py:1224
+#: edrsysplacheck.py:516 edrsystems.py:1191 edrsystems.py:1208
+#: edrsystems.py:1226
 msgid "Electricae Radialem"
 msgstr ""
 
@@ -5227,19 +5231,19 @@ msgstr ""
 msgid "Fonticulua"
 msgstr ""
 
-#: edrsysplacheck.py:539 edrsystems.py:1220
+#: edrsysplacheck.py:539 edrsystems.py:1222
 msgid "Fonticulua Campestris"
 msgstr ""
 
-#: edrsysplacheck.py:547 edrsystems.py:1235
+#: edrsysplacheck.py:547 edrsystems.py:1237
 msgid "Fonticulua Digitos"
 msgstr ""
 
-#: edrsysplacheck.py:555 edrsystems.py:1252
+#: edrsysplacheck.py:555 edrsystems.py:1254
 msgid "Fonticulua Fluctus"
 msgstr ""
 
-#: edrsysplacheck.py:563 edrsystems.py:1245
+#: edrsysplacheck.py:563 edrsystems.py:1247
 msgid "Fonticulua Lapida"
 msgstr ""
 
@@ -5247,19 +5251,19 @@ msgstr ""
 msgid "Fonticulua Segmentatus"
 msgstr ""
 
-#: edrsysplacheck.py:579 edrsystems.py:1222
+#: edrsysplacheck.py:579 edrsystems.py:1224
 msgid "Fonticulua Upupam"
 msgstr ""
 
-#: edrsysplacheck.py:588 edrsystems.py:1012
+#: edrsysplacheck.py:588 edrsystems.py:1014
 msgid "Frutexa"
 msgstr ""
 
-#: edrsysplacheck.py:610 edrsystems.py:1307
+#: edrsysplacheck.py:610 edrsystems.py:1309
 msgid "Frutexa Acus"
 msgstr ""
 
-#: edrsysplacheck.py:620 edrsystems.py:1446
+#: edrsysplacheck.py:620 edrsystems.py:1448
 msgid "Frutexa Collum"
 msgstr ""
 
@@ -5267,7 +5271,7 @@ msgstr ""
 msgid "Frutexa Fera"
 msgstr ""
 
-#: edrsysplacheck.py:639 edrsystems.py:1263
+#: edrsysplacheck.py:639 edrsystems.py:1265
 msgid "Frutexa Flabellum"
 msgstr ""
 
@@ -5275,11 +5279,11 @@ msgstr ""
 msgid "Frutexa Flammasis"
 msgstr ""
 
-#: edrsysplacheck.py:657 edrsystems.py:1294 edrsystems.py:1383
+#: edrsysplacheck.py:657 edrsystems.py:1296 edrsystems.py:1385
 msgid "Frutexa Metallicum"
 msgstr ""
 
-#: edrsysplacheck.py:677 edrsystems.py:1175
+#: edrsysplacheck.py:677 edrsystems.py:1177
 msgid "Frutexa Sponsae"
 msgstr ""
 
@@ -5287,17 +5291,17 @@ msgstr ""
 msgid "Fungoida"
 msgstr ""
 
-#: edrsysplacheck.py:706 edrsystems.py:1215
+#: edrsysplacheck.py:706 edrsystems.py:1217
 msgid "Fungoida Bullarum"
 msgstr ""
 
-#: edrsysplacheck.py:714 edrsystems.py:1152 edrsystems.py:1334
-#: edrsystems.py:1344 edrsystems.py:1399
+#: edrsysplacheck.py:714 edrsystems.py:1154 edrsystems.py:1336
+#: edrsystems.py:1346 edrsystems.py:1401
 msgid "Fungoida Gelata"
 msgstr ""
 
-#: edrsysplacheck.py:724 edrsystems.py:1228 edrsystems.py:1266
-#: edrsystems.py:1295
+#: edrsysplacheck.py:724 edrsystems.py:1230 edrsystems.py:1268
+#: edrsystems.py:1297
 msgid "Fungoida Setisis"
 msgstr ""
 
@@ -5305,43 +5309,43 @@ msgstr ""
 msgid "Fungoida Stabitis"
 msgstr ""
 
-#: edrsysplacheck.py:743 edrsystems.py:1015
+#: edrsysplacheck.py:743 edrsystems.py:1017
 msgid "Osseus"
 msgstr ""
 
-#: edrsysplacheck.py:763 edrsystems.py:1342 edrsystems.py:1414
+#: edrsysplacheck.py:763 edrsystems.py:1344 edrsystems.py:1416
 msgid "Osseus Cornibus"
 msgstr ""
 
-#: edrsysplacheck.py:773 edrsystems.py:1176 edrsystems.py:1181
+#: edrsysplacheck.py:773 edrsystems.py:1178 edrsystems.py:1183
 msgid "Osseus Discus"
 msgstr ""
 
-#: edrsysplacheck.py:781 edrsystems.py:1330 edrsystems.py:1419
+#: edrsysplacheck.py:781 edrsystems.py:1332 edrsystems.py:1421
 msgid "Osseus Fractus"
 msgstr ""
 
-#: edrsysplacheck.py:791 edrsystems.py:1363
+#: edrsysplacheck.py:791 edrsystems.py:1365
 msgid "Osseus Pellebantus"
 msgstr ""
 
-#: edrsysplacheck.py:801 edrsystems.py:1216 edrsystems.py:1229
+#: edrsysplacheck.py:801 edrsystems.py:1218 edrsystems.py:1231
 msgid "Osseus Pumice"
 msgstr ""
 
-#: edrsysplacheck.py:811 edrsystems.py:1267 edrsystems.py:1296
+#: edrsysplacheck.py:811 edrsystems.py:1269 edrsystems.py:1298
 msgid "Osseus Spiralis"
 msgstr ""
 
-#: edrsysplacheck.py:820 edrsystems.py:1016
+#: edrsysplacheck.py:820 edrsystems.py:1018
 msgid "Recepta"
 msgstr ""
 
-#: edrsysplacheck.py:829 edrsystems.py:1447 edrsystems.py:1465
+#: edrsysplacheck.py:829 edrsystems.py:1449 edrsystems.py:1467
 msgid "Recepta Deltahedronix"
 msgstr ""
 
-#: edrsysplacheck.py:837 edrsystems.py:1438
+#: edrsysplacheck.py:837 edrsystems.py:1440
 msgid "Recepta Umbrux"
 msgstr ""
 
@@ -5349,11 +5353,11 @@ msgstr ""
 msgid "Recepta Conditivus"
 msgstr ""
 
-#: edrsysplacheck.py:854 edrsystems.py:1018
+#: edrsysplacheck.py:854 edrsystems.py:1020
 msgid "Stratum"
 msgstr ""
 
-#: edrsysplacheck.py:877 edrsystems.py:1453
+#: edrsysplacheck.py:877 edrsystems.py:1455
 msgid "Stratum Araneamus"
 msgstr ""
 
@@ -5377,21 +5381,21 @@ msgstr ""
 msgid "Stratum Limaxus"
 msgstr ""
 
-#: edrsysplacheck.py:939 edrsystems.py:1160 edrsystems.py:1279
-#: edrsystems.py:1368
+#: edrsysplacheck.py:939 edrsystems.py:1162 edrsystems.py:1281
+#: edrsystems.py:1370
 msgid "Stratum Paleas"
 msgstr ""
 
-#: edrsysplacheck.py:949 edrsystems.py:1162 edrsystems.py:1254
-#: edrsystems.py:1300 edrsystems.py:1436 edrsystems.py:1473
+#: edrsysplacheck.py:949 edrsystems.py:1164 edrsystems.py:1256
+#: edrsystems.py:1302 edrsystems.py:1438 edrsystems.py:1475
 msgid "Stratum Tectonicas"
 msgstr ""
 
-#: edrsysplacheck.py:960 edrsystems.py:1019
+#: edrsysplacheck.py:960 edrsystems.py:1021
 msgid "Tubus"
 msgstr ""
 
-#: edrsysplacheck.py:980 edrsystems.py:1349
+#: edrsysplacheck.py:980 edrsystems.py:1351
 msgid "Tubus Cavas"
 msgstr ""
 
@@ -5403,11 +5407,11 @@ msgstr ""
 msgid "Tubus Conifer"
 msgstr ""
 
-#: edrsysplacheck.py:1026 edrsystems.py:1277
+#: edrsysplacheck.py:1026 edrsystems.py:1279
 msgid "Tubus Rosarium"
 msgstr ""
 
-#: edrsysplacheck.py:1037 edrsystems.py:1298 edrsystems.py:1426
+#: edrsysplacheck.py:1037 edrsystems.py:1300 edrsystems.py:1428
 msgid "Tubus Sororibus"
 msgstr ""
 
@@ -5419,7 +5423,7 @@ msgstr ""
 msgid "Tussock Albata"
 msgstr ""
 
-#: edrsysplacheck.py:1081 edrsystems.py:1218 edrsystems.py:1237
+#: edrsysplacheck.py:1081 edrsystems.py:1220 edrsystems.py:1239
 msgid "Tussock Capillum"
 msgstr ""
 
@@ -5427,7 +5431,7 @@ msgstr ""
 msgid "Tussock Caputus"
 msgstr ""
 
-#: edrsysplacheck.py:1101 edrsystems.py:1268
+#: edrsysplacheck.py:1101 edrsystems.py:1270
 msgid "Tussock Catena"
 msgstr ""
 
@@ -5451,7 +5455,7 @@ msgstr ""
 msgid "Tussock Pennatis"
 msgstr ""
 
-#: edrsysplacheck.py:1160 edrsystems.py:1310
+#: edrsysplacheck.py:1160 edrsystems.py:1312
 msgid "Tussock Propagito"
 msgstr ""
 
@@ -5459,7 +5463,7 @@ msgstr ""
 msgid "Tussock Serrati"
 msgstr ""
 
-#: edrsysplacheck.py:1181 edrsystems.py:1450
+#: edrsysplacheck.py:1181 edrsystems.py:1452
 msgid "Tussock Stigmasis"
 msgstr ""
 
@@ -5471,319 +5475,319 @@ msgstr ""
 msgid "Tussock Ventusa"
 msgstr ""
 
-#: edrsysplacheck.py:1214 edrsystems.py:1177 edrsystems.py:1182
+#: edrsysplacheck.py:1214 edrsystems.py:1179 edrsystems.py:1184
 msgid "Tussock Virgam"
 msgstr ""
 
-#: edrsyssetlcheck.py:192
+#: edrsyssetlcheck.py:228
 msgid "abandoned"
 msgstr ""
 
-#: edrsyssetlcheck.py:193
+#: edrsyssetlcheck.py:229
 msgid "restore"
 msgstr ""
 
-#: edrsyssetlcheck.py:194
+#: edrsyssetlcheck.py:230
 msgid "cz"
 msgstr ""
 
-#: edrsyssetlcheck.py:195
+#: edrsyssetlcheck.py:231
 msgid "combatzone"
 msgstr ""
 
-#: edrsyssetlcheck.py:199
+#: edrsyssetlcheck.py:235
 msgid "anarchy"
 msgstr ""
 
-#: edrsyssetlcheck.py:200
+#: edrsyssetlcheck.py:236
 msgid "anar"
 msgstr ""
 
-#: edrsyssetlcheck.py:201
+#: edrsyssetlcheck.py:237
 msgid "confederacy"
 msgstr ""
 
-#: edrsyssetlcheck.py:202
+#: edrsyssetlcheck.py:238
 msgid "cooperative"
 msgstr ""
 
-#: edrsyssetlcheck.py:203
+#: edrsyssetlcheck.py:239
 msgid "corporate"
 msgstr ""
 
-#: edrsyssetlcheck.py:204
+#: edrsyssetlcheck.py:240
 msgid "democracy"
 msgstr ""
 
-#: edrsyssetlcheck.py:205
+#: edrsyssetlcheck.py:241
 msgid "demo"
 msgstr ""
 
-#: edrsyssetlcheck.py:206
+#: edrsyssetlcheck.py:242
 msgid "dictatorship"
 msgstr ""
 
-#: edrsyssetlcheck.py:207
+#: edrsyssetlcheck.py:243
 msgid "feudal"
 msgstr ""
 
-#: edrsyssetlcheck.py:208
+#: edrsyssetlcheck.py:244
 msgid "patronage"
 msgstr ""
 
-#: edrsyssetlcheck.py:209 edrsyssetlcheck.py:277
+#: edrsyssetlcheck.py:245 edrsyssetlcheck.py:312
 msgid "prison"
 msgstr ""
 
-#: edrsyssetlcheck.py:210
+#: edrsyssetlcheck.py:246
 msgid "prison colony"
 msgstr ""
 
-#: edrsyssetlcheck.py:211
+#: edrsyssetlcheck.py:247
 msgid "theocracy"
 msgstr ""
 
-#: edrsyssetlcheck.py:212 edrsyssetlcheck.py:268
+#: edrsyssetlcheck.py:248 edrsyssetlcheck.py:303
 msgid "engineer"
 msgstr ""
 
-#: edrsyssetlcheck.py:213
+#: edrsyssetlcheck.py:249
 msgid "communism"
 msgstr ""
 
-#: edrsyssetlcheck.py:219
+#: edrsyssetlcheck.py:255
 msgid "independent"
 msgstr ""
 
-#: edrsyssetlcheck.py:220
+#: edrsyssetlcheck.py:256
 msgid "alliance"
 msgstr ""
 
-#: edrsyssetlcheck.py:221
+#: edrsyssetlcheck.py:257
 msgid "federal"
 msgstr ""
 
-#: edrsyssetlcheck.py:222
+#: edrsyssetlcheck.py:258
 msgid "federation"
 msgstr ""
 
-#: edrsyssetlcheck.py:223
+#: edrsyssetlcheck.py:259
 msgid "imperial"
 msgstr ""
 
-#: edrsyssetlcheck.py:224
+#: edrsyssetlcheck.py:260
 msgid "empire"
 msgstr ""
 
-#: edrsyssetlcheck.py:225
+#: edrsyssetlcheck.py:261
 msgid "pirate"
 msgstr ""
 
-#: edrsyssetlcheck.py:226
+#: edrsyssetlcheck.py:262
 msgid "pilotsfederation"
 msgstr ""
 
-#: edrsyssetlcheck.py:227
+#: edrsyssetlcheck.py:263
 msgid "thargoids"
 msgstr ""
 
-#: edrsyssetlcheck.py:228
+#: edrsyssetlcheck.py:264
 msgid "guardians"
 msgstr ""
 
-#: edrsyssetlcheck.py:232
+#: edrsyssetlcheck.py:268
 msgid "blight"
 msgstr ""
 
-#: edrsyssetlcheck.py:233
+#: edrsyssetlcheck.py:269
 msgid "bust"
 msgstr ""
 
-#: edrsyssetlcheck.py:234
+#: edrsyssetlcheck.py:270
 msgid "boom"
 msgstr ""
 
-#: edrsyssetlcheck.py:235
+#: edrsyssetlcheck.py:271
 msgid "civilliberty"
 msgstr ""
 
-#: edrsyssetlcheck.py:236
+#: edrsyssetlcheck.py:272
 msgid "civilunrest"
 msgstr ""
 
-#: edrsyssetlcheck.py:237
+#: edrsyssetlcheck.py:273
 msgid "coldwar"
 msgstr ""
 
-#: edrsyssetlcheck.py:238
+#: edrsyssetlcheck.py:274
 msgid "civilwar"
 msgstr ""
 
-#: edrsyssetlcheck.py:239
+#: edrsyssetlcheck.py:275
 msgid "colonisation"
 msgstr ""
 
-#: edrsyssetlcheck.py:240
+#: edrsyssetlcheck.py:276
 msgid "drought"
 msgstr ""
 
-#: edrsyssetlcheck.py:241
+#: edrsyssetlcheck.py:277
 msgid "elections"
 msgstr ""
 
-#: edrsyssetlcheck.py:242
+#: edrsyssetlcheck.py:278
 msgid "expansion"
 msgstr ""
 
-#: edrsyssetlcheck.py:243
+#: edrsyssetlcheck.py:279
 msgid "famine"
 msgstr ""
 
-#: edrsyssetlcheck.py:244
+#: edrsyssetlcheck.py:280
 msgid "historicevent"
 msgstr ""
 
-#: edrsyssetlcheck.py:245
+#: edrsyssetlcheck.py:281
 msgid "incursion"
 msgstr ""
 
-#: edrsyssetlcheck.py:246
+#: edrsyssetlcheck.py:282
 msgid "infested"
 msgstr ""
 
-#: edrsyssetlcheck.py:247
+#: edrsyssetlcheck.py:283
 msgid "infrastructurefailure"
 msgstr ""
 
-#: edrsyssetlcheck.py:248
+#: edrsyssetlcheck.py:284
 msgid "investment"
 msgstr ""
 
-#: edrsyssetlcheck.py:249
+#: edrsyssetlcheck.py:285
 msgid "lockdown"
 msgstr ""
 
-#: edrsyssetlcheck.py:250
+#: edrsyssetlcheck.py:286
 msgid "naturaldisaster"
 msgstr ""
 
-#: edrsyssetlcheck.py:251
+#: edrsyssetlcheck.py:287
 msgid "outbreak"
 msgstr ""
 
-#: edrsyssetlcheck.py:252
+#: edrsyssetlcheck.py:288
 msgid "pirateattack"
 msgstr ""
 
-#: edrsyssetlcheck.py:253
+#: edrsyssetlcheck.py:289
 msgid "publicholiday"
 msgstr ""
 
-#: edrsyssetlcheck.py:254
+#: edrsyssetlcheck.py:290
 msgid "retreat"
 msgstr ""
 
-#: edrsyssetlcheck.py:255
+#: edrsyssetlcheck.py:291
 msgid "revolution"
 msgstr ""
 
-#: edrsyssetlcheck.py:256
+#: edrsyssetlcheck.py:292
 msgid "technologicalleap"
 msgstr ""
 
-#: edrsyssetlcheck.py:257
+#: edrsyssetlcheck.py:293
 msgid "terroristattack"
 msgstr ""
 
-#: edrsyssetlcheck.py:258
+#: edrsyssetlcheck.py:294
 msgid "tradewar"
 msgstr ""
 
-#: edrsyssetlcheck.py:259
+#: edrsyssetlcheck.py:295
 msgid "war"
 msgstr ""
 
-#: edrsyssetlcheck.py:264
+#: edrsyssetlcheck.py:299
 msgid "agriculture"
 msgstr ""
 
-#: edrsyssetlcheck.py:265
+#: edrsyssetlcheck.py:300
 msgid "agri"
 msgstr ""
 
-#: edrsyssetlcheck.py:266
+#: edrsyssetlcheck.py:301
 msgid "colony"
 msgstr ""
 
-#: edrsyssetlcheck.py:267
+#: edrsyssetlcheck.py:302
 msgid "damaged"
 msgstr ""
 
-#: edrsyssetlcheck.py:269
+#: edrsyssetlcheck.py:304
 msgid "extraction"
 msgstr ""
 
-#: edrsyssetlcheck.py:270
+#: edrsyssetlcheck.py:305
 msgid "extr"
 msgstr ""
 
-#: edrsyssetlcheck.py:271
+#: edrsyssetlcheck.py:306
 msgid "hightech"
 msgstr ""
 
-#: edrsyssetlcheck.py:272
+#: edrsyssetlcheck.py:307
 msgid "high"
 msgstr ""
 
-#: edrsyssetlcheck.py:273
+#: edrsyssetlcheck.py:308
 msgid "industrial"
 msgstr ""
 
-#: edrsyssetlcheck.py:274
+#: edrsyssetlcheck.py:309
 msgid "indu"
 msgstr ""
 
-#: edrsyssetlcheck.py:275
+#: edrsyssetlcheck.py:310
 msgid "military"
 msgstr ""
 
-#: edrsyssetlcheck.py:276
+#: edrsyssetlcheck.py:311
 msgid "mili"
 msgstr ""
 
-#: edrsyssetlcheck.py:278
+#: edrsyssetlcheck.py:313
 msgid "privateenterprise"
 msgstr ""
 
-#: edrsyssetlcheck.py:279
+#: edrsyssetlcheck.py:314
 msgid "refinery"
 msgstr ""
 
-#: edrsyssetlcheck.py:280
+#: edrsyssetlcheck.py:315
 msgid "repair"
 msgstr ""
 
-#: edrsyssetlcheck.py:281
+#: edrsyssetlcheck.py:316
 msgid "rescue"
 msgstr ""
 
-#: edrsyssetlcheck.py:282
+#: edrsyssetlcheck.py:317
 msgid "service"
 msgstr ""
 
-#: edrsyssetlcheck.py:283
+#: edrsyssetlcheck.py:318
 msgid "terraforming"
 msgstr ""
 
-#: edrsyssetlcheck.py:284
+#: edrsyssetlcheck.py:319
 msgid "tourism"
 msgstr ""
 
-#: edrsyssetlcheck.py:285
+#: edrsyssetlcheck.py:320
 msgid "tour"
 msgstr ""
 
-#: edrsyssetlcheck.py:286
+#: edrsyssetlcheck.py:321
 msgid "underattack"
 msgstr ""
 
@@ -5839,7 +5843,7 @@ msgstr ""
 msgid "Fac: {}  "
 msgstr ""
 
-#: edrsystems.py:624 edrsystems.py:690 edrsystems.py:881
+#: edrsystems.py:624 edrsystems.py:690 edrsystems.py:883
 msgid "Max value: {} cr @ {} LS"
 msgstr "Valeur max: {} cr @ {} AL"
 
@@ -5847,315 +5851,315 @@ msgstr "Valeur max: {} cr @ {} AL"
 msgid "Discovered {}/{} {}%"
 msgstr "Découvertes {}/{} {}%"
 
-#: edrsystems.py:834
+#: edrsystems.py:836
 msgid "as of {}  "
 msgstr "date des infos: {} "
 
-#: edrsystems.py:851
+#: edrsystems.py:853
 msgid "{}/{}  "
 msgstr ""
 
-#: edrsystems.py:853
+#: edrsystems.py:855
 msgid "-/{}  "
 msgstr ""
 
-#: edrsystems.py:855
+#: edrsystems.py:857
 msgid "{}  "
 msgstr ""
 
-#: edrsystems.py:860
+#: edrsystems.py:862
 msgid "[LAND: {}G; {}K]"
 msgstr "[ATTER: {}G; {}K]"
 
-#: edrsystems.py:862
+#: edrsystems.py:864
 msgid "[WALK: {}G; {}K]"
 msgstr ""
 
-#: edrsystems.py:874
+#: edrsystems.py:876
 msgid "[{}]"
 msgstr ""
 
-#: edrsystems.py:1002
+#: edrsystems.py:1004
 msgid "Aleoids"
 msgstr ""
 
-#: edrsystems.py:1003
+#: edrsystems.py:1005
 msgid "Anemone"
 msgstr ""
 
-#: edrsystems.py:1005
+#: edrsystems.py:1007
 msgid "Bark mound"
 msgstr ""
 
-#: edrsystems.py:1006
+#: edrsystems.py:1008
 msgid "Seed"
 msgstr ""
 
-#: edrsystems.py:1007
+#: edrsystems.py:1009
 msgid "Cactoids"
 msgstr ""
 
-#: edrsystems.py:1009
+#: edrsystems.py:1011
 msgid "Conchas"
 msgstr ""
 
-#: edrsystems.py:1011
+#: edrsystems.py:1013
 msgid "Fonticulus"
 msgstr ""
 
-#: edrsystems.py:1013
+#: edrsystems.py:1015
 msgid "Fumerolas"
 msgstr ""
 
-#: edrsystems.py:1014
+#: edrsystems.py:1016
 msgid "Fungoids"
 msgstr ""
 
-#: edrsystems.py:1017
+#: edrsystems.py:1019
 msgid "Sinuous tuber"
 msgstr ""
 
-#: edrsystems.py:1020
+#: edrsystems.py:1022
 msgid "Tussocks"
 msgstr ""
 
-#: edrsystems.py:1021
+#: edrsystems.py:1023
 msgid "Crystalline shards"
 msgstr ""
 
-#: edrsystems.py:1022
+#: edrsystems.py:1024
 msgid "Amphora"
 msgstr ""
 
-#: edrsystems.py:1097
+#: edrsystems.py:1099
 msgid "Amphora(?)"
 msgstr ""
 
-#: edrsystems.py:1100
+#: edrsystems.py:1102
 msgid "Anemones"
 msgstr ""
 
-#: edrsystems.py:1103
+#: edrsystems.py:1105
 msgid "Anemones(?)"
 msgstr ""
 
-#: edrsystems.py:1115
+#: edrsystems.py:1117
 msgid "Crystalline shard"
 msgstr ""
 
-#: edrsystems.py:1149 edrsystems.py:1186 edrsystems.py:1202 edrsystems.py:1212
-#: edrsystems.py:1232 edrsystems.py:1242 edrsystems.py:1249 edrsystems.py:1274
-#: edrsystems.py:1285 edrsystems.py:1304 edrsystems.py:1381 edrsystems.py:1443
-#: edrsystems.py:1461 edrsystems.py:1470
+#: edrsystems.py:1151 edrsystems.py:1188 edrsystems.py:1204 edrsystems.py:1214
+#: edrsystems.py:1234 edrsystems.py:1244 edrsystems.py:1251 edrsystems.py:1276
+#: edrsystems.py:1287 edrsystems.py:1306 edrsystems.py:1383 edrsystems.py:1445
+#: edrsystems.py:1463 edrsystems.py:1472
 msgid "Tela"
 msgstr ""
 
-#: edrsystems.py:1153 edrsystems.py:1335 edrsystems.py:1345 edrsystems.py:1400
+#: edrsystems.py:1155 edrsystems.py:1337 edrsystems.py:1347 edrsystems.py:1402
 msgid "Stabitis"
 msgstr ""
 
-#: edrsystems.py:1166 edrsystems.py:1355 edrsystems.py:1429
+#: edrsystems.py:1168 edrsystems.py:1357 edrsystems.py:1431
 msgid "Clypeus Lacrimam"
 msgstr ""
 
-#: edrsystems.py:1167 edrsystems.py:1356 edrsystems.py:1430
+#: edrsystems.py:1169 edrsystems.py:1358 edrsystems.py:1432
 msgid "Margaritus"
 msgstr ""
 
-#: edrsystems.py:1170 edrsystems.py:1358 edrsystems.py:1432
+#: edrsystems.py:1172 edrsystems.py:1360 edrsystems.py:1434
 msgid "Speculumi"
 msgstr ""
 
-#: edrsystems.py:1179
+#: edrsystems.py:1181
 msgid "Fumerola Aquatis"
 msgstr ""
 
-#: edrsystems.py:1193
+#: edrsystems.py:1195
 msgid "Fonticulua segmentatus"
 msgstr ""
 
-#: edrsystems.py:1196
+#: edrsystems.py:1198
 msgid "Verrata"
 msgstr ""
 
-#: edrsystems.py:1198
+#: edrsystems.py:1200
 msgid "Omentum"
 msgstr ""
 
-#: edrsystems.py:1200
+#: edrsystems.py:1202
 msgid "Scopulum"
 msgstr ""
 
-#: edrsystems.py:1257 edrsystems.py:1288
+#: edrsystems.py:1259 edrsystems.py:1290
 msgid "Spica"
 msgstr ""
 
-#: edrsystems.py:1260 edrsystems.py:1291
+#: edrsystems.py:1262 edrsystems.py:1293
 msgid "Peperatis"
 msgstr ""
 
-#: edrsystems.py:1264
+#: edrsystems.py:1266
 msgid "Flammasis"
 msgstr ""
 
-#: edrsystems.py:1269
+#: edrsystems.py:1271
 msgid "Cultro"
 msgstr ""
 
-#: edrsystems.py:1270
+#: edrsystems.py:1272
 msgid "Divisa"
 msgstr ""
 
-#: edrsystems.py:1280
+#: edrsystems.py:1282
 msgid "Laminamus"
 msgstr ""
 
-#: edrsystems.py:1308
+#: edrsystems.py:1310
 msgid "Fera"
 msgstr ""
 
-#: edrsystems.py:1311
+#: edrsystems.py:1313
 msgid "Pennatis"
 msgstr ""
 
-#: edrsystems.py:1313
+#: edrsystems.py:1315
 msgid "Pennata"
 msgstr ""
 
-#: edrsystems.py:1315
+#: edrsystems.py:1317
 msgid "Ventusa"
 msgstr ""
 
-#: edrsystems.py:1317
+#: edrsystems.py:1319
 msgid "Ignis"
 msgstr ""
 
-#: edrsystems.py:1319
+#: edrsystems.py:1321
 msgid "Serrati"
 msgstr ""
 
-#: edrsystems.py:1321
+#: edrsystems.py:1323
 msgid "Albata"
 msgstr ""
 
-#: edrsystems.py:1327 edrsystems.py:1339 edrsystems.py:1393
+#: edrsystems.py:1329 edrsystems.py:1341 edrsystems.py:1395
 msgid "Pullulanta"
 msgstr ""
 
-#: edrsystems.py:1329
+#: edrsystems.py:1331
 msgid "Renibus"
 msgstr ""
 
-#: edrsystems.py:1331
+#: edrsystems.py:1333
 msgid "Cornibus"
 msgstr ""
 
-#: edrsystems.py:1333 edrsystems.py:1343
+#: edrsystems.py:1335 edrsystems.py:1345
 msgid "Caputus"
 msgstr ""
 
-#: edrsystems.py:1350
+#: edrsystems.py:1352
 msgid "Compagibus"
 msgstr ""
 
-#: edrsystems.py:1351
+#: edrsystems.py:1353
 msgid "Conifer"
 msgstr ""
 
-#: edrsystems.py:1365
+#: edrsystems.py:1367
 msgid "Triticum"
 msgstr ""
 
-#: edrsystems.py:1370 edrsystems.py:1455
+#: edrsystems.py:1372 edrsystems.py:1457
 msgid "Excutitus"
 msgstr ""
 
-#: edrsystems.py:1372 edrsystems.py:1456
+#: edrsystems.py:1374 edrsystems.py:1458
 msgid "Limaxus"
 msgstr ""
 
-#: edrsystems.py:1373 edrsystems.py:1458
+#: edrsystems.py:1375 edrsystems.py:1460
 msgid "Frigus"
 msgstr ""
 
-#: edrsystems.py:1374 edrsystems.py:1459
+#: edrsystems.py:1376 edrsystems.py:1461
 msgid "Cucumisis"
 msgstr ""
 
-#: edrsystems.py:1405
+#: edrsystems.py:1407
 msgid "Labiata"
 msgstr ""
 
-#: edrsystems.py:1416
+#: edrsystems.py:1418
 msgid "Pellebantus"
 msgstr ""
 
-#: edrsystems.py:1421
+#: edrsystems.py:1423
 msgid "Fractus"
 msgstr ""
 
-#: edrsystems.py:1439
+#: edrsystems.py:1441
 msgid "Conditivus"
 msgstr ""
 
-#: edrsystems.py:1448 edrsystems.py:1466
+#: edrsystems.py:1450 edrsystems.py:1468
 msgid "Umbrux"
 msgstr ""
 
-#: edrsystems.py:1468
+#: edrsystems.py:1470
 msgid "Bacterium Cerbus"
 msgstr ""
 
-#: edrsystems.py:1503
+#: edrsystems.py:1505
 msgid "Unknown belt"
 msgstr "Ceinture non reconnu"
 
-#: edrsystems.py:1504
+#: edrsystems.py:1506
 msgid "Type: {}"
 msgstr ""
 
-#: edrsystems.py:1516
+#: edrsystems.py:1518
 msgid "Unknown ring"
 msgstr "Anneau non reconnu"
 
-#: edrsystems.py:1517
+#: edrsystems.py:1519
 msgid "Type: {} {}"
 msgstr "Type: {}/{}"
 
 #. Translators: this is for the sitreps feature; it's the title of a section to show systems with sighted outlaws
 #. Translators: this is for the sitrep feature; it's a section to show wanted cmdrs who have been sighted in the system of interest
-#: edrsystems.py:2193 edrsystems.py:2397
+#: edrsystems.py:2195 edrsystems.py:2399
 msgid "sitreps section|✪ Outlaws"
 msgstr "✪ Bandits"
 
 #. Translators: this is for the sitreps feature; it's the title of a section to show systems with sighted enemies (powerplay)
 #. Translators: this is for the sitrep feature; it's a section to show enemy cmdrs who have been sighted in the system of interest
-#: edrsystems.py:2202 edrsystems.py:2406
+#: edrsystems.py:2204 edrsystems.py:2408
 msgid "sitreps section|✪ Enemies"
 msgstr "✪ Ennemis"
 
 #. Translators: this is for the sitreps feature; it's the title of a section to show systems with reported crimes
-#: edrsystems.py:2210
+#: edrsystems.py:2212
 msgid "sitreps section|✪ Crimes"
 msgstr "✪ Crimes"
 
 #. Translators: this is for the sitreps feature; it's the title of a section to show systems with traffic
-#: edrsystems.py:2218
+#: edrsystems.py:2220
 msgid "sitreps section|✪ Traffic"
 msgstr "✪ Traffic"
 
 #. Translators: this is for the sitrep feature; it's a section to show sighted cmdrs in the system of interest
-#: edrsystems.py:2351
+#: edrsystems.py:2353
 msgid "sitrep section|✪ Sighted"
 msgstr "✪ Repérés"
 
 #. Translators: this is for the sitrep feature; it's a section to show cmdrs who have been reported as interdicting another cmdr in the system of interest
-#: edrsystems.py:2385
+#: edrsystems.py:2387
 msgid "sitrep section|✪ Interdictors"
 msgstr "✪ Interdicteurs"
 
 #. Translators: this is for the sitrep feature; it's a section to show cmdrs who have been reported as responsible for destroying the ship of another cmdr in the system of interest; use a judgement-neutral term
-#: edrsystems.py:2388
+#: edrsystems.py:2390
 msgid "sitreps section|✪ Destroyers"
 msgstr "✪ Destructeurs"
 
@@ -6389,7 +6393,7 @@ msgstr ":{nb_seconds}{suffix}"
 msgid "{nb_seconds}{suffix}"
 msgstr "{nb_seconds}{suffix}"
 
-#: edtime.py:136
+#: edtime.py:148
 msgid "%Y-%m-%d"
 msgstr "%d-%m-%Y"
 
@@ -7633,7 +7637,7 @@ msgstr "{} Échantillon #{}: {}m  ›{:03}‹"
 msgid "LG. Pad:{}   Outfit:{}   Shipyard:{}"
 msgstr "LG. Pad:{}   Equipmt:{}   Chantier:{}"
 
-#: ingamemsg.py:516 ingamemsg.py:595 ingamemsg.py:636
+#: ingamemsg.py:516 ingamemsg.py:601 ingamemsg.py:644
 msgid "Refuel:{}   Repair:{}   Restock:{}"
 msgstr "Fuel:{}   Réparer:{}   Ravitailler:{}"
 
@@ -7701,120 +7705,120 @@ msgstr "HT."
 msgid "I.Factor:{}   {} Broker:{}"
 msgstr "I.Factor:{}   Courtier {}:{}"
 
-#: ingamemsg.py:575 ingamemsg.py:615
+#: ingamemsg.py:579 ingamemsg.py:618
 msgid "PMF: {}"
 msgstr ""
 
-#: ingamemsg.py:600
+#: ingamemsg.py:606
 msgid "Market:{}   B.Market:{}   I.Factor:{}"
 msgstr "Marché:{}   Marché N.:{}   {} I.Factor:{}"
 
-#: ingamemsg.py:631
+#: ingamemsg.py:639
 msgid "Outfit:{}   Shipyard:{}"
 msgstr "Equipmt:{}   Chantier:{}"
 
-#: ingamemsg.py:640
+#: ingamemsg.py:648
 msgid "Market:{}   B.Market:{}"
 msgstr "Marché:{}   Marché N.:{}"
 
-#: ingamemsg.py:645
+#: ingamemsg.py:653
 msgid "U.Cart:{}   Vista G:{}"
 msgstr ""
 
-#: ingamemsg.py:651
+#: ingamemsg.py:659
 msgid "Redempt.O:{}   Pioneer S:{}   Lounge:{}"
 msgstr ""
 
-#: ingamemsg.py:1058
+#: ingamemsg.py:1068
 msgid "Mining Stats"
 msgstr "Stats minage"
 
-#: ingamemsg.py:1063
+#: ingamemsg.py:1073
 msgid "Mining Stats - MNR: {}"
 msgstr "Stats minage - MNR: {}"
 
-#: ingamemsg.py:1064
+#: ingamemsg.py:1074
 msgid "MNR %: {:>6.2f}  [{}/{}; {}]"
 msgstr "MNR %: {:>6.2f}  [{}/{}; {}]"
 
-#: ingamemsg.py:1065
+#: ingamemsg.py:1075
 msgid "MAX %: {:>6.2f}"
 msgstr "MAX %: {:>6.2f}"
 
-#: ingamemsg.py:1066
+#: ingamemsg.py:1076
 msgid "AVG %: {:>6.2f}"
 msgstr "MOY %: {:>6.2f}"
 
-#: ingamemsg.py:1069
+#: ingamemsg.py:1079
 msgid ">> DEPLETED <<"
 msgstr ">> APPAUVRI <<"
 
-#: ingamemsg.py:1073
+#: ingamemsg.py:1083
 msgid ">> WORTHLESS <<"
 msgstr ">> SANS VALEUR <<"
 
-#: ingamemsg.py:1077
+#: ingamemsg.py:1087
 msgid "ITM/H: {:>6.0f} [TGT: {:.0f}]"
 msgstr "MNR/H: {:>6.0f} [OBJ: {:.0f}]"
 
-#: ingamemsg.py:1078
+#: ingamemsg.py:1088
 msgid "ITM #: {:>6}"
 msgstr "MNT #: {:>6}"
 
-#: ingamemsg.py:1219
+#: ingamemsg.py:1229
 msgid "Bounty Hunting Stats"
 msgstr "Stats Chasses à la Prime"
 
-#: ingamemsg.py:1227
+#: ingamemsg.py:1237
 msgid "BOUNTY: {} cr [{}]"
 msgstr "PRIME: {} cr [{}]"
 
-#: ingamemsg.py:1228
+#: ingamemsg.py:1238
 msgid "MAX B.: {} cr"
 msgstr "MAX P.: {} cr"
 
-#: ingamemsg.py:1229
+#: ingamemsg.py:1239
 msgid "AVG B.: {} cr"
 msgstr "MOY P.: {} cr"
 
-#: ingamemsg.py:1230
+#: ingamemsg.py:1240
 msgid "CR / H: {} [TGT: {}]"
 msgstr "CR / H: {} [TGT: {}]"
 
-#: ingamemsg.py:1231
+#: ingamemsg.py:1241
 msgid "TOTALS: {} cr [{} rewards]"
 msgstr "TOTAL: {} cr [{} reçu]"
 
-#: ingamemsg.py:1353
+#: ingamemsg.py:1363
 #, python-brace-format
 msgid "{prefix}{cmdr} ({ship})"
 msgstr "{prefix}{cmdr} ({ship})"
 
-#: ingamemsg.py:1353
+#: ingamemsg.py:1363
 msgid "CMDR "
 msgstr "CMDT "
 
-#: ingamemsg.py:1364
+#: ingamemsg.py:1374
 msgid "[{} to 100%/UP]"
 msgstr "[{} pour 100%/UP]"
 
-#: ingamemsg.py:1368 ingamemsg.py:1383 ingamemsg.py:1398
+#: ingamemsg.py:1378 ingamemsg.py:1393 ingamemsg.py:1408
 msgid "[{} to   0%]"
 msgstr "[{} pour   0%]"
 
-#: ingamemsg.py:1369
+#: ingamemsg.py:1379
 msgid "SHLD{}: {}% {}"
 msgstr "SHLD{}: {}% {}"
 
-#: ingamemsg.py:1379 ingamemsg.py:1394
+#: ingamemsg.py:1389 ingamemsg.py:1404
 msgid "[{} to 100%]"
 msgstr "[{} pour 100%]"
 
-#: ingamemsg.py:1384
+#: ingamemsg.py:1394
 msgid "HULL{}: {}% {}"
 msgstr "HULL{}: {}% {}"
 
-#: ingamemsg.py:1399
+#: ingamemsg.py:1409
 #, python-brace-format
 msgid "{subsys}{signal}: {hp:.4g}% {delta}"
 msgstr "{subsys}{signal}: {hp:.4g}% {delta}"
@@ -9441,6 +9445,9 @@ msgid ""
 msgstr ""
 "[Minage] Maintenez votre cargo (e.g. LTD) en dessous de 10 pourcents de la "
 "demande d'un marché afin de bénéficier du meilleur prix."
+
+#~ msgid "Check that Elite still has the focus!"
+#~ msgstr "Vérifiez qu'Elite a le focus!"
 
 #~ msgid "I.Factor:{}"
 #~ msgstr "I.Factor:{}"

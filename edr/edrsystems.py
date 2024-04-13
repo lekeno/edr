@@ -1878,7 +1878,7 @@ class EDRSystems(object):
     def are_factions_stale(self, star_system):
         if not star_system:
             return False
-        return self.factions.is_stale(star_system.lower())
+        return self.factions.are_factions_stale(star_system.lower())
     
 
     def system_state(self, star_system):

@@ -109,7 +109,7 @@ class EDRCommands(object):
             systems = " ".join(command_parts[1:]).split(" > ", 1)
             if not systems:
                 self.edr_log.log(u"Aborting distance calculation (no params).", "DEBUG")
-                return
+                return False
             from_sys = systems[0] if len(systems) == 2 else cmdr.star_system
             to_sys = systems[1] if len(systems) == 2 else systems[0]
             self.edr_log.log(u"Distance command from {} to {}".format(from_sys, to_sys), "INFO")
@@ -161,13 +161,13 @@ class EDRCommands(object):
             self.edr_client.staging_station_near(search_center, override_sc_dist)
         elif command == "!fc":
             if len(command_parts) < 2:
-                return
+                return False
             callsign_or_name = " ".join(command_parts[1:]).upper()
             self.edr_log.log(u"Looking for a Fleet Carrier in current system with {} in callsign or name".format(callsign_or_name), "INFO")
             self.edr_client.fc_in_current_system(callsign_or_name)
         elif command == "!station":
             if len(command_parts) < 2:
-                return
+                return False
             station_name = " ".join(command_parts[1:]).upper()
             self.edr_log.log(u"Looking for a Station in current system with {} in its name".format(station_name), "INFO")
             self.edr_client.station_in_current_system(station_name)
@@ -237,11 +237,11 @@ class EDRCommands(object):
             if service == "fuel" and not cmdr.lowish_fuel():
                 self.edr_log.log(u"EDR Central for {} with {} not allowed (enough fuel)".format(service, message), "INFO")
                 self.edr_client.notify_with_details("EDR Central", [_(u"Call rejected: you seem to have enough fuel."), _("Contact Cmdr LeKeno if this is inaccurate")])
-                return
+                return False
             if service == "repair" and not cmdr.heavily_damaged():
                 self.edr_log.log(u"EDR Central for {} with {} not allowed (no serious damage)".format(service, message), "INFO")
                 self.edr_client.notify_with_details("EDR Central", [_(u"Call rejected: you seem to have enough hull left."), _("Contact Cmdr LeKeno if this is inaccurate")])
-                return
+                return False
             info = self.edr_client.player.json(fuel_info=(service == "fuel"))
             info["message"] = message
             self.edr_log.log(u"Message to EDR Central for {} with {}".format(service, message), "INFO")
@@ -249,47 +249,42 @@ class EDRCommands(object):
         elif command == "!nav":
             if len(command_parts) < 2:
                 self.edr_log.log(u"Not enough parameters for navigation command", "INFO")
-                return
+                return False
             if command_parts[1].lower() == "off":
                 self.edr_log.log(u"Clearing destination", "INFO")
                 self.edr_client.player.planetary_destination = None
-                return
             elif command_parts[1].lower() == "set" and self.edr_client.player.attitude.valid():
                 self.edr_log.log(u"Setting destination", "INFO")
                 attitude = self.edr_client.player.attitude
                 name = command_parts[2:].lower() if len(command_parts) > 2 else "Navpoint"
                 self.edr_client.navigation(attitude.latitude, attitude.longitude, name)
-                return
             elif command_parts[1].lower() == "next":
                 self.edr_log.log(u"Next custom POI", "INFO")
                 self.edr_client.player.planetary_destination = None
                 self.edr_client.next_custom_poi()
-                return
             elif command_parts[1].lower() == "previous":
                 self.edr_log.log(u"Previous custom POI", "INFO")
                 self.edr_client.player.planetary_destination = None
                 self.edr_client.previous_custom_poi()
-                return
             elif command_parts[1].lower() == "clear":
                 self.edr_log.log(u"Clearing POI", "INFO")
                 self.edr_client.player.planetary_destination = None
                 self.edr_client.clear_current_custom_poi()
-                return
             elif command_parts[1].lower() == "reset":
                 self.edr_log.log(u"Reset POIs", "INFO")
                 self.edr_client.player.planetary_destination = None
                 self.edr_client.reset_custom_pois()
-                return
-            lat_long = command_parts[1].split(" ")
-            if len(lat_long) != 2:
-                self.edr_log.log(u"Invalid parameters for navigation command", "INFO")
-                return
-            try:
-                self.edr_log.log(u"Navigation command", "INFO")
-                self.edr_client.navigation(float(lat_long[0]), float(lat_long[1]))
-            except:
-                self.edr_log.log(u"Couldn't convert parameters for navigation command to lat/long", "INFO")
-                return
+            else:
+                lat_long = command_parts[1].split(" ")
+                if len(lat_long) != 2:
+                    self.edr_log.log(u"Invalid parameters for navigation command", "INFO")
+                    return False
+                try:
+                    self.edr_log.log(u"Navigation command", "INFO")
+                    self.edr_client.navigation(float(lat_long[0]), float(lat_long[1]))
+                except:
+                    self.edr_log.log(u"Couldn't convert parameters for navigation command to lat/long", "INFO")
+                    return False
         elif command == "!ship" and len(command_parts) == 2:
             name_or_type = command_parts[1]
             self.edr_log.log(u"Ship search command for {}".format(name_or_type), "INFO")
@@ -420,7 +415,7 @@ class EDRCommands(object):
         target_cmdr = EDRCommands.get_target_cmdr(command_parts, recipient, self.edr_client.player)
         if target_cmdr is None:
             self.edr_log.log(u"Skipping tag command: no valid target", "WARNING")
-            return
+            return False
         
         if (command == "#!" or command == "#outlaw"):
             self.edr_log.log(u"Tag outlaw command for {}".format(target_cmdr), "INFO")
