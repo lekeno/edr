@@ -9078,8 +9078,8 @@ msgid ""
 "Never combat log in Open. If you aren't willing to accept the risk, don't "
 "bother with Open, Google 'Mobius PVE'."
 msgstr ""
-"Non combattere mai l'accesso a Open. Se non sei disposto ad accettare il "
-"rischio, non preoccuparti di Open, Google 'Mobius PVE'."
+"Evita il log-out in combattimento in Open. Se non accetti il rischio, evita "
+"l'Open, cerca 'Mobius PVE' su Google."
 
 #: randomtips.py:167
 msgid ""
