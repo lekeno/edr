@@ -2,9 +2,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
 "POT-Creation-Date: 2024-04-05 12:39+0900\n"
-"PO-Revision-Date: 2024-04-05 12:39+0900\n"
+"PO-Revision-Date: 2024-04-15 22:10+0200\n"
 "Last-Translator: GLWine\n"
-"Language-Team: GWine\n"
+"Language-Team: GLWine\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -139,7 +139,7 @@ msgstr "-- Ti senti perso? Invia !help tramite la chat in-game --"
 #. Translators: this is shown when EDR warms-up via the overlay
 #: edrclient.py:461
 msgid "EDR v{} by LeKeno"
-msgstr "EDR contro{} di LeKeno"
+msgstr "EDR v{} di LeKeno"
 
 #: edrclient.py:490
 msgid "Troubleshooting"
@@ -397,7 +397,7 @@ msgstr "Informazioni sui segnali (risultati potenziali)"
 #: edrclient.py:862
 #, python-brace-format
 msgid "Known signals in {system}"
-msgstr "Segnali conosciuti nel {system}"
+msgstr "Segnali conosciuti in {system}"
 
 #: edrclient.py:881 edrclient.py:883
 msgid "Genus: {}/{}"
