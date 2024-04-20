@@ -143,9 +143,9 @@ ED Recon est proposé en tant que plugin pour Elite Dangerous Market Connector, 
 1. [Téléchargez la dernière version d'EDR](https://github.com/lekeno/EDR/releases/latest) (le fichier EDR.v#.#.#.zip où #.#.# est le numéro de version, ex. 1.0.0 dans la capture d'écran)
 
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/master/edr/docs/assets/EDR_1.0.0_Black.png?raw=true">
-      <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/master/edr/docs/assets/EDR_1.0.0_White.png?raw=true">
-      <img alt="Screenshot of the release page of EDR 1.0.0" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/EDR_1.0.0_White.png?raw=true">
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/lekeno/edr/blob/master/edr/docs/assets/EDR_1.0.0_Black.png?raw=true">
+      <source media="(prefers-color-scheme: light)" srcset="https://github.com/lekeno/edr/blob/master/edr/docs/assets/EDR_1.0.0_White.png?raw=true">
+      <img alt="Screenshot of the release page of EDR 1.0.0" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/EDR_1.0.0_White.png?raw=true">
     </picture>
 
 2. Lancez EDMC.
@@ -153,32 +153,32 @@ ED Recon est proposé en tant que plugin pour Elite Dangerous Market Connector, 
 3. Cliquez sur Fichier puis Paramètres.
 
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_01-02_Black.png?raw=true">
-      <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_01-02_White.png?raw=true">
-      <img alt="How to open EDMC settings" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_01-02_White.png?raw=true">
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_01-02_Black.png?raw=true">
+      <source media="(prefers-color-scheme: light)" srcset="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_01-02_White.png?raw=true">
+      <img alt="How to open EDMC settings" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_01-02_White.png?raw=true">
     </picture>
 
 4. Cliquez sur l'onglet Plugins, puis cliquez sur Ouvrir.
 
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_03-04_Black.png?raw=true">
-      <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_03-04_White.png?raw=true">
-      <img alt="How to go to the plugin tab" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_03-04_White.png?raw=true">
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_03-04_Black.png?raw=true">
+      <source media="(prefers-color-scheme: light)" srcset="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_03-04_White.png?raw=true">
+      <img alt="How to go to the plugin tab" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_03-04_White.png?raw=true">
     </picture>
 
 5. Créez un sous-dossier nommé `EDR` dans le dossier `plugins`.
 
-    <img alt="How to access the tab and then the plugins folder" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_05_White.png?raw=true">
+    <img alt="How to access the tab and then the plugins folder" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_05_White.png?raw=true">
 
 6. Décompressez le contenu du fichier Zip que vous avez téléchargé à l'étape 2 directement dans le sous-dossier EDR.
 
-    <img alt="EDR folder creation" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_06_White.png?raw=true">
+    <img alt="EDR folder creation" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_06_White.png?raw=true">
 
 7. Relancez EDMC.
 
 8. Vous devriez voir une ligne d'état EDR (ex. `EDR: identité (invité)`) au bas de la fenêtre EDMC:
 
-    <img alt="Location and folder structure of EDR" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_07_White.png?raw=true">
+    <img alt="Location and folder structure of EDR" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_07_White.png?raw=true">
 
 9. Lancez Elite: Dangerous, démarrez une nouvelle partie.
 
@@ -199,14 +199,14 @@ Remarques importantes:
 
 Après avoir obtenu vos informations d'identification, ouvrez les paramètres EDR (menu `Fichier` menu, `Paramètres`, onglet `EDR`), remplissez les champs email et mot de passe en conséquence, puis cliquez sur OK.
 
-<img alt="Where to write email and password in EDMC settings for EDR" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_08_White.png?raw=true">
+<img alt="Where to write email and password in EDMC settings for EDR" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_08_White.png?raw=true">
 
 Si tout se passe comme prévu, vous devriez voir "identité vérifiée" dans la ligne d'état EDR.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_09_Black.png?raw=true">
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_09_White.png?raw=true">
-  <img alt="Location where it is indicated whether the login was successful" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_09_White.png?raw=true">
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_09_Black.png?raw=true">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_09_White.png?raw=true">
+  <img alt="Location where it is indicated whether the login was successful" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_09_White.png?raw=true">
 </picture>
 
 # EDR en quelques mots
@@ -220,9 +220,9 @@ EDR propose un large éventail de fonctionnalités conçues pour faciliter et au
 Ces fonctionnalités se déclenchent soit automatiquement en fonction de ce qui se passe dans le jeu, ou peuvent être déclenchées en envoyant des commandes EDR (ex. `!who lekeno`) via le chat du jeu (n'importe quel canal), ou via le champ de saisie EDR dans la fenêtre EDMC:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_10_Black.png?raw=true">
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_10_White.png?raw=true">
-  <img alt="Alterative position from where to send EDR commands in EDMC" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_10_White.png?raw=true">
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_10_Black.png?raw=true">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_10_White.png?raw=true">
+  <img alt="Alterative position from where to send EDR commands in EDMC" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_10_White.png?raw=true">
 </picture>
 
 ### Affichage
@@ -260,7 +260,7 @@ Vous pouvez aussi cibler un autre joueur pour révéler son profil EDR. Pour les
 
 EDR affichera également des informations clés (points de vie, taille/classe, historique) sur le vaisseau/véhicule de votre cible et le sous-module sélectionné le cas échéant:
 
-<img alt="Interface integrity and hull and shield of the opponent" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_11.png?raw=true">
+<img alt="Interface integrity and hull and shield of the opponent" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_11.png?raw=true">
 
 ## Annotations d'autres commandants
 
@@ -314,7 +314,7 @@ La section supérieure contient une vue combinée (même échelle verticale) des
 
 La section inférieure montre la plus grande prime signalée pour un mois donné. La hauteur de la barre est relative aux autres primes signalées. C'est-à-dire que la barre la plus haute représente la prime maximale pour les 12 derniers mois, et une barre à mi-hauteur représente 50 % de cette prime maximale. Le montant de la prime est reflété dans la couleur de la barre: plus la couleur est chaude, plus le montant de la prime est élevé.
 
-<img alt="Framing interface of a graphical box commander" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_12.png?raw=true">
+<img alt="Framing interface of a graphical box commander" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_12.png?raw=true">
 
 La section textuelle inclut des informations provenant d'EDR et d'[Inara](https://inara.cz/).
 
@@ -331,7 +331,7 @@ La section EDR fournit divers signaux pour vous aider à former une opinion d'un
 
 La section Inara affiche des informations telles que le rôle, l'escadron, l'allégeance, etc en provenance du site Inara si le commandant s'y est inscrit.
 
-<img alt="Framing interface of a commander" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_13.png?raw=true">
+<img alt="Framing interface of a commander" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_13.png?raw=true">
 
 # Karma EDR
 
@@ -508,7 +508,7 @@ EDR montrera une évaluation des matériaux Odyssey en fonction des événements
 - Accepter une mission avec un matériau fourni pour la mission.
 - Pointer un matériau avec le système gestuel du jeu (utilisations, rareté, emplacements typiques, requis par les ingénieurs ainsi qu’une indication de son utilité en fonction de votre progression, …). Cela fonctionne également pour les matériaux Horizons.
 
-<img alt="On-foot material analysis interface" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_14.png?raw=true">
+<img alt="On-foot material analysis interface" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_14.png?raw=true">
 
 - Envoi d'une demande d'évaluation avec `!eval backpack`, `!eval locker`, <tt>!eval _nom du matériau_</tt> (ex. des `!eval air quality reports`).
 - Validation d'un ordre d'achat ou de vente pour un matériau au bar de votre Fleet Carrier.
@@ -536,7 +536,7 @@ Vous pouvez également déclencher ces évaluations pour le dernièr bar que vou
 - `!eval bar` ou `!eval bar stock` pour évaluer les articles en vente.
 - `!eval bar demande` pour évaluer les articles recherchés par le propriétaire du transporteur de la flotte.
 
-    <img alt="Example of the interface and materials for the bar" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_15.png?raw=true">
+    <img alt="Example of the interface and materials for the bar" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_15.png?raw=true">
 
 # Fonctionnalités Vaisseaux
 
@@ -573,16 +573,16 @@ La commande !parking est là pour vous aider à trouver une place de parking pou
 Comme toujours, EDR copiera le nom du système dans votre presse-papiers, afin que vous puissiez rechercher celui-ci depuis la carte de la galaxie.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_16_Black.png?raw=true">
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_16_White.png?raw=true">
-  <img alt="Explanation of the interface of where the Fleet Carrier is parked" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_16_White.png?raw=true">
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_16_Black.png?raw=true">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_16_White.png?raw=true">
+  <img alt="Explanation of the interface of where the Fleet Carrier is parked" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_16_White.png?raw=true">
 </picture>
 
 ## Atterrissage
 
 EDR affichera des informations clés sur une station lors d’une demande d’atterrissage. Vous verrez aussi l'emplacement de votre aire d'atterrissage pour les stations Coriolis, Orbis, ainsi que les Fleet Carrier et certaines bases planétaires.
 
-<img alt="Example of a planetary station interface when requesting the dock" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_17.png?raw=true">
+<img alt="Example of a planetary station interface when requesting the dock" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_17.png?raw=true">
 
 # Fonctionnalités Escadron
 
@@ -638,7 +638,7 @@ Si vous avez été engagé assez longtemps à un pouvoir, vous pouvez utiliser l
 
 EDR affiche diverses statistiques et informations pour vous aider à miner plus efficacement (voir [cette vidéo](https://www.youtube.com/watch?v=1bp_Q3JgW3o) pour plus de détails):
 
-<img alt="Example of mining assistance interface with explanation of parameters" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_18.png?raw=true">
+<img alt="Example of mining assistance interface with explanation of parameters" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_18.png?raw=true">
 
 De plus, EDR vous rappellera de vous réapprovisionner en drones avant de quitter la station.
 
@@ -656,11 +656,11 @@ EDR peut estimer quelles espèces biologiques sont susceptibles d'apparaître su
 
 - En ciblant une planète (voir les lignes “Bio attendue” et “Progression”), ou en envoyant la commande !biology pour une planète donnée (ex. `!biology A 1`):
 
-  <img alt="Example of a planet's information interface with biological material" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_19.png?raw=true">
+  <img alt="Example of a planet's information interface with biological material" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_19.png?raw=true">
 
 - Après avoir cartographié l'ensemble de la planète, EDR mettra à jour les informations “Bio attendue” pour refléter les genres réels que vous pouvez trouver sur la planète. Remarque: les espèces sont toujours les meilleures suppositions d'EDR.
 
-  <img alt="Example of interface of relevant information of a planet with biological material" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_20.png?raw=true">
+  <img alt="Example of interface of relevant information of a planet with biological material" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_20.png?raw=true">
 
 ## Navigation et suivi des progrès
 
@@ -668,7 +668,7 @@ Pour améliorer votre efficacité avec les activités d'Exobiologie, EDR propose
 
 - Informations clés pour les espèces actuellement suivies:
 
-  <img alt="Example of biological material information interface and how far to move for the next scan" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_21.png?raw=true">
+  <img alt="Example of biological material information interface and how far to move for the next scan" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_21.png?raw=true">
 
   De haut en bas:
 
@@ -679,7 +679,7 @@ Pour améliorer votre efficacité avec les activités d'Exobiologie, EDR propose
 
 - Après avoir échantillonné avec succès une espèce (3 échantillons), EDR montrera vos progrès jusqu'à présent:
 
-  <img alt="Example of an information interface on the scanning status of the biological forms available on the planet" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_22.png?raw=true">
+  <img alt="Example of an information interface on the scanning status of the biological forms available on the planet" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_22.png?raw=true">
 
   - Nombre de genres analysés par rapport au nombre total de genres connus.
   - Nom des genres analysés.
@@ -692,7 +692,7 @@ Pour améliorer votre efficacité avec les activités d'Exobiologie, EDR propose
 
   - Remarque: ces points d'intérêt personnalisés sont éphémères (ex. effacés lorsque EDMC est fermé).
 
-    <img alt="Example of a navigator interface that takes you to the next point" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_23.png?raw=true">
+    <img alt="Example of a navigator interface that takes you to the next point" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_23.png?raw=true">
 
   - En haut: angle de cap à viser pour être sur la bonne voie.
 
@@ -720,7 +720,7 @@ Le HUD fournit les informations suivantes:
 
 - Un symbole visuel indiquant si l'étoile principale d'un système est récupérable (cercle) ou non (croix). Remarque: la couleur du symbole représente le type de l'étoile principale (notez que le waypoint actuel est toujours en bleu).
 
-    <img alt="Example of interstellar navigation assistance interface, indicates different components for the various jumps to be made" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_24.png?raw=true">
+    <img alt="Example of interstellar navigation assistance interface, indicates different components for the various jumps to be made" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_24.png?raw=true">
 
 - Les étoiles uniques ou dangereuses sont notées par un préfixe descriptif après le nom du système (ex. Neutron, White Dwarf, Black Hole, etc.).
 
@@ -730,26 +730,26 @@ Le HUD fournit les informations suivantes:
     - Distance depuis le départ.
     - Temps écoulé.
 
-        <img alt="Example of interstellar navigation assistance interface, indicates route progress details (start system name, how many jumps you have made, distance from the start system and elapsed time)" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_25.png?raw=true">
+        <img alt="Example of interstellar navigation assistance interface, indicates route progress details (start system name, how many jumps you have made, distance from the start system and elapsed time)" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_25.png?raw=true">
 
   - Sur le système suivant, vous trouverez les informations suivantes:
     - une moyenne de la durée entre chaque saut (ex. 18 sec/j = 18 secondes par saut).
     - une estimation de votre vitesse de saut (ex. 1780 LY/HR = 1780 années-lumière par heure).
 
-       <img alt="Example of interstellar navigation assistance interface, indicates route progress details on current system (current system name, average time to jump, average speed per hour in Ly/Hr)" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_26.png?raw=true">
+       <img alt="Example of interstellar navigation assistance interface, indicates route progress details on current system (current system name, average time to jump, average speed per hour in Ly/Hr)" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_26.png?raw=true">
 
   - Sur le système de destination, vous trouverez les informations suivantes:
     - Combien de sauts restants pour atteindre la destination.
     - Distance restante jusqu'à la destination.
     - Estimation du temps restant pour atteindre la destination
 
-        <img alt="Example of interstellar navigation assistance interface, indicates route progress details on the final system (current system name, remaining hops, remaining distance and remaining time to the arrival system)" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_27.png?raw=true">
+        <img alt="Example of interstellar navigation assistance interface, indicates route progress details on the final system (current system name, remaining hops, remaining distance and remaining time to the arrival system)" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_27.png?raw=true">
 
 # Compagnon Spansh
 
 EDR intègre un ensemble de fonctionnalités pour tirer le meilleur parti de [Spansh](https://spansh.co.uk/), qui est un site Web proposant divers outils de routage. EDR vous aidera aussi à comprendre votre progression, comme indiqué ci-dessous:
 
-<img alt="Example of interface for Spanish integration, indicates the jumps to be made, the time needed and other information" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_28.png?raw=true">
+<img alt="Example of interface for Spanish integration, indicates the jumps to be made, the time needed and other information" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_28.png?raw=true">
 
 - Systèmes de départ et de destination.
 - Waypoint actuel et nombre total de waypoints.
@@ -884,7 +884,7 @@ Vous pouvez envoyer le plan de vol de votre Fleet Carrier vers EDR Central ou un
 
 Vous pouvez envoyer vos ordres d'achat/vente de matières premières et de matériaux Odyssey vers un canal Discord de votre choix. Vérifiez le reste des instructions dans le fichier `user_config_sample.ini` qui se trouve dans le dossier config d'EDR.
 
-<img alt="Example of post on discord of requests to buy and sell materials in the bar" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_29.png?raw=true">
+<img alt="Example of post on discord of requests to buy and sell materials in the bar" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_29.png?raw=true">
 
 EDR placera également un résumé des commandes de vente/d'achat récentes dans le presse-papiers, après avoir validé les modifications à votre marché et/ou à votre bar. Vous pouvez copier-coller ce résumé dans le forum officiel pour Elite par exemple.
 
@@ -894,7 +894,7 @@ EDR placera également un résumé des commandes de vente/d'achat récentes dans
 
 Si vous avez une configuration multi-écrans ou un casque VR, vous pouvez définir la superposition sur autonome (menu Fichier, Paramètres, onglet EDR, liste déroulante Superposition). La superposition apparaîtra dans une fenêtre séparée avec quelques commandes visuelles:
 
-<img alt="Example interface when the overlay is set as standalone" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_30.png?raw=true">
+<img alt="Example interface when the overlay is set as standalone" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_30.png?raw=true">
 
 - **Coin supérieur gauche**: glisser-déposer pour déplacer la superposition, double-cliquer pour maximiser/restaurer.
 - **Coin inférieur gauche**: survolez pour rendre la superposition transparente.
@@ -915,7 +915,7 @@ Si vous avez une configuration multi-écrans ou un casque VR, vous pouvez défin
 8. Ajuster la position et la taille en VR
 9. Fermer le tableau de bord de SteamVR
 
-    <img alt="Example of interface when the overlay is integrated into the VR headset" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_31.png?raw=true">
+    <img alt="Example of interface when the overlay is integrated into the VR headset" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_31.png?raw=true">
 
 Consultez également ces [notes de mise à jour SteamVR](https://steamcommunity.com/games/250820/announcements/detail/2969548216412141657) pour plus de détails.
 
@@ -992,7 +992,7 @@ Etapes:
 
 4. Dans le menu déroulant superposé, sélectionnez Activé.
 
-    <img alt="Setting menu, EDR tab, point where to activate the overlay" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_32.png?raw=true" height="450">
+    <img alt="Setting menu, EDR tab, point where to activate the overlay" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_32.png?raw=true" height="450">
 
 5. Dans Elite, revenez au menu principal et lancez une nouvelle partie.
 
@@ -1016,7 +1016,7 @@ Etapes:
 
 5. Faites un clic droit sur le fichier `edmcoverlay.exe`, sélectionnez votre option d'analyse antivirus.
 
-    <img alt="Scan the overlay.exe file in the EDR/EDMCOverlay folder" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_33.png?raw=true">
+    <img alt="Scan the overlay.exe file in the EDR/EDMCOverlay folder" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_33.png?raw=true">
 
 6. Si votre antivirus ne se plaint pas, double-cliquez sur le fichier `edmcoverlay.exe` et laissez-le s'exécuter si votre antivirus vous demande une confirmation.
 
@@ -1028,15 +1028,15 @@ Avant d'essayer l'une des options ci-dessous, assurez-vous que vos pilotes graph
 
 1. Accédez aux options en jeu d'Elite:
 
-    <img alt="Panel to open the game Settings" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_34.png?raw=true">
+    <img alt="Panel to open the game Settings" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_34.png?raw=true">
 
 2. Sélectionnez les options graphiques:
 
-    <img alt="Panel to open the game's graphic settings" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_35.png?raw=true">
+    <img alt="Panel to open the game's graphic settings" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_35.png?raw=true">
 
 3. Trouvez Vertical sync, sous la section Affichage, et désactivez-le:
 
-    <img alt="Panel to open the game's graphic settings to deactivate Vertical sync in the Display section" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_36.png?raw=true">
+    <img alt="Panel to open the game's graphic settings to deactivate Vertical sync in the Display section" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_36.png?raw=true">
 
 4. Retester l'EDR
 
@@ -1051,9 +1051,9 @@ Avant d'essayer l'une des options ci-dessous, assurez-vous que vos pilotes graph
 1. Sur le bord droit du statut EDR, cochez la case pour révéler l'interface utilisateur alternative d'EDR:
 
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_37_Black.png?raw=true">
-      <source media="(prefers-color-scheme: light)" srcset="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_37_White.png?raw=true">
-      <img alt="Interface to activate alternative/extended view of EDR in EDMC application" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_37_White.png?raw=true" height="450">
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_37_Black.png?raw=true">
+      <source media="(prefers-color-scheme: light)" srcset="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_37_White.png?raw=true">
+      <img alt="Interface to activate alternative/extended view of EDR in EDMC application" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_37_White.png?raw=true" height="450">
     </picture>
 
 2. Les informations qui auraient été affichées via la superposition seront affichées dans cette zone
@@ -1075,13 +1075,13 @@ Etapes:
 
 1. Appuyez simultanément sur votre touche Windows et la touche R.
 
-    <img alt="Run interface to go to Temp folder" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_38.png?raw=true">
+    <img alt="Run interface to go to Temp folder" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_38.png?raw=true">
 
 2. Saisissez `%tmp%` (ou `%temp%`) et appuyez sur la touche Entrée.
 
 3. Trouvez le fichier nommé `EDMarketConnector.log`
 
-    <img alt="TEMP folder where the EDMC log files are present" src="https://github.com/GLWine/edr/blob/master/edr/docs/assets/IMG_39.png?raw=true">
+    <img alt="TEMP folder where the EDMC log files are present" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_39.png?raw=true">
 
 4. Passez en revue et modifiez son contenu avec le bloc-notes (un double-clic devrait l'ouvrir avec le bloc-notes) si nécessaire.
 
