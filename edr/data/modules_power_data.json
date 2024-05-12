@@ -831,29 +831,125 @@
         "powergen": 0,
         "powerdraw": 0.3
     },
-    "hyperdrive_overcharge_size2_class3": {
+    "int_hyperdrive_overcharge_size7_class1": {
         "powergen": 0,
-        "powerdraw": 0.2
+        "powerdraw": 0.6
     },
-    "hyperdrive_overcharge_size3_class3": {
+    "int_hyperdrive_overcharge_size7_class2": {
         "powergen": 0,
-        "powerdraw": 0.3
+        "powerdraw": 0.75
     },
-    "hyperdrive_overcharge_size4_class3": {
+    "int_hyperdrive_overcharge_size7_class3": {
         "powergen": 0,
-        "powerdraw": 0.3
+        "powerdraw": 0.75
     },
-    "hyperdrive_overcharge_size5_class3": {
+    "int_hyperdrive_overcharge_size7_class4": {
         "powergen": 0,
-        "powerdraw": 0.45
+        "powerdraw": 0.75
     },
-    "hyperdrive_overcharge_size6_class3": {
+    "int_hyperdrive_overcharge_size7_class5": {
+        "powergen": 0,
+        "powerdraw": 0.9
+    },
+    "int_hyperdrive_overcharge_size6_class1": {
         "powergen": 0,
         "powerdraw": 0.5
     },
-    "hyperdrive_overcharge_size7_class3": {
+    "int_hyperdrive_overcharge_size6_class2": {
         "powergen": 0,
-        "powerdraw": 0.68
+        "powerdraw": 0.63
+    },
+    "int_hyperdrive_overcharge_size6_class3": {
+        "powergen": 0,
+        "powerdraw": 0.63
+    },
+    "int_hyperdrive_overcharge_size6_class4": {
+        "powergen": 0,
+        "powerdraw": 0.63
+    },
+    "int_hyperdrive_overcharge_size6_class5": {
+        "powergen": 0,
+        "powerdraw": 0.75
+    },
+    "int_hyperdrive_overcharge_size5_class1": {
+        "powergen": 0,
+        "powerdraw": 0.45
+    },
+    "int_hyperdrive_overcharge_size5_class2": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "int_hyperdrive_overcharge_size5_class3": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "int_hyperdrive_overcharge_size5_class4": {
+        "powergen": 0,
+        "powerdraw": 0.5
+    },
+    "int_hyperdrive_overcharge_size5_class5": {
+        "powergen": 0,
+        "powerdraw": 0.6
+    },
+    "int_hyperdrive_overcharge_size4_class1": {
+        "powergen": 0,
+        "powerdraw": 0.3
+    },
+    "int_hyperdrive_overcharge_size4_class2": {
+        "powergen": 0,
+        "powerdraw": 0.38
+    },
+    "int_hyperdrive_overcharge_size4_class3": {
+        "powergen": 0,
+        "powerdraw": 0.38
+    },
+    "int_hyperdrive_overcharge_size4_class4": {
+        "powergen": 0,
+        "powerdraw": 0.38
+    },
+    "int_hyperdrive_overcharge_size4_class5": {
+        "powergen": 0,
+        "powerdraw": 0.45
+    },
+    "int_hyperdrive_overcharge_size3_class1": {
+        "powergen": 0,
+        "powerdraw": 0.3
+    },
+    "int_hyperdrive_overcharge_size3_class2": {
+        "powergen": 0,
+        "powerdraw": 0.38
+    },
+    "int_hyperdrive_overcharge_size3_class3": {
+        "powergen": 0,
+        "powerdraw": 0.38
+    },
+    "int_hyperdrive_overcharge_size3_class4": {
+        "powergen": 0,
+        "powerdraw": 0.38
+    },
+    "int_hyperdrive_overcharge_size3_class5": {
+        "powergen": 0,
+        "powerdraw": 0.45
+    },
+    "int_hyperdrive_overcharge_size2_class1": {
+        "powergen": 0,
+        "powerdraw": 0.2
+    },
+    "int_hyperdrive_overcharge_size2_class2": {
+        "powergen": 0,
+        "powerdraw": 0.25
+    },
+    "int_hyperdrive_overcharge_size2_class3": {
+        "powergen": 0,
+        "powerdraw": 0.25
+    },
+    "int_hyperdrive_overcharge_size2_class4": {
+        "powergen": 0,
+        "powerdraw": 0.25
+    },
+    "int_hyperdrive_overcharge_size2_class5": {
+        "powergen": 0,
+        "powerdraw": 0.3
     },
     "int_fsdinterdictor_size1_class1": {
         "powergen": 0,
