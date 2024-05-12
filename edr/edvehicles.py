@@ -263,6 +263,7 @@ class EDVehicle(object):
         key_prefixes_lut = {
             u"drive_": u"thrusters",
             u"hyperdrive_": u"fsd",
+            u"hyperdrive_overcharge": u"fsd (sco)",
             u"powerdistributor_": u"power distributor",
             u"shieldgenerator_": u"shield generator",
             u"powerplant_": u"power plant"
@@ -967,6 +968,18 @@ class EDPython(EDVehicle):
         self.hull_mass = 350
         self.hull_hardness = 65
         self.hull_base_strength = 468 / 1.8
+
+class EDPythonMkII(EDVehicle):
+    def __init__(self):
+        super(EDPythonMkII, self).__init__()
+        self.type = u'Python Mk II'
+        self.size = EDVehicleSize.MEDIUM
+        self.seats = 2
+        self.value = 66161981
+        self.shield_base_strength = 316
+        self.hull_mass = 335
+        self.hull_hardness = 70
+        self.hull_base_strength = 504 / 1.8
     
 class EDBelugaLiner(EDVehicle):
     def __init__(self):
@@ -1384,6 +1397,7 @@ class EDVehicleFactory(object):
         "type9": EDT9Heavy,
         "type9_military": EDT10Defender,
         "python": EDPython,
+        "python_nx": EDPythonMkII,
         "belugaliner": EDBelugaLiner,
         "ferdelance": EDFerDeLance,
         "anaconda": EDAnaconda,
