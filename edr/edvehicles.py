@@ -1511,7 +1511,8 @@ class EDVehicleFactory(object):
 
         vehicle_class = EDVehicleFactory.__vehicle_classes.get(name.lower(), None)
         if vehicle_class is None:
-            raise NotImplementedError("The requested vehicle has not been implemented")
+            EDRLOG.log("The requested vehicle has not been implemented: {}".format(name), "ERROR")
+            vehicle_class = EDUnknownVehicle
         
         vehicle = vehicle_class()
         vehicle.id = state.get('ShipID', None)
