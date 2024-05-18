@@ -617,7 +617,7 @@ class EDPilot(object):
         true_amount = entry["Amount"] * (1.0 - entry.get("BrokerPercentage", 0)/100.0)
         self.bounty = max(0, self.bounty - true_amount)
         if "Faction" in entry:
-            self.bounties[entry["Faction"]] = max(0, self.bounties[entry["Faction"]] - true_amount)
+            self.bounties[entry["Faction"]] = max(0, self.bounties.get(entry["Faction"], true_amount) - true_amount)
 
     def is_wanted_by_faction(self, faction):
         return self.bounties.get(faction, 0) > 0 
