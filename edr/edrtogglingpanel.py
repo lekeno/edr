@@ -87,6 +87,7 @@ class ToggledFrame(tk.Frame):
         self.input.bind("<Return>", (lambda event: callback_entry(self.input.get())))
         self.input.grid(sticky="ew", row=2, column=0, columnspan=3)
         self.input.config(state='disabled')
+        self.input.configure(foreground=fg, background=bg)
         
         self.status_frame.grid_columnconfigure(2, weight=1)
 
