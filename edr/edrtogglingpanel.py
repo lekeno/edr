@@ -119,6 +119,7 @@ class ToggledFrame(tk.Frame):
         self.label.configure(foreground=conf.rgb("status", "label"), background=bg)
         self.status_ui.configure(foreground=fg, background=bg)
         self.toggle_button.configure(foreground=conf.rgb("status", "check"), background=bg)
+        self.input.configure(foreground=fg, background=bg)
 
 
 class EDRTogglingPanel(ToggledFrame):
