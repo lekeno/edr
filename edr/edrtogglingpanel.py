@@ -18,16 +18,16 @@ import ttkHyperlinkLabel
 from edri18n import _
 
 class EntryWithPlaceholder(tk.Entry):
-    def __init__(self, master=None, placeholder="type here", color='grey'):
+    def __init__(self, master=None, placeholder="type here", placeholder_color='grey'):
         super().__init__(master)
 
         self.placeholder = placeholder
-        self.placeholder_color = color
+        self.placeholder_color = placeholder_color
         self.default_fg_color = self['fg']
 
         self.bind("<FocusIn>", self.focus_in)
         self.bind("<FocusOut>", self.focus_out)
-
+        
         self.show_placeholder()
 
     def show_placeholder(self):
@@ -44,17 +44,33 @@ class EntryWithPlaceholder(tk.Entry):
         if not self.get():
             self.show_placeholder()
 
+    def refresh_theme(self):
+        conf = IGMConfig(config_file='config/igm_alt_config.v4.ini', user_config_file=['config/user_igm_alt_config.v4.ini', 'config/user_igm_alt_config.v3.ini'])
+        theme=EDMCConfig.config.get_int('theme') # hat tip to ewanm89@
+        if (theme):
+            conf = IGMConfig(config_file='config/igm_alt_themed_config.v4.ini', user_config_file=['config/user_igm_alt_themed_config.v4.ini', 'config/user_igm_alt_themed_config.v3.ini'])
+        bg = conf.rgb("general", "fill")
+        fg = conf.rgb("general", "body")
+        pl_fg = conf.rgb("general", "placeholder")
+
+        self.default_fg_color = fg
+        self.placeholder_color = pl_fg
+        self.configure(foreground=fg, background=bg, insertbackground=fg)
+        self.show_placeholder()
+        self.focus_out()
+
 
 class ToggledFrame(tk.Frame):
 
     def __init__(self, parent, label, status, show, callback_entry, *args, **options):
-        conf = IGMConfig(config_file='config/igm_alt_config.v3.ini', user_config_file=['config/user_igm_alt_config.v3.ini', 'config/user_igm_alt_config.v2.ini'])
+        conf = IGMConfig(config_file='config/igm_alt_config.v4.ini', user_config_file=['config/user_igm_alt_config.v4.ini', 'config/user_igm_alt_config.v3.ini'])
         theme=EDMCConfig.config.get_int('theme') # hat tip to ewanm89@
         if (theme):
-            conf = IGMConfig(config_file='config/igm_alt_themed_config.v3.ini', user_config_file=['config/user_igm_alt_themed_config.v3.ini', 'config/user_igm_alt_themed_config.v2.ini'])
+            conf = IGMConfig(config_file='config/igm_alt_themed_config.v4.ini', user_config_file=['config/user_igm_alt_themed_config.v4.ini', 'config/user_igm_alt_themed_config.v3.ini'])
         
         fg = conf.rgb("status", "body")
         bg = conf.rgb("status", "fill")
+        pl_fg = conf.rgb("general", "placeholder")
         tk.Frame.__init__(self, parent, *args, **options)
         self.configure(background=bg)
         
@@ -83,11 +99,11 @@ class ToggledFrame(tk.Frame):
                                             variable=self.show, foreground=conf.rgb("status", "check"), background=bg)
         self.toggle_button.grid(sticky="e", row=1, column=2)
         
-        self.input = EntryWithPlaceholder(self.status_frame, placeholder=_("Waiting for a game session..."))
+        self.input = EntryWithPlaceholder(self.status_frame, placeholder=_("Waiting for a game session..."), placeholder_color=pl_fg)
         self.input.bind("<Return>", (lambda event: callback_entry(self.input.get())))
         self.input.grid(sticky="ew", row=2, column=0, columnspan=3)
         self.input.config(state='disabled')
-        self.input.configure(foreground=fg, background=bg)
+        self.input.refresh_theme()
         
         self.status_frame.grid_columnconfigure(2, weight=1)
 
@@ -106,10 +122,10 @@ class ToggledFrame(tk.Frame):
     
     def refresh_theme(self):
         self.status_frame.grid_propagate(False)
-        conf = IGMConfig(config_file='config/igm_alt_config.v3.ini', user_config_file=['config/user_igm_alt_config.v3.ini', 'config/user_igm_alt_config.v2.ini'])
+        conf = IGMConfig(config_file='config/igm_alt_config.v4.ini', user_config_file=['config/user_igm_alt_config.v4.ini', 'config/user_igm_alt_config.v3.ini'])
         theme=EDMCConfig.config.get_int('theme') # hat tip to ewanm89@
         if (theme):
-            conf = IGMConfig(config_file='config/igm_alt_themed_config.v3.ini', user_config_file=['config/user_igm_alt_themed_config.v3.ini', 'config/user_igm_alt_themed_config.v2.ini'])
+            conf = IGMConfig(config_file='config/igm_alt_themed_config.v4.ini', user_config_file=['config/user_igm_alt_themed_config.v4.ini', 'config/user_igm_alt_themed_config.v3.ini'])
         
         fg = conf.rgb("status", "body")
         bg = conf.rgb("status", "fill")
@@ -120,15 +136,16 @@ class ToggledFrame(tk.Frame):
         self.label.configure(foreground=conf.rgb("status", "label"), background=bg)
         self.status_ui.configure(foreground=fg, background=bg)
         self.toggle_button.configure(foreground=conf.rgb("status", "check"), background=bg)
-        self.input.configure(foreground=fg, background=bg)
+        self.input.refresh_theme()
+        
 
 
 class EDRTogglingPanel(ToggledFrame):
     def __init__(self, status, show, callback_entry, parent=0):
-        conf = IGMConfig(config_file='config/igm_alt_config.v3.ini', user_config_file=['config/user_igm_alt_config.v3.ini', 'config/user_igm_alt_config.v2.ini'])
+        conf = IGMConfig(config_file='config/igm_alt_config.v4.ini', user_config_file=['config/user_igm_alt_config.v4.ini', 'config/user_igm_alt_config.v3.ini'])
         theme=EDMCConfig.config.get_int('theme') # hat tip to ewanm89@
         if (theme):
-            conf = IGMConfig(config_file='config/igm_alt_themed_config.v3.ini', user_config_file=['config/user_igm_alt_themed_config.v3.ini', 'config/user_igm_alt_themed_config.v2.ini'])
+            conf = IGMConfig(config_file='config/igm_alt_themed_config.v4.ini', user_config_file=['config/user_igm_alt_themed_config.v4.ini', 'config/user_igm_alt_themed_config.v3.ini'])
         self.callback_entry = callback_entry
         ToggledFrame.__init__(self, parent, label="EDR:", status=status, show=show, callback_entry=self.__entry_process)
         self.bg_color = conf.rgb("general", "fill")
@@ -204,10 +221,10 @@ class EDRTogglingPanel(ToggledFrame):
             self.output.tag_configure("body_"+kind, foreground=conf.rgb(kind, "body"), background=conf.rgb("general", "fill"))
     
     def refresh_theme(self):
-        conf = IGMConfig(config_file='config/igm_alt_config.v3.ini', user_config_file=['config/user_igm_alt_config.v3.ini', 'config/user_igm_alt_config.v2.ini'])
+        conf = IGMConfig(config_file='config/igm_alt_config.v4.ini', user_config_file=['config/user_igm_alt_config.v4.ini', 'config/user_igm_alt_config.v3.ini'])
         theme=EDMCConfig.config.get_int('theme') # hat tip to ewanm89@
         if (theme):
-            conf = IGMConfig(config_file='config/igm_alt_themed_config.v3.ini', user_config_file=['config/user_igm_alt_themed_config.v3.ini', 'config/user_igm_alt_themed_config.v2.ini'])
+            conf = IGMConfig(config_file='config/igm_alt_themed_config.v4.ini', user_config_file=['config/user_igm_alt_themed_config.v4.ini', 'config/user_igm_alt_themed_config.v3.ini'])
         if sys.version_info.major == 2:
             super(EDRTogglingPanel, self).refresh_theme()
         else:
