@@ -295,7 +295,7 @@ class EDRFSSInsights(object):
         return len(self.signals_seen) == 0
 
     def is_scenario_signal(self, name):
-        return bool(re.search('^\$[ -~]+;$', name))
+        return bool(re.search(r'^\$[ -~]+;$', name))
 
     def is_nav_beacon(self, name):
         return name in ["$MULTIPLAYER_SCENARIO42_TITLE;", "$MULTIPLAYER_SCENARIO80_TITLE;"]
