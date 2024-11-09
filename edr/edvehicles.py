@@ -855,6 +855,17 @@ class EDT7Transporter(EDVehicle):
         self.hull_hardness = 54
         self.hull_base_strength = 612 / 1.8
 
+class EDT8Transporter(EDVehicle):
+    def __init__(self):
+        super(EDT8Transporter, self).__init__()
+        self.type = u'Type-8 Transporter'
+        self.size = EDVehicleSize.MEDIUM
+        self.value = 0 # TODO
+        self.shield_base_strength = 122
+        self.hull_mass = 400
+        self.hull_hardness = 54 # TODO
+        self.hull_base_strength = 792 / 1.8
+
 class EDAspExplorer(EDVehicle):
     def __init__(self):
         super(EDAspExplorer, self).__init__()
@@ -1388,6 +1399,7 @@ class EDVehicleFactory(object):
         "type6": EDT6Transporter,
         "dolphin": EDDolphin,
         "type7": EDT7Transporter,
+        "type8": EDT8Transporter,
         "asp": EDAspExplorer,
         "vulture": EDVulture,
         "vulture_taxi": EDVultureFrontlines,

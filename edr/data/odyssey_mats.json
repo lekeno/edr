@@ -120,7 +120,7 @@
     "ionisedgas": { "upgrades": 28, "type": "item", "locations": ["RES buildings", "PWR buildings", "IND buildings", "EXT buildings", "AGRI buildings", "Mission reward"], "used": 28},
     "compressionliquefiedgas": { "upgrades": 16, "type": "item", "locations": ["RES buildings", "PWR buildings", "IND buildings", "EXT buildings", "AGRI buildings", "Mission reward"], "used": 20},
     "healthmonitor": { "upgrades": 12, "type": "item", "locations": ["MED room", "RES buildings", "HAB buildings", "Mission reward", "Surface crash site"], "used": 12},
-    "largecapacitypowerregulator": { "upgrades": 12, "type": "item", "locations": ["Settlements"], "used": 12},
+    "largecapacitypowerregulator": { "useless": true, "upgrades": 0, "type": "item", "locations": ["Settlements"], "used": 0},
     "suitschematic": { "upgrades": 12, "type": "item", "locations": ["STO buildings", "PWR buildings", "CMD buildings", "Mission reward"], "used": 12},
     "surveillanceequipment": { "blueprints": 3, "type": "item", "locations": ["STO buildings", "EXT buildings", "CMD buildings"], "used": 3, "referer": "Kit Fowler", "refer": "Yarden Bond"},
     "gmeds": { "blueprints": 3, "type": "item", "locations": ["Irregular markers", "MED room", "RES buildings", "CMD buildings", "AGRI buildings", "Settlements", "Mission reward", "Surface crash site"], "used": 3},

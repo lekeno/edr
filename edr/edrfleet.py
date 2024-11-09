@@ -19,6 +19,7 @@ class EDRFleet(object):
         "cobra": "cobramkiii",
         "t6": "type6",
         "t7": "type7",
+        "t8": "type8",
         "t9": "type9",
         "t10": "type9_military",
         "aspx": "asp",

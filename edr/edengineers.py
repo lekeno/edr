@@ -38,7 +38,7 @@ class EDKitFowler(EDEngineer):
         if self.progress is None:
             needed["push"] = 5
         if self.progress != "Unlocked":
-            needed["opinionpolls"] = 20
+            needed["opinionpolls"] = 5
         return needed
 
     def relevant(self, material_name):
@@ -63,7 +63,7 @@ class EDYardenBond(EDEngineer):
         if self.progress is None:
             needed["surveillanceequipment"] = 5
         if self.progress != "Unlocked":
-            needed["smearcampaignplans"] = 8
+            needed["smearcampaignplans"] = 5
         return needed
 
     def relevant(self, material_name):
@@ -155,14 +155,14 @@ class EDWellingtonBeck(EDEngineer):
             me = materials.get("multimediaentertainment", 0)
             ce = materials.get("classicentertainment", 0)
             cm = materials.get("catmedia", 0)
-            me = max(min(25, me), 8)
-            ce = max(min(25-me, ce), 25-me-8)
-            cm = 25-me-ce
+            me = max(min(15, me), 5)
+            ce = max(min(15-me, ce), 15-me-5)
+            cm = 15-me-ce
             
             needed = {"multimedia entertainment":me, "classic entertainment":ce, "cat media": cm}
         
         if self.progress is None:
-            needed["settlementdefenceplans"] = 15
+            needed["settlementdefenceplans"] = 5
         return needed
 
     def relevant(self, material_name):

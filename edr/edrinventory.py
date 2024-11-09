@@ -150,7 +150,7 @@ MATERIALS_LUT = {
     "unknownorganiccircuitry": {"localized": _(u"Thargoid Organic Circuitry"), "raw": "Thargoid Organic Circuitry", "category": "manufactured", "grade": 5},
     "unknowntechnologycomponents": {"localized": _(u"Thargoid Technological Components"), "raw": "Thargoid Technological Components", "category": "manufactured", "grade": 4},
     "bypass": { "localized": _(u"E-Breach"), "category": "consumable", "raw": "E-Breach", "grade":0},
-    "largecapacitypowerregulator": { "localized": _(u"Power Regulator"), "category": "item", "raw": "Power Regulator", "grade":0, "comments": _("Suits upgrades")},
+    "largecapacitypowerregulator": { "localized": _(u"Power Regulator"), "category": "item", "raw": "Power Regulator", "grade":0},
     "chemicalinventory": { "localized": _(u"Chemical Inventory"), "category": "data", "raw": "Chemical Inventory", "grade":0, "comments": _("Extra backpack")},
     "dutyrota": { "localized": _(u"Duty Rota"), "category": "data", "raw": "Duty Rota", "grade":0},
     "evacuationprotocols": { "localized": _(u"Evacuation Protocols"), "category": "data", "raw": "Evacuation Protocols", "grade":0, "comments": _("Combat movement")},
