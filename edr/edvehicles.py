@@ -986,9 +986,9 @@ class EDPythonMkII(EDVehicle):
         self.type = u'Python Mk II'
         self.size = EDVehicleSize.MEDIUM
         self.seats = 2
-        self.value = 66161981
-        self.shield_base_strength = 316
-        self.hull_mass = 335
+        self.value = 68906009
+        self.shield_base_strength = 335
+        self.hull_mass = 450
         self.hull_hardness = 70
         self.hull_base_strength = 504 / 1.8
     
@@ -1264,6 +1264,18 @@ class EDMamba(EDVehicle):
         self.hull_hardness = 70
         self.hull_base_strength = 414 / 1.8
 
+class EDMandalay(EDVehicle):
+    def __init__(self):
+        super(EDMandalay, self).__init__()
+        self.type = u'Mandalay'
+        self.size = EDVehicleSize.MEDIUM
+        self.seats = 2
+        self.value = 15614644
+        self.shield_base_strength = 220
+        self.hull_mass = 230
+        self.hull_hardness = 55
+        self.hull_base_strength = 414 / 1.8
+
 class EDShipLaunchedFighter(EDVehicle):
     def __init__(self):
         super(EDShipLaunchedFighter, self).__init__()
@@ -1431,6 +1443,7 @@ class EDVehicleFactory(object):
         "krait_mkii": EDKraitMkII,
         "krait_light": EDKraitPhantom, 
         "mamba": EDMamba,
+        "mandalay": EDMandalay,
         "empire_fighter": EDImperialFighter,
         "federation_fighter": EDF63Condor,
         "independent_fighter" : EDTaipanFighter,

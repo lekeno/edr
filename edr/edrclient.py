@@ -515,11 +515,11 @@ class EDRClient(object):
         cred_label.grid(padx=10, columnspan=2, sticky=tk.W)
 
         notebook.Label(frame, text=_(u"Email")).grid(padx=10, row=11, sticky=tk.W)
-        notebook.Entry(frame, textvariable=self._email).grid(padx=10, row=11,
+        notebook.EntryMenu(frame, textvariable=self._email).grid(padx=10, row=11,
                                                              column=1, sticky=tk.EW)
 
         notebook.Label(frame, text=_(u"Password")).grid(padx=10, row=12, sticky=tk.W)
-        notebook.Entry(frame, textvariable=self._password,
+        notebook.EntryMenu(frame, textvariable=self._password,
                        show=u'*').grid(padx=10, row=12, column=1, sticky=tk.EW)
 
         notebook.Label(frame, text=_(u'Broadcasts')).grid(padx=10, row=14, sticky=tk.W)

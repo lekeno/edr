@@ -119,6 +119,7 @@ class EDRFSSInsights(object):
        
 
     def __process(self, fss_event):
+        # TODO look into how SignalType might be useful for other signals (already added for FleetCarrier)
         if fss_event.get("event", None) != "FSSSignalDiscovered":
             return False
 
@@ -173,7 +174,7 @@ class EDRFSSInsights(object):
         
         fc_regexp = r"^(.+ )?([A-Z0-9]{3}-[A-Z0-9]{3})$"
         m = re.match(fc_regexp, location_name)
-        if m:
+        if m and fss_event.get("SignalType", "FleetCarrier") == "FleetCarrier":
             carrier_name = m.group(1) or ""
             callsign = m.group(2)
             self.fleet_carriers[callsign] = carrier_name
@@ -294,7 +295,7 @@ class EDRFSSInsights(object):
         return len(self.signals_seen) == 0
 
     def is_scenario_signal(self, name):
-        return bool(re.search('^\$[ -~]+;$', name))
+        return bool(re.search(r'^\$[ -~]+;$', name))
 
     def is_nav_beacon(self, name):
         return name in ["$MULTIPLAYER_SCENARIO42_TITLE;", "$MULTIPLAYER_SCENARIO80_TITLE;"]
