@@ -498,172 +498,7 @@ class InGameMsg(object):
         self.__msg_header("biology", header)
         self.__msg_body("biology", details)
 
-    def describe_station(self, station, faction):
-        if not station:
-            return
-        station_type = (station.get("type","N/A") or "N/A").lower()
-        station_other_services = (station.get("otherServices", []) or []) 
-        station_economy = (station.get('economy', "") or "").lower()
-        station_second_economy = (station.get('secondEconomy', "") or "").lower()
-        details = []
-        a = u"◌" if station_type in ["outpost"] else u"●"
-        b = u"●" if station.get("haveOutfitting", False) else u"◌"
-        c = u"●" if station.get("haveShipyard", False) else u"◌"
-        details.append(_(u"LG. Pad:{}   Outfit:{}   Shipyard:{}").format(a,b,c))
-        a = u"●" if "Refuel" in station_other_services else u"◌"
-        b = u"●" if "Repair" in station_other_services else u"◌"
-        c = u"●" if "Restock" in station_other_services else u"◌"
-        details.append(_(u"Refuel:{}   Repair:{}   Restock:{}").format(a,b,c))
-        a = u"●" if station.get("haveMarket", False) else u"◌"
-        b = u"●" if "Black Market" in station_other_services else u"◌"
-        c = u"◌"
-        m = _c(u"material trader|M.") 
-        if "Material Trader" in station_other_services:
-            c = u"●"
-            if station_economy in ['extraction', 'refinery']:
-                if not station["secondEconomy"]:
-                    m = _(u"RAW")
-                elif station_second_economy == "industrial":
-                    m = _(u"R/M")
-                elif station_second_economy in ["high tech", "military"]:
-                    m = _(u"R/E")
-            elif station_economy == 'industrial':
-                if not station["secondEconomy"]:
-                    m = _(u"MAN")
-                elif station_second_economy in ["extraction", "refinery"]:
-                    m = _(u"M/R")
-                elif station_second_economy in ["high tech", "military"]:
-                    m = _(u"M/E")
-            elif station_economy in ['high tech', 'military']:
-                if not station["secondEconomy"]:
-                    m = _(u"ENC")
-                elif station_second_economy in ["extraction", "refinery"]:
-                    m = _(u"E/R")
-                elif station_second_economy == "industrial":
-                    m = _(u"E/M")
-        details.append(_(u"Market:{}   B.Market:{}   {} Trad:{}").format(a,b,m,c))
-        a = u"●" if "Interstellar Factors Contact" in station_other_services else u"◌"
-        t = _c(u"tech broker|T.")
-        b =  u"◌" 
-        if "Technology Broker" in station_other_services:
-            b = u"●"
-            if station_economy == 'high tech':
-                if not station["secondEconomy"]:
-                    t = _c(u"guardian tech|GT.")
-                elif station_second_economy == "industrial":
-                    t = _c(u"ambiguous tech|T.")
-            elif station_economy == 'industrial':
-                if not station["secondEconomy"]:
-                    t = _c(u"human tech|HT.") 
-                elif station_second_economy == "high tech":
-                    t = _c(u"ambiguous tech|T.")
-
-        details.append(_(u"I.Factor:{}   {} Broker:{}").format(a,t,b))
-        if "controllingFaction" in station:
-            controllingFaction = station["controllingFaction"]
-            controllingFactionName=controllingFaction.get("name", "???")
-
-            qualifiers = []
-
-            if "allegiance" in station:
-                qualifiers.append(station["allegiance"])
-
-            if "government" in station:
-                qualifiers.append(station["government"])
-            
-            if faction:
-                if faction.state != None and faction.state.lower() != "none":
-                    qualifiers.append(faction.state)
-
-                if faction.isPMF != None:
-                    qualifiers.append(_("PMF: {}").format(u"●" if faction.isPMF else u"◌"))
-
-            if qualifiers:
-                details.append("{name} ({qualifiers})".format(name=controllingFactionName, qualifiers=", ".join(qualifiers)))
-            else:
-                details.append("{name}".format(name=controllingFactionName))
-
-        updated = EDTime()
-        updated.from_edsm_timestamp(station['updateTime']['information'])
-        details.append(_(u"as of {date}").format(date=updated.as_local_timestamp()))
-        return details
-    
-    def describe_ed_settlement(self, entry, faction):
-        details = []
-        if entry["event"] != "ApproachSettlement":
-            return details
-        
-        settlement_services = (entry.get("StationServices", []) or [])
-        
-        a = u"●" if "refuel" in settlement_services else u"◌"
-        b = u"●" if "repair" in settlement_services else u"◌"
-        c = u"●" if "rearm" in settlement_services else u"◌"
-        details.append(_(u"Refuel:{}   Repair:{}   Restock:{}").format(a,b,c))
-        
-        a = u"●" if "commodities" in settlement_services else u"◌"
-        b = u"●" if "blackmarket" in settlement_services else u"◌"
-        c = u"●" if "facilitator" in settlement_services else u"◌"
-        details.append(_(u"Market:{}   B.Market:{}   I.Factor:{}").format(a,b,c))
-        
-        if "StationFaction" in entry:
-            factionName = entry["StationFaction"].get("Name", "???")
-            qualifiers = []
-            if "StationAllegiance" in entry:
-                qualifiers.append(entry["StationAllegiance"])
-
-            if "StationGovernment_Localised" in entry:
-                qualifiers.append(entry["StationGovernment_Localised"])
-            
-            if faction and faction.isPMF != None:
-                qualifiers.append(_("PMF: {}").format(u"●" if faction.isPMF else u"◌"))
-
-            if entry["StationFaction"].get("FactionState", "").lower() not in ["", "none"]:
-                qualifiers.append(entry["StationFaction"]["FactionState"])
-            elif faction and faction.state and faction.state.lower() != "none":
-                qualifiers.append(faction.state)
-                
-            if qualifiers:
-                details.append("{name} ({qualifiers})".format(name=factionName, qualifiers=", ".join(qualifiers)))
-            else:
-                details.append("{name}".format(name=factionName))
-            
-        
-        return details
-
-    def describe_fleet_carrier(self, fc):
-        fc_other_services = (fc.get("otherServices", []) or []) 
-        details = []
-        
-        a = u"●" if fc.get("haveOutfitting", False) else u"◌"
-        b = u"●" if fc.get("haveShipyard", False) else u"◌"
-        details.append(_(u"Outfit:{}   Shipyard:{}").format(a,b))
-        
-        a = u"●" if "Refuel" in fc_other_services else u"◌"
-        b = u"●" if "Repair" in fc_other_services else u"◌"
-        c = u"●" if "Restock" in fc_other_services else u"◌"
-        details.append(_(u"Refuel:{}   Repair:{}   Restock:{}").format(a,b,c))
-        
-        a = u"●" if fc.get("haveMarket", False) else u"◌"
-        b = u"●" if "Black Market" in fc_other_services else u"◌"
-        details.append(_(u"Market:{}   B.Market:{}").format(a,b))
-        
-        a = u"●" if "Universal Cartographics" in fc_other_services else u"◌"
-        b = u"●" if "Vista Genomics" in fc_other_services else u"◌"
-        if a == u"●" or b == u"●":
-             details.append(_(u"U.Cart:{}   Vista G:{}").format(a,b))
-        
-        a = u"●" if "Pioneer Supplies" in fc_other_services else u"◌"
-        b = u"●" if "Contacts" in fc_other_services else u"◌"
-        c = u"●" if "Crew Lounge" in fc_other_services else u"◌"
-        if a == u"●" or b == u"●" or c == u"●":
-            details.append(_(u"Redempt.O:{}   Pioneer S:{}   Lounge:{}").format(a,b,c))
-
-        updated= EDTime()
-        updated.from_edsm_timestamp(fc['updateTime']['information'])
-        details.append(_(u"as of {date}").format(date=updated.as_local_timestamp()))
-        return details
-
-    def docking(self, system, station, pad, faction):
+    def docking(self, system, station, pad, faction, description):
         if not self.cfg["docking"].get("enabled", None):
             return
 
@@ -679,18 +514,17 @@ class InGameMsg(object):
         station_type = (station.get("type","N/A") or "N/A").lower()
 
         header = u"{} ({})".format(station["name"], economy)
-        details = self.describe_station(station, faction)
         self.__msg_header("docking", header)
-        self.__msg_body("docking", details)
+        self.__msg_body("docking", description)
 
         if not self.cfg["docking-station"]["enabled"]:
-            return {"header": header, "body": details}
+            return {"header": header, "body": description}
         
         if station_type in ["asteroid base", 'bernal starport', "coriolis starport", "ocellus starport", "orbis starport", "bernal", "bernal statioport"]:
             self.__station_schematic(pad)
         else:
             self.__landable_schematic(system, station, pad)
-        return {"header": header, "body": details}
+        return {"header": header, "body": description}
 
     def __landable_schematic(self, system, station, pad):
         station_type = (station.get("type","N/A") or "N/A").lower()

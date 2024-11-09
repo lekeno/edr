@@ -1369,9 +1369,21 @@
     "hr 3230": {
         "3 a a": [
             {
-                "title": "Selenium farm",
+                "title": "Selenium farm #1",
                 "latitude": 52.6,
                 "longitude":  -165.8786,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Selenium farm #2",
+                "latitude": 52.64,
+                "longitude":  -165.74,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Selenium farm #3",
+                "latitude": 52.71,
+                "longitude":  -165.93,
                 "odyssey": "adjusted"
             }
         ]
@@ -1386,12 +1398,40 @@
             }
         ]
     },
+    "wregoe sb-z b41-2": {
+        "a 1 a": [
+            {
+                "title": "Technetium brain trees #1",
+                "latitude": -50.94,
+                "longitude": 165.1866,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Technetium brain trees #2",
+                "latitude": -51.02,
+                "longitude": 164.65,
+                "odyssey": "adjusted"
+            }
+        ]
+    },
     "synuefe an-h d11-101": {
         "ab 1 c": [
             {
-                "title": "Yttrium brain trees",
+                "title": "Yttrium brain trees #1",
                 "latitude": -50.2389,
                 "longitude": 103.7574,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Yttrium brain trees #2",
+                "latitude": 65.57,
+                "longitude": -46.12,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Yttrium brain trees #3",
+                "latitude": 65.60,
+                "longitude": -46.27,
                 "odyssey": "adjusted"
             }
         ]
@@ -1399,9 +1439,21 @@
     "synuefe by-f d12-39": {
         "a 2": [
             {
-                "title": "Polonium brain trees",
+                "title": "Polonium brain trees #1",
                 "latitude": 36.3907,
                 "longitude": 46.3248,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Polonium brain trees #2",
+                "latitude": 35.6,
+                "longitude": 45.99,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Polonium brain trees #3",
+                "latitude": 35.76,
+                "longitude": 46.79,
                 "odyssey": "adjusted"
             }
         ]
@@ -1426,12 +1478,58 @@
             }
         ]
     },
+    "synuefe fs-x b48-1": {
+        "a 1 a": [
+            {
+                "title": "Tellurium brain trees #1",
+                "latitude": 39.99,
+                "longitude": 72.39,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Tellurium brain trees #2",
+                "latitude": 40.16,
+                "longitude": 72.27,
+                "odyssey": "adjusted"
+            }
+        ]
+    },
     "v518 carinae": {
         "2 a": [
             {
                 "title": "Antimony brain trees",
                 "latitude": 13.7416,
                 "longitude": -91.2381,
+                "odyssey": "adjusted"
+            }
+        ]
+    },
+    "hip 34958": {
+        "ab 1 a": [
+            {
+                "title": "Antimony brain trees #1",
+                "latitude": -15.73,
+                "longitude": 35.43,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Antimony brain trees #2",
+                "latitude": -15.61,
+                "longitude": 35.49,
+                "odyssey": "adjusted"
+            }
+        ],
+        "ab 1 d a": [
+            {
+                "title": "Ruthenium brain trees #1",
+                "latitude": 6.70,
+                "longitude": -47.07,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Ruthenium brain trees #2",
+                "latitude": 6.62,
+                "longitude": -47.42,
                 "odyssey": "adjusted"
             }
         ]
