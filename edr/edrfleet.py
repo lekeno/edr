@@ -46,6 +46,8 @@ class EDRFleet(object):
         "challenger": "typex_3",
         "krait": "krait_mkii",
         "phantom": "krait_light",
+        "python 2": "python_nx",
+        "python II": "python_nx",
     }
 
 

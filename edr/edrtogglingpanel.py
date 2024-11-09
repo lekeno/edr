@@ -57,7 +57,6 @@ class ToggledFrame(tk.Frame):
         bg = conf.rgb("status", "fill")
         tk.Frame.__init__(self, parent, *args, **options)
         self.configure(background=bg)
-        self.tk_setPalette(background=bg, foreground=fg, activeBackground=conf.rgb("status", "active_bg"), activeForeground=conf.rgb("status", "active_fg"))
         
         self.show = show
         
@@ -114,7 +113,6 @@ class ToggledFrame(tk.Frame):
         fg = conf.rgb("status", "body")
         bg = conf.rgb("status", "fill")
         self.configure(background=bg)
-        self.tk_setPalette(background=bg, foreground=fg, activeBackground=conf.rgb("status", "active_bg"), activeForeground=conf.rgb("status", "active_fg"))
         
         self.status_frame.configure(background=bg)
         self.sub_frame.configure(background=bg)
