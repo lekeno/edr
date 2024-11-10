@@ -115,8 +115,8 @@ class EDRPowerplay(object):
             u"zemina torval": u"Empire",
             u"nakato_kaine": u"Alliance",
             u"nakato kaine": u"Alliance",
-            u"jerome_archer": u"Empire", # TODO verify
-            u"jerome archer": u"Empire", # TODO verify
+            u"jerome_archer": u"Federation",
+            u"jerome archer": u"Federation",
         }
 
         power = power.lower()
@@ -140,7 +140,7 @@ class EDRPowerplay(object):
             u"zachary_hudson": u"Zachary",
             u"zemina_torval": u"Zemina",
             u"nakato_kaine": u"Nakato",
-            u"jerome_archer": u"Jerome", # TODO verify
+            u"jerome_archer": u"Jerome",
             u"independent": u"Independent",
             u"unknown": u"Unknown"  
         }
