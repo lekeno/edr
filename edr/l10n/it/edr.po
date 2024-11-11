@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
 "POT-Creation-Date: 2024-11-10 11:06+0100\n"
-"PO-Revision-Date: 2024-11-10 11:12+0100\n"
+"PO-Revision-Date: 2024-11-11 01:52+0100\n"
 "Last-Translator: GLWine\n"
 "Language-Team: GLWine\n"
 "Language: it_IT\n"
@@ -266,12 +266,12 @@ msgstr "aggiornamento obbligatorio in sospeso (riavvia EDMC)"
 
 #: edrclient.py:590
 msgid "update pending (relaunch EDMC to apply)"
-msgstr "aggiornamento in sospeso (riavviare EDMC per applicare)"
+msgstr "aggiornamento in sospeso (riavvia EDMC per applicarlo)"
 
 #. Translators: this is shown in EDMC's status
 #: edrclient.py:593
 msgid "mandatory EDR update!"
-msgstr "è necessario l'aggiornamento dell'EDR!"
+msgstr "aggiornamento EDR obbligatorio!"
 
 #: edrclient.py:593
 msgid "please update EDR!"
@@ -2417,7 +2417,7 @@ msgid ""
 msgstr ""
 "```Accesso:   :    {}\n"
 "Notorietà:    {}\n"
-"Blocco (UTC):    {}```"
+"Blocco(UTC):    {}```"
 
 #: edrdiscord.py:532
 msgid "Allowed"
@@ -6507,7 +6507,7 @@ msgstr "{nb_seconds}{suffix}"
 
 #: edtime.py:148
 msgid "%Y-%m-%d"
-msgstr "%Y-%m-%d"
+msgstr "%d-%m-%Y"
 
 #: helpcontent.py:15
 msgid "Help sections"
@@ -6664,7 +6664,7 @@ msgid ""
 " - Contributions by : Juniper Nomi'Tar [UGC], Tomski [bbFA], Jason Hill, "
 "MonkasteR, FrostBit"
 msgstr ""
-" - Contributi di: Juniper Nomi'Tar [UGC], Tomski [bbFA], Jason Hill e "
+" - Contributi di: Juniper Nomi'Tar [UGC], Tomski [bbFA], Jason Hill, "
 "MonkasteR, FrostBit"
 
 #: helpcontent.py:53
@@ -7442,7 +7442,7 @@ msgstr ""
 #: helpcontent.py:244
 msgid " - 'cad' for cadmium, 'a e c d' for abnormal compact emission data."
 msgstr ""
-" - \"cad\" per cadmium, \"a e c d\" per abnormal compact emission data."
+" - 'cad' per cadmium, 'a e c d' per abnormal compact emission data."
 
 #: helpcontent.py:245
 msgid ""
@@ -7583,7 +7583,7 @@ msgstr ""
 #: helpcontent.py:276
 msgid " - '!eval power' to get an assessment of your power priorities."
 msgstr ""
-" - \"!eval power\" per ottenere una valutazione delle priorità del sistema "
+" - '!eval power' per ottenere una valutazione delle priorità del sistema "
 "di alimentazione."
 
 #: helpcontent.py:278
@@ -8220,7 +8220,7 @@ msgid ""
 "Sending '#s!' or '#enemy' to a contact will tag them as an enemy for your "
 "Inara squadron."
 msgstr ""
-"Inviando \"#s!\" o '#enemy' ad un contatto lo contrassegnerà come nemico per "
+"Inviando '#s!' o '#enemy' ad un contatto lo contrassegnerà come nemico per "
 "il tuo squadrone Inara."
 
 #: randomtips.py:55
@@ -8228,7 +8228,7 @@ msgid ""
 "Send '#s! <cmdrname>' or '#enemy <cmdrname>' to tag <cmdrname> as an enemy "
 "for your Inara squadron."
 msgstr ""
-"Invia \"#\"! <cmdrname>' o '#enemy <cmdrname>' per contrassegnare <cmdrname> "
+"Invia '#s! <cmdrname>' o '#enemy <cmdrname>' per contrassegnare <cmdrname> "
 "come nemico per il tuo squadrone Inara."
 
 #: randomtips.py:56
@@ -8236,7 +8236,7 @@ msgid ""
 "Sending '#s+' or '#ally' to a contact will tag them as an ally for your "
 "Inara squadron."
 msgstr ""
-"Inviando \"#s+\" o \"#ally\" ad un contatto lo taggerai come alleato per il "
+"Inviando '#s+' o '#ally' ad un contatto lo taggerai come alleato per il "
 "tuo squadrone Inara."
 
 #: randomtips.py:57
@@ -8712,7 +8712,7 @@ msgid ""
 "Send '!rrrfc' to get a fleet carrier with repair, rearm, refuel in the "
 "current system. Double check docking access before proceeding."
 msgstr ""
-"Invia \"!rrrfc\" per ottenere una portaerei con riparazione, riarmo e "
+"Invia '!rrrfc' per ottenere una portaerei con riparazione, riarmo e "
 "rifornimento nel sistema attuale. Ricontrolla l'accesso all'attracco prima "
 "di procedere."
 
@@ -8740,7 +8740,7 @@ msgid ""
 "Send '!rrr' to get a station with repair, rearm, refuel in the current "
 "system."
 msgstr ""
-"Invia \"!rrr\" per ottenere una stazione con riparazione, riarmo e "
+"Invia '!rrr' per ottenere una stazione con riparazione, riarmo e "
 "rifornimento nel sistema attuale."
 
 #: randomtips.py:124
@@ -8937,7 +8937,7 @@ msgid ""
 "Send '!search bio' to find a nearby planet with the right conditions for "
 "exobiology."
 msgstr ""
-"Invia \"'!search bio' per trovare un pianeta vicino con le giuste condizioni "
+"Invia '!search bio' per trovare un pianeta vicino con le giuste condizioni "
 "per l'esobiologia."
 
 #: randomtips.py:148
@@ -9191,9 +9191,9 @@ msgid ""
 "[Suicide trap] At busy stations, stay below 100 m/s or you will get killed "
 "by the station for colliding into a 'suicide eagle'."
 msgstr ""
-"[Trappola suicida] Nelle stazioni trafficate, rimani al di sotto dei 100 m/s "
-"o verrai ucciso dalla stazione per esserti scontrato con un'\"aquila "
-"suicida\"."
+"[Trappola suicida] Nelle stazioni affollate, mantieni una velocità inferiore "
+"a 100 m/s o verrai disgregato dalla stazione per esserti scontrato con un'\""
+"eagle suicida\"."
 
 #: randomtips.py:181
 msgid ""
@@ -9350,48 +9350,48 @@ msgid ""
 "[Combat] Put all 4 pips to SYS when being fired upon; move them where needed "
 "when not fired upon."
 msgstr ""
-"[Combattimento] Imposta tutti e 4 i pips a SYS quando sei sotto tiro; "
-"spostali dove necessario quando non sei sotto tiro."
+"[Combat] Imposta tutti e 4 i pips a SYS quando sei sotto tiro; spostali dove "
+"necessario quando non sei sotto tiro."
 
 #: randomtips.py:200
 msgid ""
 "[Combat] Don't fly in a straight line, you'll die if you do. Be evasive: "
 "combine rolls, turns, thrusters, boost and Fligh Assist Off."
 msgstr ""
-"[Combattimento] Non volare in linea retta, morirai se lo fai. Sii evasivo: "
-"combina rotazioni, virate, propulsori, spinta e Flight Assist Off."
+"[Combat] Non volare in linea retta, morirai se lo fai. Sii evasivo: combina "
+"rotazioni, virate, propulsori, spinta e Flight Assist Off."
 
 #: randomtips.py:201
 msgid ""
 "[Combat] When shields drop, target specific modules. In particular: power "
 "plant, drives, biweave shields, weapons."
 msgstr ""
-"[Combattimento] Quando gli scudi crollano, mira a moduli specifici. In "
-"particolare: power plant, drives, biweave shields, weapons."
+"[Combat] Quando gli scudi crollano, mira a moduli specifici. In particolare: "
+"power plant, drives, biweave shields, weapons."
 
 #: randomtips.py:202
 msgid ""
 "[Combat] Double shield cell banking: fire first cell, wait for 90 percents "
 "heat, fire heat sink, when heat drops rapidly fire the second cell."
 msgstr ""
-"[Combattimento] Doppia attivazione delle shield cell banking: spara la prima "
-"cella, attendi fino al 90% di calore, attiva il heat sink, quando il calore "
+"[Combat] Doppia attivazione delle shield cell banking: spara la prima cella, "
+"attendi fino al 90% di calore, attiva il heat sink, quando il calore "
 "diminuisce rapidamente, spara la seconda cella."
 
 #: randomtips.py:203
 msgid "[Combat] Railgun with feedback cascade can counter shield cell banking."
 msgstr ""
-"[Combattimento] Una Railgun con 'feedback cascade' può contrastare "
-"l'utilizzo delle shield cell banking."
+"[Combat] Una Railgun con 'feedback cascade' può contrastare l'utilizzo delle "
+"shield cell banking."
 
 #: randomtips.py:204
 msgid ""
 "[Combat] Best time to fire your shield cell is when you are at 1 / 1.5 ring "
 "and right in front of your opponent just as you are about to fly past them."
 msgstr ""
-"[Combattimento] Il momento migliore per attivare la tua cella di scudo è "
-"quando sei a 1 / 1,5 dell'anello e direttamente di fronte al tuo avversario, "
-"proprio mentre stai per oltrepassarlo."
+"[Combat] Il momento migliore per attivare la tua cella di scudo è quando sei "
+"a 1 / 1,5 dell'anello e direttamente di fronte al tuo avversario, proprio "
+"mentre stai per oltrepassarlo."
 
 #: randomtips.py:205
 msgid ""
