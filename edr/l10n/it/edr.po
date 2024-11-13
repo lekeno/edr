@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2024-11-10 11:06+0100\n"
-"PO-Revision-Date: 2024-11-13 03:16+0100\n"
+"POT-Creation-Date: 2024-11-14 00:51+0100\n"
+"PO-Revision-Date: 2024-11-14 00:56+0100\n"
 "Last-Translator: GLWine\n"
 "Language-Team: GLWine\n"
 "Language: it_IT\n"
@@ -21,12 +21,12 @@ msgstr ""
 #. Translators: this is used when a location, comprised of a system and a place (e.g. Alpha Centauri & Hutton Orbital), has no place specified
 #: edentities.py:342
 msgid "For an unknown or missing place|Unknown"
-msgstr "Per un luogo sconosciuto o mancante|Sconosciuto"
+msgstr "For an unknown or missing place|Sconosciuto"
 
 #. Translators: this is used when a location, comprised of a system and a body (e.g. Alpha Centauri & 3 A), has no body specified
 #: edentities.py:354
 msgid "For an unknown or missing body|Unknown"
-msgstr "Per un body sconosciuto o mancante|Sconosciuto"
+msgstr "For an unknown or missing body|Sconosciuto"
 
 #: edrclient.py:82
 msgid "You may want to give a shot to the !parking command next time."
@@ -94,12 +94,12 @@ msgstr "Direct"
 #. Translators: this is shown on EDMC's status bar when a user enables loud audio cues
 #: edrclient.py:195
 msgid "loud audio cues."
-msgstr "segnali audio forti."
+msgstr "notifiche audio forti."
 
 #. Translators: this is shown on EDMC's status bar when a user enables soft audio cues
 #: edrclient.py:201
 msgid "soft audio cues."
-msgstr "segnali audio deboli."
+msgstr "notifiche audio deboli."
 
 #. Translators: this is shown on EDMC's status bar when the version check fails
 #: edrclient.py:263
@@ -669,7 +669,7 @@ msgstr "Valore: {} cr; Diversità genetica: +{}m => {}"
 #. Translators: this is shown via the overlay if the system of interest is an Anarchy (current system or !sitrep <system>)
 #: edrclient.py:1480
 msgid "Sitrep|Anarchy: not all crimes are reported."
-msgstr "Report eventi|Anarchia: non tutti i crimini vengono denunciati."
+msgstr "Sitrep|Anarchia: non tutti i crimini vengono denunciati."
 
 #. Translators: this is the heading for the sitrep of a given system {}; shown via the overlay
 #: edrclient.py:1507
@@ -2655,15 +2655,15 @@ msgstr "Misc."
 
 #: edrfssinsights.py:44 edrfssinsights.py:75
 msgid "Pirates Threat 7|Th7"
-msgstr "Minaccia dei pirati 7|Th7"
+msgstr "Pirates Threat 7|Th7"
 
 #: edrfssinsights.py:44 edrfssinsights.py:75
 msgid "Pirates Threat 6|Th6"
-msgstr "Minaccia dei pirati 6|Th6"
+msgstr "Pirates Threat 6|Th6"
 
 #: edrfssinsights.py:44 edrfssinsights.py:75
 msgid "Pirates Threat 5|Th5"
-msgstr "Minaccia dei pirati 5|Th5"
+msgstr "Pirates Threat 5|Th5"
 
 #: edrfssinsights.py:44 edrfssinsights.py:75
 msgid "Pirates"
@@ -4334,7 +4334,7 @@ msgstr "Usato nei {} miglioramenti"
 
 #: edrinventory.py:1181
 msgid "Required by {} to refer {}"
-msgstr "Richiesto da {} per fare riferimento a {}"
+msgstr "Richiesto da {} per indirizzarti a {}"
 
 #: edrinventory.py:1184 edrinventory.py:1264
 msgid "Required by {}"
@@ -6241,38 +6241,38 @@ msgstr "Tipo: {} {}"
 #. Translators: this is for the sitrep feature; it's a section to show wanted cmdrs who have been sighted in the system of interest
 #: edrsystems.py:2195 edrsystems.py:2399
 msgid "sitreps section|✪ Outlaws"
-msgstr "report di sezione|✪ Fuorilegge"
+msgstr "sitreps section|✪ Fuorilegge"
 
 #. Translators: this is for the sitreps feature; it's the title of a section to show systems with sighted enemies (powerplay)
 #. Translators: this is for the sitrep feature; it's a section to show enemy cmdrs who have been sighted in the system of interest
 #: edrsystems.py:2204 edrsystems.py:2408
 msgid "sitreps section|✪ Enemies"
-msgstr "report di sezione|✪ Nemici"
+msgstr "sitreps section|✪ Nemici"
 
 #. Translators: this is for the sitreps feature; it's the title of a section to show systems with reported crimes
 #: edrsystems.py:2212
 msgid "sitreps section|✪ Crimes"
-msgstr "report di sezione|✪ Crimini"
+msgstr "sitreps section|✪ Crimini"
 
 #. Translators: this is for the sitreps feature; it's the title of a section to show systems with traffic
 #: edrsystems.py:2220
 msgid "sitreps section|✪ Traffic"
-msgstr "report di sezione|✪ Traffico"
+msgstr "sitreps section|✪ Traffico"
 
 #. Translators: this is for the sitrep feature; it's a section to show sighted cmdrs in the system of interest
 #: edrsystems.py:2353
 msgid "sitrep section|✪ Sighted"
-msgstr "report di sezione|✪ Avvistato"
+msgstr "sitrep section|✪ Avvistato"
 
 #. Translators: this is for the sitrep feature; it's a section to show cmdrs who have been reported as interdicting another cmdr in the system of interest
 #: edrsystems.py:2387
 msgid "sitrep section|✪ Interdictors"
-msgstr "report di sezione|✪ Interdittori"
+msgstr "sitrep section|✪ Interdittori"
 
 #. Translators: this is for the sitrep feature; it's a section to show cmdrs who have been reported as responsible for destroying the ship of another cmdr in the system of interest; use a judgement-neutral term
 #: edrsystems.py:2390
 msgid "sitreps section|✪ Destroyers"
-msgstr "report di sezione|✪ Distruttori"
+msgstr "sitreps section|✪ Distruttori"
 
 #: edrtogglingpanel.py:102 edrtogglingpanel.py:174
 msgid "Waiting for a game session..."
@@ -6415,24 +6415,24 @@ msgstr "surface scanner"
 #. Translators: this is to show how long ago an event took place, keep it ultra-short, e.g. -{} would show something like -3H
 #: edtime.py:34
 msgid "short notation for t-minus|-{}"
-msgstr "notazione breve per t-meno|-{}"
+msgstr "short notation for t-minus|-{}"
 
 #. Translators: this is to show how long ahead an event will take place, keep it ultra-short, e.g. +{} would show something like +3H
 #: edtime.py:43
 msgid "short notation for t-plus|+{}"
-msgstr "notazione breve per t-plus|+{}"
+msgstr "short notation for t-plus|+{}"
 
 #: edtime.py:74
 msgid "suffix| days"
-msgstr "suffisso| giorni"
+msgstr "suffix| giorni"
 
 #: edtime.py:74
 msgid "suffix| day"
-msgstr "suffisso| giorno"
+msgstr "suffix| giorno"
 
 #: edtime.py:74
 msgid "short suffix|d"
-msgstr "suffisso breve|d"
+msgstr "short suffix|d"
 
 #: edtime.py:75
 #, python-brace-format
@@ -6441,15 +6441,15 @@ msgstr "{nb_days}{suffix}"
 
 #: edtime.py:77 edtime.py:80
 msgid "suffix| hours"
-msgstr "suffisso| ore"
+msgstr "suffix| ore"
 
 #: edtime.py:77 edtime.py:80
 msgid "suffix| hour"
-msgstr "suffisso| ora"
+msgstr "suffix| ora"
 
 #: edtime.py:77 edtime.py:80
 msgid "short suffix|h"
-msgstr "suffisso breve|h"
+msgstr "short suffix|h"
 
 #: edtime.py:78
 #, python-brace-format
@@ -6463,15 +6463,15 @@ msgstr "{nb_hours}{suffix}"
 
 #: edtime.py:83 edtime.py:86
 msgid "suffix| minutes"
-msgstr "suffisso| minuti"
+msgstr "suffix| minuti"
 
 #: edtime.py:83 edtime.py:86
 msgid "suffix| minute"
-msgstr "suffisso| minuto"
+msgstr "suffix| minuto"
 
 #: edtime.py:83 edtime.py:86
 msgid "short suffix|m"
-msgstr "suffisso breve|m"
+msgstr "short suffix|m"
 
 #: edtime.py:84
 #, python-brace-format
@@ -6485,15 +6485,15 @@ msgstr "{nb_minutes}{suffix}"
 
 #: edtime.py:89 edtime.py:92
 msgid "suffix| seconds"
-msgstr "suffisso| secondi"
+msgstr "suffix| secondi"
 
 #: edtime.py:89 edtime.py:92
 msgid "suffix| second"
-msgstr "suffisso| secondo"
+msgstr "suffix| secondo"
 
 #: edtime.py:89 edtime.py:92
 msgid "short suffix|s"
-msgstr "suffisso breve|s"
+msgstr "short suffix|s"
 
 #: edtime.py:90
 #, python-brace-format
