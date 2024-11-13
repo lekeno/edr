@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
 "POT-Creation-Date: 2024-11-10 11:06+0100\n"
-"PO-Revision-Date: 2024-11-11 01:52+0100\n"
+"PO-Revision-Date: 2024-11-13 03:16+0100\n"
 "Last-Translator: GLWine\n"
 "Language-Team: GLWine\n"
 "Language: it_IT\n"
@@ -6507,7 +6507,7 @@ msgstr "{nb_seconds}{suffix}"
 
 #: edtime.py:148
 msgid "%Y-%m-%d"
-msgstr "%d-%m-%Y"
+msgstr "%Y-%m-%d"
 
 #: helpcontent.py:15
 msgid "Help sections"
@@ -7441,8 +7441,7 @@ msgstr ""
 
 #: helpcontent.py:244
 msgid " - 'cad' for cadmium, 'a e c d' for abnormal compact emission data."
-msgstr ""
-" - 'cad' per cadmium, 'a e c d' per abnormal compact emission data."
+msgstr " - 'cad' per cadmium, 'a e c d' per abnormal compact emission data."
 
 #: helpcontent.py:245
 msgid ""
@@ -7583,8 +7582,8 @@ msgstr ""
 #: helpcontent.py:276
 msgid " - '!eval power' to get an assessment of your power priorities."
 msgstr ""
-" - '!eval power' per ottenere una valutazione delle priorità del sistema "
-"di alimentazione."
+" - '!eval power' per ottenere una valutazione delle priorità del sistema di "
+"alimentazione."
 
 #: helpcontent.py:278
 msgid ""
@@ -7656,8 +7655,8 @@ msgid ""
 "the bar, or via your fleet carrier."
 msgstr ""
 " - !eval [locker|backpack]: per valutare l'utilità dei materiali "
-"nell'armadietto o nello zaino della nave, ad es. '!eval locker'. Utile "
-"quando vendi articoli al bar o tramite la tua fleet carrier."
+"nell'armadietto (locker) della nave o nello zaino (backpack), ad es. '!eval "
+"locker'. Utile quando vendi articoli al bar o tramite la tua fleet carrier."
 
 #: helpcontent.py:300
 msgid ""
@@ -8236,8 +8235,8 @@ msgid ""
 "Sending '#s+' or '#ally' to a contact will tag them as an ally for your "
 "Inara squadron."
 msgstr ""
-"Inviando '#s+' o '#ally' ad un contatto lo taggerai come alleato per il "
-"tuo squadrone Inara."
+"Inviando '#s+' o '#ally' ad un contatto lo taggerai come alleato per il tuo "
+"squadrone Inara."
 
 #: randomtips.py:57
 msgid ""
@@ -9192,8 +9191,8 @@ msgid ""
 "by the station for colliding into a 'suicide eagle'."
 msgstr ""
 "[Trappola suicida] Nelle stazioni affollate, mantieni una velocità inferiore "
-"a 100 m/s o verrai disgregato dalla stazione per esserti scontrato con un'\""
-"eagle suicida\"."
+"a 100 m/s o verrai disgregato dalla stazione per esserti scontrato con "
+"un'\"eagle suicida\"."
 
 #: randomtips.py:181
 msgid ""
