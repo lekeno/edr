@@ -641,7 +641,7 @@ class EDRClient(object):
         self.edrsystems.system_id(fsdjump_event['StarSystem'], may_create=True, coords=fsdjump_event.get("StarPos", None))
         self.edrfactions.process_jump_event(fsdjump_event)
         facts = self.edrresourcefinder.assess_jump(fsdjump_event, self.player.inventory)
-        header = _('Rare materials in {} (USS-HGE/EE, Mission Rewards)'.format(fsdjump_event['StarSystem']))
+        header = _('Rare materials in {} (USS-HGE/EE, Mission Rewards)').format(fsdjump_event['StarSystem'])
         if not facts:
             facts = self.edrboi.bodies_of_interest(fsdjump_event['StarSystem'])
             header = _('Noteworthy stellar bodies in {}').format(fsdjump_event['StarSystem'])
@@ -1516,7 +1516,7 @@ class EDRClient(object):
                 self.SFX.mining()
         
         if len(self.player.mining_stats.last["minerals_stats"]) > 0 and self.player.mining_stats.last["proportion"]:
-            self.status = _(u"[Yield: {:.2f}%]   [Items: {} ({:.0f}/hour)]".format(self.player.mining_stats.last["proportion"], self.player.mining_stats.refined_nb, self.player.mining_stats.item_per_hour()))
+            self.status = _(u"[Yield: {:.2f}%]   [Items: {} ({:.0f}/hour)]").format(self.player.mining_stats.last["proportion"], self.player.mining_stats.refined_nb, self.player.mining_stats.item_per_hour())
     
     def bounty_hunting_guidance(self, turn_off=False):
         if self.visual_feedback:
@@ -1529,7 +1529,7 @@ class EDRClient(object):
         
         bounty = EDFineOrBounty(self.player.bounty_hunting_stats.last["bounty"])
         credits_per_hour = EDFineOrBounty(int(self.player.bounty_hunting_stats.credits_per_hour()))
-        self.status = _(u"[Last: {} cr [{}]]   [Totals: {} cr/hour ({} awarded)]".format(bounty.pretty_print(), self.player.bounty_hunting_stats.last["name"], self.player.bounty_hunting_stats.awarded_nb, credits_per_hour.pretty_print()))
+        self.status = _(u"[Last: {} cr [{}]]   [Totals: {} cr/hour ({} awarded)]").format(bounty.pretty_print(), self.player.bounty_hunting_stats.last["name"], self.player.bounty_hunting_stats.awarded_nb, credits_per_hour.pretty_print())
 
     def target_guidance(self, target_event, turn_off=False):
         if turn_off or (not target_event or not self.player.target_pilot() or not self.player.target_pilot().vehicle):
@@ -3836,7 +3836,7 @@ class EDRClient(object):
             self.player.routenav.set_journey(route)
             return True
         details = []
-        details.append(_("Failed to load a csv route from {}.".format(filename)))
+        details.append(_("Failed to load a csv route from {}.").format(filename))
         self.notify_with_details(_("EDR Journey"), details, clear_before=True)
 
         return False
@@ -3931,7 +3931,7 @@ class EDRClient(object):
         if details:
             wp = self.player.routenav.current_wp_sysname()
             if wp and not self.player.star_system == wp:
-                details.append(_("Copied '{}' into the clipboard".format(wp)))
+                details.append(_("Copied '{}' into the clipboard").format(wp))
                 copy(wp)
             self.notify_with_details(_("EDR Journey"), details, clear_before=True)
             return True
@@ -3960,7 +3960,7 @@ class EDRClient(object):
         if details:
             wp = self.player.routenav.current_wp_sysname()
             if wp and not self.player.star_system == wp:
-                details.append(_("Copied '{}' into the clipboard".format(wp)))
+                details.append(_("Copied '{}' into the clipboard").format(wp))
                 copy(wp)
             self.notify_with_details(_("EDR Journey"), details, clear_before=True)
             return True
@@ -3978,7 +3978,7 @@ class EDRClient(object):
         if details:
             wp = self.player.routenav.current_wp_sysname()
             if wp and not self.player.star_system == wp:
-                details.append(_("Copied '{}' into the clipboard".format(wp)))
+                details.append(_("Copied '{}' into the clipboard").format(wp))
                 copy(wp)
             self.notify_with_details(_("EDR Journey - Current Waypoint"), details, clear_before=True)
             return True
@@ -3993,7 +3993,7 @@ class EDRClient(object):
         if details:
             wp = self.player.routenav.current_wp_sysname()
             if wp and not self.player.star_system == wp:
-                details.append(_("Copied '{}' into the clipboard".format(wp)))
+                details.append(_("Copied '{}' into the clipboard").format(wp))
                 copy(wp)
             self.notify_with_details(_("EDR Journey"), details, clear_before=True)
             return True
