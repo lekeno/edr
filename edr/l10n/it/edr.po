@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
 "POT-Creation-Date: 2024-11-14 00:51+0100\n"
-"PO-Revision-Date: 2024-11-14 00:56+0100\n"
+"PO-Revision-Date: 2024-11-16 17:14+0100\n"
 "Last-Translator: GLWine\n"
 "Language-Team: GLWine\n"
 "Language: it_IT\n"
@@ -392,7 +392,7 @@ msgstr "Info interessanti su {} ({} materiali)"
 
 #: edrclient.py:868
 msgid "Skipped FC report for consistency reasons (fix: leave and come back)"
-msgstr "Report FC saltato per motivi di coerenza (risolto: esci e ritorna)"
+msgstr "Rapporto FC omesso per motivi di coerenza (soluzione: esci e rientra)"
 
 #: edrclient.py:883
 msgid "Reported {} fleet carrier in system {}"
@@ -4310,11 +4310,11 @@ msgstr "Materiali inutili"
 
 #: edrinventory.py:1165
 msgid "Bar exchange: worth {}, cost {}"
-msgstr "Cambio al Bar: valore {}, costo {}"
+msgstr "Tasso di cambio al Bar: valore {}, costo {}"
 
 #: edrinventory.py:1167
 msgid "Bar exchange: worth {}"
-msgstr "Cambio al Bar: valore {}"
+msgstr "Tasso di cambio al Bar: valore {}"
 
 #: edrinventory.py:1170
 msgid "Used for: {}"
