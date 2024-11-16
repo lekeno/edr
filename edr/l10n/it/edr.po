@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EDR\n"
-"POT-Creation-Date: 2024-11-14 00:51+0100\n"
-"PO-Revision-Date: 2024-11-16 17:14+0100\n"
+"POT-Creation-Date: 2024-11-16 18:09+0100\n"
+"PO-Revision-Date: 2024-11-16 18:09+0100\n"
 "Last-Translator: GLWine\n"
 "Language-Team: GLWine\n"
 "Language: it_IT\n"
@@ -4276,115 +4276,115 @@ msgstr "Transmitter"
 msgid "Enhanced tracking, Audio masking"
 msgstr "Enhanced tracking, Audio masking"
 
-#: edrinventory.py:730
+#: edrinventory.py:728
 msgid "DATA"
 msgstr "DATA"
 
-#: edrinventory.py:730
+#: edrinventory.py:728
 msgid "ASSET"
 msgstr "ASSET"
 
-#: edrinventory.py:730
+#: edrinventory.py:728
 msgid "GOODS"
 msgstr "GOODS"
 
-#: edrinventory.py:730
+#: edrinventory.py:728
 msgid "CONSUMABLE"
 msgstr "CONSUMABLE"
 
-#: edrinventory.py:730
+#: edrinventory.py:728
 msgid "TECH"
 msgstr "TECH"
 
-#: edrinventory.py:730
+#: edrinventory.py:728
 msgid "CHEMICALS"
 msgstr "CHEMICALS"
 
-#: edrinventory.py:730
+#: edrinventory.py:728
 msgid "CIRCUITS"
 msgstr "CIRCUITS"
 
-#: edrinventory.py:1161 edrinventory.py:1253
+#: edrinventory.py:1155 edrinventory.py:1247
 msgid "Useless material"
 msgstr "Materiali inutili"
 
-#: edrinventory.py:1165
+#: edrinventory.py:1159
 msgid "Bar exchange: worth {}, cost {}"
 msgstr "Tasso di cambio al Bar: valore {}, costo {}"
 
-#: edrinventory.py:1167
+#: edrinventory.py:1161
 msgid "Bar exchange: worth {}"
 msgstr "Tasso di cambio al Bar: valore {}"
 
-#: edrinventory.py:1170
+#: edrinventory.py:1164
 msgid "Used for: {}"
 msgstr "Usato per: {}"
 
-#: edrinventory.py:1174
+#: edrinventory.py:1168
 msgid "Used in {} blueprints, {} upgrades"
 msgstr "Usato nei {} blueprints, {} miglioramenti"
 
-#: edrinventory.py:1176
+#: edrinventory.py:1170
 msgid "Used in {} blueprints"
 msgstr "Usato nei {} blueprints"
 
-#: edrinventory.py:1178
+#: edrinventory.py:1172
 msgid "Used in {} upgrades"
 msgstr "Usato nei {} miglioramenti"
 
-#: edrinventory.py:1181
+#: edrinventory.py:1175
 msgid "Required by {} to refer {}"
 msgstr "Richiesto da {} per indirizzarti a {}"
 
-#: edrinventory.py:1184 edrinventory.py:1264
+#: edrinventory.py:1178 edrinventory.py:1258
 msgid "Required by {}"
 msgstr "Richiesto da {}"
 
-#: edrinventory.py:1187
+#: edrinventory.py:1181
 msgid "Found in: {}"
 msgstr "Trovato in: {}"
 
-#: edrinventory.py:1217
+#: edrinventory.py:1211
 msgid "0"
 msgstr "0"
 
-#: edrinventory.py:1220
+#: edrinventory.py:1214
 msgid "B{}"
 msgstr "B{}"
 
-#: edrinventory.py:1223
+#: edrinventory.py:1217
 msgid "U{}"
 msgstr "U{}"
 
-#: edrinventory.py:1226
+#: edrinventory.py:1220
 msgid "X{}"
 msgstr "X{}"
 
-#: edrinventory.py:1237
+#: edrinventory.py:1231
 msgid "E{}"
 msgstr "E{}"
 
-#: edrinventory.py:1256
+#: edrinventory.py:1250
 msgid "blueprints"
 msgstr "blueprints"
 
-#: edrinventory.py:1256
+#: edrinventory.py:1250
 msgid "synthesis"
 msgstr "synthesis"
 
-#: edrinventory.py:1256
+#: edrinventory.py:1250
 msgid "experimental effects"
 msgstr "effetto sperimentale"
 
-#: edrinventory.py:1256
+#: edrinventory.py:1250
 msgid "tech broker items"
 msgstr "tech broker items"
 
-#: edrinventory.py:1260
+#: edrinventory.py:1254
 msgid "{} {}"
 msgstr "{} {}"
 
-#: edrinventory.py:1261
+#: edrinventory.py:1255
 msgid "Used in: {}"
 msgstr "Usato in: {}"
 
