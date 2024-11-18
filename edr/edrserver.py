@@ -104,7 +104,7 @@ class EDRServer(object):
         
         try:
             if body["header"]["eventStatus"] == 400:
-                EDRLOG.log(u"Too much requests for Inara.", "INFO")
+                EDRLOG.log(u"Too many requests for Inara.", "INFO")
                 self.backoff["Inara"].throttle()
                 return None
             if body["events"][0]["eventStatus"] == 204:
