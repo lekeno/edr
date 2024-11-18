@@ -33,6 +33,7 @@ class EDRServer(object):
         self.REST_firebase = RESTFirebase.RESTFirebaseAuth()
         self.EDR_API_KEY = config.edr_api_key()
         self.EDR_SERVER = config.edr_server()
+        self.EDR_SERVER_FUNCTIONS = config.edr_server_functions()
         self.player_name = None
         self.game_mode = None
         self.dlc_name = None
@@ -395,7 +396,7 @@ class EDRServer(object):
             "X-EDR-UID": self.uid()
         }
         requester = quote(self.player_name.encode('utf-8')) if self.player_name else u"-"
-        endpoint = "https://us-central1-blistering-inferno-4028.cloudfunctions.net/edr/v1/inara/{}/{}".format(quote(cmdr.lower().encode('utf-8')), quote(requester))
+        endpoint = "{}/edr/v1/inara/{}/{}".format(self.EDR_SERVER_FUNCTIONS, quote(cmdr.lower().encode('utf-8')), quote(requester))
         resp = self.__get(endpoint, "EDR", headers=headers)
 
         if not self.__check_response(resp, "Inara", "Inara"):
@@ -492,7 +493,7 @@ class EDRServer(object):
             return False
         flight_plan["psa"] = self.fc_jump_psa
         EDRLOG.log(u"Fleet Carrier jump with json:{json}".format(json=flight_plan), "INFO")
-        endpoint = "/v1/fcjumps/{uid}/".format(server=self.EDR_SERVER, uid=self.uid())
+        endpoint = "/v1/fcjumps/{uid}/".format(uid=self.uid())
         return self.__post_json(endpoint, flight_plan, "EDR")
 
     def fc_jump_cancelled(self, status):
@@ -500,7 +501,7 @@ class EDRServer(object):
             return False
         EDRLOG.log(u"Cancelling Fleet Carrier jump", "INFO")
         status["psa"] = self.fc_jump_psa
-        endpoint = "/v1/fcjumps/{uid}/".format(server=self.EDR_SERVER, uid=self.uid())
+        endpoint = "/v1/fcjumps/{uid}/".format(uid=self.uid())
         return self.__post_json(endpoint, status, "EDR")
 
     def crew_report(self, crew_id, report):
@@ -622,7 +623,7 @@ class EDRServer(object):
 
     def heartbeat(self):
         EDRLOG.log(u"Sending heartbeat", "INFO")                
-        endpoint = "https://us-central1-blistering-inferno-4028.cloudfunctions.net/heartbeat"
+        endpoint = "{}/heartbeat".format(self.EDR_SERVER_FUNCTIONS)
         params = {"uid": self.uid() }
         resp = self.__get(endpoint, "EDR", params)
 
@@ -790,7 +791,7 @@ class EDRServer(object):
         headers = {"Authorization": "Bearer {}".format(self.auth_token()), "EDR-Version": "v{}".format(self.version) }
         json = { "name": self.player_name, "timestamp": {".sv": "timestamp"}, "param": param, "api": api_name, "mode": self.game_mode, "dlc": self.dlc_name, "group": self.private_group }
         EDRLOG.log(u"Preflight request for {} with {}".format(api_name, json), "DEBUG")
-        endpoint = "https://us-central1-blistering-inferno-4028.cloudfunctions.net/edr/v1/preflight/{uid}".format(server=self.EDR_SERVER, uid=self.uid())
+        endpoint = "{server_functions}/edr/v1/preflight/{uid}".format(server_functions=self.EDR_SERVER_FUNCTIONS, uid=self.uid())
         resp = self.__put(endpoint, "EDR", json=json, headers=headers)
         EDRLOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
         return self.__check_response(resp, "EDR", "Preflight {}".format(api_name))

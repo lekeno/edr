@@ -53,6 +53,9 @@ class EDRConfig(object):
 
     def edr_server(self):
         return self.config.get('edr', 'edr_server')
+    
+    def edr_server_functions(self):
+        return self.config.get('edr', 'edr_server_functions')
 
     def edr_needs_u_novelty_threshold(self):
         return int(self.config.get('edr', 'edr_needs_u_novelty_threshold'))
