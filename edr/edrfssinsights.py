@@ -18,7 +18,6 @@ class EDRFSSInsights(object):
             "$Warzone_TG;": {"count": 0, "short_name": _("CZ [AX]") },
             "$FIXED_EVENT_CAPSHIP;": {"count": 0, "short_name": _("CAPITAL SHIP") },
             "$NumberStation:#index=1;": {"count": 0, "short_name": _("Unreg. Comms - Numbers Station (Ⅰ)") },
-            "$NumberStation:#index=1;": {"count": 0, "short_name": _("Unreg. Comms") },
             "$FIXED_EVENT_HIGHTHREATSCENARIO_T7;": {"count": 0, "short_name": _("Pirates [Th. 7]") },
             "$FIXED_EVENT_HIGHTHREATSCENARIO_T6;": {"count": 0, "short_name": _("Pirates [Th. 6]") },
             "$FIXED_EVENT_HIGHTHREATSCENARIO_T5;": {"count": 0, "short_name": _("Pirates [Th. 5]") },

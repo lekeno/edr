@@ -282,26 +282,6 @@ class EDRSystems(object):
 
     def are_settlements_stale(self, star_system):
         return self.are_stations_stale(star_system)
-        
-    def station(self, star_system, station_name, station_type):
-        stations = self.stations_in_system(star_system)
-        if not stations:
-            return None
-            
-        for station in stations:
-            if station["name"] == station_name:
-                return station
-        
-        worth_retrying_age = 60*60*6 
-        if station_type == "FleetCarrier" and self.edsm_stations_cache.is_older_than(star_system.lower(), worth_retrying_age):
-            # FleetCarrier are a bit more dynamic, so evict a lukewarm entry and get a new fresh one in case the info has been reflected since last time
-            self.edsm_stations_cache.evict(star_system.lower())
-            stations = self.stations_in_system(star_system)
-            for station in stations:
-                if station["name"] == station_name:
-                    return station
-        
-        return None
 
     def fuzzy_stations(self, star_system, station_name):
         if station_name is None or station_name == "":
@@ -703,27 +683,6 @@ class EDRSystems(object):
                     progress = int(value["progress"]*100.0)
                     star_info.append(_("Discovered {}/{} {}%").format(scanned_body_count, body_count, progress))
         return star_info
-
-    def station(self, star_system, station_name, station_type):
-        stations = self.stations_in_system(star_system)
-        if not stations:
-            return None
-            
-        for station in stations:
-            if station["name"] == station_name:
-                return station
-        
-        worth_retrying_age = 60*60*6 
-        if station_type == "FleetCarrier" and self.edsm_stations_cache.is_older_than(star_system.lower(), worth_retrying_age):
-            # FleetCarrier are a bit more dynamic, so evict a lukewarm entry and get a new fresh one in case the info has been reflected since last time
-            self.edsm_stations_cache.evict(star_system.lower())
-            stations = self.stations_in_system(star_system)
-            for station in stations:
-                if station["name"] == station_name:
-                    return station
-        
-        return None
-
 
     def market(self, marketId):
         marketInfo = self.edsm_markets_cache.get(marketId)
