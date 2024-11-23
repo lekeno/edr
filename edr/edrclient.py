@@ -3986,7 +3986,7 @@ class EDRClient(object):
     
     def journey_show_overview(self, passive=False):
         if self.player.routenav.no_journey() and not passive:
-            self.notify_with_details(_("EDR Journey"), [("No active route."), ("Send '!journey new' or '!journey load' to define a route.")])
+            self.notify_with_details(_("EDR Journey"), [_("No active route."), _("Send '!journey new' or '!journey load' to define a route.")])
             return False
         
         details = self.player.routenav.describe()
