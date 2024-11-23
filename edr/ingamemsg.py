@@ -485,7 +485,7 @@ class InGameMsg(object):
             self.__shape("biology", self.cfg["biology"]["panel"])
         header = species
         details = []
-        details.append(_("Value: {} credits".format(pretty_print_number(value))))
+        details.append(_("Value: {} credits").format(pretty_print_number(value)))
         details.append(_("Gene diversity: +{}m").format(ccr))
         i = 1
         for distance in distances_meters:

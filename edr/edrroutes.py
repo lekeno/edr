@@ -573,7 +573,7 @@ class SpanshBodiesJourneyJSON(GenericRoute):
             
             if value and b.get("name", None):
                 simple_body_name = simplified_body_name(self.current_wp_sysname(), b["name"])
-                details.append(_("{}: {} cr ({})".format(simple_body_name, pretty_print_number(value), " + ".join(activities))))
+                details.append(_("{}: {} cr ({})").format(simple_body_name, pretty_print_number(value), " + ".join(activities)))
 
         return details
     
