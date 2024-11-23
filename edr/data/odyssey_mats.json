@@ -78,6 +78,7 @@
     "insight":                           { "useless": true,  "type": "item", "used":  0, "locations": ["RES buildings", "HAB buildings", "CMD buildings", "Settlements"]},
     "insightdatabank":                   { "useless": true,  "type": "item", "used":  0, "locations": ["RES buildings", "HAB buildings", "CMD buildings", "Settlements"]},
     "lazarus":                           { "useless": true,  "type": "item", "used":  0, "locations": ["Irregular markers", "Surface crash site"]},
+    "largecapacitypowerregulator":       { "useless": true,  "type": "item", "used":  0, "locations": ["PWR buildings", "Settlements"], "comment": "In-Game Name: Power Regulator"},
     "microbialinhibitor":                { "useless": true,  "type": "item", "used":  0, "locations": ["RES buildings", "AGRI buildings"]},
     "mutageniccatalyst":                 { "useless": true,  "type": "item", "used":  0, "locations": []},
     "nutritionalconcentrate":            { "useless": true,  "type": "item", "used":  0, "locations": ["RES buildings", "AGRI buildings"]},
@@ -141,7 +142,6 @@
     "gmeds":                       { "blueprints":  3, "type": "item", "used":  3, "locations": ["Mission reward", "Irregular markers", "MED room", "RES buildings", "CMD buildings", "AGRI buildings", "Settlements", "Surface crash site"]},
     "healthmonitor":               { "upgrades":   12, "type": "item", "used": 12, "locations": ["Mission reward", "MED room", "RES buildings", "HAB buildings", "Surface crash site"]},
     "ionisedgas":                  { "upgrades":   28, "type": "item", "used": 28, "locations": ["Mission reward", "RES buildings", "PWR buildings", "IND buildings", "EXT buildings", "AGRI buildings"]},
-    "largecapacitypowerregulator": {                   "type": "item", "used":  1, "locations": ["PWR buildings", "Settlements"], "comment": "In-Game Name: Power Regulator"},
     "suitschematic":               { "upgrades":   12, "type": "item", "used": 12, "locations": ["Mission reward", "STO buildings", "PWR buildings", "CMD buildings"]},
     "weaponschematic":             { "upgrades":   44, "type": "item", "used": 44, "locations": ["Mission reward", "Irregular markers", "STO buildings", "PWR buildings", "CMD buildings"]},
 
