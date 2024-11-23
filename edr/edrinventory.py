@@ -659,16 +659,6 @@ class EDRInventory(object):
             for removal in info["Removed"]:
                 self.adjust_backpack(removal["Type"], removal["Name"], -removal.get("Count", 0))
 
-
-    def traded(self, info):
-        if "Offered" not in info:
-            return
-
-        for offer in info["Offered"]:
-            self.substract(offer["Category"], offer["Name"], offer["Count"])
-
-        self.add(info["Category"], info["Received"], info["Count"])
-    
     def collected(self, info):
         self.add(info["Category"], info["Name"], info["Count"])
 
