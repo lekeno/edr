@@ -8,14 +8,14 @@ import pickle
 
 from lrucache import LRUCache
 from edrconfig import EDRConfig
-from edrlog import EDRLog
+from edrlog import EDR_LOG
 from edtime import EDTime
 from collections import deque
 from edentities import EDFineOrBounty
 from edri18n import _, _c
 import utils2to3
 
-EDRLOG = EDRLog()
+
 
 class EDRLegalRecords(object):
     EDR_LEGAL_RECORDS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'legal_records.v3.p')
@@ -41,15 +41,15 @@ class EDRLegalRecords(object):
     
     def summarize(self, cmdr_id):
         if not cmdr_id:
-            EDRLOG.log(u"No cmdr_id, no records for {}".format(cmdr_id), "INFO")
+            EDR_LOG.log(u"No cmdr_id, no records for {}".format(cmdr_id), "INFO")
             return None
         self.__update_records_if_stale(cmdr_id)
         records = self.records.get(cmdr_id)["records"] if self.records.has_key(cmdr_id) else None
         if not records:
-            EDRLOG.log(u"No legal records for {}".format(cmdr_id), "INFO")
+            EDR_LOG.log(u"No legal records for {}".format(cmdr_id), "INFO")
             return None
         
-        EDRLOG.log(u"Got legal records for {}".format(cmdr_id), "INFO")
+        EDR_LOG.log(u"Got legal records for {}".format(cmdr_id), "INFO")
         overview = None
         (clean, wanted, bounties, recent_stats) = self.__process(records)
         timespan = EDTime.pretty_print_timespan(self.timespan, short=True, verbose=True)

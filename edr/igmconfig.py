@@ -8,7 +8,7 @@ except ImportError:
     # for Python3
     import configparser as cp
 
-from edrlog import EDRLog
+from edrlog import EDR_LOG
 import utils2to3
 
 class IGMConfig(object):
@@ -19,16 +19,16 @@ class IGMConfig(object):
         # TODO assumes that there is always 2 user config options...
         user_cfg_path = utils2to3.abspathmaker(__file__, user_config_file[0])
         if os.path.exists(user_cfg_path):
-            EDRLog().log(u"Using user defined layout at {}.".format(user_config_file[0]), "INFO")
+            EDR_LOG.log(u"Using user defined layout at {}.".format(user_config_file[0]), "INFO")
             self.config.read(user_cfg_path)
         else:
-            EDRLog().log(u"No user defined layout at {}, using {} instead.".format(user_config_file[0], user_config_file[1]), "INFO")
+            EDR_LOG.log(u"No user defined layout at {}, using {} instead.".format(user_config_file[0], user_config_file[1]), "INFO")
             user_cfg_path = utils2to3.abspathmaker(__file__, user_config_file[1])
             if os.path.exists(user_cfg_path):
-                EDRLog().log(u"Using user defined layout at {}.".format(user_config_file[1]), "INFO")
+                EDR_LOG.log(u"Using user defined layout at {}.".format(user_config_file[1]), "INFO")
                 self.config.read(user_cfg_path)
             else:
-                EDRLog().log(u"No user defined layout at {} or {}, using {} instead.".format(user_config_file[0], user_config_file[1], config_file), "INFO")
+                EDR_LOG.log(u"No user defined layout at {} or {}, using {} instead.".format(user_config_file[0], user_config_file[1], config_file), "INFO")
                 self.config = self.fallback_config
 
     def large_height(self):
@@ -74,7 +74,7 @@ class IGMConfig(object):
         return self._getint(kind, '{}_ttl'.format(part), 5)
 
     def rgb(self, kind, part):
-        return "#{}".format(self._get(kind, '{}_rgb'.format(part)), "ffffff")
+        return "#{}".format(self._get(kind, '{}_rgb'.format(part), "ffffff"))
 
     def rgb_list(self, kind, part):
         rgbs = self._get(kind, '{}_rgb'.format(part), "ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff")

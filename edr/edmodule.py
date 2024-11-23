@@ -4,10 +4,10 @@ import json
 import re
 import os
 
-from edrlog import EDRLog
+from edrlog import EDR_LOG
 import utils2to3
 
-EDRLOG = EDRLog()
+
 POWER_DATA = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'modules_power_data.json')).read())
 
 class EDResistances(object):
@@ -31,7 +31,7 @@ class EDModule(object):
         prev_cname = self.cname
         prev_on = self.on
 
-        EDRLOG.log(u"before: {}, {}, {}, {}".format(prev_cname, prev_power_draw, prev_priority, prev_on), "DEBUG")
+        EDR_LOG.log(u"before: {}, {}, {}, {}".format(prev_cname, prev_power_draw, prev_priority, prev_on), "DEBUG")
 
         self.power_draw = module["Power"] if "Power" in module else EDModule.__get_power_draw(module)
         self.priority = EDModule.__get_priority(module)
@@ -40,7 +40,7 @@ class EDModule(object):
 
         updated = prev_power_draw != self.power_draw or prev_priority != self.priority or prev_cname != self.cname or prev_on != self.on
         if updated:
-            EDRLOG.log(u"after: {}, {}, {}, {}".format(self.cname, self.power_draw, self.priority, self.on), "DEBUG")
+            EDR_LOG.log(u"after: {}, {}, {}, {}".format(self.cname, self.power_draw, self.priority, self.on), "DEBUG")
         return updated
 
 
@@ -92,7 +92,7 @@ class EDModule(object):
         elif item.startswith("modularcargobaydoor"):
             power_draw = 0.6
         elif not(item.startswith(('nameplate_', 'paintjob_', 'voicepack_', 'weaponcustomisation_', 'enginecustomisation_', 'bobble_', 'decal_')) or item.endswith(('_cockpit', '_armour_grade1', '_armour_grade2', '_armour_grade3', '_armour_mirrored', '_armour_reactive'))):
-            EDRLOG.log(u"unknown item: {}".format(item), "DEBUG")
+            EDR_LOG.log(u"unknown item: {}".format(item), "DEBUG")
         
         for modifier in modifiers:
             if modifier.get("Label", "").lower() != "powerdraw":

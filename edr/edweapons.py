@@ -1,9 +1,4 @@
 from math import log10
-import re
-
-import edrlog
-
-EDRLOG = edrlog.EDRLog()
 
 class EDDamageFractions(object):
     def __init__(self, absolute=0.0, explosive=0.0, kinetic=0.0, thermal=0.0, caustic=0.0):

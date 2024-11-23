@@ -5,9 +5,9 @@ import re
 
 import edtime
 from edrutils import simplified_body_name
-from edrlog import EDRLog
+from edrlog import EDR_LOG
 from edri18n import _
-EDRLOG = EDRLog()
+
 
 class EDRFleetCarrier(object):
     def __init__(self):

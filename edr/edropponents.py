@@ -10,15 +10,12 @@ import pickle
 import lrucache
 from collections import deque 
 import edrconfig
-import edrserver
 import edrrealtime
-import edrlog
+from edrlog import EDR_LOG
 import edtime
 from edentities import EDFineOrBounty
 from edri18n import _, _c
 import utils2to3
-
-EDRLOG = edrlog.EDRLog()
 
 class EDROpponents(object):
     OUTLAWS = "Outlaws"
@@ -108,10 +105,10 @@ class EDROpponents(object):
     def recent_sightings(self):
         self.__update_opponents_if_stale()
         if not self.recents:
-            EDRLOG.log(u"No recently sighted {}".format(self.kind), "INFO")
+            EDR_LOG.log(u"No recently sighted {}".format(self.kind), "INFO")
             return None
         
-        EDRLOG.log(u"Got recently sighted {}".format(self.kind), "INFO")
+        EDR_LOG.log(u"Got recently sighted {}".format(self.kind), "INFO")
         summary = []
         now = datetime.datetime.now()
         js_epoch_now = int(1000 * time.mktime(now.timetuple()))
@@ -125,7 +122,7 @@ class EDROpponents(object):
         return summary
 
     def __readable_opponent_sighting(self, sighting, one_liner=False):
-        EDRLOG.log(u"sighting: {}".format(sighting), "DEBUG")
+        EDR_LOG.log(u"sighting: {}".format(sighting), "DEBUG")
         if not sighting:
             return None
         t_minus = edtime.EDTime.t_minus(sighting["timestamp"], short=True)

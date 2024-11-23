@@ -13,7 +13,7 @@ except ImportError:
 
 from sseclient import SSEClient
 from edtime import EDTime
-from edrlog import EDRLog
+from edrlog import EDR_LOG
 
 class EDRRealtimeUpdates(object):
     def __init__(self, callback, kind, endpoint, authenticator):
@@ -99,23 +99,22 @@ class RemoteThread(threading.Thread):
     
     def run(self):
         self._setup_sse()
-        edr_log = EDRLog()
         try:
             for msg in self.sse:
                 if msg.event == "keep-alive":
-                    edr_log.log(u"SSE keep-alive received", "DEBUG")
+                    EDR_LOG.log(u"SSE keep-alive received", "DEBUG")
                     continue
                 if msg.event == "auth_revoked":
-                    edr_log.log(u"SSE auth_revoked received", "DEBUG")
+                    EDR_LOG.log(u"SSE auth_revoked received", "DEBUG")
                     self.message_queue.put(msg)
                     self.close()
                     break
                 if msg.event == "cancel":
-                    edr_log.log(u"SSE cancel received", "DEBUG")
+                    EDR_LOG.log(u"SSE cancel received", "DEBUG")
                     self.message_queue.put(msg)
                     self.close()
                     break
-                edr_log.log(u"SSE msg received: {} {}".format(msg.event, msg.data), "DEBUG")
+                EDR_LOG.log(u"SSE msg received: {} {}".format(msg.event, msg.data), "DEBUG")
                 self.message_queue.put(msg)
         except socket.error:
             pass    # this can happen when we close the stream
@@ -138,13 +137,12 @@ class EDRSEEReader():
             super(EDRSEEReader.EDRSEEThread, self).__init__()
 
         def run(self):
-            edr_log = EDRLog()
             while True:
                 msg = self.inbound_queue.get()
                 if not msg:
-                    edr_log.log(u"SSE stop signal received.", "DEBUG")
+                    EDR_LOG.log(u"SSE stop signal received.", "DEBUG")
                     break
-                edr_log.log(u"handling msg: {} {} {}".format(msg.event, msg.data, self.kind), "DEBUG")
+                EDR_LOG.log(u"handling msg: {} {} {}".format(msg.event, msg.data, self.kind), "DEBUG")
                 if msg.event in ["put", "patch"] and msg.data:
                     data = json.loads(msg.data)
                     if data is None or data["data"] is None:

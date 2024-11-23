@@ -8,9 +8,9 @@ import math
 import utils2to3
 from edvehicles import EDVehicleFactory
 from edtime import EDTime
-from edrlog import EDRLog
+from edrlog import EDR_LOG
 
-EDRLOG = EDRLog()
+
 
 class EDRFleet(object):
 
@@ -65,7 +65,7 @@ class EDRFleet(object):
                         destination_system TEXT, source_market_id INTEGER, destination_market_id INTEGER)''')
             self.db.commit()
         except:
-            EDRLOG.log(u"Couldn't open/create the fleet database", "ERROR")
+            EDR_LOG.log(u"Couldn't open/create the fleet database", "ERROR")
             self.db = None
     
     def update(self, event):

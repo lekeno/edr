@@ -30,3 +30,6 @@ class EDRLog(object):
     def log(self, msg, level):
         level = self.LEVEL_MAPPING.get(level, logging.NOTSET)
         self.logger.log(level, msg)
+
+
+EDR_LOG = EDRLog()

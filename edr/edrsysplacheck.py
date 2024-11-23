@@ -1,8 +1,5 @@
 from edri18n import _, _c, _edr
-import edrlog
-import math
-
-EDRLOG = edrlog.EDRLog()
+from edrlog import EDR_LOG
 
 class EDRSystemPlanetCheck(object):
 
@@ -97,23 +94,23 @@ class EDRBiologyCheck(EDRSystemPlanetCheck):
     
     def check_planet(self, planet, system_name):
         if not super(EDRBiologyCheck, self).check_planet(planet, system_name):
-            EDRLOG.log("SystemPlanetCheck check planet failed: {}".format(planet), "DEBUG")
+            EDR_LOG.log("SystemPlanetCheck check planet failed: {}".format(planet), "DEBUG")
             return False
         
         if not self.edrsystems.meets_biome_conditions(planet):
-            EDRLOG.log("BiologyCheck meets_biome_conditions failed: {}".format(planet), "DEBUG")
+            EDR_LOG.log("BiologyCheck meets_biome_conditions failed: {}".format(planet), "DEBUG")
             return False
     
         genuses = planet.get("genuses", [])
         if genuses and self.genus:
             cgenus = self.genus.lower()
             for g in genuses:
-                EDRLOG.log("Checking genus {} in {} ".format(cgenus, g), "DEBUG")
+                EDR_LOG.log("Checking genus {} in {} ".format(cgenus, g), "DEBUG")
                 if cgenus in g["Genus"]:
-                    EDRLOG.log("Found genus {} in {}".format(cgenus, planet), "DEBUG")
+                    EDR_LOG.log("Found genus {} in {}".format(cgenus, planet), "DEBUG")
                     return True
         else:
-            EDRLOG.log("Found planet {}".format(planet), "DEBUG")
+            EDR_LOG.log("Found planet {}".format(planet), "DEBUG")
             return True
         return False
 

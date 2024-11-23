@@ -16,9 +16,8 @@ import json
 
 import edtime
 import edrconfig
-import edrlog
+from edrlog import EDR_LOG
 import lrucache
-import edsmserver
 from edentities import EDFineOrBounty
 from edrutils import pretty_print_number
 from edri18n import _, _c, _edr
@@ -30,8 +29,6 @@ import edrparkingsystemfinder
 import edrplanetfinder
 import edrsettlementfinder
 import utils2to3
-
-EDRLOG = edrlog.EDRLog()
 
 class EDRSystems(object):
     EDR_SYSTEMS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'systems.v5.p')
@@ -222,13 +219,13 @@ class EDRSystems(object):
         system = self.systems_cache.get(star_system.lower())
         cached = self.systems_cache.has_key(star_system.lower())
         if cached and system is None:
-            EDRLOG.log(u"Temporary entry for System {} in the cache".format(star_system), "DEBUG")
+            EDR_LOG.log(u"Temporary entry for System {} in the cache".format(star_system), "DEBUG")
             return None
 
         if cached and system:
             sid = list(system)[0]
             if may_create and coords and not "coords" in system[sid]:
-                EDRLOG.log(u"System {} is in the cache with id={} but missing coords".format(star_system, sid), "DEBUG")
+                EDR_LOG.log(u"System {} is in the cache with id={} but missing coords".format(star_system, sid), "DEBUG")
                 system = self.server.system(star_system, may_create, coords)
                 if system:
                     self.systems_cache.set(star_system.lower(), system)
@@ -239,11 +236,11 @@ class EDRSystems(object):
         if system:
             self.systems_cache.set(star_system.lower(), system)
             sid = list(system)[0]
-            EDRLOG.log(u"Cached {}'s info with id={}".format(star_system, sid), "DEBUG")
+            EDR_LOG.log(u"Cached {}'s info with id={}".format(star_system, sid), "DEBUG")
             return sid
 
         self.systems_cache.set(star_system.lower(), None)
-        EDRLOG.log(u"No match on EDR. Temporary entry to be nice on EDR's server.", "DEBUG")
+        EDR_LOG.log(u"No match on EDR. Temporary entry to be nice on EDR's server.", "DEBUG")
         return None
 
     def fc_id(self, callsign, name, star_system, may_create=False):
@@ -252,7 +249,7 @@ class EDRSystems(object):
         fc = self.fcs_cache.get(callsign.lower())
         cached = self.fcs_cache.has_key(callsign.lower())
         if cached and fc is None:
-            EDRLOG.log(u"Temporary entry for FC {} in the cache".format(callsign), "DEBUG")
+            EDR_LOG.log(u"Temporary entry for FC {} in the cache".format(callsign), "DEBUG")
             return None
 
         if cached and fc:
@@ -263,11 +260,11 @@ class EDRSystems(object):
         if fc:
             self.fcs_cache.set(callsign.lower(), fc)
             fcid = list(fc)[0]
-            EDRLOG.log(u"Cached {}'s info with id={}".format(callsign, fcid), "DEBUG")
+            EDR_LOG.log(u"Cached {}'s info with id={}".format(callsign, fcid), "DEBUG")
             return fcid
 
         self.fcs_cache.set(callsign.lower(), None)
-        EDRLOG.log(u"No match on EDR. Temporary entry to be nice on EDR's server.", "DEBUG")
+        EDR_LOG.log(u"No match on EDR. Temporary entry to be nice on EDR's server.", "DEBUG")
         return None
 
     def are_bodies_stale(self, star_system):
@@ -303,17 +300,17 @@ class EDRSystems(object):
         stations = self.edsm_stations_cache.get(star_system.lower())
         cached = self.edsm_stations_cache.has_key(star_system.lower())
         if cached or stations:
-            EDRLOG.log(u"Stations for system {} are in the cache.".format(star_system), "DEBUG")
+            EDR_LOG.log(u"Stations for system {} are in the cache.".format(star_system), "DEBUG")
             return stations
 
         stations = self.edsm_server.stations_in_system(star_system)
         if stations:
             self.edsm_stations_cache.set(star_system.lower(), stations)
-            EDRLOG.log(u"Cached {}'s stations".format(star_system), "DEBUG")
+            EDR_LOG.log(u"Cached {}'s stations".format(star_system), "DEBUG")
             return stations
 
         self.edsm_stations_cache.set(star_system.lower(), None)
-        EDRLOG.log(u"No match on EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
+        EDR_LOG.log(u"No match on EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
         return None
 
     def persist(self):
@@ -654,7 +651,7 @@ class EDRSystems(object):
         common_star_classes = "o,b,a,f,g,k,m,n,l,t,tts,s,w,x,y,h".split(",")
         
         if star_type.lower() not in type_lut and star_type.lower() not in common_star_classes:
-            EDRLOG.log(u"Unrecognized star type: {}.".format(star_type), "WARNING")
+            EDR_LOG.log(u"Unrecognized star type: {}.".format(star_type), "WARNING")
         return type_lut.get(star_type.lower(), star_type)
         
 
@@ -688,51 +685,51 @@ class EDRSystems(object):
         marketInfo = self.edsm_markets_cache.get(marketId)
         cached = self.edsm_markets_cache.has_key(marketId)
         if cached or marketInfo:
-            EDRLOG.log(u"Market info for marketId {} is in the cache.".format(marketId), "DEBUG")
+            EDR_LOG.log(u"Market info for marketId {} is in the cache.".format(marketId), "DEBUG")
             return marketInfo
 
         marketInfo = self.edsm_server.market(marketId)
         if marketInfo:
             self.edsm_markets_cache.set(marketId, marketInfo)
-            EDRLOG.log(u"Cached {}'s market info".format(marketId), "DEBUG")
+            EDR_LOG.log(u"Cached {}'s market info".format(marketId), "DEBUG")
             return marketInfo
 
         self.edsm_markets_cache.set(marketId, None)
-        EDRLOG.log(u"No match on EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
+        EDR_LOG.log(u"No match on EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
         return None
 
     def shipyard(self, shipyardId):
         shipyardInfo = self.edsm_shipyards_cache.get(shipyardId)
         cached = self.edsm_shipyards_cache.has_key(shipyardId)
         if cached or shipyardInfo:
-            EDRLOG.log(u"shipyard info for shipyardId {} is in the cache.".format(shipyardId), "DEBUG")
+            EDR_LOG.log(u"shipyard info for shipyardId {} is in the cache.".format(shipyardId), "DEBUG")
             return shipyardInfo
 
         shipyardInfo = self.edsm_server.shipyard(shipyardId)
         if shipyardInfo:
             self.edsm_shipyards_cache.set(shipyardId, shipyardInfo)
-            EDRLOG.log(u"Cached {}'s shipyard info".format(shipyardId), "DEBUG")
+            EDR_LOG.log(u"Cached {}'s shipyard info".format(shipyardId), "DEBUG")
             return shipyardInfo
 
         self.edsm_shipyards_cache.set(shipyardId, None)
-        EDRLOG.log(u"No match on EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
+        EDR_LOG.log(u"No match on EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
         return None
 
     def outfitting(self, outfittingId):
         outfittingInfo = self.edsm_outfittings_cache.get(outfittingId)
         cached = self.edsm_outfittings_cache.has_key(outfittingId)
         if cached or outfittingInfo:
-            EDRLOG.log(u"outfitting info for outfittingId {} is in the cache.".format(outfittingId), "DEBUG")
+            EDR_LOG.log(u"outfitting info for outfittingId {} is in the cache.".format(outfittingId), "DEBUG")
             return outfittingInfo
 
         outfittingInfo = self.edsm_server.outfitting(outfittingId)
         if outfittingInfo:
             self.edsm_outfittings_cache.set(outfittingId, outfittingInfo)
-            EDRLOG.log(u"Cached {}'s outfitting info".format(outfittingId), "DEBUG")
+            EDR_LOG.log(u"Cached {}'s outfitting info".format(outfittingId), "DEBUG")
             return outfittingInfo
 
         self.edsm_outfittings_cache.set(outfittingId, None)
-        EDRLOG.log(u"No match on EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
+        EDR_LOG.log(u"No match on EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
         return None
 
 
@@ -862,12 +859,12 @@ class EDRSystems(object):
         parent_star = self.__parent_star(system_name, body)
         star_type = "???"
         if not parent_star:
-            EDRLOG.log("No parent star: {}".format(body.get("name", "unknown body")), "DEBUG")
+            EDR_LOG.log("No parent star: {}".format(body.get("name", "unknown body")), "DEBUG")
             return star_type
     
         raw_type = parent_star.get("subType", "???")
         if raw_type == "???":
-            EDRLOG.log("Weird star: {}".format(parent_star), "DEBUG")
+            EDR_LOG.log("Weird star: {}".format(parent_star), "DEBUG")
         return self.__star_type_lut(raw_type)
 
     def parent_star_distance(self, system_name, body):
@@ -931,7 +928,7 @@ class EDRSystems(object):
             biome.append(species)
             species_added = True
         elif cgenus == "unknown":
-            EDRLOG.log("Unknown genus: {}".format(genus), "WARNING")
+            EDR_LOG.log("Unknown genus: {}".format(genus), "WARNING")
             biome.append(species)
             species_added = True
         else:
@@ -1023,27 +1020,27 @@ class EDRSystems(object):
             # skip SAA complete scanned with no bio signals
             return {}
         
-        EDRLOG.log("Expected bio on planet {} in system {}".format(planet.get("name", "???"), system_name), "INFO")
+        EDR_LOG.log("Expected bio on planet {} in system {}".format(planet.get("name", "???"), system_name), "INFO")
         credits = {}
         species = []
         detected_genuses = planet.get("genuses", None)
         genuses = []
-        EDRLOG.log("Detected genuses: {}".format(detected_genuses), "INFO")
+        EDR_LOG.log("Detected genuses: {}".format(detected_genuses), "INFO")
         atmosphere = EDRSystems.canonical_atmosphere(planet)
-        EDRLOG.log("Atm: {}".format(atmosphere), "INFO")
+        EDR_LOG.log("Atm: {}".format(atmosphere), "INFO")
         gravity = planet.get("gravity", 100) / 9.81
-        EDRLOG.log("Gravity: {}".format(gravity), "INFO")
+        EDR_LOG.log("Gravity: {}".format(gravity), "INFO")
         mean_temperature = planet.get("surfaceTemperature", 1000)
-        EDRLOG.log("Temperature: {}".format(mean_temperature), "INFO")
+        EDR_LOG.log("Temperature: {}".format(mean_temperature), "INFO")
         planet_class = EDRSystems.canonical_planet_class(planet)
-        EDRLOG.log("Class: {}".format(planet_class), "INFO")
+        EDR_LOG.log("Class: {}".format(planet_class), "INFO")
         volcanism = planet["volcanismType"].lower() if planet.get("volcanismType", None) else ""
         luminosity = self.parent_star_luminosity(system_name, planet)
         star_type = self.parent_star_type(system_name, planet)
         distance_from_parent_star = self.parent_star_distance(system_name, planet)
         
-        EDRLOG.log("parent star type: {}".format(star_type), "INFO")
-        EDRLOG.log("distance from parent star: {}".format(distance_from_parent_star), "INFO")
+        EDR_LOG.log("parent star type: {}".format(star_type), "INFO")
+        EDR_LOG.log("distance from parent star: {}".format(distance_from_parent_star), "INFO")
 
         if atmosphere == "noatmosphere":
             '''
@@ -1094,7 +1091,7 @@ class EDRSystems(object):
             }
         
         if not EDRSystems.__planet_walkable(planet):
-            EDRLOG.log("High gravity or not landable => no bio expected", "INFO")
+            EDR_LOG.log("High gravity or not landable => no bio expected", "INFO")
             self.__add_missing_genuses(species, genuses, detected_genuses)
             return {
                 "species": species,
@@ -1435,8 +1432,8 @@ class EDRSystems(object):
 
         self.__add_missing_genuses(species, genuses, detected_genuses)
         
-        EDRLOG.log("Species: {}".format(species), "INFO")
-        EDRLOG.log("Genuses: {}".format(genuses), "INFO")
+        EDR_LOG.log("Species: {}".format(species), "INFO")
+        EDR_LOG.log("Genuses: {}".format(genuses), "INFO")
         
         return {
             "species": species,
@@ -1502,7 +1499,7 @@ class EDRSystems(object):
 
         the_body = self.body(system_name, body_name)
         if not the_body:
-            EDRLOG.log("No body for biology on: {}".format(system_name, body_name), "INFO")
+            EDR_LOG.log("No body for biology on: {}".format(system_name, body_name), "INFO")
             return {}
         return self.__expected_bio_on_planet(the_body, system_name)
 
@@ -2100,10 +2097,10 @@ class EDRSystems(object):
             if "until" in notam:
                 active &= js_epoch_now <= notam["until"]
             if active and "text" in notam:
-                EDRLOG.log(u"Active NOTAM: {}".format(notam["text"]), "DEBUG")
+                EDR_LOG.log(u"Active NOTAM: {}".format(notam["text"]), "DEBUG")
                 active_notams.append(_edr(notam["text"]))
             elif active and "l10n" in notam:
-                EDRLOG.log(u"Active NOTAM: {}".format(notam["l10n"]["default"]), "DEBUG")
+                EDR_LOG.log(u"Active NOTAM: {}".format(notam["l10n"]["default"]), "DEBUG")
                 active_notams.append(_edr(notam["l10n"]))
         return active_notams
 
@@ -2554,21 +2551,21 @@ class EDRSystems(object):
         cached = self.edsm_systems_within_radius_cache.has_key(key)
         if cached:
             if not systems:
-                EDRLOG.log(u"Systems within {} of system {} are not available for a while.".format(radius, star_system), "DEBUG")
+                EDR_LOG.log(u"Systems within {} of system {} are not available for a while.".format(radius, star_system), "DEBUG")
                 return None
             else:
-                EDRLOG.log(u"Systems within {} of system {} are in the cache.".format(radius, star_system), "DEBUG")
+                EDR_LOG.log(u"Systems within {} of system {} are in the cache.".format(radius, star_system), "DEBUG")
                 return sorted(systems, key = lambda i: i['distance'])
 
         systems = self.edsm_server.systems_within_radius(star_system, radius)
         if systems:
             systems = sorted(systems, key = lambda i: i['distance']) 
             self.edsm_systems_within_radius_cache.set(key, systems)
-            EDRLOG.log(u"Cached systems within {}LY of {}".format(radius, star_system), "DEBUG")
+            EDR_LOG.log(u"Cached systems within {}LY of {}".format(radius, star_system), "DEBUG")
             return systems
 
         self.edsm_systems_within_radius_cache.set(key, None)
-        EDRLOG.log(u"No results from EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
+        EDR_LOG.log(u"No results from EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
         return None
 
     def is_recent(self, timestamp, max_age):

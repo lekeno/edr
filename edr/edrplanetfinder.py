@@ -1,9 +1,9 @@
 import threading
 from random import shuffle, seed
 from edri18n import _
-from edrlog import EDRLog
+from edrlog import EDR_LOG
 
-EDRLOG = EDRLog()
+
 
 class EDRPlanetFinder(threading.Thread):
 
@@ -70,17 +70,17 @@ class EDRPlanetFinder(threading.Thread):
 
         if self.shuffle_systems:
             seed() # TODO should no longer be necessary
-            EDRLOG.log("Nearby: shuffling systems", "DEBUG")
+            EDR_LOG.log("Nearby: shuffling systems", "DEBUG")
             shuffle(systems)
 
         candidates = self.__search(systems, candidates)
         if not (candidates and candidates.get('prime', None)):
-            EDRLOG.log(u"Couldn't find any prime candidate so far. Trying again after a shuffle", "DEBUG")
+            EDR_LOG.log(u"Couldn't find any prime candidate so far. Trying again after a shuffle", "DEBUG")
             shuffle(systems)
             candidates = self.__search(systems, candidates)
 
         if not (candidates and candidates.get('prime', None)) and self.edr_systems.in_colonia(self.star_system):
-            EDRLOG.log(u"Couldn't find any candidate so far. Trying with key Colonia star systems", "DEBUG")
+            EDR_LOG.log(u"Couldn't find any candidate so far. Trying with key Colonia star systems", "DEBUG")
             key_colonia_star_systems = [ "Alberta", "Amatsuboshi", "Asura", "Aurora Astrum", "Benzaiten", "Centralis", "Coeus", "Colonia", "Deriso", "Desy", "Diggidiggi", "Dubbuennel", "Edge Fraternity Landing", "Einheriar", "Eol Procul Centauri", "Helgoland", "Kajuku", "Kinesi", "Kojeara", "Kopernik", "Los", "Luchtaine", "Magellan", "Mriya", "Pennsylvania", "Poe", "Randgnid", "Ratraii", "Saraswati", "Solitude", "Tir", "White Sun" ]
             for star_system in key_colonia_star_systems:
                 system = self.edr_systems.system(star_system)
@@ -101,10 +101,10 @@ class EDRPlanetFinder(threading.Thread):
         if not system:
             return candidates
 
-        EDRLOG.log(u"System {}".format(system), "DEBUG")
+        EDR_LOG.log(u"System {}".format(system), "DEBUG")
         possibility = self.checker.check_system(system)
         accessible = not system.get('requirePermit', False) or (system.get('requirePermit', False) and system['name'] in self.permits)
-        EDRLOG.log(u"System {}: possibility {}, accessible {}".format(system['name'], possibility, accessible), "DEBUG")
+        EDR_LOG.log(u"System {}: possibility {}, accessible {}".format(system['name'], possibility, accessible), "DEBUG")
         if not possibility or not accessible:
             return candidates
 
@@ -114,18 +114,18 @@ class EDRPlanetFinder(threading.Thread):
         candidate = self.__planet_in_system(system)
         if candidate:
             check_sc_distance = candidate['distanceToArrival'] <= self.sc_distance
-            EDRLOG.log(u"System {} has a candidate {}: sc_distance {}".format(system['name'], candidate['name'], check_sc_distance), "DEBUG")
+            EDR_LOG.log(u"System {} has a candidate {}: sc_distance {}".format(system['name'], candidate['name'], check_sc_distance), "DEBUG")
             if check_sc_distance:
                 trialed = system
                 trialed['planet'] = candidate
                 closest = self.edr_systems.closest_planet(trialed, candidates['prime'])
-                EDRLOG.log(u"Prime Trial {}, closest {}".format(system['name'], closest['name']), "DEBUG")
+                EDR_LOG.log(u"Prime Trial {}, closest {}".format(system['name'], closest['name']), "DEBUG")
                 candidates['prime'] = closest
             else:
                 trialed = system
                 trialed['planet'] = candidate
                 closest = self.edr_systems.closest_planet(trialed, candidates['alt'])
-                EDRLOG.log(u"Trial {}, closest {}".format(system['name'], closest['name']), "DEBUG")
+                EDR_LOG.log(u"Trial {}, closest {}".format(system['name'], closest['name']), "DEBUG")
                 candidates['alt'] = closest
         return candidates
 
@@ -136,7 +136,7 @@ class EDRPlanetFinder(threading.Thread):
             return candidates
         for system in systems:
             if self.trials > self.max_trials:
-                EDRLOG.log(u"Tried too many. Aborting here.", "DEBUG")
+                EDR_LOG.log(u"Tried too many. Aborting here.", "DEBUG")
                 break
 
             if self.exclude_center and self.star_system == system.get("name", None):
@@ -148,7 +148,7 @@ class EDRPlanetFinder(threading.Thread):
             self.checked_systems.append(system.get('name', ""))
 
             if candidates and candidates.get('prime', None):
-                EDRLOG.log(u"Prime found, breaking here.", "DEBUG")
+                EDR_LOG.log(u"Prime found, breaking here.", "DEBUG")
                 break
 
         return candidates        
@@ -160,13 +160,13 @@ class EDRPlanetFinder(threading.Thread):
                 continue
             
             if overall == None:
-                EDRLOG.log("Closest planet fit: found first candidate: {}".format(planet), "DEBUG")
+                EDR_LOG.log("Closest planet fit: found first candidate: {}".format(planet), "DEBUG")
                 overall = planet
             elif planet['distanceToArrival'] < overall['distanceToArrival']:
-                EDRLOG.log("Closest planet fit: found better candidate: {}".format(planet), "DEBUG")
+                EDR_LOG.log("Closest planet fit: found better candidate: {}".format(planet), "DEBUG")
                 overall = planet
             else:
-                EDRLOG.log("Closest planet fit: worse candidate: {}".format(planet), "DEBUG")
+                EDR_LOG.log("Closest planet fit: worse candidate: {}".format(planet), "DEBUG")
             
         return overall
 
@@ -183,7 +183,7 @@ class EDRPlanetFinder(threading.Thread):
 
         if self.shuffle_planets:
             seed() # TODO should no longer be necessary
-            EDRLOG.log("Nearby: shuffling bodies", "DEBUG")
+            EDR_LOG.log("Nearby: shuffling bodies", "DEBUG")
             shuffle(all_bodies)
 
         return self.closest_planet_fit(all_bodies, system['name'])

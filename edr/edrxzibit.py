@@ -1,33 +1,29 @@
 import json
-import re
-import os
-import edrlog
-import edmodule
+from edrlog import EDR_LOG
 from edri18n import _
 import utils2to3
 
-EDRLOG = edrlog.EDRLog()
 POWER_DATA = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'modules_power_data.json')).read())
 
 
 class EDRXzibit(object):
  
     def __init__(self, vehicle):
-        EDRLOG.log(u"Xzibit is checking your ship", "DEBUG")
+        EDR_LOG.log(u"Xzibit is checking your ship", "DEBUG")
         self.power_capacity = vehicle.power_capacity
-        EDRLOG.log(u" Power cap: {}".format(self.power_capacity), "DEBUG")
+        EDR_LOG.log(u" Power cap: {}".format(self.power_capacity), "DEBUG")
         self.per_prio = {"1": { "modules": []}, "2": { "modules": []}, "3": { "modules": []}, "4": { "modules": []}, "5": { "modules": []}}
         for slot in vehicle.slots:
             ed_module = vehicle.slots[slot]
-            EDRLOG.log(u" {}: {}".format(slot, ed_module), "DEBUG")
+            EDR_LOG.log(u" {}: {}".format(slot, ed_module), "DEBUG")
             if ed_module.is_valid():
                 prio = str(ed_module.priority)
-                EDRLOG.log(u"  added to prio {}".format(prio), "DEBUG")
+                EDR_LOG.log(u"  added to prio {}".format(prio), "DEBUG")
                 self.per_prio[prio]["modules"].append(ed_module)
 
     def assess_power_priorities(self):
         if not self.power_capacity:
-            EDRLOG.log(u"A ship without any power?!", "DEBUG")
+            EDR_LOG.log(u"A ship without any power?!", "DEBUG")
             return None
 
         assessment = {}
@@ -41,31 +37,31 @@ class EDRXzibit(object):
         threshold = self.power_capacity * percent
         within_modules = set()
         within_priorities = []
-        EDRLOG.log(u"Looking at what's functional within {}MW".format(threshold), "DEBUG")
+        EDR_LOG.log(u"Looking at what's functional within {}MW".format(threshold), "DEBUG")
         for pri in sorted(self.per_prio.keys()):
-            EDRLOG.log(u" P{} is next. Power draw: {}MW so far".format(pri, power_draw), "DEBUG")
+            EDR_LOG.log(u" P{} is next. Power draw: {}MW so far".format(pri, power_draw), "DEBUG")
             if power_draw > threshold:
-                EDRLOG.log(u" {} is over the cap {} => aborting".format(power_draw, threshold), "DEBUG")
+                EDR_LOG.log(u" {} is over the cap {} => aborting".format(power_draw, threshold), "DEBUG")
                 break
             
             tentative_within_modules = set()
             for ed_module in self.per_prio[pri]["modules"]:
                 if not ed_module.on and not ed_module.generic_name() in required:
-                    EDRLOG.log(u" skipping {}".format(ed_module), "DEBUG")
+                    EDR_LOG.log(u" skipping {}".format(ed_module), "DEBUG")
                     continue
                 tentative_within_modules.add(ed_module.generic_name())
                 power_draw += ed_module.power_draw
-                EDRLOG.log(u" adding {}. Power draw so far: {} vs. {}".format(ed_module, power_draw, threshold), "DEBUG")
+                EDR_LOG.log(u" adding {}. Power draw so far: {} vs. {}".format(ed_module, power_draw, threshold), "DEBUG")
                 
             if power_draw > threshold:
-                EDRLOG.log(u" {} is over the cap {} => not adding anything from {}".format(power_draw, threshold, tentative_within_modules), "DEBUG")
+                EDR_LOG.log(u" {} is over the cap {} => not adding anything from {}".format(power_draw, threshold, tentative_within_modules), "DEBUG")
                 break
             
             within_priorities.append(u"P{}".format(pri))
             within_modules |= tentative_within_modules
 
-        EDRLOG.log(u" within modules: {}".format(within_modules), "DEBUG")
-        EDRLOG.log(u" within priorities: {}".format(within_priorities), "DEBUG")
+        EDR_LOG.log(u" within modules: {}".format(within_modules), "DEBUG")
+        EDR_LOG.log(u" within priorities: {}".format(within_priorities), "DEBUG")
         return {"modules": within_modules, "priorities": within_priorities}
 
     def _assess_busted_powerplant(self):

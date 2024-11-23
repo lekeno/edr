@@ -17,9 +17,9 @@ from lrucache import LRUCache
 from edrafkdetector import EDRAfkDetector
 from edtime import EDTime
 import backoff
-from edrlog import EDRLog
+from edrlog import EDR_LOG
 
-EDRLOG = EDRLog()
+
 
 class EDRDiscordSimpleMessage(object):
     def __init__(self, message):
@@ -155,7 +155,7 @@ class EDRDiscordWebhook(object):
                 resp = EDRDiscordWebhook.SESSION.post(self.webhook_url, json=payload_json, files=files)
                 return self.__check_response(resp)
             except requests.exceptions.RequestException as e:
-                EDRLOG.log(u"ConnectionException {} for POST Discord Webhook: attempts={}".format(e, attempts), u"WARNING")
+                EDR_LOG.log(u"ConnectionException {} for POST Discord Webhook: attempts={}".format(e, attempts), u"WARNING")
                 last_connection_exception = e
         raise last_connection_exception
     
@@ -703,13 +703,13 @@ class EDRDiscordIntegration(object):
         cfg = self.__combined_cfg(from_cmdr, channel)
 
         if cfg.get("blocked", False):
-            EDRLOG.log(u"blocked in player cfg: {}".format(cfg), u"DEBUG")
+            EDR_LOG.log(u"blocked in player cfg: {}".format(cfg), u"DEBUG")
             return True
 
         if cfg["matching"]:
             try:
                 if not(any(re.compile(regex).match(message) for regex in cfg["matching"])):
-                    EDRLOG.log(u"no matching in player cfg: {} {}".format(message, cfg["matching"]), u"DEBUG")
+                    EDR_LOG.log(u"no matching in player cfg: {} {}".format(message, cfg["matching"]), u"DEBUG")
                     return True
             except:
                 pass
@@ -717,7 +717,7 @@ class EDRDiscordIntegration(object):
         if cfg["mismatching"]:
             try:
                 if any(re.compile(regex).match(message) for regex in cfg["mismatching"]):
-                    EDRLOG.log(u"mismatching in player cfg: {} {}".format(message, cfg["mismatching"]), u"DEBUG")
+                    EDR_LOG.log(u"mismatching in player cfg: {} {}".format(message, cfg["mismatching"]), u"DEBUG")
                     return True
             except:
                 pass
@@ -726,7 +726,7 @@ class EDRDiscordIntegration(object):
             profile = self.edrcmdrs.cmdr(from_cmdr, autocreate=False, check_inara_server=True)
             karma = profile.karma if profile else 0
             karma_check = karma < cfg["min_karma"] or karma > cfg["max_karma"]
-            EDRLOG.log(u"Karma check is {} ({} < karma < {})".format(karma_check, cfg["min_karma"], cfg["max_karma"]), u"DEBUG")
+            EDR_LOG.log(u"Karma check is {} ({} < karma < {})".format(karma_check, cfg["min_karma"], cfg["max_karma"]), u"DEBUG")
             return karma_check
         
         return False

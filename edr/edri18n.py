@@ -8,7 +8,7 @@ import sys
 
 import l10n  # Importing localization module
 import utils2to3
-from edrlog import EDRLog  # Importing EDRLog module for logging
+from edrlog import EDR_LOG
 
 # Constants
 CONTEXT_SEPARATOR = u"|"  # Separator used for contextual message
@@ -16,7 +16,7 @@ L10N_DIR = utils2to3.abspathmaker(__file__, 'l10n')  # Directory for localizatio
 LANG_LIST = ["fr", "it", "de"]  # List of supported languages
 
 # Logger
-EDRLOG = EDRLog()  # Creating an instance of EDRLog for logging
+  # Creating an instance of EDRLog for logging
 
 # Global variables
 language = None
@@ -43,22 +43,22 @@ def _get_sys_lang():
             select_lang = None
     except AttributeError as e:
         # Handling AttributeError when attempting to retrieve preferred languages
-        EDRLOG.error("AttributeError occurred: {}.".format(e), "DEBUG")
+        EDR_LOG.log("AttributeError occurred: {}.".format(e), "ERROR")
         select_lang = None
     except (IndexError, TypeError, KeyError) as e:
         # Handling specific exceptions
-        EDRLOG.log(u"Error occurred: {}.".format(e), "DEBUG")
+        EDR_LOG.log(u"Error occurred: {}.".format(e), "ERROR")
         select_lang = None
     except Exception as e:
         # Handling other exceptions
-        EDRLOG.log(u"An unexpected error occurred: {}.".format(e), "DEBUG")
+        EDR_LOG.log(u"An unexpected error occurred: {}.".format(e), "ERROR")
         select_lang = None
     finally:
         # Logging the acceptance of the system language for translation
         if select_lang is not None:
-            EDRLOG.log(u"The system language ({}) is accepted for translation.".format(select_lang), "INFO")
+            EDR_LOG.log(u"The system language ({}) is accepted for translation.".format(select_lang), "INFO")
         else:
-            EDRLOG.log(u"The system language is not accepted for translation, English will be used.", "INFO")
+            EDR_LOG.log(u"The system language is not accepted for translation, English will be used.", "INFO")
 
     return select_lang
 
@@ -83,16 +83,16 @@ def set_language(lang):
         # Set custom language if provided
         language = lang
         translate = gettext.translation('edr', L10N_DIR, fallback=True, languages=[language])
-        EDRLOG.log(u"The EDMC language parameter is set to custom: lang {}.".format(language), "INFO")
+        EDR_LOG.log(u"The EDMC language parameter is set to custom: lang {}.".format(language), "INFO")
     elif _sys_lang:
         # Set default language if available
         language = _sys_lang
         translate = gettext.translation('edr', L10N_DIR, fallback=True, languages=[language])
-        EDRLOG.log(u"The EDMC language parameter is set to default.", "INFO")
+        EDR_LOG.log(u"The EDMC language parameter is set to default.", "INFO")
     else:
         # Set fallback to English if neither custom nor system language available
         translate = gettext.translation('edr', L10N_DIR, fallback=True)
-        EDRLOG.log(u"Failed to set EDMC language parameter, falling back to English.", "INFO")
+        EDR_LOG.log(u"Failed to set EDMC language parameter, falling back to English.", "INFO")
 
 
 def ugettext(message):  # Function to translate a message

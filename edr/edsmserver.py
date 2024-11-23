@@ -3,12 +3,12 @@ from __future__ import absolute_import
 import json
 
 from edrconfig import EDRConfig
-from edrlog import EDRLog
+from edrlog import EDR_LOG
 
 import requests
 
 
-EDRLOG = EDRLog()
+
 
 class EDSMServer(object):
 
@@ -42,7 +42,7 @@ class EDSMServer(object):
         results = self.__get(endpoint, params) 
         
         if not results:
-            EDRLOG.log(u"Empty systems within radius.", "INFO")
+            EDR_LOG.log(u"Empty systems within radius.", "INFO")
             return []
         sorted_results = sorted(results, key=lambda t: t["distance"])
         return sorted_results
@@ -63,7 +63,7 @@ class EDSMServer(object):
         results = self.__get(endpoint, params)
 
         if not results or not results.get('stations', None):
-            EDRLOG.log(u"No stations in system {}.".format(system_name), "INFO")
+            EDR_LOG.log(u"No stations in system {}.".format(system_name), "INFO")
             return []
         sorted_results = sorted(results['stations'], key=lambda t: t["distanceToArrival"])
         return sorted_results
@@ -111,11 +111,11 @@ class EDSMServer(object):
                 attempts -= 1
                 resp = EDSMServer.SESSION.get(endpoint, params=params)
                 if resp.status_code != requests.codes.ok:
-                    EDRLOG.log(u"Failed to get {} from EDSM: {}.".format(params, resp.status_code), "ERROR")
+                    EDR_LOG.log(u"Failed to get {} from EDSM: {}.".format(params, resp.status_code), "ERROR")
                     return None
                 
                 return json.loads(resp.content)
             except requests.exceptions.RequestException as e:
                 last_connection_exception = e
-                EDRLOG.log(u"ConnectionException {} for GET EDSM: attempts={}".format(e, attempts), u"WARNING")
+                EDR_LOG.log(u"ConnectionException {} for GET EDSM: attempts={}".format(e, attempts), u"WARNING")
         raise last_connection_exception 

@@ -3,9 +3,9 @@ from __future__ import absolute_import
 import collections
 import datetime
 
-from edrlog import EDRLog
+from edrlog import EDR_LOG
 
-EDRLOG = EDRLog()
+
 
 class LRUCache(object):
     def __init__(self, max_size, max_age_seconds):
@@ -61,7 +61,7 @@ class LRUCache(object):
                 self.cache[key] = self.cache.pop(key)
                 return entry["content"]
             else:
-                EDRLOG.log(u"Stale entry for {key}: {now} - {dt} = {diff} > {mxa}, {content}".format(key=key, now=datetime.datetime.now(), dt=entry["datetime"], diff=(datetime.datetime.now() - entry["datetime"]), mxa=self.max_age, content=entry["content"]), "DEBUG")
+                EDR_LOG.log(u"Stale entry for {key}: {now} - {dt} = {diff} > {mxa}, {content}".format(key=key, now=datetime.datetime.now(), dt=entry["datetime"], diff=(datetime.datetime.now() - entry["datetime"]), mxa=self.max_age, content=entry["content"]), "DEBUG")
                 self.cache.pop(key)
         except KeyError:
             pass
