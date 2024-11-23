@@ -1119,7 +1119,7 @@ class EDRRemlokHelmet(object):
                 c_item = c_item[:-5]
             if c_item.startswith("microresource_of:#content=$"):
                 c_item = c_item[len("microresource_of:#content=$"):]
-            c_item = re.sub("[ \-_]", "", c_item)
+            c_item = re.sub(r"[ -_]", "", c_item)
         
         if c_item in ODYSSEY_MATS:
             return self.__describe_odyssey_material(c_item, inventory)
@@ -1319,7 +1319,7 @@ class EDRRemlokHelmet(object):
                 c_item = c_item[:-5]
             if c_item.startswith("microresource_of:#content=$"):
                 c_item = c_item[len("microresource_of:#content=$"):]
-            c_item = re.sub("[ \-_]", "", c_item)
+            c_item = re.sub(r"[ -_]", "", c_item)
         
         if c_item in ODYSSEY_MATS:
             return self.__how_useful_odyssey_material(c_item)
