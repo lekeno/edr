@@ -1894,7 +1894,7 @@ class EDRSystems(object):
             value = {
                 "name": system_name,
                 "estimatedValue": totalHonkValue,
-                "estimatedValue": totalMappedValue,
+                "estimatedValueMapped": totalMappedValue,
                 "valuableBodies": valuable_bodies,
             }
 
