@@ -1550,7 +1550,7 @@ class EDRSystems(object):
             "BodyID": {"k": "bodyId", "v": lambda v: v},
             "StarSystem": None,
             "SystemAddress": None,
-            "StarType": {"k": "type", "v": lambda v: v},
+            "StarType": {"k": "subType", "v": lambda v: v},  # should have been type but this has been mistakenly squatted in the past
             "StellarMass": {"k": "solarMasses", "v": lambda v: v},
             "Age_MY": {"k": "age", "v": lambda v: v},
             "Luminosity": None,
@@ -1570,7 +1570,7 @@ class EDRSystems(object):
             "AtmosphereType": {"k": "atmosphereType", "v": lambda v: v if v and v != "None" else "No atmosphere"},
             "Composition": {"k": "solidComposition", "v": lambda v: {m:p*100 for m,p in v.items()} if v else None},
             "PlanetClass": {"k": "subType", "v": lambda v: v},
-            "StarType": {"k": "subType", "v": lambda v: v},
+            "StarClass": {"k": "class", "v": lambda v: v}, # should have been subType but this has been mistakenly squatted in the past
             "SurfacePressure": {"k": "surfacePressure", "v": lambda v: v/101325},
             "WasDiscovered": {"k": "wasDiscovered", "v": lambda v: v},
             "WasMapped": {"k": "wasMapped", "v": lambda v: v},
