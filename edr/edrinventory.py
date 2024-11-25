@@ -13,7 +13,6 @@ from edtime import EDTime
 #TODO anarchy only microresources...
 ODYSSEY_MATS = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'odyssey_mats.json')).read())
 
-# TODO add encoded data
 HORIZONS_MATS = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'horizons_mats.json')).read())
 
 MATERIALS_LUT = {
@@ -955,8 +954,8 @@ class EDRInventory(object):
     @staticmethod
     def readable(name):
         cname = name.lower()
-        if cname in EDRInventory.MATERIALS_LUT:
-           return EDRInventory.MATERIALS_LUT[cname].get("localized", name)
+        if cname in MATERIALS_LUT:
+           return MATERIALS_LUT[cname].get("localized", name)
         return name
 
     def __c_cat(self, category):
