@@ -26,7 +26,7 @@ if sys.platform == "win32":
         sys.path.append(_overlay_dir)
 
 try:
-    import edmcoverlay
+    from EDMCOverlay import edmcoverlay
 except ImportError:
     raise Exception(str(sys.path))
 
