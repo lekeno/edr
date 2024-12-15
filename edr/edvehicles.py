@@ -1154,6 +1154,18 @@ class EDCobraMkIV(EDVehicle):
         self.hull_hardness = 35
         self.hull_base_strength = 216 / 1.8
 
+class EDCobraMkV(EDVehicle):
+    def __init__(self):
+        super(EDCobraMkV, self).__init__()
+        self.type = u'Cobra Mk V'
+        self.size = EDVehicleSize.SMALL
+        self.seats = 3
+        self.value = 1989460
+        self.shield_base_strength = 160
+        self.hull_mass = 150
+        self.hull_hardness = 40
+        self.hull_base_strength = 324 / 1.8
+
 class EDKeelback(EDVehicle):
     def __init__(self):
         super(EDKeelback, self).__init__()
@@ -1431,6 +1443,7 @@ class EDVehicleFactory(object):
         "federation_gunship": EDFederalGunship,
         "viper_mkiv": EDViperMkIV,
         "cobramkiv": EDCobraMkIV,
+        "cobramkv": EDCobraMkV,
         "independant_trader": EDKeelback,
         "asp_scout": EDAspScout,
         "typex": EDAllianceChieftain,

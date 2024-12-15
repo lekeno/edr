@@ -38,6 +38,8 @@ class EDRFleet(object):
         "viper 4": "viper_mkiv",
         "cobra iv": "cobramkiv",
         "cobra 4": "cobramkiv",
+        "cobra v": "cobramkv",
+        "cobra 5": "cobramkv",
         "keelie": "independant_trader",
         "keelback": "independant_trader",
         "asps": "asp_scout",
