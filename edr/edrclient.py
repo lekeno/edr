@@ -31,7 +31,7 @@ from edsitu import EDPlanetaryLocation, EDLocation
 from edrserver import EDRServer, CommsJammedError
 from edsmserver import EDSMServer
 from audiofeedback import EDRSoundEffects
-from edrlog import EDRLog
+from edrlog import EDR_LOG
 from ingamemsg import InGameMsg
 from edrtogglingpanel import EDRTogglingPanel
 from edrsystems import EDRSystems
@@ -57,7 +57,7 @@ from edrcommands import EDRCommands
 import edrroutes
 from edrutils import simplified_body_name, pretty_print_number
 
-EDRLOG = EDRLog()
+
 
 class EDRClient(object):
     SFX = EDRSoundEffects()
@@ -67,7 +67,7 @@ class EDRClient(object):
         set_language(config.get_str("language"))
 
         self.edr_version = edr_config.edr_version()
-        EDRLOG.log(u"Version {}".format(self.edr_version), "INFO")
+        EDR_LOG.log(u"Version {}".format(self.edr_version), "INFO")
 
         self.enemy_alerts_pledge_threshold = edr_config.enemy_alerts_pledge_threshold()
         self.system_novelty_threshold = edr_config.system_novelty_threshold()
@@ -264,13 +264,13 @@ class EDRClient(object):
             return
 
         if self.is_obsolete(version_range["min"]):
-            EDRLOG.log(u"Mandatory update! {version} vs. {min}"
+            EDR_LOG.log(u"Mandatory update! {version} vs. {min}"
                        .format(version=self.edr_version, min=version_range["min"]), "ERROR")
             self.mandatory_update = True
             self.autoupdate_pending = version_range.get("autoupdatable", False)
             self.__status_update_pending()
         elif self.is_obsolete(version_range["latest"]):
-            EDRLOG.log(u"EDR update available! {version} vs. {latest}"
+            EDR_LOG.log(u"EDR update available! {version} vs. {latest}"
                        .format(version=self.edr_version, latest=version_range["latest"]), "INFO")
             self.mandatory_update = False
             self.autoupdate_pending = version_range.get("autoupdatable", False)
@@ -418,7 +418,7 @@ class EDRClient(object):
 
     def pledged_to(self, power, time_pledged=0):
         if self.server.is_anonymous():
-            EDRLOG.log(u"Skipping pledged_to call since the user is anonymous.", "INFO")
+            EDR_LOG.log(u"Skipping pledged_to call since the user is anonymous.", "INFO")
             return
         nodotpower = power.replace(".", "") if power else None
         if self.edrcmdrs.player_pledged_to(nodotpower, time_pledged):
@@ -442,7 +442,7 @@ class EDRClient(object):
         return (self.is_logged_in() and self.server.is_anonymous())
 
     def warmup(self):
-        EDRLOG.log(u"Warming up client.", "INFO")
+        EDR_LOG.log(u"Warming up client.", "INFO")
         details = []
         if not self.crimes_reporting:
             details.append(_(u"Crimes reporting is off (!crimes on to re-enable)"))
@@ -608,7 +608,7 @@ class EDRClient(object):
     def prefs_changed(self):
         set_language(config.get_str("language"))
         if self.mandatory_update:
-            EDRLOG.log(u"Out-of-date client, aborting.", "ERROR")
+            EDR_LOG.log(u"Out-of-date client, aborting.", "ERROR")
             self.__status_update_pending()
             return
 
@@ -622,10 +622,10 @@ class EDRClient(object):
         config.set("EDRRedactMyInfo", self.anonymous_reports)
         config.set("EDRCrimesReporting", "True" if self.crimes_reporting else "False")
         config.set("EDRFCJumpPSA", self.fc_jump_psa)
-        EDRLOG.log(u"Audio cues: {}, {}".format(config.get_str("EDRAudioFeedback"),
+        EDR_LOG.log(u"Audio cues: {}, {}".format(config.get_str("EDRAudioFeedback"),
                                                 config.get_str("EDRAudioFeedbackVolume")), "DEBUG")
-        EDRLOG.log(u"Anonymous reports: {}".format(config.get_str("EDRRedactMyInfo")), "DEBUG")
-        EDRLOG.log(u"Crimes reporting: {}".format(config.get_str("EDRCrimesReporting")), "DEBUG")
+        EDR_LOG.log(u"Anonymous reports: {}".format(config.get_str("EDRRedactMyInfo")), "DEBUG")
+        EDR_LOG.log(u"Crimes reporting: {}".format(config.get_str("EDRCrimesReporting")), "DEBUG")
         self.ui.refresh_theme()
         self.login()
 
@@ -641,7 +641,7 @@ class EDRClient(object):
         self.edrsystems.system_id(fsdjump_event['StarSystem'], may_create=True, coords=fsdjump_event.get("StarPos", None))
         self.edrfactions.process_jump_event(fsdjump_event)
         facts = self.edrresourcefinder.assess_jump(fsdjump_event, self.player.inventory)
-        header = _('Rare materials in {} (USS-HGE/EE, Mission Rewards)'.format(fsdjump_event['StarSystem']))
+        header = _('Rare materials in {} (USS-HGE/EE, Mission Rewards)').format(fsdjump_event['StarSystem'])
         if not facts:
             facts = self.edrboi.bodies_of_interest(fsdjump_event['StarSystem'])
             header = _('Noteworthy stellar bodies in {}').format(fsdjump_event['StarSystem'])
@@ -772,16 +772,16 @@ class EDRClient(object):
         outcome |= self.player.update_body_if_obsolete(None)
 
         if not self.player.routenav.leave_body(star_system, body_name):
-            EDRLOG.log("RouteNav: no update upon leaving a body {} in {}".format(body_name, star_system), "DEBUG")
+            EDR_LOG.log("RouteNav: no update upon leaving a body {} in {}".format(body_name, star_system), "DEBUG")
             return outcome
         
         wp_sys_name = self.player.routenav.current_wp_sysname()
         if not wp_sys_name or wp_sys_name != star_system:
-            EDRLOG.log("RouteNav: updated from leave body but system {} is not the current waypoint {}".format(star_system, wp_sys_name), "DEBUG")
+            EDR_LOG.log("RouteNav: updated from leave body but system {} is not the current waypoint {}".format(star_system, wp_sys_name), "DEBUG")
             return outcome
         
         details = self.player.routenav.describe_wp_bodies()
-        EDRLOG.log("RouteNav: waypoint bodies: {}".format(details), "DEBUG")
+        EDR_LOG.log("RouteNav: waypoint bodies: {}".format(details), "DEBUG")
         if details:
             self.notify_with_details(_("EDR Journey: survey targets"), details, clear_before=True)
         return outcome
@@ -875,7 +875,7 @@ class EDRClient(object):
             return
         fc_report = self.edrfssinsights.fleet_carriers_report(force_reporting)
         if fc_report is not None:
-            EDRLOG.log(u"Registering FSS signals; fc_report: {} with sys_address {} and star_system {}".format(fc_report, system_address, override_star_system), "DEBUG")
+            EDR_LOG.log(u"Registering FSS signals; fc_report: {} with sys_address {} and star_system {}".format(fc_report, system_address, override_star_system), "DEBUG")
             fc_report["reportedBy"] = self.player.name
             if self.edrsystems.update_fc_presence(fc_report):
                 self.edrfssinsights.reported = True
@@ -1267,7 +1267,7 @@ class EDRClient(object):
             bio_info = self.edrsystems.biology_on(star_system, body_name)
 
         if not (bio_info and "species" in bio_info):
-            EDRLOG.log("No bio on {}".format(bio_info), "INFO")
+            EDR_LOG.log("No bio on {}".format(bio_info), "INFO")
             details.append(_("Expected Bio: none"))
             self.__notify(header, details, clear_before=True)
             return
@@ -1331,14 +1331,14 @@ class EDRClient(object):
             return
         
         if self.player.on_foot:
-            EDRLOG.log("Player is on foot, so no cutom POI from codex entry needed (not coming from the com scanner", "INFO")
+            EDR_LOG.log("Player is on foot, so no cutom POI from codex entry needed (not coming from the com scanner", "INFO")
             return
         now = datetime.datetime.now()
         name = entry.get("Name_Localised", "Comp.Scan")
         title = "{} ({})".format(name, now.strftime("%H:%M:%S"))
         
         if "Latitude" not in entry or "Longitude" not in entry:
-            EDRLOG.log("No Lat/Lon for codex", "WARNING")
+            EDR_LOG.log("No Lat/Lon for codex", "WARNING")
             return
 
         poi = {
@@ -1350,7 +1350,7 @@ class EDRClient(object):
         system_name = entry["System"]
         body_name = self.edrsystems.body_name_with_id(system_name, entry["BodyID"])
         if not body_name:
-            EDRLOG.log("No body name found for codex with {}, {}".format(system_name, entry["BodyID"]), "WARNING")
+            EDR_LOG.log("No body name found for codex with {}, {}".format(system_name, entry["BodyID"]), "WARNING")
             return
 
         if self.edrboi.add_custom_poi(system_name, body_name, poi):
@@ -1382,7 +1382,7 @@ class EDRClient(object):
         distance = destination.distance(current, radius) if radius else None
         
         if distance is None:
-            EDRLOG.log(u"No distance info out of System:{}, Body:{}, Place: {}, Radius:{}".format(location.star_system, location.body, location.place, radius), "DEBUG")
+            EDR_LOG.log(u"No distance info out of System:{}, Body:{}, Place: {}, Radius:{}".format(location.star_system, location.body, location.place, radius), "DEBUG")
             return
         
         threshold = 0.1
@@ -1451,7 +1451,7 @@ class EDRClient(object):
             bearing = poi.bearing(current)
             distance = poi.distance(current, radius) * 1000 if radius else None
             if distance is None:
-                EDRLOG.log(u"No distance info out of System:{}, Body:{}, Place: {}, Radius:{}".format(location.star_system, location.body, location.place, radius), "DEBUG")
+                EDR_LOG.log(u"No distance info out of System:{}, Body:{}, Place: {}, Radius:{}".format(location.star_system, location.body, location.place, radius), "DEBUG")
                 continue
             distances.append(distance)
             distances_summary += _(" [{loc_index}]: {dist}m  >{head:03}<").format(loc_index=i, dist=math.floor(distance), head=bearing)
@@ -1466,16 +1466,16 @@ class EDRClient(object):
 
     def check_system(self, star_system, may_create=False, coords=None):
         try:
-            EDRLOG.log(u"Check system called: {}".format(star_system), "INFO")
+            EDR_LOG.log(u"Check system called: {}".format(star_system), "INFO")
             details = []
             notams = self.edrsystems.active_notams(star_system, may_create, coords)
             if notams:
-                EDRLOG.log(u"NOTAMs for {}: {}".format(star_system, notams), "DEBUG")
+                EDR_LOG.log(u"NOTAMs for {}: {}".format(star_system, notams), "DEBUG")
                 details += notams
             
             if self.edrsystems.has_sitrep(star_system):
                 if star_system == self.player.star_system and self.player.in_bad_neighborhood():
-                    EDRLOG.log(u"Sitrep system is known to be an anarchy. Crimes aren't reported.", "INFO")
+                    EDR_LOG.log(u"Sitrep system is known to be an anarchy. Crimes aren't reported.", "INFO")
                     # Translators: this is shown via the overlay if the system of interest is an Anarchy (current system or !sitrep <system>)
                     details.append(_c(u"Sitrep|Anarchy: not all crimes are reported."))
                 if self.edrsystems.has_recent_activity(star_system):
@@ -1516,7 +1516,7 @@ class EDRClient(object):
                 self.SFX.mining()
         
         if len(self.player.mining_stats.last["minerals_stats"]) > 0 and self.player.mining_stats.last["proportion"]:
-            self.status = _(u"[Yield: {:.2f}%]   [Items: {} ({:.0f}/hour)]".format(self.player.mining_stats.last["proportion"], self.player.mining_stats.refined_nb, self.player.mining_stats.item_per_hour()))
+            self.status = _(u"[Yield: {:.2f}%]   [Items: {} ({:.0f}/hour)]").format(self.player.mining_stats.last["proportion"], self.player.mining_stats.refined_nb, self.player.mining_stats.item_per_hour())
     
     def bounty_hunting_guidance(self, turn_off=False):
         if self.visual_feedback:
@@ -1529,7 +1529,7 @@ class EDRClient(object):
         
         bounty = EDFineOrBounty(self.player.bounty_hunting_stats.last["bounty"])
         credits_per_hour = EDFineOrBounty(int(self.player.bounty_hunting_stats.credits_per_hour()))
-        self.status = _(u"[Last: {} cr [{}]]   [Totals: {} cr/hour ({} awarded)]".format(bounty.pretty_print(), self.player.bounty_hunting_stats.last["name"], self.player.bounty_hunting_stats.awarded_nb, credits_per_hour.pretty_print()))
+        self.status = _(u"[Last: {} cr [{}]]   [Totals: {} cr/hour ({} awarded)]").format(bounty.pretty_print(), self.player.bounty_hunting_stats.last["name"], self.player.bounty_hunting_stats.awarded_nb, credits_per_hour.pretty_print())
 
     def target_guidance(self, target_event, turn_off=False):
         if turn_off or (not target_event or not self.player.target_pilot() or not self.player.target_pilot().vehicle):
@@ -1546,7 +1546,7 @@ class EDRClient(object):
             subsys_details = tgt.subsystem_details(target_event["Subsystem"])
 
         if not meaningful:
-            EDRLOG.log("Target info is not that interesting, skipping", "DEBUG")
+            EDR_LOG.log("Target info is not that interesting, skipping", "DEBUG")
             return False
 
         shield_label = u"{:.4g}".format(tgt.shield_health) if tgt.shield_health else u"-"
@@ -1576,7 +1576,7 @@ class EDRClient(object):
     def notam(self, star_system):
         summary = self.edrsystems.active_notams(star_system)
         if summary:
-            EDRLOG.log(u"NOTAMs for {}: {}".format(star_system, summary), "DEBUG")
+            EDR_LOG.log(u"NOTAMs for {}: {}".format(star_system, summary), "DEBUG")
             # Translators: this is the heading to show any active NOTAM for a given system {} 
             self.__sitrep(_(u"NOTAM for {}").format(star_system), summary)
         else:
@@ -1599,11 +1599,11 @@ class EDRClient(object):
         try:
             profile = self.cmdr(cmdr_name, check_inara_server=False)
             if not (profile is None or profile.cid is None):
-                EDRLOG.log(u"Cmdr {cmdr} known as id={cid}".format(cmdr=cmdr_name,
+                EDR_LOG.log(u"Cmdr {cmdr} known as id={cid}".format(cmdr=cmdr_name,
                                                                 cid=profile.cid), "DEBUG")
                 return profile.cid
 
-            EDRLOG.log(u"Failed to retrieve/create cmdr {}".format(cmdr_name), "ERROR")
+            EDR_LOG.log(u"Failed to retrieve/create cmdr {}".format(cmdr_name), "ERROR")
             return None
         except CommsJammedError:
             self.__commsjammed()
@@ -2119,24 +2119,24 @@ class EDRClient(object):
                 distance = self.edrsystems.distance(origin, event["starSystem"])
                 threshold = self.realtime_params[kind]["max_distance"]
                 if distance > threshold:
-                    EDRLOG.log(u"EDR alert not worthy. Distance {} between systems {} and {} exceeds threshold {}".format(distance, origin, event["starSystem"], threshold), "DEBUG")
+                    EDR_LOG.log(u"EDR alert not worthy. Distance {} between systems {} and {} exceeds threshold {}".format(distance, origin, event["starSystem"], threshold), "DEBUG")
                     return False
             except ValueError:
-                EDRLOG.log(u"Can't compute distance between systems {} and {}: unknown system(s)".format(self.player.star_system, event["starSystem"]), "WARNING")
+                EDR_LOG.log(u"Can't compute distance between systems {} and {}: unknown system(s)".format(self.player.star_system, event["starSystem"]), "WARNING")
                 pass
         if self.realtime_params[kind]["min_bounty"]:
             if "bounty" not in event:
                 return False
             if event["bounty"] < self.realtime_params[kind]["min_bounty"]:
-                EDRLOG.log(u"EDR alert not worthy. Bounty {} does not exceeds threshold {}".format(event["bounty"], self.realtime_params[kind]["min_bounty"]), "DEBUG")
+                EDR_LOG.log(u"EDR alert not worthy. Bounty {} does not exceeds threshold {}".format(event["bounty"], self.realtime_params[kind]["min_bounty"]), "DEBUG")
                 return False
         return self.novel_enough_alert(event["cmdr"].lower(), event)
 
     def _summarize_realtime_alert(self, kind, event):
         summary =  []
-        EDRLOG.log(u"realtime {} alerts, handling {}".format(kind, event), "DEBUG")
+        EDR_LOG.log(u"realtime {} alerts, handling {}".format(kind, event), "DEBUG")
         if not self._worthy_alert(kind, event):
-            EDRLOG.log(u"Skipped realtime {} event because it wasn't worth alerting about: {}.".format(kind, event), "DEBUG")
+            EDR_LOG.log(u"Skipped realtime {} event because it wasn't worth alerting about: {}.".format(kind, event), "DEBUG")
         else:
             location = EDLocation(event["starSystem"], place=event["place"], body=event.get("body", None))
             copy(event["starSystem"])
@@ -2172,14 +2172,14 @@ class EDRClient(object):
             profile = self.cmdr(cmdr_name, autocreate, check_inara_server=True)
             if profile:
                 self.status = _(u"got info about {}").format(cmdr_name)
-                EDRLOG.log(u"Who {} : {}".format(cmdr_name, profile.short_profile(self.player.powerplay)), "INFO")
+                EDR_LOG.log(u"Who {} : {}".format(cmdr_name, profile.short_profile(self.player.powerplay)), "INFO")
                 legal = self.edrlegal.summarize(profile.cid)
                 details = [profile.short_profile(self.player.powerplay)]
                 if legal:
                     details.append(legal["overview"])
                 self.__intel(_(u"Intel about {}").format(cmdr_name), details, clear_before=True, legal=legal)
             else:
-                EDRLOG.log(u"Who {} : no info".format(cmdr_name), "INFO")
+                EDR_LOG.log(u"Who {} : no info".format(cmdr_name), "INFO")
                 self.__intel(_(u"Intel about {}").format(cmdr_name), [_("No info").format(cmdr=cmdr_name)], clear_before=True)
         except CommsJammedError:
             self.__commsjammed()    
@@ -2209,13 +2209,13 @@ class EDRClient(object):
 
     def blip(self, cmdr_name, blip, system_wide=False):
         if self.player.in_solo() and not system_wide:
-            EDRLOG.log(u"Skipping blip since the user is in solo (unexpected).", "INFO")
+            EDR_LOG.log(u"Skipping blip since the user is in solo (unexpected).", "INFO")
             return False
 
         cmdr_id = self.cmdr_id(cmdr_name)
         if cmdr_id is None:
             self.status = _(u"no cmdr id (contact).")
-            EDRLOG.log(u"Can't submit blip (no cmdr id for {}).".format(cmdr_name), "ERROR")
+            EDR_LOG.log(u"Can't submit blip (no cmdr id for {}).".format(cmdr_name), "ERROR")
             its_actually_fine = self.is_anonymous()
             return its_actually_fine
 
@@ -2248,14 +2248,14 @@ class EDRClient(object):
                 elif self.player.in_open() and self.is_anonymous():
                     self.advertise_full_account(_("You could have helped other EDR users by reporting this enemy."))
             else:
-                EDRLOG.log(u"Skipping warning since a warning was recently shown.", "INFO")
+                EDR_LOG.log(u"Skipping warning since a warning was recently shown.", "INFO")
 
         if not self.novel_enough_blip(cmdr_id, blip, system_wide):
-            EDRLOG.log(u"Blip is not novel enough to warrant reporting", "INFO")
+            EDR_LOG.log(u"Blip is not novel enough to warrant reporting", "INFO")
             return True
 
         if self.is_anonymous():
-            EDRLOG.log("Skipping blip since the user is anonymous.", "INFO")
+            EDR_LOG.log("Skipping blip since the user is anonymous.", "INFO")
             self.blips_cache.set(cmdr_id, blip)
             return True
 
@@ -2263,20 +2263,20 @@ class EDRClient(object):
         if success:
             self.blips_cache.set(cmdr_id, blip)
         else:
-            EDRLOG.log("Blip failed (server side) for {} with {}".format(cmdr_id, blip), "DEBUG")
+            EDR_LOG.log("Blip failed (server side) for {} with {}".format(cmdr_id, blip), "DEBUG")
 
         return success
 
     def scanned(self, cmdr_name, scan):
         if self.player.in_solo():
-            EDRLOG.log(u"Skipping scanned since the user is in solo (unexpected).", "INFO")
+            EDR_LOG.log(u"Skipping scanned since the user is in solo (unexpected).", "INFO")
             self.status = _(u"failed to report scan.")
             return False
 
         cmdr_id = self.cmdr_id(cmdr_name)
         if cmdr_id is None:
             self.status = _(u"cmdr unknown to EDR.")
-            EDRLOG.log(u"Can't submit scan (no cmdr id for {}).".format(cmdr_name), "ERROR")
+            EDR_LOG.log(u"Can't submit scan (no cmdr id for {}).".format(cmdr_name), "ERROR")
             its_actually_fine = self.is_anonymous()
             return its_actually_fine
 
@@ -2322,21 +2322,21 @@ class EDRClient(object):
 
         if not self.novel_enough_scan(cmdr_id, scan):
             self.status = _(u"not novel enough (scan).")
-            EDRLOG.log(u"Scan is not novel enough to warrant reporting", "INFO")
+            EDR_LOG.log(u"Scan is not novel enough to warrant reporting", "INFO")
             return True
 
         if self.is_anonymous():
-            EDRLOG.log("Skipping reporting scan since the user is anonymous.", "INFO")
+            EDR_LOG.log("Skipping reporting scan since the user is anonymous.", "INFO")
             self.scans_cache.set(cmdr_id, scan)
             return True
 
         if not self.player.in_open():
-            EDRLOG.log(u"Scan not submitted due to unconfirmed Open mode", "INFO")
+            EDR_LOG.log(u"Scan not submitted due to unconfirmed Open mode", "INFO")
             self.status = _(u"Scan reporting disabled in solo/private modes.")
             return False
 
         if self.player.has_partial_status():
-            EDRLOG.log(u"Scan not submitted due to partial status", "INFO")
+            EDR_LOG.log(u"Scan not submitted due to partial status", "INFO")
             return False
 
         success = self.server.scanned(cmdr_id, scan)
@@ -2348,23 +2348,23 @@ class EDRClient(object):
 
     def traffic(self, star_system, traffic, system_wide=False):
         if self.player.in_solo() and not system_wide:
-            EDRLOG.log(u"Skipping traffic since the user is in solo (unexpected).", "INFO")
+            EDR_LOG.log(u"Skipping traffic since the user is in solo (unexpected).", "INFO")
             return False
 
         try:
             if self.is_anonymous():
-                EDRLOG.log(u"Skipping traffic report since the user is anonymous.", "INFO")
+                EDR_LOG.log(u"Skipping traffic report since the user is anonymous.", "INFO")
                 return True
 
             sigthed_cmdr = traffic["cmdr"]
             if not self.novel_enough_traffic_report(sigthed_cmdr, traffic):
                 self.status = _(u"not novel enough (traffic).")
-                EDRLOG.log(u"Traffic report is not novel enough to warrant reporting", "INFO")
+                EDR_LOG.log(u"Traffic report is not novel enough to warrant reporting", "INFO")
                 return True
 
             sid = self.edrsystems.system_id(star_system, may_create=True)
             if sid is None:
-                EDRLOG.log(u"Failed to report traffic for system {} : no id found.".format(star_system),
+                EDR_LOG.log(u"Failed to report traffic for system {} : no id found.".format(star_system),
                         "DEBUG")
                 return False
 
@@ -2381,28 +2381,28 @@ class EDRClient(object):
 
     def crime(self, star_system, crime):
         if self.player.in_solo():
-            EDRLOG.log(u"Skipping crime since the user is in solo (unexpected).", "INFO")
+            EDR_LOG.log(u"Skipping crime since the user is in solo (unexpected).", "INFO")
             return False
             
         if not self.crimes_reporting:
-            EDRLOG.log(u"Crimes reporting is off (!crimes on to re-enable).", "INFO")
+            EDR_LOG.log(u"Crimes reporting is off (!crimes on to re-enable).", "INFO")
             self.status = _(u"Crimes reporting is off (!crimes on to re-enable)")
             return True
             
         if self.player.in_bad_neighborhood():
-            EDRLOG.log(u"Crime not being reported because the player is in an anarchy.", "INFO")
+            EDR_LOG.log(u"Crime not being reported because the player is in an anarchy.", "INFO")
             self.status = _(u"Anarchy system (crimes not reported).")
             return True
 
         if self.is_anonymous():
-            EDRLOG.log(u"Skipping crime report since the user is anonymous.", "INFO")
+            EDR_LOG.log(u"Skipping crime report since the user is anonymous.", "INFO")
             if crime["victim"] == self.player.name:
                 self.advertise_full_account(_(u"You could have helped other EDR users or get help by reporting this crime!"))
             return True
 
         sid = self.edrsystems.system_id(star_system, may_create=True)
         if sid is None:
-            EDRLOG.log(u"Failed to report crime in system {} : no id found.".format(star_system),
+            EDR_LOG.log(u"Failed to report crime in system {} : no id found.".format(star_system),
                        "DEBUG")
             return False
 
@@ -2413,21 +2413,21 @@ class EDRClient(object):
 
     def fight(self, fight):
         if self.player.in_solo():
-            EDRLOG.log(u"Skipping fight since the user is in solo (unexpected).", "INFO")
+            EDR_LOG.log(u"Skipping fight since the user is in solo (unexpected).", "INFO")
             return False
 
         if not self.crimes_reporting:
-            EDRLOG.log(u"Crimes reporting is off (!crimes on to re-enable).", "INFO")
+            EDR_LOG.log(u"Crimes reporting is off (!crimes on to re-enable).", "INFO")
             self.status = _(u"Crimes reporting is off (!crimes on to re-enable)")
             return
             
         if self.player.in_bad_neighborhood():
-            EDRLOG.log(u"Fight not being reported because the player is in an anarchy.", "INFO")
+            EDR_LOG.log(u"Fight not being reported because the player is in an anarchy.", "INFO")
             self.status = _(u"Anarchy system (fights not reported).")
             return
 
         if self.is_anonymous():
-            EDRLOG.log(u"Skipping fight report since the user is anonymous.", "INFO")
+            EDR_LOG.log(u"Skipping fight report since the user is anonymous.", "INFO")
             return
 
         if not self.player.recon_box.forced:
@@ -2443,13 +2443,13 @@ class EDRClient(object):
             return
 
         if not self.novel_enough_fight(fight['cmdr'].lower(), fight):
-            EDRLOG.log(u"Skipping fight report (not novel enough).", "INFO")
+            EDR_LOG.log(u"Skipping fight report (not novel enough).", "INFO")
             return
 
         star_system = fight["starSystem"]
         sid = self.edrsystems.system_id(star_system, may_create=True)
         if sid is None:
-            EDRLOG.log(u"Failed to report fight in system {} : no id found.".format(star_system),
+            EDR_LOG.log(u"Failed to report fight in system {} : no id found.".format(star_system),
                        "DEBUG")
             return
         instance_changes = self.player.instance.noteworthy_changes_json()
@@ -2468,11 +2468,11 @@ class EDRClient(object):
 
     def crew_report(self, report):
         if self.player.in_solo():
-            EDRLOG.log(u"Skipping crew report since the user is in solo (unexpected).", "INFO")
+            EDR_LOG.log(u"Skipping crew report since the user is in solo (unexpected).", "INFO")
             return False
 
         if self.is_anonymous():
-            EDRLOG.log(u"Skipping crew report since the user is anonymous.", "INFO")
+            EDR_LOG.log(u"Skipping crew report since the user is anonymous.", "INFO")
             if report["captain"] == self.player.name and (report["crimes"] or report["kicked"]):
                 self.advertise_full_account(_(u"You could have helped other EDR users by reporting this problematic crew member!"))
             return False
@@ -2480,7 +2480,7 @@ class EDRClient(object):
         crew_id = self.cmdr_id(report["crew"])
         if crew_id is None:
             self.status = _(u"{} is unknown to EDR.").format(report["crew"])
-            EDRLOG.log(u"Can't submit crew report (no cmdr id for {}).".format(report["crew"]), "ERROR")
+            EDR_LOG.log(u"Can't submit crew report (no cmdr id for {}).".format(report["crew"]), "ERROR")
             return False
         
         if self.server.crew_report(crew_id, report):
@@ -2496,14 +2496,14 @@ class EDRClient(object):
             return
 
         if self.fc_jump_psa == _(u"Never"):
-            EDRLOG.log(u"FC Jump reporting is off.", "INFO")
+            EDR_LOG.log(u"FC Jump reporting is off.", "INFO")
             self.status = _(u"Skipped FC jump announcement.")
             return True
 
         jump_info["owner"] = self.player.name
         if self.fc_jump_psa in [_(u"Public"), _(u"Private")]:
             if self.is_anonymous():
-                EDRLOG.log(u"Skipping fleet carrier jump report since the user is anonymous.", "INFO")
+                EDR_LOG.log(u"Skipping fleet carrier jump report since the user is anonymous.", "INFO")
                 self.status = _(u"Skipped Public/Private FC jump announcement (EDR account needed).")
                 return True
         
@@ -2523,7 +2523,7 @@ class EDRClient(object):
         self.player.fleet_carrier.jump_cancelled(event)
         
         if self.fc_jump_psa == _(u"Never"):
-            EDRLOG.log(u"FC Jump reporting is off.", "INFO")
+            EDR_LOG.log(u"FC Jump reporting is off.", "INFO")
             self.status = _(u"Skipped FC jump announcement.")
             return True
 
@@ -2531,7 +2531,7 @@ class EDRClient(object):
         status["owner"] = self.player.name
         if self.fc_jump_psa in [_(u"Public"), _(u"Private")]:
             if self.is_anonymous():
-                EDRLOG.log(u"Skipping fleet carrier jump report since the user is anonymous.", "INFO")
+                EDR_LOG.log(u"Skipping fleet carrier jump report since the user is anonymous.", "INFO")
                 self.status = _(u"Skipped Public/Private FC jump announcement (EDR account needed).")
                 return True
             
@@ -2598,7 +2598,7 @@ class EDRClient(object):
 
     def call_central(self, service, info):
         if self.is_anonymous():
-            EDRLOG.log(u"Skipping EDR Central call since the user is anonymous.", "INFO")
+            EDR_LOG.log(u"Skipping EDR Central call since the user is anonymous.", "INFO")
             self.advertise_full_account(_(u"Sorry, this feature only works with an EDR account."), passive=False)
             return False
         
@@ -2613,7 +2613,7 @@ class EDRClient(object):
         star_system = info["starSystem"]
         sid = self.edrsystems.system_id(star_system, may_create=True)
         if sid is None:
-            EDRLOG.log(u"Failed to call central from system {} : no id found.".format(star_system),
+            EDR_LOG.log(u"Failed to call central from system {} : no id found.".format(star_system),
                        "DEBUG")
             return False
         
@@ -2642,17 +2642,17 @@ class EDRClient(object):
 
     def tag_cmdr(self, cmdr_name, tag):
         if self.is_anonymous():
-            EDRLOG.log(u"Skipping tag cmdr since the user is anonymous.", "INFO")
+            EDR_LOG.log(u"Skipping tag cmdr since the user is anonymous.", "INFO")
             self.advertise_full_account(_(u"Sorry, this feature only works with an EDR account."), passive=False)
             return False
         
         if  tag in ["enemy", "ally"]:
             if not self.player.squadron:
-                EDRLOG.log(u"Skipping squadron tag since the user isn't a member of a squadron.", "INFO")
+                EDR_LOG.log(u"Skipping squadron tag since the user isn't a member of a squadron.", "INFO")
                 self.notify_with_details(_(u"Squadron Dex"), [_(u"You need to join a squadron on https://inara.cz to use this feature."), _(u"Then, reboot EDR to reflect these changes.")])
                 return False
             elif not self.player.is_empowered_by_squadron():
-                EDRLOG.log(u"Skipping squadron tag since the user isn't trusted.", "INFO")
+                EDR_LOG.log(u"Skipping squadron tag since the user isn't trusted.", "INFO")
                 self.notify_with_details(_(u"Squadron Dex"), [_(u"You need to reach {} to tag enemies or allies.").format(self.player.squadron_empowered_rank())])
                 return False
 
@@ -2668,7 +2668,7 @@ class EDRClient(object):
     
     def memo_cmdr(self, cmdr_name, memo):
         if self.is_anonymous():
-            EDRLOG.log(u"Skipping memo cmdr since the user is anonymous.", "INFO")
+            EDR_LOG.log(u"Skipping memo cmdr since the user is anonymous.", "INFO")
             self.advertise_full_account(_(u"Sorry, this feature only works with an EDR account."), passive=False)
             return False
 
@@ -2683,7 +2683,7 @@ class EDRClient(object):
 
     def clear_memo_cmdr(self, cmdr_name):
         if self.is_anonymous():
-            EDRLOG.log(u"Skipping clear_memo_cmdr since the user is anonymous.", "INFO")
+            EDR_LOG.log(u"Skipping clear_memo_cmdr since the user is anonymous.", "INFO")
             self.advertise_full_account(_(u"Sorry, this feature only works with an EDR account."), passive=False)
             return False
 
@@ -2698,17 +2698,17 @@ class EDRClient(object):
 
     def untag_cmdr(self, cmdr_name, tag):
         if self.is_anonymous():
-            EDRLOG.log(u"Skipping untag cmdr since the user is anonymous.", "INFO")
+            EDR_LOG.log(u"Skipping untag cmdr since the user is anonymous.", "INFO")
             self.advertise_full_account(_(u"Sorry, this feature only works with an EDR account."), passive=False)
             return False
 
         if  tag in ["enemy", "ally"]:
             if not self.player.squadron:
-                EDRLOG.log(u"Skipping squadron untag since the user isn't a member of a squadron.", "INFO")
+                EDR_LOG.log(u"Skipping squadron untag since the user isn't a member of a squadron.", "INFO")
                 self.notify_with_details(_(u"Squadron Dex"), [_(u"You need to join a squadron on https://inara.cz to use this feature."), _(u"Then, reboot EDR to reflect these changes.")])
                 return False
             elif not self.player.is_empowered_by_squadron():
-                EDRLOG.log(u"Skipping squadron untag since the user isn't trusted.", "INFO")
+                EDR_LOG.log(u"Skipping squadron untag since the user isn't trusted.", "INFO")
                 self.notify_with_details(_(u"Squadron Dex"), [_(u"You need to reach {} to tag enemies or allies.").format(self.player.squadron_empowered_rank())])
                 return False
 
@@ -2738,7 +2738,7 @@ class EDRClient(object):
                 header = _(u"Intel about {}") if self.player.in_open() else _(u"Intel about {} (Open)")
                 self.__intel(header.format(cmdr_name), report["readable"], clear_before=True)
             else:
-                EDRLOG.log(u"Where {} : no info".format(cmdr_name), "INFO")
+                EDR_LOG.log(u"Where {} : no info".format(cmdr_name), "INFO")
                 self.status = _(u"no info about {}").format(cmdr_name)
                 header = _(u"Intel about {}") if self.player.in_open() else _(u"Intel about {} (Open)")
                 self.__intel(header.format(cmdr_name), [_(u"Not recently sighted or not an outlaw.")], clear_before=True)
@@ -2776,7 +2776,7 @@ class EDRClient(object):
 
     def contracts(self):
         if self.is_anonymous():
-            EDRLOG.log(u"Skipping contracts since the user is anonymous.", "INFO")
+            EDR_LOG.log(u"Skipping contracts since the user is anonymous.", "INFO")
             self.advertise_full_account(_(u"Sorry, this feature only works with an EDR account."), passive=False)
             return False
 
@@ -2790,7 +2790,7 @@ class EDRClient(object):
 
     def contract(self, cmdr_name):
         if self.is_anonymous():
-            EDRLOG.log(u"Skipping contract since the user is anonymous.", "INFO")
+            EDR_LOG.log(u"Skipping contract since the user is anonymous.", "INFO")
             self.advertise_full_account(_(u"Sorry, this feature only works with an EDR account."), passive=False)
             return False
 
@@ -2800,7 +2800,7 @@ class EDRClient(object):
 
     def contract_on(self, cmdr_name, reward):
         if self.is_anonymous():
-            EDRLOG.log(u"Skipping contract since the user is anonymous.", "INFO")
+            EDR_LOG.log(u"Skipping contract since the user is anonymous.", "INFO")
             self.advertise_full_account(_(u"Sorry, this feature only works with an EDR account."), passive=False)
             return False
         
@@ -2839,24 +2839,24 @@ class EDRClient(object):
     def _opponents(self, kind):
         if kind is EDROpponents.ENEMIES:
             if self.is_anonymous():
-                EDRLOG.log(u"Skipping enemies since the user is anonymous.", "INFO")
+                EDR_LOG.log(u"Skipping enemies since the user is anonymous.", "INFO")
                 self.advertise_full_account(_(u"Sorry, this feature only works with an EDR account."), passive=False)
                 return False
             elif not self.player.power:
-                EDRLOG.log(u"Not pledged to any power, can't have enemies.", "INFO")
+                EDR_LOG.log(u"Not pledged to any power, can't have enemies.", "INFO")
                 self.__notify(_(u"Recently Sighted {kind}").format(kind=_(kind)), [_(u"You need to be pledged to a power.")], clear_before = True, sfx=False)
                 if self.audio_feedback:
                     self.SFX.failed()
                 return False
         opponents_report = self.edropponents[kind].recent_sightings()
         if not opponents_report:
-            EDRLOG.log(u"No recently sighted {}".format(kind), "INFO")
+            EDR_LOG.log(u"No recently sighted {}".format(kind), "INFO")
             header = _(u"Recently Sighted {kind}") if self.player.in_open() else _(u"Recently Sighted {kind} (Open)")
             self.__sitrep(header.format(kind=_(kind)), [_(u"No {kind} sighted in the last {timespan}").format(kind=_(kind).lower(), timespan=EDTime.pretty_print_timespan(self.edropponents[kind].timespan))])
             return False
         
         self.status = _(u"recently sighted {kind}").format(kind=_(kind))
-        EDRLOG.log(u"Got recently sighted {}".format(kind), "INFO")
+        EDR_LOG.log(u"Got recently sighted {}".format(kind), "INFO")
         header = _(u"Recently Sighted {kind}") if self.player.in_open() else _(u"Recently Sighted {kind} (Open)")
         self.__sitrep(header.format(kind=_(kind)), opponents_report)
 
@@ -2867,11 +2867,11 @@ class EDRClient(object):
 
         translated_content_details = [_(line) for line in content["details"]]
         if self.visual_feedback:
-            EDRLOG.log(u"Show help for {} with header: {} and details: {}".format(section, content["header"], content["details"][0]), "DEBUG")
+            EDR_LOG.log(u"Show help for {} with header: {} and details: {}".format(section, content["header"], content["details"][0]), "DEBUG")
             self.IN_GAME_MSG.help(_(content["header"]), translated_content_details)
             if self.audio_feedback:
                 self.SFX.help()
-        EDRLOG.log(u"[Alt] Show help for {} with header: {} and details: {}".format(section, content["header"], content["details"][0]), "DEBUG")
+        EDR_LOG.log(u"[Alt] Show help for {} with header: {} and details: {}".format(section, content["header"], content["details"][0]), "DEBUG")
         self.ui.help(_(content["header"]), translated_content_details)
         return True
 
@@ -2881,11 +2881,11 @@ class EDRClient(object):
             return False
 
         if self.visual_feedback:
-            EDRLOG.log(u"Show tip for {} with details: {}".format(category, the_tip), "DEBUG")
+            EDR_LOG.log(u"Show tip for {} with details: {}".format(category, the_tip), "DEBUG")
             self.__notify(_(u"EDR pro-tips"), [the_tip], clear_before=True)
             if self.audio_feedback:
                 self.SFX.help()
-        EDRLOG.log(u"[Alt] Show tip for {} with details: {}".format(category, the_tip), "DEBUG")
+        EDR_LOG.log(u"[Alt] Show tip for {} with details: {}".format(category, the_tip), "DEBUG")
         self.ui.help(_(u"EDR pro-tips"), [the_tip])
         return True
 
@@ -2899,43 +2899,43 @@ class EDRClient(object):
         if self.audio_feedback:
             self.SFX.sitrep()
         if self.visual_feedback:
-            EDRLOG.log(u"sitrep with header: {}; details: {}".format(header, details[0]), "DEBUG")
+            EDR_LOG.log(u"sitrep with header: {}; details: {}".format(header, details[0]), "DEBUG")
             self.IN_GAME_MSG.clear_sitrep()
             self.IN_GAME_MSG.sitrep(header, details)
-        EDRLOG.log(u"[Alt] sitrep with header: {}; details: {}".format(header, details[0]), "DEBUG")
+        EDR_LOG.log(u"[Alt] sitrep with header: {}; details: {}".format(header, details[0]), "DEBUG")
         self.ui.sitrep(header, details)
 
     def __intel(self, header, details, clear_before=False, legal=None):
         if self.audio_feedback:
             self.SFX.intel()
         if self.visual_feedback:
-            EDRLOG.log(u"Intel; details: {}".format(details[0]), "DEBUG")
+            EDR_LOG.log(u"Intel; details: {}".format(details[0]), "DEBUG")
             if clear_before:
                 self.IN_GAME_MSG.clear_intel()
             self.IN_GAME_MSG.intel(header, details, legal)
-        EDRLOG.log(u"[Alt] Intel; details: {}".format(details[0]), "DEBUG")
+        EDR_LOG.log(u"[Alt] Intel; details: {}".format(details[0]), "DEBUG")
         self.ui.intel(header, details)
 
     def __warning(self, header, details, clear_before=False, legal=None):
         if self.audio_feedback:
             self.SFX.warning()
         if self.visual_feedback:
-            EDRLOG.log(u"Warning; details: {}".format(details[0]), "DEBUG")
+            EDR_LOG.log(u"Warning; details: {}".format(details[0]), "DEBUG")
             if clear_before:
                 self.IN_GAME_MSG.clear_warning()
             self.IN_GAME_MSG.warning(header, details, legal)
-        EDRLOG.log(u"[Alt] Warning; details: {}".format(details[0]), "DEBUG")
+        EDR_LOG.log(u"[Alt] Warning; details: {}".format(details[0]), "DEBUG")
         self.ui.warning(header, details)
     
     def __notify(self, header, details, clear_before=False, sfx=True):
         if sfx and self.audio_feedback:
             self.SFX.notify()
         if self.visual_feedback:
-            EDRLOG.log(u"Notify about {}; details: {}".format(header, details[0]), "DEBUG")
+            EDR_LOG.log(u"Notify about {}; details: {}".format(header, details[0]), "DEBUG")
             if clear_before:
                 self.IN_GAME_MSG.clear_notice()
             self.IN_GAME_MSG.notify(header, details)
-        EDRLOG.log(u"[Alt] Notify about {}; details: {}".format(header, details[0]), "DEBUG")
+        EDR_LOG.log(u"[Alt] Notify about {}; details: {}".format(header, details[0]), "DEBUG")
         self.ui.notify(header, details)
 
     def __commsjammed(self):
@@ -3249,11 +3249,11 @@ class EDRClient(object):
         
         if action == "point":
             if not (self.player.body and self.player.star_system):
-                EDRLOG.log("Skipping point gesture: not on/near a body, or no system set", "INFO")
+                EDR_LOG.log("Skipping point gesture: not on/near a body, or no system set", "INFO")
                 return
 
             if not (self.player.location.on_foot_location.on_planet):
-                EDRLOG.log("Skipping point gesture: not on a planet", "INFO")
+                EDR_LOG.log("Skipping point gesture: not on a planet", "INFO")
                 return
 
             now = datetime.datetime.now()
@@ -3301,7 +3301,7 @@ class EDRClient(object):
         system_name = self.player.star_system
         body_name = self.player.body
         if not body_name or body_name.lower() == "unknown":
-            EDRLOG.log("Can't reset custom POIs, no body name: {}".format(body_name), "WARNING")
+            EDR_LOG.log("Can't reset custom POIs, no body name: {}".format(body_name), "WARNING")
             return
 
         self.edrboi.reset_custom_poi(system_name, body_name)
@@ -3310,7 +3310,7 @@ class EDRClient(object):
         system_name = self.player.star_system
         body_name = self.player.body
         if not body_name or body_name.lower() == "unknown":
-            EDRLOG.log("Can't clear current custom POI, no body name: {}".format(body_name), "WARNING")
+            EDR_LOG.log("Can't clear current custom POI, no body name: {}".format(body_name), "WARNING")
             return
 
         self.edrboi.clear_current_custom_poi(system_name, body_name)
@@ -3354,9 +3354,9 @@ class EDRClient(object):
                     if self.server.report_fc_market(fc_id, market):
                         details.append(_("Access: all => Market info sent."))
                     else:
-                        EDRLOG.log("Failed to report FC market update.", "DEBUG")
+                        EDR_LOG.log("Failed to report FC market update.", "DEBUG")
                 else:
-                    EDRLOG.log("Skip reporting FC market given that the FC is not open to all.", "DEBUG")
+                    EDR_LOG.log("Skip reporting FC market given that the FC is not open to all.", "DEBUG")
                 sale_orders = self.player.fleet_carrier.sale_orders_within(timeframe)
                 purchase_orders = self.player.fleet_carrier.purchase_orders_within(timeframe)
                 summary = self.__summarize_fc_market(sale_orders, purchase_orders)
@@ -3730,7 +3730,7 @@ class EDRClient(object):
         if EDTime.py_epoch_now() - self.searching["timestamp"] < threshold:
             return self.searching["active"]
 
-        EDRLOG.log("Resetting searching state due to no completion in {} seconds".format(threshold), "DEBUG")
+        EDR_LOG.log("Resetting searching state due to no completion in {} seconds".format(threshold), "DEBUG")
         self.__searching(False)
         return False
         
@@ -3836,7 +3836,7 @@ class EDRClient(object):
             self.player.routenav.set_journey(route)
             return True
         details = []
-        details.append(_("Failed to load a csv route from {}.".format(filename)))
+        details.append(_("Failed to load a csv route from {}.").format(filename))
         self.notify_with_details(_("EDR Journey"), details, clear_before=True)
 
         return False
@@ -3859,7 +3859,7 @@ class EDRClient(object):
             self.notify_with_details(_("EDR Journey"), details, clear_before=True)
             return True
         except Exception as e:
-            EDRLOG.log(u"Journey Fetch failed with exception: {}".format(e), "ERROR")
+            EDR_LOG.log(u"Journey Fetch failed with exception: {}".format(e), "ERROR")
             self.notify_with_details(_("EDR Journey"), [_("Something went wrong.")], clear_before=True)
             pass
 
@@ -3931,7 +3931,7 @@ class EDRClient(object):
         if details:
             wp = self.player.routenav.current_wp_sysname()
             if wp and not self.player.star_system == wp:
-                details.append(_("Copied '{}' into the clipboard".format(wp)))
+                details.append(_("Copied '{}' into the clipboard").format(wp))
                 copy(wp)
             self.notify_with_details(_("EDR Journey"), details, clear_before=True)
             return True
@@ -3960,7 +3960,7 @@ class EDRClient(object):
         if details:
             wp = self.player.routenav.current_wp_sysname()
             if wp and not self.player.star_system == wp:
-                details.append(_("Copied '{}' into the clipboard".format(wp)))
+                details.append(_("Copied '{}' into the clipboard").format(wp))
                 copy(wp)
             self.notify_with_details(_("EDR Journey"), details, clear_before=True)
             return True
@@ -3978,7 +3978,7 @@ class EDRClient(object):
         if details:
             wp = self.player.routenav.current_wp_sysname()
             if wp and not self.player.star_system == wp:
-                details.append(_("Copied '{}' into the clipboard".format(wp)))
+                details.append(_("Copied '{}' into the clipboard").format(wp))
                 copy(wp)
             self.notify_with_details(_("EDR Journey - Current Waypoint"), details, clear_before=True)
             return True
@@ -3986,14 +3986,14 @@ class EDRClient(object):
     
     def journey_show_overview(self, passive=False):
         if self.player.routenav.no_journey() and not passive:
-            self.notify_with_details(_("EDR Journey"), [("No active route."), ("Send '!journey new' or '!journey load' to define a route.")])
+            self.notify_with_details(_("EDR Journey"), [_("No active route."), _("Send '!journey new' or '!journey load' to define a route.")])
             return False
         
         details = self.player.routenav.describe()
         if details:
             wp = self.player.routenav.current_wp_sysname()
             if wp and not self.player.star_system == wp:
-                details.append(_("Copied '{}' into the clipboard".format(wp)))
+                details.append(_("Copied '{}' into the clipboard").format(wp))
                 copy(wp)
             self.notify_with_details(_("EDR Journey"), details, clear_before=True)
             return True
@@ -4014,7 +4014,7 @@ class EDRClient(object):
             return False
          
         details = self.player.routenav.describe_wp_bodies()
-        EDRLOG.log("Journey show bodies: {}".format(details), "INFO")
+        EDR_LOG.log("Journey show bodies: {}".format(details), "INFO")
         if details:
             self.notify_with_details(_("EDR Journey: survey targets"), details, clear_before=True)
             return True

@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 
-from edrlog import EDRLog
+from edrlog import EDR_LOG
 import random
 from edtime import EDTime
 
-EDRLOG = EDRLog()
+
 
 class Backoff(object):
 
@@ -19,16 +19,16 @@ class Backoff(object):
         self.attempts += 1
         delay = min(self.cap, self.base * 2 ** self.attempts) + random.randint(0, 60)
         self.backoff_until = EDTime.py_epoch_now() + delay
-        EDRLOG.log(u"Exponential backoff for {} API calls: attempts={}, until={}".format(self.name, self.attempts, EDTime.t_plus_py(self.backoff_until)), u"DEBUG")
+        EDR_LOG.log(u"Exponential backoff for {} API calls: attempts={}, until={}".format(self.name, self.attempts, EDTime.t_plus_py(self.backoff_until)), u"DEBUG")
 
     def throttled(self):
         should = EDTime.py_epoch_now() < self.backoff_until
         if should:
-            EDRLOG.log(u"Exponential backoff still active for {} API calls: attempts={}, until={}".format(self.name, self.attempts, EDTime.t_plus_py(self.backoff_until)), u"DEBUG")
+            EDR_LOG.log(u"Exponential backoff still active for {} API calls: attempts={}, until={}".format(self.name, self.attempts, EDTime.t_plus_py(self.backoff_until)), u"DEBUG")
         return should
     
     def reset(self):
         if self.attempts > 0:
-            EDRLOG.log(u"Clearing exponential backoff for {} API calls, attempts={}".format(self.name, self.attempts), u"DEBUG")
+            EDR_LOG.log(u"Clearing exponential backoff for {} API calls, attempts={}".format(self.name, self.attempts), u"DEBUG")
         self.attempts = 0
         self.backoff_until = 0

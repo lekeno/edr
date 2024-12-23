@@ -8,9 +8,9 @@ import math
 
 import utils2to3
 from edtime import EDTime
-from edrlog import EDRLog
+from edrlog import EDR_LOG
 
-EDRLOG = EDRLog()
+
 
 class EDRRawDepletables(object):
     
@@ -746,7 +746,7 @@ class EDRRawDepletables(object):
                     cursor.execute('insert into concentrations(hotspotid, resource, concentration) values (?,?,?)', concentration)
             self.db.commit()
         except:
-            EDRLOG.log(u"Couldn't open/create the depletables database", "ERROR")
+            EDR_LOG.log(u"Couldn't open/create the depletables database", "ERROR")
             self.db = None
     
     def visit(self, poi_name):

@@ -15,8 +15,8 @@ from collections import deque
 from edrutils import pretty_print_number, simplified_body_name
 from edrconfig import EDR_CONFIG
 
-from edrlog import EDRLog
-EDRLOG = EDRLog()
+from edrlog import EDR_LOG
+
 
 class BidiWaypointIterator(object):
     def __init__(self, collection):
@@ -167,12 +167,12 @@ class SpanshServer(threading.Thread):
         url = self.api_path + job_id
         response = SpanshServer.SESSION.get(url)
         if response.status_code != 200:
-            EDRLOG.log("SpanshServer status not 200 OK: {}".format(response.status_code), "DEBUG")
+            EDR_LOG.log("SpanshServer status not 200 OK: {}".format(response.status_code), "DEBUG")
             return None
         
         data = json.loads(response.content)
         if not data:
-            EDRLOG.log("SpanshServer returned no data", "DEBUG")
+            EDR_LOG.log("SpanshServer returned no data", "DEBUG")
             return None
         return data.get("result", None)
     
@@ -573,7 +573,7 @@ class SpanshBodiesJourneyJSON(GenericRoute):
             
             if value and b.get("name", None):
                 simple_body_name = simplified_body_name(self.current_wp_sysname(), b["name"])
-                details.append(_("{}: {} cr ({})".format(simple_body_name, pretty_print_number(value), " + ".join(activities))))
+                details.append(_("{}: {} cr ({})").format(simple_body_name, pretty_print_number(value), " + ".join(activities)))
 
         return details
     

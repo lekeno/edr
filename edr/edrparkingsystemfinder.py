@@ -1,8 +1,8 @@
 import threading
 from edri18n import _
-from edrlog import EDRLog
+from edrlog import EDR_LOG
 
-EDRLOG = EDRLog()
+
 
 class EDRParkingSystemFinder(threading.Thread):
 

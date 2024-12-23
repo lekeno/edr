@@ -3,9 +3,9 @@ from __future__ import absolute_import
 import json
 from os.path import join
 from config import config
-from edrlog import EDRLog
+from edrlog import EDR_LOG
 
-EDRLOG = EDRLog()
+
 
 class EDMarketReader(object):
     def __init__(self):
@@ -19,4 +19,4 @@ class EDMarketReader(object):
                     entry = json.loads(data)
                     return entry
         except:
-            EDRLOG.log(u"Couldn't process market", u"WARNING")
+            EDR_LOG.log(u"Couldn't process market", u"WARNING")

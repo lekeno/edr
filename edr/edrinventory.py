@@ -13,7 +13,6 @@ from edtime import EDTime
 #TODO anarchy only microresources...
 ODYSSEY_MATS = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'odyssey_mats.json')).read())
 
-# TODO add encoded data
 HORIZONS_MATS = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'horizons_mats.json')).read())
 
 MATERIALS_LUT = {
@@ -659,16 +658,6 @@ class EDRInventory(object):
             for removal in info["Removed"]:
                 self.adjust_backpack(removal["Type"], removal["Name"], -removal.get("Count", 0))
 
-
-    def traded(self, info):
-        if "Offered" not in info:
-            return
-
-        for offer in info["Offered"]:
-            self.substract(offer["Category"], offer["Name"], offer["Count"])
-
-        self.add(info["Category"], info["Received"], info["Count"])
-    
     def collected(self, info):
         self.add(info["Category"], info["Name"], info["Count"])
 
@@ -965,8 +954,8 @@ class EDRInventory(object):
     @staticmethod
     def readable(name):
         cname = name.lower()
-        if cname in EDRInventory.MATERIALS_LUT:
-           return EDRInventory.MATERIALS_LUT[cname].get("localized", name)
+        if cname in MATERIALS_LUT:
+           return MATERIALS_LUT[cname].get("localized", name)
         return name
 
     def __c_cat(self, category):
@@ -1119,7 +1108,7 @@ class EDRRemlokHelmet(object):
                 c_item = c_item[:-5]
             if c_item.startswith("microresource_of:#content=$"):
                 c_item = c_item[len("microresource_of:#content=$"):]
-            c_item = re.sub("[ \-_]", "", c_item)
+            c_item = re.sub(r"[ -_]", "", c_item)
         
         if c_item in ODYSSEY_MATS:
             return self.__describe_odyssey_material(c_item, inventory)
@@ -1162,9 +1151,9 @@ class EDRRemlokHelmet(object):
             
         if descriptor.get("value", False):
             if descriptor.get("cost", False):
-                details.append(_("Bar exchange: worth {}, cost {}".format(descriptor["value"], descriptor["cost"])))
+                details.append(_("Bar exchange: worth {}, cost {}").format(descriptor["value"], descriptor["cost"]))
             else:
-                details.append(_("Bar exchange: worth {}".format(descriptor["value"])))
+                details.append(_("Bar exchange: worth {}").format(descriptor["value"]))
         
         if entry.get("comments", False):
             details.append(_("Used for: {}").format(entry["comments"]))
@@ -1178,13 +1167,13 @@ class EDRRemlokHelmet(object):
                 details.append(_("Used in {} upgrades").format(descriptor["upgrades"]))
 
         if descriptor.get("referer", False) and descriptor.get("refer", False):
-            details.append(_("Required by {} to refer {}".format(descriptor["referer"], descriptor["refer"])))
+            details.append(_("Required by {} to refer {}").format(descriptor["referer"], descriptor["refer"]))
         
         if descriptor.get("unlock", False):
-            details.append(_("Required by {}".format(descriptor["unlock"])))
+            details.append(_("Required by {}").format(descriptor["unlock"]))
 
         if descriptor.get("locations", False):
-            details.append(_("Found in: {}".format("; ".join(descriptor["locations"]))))
+            details.append(_("Found in: {}").format("; ".join(descriptor["locations"])))
 
         return details
 
@@ -1223,7 +1212,7 @@ class EDRRemlokHelmet(object):
             values.append(_("U{}").format(descriptor["upgrades"]))
 
         if descriptor.get("value", False):
-            values.append(_("X{}".format(descriptor["value"])))
+            values.append(_("X{}").format(descriptor["value"]))
         
         if not ignore_eng_unlocks:
             value = 0
@@ -1234,7 +1223,7 @@ class EDRRemlokHelmet(object):
                 value +=1
             
             if value:
-                values.append(_("E{}".format(value)))
+                values.append(_("E{}").format(value))
         
         return "/".join(values)
     
@@ -1261,7 +1250,7 @@ class EDRRemlokHelmet(object):
         details.append(_("Used in: {}").format("; ".join(all_recipes)))
 
         if descriptor.get("unlock", False):
-            details.append(_("Required by {}".format(descriptor["unlock"])))
+            details.append(_("Required by {}").format(descriptor["unlock"]))
 
         return details
 
@@ -1319,7 +1308,7 @@ class EDRRemlokHelmet(object):
                 c_item = c_item[:-5]
             if c_item.startswith("microresource_of:#content=$"):
                 c_item = c_item[len("microresource_of:#content=$"):]
-            c_item = re.sub("[ \-_]", "", c_item)
+            c_item = re.sub(r"[ -_]", "", c_item)
         
         if c_item in ODYSSEY_MATS:
             return self.__how_useful_odyssey_material(c_item)

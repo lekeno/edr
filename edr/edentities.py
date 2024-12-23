@@ -10,7 +10,7 @@ from edvehicles import EDVehicleFactory
 from edspacesuits import EDSuitFactory, EDOdysseyCloset
 from edcodex import EDCodex
 from edinstance import EDInstance
-from edrlog import EDRLog
+from edrlog import EDR_LOG
 from edrconfig import EDRConfig
 from edreconbox import EDReconBox
 from edrinventory import EDRInventory, EDRRemlokHelmet
@@ -24,7 +24,7 @@ from edrutils import pretty_print_number
 from edrroutes import EDRNavigator
 
 import utils2to3
-EDRLOG = EDRLog()
+
 
 class EDRCrew(object):
     def __init__(self, captain):
@@ -411,7 +411,7 @@ class EDPilot(object):
         
         self.in_spacesuit()
         if entry.get("ShipID", self.mothership.id) != self.mothership.id:
-            EDRLOG.log("Player disembarked from their ship but the ID was different new:{} vs old:{}".format(entry["ShipID"], self.mothership.id), "DEBUG")
+            EDR_LOG.log("Player disembarked from their ship but the ID was different new:{} vs old:{}".format(entry["ShipID"], self.mothership.id), "DEBUG")
             self.mothership = EDVehicleFactory.unknown_vehicle()
             self.mothership.id = entry["ShipID"]
         self.location.from_entry(entry)
@@ -437,7 +437,7 @@ class EDPilot(object):
             self.in_mothership()
         else:
             if entry.get("ShipID", self.mothership.id) != self.mothership.id:
-                EDRLOG.log("Player embarked on their ship but the ID was different new:{} vs old:{}".format(entry["ShipID"], self.mothership.id), "DEBUG")
+                EDR_LOG.log("Player embarked on their ship but the ID was different new:{} vs old:{}".format(entry["ShipID"], self.mothership.id), "DEBUG")
                 self.mothership = EDVehicleFactory.unknown_vehicle()
                 self.mothership.id = entry["ShipID"]
             self.in_mothership()
@@ -485,7 +485,7 @@ class EDPilot(object):
         self._touch()
         self.on_foot = False
         if not self.shuttle:
-            EDRLOG.log("Player in a taxi but we had none", "DEBUG")
+            EDR_LOG.log("Player in a taxi but we had none", "DEBUG")
             self.shuttle = EDVehicleFactory.unknown_taxi()
         self.piloted_vehicle = self.shuttle
 
@@ -767,7 +767,7 @@ class EDPilot(object):
         if system_address:
             self.location.star_system_address = system_address
         if star_system and (self.location.star_system is None or self.location.star_system != star_system):
-            EDRLOG.log(u"Updating system info (was missing or obsolete). {old} vs. {system}".format(old=self.location.star_system, system=star_system), u"INFO")
+            EDR_LOG.log(u"Updating system info (was missing or obsolete). {old} vs. {system}".format(old=self.location.star_system, system=star_system), u"INFO")
             self.location.star_system = star_system
             return True
         return False
@@ -775,7 +775,7 @@ class EDPilot(object):
     def update_place_if_obsolete(self, place):
         self._touch()
         if self.location.place is None or self.location.place != place:
-            EDRLOG.log(u"Updating place info (was missing or obsolete). {old} vs. {place}".format(old=self.location.place, place=place), u"INFO")
+            EDR_LOG.log(u"Updating place info (was missing or obsolete). {old} vs. {place}".format(old=self.location.place, place=place), u"INFO")
             self.location.place = place
             return True
         return False
@@ -783,7 +783,7 @@ class EDPilot(object):
     def update_body_if_obsolete(self, body):
         self._touch()
         if self.location.body is None or self.location.body != body:
-            EDRLOG.log(u"Updating body info (was missing or obsolete). {old} vs. {body}".format(old=self.location.body, body=body), u"INFO")
+            EDR_LOG.log(u"Updating body info (was missing or obsolete). {old} vs. {body}".format(old=self.location.body, body=body), u"INFO")
             self.location.body = body
             return True
         return False
@@ -833,7 +833,7 @@ class EDPlayer(EDPilot):
 
     def in_blue_tunnel(self, tunnel=True):
         if tunnel != self.blue_tunnel:
-            EDRLOG.log(u"Blue Tunnel update: {old} vs. {new}".format(old=self.blue_tunnel, new=tunnel), u"DEBUG")
+            EDR_LOG.log(u"Blue Tunnel update: {old} vs. {new}".format(old=self.blue_tunnel, new=tunnel), u"DEBUG")
         self.blue_tunnel = tunnel
 
     def is_trusted_by_squadron(self):
@@ -1343,7 +1343,7 @@ class EDPlayerOne(EDPlayer):
             if self.slf:
                 self.slf.attacked()
             else:
-                EDRLOG.log(u"SLF attacked but player had none", u"WARNING")
+                EDR_LOG.log(u"SLF attacked but player had none", u"WARNING")
         elif target == u"You":
             if self.on_foot:
                 self.spacesuit.attacked()
@@ -1353,9 +1353,9 @@ class EDPlayerOne(EDPlayer):
             if self.srv:
                 self.srv.attacked()
             else:
-                EDRLOG.log(u"SRV attacked but player had none", u"WARNING")
+                EDR_LOG.log(u"SRV attacked but player had none", u"WARNING")
         else:
-            EDRLOG.log(u"Unrecognized target: {}".format(target), u"WARNING")
+            EDR_LOG.log(u"Unrecognized target: {}".format(target), u"WARNING")
 
 
     def pips(self, values):

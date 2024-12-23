@@ -9,9 +9,7 @@ from lrucache import LRUCache
 from edri18n import _
 from edtime import EDTime
 import utils2to3
-import edrlog
-
-EDRLOG = edrlog.EDRLog()
+from edrlog import EDR_LOG
 
 class EDRMaterialOutcomes(object):
     def __init__(self):
@@ -146,7 +144,7 @@ class EDRFaction(object):
         if self.timestamps["isPMF"] is None or edsm_last_update > self.timestamps["isPMF"]:
             isPMF = edsm_faction_info.get("isPlayer", None)
             if self.isPMF != isPMF:
-                EDRLOG.log("Updating faction {}'s PMF flag {} with EDSM info {}".format(self.name, self.isPMF, isPMF), "DEBUG")
+                EDR_LOG.log("Updating faction {}'s PMF flag {} with EDSM info {}".format(self.name, self.isPMF, isPMF), "DEBUG")
                 self.isPMF = isPMF
             self.timestamps["isPMF"] = edsm_last_update
         
@@ -156,37 +154,37 @@ class EDRFaction(object):
         if edsm_last_update > self.lastUpdated:
             self.lastUpdated = edsm_last_update
         elif (self.lastUpdated - edsm_last_update) > OBSOLETE_THRESHOLD:
-            EDRLOG.log("Skipping updates from EDSM info: too stale! local {} - edsm {} > threshold {}".format(self.lastUpdated, edsm_last_update, OBSOLETE_THRESHOLD), "DEBUG")
+            EDR_LOG.log("Skipping updates from EDSM info: too stale! local {} - edsm {} > threshold {}".format(self.lastUpdated, edsm_last_update, OBSOLETE_THRESHOLD), "DEBUG")
             return
 
         if self.timestamps["allegiance"] is None or (edsm_last_update > self.timestamps["allegiance"] and "allegiance" in edsm_faction_info):
             if self.allegiance != edsm_faction_info["allegiance"]:
-                EDRLOG.log("Updating faction {}'s allegiance {} with EDSM info {}".format(self.name, self.allegiance, edsm_faction_info["allegiance"]), "DEBUG")
+                EDR_LOG.log("Updating faction {}'s allegiance {} with EDSM info {}".format(self.name, self.allegiance, edsm_faction_info["allegiance"]), "DEBUG")
                 self.allegiance = edsm_faction_info["allegiance"]
             self.timestamps["allegiance"] = edsm_last_update
         
         if self.timestamps["influence"] is None or (edsm_last_update > self.timestamps["influence"] and "influence" in edsm_faction_info):
             if self.influence != edsm_faction_info["influence"]:
-                EDRLOG.log("Updating faction {}'s influence {} with EDSM info {}".format(self.name, self.influence, edsm_faction_info["influence"]), "DEBUG")
+                EDR_LOG.log("Updating faction {}'s influence {} with EDSM info {}".format(self.name, self.influence, edsm_faction_info["influence"]), "DEBUG")
                 self.influence = edsm_faction_info["influence"]
             self.timestamps["influence"] = edsm_last_update
 
         if self.timestamps["state"] is None or (edsm_last_update > self.timestamps["state"] and "state" in edsm_faction_info):
             edsm_state =  EDRFaction._simplified_state(edsm_faction_info["state"])
             if self.state != edsm_state:
-                EDRLOG.log("Updating faction {}'s state {} with EDSM info {}".format(self.name, self.state, edsm_state), "DEBUG")
+                EDR_LOG.log("Updating faction {}'s state {} with EDSM info {}".format(self.name, self.state, edsm_state), "DEBUG")
                 self.state = edsm_state
             self.timestamps["state"] = edsm_last_update
 
         if self.timestamps["government"] is None or (edsm_last_update > self.timestamps["government"] and "government" in edsm_faction_info):
             if self.government != edsm_faction_info["government"]:
-                EDRLOG.log("Updating faction {}'s government {} with EDSM info {}".format(self.name, self.influence, edsm_faction_info["government"]), "DEBUG")
+                EDR_LOG.log("Updating faction {}'s government {} with EDSM info {}".format(self.name, self.influence, edsm_faction_info["government"]), "DEBUG")
                 self.allegiance = edsm_faction_info["government"]
             self.timestamps["government"] = edsm_last_update
 
         if self.timestamps["active_states"] is None or (edsm_last_update > self.timestamps["active_states"] and "activeStates" in edsm_faction_info):
             active_states = edsm_faction_info["activeStates"]
-            EDRLOG.log("Updating faction {}'s active states {} with EDSM info {}".format(self.name, self.active_states, active_states), "DEBUG")
+            EDR_LOG.log("Updating faction {}'s active states {} with EDSM info {}".format(self.name, self.active_states, active_states), "DEBUG")
             self.active_states = set([self.state])
             for state in active_states:
                 self.active_states.add(EDRFaction._simplified_state(state.get("state", "None")))
@@ -194,7 +192,7 @@ class EDRFaction(object):
         
         if self.timestamps["pending_states"] is None or (edsm_last_update > self.timestamps["pending_states"] and "pendingStates" in edsm_faction_info):
             pending_states = edsm_faction_info.get("pendingStates", []) 
-            EDRLOG.log("Updating faction {}'s pending states {} with EDSM info {}".format(self.name, self.pending_states, pending_states), "DEBUG")
+            EDR_LOG.log("Updating faction {}'s pending states {} with EDSM info {}".format(self.name, self.pending_states, pending_states), "DEBUG")
             self.pending_states = set()
             for state in pending_states:
                 self.pending_states.add(EDRFaction._simplified_state(state.get("state", "None")))
@@ -202,7 +200,7 @@ class EDRFaction(object):
             
         if self.timestamps["recovering_states"] is None or (edsm_last_update > self.timestamps["recovering_states"] and "recoveringStates" in edsm_faction_info):
             recovering_states = edsm_faction_info.get("recoveringStates", []) 
-            EDRLOG.log("Updating faction {}'s recovering states {} with EDSM info {}".format(self.name, self.recovering_states, recovering_states), "DEBUG")
+            EDR_LOG.log("Updating faction {}'s recovering states {} with EDSM info {}".format(self.name, self.recovering_states, recovering_states), "DEBUG")
             self.recovering_states = set()
             for state in recovering_states:
                 self.recovering_states.add(EDRFaction._simplified_state(state.get("state", "None")))
@@ -498,18 +496,18 @@ class EDRFactions(object):
             cname = faction["Name"].lower()
             tracked.add(cname)
             if cname in factions_in_system:
-                EDRLOG.log("Updating faction in {}: before= {}".format(star_system, factions_in_system[cname]), "DEBUG")
+                EDR_LOG.log("Updating faction in {}: before= {}".format(star_system, factions_in_system[cname]), "DEBUG")
                 factions_in_system[cname].updateFromED(faction)
-                EDRLOG.log("Updating faction in {}: after= {}".format(star_system, factions_in_system[cname]), "DEBUG")
+                EDR_LOG.log("Updating faction in {}: after= {}".format(star_system, factions_in_system[cname]), "DEBUG")
             else:
                 new_faction = EDRFaction(faction)
-                EDRLOG.log("Adding faction for {}: {}".format(star_system, new_faction), "DEBUG")
+                EDR_LOG.log("Adding faction for {}: {}".format(star_system, new_faction), "DEBUG")
                 factions_in_system[cname] = new_faction
 
         if tracked != factions_in_system.keys():
-            EDRLOG.log("Pruning some factions. Seen in ED info={}; Local cache={}".format(tracked, factions_in_system.keys()), "DEBUG")
+            EDR_LOG.log("Pruning some factions. Seen in ED info={}; Local cache={}".format(tracked, factions_in_system.keys()), "DEBUG")
             remaining_factions_in_system = {n: factions_in_system[n] for n in tracked}
-            EDRLOG.log("Updating local faction cache for {}".format(star_system), "DEBUG")
+            EDR_LOG.log("Updating local faction cache for {}".format(star_system), "DEBUG")
             self.factions_cache.set(star_system.lower(), remaining_factions_in_system)
         else:
             self.factions_cache.set(star_system.lower(), factions_in_system)
@@ -583,13 +581,13 @@ class EDRFactions(object):
         worth_refreshing_age = 60*60*6 
         if self.edsm_factions_cache.has_key(star_system.lower()) and self.edsm_factions_cache.is_older_than(star_system.lower(), worth_refreshing_age):
             # BGS can be quite dynamic, so proactively evict a lukewarm entry to get a fresh take
-            EDRLOG.log("Refreshing edsm factions for {}".format(star_system), "DEBUG")
+            EDR_LOG.log("Refreshing edsm factions for {}".format(star_system), "DEBUG")
             self.edsm_factions_cache.evict(star_system.lower())
 
         factions_in_system = self.get_all(star_system)
 
         if factions_in_system and name.lower() in factions_in_system:
-            EDRLOG.log("Using info from local event to update faction: {}".format(factions_in_system[name.lower()]), "DEBUG")
+            EDR_LOG.log("Using info from local event to update faction: {}".format(factions_in_system[name.lower()]), "DEBUG")
             local_faction = factions_in_system[name.lower()]
             local_faction.government = GVT_LUT.get(entry["StationGovernment"], entry["StationGovernment"])
             local_faction.allegiance = entry["StationAllegiance"]
@@ -602,7 +600,7 @@ class EDRFactions(object):
             local_faction.timestamps["allegiance"] = local_faction.lastUpdated
             local_faction.timestamps["state"] = local_faction.lastUpdated
             local_faction.timestamps["active_states"] = local_faction.lastUpdated
-            EDRLOG.log("Post-update faction: {}".format(factions_in_system[name.lower()]), "DEBUG")
+            EDR_LOG.log("Post-update faction: {}".format(factions_in_system[name.lower()]), "DEBUG")
             return
         
         art_info = {
@@ -630,7 +628,7 @@ class EDRFactions(object):
         
         edsm_factions = self.__get_all_from_edsm(star_system)
         if not edsm_factions:
-            EDRLOG.log("No factions from EDSM for {}".format(star_system), "DEBUG")
+            EDR_LOG.log("No factions from EDSM for {}".format(star_system), "DEBUG")
             return None
         
         edsm_controlling_faction_name = edsm_factions["controllingFaction"]["name"] if "controllingFaction" in edsm_factions else None
@@ -645,12 +643,12 @@ class EDRFactions(object):
                     local_last_update = controlling_faction_for_system.lastUpdated
                     edsm_last_update = faction["lastUpdate"]
                     if edsm_last_update > local_last_update:
-                        EDRLOG.log("Updating controlling faction with EDSM info: {}".format(faction["name"]), "DEBUG")
+                        EDR_LOG.log("Updating controlling faction with EDSM info: {}".format(faction["name"]), "DEBUG")
                         self.controlling_factions_cache.set(star_system.lower(), EDRFactionEDSM(faction))
                     else:
                         controlling_faction_for_system.updateFromEDSM(faction)
                 else:
-                    EDRLOG.log("Setting controlling faction with EDSM info: {}".format(faction["name"]), "DEBUG")
+                    EDR_LOG.log("Setting controlling faction with EDSM info: {}".format(faction["name"]), "DEBUG")
                     self.controlling_factions_cache.set(star_system.lower(), EDRFactionEDSM(faction))
 
             if faction["name"].lower() in factions_in_system:
@@ -661,16 +659,16 @@ class EDRFactions(object):
                 if edsm_last_update <= local_last_update:
                     edsm_more_recent = False
             else:
-                EDRLOG.log("Setting faction with EDSM info: {}".format(faction["name"]), "DEBUG")
+                EDR_LOG.log("Setting faction with EDSM info: {}".format(faction["name"]), "DEBUG")
                 factions_in_system[faction["name"].lower()] = EDRFactionEDSM(faction)
 
         if edsm_more_recent and edsm_tracked != factions_in_system.keys():
-            EDRLOG.log("Pruning some factions. Seen in EDSM info={}; Local cache={}".format(edsm_tracked, factions_in_system.keys()), "DEBUG")
+            EDR_LOG.log("Pruning some factions. Seen in EDSM info={}; Local cache={}".format(edsm_tracked, factions_in_system.keys()), "DEBUG")
             remaining_factions_in_system = {n: factions_in_system[n] for n in edsm_tracked}
-            EDRLOG.log("Updating local faction cache for {}".format(star_system), "DEBUG")
+            EDR_LOG.log("Updating local faction cache for {}".format(star_system), "DEBUG")
             self.factions_cache.set(star_system.lower(), remaining_factions_in_system)
         else:
-            EDRLOG.log("Updating local faction cache for {}".format(star_system), "DEBUG")
+            EDR_LOG.log("Updating local faction cache for {}".format(star_system), "DEBUG")
             self.factions_cache.set(star_system.lower(), factions_in_system)
 
         return factions_in_system
@@ -716,18 +714,18 @@ class EDRFactions(object):
         factions = self.edsm_factions_cache.get(star_system.lower())
         cached = self.edsm_factions_cache.has_key(star_system.lower())
         if cached or factions:
-            EDRLOG.log(u"Factions for system {} are in the cache.".format(star_system), "DEBUG")
+            EDR_LOG.log(u"Factions for system {} are in the cache.".format(star_system), "DEBUG")
             return factions
 
-        EDRLOG.log(u"Factions for system {} are NOT in the cache.".format(star_system), "DEBUG")
+        EDR_LOG.log(u"Factions for system {} are NOT in the cache.".format(star_system), "DEBUG")
         factions = self.edsm_server.factions_in_system(star_system)
         if factions:
             self.edsm_factions_cache.set(star_system.lower(), factions)
-            EDRLOG.log(u"Cached {}'s factions".format(star_system), "DEBUG")
+            EDR_LOG.log(u"Cached {}'s factions".format(star_system), "DEBUG")
             return factions
 
         self.edsm_factions_cache.set(star_system.lower(), None)
-        EDRLOG.log(u"No match on EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
+        EDR_LOG.log(u"No match on EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
         return None
     
     def getControllingFactionAllegiance(self, star_system):

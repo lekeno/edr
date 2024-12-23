@@ -7,7 +7,7 @@ import utils2to3
 import os
 import configparser as cp
 
-from edrlog import EDRLog
+from edrlog import EDR_LOG
 
 class EDRSoundEffects(object):
     def __init__(self, loud=True):
@@ -88,10 +88,10 @@ class SFXConfig(object):
         self.fallback_config.read(utils2to3.abspathmaker(__file__, config_file))
         user_cfg_path = utils2to3.abspathmaker(__file__, user_config_file)
         if os.path.exists(user_cfg_path):
-            EDRLog().log(u"Using user defined SFX at {}.".format(user_config_file), "INFO")
+            EDR_LOG.log(u"Using user defined SFX at {}.".format(user_config_file), "INFO")
             self.config.read(user_cfg_path)
         else:
-            EDRLog().log(u"No user defined SFX at {}, using {} instead.".format(user_config_file, config_file), "INFO")
+            EDR_LOG.log(u"No user defined SFX at {}, using {} instead.".format(user_config_file, config_file), "INFO")
             self.config = self.fallback_config
 
     def snd(self, kind, loud=True):

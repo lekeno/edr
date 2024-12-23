@@ -1,10 +1,7 @@
 from math import log10
 import re
 
-import edrlog
 from edmodule import EDResistances
-
-EDRLOG = edrlog.EDRLog()
 
 class EDHullReinforcementPackage(object):
     def __init__(self):

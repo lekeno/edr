@@ -1,7 +1,5 @@
 import re
-import os
 import json
-from collections import deque
 from math import log10
 
 from edtime import EDTime
@@ -10,14 +8,12 @@ import edrhitppoints
 import edmodule
 import edmodulesinforeader
 import edcargoreader
-import edrlog
+from edrlog import EDR_LOG
 import edcargo
 import utils2to3
 from edshield import EDPowerDistributor, EDShieldGenerator, EDShieldingFactory
 from edarmour import EDHullFactory
 from edweapons import EDWeaponFactory
-
-EDRLOG = edrlog.EDRLog()
 
 class EDVehicleSize(object):
     UNKNOWN = 1
@@ -287,7 +283,7 @@ class EDVehicle(object):
         other_type = EDVehicleFactory.canonicalize(event.get("Ship", "unknown")) 
 
         if other_id != self.id or other_type != self.type:
-            EDRLOG.log(u"Mismatch between ID ({} vs {}) and/or Type ({} vs. {}), can't update from loadout".format(self.id, other_id, self.type, other_type), "WARNING")
+            EDR_LOG.log(u"Mismatch between ID ({} vs {}) and/or Type ({} vs. {}), can't update from loadout".format(self.id, other_id, self.type, other_type), "WARNING")
             return
 
         self.identity = event.get('ShipIdent', None)
@@ -414,22 +410,22 @@ class EDVehicle(object):
         modules_info = reader.process()
         stale = (self.slots_timestamp is None) or (self.module_info_timestamp and (self.slots_timestamp.as_py_epoch() < self.module_info_timestamp.as_py_epoch()))
         if not stale:
-            EDRLOG.log(u"Modules info: up-to-date", "DEBUG")
+            EDR_LOG.log(u"Modules info: up-to-date", "DEBUG")
             return True
 
         if not modules_info or not modules_info.get("Modules", None):
-            EDRLOG.log(u"No info on modules!", "DEBUG")
+            EDR_LOG.log(u"No info on modules!", "DEBUG")
             return False
 
         timestamp = EDTime()
         timestamp.from_journal_timestamp(modules_info['timestamp'])
         if self.slots_timestamp and (timestamp.as_py_epoch() < self.slots_timestamp.as_py_epoch() or timestamp.as_py_epoch() < self.module_info_timestamp.as_py_epoch()):
-            EDRLOG.log(u"Stale info in modulesinfo.json: {} vs. {})".format(timestamp, self.slots_timestamp), "DEBUG")
+            EDR_LOG.log(u"Stale info in modulesinfo.json: {} vs. {})".format(timestamp, self.slots_timestamp), "DEBUG")
             return False
         
-        EDRLOG.log(u"Trying an update of modules: json@{}, slots@{}, panel looked@{}".format(timestamp, self.slots_timestamp, self.module_info_timestamp), "DEBUG")
+        EDR_LOG.log(u"Trying an update of modules: json@{}, slots@{}, panel looked@{}".format(timestamp, self.slots_timestamp, self.module_info_timestamp), "DEBUG")
         updated = self.slots_timestamp is None
-        EDRLOG.log(u"This will be our first time with actual info", "DEBUG")
+        EDR_LOG.log(u"This will be our first time with actual info", "DEBUG")
         self.slots_timestamp = timestamp
         modules = modules_info.get("Modules", [])
         for module in modules:
@@ -438,13 +434,13 @@ class EDVehicle(object):
                 module_updated = self.slots[slot_name].update(module)
                 if self.slots[slot_name].power_draw > 0:
                     if module_updated:
-                        EDRLOG.log(u"{} in {}: power_draw: {}, priority: {}".format(self.slots[slot_name].cname, slot_name, self.slots[slot_name].power_draw, self.slots[slot_name].priority), "DEBUG")
+                        EDR_LOG.log(u"{} in {}: power_draw: {}, priority: {}".format(self.slots[slot_name].cname, slot_name, self.slots[slot_name].power_draw, self.slots[slot_name].priority), "DEBUG")
                     updated |= module_updated
             else:
                 the_module = edmodule.EDModule(module)
                 self.slots[slot_name] = the_module
                 if the_module.power_draw > 0 or the_module.power_generation > 0:
-                    EDRLOG.log(u"[New] {} in {}: power_draw: {}, priority: {}".format(self.slots[slot_name].cname, slot_name, self.slots[slot_name].power_draw, self.slots[slot_name].priority), "DEBUG")
+                    EDR_LOG.log(u"[New] {} in {}: power_draw: {}, priority: {}".format(self.slots[slot_name].cname, slot_name, self.slots[slot_name].power_draw, self.slots[slot_name].priority), "DEBUG")
                 updated |= the_module.power_draw > 0 or the_module.power_generation > 0
         self.whole_loadout = True
         return updated
@@ -453,7 +449,7 @@ class EDVehicle(object):
         other_id = event.get("ShipID", None)
         other_type = EDVehicleFactory.canonicalize(event.get("Ship", "unknown")) 
         if other_id != self.id or other_type != self.type:
-            EDRLOG.log(u"Mismatch between ID ({} vs {}) and/or Type ({} vs. {}), can't update name/identity".format(self.id, other_id, self.type, other_type), "WARNING")
+            EDR_LOG.log(u"Mismatch between ID ({} vs {}) and/or Type ({} vs. {}), can't update name/identity".format(self.id, other_id, self.type, other_type), "WARNING")
             return
         self.identity = event.get('UserShipId', None)
         self.name = event.get('UserShipName', None)
@@ -1158,6 +1154,18 @@ class EDCobraMkIV(EDVehicle):
         self.hull_hardness = 35
         self.hull_base_strength = 216 / 1.8
 
+class EDCobraMkV(EDVehicle):
+    def __init__(self):
+        super(EDCobraMkV, self).__init__()
+        self.type = u'Cobra Mk V'
+        self.size = EDVehicleSize.SMALL
+        self.seats = 3
+        self.value = 1989460
+        self.shield_base_strength = 160
+        self.hull_mass = 150
+        self.hull_hardness = 40
+        self.hull_base_strength = 324 / 1.8
+
 class EDKeelback(EDVehicle):
     def __init__(self):
         super(EDKeelback, self).__init__()
@@ -1435,6 +1443,7 @@ class EDVehicleFactory(object):
         "federation_gunship": EDFederalGunship,
         "viper_mkiv": EDViperMkIV,
         "cobramkiv": EDCobraMkIV,
+        "cobramkv": EDCobraMkV,
         "independant_trader": EDKeelback,
         "asp_scout": EDAspScout,
         "typex": EDAllianceChieftain,
@@ -1536,7 +1545,7 @@ class EDVehicleFactory(object):
 
         vehicle_class = EDVehicleFactory.__vehicle_classes.get(name.lower(), None)
         if vehicle_class is None:
-            EDRLOG.log("The requested vehicle has not been implemented: {}".format(name), "ERROR")
+            EDR_LOG.log("The requested vehicle has not been implemented: {}".format(name), "ERROR")
             vehicle_class = EDUnknownVehicle
         
         vehicle = vehicle_class()
