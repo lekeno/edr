@@ -199,36 +199,36 @@
 
 
 
-    "### CategoryPP2.0Data ###":  "{'PP2.0'--------'type'----------'used'------'locations'------------------------------------------------------'comment'-----------------}",
+    "# CategoryPP2.0Data #":  "{'PP2.0'--------'type'----------'used'------'locations'------------------------------------------------------'comment'----------------------------------------}",
 
-    "datastoragedevice":           {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Data port"],                       "comment": "Powerplay item"},
-    "electronicspackage":          {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Data port"],                       "comment": "Powerplay item"},
-    "energyregulator":             {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Data port"],                       "comment": "Powerplay item"},
-    "powerassociationdata":        {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Data port"],                       "comment": "Powerplay item"},
-    "powerclassifieddata":         {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Data port"],                       "comment": "Powerplay item"},
-    "powerindustrialdata":         {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Data port"],                       "comment": "Powerplay item"},
-    "powerinjectionmalware":       {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Data port"],                       "comment": "Powerplay item"},
-    "powermegashipdata":           {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Data port"],                       "comment": "Powerplay item"},
-    "powerpoliticaldata":          {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Data port"],                       "comment": "Powerplay item"},
-    "powerresearchdata":           {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Data port"],                       "comment": "Powerplay item"},
-    "powertrackermalware":         {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Data port"],                       "comment": "Powerplay item"},
-    "researchnotes":               {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Data port"],                       "comment": "Powerplay item"},
-    "securitylogs":                {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Data port"],                       "comment": "Powerplay item"},
+    "powerclassifieddata":     {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Data port"],                       "comment": "In-Game Name: Power Classified Data"},
+    "poweremployeedata":       {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Data port"],                       "comment": "In-Game Name: Power Association Data"},
+    "powerfinancialrecords":   {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Data port"],                       "comment": "In-Game Name: Power Industrial Data"},
+    "powerpreparationspyware": {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Data port"],                       "comment": "In-Game Name: Power Injection Malware"},
+    "powermegashipdata":       {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Data port"],                       "comment": "Powerplay item"},
+    "powerpropagandadata":     {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Data port"],                       "comment": "In-Game Name: Power Political Data"},
+    "powerresearchdata":       {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Data port"],                       "comment": "In-Game Name: Power Research Data"},
+    "powerspyware":            {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Data port"],                       "comment": "In-Game Name: Power Tracker Malware"},
 
 
 
-    "### CategoryPP2.0Item ###":  "{'PP2.0'--------'type'----------'used'------'locations'------------------------------------------------------'comment'-----------------}",
+    "# CategoryPP2.0Item #":  "{'PP2.0'--------'type'----------'used'------'locations'------------------------------------------------------'comment'----------------------------------------------}",
     
-    "agriculturalsample":          {"PP2.0": true, "type": "item", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "Powerplay item"},
-    "computerparts":               {"PP2.0": true, "type": "item", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "Powerplay item"},
-    "experimentprototype":         {"PP2.0": true, "type": "item", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "Powerplay item"},
-    "extractionsample":            {"PP2.0": true, "type": "item", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "Powerplay item"},
-    "industrialcomponent":         {"PP2.0": true, "type": "item", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "Powerplay item"},
-    "industrialmachinery":         {"PP2.0": true, "type": "item", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "Powerplay item"},
-    "inventoryrecord":             {"PP2.0": true, "type": "item", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "Powerplay item"},
-    "medicalsample":               {"PP2.0": true, "type": "item", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "Powerplay item"},
-    "militaryschematic":           {"PP2.0": true, "type": "item", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "Powerplay item"},
-    "personalprotectiveequipment": {"PP2.0": true, "type": "item", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "Powerplay item"},
+    "energyregulator":         {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "Powerplay item"},
+    "powerindustrial":         {"PP2.0": true, "type": "item", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "In-Game Name: Industrial Component"},
+    "poweragriculture":        {"PP2.0": true, "type": "item", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "In-Game Name: Agricultural Sample"},
+    "powercomputer":           {"PP2.0": true, "type": "item", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "In-Game Name: Computer Parts"},
+    "powerelectronics":        {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "In-Game Name: Electronics Package"},
+    "powerequipment":          {"PP2.0": true, "type": "item", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "In-Game Name: Personal Protective Equipment"},
+    "powerexperiment":         {"PP2.0": true, "type": "item", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "In-Game Name: Experiment Prototype"},
+    "powerextraction":         {"PP2.0": true, "type": "item", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "In-Game Name: Extraction Sample"},
+    "powerinventory":          {"PP2.0": true, "type": "item", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "In-Game Name: Inventory Record"},
+    "powermedical":            {"PP2.0": true, "type": "item", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "In-Game Name: Medical Sample"},
+    "powermisccomputer":       {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "In-Game Name: Data Storage Device"},
+    "powermiscindust":         {"PP2.0": true, "type": "item", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "In-Game Name: Industrial Machinery"},
+    "powerplaymilitary":       {"PP2.0": true, "type": "item", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "In-Game Name: Military Schematic"},
+    "powersecurity":           {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "In-Game Name: Security Logs"},
+    "researchnotes":           {"PP2.0": true, "type": "data", "used":  1, "locations": ["Settlements", "Power locker", "Power container"], "comment": "Powerplay item"},
 
 
 
