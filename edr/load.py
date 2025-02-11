@@ -1293,7 +1293,7 @@ def report_comms(player, entry):
                 EDR_LOG.log(u"Emote to {} (not friend/wing) == same location".format(receiving_party), "INFO")
                 contact = player.instanced_player(receiving_party)
                 edr_submit_contact(contact, entry["timestamp"], "Emote sent (non wing/friend player)", player)
-                if action in ["wave", "point"]:
+                if action in ["wave", "point"] and EDR_CLIENT.gesture_triggers:
                     EDR_LOG.log(u"Implicit who emote-command for {}".format(receiving_party), "INFO")
                     EDR_CLIENT.who(receiving_party, autocreate=True)
             elif "$HumanoidEmote_TargetMessage:#player=$cmdr_decorate:#name=" in entry.get("Message", ""):

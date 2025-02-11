@@ -3231,9 +3231,9 @@ class EDRClient(object):
         return True
 
     def pointing_guidance(self, entry):
-        if (not self._gesture_triggers):
+        if (not self.gesture_triggers):
             EDR_LOG.log("Gestures setting is off, skipping processing", "INFO")
-            return
+            return True
         # TODO add the name of the thing in the header
         target = self.player.remlok_helmet.pointing_at(entry)
         if not target:
@@ -3252,7 +3252,7 @@ class EDRClient(object):
         return True
     
     def gesture(self, entry):
-        if (not self._gesture_triggers):
+        if (not self.gesture_triggers):
             EDR_LOG.log("Gestures setting is off, skipping processing", "INFO")
             return
         default_emote_regex = r"^\$HumanoidEmote_DefaultMessage:#player=\$cmdr_decorate:#name=(.+);:#action=\$HumanoidEmote_(.+)_Action[;]+$"
