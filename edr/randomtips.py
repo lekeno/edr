@@ -160,6 +160,8 @@ DEFAULT_TIPS = {
         _(u"Send '!journey bodies' to see list of bodies to survey when using a Spansh route for exobiology or mapping (e.g. exomastery, road to riches)"),
         _(u"Send '!journey next', '!journey previous' to manually change the target waypoint of an active Spansh journey."),
         _(u"Send '!journey check 1 a 1, 1 a 2' to manually clear-off bodies (1 a 1, and 1 a 2), off the list for an active Spansh journey"),
+        _(u"Send '!gesture on' in chat to enable triggering EDR features with gestures."),
+        _(u"Send '!gesture off' in chat to disable triggering EDR features with gestures."),
     ],
     "open": [
         _(u"Never fly what you can't afford to lose. Check your rebuy and credit balance on your right panel."),

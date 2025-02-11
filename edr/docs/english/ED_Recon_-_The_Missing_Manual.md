@@ -783,9 +783,12 @@ If you don’t want to report interactions or fights (e.g. agreed upon PvP), you
 - To disable crimes reporting, send `!crimes off`, or uncheck the “Crimes reporting” option in EDR’s settings panel.
 - To enable crimes reporting, send `!crimes on`, or check the “Crimes reporting” option in EDR’s settings panel.
 - You can confirm the current configuration by sending `!crimes`. 
+# Gesture triggers
+## Commands and options
+The use of in-game gestures to trigger EDR features can be disabled or enabled via the `!gesture off` or `!gesture on` chat commands.
 # Sounds Effects
 ## Commands and options
-Sound effects can be disabled or enabled from the EDR options in EDMC (`File` menu, `Settings`, `EDR` tab, `Feedback` section, `Sound` checkbox)
+Sound effects can be disabled or enabled from the EDR options in EDMC (`File` menu, `Settings`, `EDR` tab, `Feedback` section, `Sound` checkbox), or via the `!audiocue off` or `!audiocue on` chat commands.
 ## Customization
 To customize the sound effects, make a copy of the `sfx_config.v1.ini` file, found in the config folder, and rename it `user_sfx_config.v1.ini`
 
