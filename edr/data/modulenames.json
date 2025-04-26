@@ -368,6 +368,8 @@
 "drive_class8_c_cobramkv": { "name":"drive (8C*)", "shortname": "Drive (8∴)"},
 "drive_class8_d_cobramkv": { "name":"drive (8D*)", "shortname": "Drive (8⸬)"},
 "drive_class8_e_cobramkv": { "name":"drive (8E*)", "shortname": "Drive (8⁙)"},
+"drive_corsair": { "name":"drive", "shortname": "Drive"},
+"drive_corsair_small": { "name":"drive (s)", "shortname": "Drive (s)"},
 "engine_size2_class1": { "name":"thrusters (2E)", "shortname": "Thruster (2E)"},
 "engine_size2_class2": { "name":"thrusters (2D)", "shortname": "Thruster (2D)"},
 "engine_size2_class3": { "name":"thrusters (2C)", "shortname": "Thruster (2C)"},
