@@ -47,6 +47,8 @@ class EDRCommands(object):
             self.overlay_command("" if len(command_parts) == 1 else command_parts[1])
         elif command == "!audiocue" and len(command_parts) == 2:
             self.audiocue_command(command_parts[1])
+        elif command in ["!gesture", "!gestures"] and len(command_parts) == 2:
+            self.gesture_triggers_command(command_parts[1])
         elif command in ["!who", "!w"]:
             target_cmdr = None
             if len(command_parts) == 2:
@@ -581,6 +583,19 @@ class EDRCommands(object):
             self.edr_client.soft_audio_feedback()
             self.edr_client.audio_feedback = True
             self.edr_client.notify_with_details("EDR audio cues", ["Enabled", "Soft"])
+        else:
+            return False
+        return True
+    
+    def gesture_triggers_command(self, param):
+        if param == "on":
+            EDR_LOG.log(u"Enabling gesture triggers", "INFO")
+            self.edr_client.gesture_triggers = True
+            self.edr_client.notify_with_details("EDR gesture triggers", ["Enabling"])
+        elif param == "off":
+            EDR_LOG.log(u"Disabling gesture triggers", "INFO")
+            self.edr_client.gesture_triggers = False
+            self.edr_client.notify_with_details("EDR gesture triggers", ["Disabling"])
         else:
             return False
         return True

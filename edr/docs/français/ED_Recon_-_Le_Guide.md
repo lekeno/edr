@@ -935,11 +935,19 @@ Si vous ne souhaitez pas signaler les interactions ou les combats (ex. dans un s
 - Pour activer le signalement des crimes, envoyez `!crimes on` ou cochez l'option “Signalement des crimes” dans le panneau des paramètres d'EDR.
 - Vous pouvez aussi confirmer la configuration actuelle en envoyant `!crimes`.
 
+# Gestes
+## Commandes et options
+L'utilisation de gestes pour déclencher les fonctionnalités EDR peut être désactivée ou activée via les commandes de chat `!gesture off` ou `!gesture on`.
+
+# Sounds Effects
+## Commands and options
+Sound effects can be disabled or enabled from the EDR options in EDMC (`File` menu, `Settings`, `EDR` tab, `Feedback` section, `Sound` checkbox), or via the `!audiocue off` or `!audiocue on` chat commands.
+
 # Effets sonores
 
 ## Commandes et options
 
-Les effets sonores peuvent être désactivés ou activés à partir des options EDR dans EDMC (menu `Fichier`, `Paramètres`, onglet `EDR`, section `Commentaires`, case à cocher `Son`)
+Les effets sonores peuvent être désactivés ou activés à partir des options EDR dans EDMC (menu `Fichier`, `Paramètres`, onglet `EDR`, section `Commentaires`, case à cocher `Son`), ou via les commandes de chat `!audiocue off` ou `!audiocue on`.
 
 ## Personnalisation
 

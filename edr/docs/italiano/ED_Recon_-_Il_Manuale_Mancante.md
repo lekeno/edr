@@ -932,11 +932,15 @@ Se non si desidera segnalare interazioni o combattimenti (es. PvP concordato), �
 - Per attivare la segnalazione dei crimini, inviare `!crimes on`, oppure selezionare l'opzione "Report crimini" nel pannello delle impostazioni di EDR.
 - È possibile confermare la configurazione attuale inviando `!crimes`.
 
+# Gesti
+## Comandi e opzioni
+L'uso dei gesti nel gioco per attivare le funzionalità EDR può essere disabilitato o abilitato tramite i comandi di chat `!gesture off` o `!gesture on`.
+
 # Effetti audio
 
 ## Comandi e opzioni
 
-Gli effetti sonori possono essere disattivati o attivati dalle opzioni EDR in EDMC (menu `File`, `Impostazioni`, scheda `EDR`, sezione `Feedback`, casella di controllo `Audio`)
+Gli effetti sonori possono essere disattivati ​​o attivati ​​dalle opzioni EDR in EDMC (menu `File`, `Impostazioni`, scheda `EDR`, sezione `Feedback`, casella di controllo `Suono`) o tramite i comandi di chat `!audiocue off` o `!audiocue on`.
 
 ## Personalizzazione
 

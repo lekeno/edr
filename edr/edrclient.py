@@ -117,6 +117,10 @@ class EDRClient(object):
 
         audio = 1 if config.get_str("EDRAudioFeedback") == "True" else 0
         self._audio_feedback = tk.IntVar(value=audio)
+
+        g_triggers = 1 if config.get_str("EDRGestureTriggers") == "True" else 0
+        self._gesture_triggers = tk.IntVar(value=g_triggers)
+        
         
         self.server = EDRServer()
         crimes_reporting = 1 if config.get_str("EDRCrimesReporting") == "True" else 0
@@ -207,6 +211,7 @@ class EDRClient(object):
         c_visual_alt_feedback = config.get_str("EDRVisualAltFeedback")
         c_audio_feedback = config.get_str("EDRAudioFeedback")
         c_audio_volume = config.get_str("EDRAudioFeedbackVolume")
+        c_gesture_triggers = config.get_str("EDRGestureTriggers")
         c_redact_my_info = config.get_str("EDRRedactMyInfo")
         c_crimes_reporting = config.get_str("EDRCrimesReporting")
         c_fc_jump_announcements = config.get_str("EDRFCJumpPSA")
@@ -237,6 +242,11 @@ class EDRClient(object):
             self.loud_audio_feedback()
         else:
             self.soft_audio_feedback()
+
+        if c_gesture_triggers is None or c_gesture_triggers == "False":
+            self._gesture_triggers.set(0)
+        else:
+            self._gesture_triggers.set(1)
 
         if c_redact_my_info is None:
             self.anonymous_reports = _(u"Auto")
@@ -347,6 +357,14 @@ class EDRClient(object):
     @audio_feedback.setter
     def audio_feedback(self, new_value):
         self._audio_feedback.set(new_value)
+
+    @property
+    def gesture_triggers(self):
+        return self._gesture_triggers.get() == 1
+
+    @gesture_triggers.setter
+    def gesture_triggers(self, new_value):
+        self._gesture_triggers.set(new_value)
 
     @property
     def anonymous_reports(self):
@@ -569,7 +587,6 @@ class EDRClient(object):
         
         notebook.Checkbutton(frame, text=_(u"Sound"),
                              variable=self._audio_feedback).grid(padx=10, row=24, sticky=tk.W)
-
 
         return frame
 
@@ -3214,6 +3231,9 @@ class EDRClient(object):
         return True
 
     def pointing_guidance(self, entry):
+        if (not self.gesture_triggers):
+            EDR_LOG.log("Gestures setting is off, skipping processing", "INFO")
+            return True
         # TODO add the name of the thing in the header
         target = self.player.remlok_helmet.pointing_at(entry)
         if not target:
@@ -3232,6 +3252,9 @@ class EDRClient(object):
         return True
     
     def gesture(self, entry):
+        if (not self.gesture_triggers):
+            EDR_LOG.log("Gestures setting is off, skipping processing", "INFO")
+            return
         default_emote_regex = r"^\$HumanoidEmote_DefaultMessage:#player=\$cmdr_decorate:#name=(.+);:#action=\$HumanoidEmote_(.+)_Action[;]+$"
         m = re.match(default_emote_regex, entry.get("Message", ""))
         action = None

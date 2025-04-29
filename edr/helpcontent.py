@@ -287,6 +287,7 @@ class HelpContent(object):
                 _(u" - !crimes [off|on]: to disable/enable crime and fight reporting, e.g. '!crimes off' before an agreed upon duel."),
                 _(u" - !audiocue [on|off|loud|soft] to control the audio cues, e.g. '!audiocue soft' for soft cues."),
                 _(u" - !overlay [on|off|] to enable/disable or verify the overlay, e.g. '!overlay' to check if it is enabled/working."),
+                _(u" - !gesture [on|off] to control whether gestures can trigger EDR features, e.g. '!gesture off' to disable gesture triggers."),
                 _(u" - check the instructions in config/igm_config.v9.ini to customize the layout and timeouts."),
                 u"⚶",
                 _(u"Send !clear in chat to clear everything on the overlay.")
