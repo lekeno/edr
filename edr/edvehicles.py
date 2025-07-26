@@ -1166,6 +1166,18 @@ class EDCobraMkV(EDVehicle):
         self.hull_hardness = 40
         self.hull_base_strength = 324 / 1.8
 
+class EDCorsair(EDVehicle):
+    def __init__(self):
+        super(EDCorsair, self).__init__()
+        self.type = u'Corsair'
+        self.size = EDVehicleSize.MEDIUM
+        self.seats = 2
+        self.value = 79291731
+        self.shield_base_strength = 264
+        self.hull_mass = 265
+        self.hull_hardness = 65
+        self.hull_base_strength = 486 / 1.8
+
 class EDKeelback(EDVehicle):
     def __init__(self):
         super(EDKeelback, self).__init__()
@@ -1444,6 +1456,7 @@ class EDVehicleFactory(object):
         "viper_mkiv": EDViperMkIV,
         "cobramkiv": EDCobraMkIV,
         "cobramkv": EDCobraMkV,
+        "corsair": EDCorsair,
         "independant_trader": EDKeelback,
         "asp_scout": EDAspScout,
         "typex": EDAllianceChieftain,
