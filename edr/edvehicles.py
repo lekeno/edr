@@ -964,6 +964,21 @@ class EDT10Defender(EDVehicle):
     def supports_slf(self):
         return True
 
+class EDPantherClipperMkII(EDVehicle):
+    def __init__(self):
+        super(EDPantherClipperMkII, self).__init__()
+        self.type = u'Panther Clipper Mk II'
+        self.size = EDVehicleSize.LARGE
+        self.seats = 4
+        self.value = 301348586
+        self.shield_base_strength = 350
+        self.hull_mass = 1200
+        self.hull_hardness = 70
+        self.hull_base_strength = 1116 / 1.8
+    
+    def supports_slf(self):
+        return True
+
 class EDPython(EDVehicle):
     def __init__(self):
         super(EDPython, self).__init__()
@@ -1440,6 +1455,7 @@ class EDVehicleFactory(object):
         "orca": EDOrca,
         "type9": EDT9Heavy,
         "type9_military": EDT10Defender,
+        "panthermkii": EDPantherClipperMkII,
         "python": EDPython,
         "python_nx": EDPythonMkII,
         "belugaliner": EDBelugaLiner,
