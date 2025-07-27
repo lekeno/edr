@@ -319,14 +319,14 @@ class EDRClient(object):
     @status.setter
     def status(self, new_status):
         self._status.set(new_status)
-        if self.ui:
-            self.ui.nolink()
+        if self.client_ui and self.client_ui.ui:
+            self.client_ui.ui.nolink()
 
     def linkable_status(self, link, new_status = None):
         short_link = (link[:30] + u'…') if link and len(link) > 30 else link
         self._status.set(new_status if new_status else short_link)
-        if self.ui:
-            self.ui.link(link)
+        if self.client_ui and self.client_ui.ui:
+            self.client_ui.ui.link(link)
 
     @property
     def visual_feedback(self):
@@ -480,8 +480,8 @@ class EDRClient(object):
         self.__notify(_(u"EDR v{} by LeKeno").format(self.edr_version), details, clear_before=True)
         if self.audio_feedback:
             self.SFX.startup()
-        if self.ui:
-            self.ui.enable_entry()
+        if self.client_ui and self.client_ui.ui:
+            self.client_ui.ui.enable_entry()
 
     def shutdown(self, everything=False):
         self.edrcmdrs.persist()
@@ -494,8 +494,8 @@ class EDRClient(object):
         self.edrlegal.persist()
         if self.IN_GAME_MSG:
             self.IN_GAME_MSG.shutdown()
-        if self.ui:
-            self.ui.disable_entry()
+        if self.client_ui and self.client_ui.ui:
+            self.client_ui.ui.disable_entry()
         config.set("EDRVisualAltFeedback", "True" if self.visual_alt_feedback else "False")
 
         if not everything:
@@ -553,12 +553,13 @@ class EDRClient(object):
                                                 config.get_str("EDRAudioFeedbackVolume")), "DEBUG")
         EDR_LOG.log(u"Anonymous reports: {}".format(config.get_str("EDRRedactMyInfo")), "DEBUG")
         EDR_LOG.log(u"Crimes reporting: {}".format(config.get_str("EDRCrimesReporting")), "DEBUG")
-        self.ui.refresh_theme()
+        if self.client_ui and self.client_ui.ui:
+            self.client_ui.ui.refresh_theme()
         self.login()
 
     def process_sent_message(self, entry):
-        if self.ui:
-            self.ui.enable_entry()
+        if self.client_ui and self.client_ui.ui:
+            self.client_ui.ui.enable_entry()
         
         return self.edrcommands.process(entry["Message"], entry.get("To", None))
 
@@ -937,7 +938,8 @@ class EDRClient(object):
             description = self.describe_station(station, faction)
             summary = self.IN_GAME_MSG.docking(self.player.star_system, station, entry["LandingPad"], faction, description)
             if summary:
-                self.ui.notify(summary["header"], summary["body"])
+                if self.client_ui and self.client_ui.ui:
+                    self.client_ui.ui.notify(summary["header"], summary["body"])
                 if self.audio_feedback:
                     self.SFX.docking()
         else:
@@ -2555,7 +2557,8 @@ class EDRClient(object):
                 info = u"{} ({}) in {}, {} - {} {}\nInfo provided by EDR.".format(info["cmdr"], info["ship"]["type"], info["starSystem"], info["place"], fuel_info, hull_info)
                 copy(info)
                 attachment.append(info)
-                self.ui.notify(fuel_service["name"], attachment)
+                if self.client_ui and self.client_ui.ui:
+                    self.client_ui.ui.notify(fuel_service["name"], attachment)
                 details.append(_(u"Check ED Market Connector for instructions about other options"))
                 status = _(u"Sent to EDR central - Also try: {}").format(fuel_service["name"])
                 link = fuel_service["url"]
@@ -2799,7 +2802,8 @@ class EDRClient(object):
             if self.audio_feedback:
                 self.SFX.help()
         EDR_LOG.log(u"[Alt] Show help for {} with header: {} and details: {}".format(section, content["header"], content["details"][0]), "DEBUG")
-        self.ui.help(_(content["header"]), translated_content_details)
+        if self.client_ui and self.client_ui.ui:
+            self.client_ui.ui.help(_(content["header"]), translated_content_details)
         return True
 
     def tip(self, category=None):
@@ -2813,13 +2817,15 @@ class EDRClient(object):
             if self.audio_feedback:
                 self.SFX.help()
         EDR_LOG.log(u"[Alt] Show tip for {} with details: {}".format(category, the_tip), "DEBUG")
-        self.ui.help(_(u"EDR pro-tips"), [the_tip])
+        if self.client_ui and self.client_ui.ui:
+            self.client_ui.ui.help(_(u"EDR pro-tips"), [the_tip])
         return True
 
     def clear(self):
         if self.visual_feedback:
             self.IN_GAME_MSG.clear()
-        self.ui.clear()
+        if self.client_ui and self.client_ui.ui:
+            self.client_ui.ui.clear()
            
 
     def __sitrep(self, header, details):
@@ -2830,7 +2836,8 @@ class EDRClient(object):
             self.IN_GAME_MSG.clear_sitrep()
             self.IN_GAME_MSG.sitrep(header, details)
         EDR_LOG.log(u"[Alt] sitrep with header: {}; details: {}".format(header, details[0]), "DEBUG")
-        self.ui.sitrep(header, details)
+        if self.client_ui and self.client_ui.ui:
+            self.client_ui.ui.sitrep(header, details)
 
     def __intel(self, header, details, clear_before=False, legal=None):
         if self.audio_feedback:
@@ -2841,7 +2848,8 @@ class EDRClient(object):
                 self.IN_GAME_MSG.clear_intel()
             self.IN_GAME_MSG.intel(header, details, legal)
         EDR_LOG.log(u"[Alt] Intel; details: {}".format(details[0]), "DEBUG")
-        self.ui.intel(header, details)
+        if self.client_ui and self.client_ui.ui:
+            self.client_ui.ui.intel(header, details)
 
     def __warning(self, header, details, clear_before=False, legal=None):
         if self.audio_feedback:
@@ -2852,7 +2860,8 @@ class EDRClient(object):
                 self.IN_GAME_MSG.clear_warning()
             self.IN_GAME_MSG.warning(header, details, legal)
         EDR_LOG.log(u"[Alt] Warning; details: {}".format(details[0]), "DEBUG")
-        self.ui.warning(header, details)
+        if self.client_ui and self.client_ui.ui:
+            self.client_ui.ui.warning(header, details)
     
     def __notify(self, header, details, clear_before=False, sfx=True):
         if sfx and self.audio_feedback:
@@ -2863,7 +2872,8 @@ class EDRClient(object):
                 self.IN_GAME_MSG.clear_notice()
             self.IN_GAME_MSG.notify(header, details)
         EDR_LOG.log(u"[Alt] Notify about {}; details: {}".format(header, details[0]), "DEBUG")
-        self.ui.notify(header, details)
+        if self.client_ui and self.client_ui.ui:
+            self.client_ui.ui.notify(header, details)
 
     def __commsjammed(self):
         self.__notify(_(u"Comms Link Error"), [_(u"EDR Central can't be reached at the moment"), _(u"Try again later. Join https://edrecon.com/discord or contact Cmdr LeKeno if it keeps failing")], sfx=False)
