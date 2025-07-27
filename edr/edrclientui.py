@@ -12,11 +12,12 @@ class EDRClientUI(object):
         self.edr_client = edr_client
         self.parent = parent
         self.frame = None
+        self.ui = None
 
     def app_ui(self):
-        if self.edr_client.ui is None:
-            self.edr_client.ui = EDRTogglingPanel(self.edr_client._status, self.edr_client._visual_alt_feedback, self.edr_client.edrcommands.process, parent=self.parent)
-            self.edr_client.ui.notify(_(u"Troubleshooting"), [
+        if self.ui is None:
+            self.ui = EDRTogglingPanel(self.edr_client._status, self.edr_client._visual_alt_feedback, self.edr_client.edrcommands.process, parent=self.parent)
+            self.ui.notify(_(u"Troubleshooting"), [
                 _(u"If the overlay doesn't show up, try one of the following:"),
                 _(u" - In E:D Market Connector: click on the File menu, then Settings, EDR, and select the Overlay checkbox."),
                 _(u" - In Elite: go to graphics options, and select Borderless or Windowed."),
@@ -26,7 +27,7 @@ class EDRClientUI(object):
                 u"----",
                 _("Join https://edrecon.com/discord for further technical support.")])
         self.edr_client.check_version()
-        return self.edr_client.ui
+        return self.ui
 
     def prefs_ui(self):
         frame = notebook.Frame(self.parent)
