@@ -74,7 +74,7 @@ class EDRServiceFinder(threading.Thread):
                
         systems = self.edr_systems.systems_within_radius(self.star_system, self.radius)
         if not systems:
-            return candidates
+            return candidates["prime"] or candidates["alt"]  
 
         if self.shuffle_systems:
             shuffle(systems)
