@@ -1,10 +1,8 @@
-#!/usr/bin/env python
+import os
 # coding=utf-8
 
-import os
 import json
 
-import utils2to3
 
 def _(message): return message
 
@@ -311,7 +309,7 @@ class HelpContent(object):
 
     def __init__(self, help_file=None):
         if help_file:
-            self.content = json.loads(open(utils2to3.abspathmaker(__file__, help_file)).read())
+            self.content = json.loads(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), help_file)).read())
         else:
             self.content = HelpContent.DEFAULT_CONTENT
 

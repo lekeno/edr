@@ -1,9 +1,8 @@
-import json
+import os
 from edrlog import EDR_LOG
 from edri18n import _
-import utils2to3
 
-POWER_DATA = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'modules_power_data.json')).read())
+POWER_DATA = json.loads(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'modules_power_data.json')).read())
 
 
 class EDRXzibit(object):

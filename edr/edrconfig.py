@@ -1,6 +1,5 @@
-from __future__ import absolute_import
-
 import os
+
 try:
     # for Python2
     import ConfigParser as cp
@@ -9,13 +8,12 @@ except ImportError:
     import configparser as cp
 
 
-import utils2to3
 
 class EDRUserConfig(object):
     def __init__(self, config_file='config/user_config.ini'):
         self.config = cp.ConfigParser()
         try:
-            self.config.read(utils2to3.abspathmaker(__file__, config_file))
+            self.config.read(os.path.join(os.path.dirname(os.path.abspath(__file__)), config_file))
         except:
             self.config = None
 
@@ -43,7 +41,7 @@ class EDRUserConfig(object):
 class EDRConfig(object):
     def __init__(self, config_file='config/config.ini'):
         self.config = cp.ConfigParser()
-        self.config.read(utils2to3.abspathmaker(__file__, config_file))
+        self.config.read(os.path.join(os.path.dirname(os.path.abspath(__file__)), config_file))
 
     def edr_version(self):
         return self.config.get('general', 'version')

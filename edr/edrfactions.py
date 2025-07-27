@@ -1,6 +1,5 @@
-from __future__ import absolute_import, division
-
 import os
+
 import pickle
 import math
 
@@ -8,7 +7,6 @@ from edrconfig import EDRConfig
 from lrucache import LRUCache
 from edri18n import _
 from edtime import EDTime
-import utils2to3
 from edrlog import EDR_LOG
 
 class EDRMaterialOutcomes(object):
@@ -448,9 +446,9 @@ class EDRFactionEDSM(EDRFaction):
         # TODO happiness
 
 class EDRFactions(object):
-    EDR_FACTIONS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edr_factions.v2.p')
-    EDR_CONTROLLING_FACTIONS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edr_controlling_factions.v2.p')
-    EDSM_FACTIONS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_factions.v2.p')
+    EDR_FACTIONS_CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cache', 'edr_factions.v2.p')
+    EDR_CONTROLLING_FACTIONS_CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cache', 'edr_controlling_factions.v2.p')
+    EDSM_FACTIONS_CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cache', 'edsm_factions.v2.p')
 
     def __init__(self, edsm_server):
         edr_config = EDRConfig()

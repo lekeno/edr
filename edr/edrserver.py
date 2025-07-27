@@ -1,9 +1,6 @@
 # encoding: utf-8
 import sys
-try:
-    from urllib.parse import quote
-except ImportError:
-    from urllib import quote # python 2.7.11
+from urllib.parse import quote
 import urllib
 import json
 import calendar
@@ -345,11 +342,7 @@ class EDRServer(object):
             raise CommsJammedError("cmdr")
         cmdr_profile = edrcmdrprofile.EDRCmdrProfile()
 
-        params = {}
-        if sys.version_info.major == 2:
-            params = { "orderBy": '"cname"', "equalTo": json.dumps(cmdr.lower().encode('utf-8')), "limitToFirst": 1, "auth": self.auth_token()}
-        else:
-            params = { "orderBy": '"cname"', "equalTo": json.dumps(cmdr.lower()), "limitToFirst": 1, "auth": self.auth_token()}
+        params = { "orderBy": '"cname"', "equalTo": json.dumps(cmdr.lower()), "limitToFirst": 1, "auth": self.auth_token()}
         resp = self.__get("{}/v1/cmdrs.json".format(self.EDR_SERVER), "EDR", params)
 
         if not self.__check_response(resp, "EDR", "Cmdrs"):
@@ -392,8 +385,8 @@ class EDRServer(object):
             "Authorization": "ApiKey {}".format(self.INARA_API_KEY),
             "X-EDR-UID": self.uid()
         }
-        requester = quote(self.player_name.encode('utf-8')) if self.player_name else u"-"
-        endpoint = "{}/edr/v1/inara/{}/{}".format(self.EDR_SERVER_FUNCTIONS, quote(cmdr.lower().encode('utf-8')), quote(requester))
+        requester = quote(self.player_name) if self.player_name else u"-"
+        endpoint = "{}/edr/v1/inara/{}/{}".format(self.EDR_SERVER_FUNCTIONS, quote(cmdr.lower()), quote(requester))
         resp = self.__get(endpoint, "EDR", headers=headers)
 
         if not self.__check_response(resp, "Inara", "Inara"):

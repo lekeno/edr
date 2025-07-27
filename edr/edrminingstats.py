@@ -1,11 +1,10 @@
-from __future__ import absolute_import
+import os
 
 from collections import deque
 from time import time
 from edtime import EDTime
 from edri18n import _
 import json
-import utils2to3
 
 class EDRMineralStats(object):
     def __init__(self, name, internal_name, symbol):
@@ -49,7 +48,7 @@ class EDRMineralStats(object):
 
 
 class EDRMiningStats(object):
-    MINERALS_LUT = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'mining.json')).read())
+    MINERALS_LUT = json.loads(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'mining.json')).read())
 
     def __init__(self):
         self.lmh = {"-": 0, "L": 0, "M": 0, "H": 0}

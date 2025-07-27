@@ -1,5 +1,4 @@
-import json
-import utils2to3
+import os
 
 class EDEngineer(object):
     def __init__(self):
@@ -258,7 +257,7 @@ class EDYiShen(EDEngineer):
         return False
 
 class EDEngineers(object):
-    ODYSSEY_MATS = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'odyssey_mats.json')).read())
+    ODYSSEY_MATS = json.loads(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'odyssey_mats.json')).read())
 
     def __init__(self):
         self.engineers = {}

@@ -1,4 +1,4 @@
-import threading
+import os
 import csv
 import pickle
 import requests
@@ -9,7 +9,6 @@ from math import sqrt
 import re
 
 from edri18n import _
-import utils2to3
 from edtime import EDTime
 from collections import deque
 from edrutils import pretty_print_number, simplified_body_name
@@ -950,7 +949,7 @@ class EDRRouteStatistics(object):
         return None
     
 class EDRNavigator(object):
-    EDR_JOURNEY_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'navigator.v1.p')
+    EDR_JOURNEY_CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cache', 'navigator.v1.p')
     
     def __init__(self):
         self.route = None
@@ -1179,4 +1178,3 @@ class EDRNavigator(object):
             return None
         
         return self.journey.wp_bodies_to_survey(star_system)
-        

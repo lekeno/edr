@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+import os
 from __future__ import division
 #from builtins import round
 
@@ -23,7 +23,6 @@ import edengineers
 from edrutils import pretty_print_number
 from edrroutes import EDRNavigator
 
-import utils2to3
 
 
 class EDRCrew(object):
@@ -906,7 +905,7 @@ class EDWing(object):
         return changes
 
 class EDPlayerOne(EDPlayer):
-    EDR_FLEET_CARRIER_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'fleet_carrier.v3.p')
+    EDR_FLEET_CARRIER_CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cache', 'fleet_carrier.v3.p')
 
     def __init__(self, name=None):
         super(EDPlayerOne, self).__init__(name)

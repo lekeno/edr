@@ -1,14 +1,12 @@
-import datetime
+import os
 import json
 import requests
 import pickle
-import os
 
 from edrlog import EDR_LOG
-import utils2to3
 
 class RESTFirebaseAuth(object):
-    FIREBASE_ANON_AUTH_CACHE = utils2to3.abspathmaker(__file__, 'private', 'fbaa.v2.p')
+    FIREBASE_ANON_AUTH_CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'private', 'fbaa.v2.p')
 
     def __init__(self):
         self.email = ""

@@ -1,14 +1,12 @@
-from __future__ import absolute_import
+import os
 
 import json
 import re
-import os
 
 from edrlog import EDR_LOG
-import utils2to3
 
 
-POWER_DATA = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'modules_power_data.json')).read())
+POWER_DATA = json.loads(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'modules_power_data.json')).read())
 
 class EDResistances(object):
     def __init__(self, thermal=0, kinetic=0, explosive=0, caustic=0):

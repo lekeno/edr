@@ -1,4 +1,4 @@
-# coding= utf-8
+import os
 from __future__ import absolute_import
 
 # TODO void opals: Smethells 1, planet 1. Double VO. Or Smei Ti, planet ABC 4.?
@@ -6,7 +6,6 @@ from __future__ import absolute_import
 
 import math
 import json
-import os
 import random
 
 from clippy import copy
@@ -15,14 +14,13 @@ import edrstatecheck
 from edrstatefinder import EDRStateFinder
 from edri18n import _
 from edrrawdepletables import EDRRawDepletables
-import utils2to3
 
 class EDRResourceFinder(object):
 
-    RAW_MATS = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'raw.json')).read())
-    RAW_MATS_PROFILES = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'raw_profiles.json')).read())
+    RAW_MATS = json.loads(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'raw.json')).read())
+    RAW_MATS_PROFILES = json.loads(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'raw_profiles.json')).read())
     try:
-        RAW_MATS_PROFILES = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'user_raw_profiles.json')).read())
+        RAW_MATS_PROFILES = json.loads(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'user_raw_profiles.json')).read())
     except:
         pass
 
@@ -632,7 +630,7 @@ class EDRResourceFinder(object):
         if resource != "selenium":
             return False
         filename = '{}_sel.json'.format(self.dlc) if self.dlc else 'sel.json'
-        candidates = json.loads(open(utils2to3.abspathmaker(__file__, 'data', filename)).read())
+        candidates = json.loads(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', filename)).read())
         if not candidates:
             return False
 

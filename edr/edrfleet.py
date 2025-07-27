@@ -1,11 +1,8 @@
-from __future__ import absolute_import
-
 import os
+
 import sys
 import sqlite3
 import math
-
-import utils2to3
 from edvehicles import EDVehicleFactory
 from edtime import EDTime
 from edrlog import EDR_LOG
@@ -56,7 +53,7 @@ class EDRFleet(object):
 
 
     def __init__(self):
-        path = utils2to3.abspathmaker(__file__, 'db', 'fleet')
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'db', 'fleet')
         try:
             self.db = sqlite3.connect(path)
             cursor = self.db.cursor()

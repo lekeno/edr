@@ -1,4 +1,4 @@
-import re
+import os
 import json
 from math import log10
 
@@ -10,7 +10,6 @@ import edmodulesinforeader
 import edcargoreader
 from edrlog import EDR_LOG
 import edcargo
-import utils2to3
 from edshield import EDPowerDistributor, EDShieldGenerator, EDShieldingFactory
 from edarmour import EDHullFactory
 from edweapons import EDWeaponFactory
@@ -1496,8 +1495,8 @@ class EDVehicleFactory(object):
         "unknown (captain)": EDCaptainUnknownVehicle
     }
 
-    CANONICAL_SHIP_NAMES = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'shipnames.json')).read())
-    CANONICAL_MODULE_NAMES = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'modulenames.json'), encoding="utf-8", errors='ignore').read())
+    CANONICAL_SHIP_NAMES = json.loads(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'shipnames.json')).read())
+    CANONICAL_MODULE_NAMES = json.loads(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'modulenames.json'), encoding="utf-8", errors='ignore').read())
 
     @staticmethod
     def canonicalize(name):

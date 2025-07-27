@@ -1,9 +1,8 @@
-# coding= utf-8
+import os
 from __future__ import absolute_import
 
 import datetime
 import time
-import os
 import pickle
 
 from lrucache import LRUCache
@@ -13,12 +12,11 @@ from edtime import EDTime
 from collections import deque
 from edentities import EDFineOrBounty
 from edri18n import _, _c
-import utils2to3
 
 
 
 class EDRLegalRecords(object):
-    EDR_LEGAL_RECORDS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'legal_records.v3.p')
+    EDR_LEGAL_RECORDS_CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cache', 'legal_records.v3.p')
     
     def __init__(self, server):
         self.server = server

@@ -1,12 +1,10 @@
-from __future__ import absolute_import
-
 import os
+
 import json
 
-import utils2to3
 
 class EDRLandables(object):
-    MAPS = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'landable-maps.json')).read())
+    MAPS = json.loads(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'landable-maps.json')).read())
 
     @staticmethod
     def map_for(star_system, location_name, location_type):
