@@ -11,26 +11,58 @@ class EDRClientUI(object):
     def __init__(self, edr_client, parent):
         self.edr_client = edr_client
         self.parent = parent
-        self.frame = None
-        self.ui = None
+        self.ui = EDRTogglingPanel(self.edr_client._status, self.edr_client._visual_alt_feedback, self.edr_client.edrcommands.process, parent=self.parent)
 
     def app_ui(self):
         if self.ui is None:
             self.ui = EDRTogglingPanel(self.edr_client._status, self.edr_client._visual_alt_feedback, self.edr_client.edrcommands.process, parent=self.parent)
-            self.ui.notify(_(u"Troubleshooting"), [
-                _(u"If the overlay doesn't show up, try one of the following:"),
-                _(u" - In E:D Market Connector: click on the File menu, then Settings, EDR, and select the Overlay checkbox."),
-                _(u" - In Elite: go to graphics options, and select Borderless or Windowed."),
-                _(u" - With Elite and EDR launched, check that EDMCOverlay.exe is running in the task manager."), 
-                _(u"   If it's not running, then you may have to manually run it once (look in the plugins folder for 'EDMCOverlay.exe'."),
-                _(u"If the overlay hurts your FPS, try turning VSYNC off in Elite's graphics options."),
-                u"----",
-                _("Join https://edrecon.com/discord for further technical support.")])
-        self.edr_client.check_version()
+        
+        self.ui.notify(_(u"Troubleshooting"), [
+            _(u"If the overlay doesn't show up, try one of the following:"),
+            _(u" - In E:D Market Connector: click on the File menu, then Settings, EDR, and select the Overlay checkbox."),
+            _(u" - In Elite: go to graphics options, and select Borderless or Windowed."),
+            _(u" - With Elite and EDR launched, check that EDMCOverlay.exe is running in the task manager."), 
+            _(u"   If it's not running, then you may have to manually run it once (look in the plugins folder for 'EDMCOverlay.exe'."),
+            _(u"If the overlay hurts your FPS, try turning VSYNC off in Elite's graphics options."),
+            u"----",
+            _("Join https://edrecon.com/discord for further technical support.")])
         return self.ui
+    
+    def refresh_theme(self):
+        self.ui.refresh_theme()
 
-    def prefs_ui(self):
-        frame = notebook.Frame(self.parent)
+    def enable_entry(self):
+        self.ui.enable_entry()
+    
+    def disable_entry(self):
+        self.ui.disable_entry()
+
+    def notify(self, header, body):
+        self.ui.notify(header, body)
+
+    def help(self, header, body):
+        self.ui.help(header, body)
+
+    def clear(self):
+        self.ui.clear()
+
+    def intel(self, header, body):
+        self.ui.intel(header, body)
+    
+    def sitrep(self, header, body):
+        self.ui.sitrep(header, body)
+
+    def warning(self, header, body):
+        self.ui.warning(header, body)
+
+    def nolink(self):
+        self.ui.nolink()
+        
+    def link(self, link):
+        self.ui.link(link)
+
+    def prefs_ui(self, parent):
+        frame = notebook.Frame(parent)
         frame.columnconfigure(1, weight=1)
 
         # Translators: this is shown in the preferences panel
