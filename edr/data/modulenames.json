@@ -375,7 +375,7 @@
 "drive_class8_e_cobramkv": { "name":"drive (8E*)", "shortname": "Drive (8⁙)"},
 "drive_corsair": { "name":"drive", "shortname": "Drive"},
 "drive_corsair_small": { "name":"drive (s)", "shortname": "Drive (s)"},
-"TODO_drive_panthermkii": { "name":"TODO drive", "shortname": "TODO Drive"},
+"drive_panthermkii": { "name":"drive", "shortname": "Drive"},
 "engine_size2_class1": { "name":"thrusters (2E)", "shortname": "Thruster (2E)"},
 "engine_size2_class2": { "name":"thrusters (2D)", "shortname": "Thruster (2D)"},
 "engine_size2_class3": { "name":"thrusters (2C)", "shortname": "Thruster (2C)"},
