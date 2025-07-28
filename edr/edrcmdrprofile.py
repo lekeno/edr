@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-from __future__ import division
 
 from edrlog import EDR_LOG
 from edtime import EDTime
