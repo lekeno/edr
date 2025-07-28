@@ -1,13 +1,6 @@
 from subprocess import call
-
-try:
-    # for Python2
-    import Tkinter as tk
-    import ttk
-except ImportError:
-    # for Python3
-    import tkinter as tk
-    from tkinter import ttk
+import tkinter as tk
+from tkinter import ttk
 
 import sys
 import config as EDMCConfig

@@ -9,14 +9,8 @@ import re
 import json
 import webbrowser
 
-try:
-    # for Python2
-    import Tkinter as tk
-    import ttk
-except ImportError:
-    # for Python3
-    import tkinter as tk
-    from tkinter import ttk
+import tkinter as tk
+from tkinter import ttk
 import ttkHyperlinkLabel
 import myNotebook as notebook
 from config import config

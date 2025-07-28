@@ -1,8 +1,4 @@
-#!/usr/bin/env python
-# coding=utf-8
-
 import gettext
-# import os # 'os' imported but unused Flake8(F401)
 import sys
 
 import l10n  # Importing localization module

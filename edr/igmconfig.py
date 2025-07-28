@@ -1,11 +1,5 @@
-
 import os
-try:
-    # for Python2
-    import ConfigParser as cp
-except ImportError:
-    # for Python3
-    import configparser as cp
+import configparser as cp
 
 from edrlog import EDR_LOG
 

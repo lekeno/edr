@@ -1,10 +1,5 @@
-# encoding: utf-8
 import sys
-try:
-    from urllib.parse import quote
-except ImportError:
-    from urllib import quote # python 2.7.11
-import urllib
+from urllib.parse import quote
 import json
 import calendar
 import time
