@@ -28,31 +28,30 @@ import edrservicefinder
 import edrparkingsystemfinder
 import edrplanetfinder
 import edrsettlementfinder
-import utils2to3
 
 class EDRSystems(object):
-    EDR_SYSTEMS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'systems.v5.p')
-    EDR_RAW_MATERIALS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'raw_materials.v1.p')
-    EDSM_BODIES_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_bodies.v1.p')
-    EDSM_SYSTEMS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_systems.v3.p')
-    EDSM_STATIONS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_stations.v1.p')
-    EDSM_SYSTEMS_WITHIN_RADIUS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_systems_radius.v2.p')
-    EDSM_TRAFFIC_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_traffic.v1.p')
-    EDSM_DEATHS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_deaths.v1.p')
-    EDSM_MARKETS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_markets.v1.p')
-    EDSM_SHIPYARDS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_shipyards.v1.p')
-    EDSM_OUTFITTING_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_outfitting.v1.p')
-    EDSM_SYSTEM_VALUES_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_system_values.v1.p')
-    EDR_NOTAMS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'notams.v2.p')
-    EDR_SITREPS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'sitreps.v3.p')
-    EDR_TRAFFIC_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'traffic.v2.p')
-    EDR_CRIMES_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'crimes.v2.p')
-    EDR_FC_REPORTS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'fc_reports.v1.p')
-    EDR_FC_PRESENCE_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'fc_presence.v1.p')
-    EDR_FC_MATERIALS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'fc_materials.v1.p')
-    EDR_FCS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'fcs.v1.p')
-    NEBULAE = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'nebulae.json')).read())
-    BIOLOGY = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'biology.json')).read())
+    EDR_SYSTEMS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'systems.v5.p')
+    EDR_RAW_MATERIALS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'raw_materials.v1.p')
+    EDSM_BODIES_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_bodies.v1.p')
+    EDSM_SYSTEMS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_systems.v3.p')
+    EDSM_STATIONS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_stations.v1.p')
+    EDSM_SYSTEMS_WITHIN_RADIUS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_systems_radius.v2.p')
+    EDSM_TRAFFIC_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_traffic.v1.p')
+    EDSM_DEATHS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_deaths.v1.p')
+    EDSM_MARKETS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_markets.v1.p')
+    EDSM_SHIPYARDS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_shipyards.v1.p')
+    EDSM_OUTFITTING_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_outfitting.v1.p')
+    EDSM_SYSTEM_VALUES_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_system_values.v1.p')
+    EDR_NOTAMS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'notams.v2.p')
+    EDR_SITREPS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'sitreps.v3.p')
+    EDR_TRAFFIC_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'traffic.v2.p')
+    EDR_CRIMES_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'crimes.v2.p')
+    EDR_FC_REPORTS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'fc_reports.v1.p')
+    EDR_FC_PRESENCE_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'fc_presence.v1.p')
+    EDR_FC_MATERIALS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'fc_materials.v1.p')
+    EDR_FCS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'fcs.v1.p')
+    NEBULAE = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', 'nebulae.json')).read())
+    BIOLOGY = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', 'biology.json')).read())
 
     def __init__(self, server, edsm_server, factions):
         self.reasonable_sc_distance = 1500
