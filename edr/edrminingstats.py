@@ -4,7 +4,7 @@ from time import time
 from edtime import EDTime
 from edri18n import _
 import json
-import utils2to3
+import os
 
 class EDRMineralStats(object):
     def __init__(self, name, internal_name, symbol):

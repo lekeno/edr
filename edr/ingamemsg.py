@@ -192,7 +192,7 @@ class InGameMsg(object):
                 "ttl": conf.ttl(kind, "schema"),
                 "rgb": conf.rgb_list(kind, "schema"),
                 "fill": conf.fill_list(kind, "schema"),
-                "rotate": conf.getboolean(kind, "rotate_schematic")
+                "rotate": conf._getboolean(kind, "rotate_schematic")
             }
         }
         if not conf.panel(kind):

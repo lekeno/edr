@@ -949,7 +949,7 @@ class EDRRouteStatistics(object):
         return None
     
 class EDRNavigator(object):
-    EDR_JOURNEY_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'navigator.v1.p')
+    EDR_JOURNEY_CACHE = path.join(path.abspath(path.dirname(__file__)), 'cache', 'navigator.v1.p')
     
     def __init__(self):
         self.route = None
