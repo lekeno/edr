@@ -163,27 +163,18 @@ class EDRClient(object):
         self.edrcommands = EDRCommands(self)
         
     def __get_realtime_params(self, kind):
-        min_bounty = None
-        key = "{}MinBounty".format(kind)
-        try:
-            min_bounty = config.get_str(key)
-        except:
-            min_bounty = config.get_int(key)
-        
-        if min_bounty == "None":
-            min_bounty = None
+        def get_config_value(key_pattern):
+            key = key_pattern.format(kind)
+            try:
+                value = config.get_str(key)
+                return None if value == "None" else value
+            except:
+                return config.get_int(key)
 
-        max_distance = None
-        key = "{}MaxBounty".format(kind)
-        try:
-            max_distance = config.get_str(key)
-        except:
-            max_distance = config.get_int(key)
-        
-        if max_distance == "None":
-            max_distance = None
+        min_bounty = get_config_value("EDR{}AlertsMinBounty")
+        max_distance = get_config_value("EDR{}AlertsMaxDistance")
 
-        return { "min_bounty": min_bounty, "max_distance": max_distance} 
+        return {"min_bounty": min_bounty, "max_distance": max_distance}
     
     def loud_audio_feedback(self):
         config.set("EDRAudioFeedbackVolume", "loud")
@@ -280,9 +271,7 @@ class EDRClient(object):
             self.__status_update_pending()
 
     def is_obsolete(self, advertised_version):
-        client_parts = list(map(int, self.edr_version.split('.')))
-        advertised_parts = list(map(int, advertised_version.split('.')))
-        return client_parts < advertised_parts
+        return list(map(int, self.edr_version.split('.'))) < list(map(int, advertised_version.split('.')))
 
     @property
     def player(self):
@@ -600,44 +589,40 @@ class EDRClient(object):
         self.__notify(header, details, clear_before=True)
 
     def describe_ed_settlement(self, entry, faction):
-        details = []
         if entry["event"] != "ApproachSettlement":
-            return details
-        
-        settlement_services = (entry.get("StationServices", []) or [])
-        
-        a = "●" if "refuel" in settlement_services else "◌"
-        b = "●" if "repair" in settlement_services else "◌"
-        c = "●" if "rearm" in settlement_services else "◌"
-        details.append(_("Refuel:{}   Repair:{}   Restock:{}").format(a,b,c))
-        
-        a = "●" if "commodities" in settlement_services else "◌"
-        b = "●" if "blackmarket" in settlement_services else "◌"
-        c = "●" if "facilitator" in settlement_services else "◌"
-        details.append(_("Market:{}   B.Market:{}   I.Factor:{}").format(a,b,c))
-        
+            return []
+
+        settlement_services = entry.get("StationServices", []) or []
+        details = [
+            _("Refuel:{}   Repair:{}   Restock:{}").format(
+                "●" if "refuel" in settlement_services else "◌",
+                "●" if "repair" in settlement_services else "◌",
+                "●" if "rearm" in settlement_services else "◌"
+            ),
+            _("Market:{}   B.Market:{}   I.Factor:{}").format(
+                "●" if "commodities" in settlement_services else "◌",
+                "●" if "blackmarket" in settlement_services else "◌",
+                "●" if "facilitator" in settlement_services else "◌"
+            )
+        ]
+
         if "StationFaction" in entry:
-            factionName = entry["StationFaction"].get("Name", "???")
+            faction_name = entry["StationFaction"].get("Name", "???")
             qualifiers = []
             if "StationAllegiance" in entry:
                 qualifiers.append(entry["StationAllegiance"])
-
             if "StationGovernment_Localised" in entry:
                 qualifiers.append(entry["StationGovernment_Localised"])
-            
-            if faction and faction.isPMF != None:
+            if faction and faction.isPMF is not None:
                 qualifiers.append(_("PMF: {}").format("●" if faction.isPMF else "◌"))
 
-            if entry["StationFaction"].get("FactionState", "").lower() not in ["", "none"]:
+            faction_state = entry["StationFaction"].get("FactionState", "").lower()
+            if faction_state not in ["", "none"]:
                 qualifiers.append(entry["StationFaction"]["FactionState"])
             elif faction and faction.state and faction.state.lower() != "none":
                 qualifiers.append(faction.state)
                 
-            if qualifiers:
-                details.append("{name} ({qualifiers})".format(name=factionName, qualifiers=", ".join(qualifiers)))
-            else:
-                details.append("{name}".format(name=factionName))
-            
+            details.append(f"{faction_name} ({', '.join(qualifiers)})" if qualifiers else faction_name)
         
         return details
 
@@ -827,63 +812,63 @@ class EDRClient(object):
         return True
 
     def process_scan(self, scan_event):
-        if scan_event["event"] == "Scan":
+        event_type = scan_event.get("event")
+        if event_type == "Scan":
             return self.__process_space_scan(scan_event)
-        elif scan_event["event"] == "ScanOrganic":
+
+        if event_type == "ScanOrganic":
             result = self.player.process_organic_scan(scan_event)
             self.edrsystems.reflect_organic_scan(self.player.star_system, scan_event["Body"], scan_event)
             if scan_event["ScanType"] == "Analyse":
-                progress = self.edrsystems.analyzed_biome(self.player.star_system, scan_event["Body"])
-                details = []
-                genus_analyzed = progress["genuses"].get("analyzed", "1+?") # should be at least 1
-                genus_detected = progress["genuses"].get("detected", None)
-                genus_expected = progress["genuses"].get("expected", None)
-                genus_localized = progress["genuses"].get("localized", None)
-                genus_togo = progress["genuses"].get("togo", None)
-                if genus_detected:
-                    details.append(_("Genus: {}/{}").format(genus_analyzed, genus_detected))
-                elif genus_expected:
-                    details.append(_("Genus: {}/{}").format(genus_analyzed, genus_expected))
-                else:
-                    details.append(_("Genus: {}/???").format(genus_analyzed))
-                
-                if genus_localized:
-                    details.append(_(" - analyzed: {}").format(", ".join(genus_localized)))
-                    
-                if genus_togo:
-                    genuses_credits = []
-                    for g in genus_togo:
-                        if not genus_togo[g]["credits"]:
-                            genuses_credits.append(genus_togo[g]["localized"])
-                            continue
-                        
-                        if genus_togo[g]["credits"]["min"] == genus_togo[g]["max"]:
-                            value = pretty_print_number(genus_togo[g]["max"])
-                            genuses_credits.append("{} ({} cr)".format(genus_togo[g]["localized"], value))
-                            continue
-
-                        min_value = pretty_print_number(genus_togo[g]["min"])
-                        max_value = pretty_print_number(genus_togo[g]["max"])
-                        genuses_credits.append("{} ({} ~ {} cr)".format(genus_togo[g]["localized"], min_value, max_value))
-                        
-                    details.append(_(" - remaining: {}").format(", ".join(genuses_credits)))
-                
-                species_analyzed = progress["species"].get("analyzed", "1+?") # should be at least 1
-                details.append(_("Species: {}").format(species_analyzed))
-
-                if not genus_togo:
-                    surveyed = self.player.routenav.surveyed_body(self.player.star_system, self.player.body)
-                    if surveyed:
-                        other_bodies = self.player.routenav.wp_bodies_to_survey(self.player.star_system)
-                        if other_bodies:
-                            details.append(_("To survey: {}").format(", ".join(other_bodies)))
-                        else:
-                            details.append(_("Waypoint completed; Use '!journey next' to advance."))
-                
-                self.__notify(_("Biome analysis progress"), details, clear_before=True)
-            
+                self.__notify_biome_analysis_progress(scan_event)
             return result
+
         return False
+
+    def __notify_biome_analysis_progress(self, scan_event):
+        progress = self.edrsystems.analyzed_biome(self.player.star_system, scan_event["Body"])
+        details = []
+
+        genus_analyzed = progress["genuses"].get("analyzed", "1+?")
+        genus_detected = progress["genuses"].get("detected")
+        genus_expected = progress["genuses"].get("expected")
+
+        if genus_detected:
+            details.append(_("Genus: {}/{}").format(genus_analyzed, genus_detected))
+        elif genus_expected:
+            details.append(_("Genus: {}/{}?").format(genus_analyzed, genus_expected))
+        else:
+            details.append(_("Genus: {}/???").format(genus_analyzed))
+
+        genus_localized = progress["genuses"].get("localized")
+        if genus_localized:
+            details.append(_(" - analyzed: {}").format(", ".join(genus_localized)))
+
+        genus_togo = progress["genuses"].get("togo")
+        if genus_togo:
+            genuses_credits = [
+                self.__format_genus_credits(g_info) for g_info in genus_togo.values()
+            ]
+            details.append(_(" - remaining: {}").format(", ".join(genuses_credits)))
+
+        species_analyzed = progress["species"].get("analyzed", "1+?")
+        details.append(_("Species: {}").format(species_analyzed))
+
+        if not genus_togo and self.player.routenav.surveyed_body(self.player.star_system, self.player.body):
+            other_bodies = self.player.routenav.wp_bodies_to_survey(self.player.star_system)
+            details.append(_("To survey: {}").format(", ".join(other_bodies)) if other_bodies else _("Waypoint completed; Use '!journey next' to advance."))
+
+        self.__notify(_("Biome analysis progress"), details, clear_before=True)
+
+    def __format_genus_credits(self, g_info):
+        if not g_info.get("credits"):
+            return g_info["localized"]
+
+        min_val, max_val = g_info["credits"]["min"], g_info["credits"]["max"]
+        if min_val == max_val:
+            return f"{g_info['localized']} ({pretty_print_number(max_val)} cr)"
+
+        return f"{g_info['localized']} ({pretty_print_number(min_val)} ~ {pretty_print_number(max_val)} cr)"
         
     def __process_space_scan(self, scan_event):
         self.edrsystems.reflect_scan(self.player.star_system, scan_event["BodyName"], scan_event)
@@ -2824,49 +2809,62 @@ class EDRClient(object):
     def __sitrep(self, header, details):
         if self.audio_feedback:
             self.SFX.sitrep()
+
         if self.visual_feedback:
-            EDR_LOG.log("sitrep with header: {}; details: {}".format(header, details[0]), "DEBUG")
+            EDR_LOG.log(f"sitrep with header: {header}; details: {details[0]}", "DEBUG")
             self.IN_GAME_MSG.clear_sitrep()
             self.IN_GAME_MSG.sitrep(header, details)
-        EDR_LOG.log("[Alt] sitrep with header: {}; details: {}".format(header, details[0]), "DEBUG")
+
+        EDR_LOG.log(f"[Alt] sitrep with header: {header}; details: {details[0]}", "DEBUG")
         if self.client_ui:
             self.client_ui.sitrep(header, details)
 
-    def __intel(self, header, details, clear_before=False, legal=None):
-        if self.audio_feedback:
-            self.SFX.intel()
+    def __display_notification(self, level, header, details, clear_before=False, legal=None):
+        sfx_map = {
+            "intel": self.SFX.intel,
+            "warning": self.SFX.warning,
+            "sitrep": self.SFX.sitrep,
+            "notify": self.SFX.notify
+        }
+
+        if self.audio_feedback and level in sfx_map:
+            sfx_map[level]()
+
         if self.visual_feedback:
-            EDR_LOG.log("Intel; details: {}".format(details[0]), "DEBUG")
+            EDR_LOG.log(f"{level.capitalize()}; details: {details[0]}", "DEBUG")
             if clear_before:
-                self.IN_GAME_MSG.clear_intel()
-            self.IN_GAME_MSG.intel(header, details, legal)
-        EDR_LOG.log("[Alt] Intel; details: {}".format(details[0]), "DEBUG")
+                clear_method = getattr(self.IN_GAME_MSG, f"clear_{level}", None)
+                if clear_method:
+                    clear_method()
+
+            display_method = getattr(self.IN_GAME_MSG, level, None)
+            if display_method:
+                display_method(header, details, legal) if legal else display_method(header, details)
+
+        EDR_LOG.log(f"[Alt] {level.capitalize()}; details: {details[0]}", "DEBUG")
         if self.client_ui:
-            self.client_ui.intel(header, details)
+            ui_method = getattr(self.client_ui, level, None)
+            if ui_method:
+                ui_method(header, details)
+
+    def __intel(self, header, details, clear_before=False, legal=None):
+        self.__display_notification("intel", header, details, clear_before, legal)
 
     def __warning(self, header, details, clear_before=False, legal=None):
-        if self.audio_feedback:
-            self.SFX.warning()
-        if self.visual_feedback:
-            EDR_LOG.log("Warning; details: {}".format(details[0]), "DEBUG")
-            if clear_before:
-                self.IN_GAME_MSG.clear_warning()
-            self.IN_GAME_MSG.warning(header, details, legal)
-        EDR_LOG.log("[Alt] Warning; details: {}".format(details[0]), "DEBUG")
-        if self.client_ui:
-            self.client_ui.warning(header, details)
+        self.__display_notification("warning", header, details, clear_before, legal)
     
     def __notify(self, header, details, clear_before=False, sfx=True):
-        if sfx and self.audio_feedback:
-            self.SFX.notify()
-        if self.visual_feedback:
-            EDR_LOG.log("Notify about {}; details: {}".format(header, details[0]), "DEBUG")
-            if clear_before:
-                self.IN_GAME_MSG.clear_notice()
-            self.IN_GAME_MSG.notify(header, details)
-        EDR_LOG.log("[Alt] Notify about {}; details: {}".format(header, details[0]), "DEBUG")
-        if self.client_ui:
-            self.client_ui.notify(header, details)
+        if sfx:
+            self.__display_notification("notify", header, details, clear_before)
+        else:
+            if self.visual_feedback:
+                EDR_LOG.log(f"Notify about {header}; details: {details[0]}", "DEBUG")
+                if clear_before:
+                    self.IN_GAME_MSG.clear_notice()
+                self.IN_GAME_MSG.notify(header, details)
+            EDR_LOG.log(f"[Alt] Notify about {header}; details: {details[0]}", "DEBUG")
+            if self.client_ui:
+                self.client_ui.notify(header, details)
 
     def __commsjammed(self):
         self.__notify(_("Comms Link Error"), [_("EDR Central can't be reached at the moment"), _("Try again later. Join https://edrecon.com/discord or contact Cmdr LeKeno if it keeps failing")], sfx=False)
@@ -3461,183 +3459,183 @@ class EDRClient(object):
         self.__searching(False)
         details = []
         if result and "station" in result:
-            sc_distance = result['station']['distanceToArrival']
+            station_info = result['station']
             distance = result['distance']
-            pretty_dist = _("{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _("{dist}LY").format(dist=int(distance))
-            pretty_sc_dist = _("{dist}LS").format(dist=int(sc_distance))
+            sc_distance = station_info['distanceToArrival']
+
+            pretty_dist = f"{distance:.3g}LY" if distance < 50.0 else f"{int(distance)}LY"
+            pretty_sc_dist = f"{int(sc_distance)}LS"
+
             updated = EDTime()
-            updated.from_edsm_timestamp(result['station']['updateTime']['information'])
-            details.append(_("{system}, {dist}").format(system=result['name'], dist=pretty_dist))
-            details.append(_("{station} ({type}), {sc_dist}").format(station=result['station']['name'], type=result['station']['type'], sc_dist=pretty_sc_dist))
-            details.append(_("as of {date} {ci}").format(date=updated.as_local_timestamp(),ci=result['station'].get('comment', '')))
-            self.status = "{item}: {system}, {dist} - {station} ({type}), {sc_dist}".format(item=soi_checker.name, system=result['name'], dist=pretty_dist, station=result['station']['name'], type=result['station']['type'], sc_dist=pretty_sc_dist)
+            updated.from_edsm_timestamp(station_info['updateTime']['information'])
+
+            details.extend([
+                f"{result['name']}, {pretty_dist}",
+                f"{station_info['name']} ({station_info['type']}), {pretty_sc_dist}",
+                _("as of {date} {ci}").format(date=updated.as_local_timestamp(), ci=station_info.get('comment', ''))
+            ])
+
+            self.status = f"{soi_checker.name}: {result['name']}, {pretty_dist} - {station_info['name']} ({station_info['type']}), {pretty_sc_dist}"
             copy(result["name"])
         else:
             if 'station' not in result:
-                EDR_LOG.log("Unsupported search result: {}".format(result), "ERROR")
+                EDR_LOG.log(f"Unsupported search result: {result}", "ERROR")
             
             self.status = _("{}: nothing within [{}LY, {}LS] of {}").format(soi_checker.name, int(radius), int(sc), reference)
-            checked = _("checked {} systems").format(soi_checker.systems_counter) 
-            if soi_checker.stations_counter: 
-                checked = _("checked {} systems and {} stations").format(soi_checker.systems_counter, soi_checker.stations_counter) 
+            checked = _("checked {} systems and {} stations").format(soi_checker.systems_counter, soi_checker.stations_counter) if soi_checker.stations_counter else _("checked {} systems").format(soi_checker.systems_counter)
             details.append(_("nothing found within [{}LY, {}LS], {}.").format(int(radius), int(sc), checked))
             if soi_checker.hint:
                 details.append(soi_checker.hint)
-        self.__notify(_("{} near {}").format(soi_checker.name, reference), details, clear_before = True)
+
+        self.__notify(f"{soi_checker.name} near {reference}", details, clear_before=True)
 
     def __plaoi_found(self, reference, radius, sc, plaoi_checker, result):
         self.__searching(False)
         details = []
         if result:
-            sc_distance = result['planet']['distanceToArrival']
+            planet_info = result['planet']
             distance = result['distance']
-            pretty_dist = _("{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _("{dist}LY").format(dist=int(distance))
-            pretty_sc_dist = _("{dist}LS").format(dist=int(sc_distance))
-            planet_name = simplified_body_name(result['name'], result['planet']['name'])
+            sc_distance = planet_info['distanceToArrival']
+
+            pretty_dist = f"{distance:.3g}LY" if distance < 50.0 else f"{int(distance)}LY"
+            pretty_sc_dist = f"{int(sc_distance)}LS"
+            planet_name = simplified_body_name(result['name'], planet_info['name'])
+
             updated = EDTime()
-            updated.from_edsm_timestamp(result['planet']['updateTime'])
-            details.append(_("{system}, {dist}").format(system=result['name'], dist=pretty_dist))
-            details.append(_("{planet} ({type}, {atm}), {sc_dist}").format(planet=planet_name, type=result['planet']['subType'], atm=result['planet']['atmosphereType'], sc_dist=pretty_sc_dist))
-            details.append(_("as of {date}").format(date=updated.as_local_timestamp()))
-            self.status = "{item}: {system}, {dist} - {planet}, {sc_dist}".format(item=plaoi_checker.name, system=result['name'], dist=pretty_dist, planet=planet_name, sc_dist=pretty_sc_dist)
+            updated.from_edsm_timestamp(planet_info['updateTime'])
+
+            details.extend([
+                f"{result['name']}, {pretty_dist}",
+                f"{planet_name} ({planet_info['subType']}, {planet_info['atmosphereType']}), {pretty_sc_dist}",
+                _("as of {date}").format(date=updated.as_local_timestamp())
+            ])
+
+            self.status = f"{plaoi_checker.name}: {result['name']}, {pretty_dist} - {planet_name}, {pretty_sc_dist}"
             copy(result["name"])
         else:
             self.status = _("{}: nothing within [{}LY, {}LS] of {}").format(plaoi_checker.name, int(radius), int(sc), reference)
-            checked = _("checked {} systems").format(plaoi_checker.systems_counter)
-            if plaoi_checker.planets_counter: 
-                checked = _("checked {} systems and {} planets").format(plaoi_checker.systems_counter, plaoi_checker.planets_counter)
+            checked = _("checked {} systems and {} planets").format(plaoi_checker.systems_counter, plaoi_checker.planets_counter) if plaoi_checker.planets_counter else _("checked {} systems").format(plaoi_checker.systems_counter)
             details.append(_("nothing found within [{}LY, {}LS], {}.").format(int(radius), int(sc), checked))
             if plaoi_checker.hint:
                 details.append(plaoi_checker.hint)
-        self.__notify(_("{} near {}").format(plaoi_checker.name, reference), details, clear_before = True)
+
+        self.__notify(f"{plaoi_checker.name} near {reference}", details, clear_before=True)
 
     def __settloi_found(self, reference, radius, sc, settloi_checker, result):
         self.__searching(False)
         details = []
         if result and 'settlement' in result:
             settlement = result['settlement']
-            sc_distance = settlement['distanceToArrival']
             distance = result['distance']
-            pretty_dist = _("{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _("{dist}LY").format(dist=int(distance))
-            pretty_sc_dist = _("{dist}LS").format(dist=int(sc_distance))
+            sc_distance = settlement['distanceToArrival']
+
+            pretty_dist = f"{distance:.3g}LY" if distance < 50.0 else f"{int(distance)}LY"
+            pretty_sc_dist = f"{int(sc_distance)}LS"
+
             updated = EDTime()
             updated.from_edsm_timestamp(settlement['updateTime']['information'])
-            details.append(_("{system}, {dist}").format(system=result['name'], dist=pretty_dist))
-            if 'body' in settlement:
-                bodyName = settlement['body']['name']
-                adjBodyName = simplified_body_name(result['name'], bodyName, " 0")
-                details.append(_("{settlement} ({eco}), {body}, {sc_dist}").format(settlement=settlement['name'], eco=settlement["economy"], body=adjBodyName, sc_dist=pretty_sc_dist))
-            else:
-                details.append(_("{settlement} ({eco}), {sc_dist}").format(settlement=settlement['name'], eco=settlement["economy"], sc_dist=pretty_sc_dist))
+
+            details.append(f"{result['name']}, {pretty_dist}")
+
+            body_info = f", {simplified_body_name(result['name'], settlement['body']['name'], ' 0')}" if 'body' in settlement else ""
+            details.append(f"{settlement['name']} ({settlement['economy']}){body_info}, {pretty_sc_dist}")
             
             if 'controllingFaction' in settlement:
                 faction = self.edrfactions.get(result["name"], settlement['controllingFaction']['name'])
                 if faction:
                     updated = faction.lastUpdated
-                    if faction.state != None:
-                        details.append(_("{faction} ({bgs}, {gvt}, {alg})").format(faction=faction.name, bgs=faction.state, gvt=faction.government, alg=faction.allegiance))
-                    else:
-                        details.append(_("{faction} ({gvt}, {alg})").format(faction=settlement['controllingFaction']['name'], gvt=settlement['government'], alg=settlement['allegiance']))
+                    details.append(f"{faction.name} ({faction.state}, {faction.government}, {faction.allegiance})" if faction.state else f"{settlement['controllingFaction']['name']} ({settlement['government']}, {settlement['allegiance']})")
                 else:
-                    if 'state' in settlement["controllingFaction"]:
-                        details.append(_("{faction} ({bgs}, {gvt}, {alg})").format(faction=settlement['controllingFaction']['name'], bgs=settlement['controllingFaction']['state'], gvt=settlement['government'], alg=settlement['allegiance']))
-                    else:
-                        details.append(_("{faction} ({gvt}, {alg})").format(faction=settlement['controllingFaction']['name'], gvt=settlement['government'], alg=settlement['allegiance']))
-            details.append(_("as of {date} {ci}").format(date=updated.as_local_timestamp(),ci=settlement.get('comment', '')))
-            self.status = "{system}, {dist} - {settlement}, {sc_dist}".format(system=result['name'], dist=pretty_dist, settlement=settlement['name'], sc_dist=pretty_sc_dist)
+                    faction_info = settlement['controllingFaction']
+                    details.append(f"{faction_info['name']} ({faction_info['state']}, {settlement['government']}, {settlement['allegiance']})" if 'state' in faction_info else f"{faction_info['name']} ({settlement['government']}, {settlement['allegiance']})")
+
+            details.append(_("as of {date} {ci}").format(date=updated.as_local_timestamp(), ci=settlement.get('comment', '')))
+            self.status = f"{result['name']}, {pretty_dist} - {settlement['name']}, {pretty_sc_dist}"
             copy(result["name"])
         else:
             self.status = _("{}: nothing within [{}LY, {}LS] of {}").format(settloi_checker.name, int(radius), int(sc), reference)
-            checked = _("checked {} systems").format(settloi_checker.systems_counter) 
-            if settloi_checker.settlements_counter: 
-                checked = _("checked {} systems and {} settlements").format(settloi_checker.systems_counter, settloi_checker.settlements_counter) 
+            checked = _("checked {} systems and {} settlements").format(settloi_checker.systems_counter, settloi_checker.settlements_counter) if settloi_checker.settlements_counter else _("checked {} systems").format(settloi_checker.systems_counter)
             details.append(_("nothing found within [{}LY, {}LS], {}.").format(int(radius), int(sc), checked))
             if settloi_checker.hint:
                 details.append(settloi_checker.hint)
-        self.__notify(_("Settlement near {}").format(reference), details, clear_before = True)
+
+        self.__notify(f"Settlement near {reference}", details, clear_before=True)
 
     def __parking_found(self, reference, radius, rank, result):
         self.__searching(False)
         details = []
         if result:
             distance = result['distance']
-            pretty_dist = "0LY"
-            if distance > 0:
-                pretty_dist = _("{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _("{dist}LY").format(dist=int(distance))
-                details.append(_("{system}, {dist} from {ref} [#{rank}]").format(system=result['name'], dist=pretty_dist, ref=reference, rank=rank))
-            else:
-                details.append(_("{system} [#{rank}]").format(system=result['name'], rank=rank))
+            pretty_dist = f"{distance:.3g}LY" if distance > 0 and distance < 50.0 else f"{int(distance)}LY" if distance > 0 else "0LY"
+            details.append(f"{result['name']}, {pretty_dist} from {reference} [#{rank}]" if distance > 0 else f"{result['name']} [#{rank}]")
+
             fc = self.edrsystems.fleet_carriers(result['name'])
-            fc_count = fc.get("fcCount", None)
-            timestamp = fc.get("timestamp", None)
-            if not fc_count is None and fc_count >= 0 and timestamp:
+            fc_count = fc.get("fcCount")
+            timestamp = fc.get("timestamp")
+
+            if fc_count is not None and fc_count >= 0 and timestamp:
                 remaining = max(0, result['parking']['slots'] - fc_count)
-                threshold = 1000*60*60*24
-                plus = 0
-                minus = 0
-                observations = fc.get("observations", {})
-                for o in observations:
-                    if abs(timestamp - observations[o]) > threshold:
-                        continue
-                    count = int(o[1:])
-                    if count > fc_count:
-                        minus = max(minus, count-fc_count)
-                    elif count < fc_count:
-                        plus = max(plus, fc_count-count)
+                plus, minus = self.__calculate_plus_minus(fc.get("observations", {}), timestamp, fc_count)
                 tminus = EDTime.t_minus(timestamp, short=True)
-                plusminus = ""
-                if plus == minus and plus > 0:
-                    plusminus = "±{}".format(plus)
-                else:
-                    if plus > 0:
-                        plusminus = "+{}".format(plus)
-                        if minus > 0:
-                            plusminus += " -{}".format(minus)
-                    elif minus > 0:
-                        plusminus = "-{}".format(minus)
-
-                
-                if len(plusminus):
-                    details.append(_("Slots ≈ {} ({}) / {} (as of {})").format(remaining, plusminus, result['parking']['slots'], tminus))
-                else:
-                    details.append(_("Slots ≈ {} / {} (as of {})").format(remaining, result['parking']['slots'], tminus))
+                plusminus = self.__format_plusminus(plus, minus)
+                details.append(f"Slots ≈ {remaining} ({plusminus}) / {result['parking']['slots']} (as of {tminus})" if plusminus else f"Slots ≈ {remaining} / {result['parking']['slots']} (as of {tminus})")
             else:
-                details.append(_("Slots: ???/{} (no intel)").format(result['parking']['slots']))
-            stats = result['parking']['info']['all']['stats']
-            stars_stats = result['parking']['info']['stars']['stats']
-            if stats["count"] > 1 and stats["count"] > stars_stats["count"]:
-                bodyCount = _("{nb} bodies").format(nb=stats["count"]) if stats["count"] > 0 else _("{nb} body").format(nb=stats["count"])
-                median = pretty_print_number(int(stats['median']))
-                avg = pretty_print_number(int(stats['avg']))
-                max_v = pretty_print_number(int(stats['max']))
-                details.append(_("{} (LS): median={}, avg={}, max={}").format(bodyCount, median, avg, max_v))
+                details.append(f"Slots: ???/{result['parking']['slots']} (no intel)")
             
-            starCount = _("{nb} stars").format(nb=stars_stats["count"]) if stars_stats["count"] > 0 else _("{nb} stars").format(nb=stars_stats["count"])
-            stars_median = pretty_print_number(int(stars_stats['median']))
-            stars_avg = pretty_print_number(int(stars_stats['avg']))
-            stars_max = pretty_print_number(int(stars_stats['max']))
-            if stars_stats["count"] > 1:
-                details.append(_("{} (LS): median={}, avg={}, max={}").format(starCount, stars_median, stars_avg, stars_max))
-            elif stars_stats["count"] == 1:
-                details.append(_("1 star (no gravity well)"))
+            self.__add_parking_stats(details, result['parking']['info'])
+            
+            next_rank = int(rank + 1)
+            details.append(f"If full, try the next one with !parking #{next_rank}." if reference == self.player.star_system else f"If full, try the next one with !parking {reference} #{next_rank}.")
 
-            if reference == self.player.star_system:
-                details.append(_("If full, try the next one with !parking #{}.").format(int(rank+1)))
-            else:
-                details.append(_("If full, try the next one with !parking {} #{}.").format(reference, int(rank+1)))
-            
-            self.status = "FC Parking: {system}, {dist}".format(system=result['name'], dist=pretty_dist)
+            self.status = f"FC Parking: {result['name']}, {pretty_dist}"
             copy(result["name"])
         else:
-            self.status = _("FC Parking: no #{} system within [{}LY] of {}").format(int(rank), int(radius), reference)
-            details.append(_("No #{} system found within [{}LY].").format(int(rank), int(radius)))
+            self.status = f"FC Parking: no #{int(rank)} system within [{int(radius)}LY] of {reference}"
+            details.append(f"No #{int(rank)} system found within [{int(radius)}LY].")
             if rank > 0:
-                if reference == self.player.star_system:
-                    details.append(_("Try !parking #{}").format(int(rank-1)))
-                else:
-                    details.append(_("Try !parking {} #{}").format(reference, int(rank-1), int(rank-1)))
-        self.__notify(_("FC Parking near {}").format(reference), details, clear_before = True)
+                prev_rank = int(rank - 1)
+                details.append(f"Try !parking #{prev_rank}" if reference == self.player.star_system else f"Try !parking {reference} #{prev_rank}")
+
+        self.__notify(f"FC Parking near {reference}", details, clear_before=True)
         self.__searching(False)
+
+    def __calculate_plus_minus(self, observations, timestamp, fc_count):
+        threshold = 1000 * 60 * 60 * 24
+        plus = 0
+        minus = 0
+        for o, obs_timestamp in observations.items():
+            if abs(timestamp - obs_timestamp) <= threshold:
+                count = int(o[1:])
+                if count > fc_count:
+                    minus = max(minus, count - fc_count)
+                elif count < fc_count:
+                    plus = max(plus, fc_count - count)
+        return plus, minus
+
+    def __format_plusminus(self, plus, minus):
+        if plus == minus and plus > 0:
+            return f"±{plus}"
+
+        parts = []
+        if plus > 0:
+            parts.append(f"+{plus}")
+        if minus > 0:
+            parts.append(f"-{minus}")
+        return " ".join(parts)
+
+    def __add_parking_stats(self, details, info):
+        stats = info['all']['stats']
+        stars_stats = info['stars']['stats']
+
+        if stats["count"] > 1 and stats["count"] > stars_stats["count"]:
+            body_count_str = _("{nb} bodies").format(nb=stats["count"]) if stats["count"] > 1 else _("{nb} body").format(nb=stats["count"])
+            details.append(f"{body_count_str} (LS): median={pretty_print_number(int(stats['median']))}, avg={pretty_print_number(int(stats['avg']))}, max={pretty_print_number(int(stats['max']))}")
+
+        star_count_str = _("{nb} stars").format(nb=stars_stats["count"])
+        if stars_stats["count"] > 1:
+            details.append(f"{star_count_str} (LS): median={pretty_print_number(int(stars_stats['median']))}, avg={pretty_print_number(int(stars_stats['avg']))}, max={pretty_print_number(int(stats['max']))}")
+        elif stars_stats["count"] == 1:
+            details.append("1 star (no gravity well)")
 
     def configure_resourcefinder(self, raw_profile):
         canonical_raw_profile = raw_profile.lower()
