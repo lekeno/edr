@@ -14,19 +14,9 @@ def __winSetClipboard(text):
     GMEM_DDESHARE = 0x2000
     ctypes.windll.user32.OpenClipboard(0)
     ctypes.windll.user32.EmptyClipboard()
-    try:
-        # works on Python 2 (bytes() only takes one argument)
-        hCd = ctypes.windll.kernel32.GlobalAlloc(GMEM_DDESHARE, len(bytes(text))+1)
-    except TypeError:
-        # works on Python 3 (bytes() requires an encoding)
-        hCd = ctypes.windll.kernel32.GlobalAlloc(GMEM_DDESHARE, len(bytes(text, 'utf-8'))+1)
+    hCd = ctypes.windll.kernel32.GlobalAlloc(GMEM_DDESHARE, len(bytes(text, 'utf-8'))+1)
     pchData = ctypes.windll.kernel32.GlobalLock(hCd)
-    try:
-        # works on Python 2 (bytes() only takes one argument)
-        ctypes.cdll.msvcrt.strcpy(ctypes.c_char_p(pchData), bytes(text))
-    except TypeError:
-        # works on Python 3 (bytes() requires an encoding)
-        ctypes.cdll.msvcrt.strcpy(ctypes.c_char_p(pchData), bytes(text, 'utf-8'))
+    ctypes.cdll.msvcrt.strcpy(ctypes.c_char_p(pchData), bytes(text, 'utf-8'))
     ctypes.windll.kernel32.GlobalUnlock(hCd)
     ctypes.windll.user32.SetClipboardData(1, hCd)
     ctypes.windll.user32.CloseClipboard()
