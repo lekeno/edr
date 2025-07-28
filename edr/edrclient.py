@@ -163,25 +163,23 @@ class EDRClient(object):
         self.edrcommands = EDRCommands(self)
         
     def __get_realtime_params(self, kind):
-        min_bounty = None
-        key = "{}MinBounty".format(kind)
-        try:
-            min_bounty = config.get_str(key)
-        except:
-            min_bounty = config.get_int(key)
+        def get_config_value(pattern, kind):
+            value = None
+            key = pattern.format(kind)
+            try:
+                value = config.get_str(key)
+            except:
+                value = config.get_int(key)
+            
+            if value == "None":
+                value = None
+            return value
         
-        if min_bounty == "None":
-            min_bounty = None
+        pattern = "{}MinBounty"
+        min_bounty = get_config_value(pattern, kind)
 
-        max_distance = None
-        key = "{}MaxBounty".format(kind)
-        try:
-            max_distance = config.get_str(key)
-        except:
-            max_distance = config.get_int(key)
-        
-        if max_distance == "None":
-            max_distance = None
+        pattern = "{}MaxBounty"
+        max_distance = get_config_value(pattern, kind)
 
         return { "min_bounty": min_bounty, "max_distance": max_distance} 
     
@@ -280,9 +278,7 @@ class EDRClient(object):
             self.__status_update_pending()
 
     def is_obsolete(self, advertised_version):
-        client_parts = list(map(int, self.edr_version.split('.')))
-        advertised_parts = list(map(int, advertised_version.split('.')))
-        return client_parts < advertised_parts
+        return list(map(int, self.edr_version.split('.'))) < list(map(int, advertised_version.split('.')))
 
     @property
     def player(self):
