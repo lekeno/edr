@@ -1,4 +1,3 @@
-# coding= utf-8
 from __future__ import absolute_import
 
 # TODO void opals: Smethells 1, planet 1. Double VO. Or Smei Ti, planet ABC 4.?
