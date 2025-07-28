@@ -5,10 +5,10 @@ import pickle
 import os
 
 from edrlog import EDR_LOG
-import utils2to3
+import os
 
 class RESTFirebaseAuth(object):
-    FIREBASE_ANON_AUTH_CACHE = utils2to3.abspathmaker(__file__, 'private', 'fbaa.v2.p')
+    FIREBASE_ANON_AUTH_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'private', 'fbaa.v2.p')
 
     def __init__(self):
         self.email = ""

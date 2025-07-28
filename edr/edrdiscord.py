@@ -10,7 +10,7 @@ from hashlib import md5
 from numbers import Number
 from itertools import dropwhile
 
-import utils2to3
+import os
 from edri18n import _
 from edrconfig import EDRUserConfig, EDRConfig
 from lrucache import LRUCache
@@ -180,7 +180,7 @@ class EDRDiscordIntegration(object):
         user_config = EDRUserConfig()
         edr_config = EDRConfig()
         
-        players_cfg_path = utils2to3.abspathmaker(__file__, 'config', 'user_discord_players.json')
+        players_cfg_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'config', 'user_discord_players.json')
         try:
             self.channels_players_cfg = json.loads(open(players_cfg_path).read())
         except:

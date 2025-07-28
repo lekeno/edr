@@ -6,7 +6,7 @@ import sys
 import sqlite3
 import math
 
-import utils2to3
+import os
 from edtime import EDTime
 from edrlog import EDR_LOG
 
@@ -725,7 +725,7 @@ class EDRRawDepletables(object):
     ]
 
     def __init__(self):
-        path = utils2to3.abspathmaker(__file__, 'db', 'rawdepletables')
+        path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'db', 'rawdepletables')
         try:
             self.db = sqlite3.connect(path)
             cursor = self.db.cursor()

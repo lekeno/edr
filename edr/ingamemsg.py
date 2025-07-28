@@ -12,14 +12,13 @@ import igmconfig
 from edrlog import EDR_LOG
 import textwrap
 from edri18n import _, _c
-import utils2to3
 from edrlandables import EDRLandables
 from edentities import EDFineOrBounty
 from edrutils import pretty_print_number
 from edtime import EDTime
 
 if sys.platform == "win32":
-    _overlay_dir = utils2to3.pathmaker(__file__, u'EDMCOverlay')
+    _overlay_dir = os.path.join(os.path.dirname(__file__), u'EDMCOverlay')
     if _overlay_dir not in sys.path:
         sys.path.append(_overlay_dir)
 

@@ -9,21 +9,20 @@ except ImportError:
     import configparser as cp
 
 from edrlog import EDR_LOG
-import utils2to3
 
 class IGMConfig(object):
     def __init__(self, config_file, user_config_file):
         self.config = cp.ConfigParser()
         self.fallback_config = cp.ConfigParser()
-        self.fallback_config.read(utils2to3.abspathmaker(__file__, config_file))
+        self.fallback_config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), config_file))
         # TODO assumes that there is always 2 user config options...
-        user_cfg_path = utils2to3.abspathmaker(__file__, user_config_file[0])
+        user_cfg_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), user_config_file[0])
         if os.path.exists(user_cfg_path):
             EDR_LOG.log(u"Using user defined layout at {}.".format(user_config_file[0]), "INFO")
             self.config.read(user_cfg_path)
         else:
             EDR_LOG.log(u"No user defined layout at {}, using {} instead.".format(user_config_file[0], user_config_file[1]), "INFO")
-            user_cfg_path = utils2to3.abspathmaker(__file__, user_config_file[1])
+            user_cfg_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), user_config_file[1])
             if os.path.exists(user_cfg_path):
                 EDR_LOG.log(u"Using user defined layout at {}.".format(user_config_file[1]), "INFO")
                 self.config.read(user_cfg_path)

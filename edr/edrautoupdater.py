@@ -7,15 +7,15 @@ import os
 import json
 import datetime
 from edrlog import EDR_LOG
-import utils2to3
+
 
 
 
 class EDRAutoUpdater(object):
     REPO = "lekeno/edr"
-    UPDATES = utils2to3.abspathmaker(__file__, 'updates')
-    LATEST = utils2to3.abspathmaker(__file__, 'updates', 'latest.zip')
-    BACKUP = utils2to3.abspathmaker(__file__, 'backup')
+    UPDATES = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'updates')
+    LATEST = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'updates', 'latest.zip')
+    BACKUP = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'backup')
     EDR_PATH = os.path.abspath(os.path.dirname(__file__))
 
     def __init__(self):
