@@ -86,10 +86,10 @@ class SFXConfig(object):
         self.fallback_config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), config_file))
         user_cfg_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), user_config_file)
         if os.path.exists(user_cfg_path):
-            EDR_LOG.log(u"Using user defined SFX at {}.".format(user_config_file), "INFO")
+            EDR_LOG.log("Using user defined SFX at {}.".format(user_config_file), "INFO")
             self.config.read(user_cfg_path)
         else:
-            EDR_LOG.log(u"No user defined SFX at {}, using {} instead.".format(user_config_file, config_file), "INFO")
+            EDR_LOG.log("No user defined SFX at {}, using {} instead.".format(user_config_file, config_file), "INFO")
             self.config = self.fallback_config
 
     def snd(self, kind, loud=True):

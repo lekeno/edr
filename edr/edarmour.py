@@ -285,17 +285,17 @@ class EDHullFactory(object):
         normalized = name.lower()
         
         # suffix _name or _name; is not used in loadout or afmurepair events 
-        if normalized.endswith(u"_name"):
-            useless_suffix_length = len(u"_name")
+        if normalized.endswith("_name"):
+            useless_suffix_length = len("_name")
             normalized = normalized[:-useless_suffix_length]
-        elif normalized.endswith(u"_name;"):
-            useless_suffix_length = len(u"_name;")
+        elif normalized.endswith("_name;"):
+            useless_suffix_length = len("_name;")
             normalized = normalized[:-useless_suffix_length]
 
-        if normalized.startswith(u"$"):
+        if normalized.startswith("$"):
             normalized = normalized[1:]
         
-        if normalized.startswith(u"int_"):
+        if normalized.startswith("int_"):
             normalized = normalized[4:]
 
         m = re.match(r'^.*_armour_(.*)$', normalized)
