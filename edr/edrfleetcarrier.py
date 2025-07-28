@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import copy
 from pickle import TRUE
 import re
