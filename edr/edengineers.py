@@ -315,7 +315,7 @@ class EDEngineers(object):
 class EDUnknownEngineer(EDEngineer):
     def __init__(self):
         super(EDUnknownEngineer, self).__init__()
-        self.type = u'Unknown'
+        self.type = 'Unknown'
 
 class EDEngineerFactory(object):
     __engineer_classes = {

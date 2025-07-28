@@ -63,24 +63,24 @@ class EDRCrew(object):
    
 
 class EDRSquadronMember(object):
-    SOMEWHAT_TRUSTED_LEVEL = {u"rank": u"wingman", u"level": 100}
-    FULLY_TRUSTED_LEVEL = {u"rank": u"co-pilot", u"level": 300}
+    SOMEWHAT_TRUSTED_LEVEL = {"rank": "wingman", "level": 100}
+    FULLY_TRUSTED_LEVEL = {"rank": "co-pilot", "level": 300}
 
     def __init__(self, squadron_dict):
-        self.name = squadron_dict.get(u"squadronName", None)
-        self.inara_id = squadron_dict.get(u"squadronId", None)
-        self.rank = squadron_dict.get(u"squadronRank", None)
-        self.heartbeat = squadron_dict.get(u"heartbeat", None)
-        self.level = squadron_dict.get(u"squadronLevel", None)
+        self.name = squadron_dict.get("squadronName", None)
+        self.inara_id = squadron_dict.get("squadronId", None)
+        self.rank = squadron_dict.get("squadronRank", None)
+        self.heartbeat = squadron_dict.get("heartbeat", None)
+        self.level = squadron_dict.get("squadronLevel", None)
     
     def is_somewhat_trusted(self):
-        return self.level >= EDRSquadronMember.SOMEWHAT_TRUSTED_LEVEL[u"level"]
+        return self.level >= EDRSquadronMember.SOMEWHAT_TRUSTED_LEVEL["level"]
 
     def is_fully_trusted(self):
-        return self.level >= EDRSquadronMember.FULLY_TRUSTED_LEVEL[u"level"]
+        return self.level >= EDRSquadronMember.FULLY_TRUSTED_LEVEL["level"]
 
     def info(self):
-        return {u"squadronName": self.name, u"squadronId": self.inara_id, u"squadronRank": self.rank, u"squadronLevel": self.level }
+        return {"squadronName": self.name, "squadronId": self.inara_id, "squadronRank": self.rank, "squadronLevel": self.level }
 
 class EDRPowerplay(object):
     def __init__(self, pledged_to, time_pledged):
@@ -89,32 +89,32 @@ class EDRPowerplay(object):
 
     def is_enemy(self, power): 
         POWERS_AFFILIATION = {
-            u"a_lavigny-duval": u"Empire",
-            u"arissa lavigny duval": u"Empire",
-            u"aisling_duval": u"Empire",
-            u"aisling duval": u"Empire",
-            u"archon_delaine": None,
-            u"archon delaine": None,
-            u"denton_patreus": u"Empire",
-            u"denton patreus": u"Empire",
-            u"edmund_mahon": u"Alliance",
-            u"edmund mahon": u"Alliance",
-            u"felicia_winters": u"Federation",
-            u"felicia winters": u"Federation",
-            u"li_yong-rui": None,
-            u"li yong-rui": None,
-            u"pranav_antal": None,
-            u"pranav antal": None,
-            u"yuri_grom": None,
-            u"yuri grom": None,
-            u"zachary_hudson": u"Federation",
-            u"zachary hudson": u"Federation",
-            u"zemina_torval": u"Empire",
-            u"zemina torval": u"Empire",
-            u"nakato_kaine": u"Alliance",
-            u"nakato kaine": u"Alliance",
-            u"jerome_archer": u"Federation",
-            u"jerome archer": u"Federation",
+            "a_lavigny-duval": "Empire",
+            "arissa lavigny duval": "Empire",
+            "aisling_duval": "Empire",
+            "aisling duval": "Empire",
+            "archon_delaine": None,
+            "archon delaine": None,
+            "denton_patreus": "Empire",
+            "denton patreus": "Empire",
+            "edmund_mahon": "Alliance",
+            "edmund mahon": "Alliance",
+            "felicia_winters": "Federation",
+            "felicia winters": "Federation",
+            "li_yong-rui": None,
+            "li yong-rui": None,
+            "pranav_antal": None,
+            "pranav antal": None,
+            "yuri_grom": None,
+            "yuri grom": None,
+            "zachary_hudson": "Federation",
+            "zachary hudson": "Federation",
+            "zemina_torval": "Empire",
+            "zemina torval": "Empire",
+            "nakato_kaine": "Alliance",
+            "nakato kaine": "Alliance",
+            "jerome_archer": "Federation",
+            "jerome archer": "Federation",
         }
 
         power = power.lower()
@@ -126,21 +126,21 @@ class EDRPowerplay(object):
 
     def pretty_print(self):
         POWERS_AFFILIATION = {
-            u"a_lavigny-duval": u"Lavigny",
-            u"aisling_duval": u"Aisling",
-            u"archon_delaine": u"Archon",
-            u"denton_patreus": u"Patreus",
-            u"edmund_mahon": u"Mahon",
-            u"felicia_winters": u"Winters",
-            u"li_yong-rui": u"Li Yong-rui",
-            u"pranav_antal": u"Antal",
-            u"yuri_grom": u"Yuri",
-            u"zachary_hudson": u"Zachary",
-            u"zemina_torval": u"Zemina",
-            u"nakato_kaine": u"Nakato",
-            u"jerome_archer": u"Jerome",
-            u"independent": u"Independent",
-            u"unknown": u"Unknown"  
+            "a_lavigny-duval": "Lavigny",
+            "aisling_duval": "Aisling",
+            "archon_delaine": "Archon",
+            "denton_patreus": "Patreus",
+            "edmund_mahon": "Mahon",
+            "felicia_winters": "Winters",
+            "li_yong-rui": "Li Yong-rui",
+            "pranav_antal": "Antal",
+            "yuri_grom": "Yuri",
+            "zachary_hudson": "Zachary",
+            "zemina_torval": "Zemina",
+            "nakato_kaine": "Nakato",
+            "jerome_archer": "Jerome",
+            "independent": "Independent",
+            "unknown": "Unknown"
         }
 
         if self.pledged_to in POWERS_AFFILIATION:
@@ -149,9 +149,9 @@ class EDRPowerplay(object):
 
     def canonicalize(self):
         if self.pledged_to:
-            return self.pledged_to.lower().replace(u" ", u"_")
+            return self.pledged_to.lower().replace(" ", "_")
         else:
-            return u""
+            return ""
 
     def time_pledged(self):
         return EDTime.py_epoch_now() - self.since
@@ -166,16 +166,16 @@ class EDRPowerplay(object):
 
 class EDRPowerplayUnknown(EDRPowerplay):
     def __init__(self):
-        super(EDRPowerplayUnknown, self).__init__(u"Unknown", EDTime.py_epoch_now())
+        super(EDRPowerplayUnknown, self).__init__("Unknown", EDTime.py_epoch_now())
 
     def is_enemy(self, power): 
         return False
 
     def pretty_print(self):
-        return u"Unknown"
+        return "Unknown"
 
     def canonicalize(self):
-        return u"unknown"
+        return "unknown"
 
     def time_pledged(self):
         return 0
@@ -242,12 +242,12 @@ class EDPilot(object):
 
     def json(self):
         blob = {
-            u"name": self.name,
-            u"timestamp": self.timestamp * 1000,
-            u"wanted": self.wanted,
-            u"bounty": self.bounty,
-            u"power": self.powerplay.canonicalize() if self.powerplay else u'',
-            u"enemy": self.enemy,
+            "name": self.name,
+            "timestamp": self.timestamp * 1000,
+            "wanted": self.wanted,
+            "bounty": self.bounty,
+            "power": self.powerplay.canonicalize() if self.powerplay else '',
+            "enemy": self.enemy,
         }
 
         if self.piloted_vehicle:
@@ -256,7 +256,7 @@ class EDPilot(object):
             blob["suit"] = self.spacesuit.json()
         
         if self.sqid:
-            blob[u"sqid"] = self.sqid
+            blob["sqid"] = self.sqid
         return blob
     
     def is_human(self):
@@ -337,7 +337,7 @@ class EDPilot(object):
     def place(self):
         if self.location.place is None:
             # Translators: this is used when a location, comprised of a system and a place (e.g. Alpha Centauri & Hutton Orbital), has no place specified
-            return _c(u"For an unknown or missing place|Unknown")
+            return _c("For an unknown or missing place|Unknown")
         return self.location.place
 
     @place.setter
@@ -349,7 +349,7 @@ class EDPilot(object):
     def body(self):
         if self.location.body is None:
             # Translators: this is used when a location, comprised of a system and a body (e.g. Alpha Centauri & 3 A), has no body specified
-            return _c(u"For an unknown or missing body|Unknown")
+            return _c("For an unknown or missing body|Unknown")
         return self.location.body
 
     @body.setter
@@ -765,7 +765,7 @@ class EDPilot(object):
         if system_address:
             self.location.star_system_address = system_address
         if star_system and (self.location.star_system is None or self.location.star_system != star_system):
-            EDR_LOG.log(u"Updating system info (was missing or obsolete). {old} vs. {system}".format(old=self.location.star_system, system=star_system), u"INFO")
+            EDR_LOG.log("Updating system info (was missing or obsolete). {old} vs. {system}".format(old=self.location.star_system, system=star_system), "INFO")
             self.location.star_system = star_system
             return True
         return False
@@ -773,7 +773,7 @@ class EDPilot(object):
     def update_place_if_obsolete(self, place):
         self._touch()
         if self.location.place is None or self.location.place != place:
-            EDR_LOG.log(u"Updating place info (was missing or obsolete). {old} vs. {place}".format(old=self.location.place, place=place), u"INFO")
+            EDR_LOG.log("Updating place info (was missing or obsolete). {old} vs. {place}".format(old=self.location.place, place=place), "INFO")
             self.location.place = place
             return True
         return False
@@ -781,7 +781,7 @@ class EDPilot(object):
     def update_body_if_obsolete(self, body):
         self._touch()
         if self.location.body is None or self.location.body != body:
-            EDR_LOG.log(u"Updating body info (was missing or obsolete). {old} vs. {body}".format(old=self.location.body, body=body), u"INFO")
+            EDR_LOG.log("Updating body info (was missing or obsolete). {old} vs. {body}".format(old=self.location.body, body=body), "INFO")
             self.location.body = body
             return True
         return False
@@ -797,21 +797,21 @@ class EDPlayer(EDPilot):
 
     def json(self):
         blob = {
-            u"cmdr": self.name,
-            u"timestamp": self.timestamp * 1000,
-            u"wanted": self.wanted,
-            u"bounty": self.bounty,
-            u"power": self.powerplay.canonicalize() if self.powerplay else u'',
-            u"enemy": self.enemy
+            "cmdr": self.name,
+            "timestamp": self.timestamp * 1000,
+            "wanted": self.wanted,
+            "bounty": self.bounty,
+            "power": self.powerplay.canonicalize() if self.powerplay else '',
+            "enemy": self.enemy
         }
 
         if (self.piloted_vehicle):
-            blob[u"ship"] = self.piloted_vehicle.json()
+            blob["ship"] = self.piloted_vehicle.json()
         else:
-            blob[u"spacesuit"] = self.spacesuit.json()
+            blob["spacesuit"] = self.spacesuit.json()
         
         if self.sqid:
-            blob[u"sqid"] = self.sqid
+            blob["sqid"] = self.sqid
         return blob
     
     def is_human(self):
@@ -831,7 +831,7 @@ class EDPlayer(EDPilot):
 
     def in_blue_tunnel(self, tunnel=True):
         if tunnel != self.blue_tunnel:
-            EDR_LOG.log(u"Blue Tunnel update: {old} vs. {new}".format(old=self.blue_tunnel, new=tunnel), u"DEBUG")
+            EDR_LOG.log("Blue Tunnel update: {old} vs. {new}".format(old=self.blue_tunnel, new=tunnel), "DEBUG")
         self.blue_tunnel = tunnel
 
     def is_trusted_by_squadron(self):
@@ -840,10 +840,10 @@ class EDPlayer(EDPilot):
         return self.squadron.is_somewhat_trusted()
 
     def squadron_trusted_rank(self):
-        return EDRSquadronMember.SOMEWHAT_TRUSTED_LEVEL[u"rank"]
+        return EDRSquadronMember.SOMEWHAT_TRUSTED_LEVEL["rank"]
 
     def squadron_empowered_rank(self):
-        return EDRSquadronMember.FULLY_TRUSTED_LEVEL[u"rank"]
+        return EDRSquadronMember.FULLY_TRUSTED_LEVEL["rank"]
 
     def is_empowered_by_squadron(self):
         if self.is_lone_wolf():
@@ -1006,31 +1006,31 @@ class EDPlayerOne(EDPlayer):
 
     def json(self, fuel_info=False, with_target=False):
         result = {
-            u"cmdr": self.name,
-            u"timestamp": self.timestamp * 1000,
-            u"wanted": self.wanted,
-            u"bounty": self.bounty,
-            u"starSystem": self.star_system,
-            u"place": self.place,
-            u"wingof": len(self.wing.wingmates),
-            u"wing": self.wing.noteworthy_changes_json(self.instance),
-            u"byPledge": self.powerplay.canonicalize() if self.powerplay else u'',
-            u"mode": self.game_mode,
-            u"dlc": self.dlc_name,
-            u"group": self.private_group
+            "cmdr": self.name,
+            "timestamp": self.timestamp * 1000,
+            "wanted": self.wanted,
+            "bounty": self.bounty,
+            "starSystem": self.star_system,
+            "place": self.place,
+            "wingof": len(self.wing.wingmates),
+            "wing": self.wing.noteworthy_changes_json(self.instance),
+            "byPledge": self.powerplay.canonicalize() if self.powerplay else '',
+            "mode": self.game_mode,
+            "dlc": self.dlc_name,
+            "group": self.private_group
         }
 
         if (self.piloted_vehicle):
-            result[u"ship"] = self.piloted_vehicle.json(fuel_info=fuel_info)
+            result["ship"] = self.piloted_vehicle.json(fuel_info=fuel_info)
         else:
-            result[u"spacesuit"] = self.spacesuit.json()
+            result["spacesuit"] = self.spacesuit.json()
 
         if with_target:
-            result[u"target"] = self.target_pilot().json() if self._target else {}
+            result["target"] = self.target_pilot().json() if self._target else {}
 
-        result[u"crew"] = []
+        result["crew"] = []
         if self.crew:
-            result[u"crew"] = [ {u"cmdr": crew_member} for crew_member in self.crew.all_members()] 
+            result["crew"] = [ {"cmdr": crew_member} for crew_member in self.crew.all_members()]
             
         return result
    
@@ -1038,13 +1038,13 @@ class EDPlayerOne(EDPlayer):
         self._name = new_name
 
     def in_solo_or_private(self):
-        return self.game_mode in [u"Solo", u"Group"]
+        return self.game_mode in ["Solo", "Group"]
 
     def in_solo(self):
-        return self.game_mode == u"Solo"
+        return self.game_mode == "Solo"
 
     def in_open(self):
-        return self.game_mode == u"Open"
+        return self.game_mode == "Open"
 
     def inception(self, genesis=False):
         if genesis:
@@ -1335,25 +1335,25 @@ class EDPlayerOne(EDPlayer):
 
     def attacked(self, target):
         self._touch()
-        if target == u"Mothership":
+        if target == "Mothership":
             self.mothership.attacked()
-        elif target == u"Fighter":
+        elif target == "Fighter":
             if self.slf:
                 self.slf.attacked()
             else:
-                EDR_LOG.log(u"SLF attacked but player had none", u"WARNING")
-        elif target == u"You":
+                EDR_LOG.log("SLF attacked but player had none", "WARNING")
+        elif target == "You":
             if self.on_foot:
                 self.spacesuit.attacked()
             else:
                 self.piloted_vehicle.attacked()
-        elif target == u"SRV":
+        elif target == "SRV":
             if self.srv:
                 self.srv.attacked()
             else:
-                EDR_LOG.log(u"SRV attacked but player had none", u"WARNING")
+                EDR_LOG.log("SRV attacked but player had none", "WARNING")
         else:
-            EDR_LOG.log(u"Unrecognized target: {}".format(target), u"WARNING")
+            EDR_LOG.log("Unrecognized target: {}".format(target), "WARNING")
 
 
     def pips(self, values):
