@@ -16,7 +16,7 @@ Below are the installation and use manuals:
 - Manual in French
   - [ED Recon - Le Guide](https://github.com/lekeno/edr/blob/master/edr/docs/fran%C3%A7ais/ED_Recon_-_Le_Guide.md)
 - Manual in Italian
-  - [ED Recon - Il Manuale Mancante](https://github.com/lekeno/edr/blob/master/edr/docs/italiano/ED_Recon_-_Il_Manuale_Mancante.md) edited by [CMDR FrostBit aka @GLWine](https://github.com/GLWine)
+  - [ED Recon - Il Manuale Mancante](https://github.com/lekeno/edr/blob/master/edr/docs/italiano/ED_Recon_-_Il_Manuale_Mancante.md) edited by [CMDR JumpFrost_ITA aka @JumpFrostITA](https://github.com/JumpFrostITA)
 
 
 # Acknowledgements
