@@ -27,7 +27,12 @@ class TestEDTime(TestCase):
 
         timespan = -60*60*24*12
         result = EDTime.pretty_print_timespan(timespan)
-        self.assertEqual(result, u"0")
+        self.assertEqual(result, u"-12d")
+
+    def test_pretty_print_negative_timespan(self):
+        timespan = -60*60*24*7
+        result = EDTime.pretty_print_timespan(timespan)
+        self.assertEqual(result, u"-7d")
 
     def test_pretty_print_timespan_short_diff(self):
         timespan = 60*60*24*7 + 60*60*5

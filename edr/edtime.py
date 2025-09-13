@@ -56,7 +56,7 @@ class EDTime(comparable.ComparableMixin):
     @staticmethod
     def pretty_print_timespan(timespan, short=False, verbose=False):
         if timespan < 0:
-            return u"0"
+            return u"-" + EDTime.pretty_print_timespan(abs(timespan), short, verbose)
         remaining = timespan
         days = remaining // 86400
         remaining -= days * 86400
