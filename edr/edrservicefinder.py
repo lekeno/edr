@@ -161,7 +161,7 @@ class EDRServiceFinder(threading.Thread):
                 EDR_LOG.log(u"Prime found, breaking here.", "DEBUG")
                 break
 
-        return candidates        
+        return candidates   
 
     def closest_station_with_service(self, stations, system_name):
         overall = None

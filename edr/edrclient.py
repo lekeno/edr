@@ -3547,7 +3547,7 @@ class EDRClient(object):
     def __staoi_found(self, reference, radius, sc, soi_checker, result):
         self.__searching(False)
         details = []
-        if result:
+        if result and "station" in result:
             sc_distance = result['station']['distanceToArrival']
             distance = result['distance']
             pretty_dist = _(u"{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _(u"{dist}LY").format(dist=int(distance))
@@ -3560,6 +3560,9 @@ class EDRClient(object):
             self.status = u"{item}: {system}, {dist} - {station} ({type}), {sc_dist}".format(item=soi_checker.name, system=result['name'], dist=pretty_dist, station=result['station']['name'], type=result['station']['type'], sc_dist=pretty_sc_dist)
             copy(result["name"])
         else:
+            if 'station' not in result:
+                EDR_LOG.log(u"Unsupported search result: {}".format(result), "ERROR")
+            
             self.status = _(u"{}: nothing within [{}LY, {}LS] of {}").format(soi_checker.name, int(radius), int(sc), reference)
             checked = _("checked {} systems").format(soi_checker.systems_counter) 
             if soi_checker.stations_counter: 
