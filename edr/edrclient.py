@@ -16,7 +16,7 @@ import myNotebook as notebook
 from config import config
 
 from edrfleetcarrier import EDRFleetCarrier
-from edrconfig import EDRConfig
+from edrconfig import EDRConfig, EDRUserConfig
 from lrucache import LRUCache
 from edentities import EDFineOrBounty
 from edsitu import EDPlanetaryLocation, EDLocation
@@ -145,7 +145,8 @@ class EDRClient(object):
         self.edrsystems = EDRSystems(self.server, self.edsm_server, self.edrfactions)
         self.edrresourcefinder = EDRResourceFinder(self.edrsystems, self.edrfactions)
         self.edrboi = EDRBodiesOfInterest()
-        self.edrcmdrs = EDRCmdrs(self.server)
+        user_config = EDRUserConfig()
+        self.edrcmdrs = EDRCmdrs(self.server, user_config.opsec_config())
         self.edropponents = {
             EDROpponents.OUTLAWS: EDROpponents(self.server, EDROpponents.OUTLAWS, self._realtime_callback),
             EDROpponents.ENEMIES: EDROpponents(self.server, EDROpponents.ENEMIES, self._realtime_callback),
