@@ -24,7 +24,7 @@ class EDTime(comparable.ComparableMixin):
 
     @staticmethod
     def t_minus(js_epoch_then, short=False):
-        return EDTime.t_minus_py(int(js_epoch_then // 1000))
+        return EDTime.t_minus_py(int(js_epoch_then // 1000), short)
 
     @staticmethod
     def t_minus_py(py_epoch_then, short=False):

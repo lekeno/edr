@@ -66,7 +66,7 @@ class TestEDInstance(TestCase):
         now = 1000 * calendar.timegm(time.gmtime())
         instance = EDInstance()
         changes = instance.noteworthy_changes_json()
-        self.assertAlmostEquals(changes["timestamp"], now)
+        self.assertAlmostEqual(changes["timestamp"], now)
         self.assertEqual(changes["players"], [])
 
         changes = instance.noteworthy_changes_json()
@@ -74,12 +74,12 @@ class TestEDInstance(TestCase):
 
         instance.player_in(MockCmdr("LeKeno"))
         changes = instance.noteworthy_changes_json()
-        self.assertAlmostEquals(changes["timestamp"], now)
+        self.assertAlmostEqual(changes["timestamp"], now)
         self.assertEqual(changes["players"], [{"cmdr": "LeKeno"}])
 
         instance.player_out("LeKeno")
         changes = instance.noteworthy_changes_json()
-        self.assertAlmostEquals(changes["timestamp"], now)
+        self.assertAlmostEqual(changes["timestamp"], now)
         self.assertEqual(changes["players"], [])
 
         instance.player_out("LeKeno")
