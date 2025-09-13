@@ -1,6 +1,7 @@
 
 import os
 import configparser as cp
+from edropsec import EDROpsecConfig
 
 
 class EDRUserConfig(object):
@@ -10,6 +11,11 @@ class EDRUserConfig(object):
             self.config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), config_file))
         except:
             self.config = None
+
+    def opsec_config(self):
+        if self.config and self.config.has_section('opsec'):
+            return EDROpsecConfig(self.config)
+        return None
 
     def discord_webhook_for_comms(self, channel, incoming=True):
         if self.config:

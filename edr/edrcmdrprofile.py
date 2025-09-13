@@ -452,3 +452,27 @@ class EDRCmdrProfile(object):
             result += u"✪PP {} ".format(", ".join(powerplay_parts))
 
         return result
+
+    def is_opsec(self, player, opsec_config):
+        if not opsec_config or not opsec_config.opsec_enabled:
+            return False
+
+        if opsec_config.is_never_report_cmdr(self.name):
+            return True
+
+        if opsec_config.is_never_report_power(self.powerplay):
+            return True
+
+        if opsec_config.power and self.powerplay and player.power and self.powerplay == player.power:
+            return True
+
+        if opsec_config.squadron and self.squadron_id and player.squadron and self.squadron_id == player.squadron.inara_id:
+            return True
+
+        if opsec_config.wing and player.is_wingmate(self.name):
+            return True
+
+        if opsec_config.crew and player.is_crewmate(self.name):
+            return True
+
+        return False
