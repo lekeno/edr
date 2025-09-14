@@ -2009,7 +2009,7 @@ class EDRClient(object):
                 self.notify_with_details(_("EDR Alerts"), [_("invalid value, removing maximal distance")])
                 new_value = None
         else:
-            self.notify_with_details(_("Outlaws Alerts"), [_("no limits on distance")])
+            self.notify_with_details(_("EDR Alerts"), [_("no limits on distance for {}").format(_(kind))])
 
         self.realtime_params[kind]["max_distance"] = new_value
         if new_value is None:
