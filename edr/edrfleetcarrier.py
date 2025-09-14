@@ -253,7 +253,9 @@ class EDRFleetCarrier(object):
         return self.departure["destination"] is None or self.departure["time"] is None
 
     def is_open_to_all(self, include_notorious=False):
-        return self.access == "all" and self.allow_notorious if include_notorious else True
+        if include_notorious:
+            return self.access == "all" and self.allow_notorious
+        return self.access == "all"
 
     def json_jump_schedule(self):
         self.__update_position()

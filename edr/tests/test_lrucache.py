@@ -30,7 +30,7 @@ class TestLRUCache(TestCase):
         for key in samples:
             cache.set(key, samples[key])
 
-        self.assertListEqual(cache.keys(), samples.keys())
+        self.assertListEqual(list(cache.keys()), list(samples.keys()))
         
         for key in samples:
             self.assertTrue(cache.has_key(key))
@@ -50,8 +50,8 @@ class TestLRUCache(TestCase):
         cache = LRUCache(3,60)
         cache.set("a", 34)
         cache.reset()
-        self.assertEqual(cache.keys(), [])
-        self.assertEqual(cache.values(), [])
+        self.assertEqual(list(cache.keys()), [])
+        self.assertEqual(list(cache.values()), [])
         self.assertEqual(cache.last_updated, None)
 
 

@@ -155,9 +155,9 @@ class EDRFaction(object):
             return
 
         if self.timestamps["allegiance"] is None or (edsm_last_update > self.timestamps["allegiance"] and "allegiance" in edsm_faction_info):
-            if self.allegiance != edsm_faction_info["allegiance"]:
+            if self.allegiance != edsm_faction_info["allegiance"].lower():
                 EDR_LOG.log("Updating faction {}'s allegiance {} with EDSM info {}".format(self.name, self.allegiance, edsm_faction_info["allegiance"]), "DEBUG")
-                self.allegiance = edsm_faction_info["allegiance"]
+                self.allegiance = edsm_faction_info["allegiance"].lower()
             self.timestamps["allegiance"] = edsm_last_update
         
         if self.timestamps["influence"] is None or (edsm_last_update > self.timestamps["influence"] and "influence" in edsm_faction_info):

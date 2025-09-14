@@ -52,13 +52,7 @@ class BidiWaypointIterator(object):
             return self.current
         
     def empty(self):
-        if self.collection is None:
-            return True
-        
-        if next(self):
-            self.collection.previous()
-            return False
-        return True
+        return not self.collection
 
     def current_wp_sysname(self):
         return self.get_system_name(self.current)
