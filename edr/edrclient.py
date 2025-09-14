@@ -3218,13 +3218,17 @@ class EDRClient(object):
         elif action == "wave":
             pass
         elif action == "agree":
-            pass
+            self.next_custom_poi()
+            self.__notify(_("EDR Navigation (thumb up gesture)"), [_("Switched to next POI.")])
         elif action == "disagree":
-            pass
+            self.previous_custom_poi()
+            self.__notify(_("EDR Navigation (thumb down gesture)"), [_("Switched to previous POI.")])
         elif action == "go":
             pass
         elif action == "stop":
-            pass
+            self.player.planetary_destination = None
+            self.clear_current_custom_poi()
+            self.__notify(_("EDR Navigation (stop gesture)"), [_("Cleared current POI.")])
         elif action == "applaud":
             pass
         elif action == "salute":
