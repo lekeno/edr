@@ -84,7 +84,7 @@ class EDRClient(object):
         self.cognitive_blips_cache = LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
         self.traffic_cache = LRUCache(edr_config.lru_max_size(), edr_config.traffic_max_age())
         self.scans_cache = LRUCache(edr_config.lru_max_size(), edr_config.scans_max_age())
-        self.cognitive_scans_cache = LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
+        self.cognitive_scans_cache = LRUCache(edr_config.lru_max_size(), edr_config.scans_max_age())
         self.alerts_cache = LRUCache(edr_config.lru_max_size(), edr_config.alerts_max_age())
         self.fights_cache = LRUCache(edr_config.lru_max_size(), edr_config.fights_max_age())
 
