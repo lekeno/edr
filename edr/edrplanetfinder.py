@@ -69,7 +69,6 @@ class EDRPlanetFinder(threading.Thread):
             return candidates
 
         if self.shuffle_systems:
-            seed() # TODO should no longer be necessary
             EDR_LOG.log("Nearby: shuffling systems", "DEBUG")
             shuffle(systems)
 
@@ -182,7 +181,6 @@ class EDRPlanetFinder(threading.Thread):
             return None
 
         if self.shuffle_planets:
-            seed() # TODO should no longer be necessary
             EDR_LOG.log("Nearby: shuffling bodies", "DEBUG")
             shuffle(all_bodies)
 
