@@ -21,6 +21,7 @@ class EDRFleet(object):
         "t8": "type8",
         "t9": "type9",
         "t10": "type9_military",
+        "t11": "lakonminer",
         "panther": "panthermkii",
         "aspx": "asp",
         "clipper": "empire_trader",
