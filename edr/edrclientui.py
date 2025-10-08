@@ -75,10 +75,10 @@ class EDRClientUI(object):
         cred_frame = notebook.Frame(frame)
         cred_label_text = _(u'Log in with your EDR account for full access. {}')
         cred_label = notebook.Label(cred_frame, text=cred_label_text.format(""))
-        cred_label.pack(side=tk.LEFT)
-        # Translators: this is shown in the preferences panel, after a sentence saying "Log in with your EDR account for full access."
+        cred_label.grid(row=0, column=0, sticky=tk.W)
+        # Translators: this is shown in the preferences panel, after a sentence saying "Log in with your EE.DR account for full access."
         apply_text = _(u"Apply for an account.")
-        ttkHyperlinkLabel.HyperlinkLabel(cred_frame, text=apply_text, background=notebook.Label().cget('background'), url="https://edrecon.com/account", underline=True).pack(side=tk.LEFT)
+        ttkHyperlinkLabel.HyperlinkLabel(cred_frame, text=apply_text, background=notebook.Label().cget('background'), url="https://edrecon.com/account", underline=True).grid(row=0, column=1, sticky=tk.W)
         cred_frame.grid(padx=10, columnspan=2, sticky=tk.W)
 
         notebook.Label(frame, text=_(u"Email")).grid(padx=10, row=11, sticky=tk.W)
