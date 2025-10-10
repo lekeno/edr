@@ -48,6 +48,7 @@ from clippy import copy, paste
 from edrfssinsights import EDRFSSInsights
 from edrcommands import EDRCommands
 import edrroutes
+from distutils.version import LooseVersion
 from edrutils import simplified_body_name, pretty_print_number
 
 
@@ -279,7 +280,10 @@ class EDRClient(object):
             self.__status_update_pending()
 
     def is_obsolete(self, advertised_version):
-        return list(map(int, self.edr_version.split('.'))) < list(map(int, advertised_version.split('.')))
+        try:
+            return LooseVersion(self.edr_version) < LooseVersion(advertised_version)
+        except (ValueError, AttributeError):
+            return False
 
     @property
     def player(self):
@@ -1060,8 +1064,9 @@ class EDRClient(object):
             if dst.is_fleet_carrier():
                 fc_regexp = r"^(?:.+ )?([A-Z0-9]{3}-[A-Z0-9]{3})$"
                 m = re.match(fc_regexp, name)
-                callsign = m.group(1)
-                self.fc_in_current_system(callsign)
+                if m:
+                    callsign = m.group(1)
+                    self.fc_in_current_system(callsign)
                 return
             return
         
@@ -1085,8 +1090,9 @@ class EDRClient(object):
             if dst.is_fleet_carrier():
                 fc_regexp = r"^(?:.+ )?([A-Z0-9]{3}-[A-Z0-9]{3})$"
                 m = re.match(fc_regexp, name)
-                callsign = m.group(1)
-                self.fc_in_current_system(callsign)
+                if m:
+                    callsign = m.group(1)
+                    self.fc_in_current_system(callsign)
                 return
 
     def system_value(self, star_system=None):
@@ -3572,19 +3578,24 @@ class EDRClient(object):
             fc_count = fc.get("fcCount", None)
             timestamp = fc.get("timestamp", None)
             if not fc_count is None and fc_count >= 0 and timestamp:
-                remaining = max(0, result['parking']['slots'] - fc_count)
+                parking_info = result.get('parking', {})
+                slots = parking_info.get('slots', 0)
+                remaining = max(0, slots - fc_count)
                 threshold = 1000*60*60*24
                 plus = 0
                 minus = 0
                 observations = fc.get("observations", {})
                 for o in observations:
-                    if abs(timestamp - observations[o]) > threshold:
+                    try:
+                        if abs(timestamp - observations[o]) > threshold:
+                            continue
+                        count = int(o[1:])
+                        if count > fc_count:
+                            minus = max(minus, count-fc_count)
+                        elif count < fc_count:
+                            plus = max(plus, fc_count-count)
+                    except (ValueError, TypeError):
                         continue
-                    count = int(o[1:])
-                    if count > fc_count:
-                        minus = max(minus, count-fc_count)
-                    elif count < fc_count:
-                        plus = max(plus, fc_count-count)
                 tminus = EDTime.t_minus(timestamp, short=True)
                 plusminus = ""
                 if plus == minus and plus > 0:
@@ -3599,11 +3610,12 @@ class EDRClient(object):
 
                 
                 if len(plusminus):
-                    details.append(_("Slots ≈ {} ({}) / {} (as of {})").format(remaining, plusminus, result['parking']['slots'], tminus))
+                    details.append(_("Slots ≈ {} ({}) / {} (as of {})").format(remaining, plusminus, slots, tminus))
                 else:
-                    details.append(_("Slots ≈ {} / {} (as of {})").format(remaining, result['parking']['slots'], tminus))
+                    details.append(_("Slots ≈ {} / {} (as of {})").format(remaining, slots, tminus))
             else:
-                details.append(_("Slots: ???/{} (no intel)").format(result['parking']['slots']))
+                slots = result.get('parking', {}).get('slots', "???")
+                details.append(_("Slots: ???/{} (no intel)").format(slots))
             stats = result['parking']['info']['all']['stats']
             stars_stats = result['parking']['info']['stars']['stats']
             if stats["count"] > 1 and stats["count"] > stars_stats["count"]:

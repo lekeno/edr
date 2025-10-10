@@ -517,7 +517,7 @@ class EDRSystems(object):
         if not system:
             return None
 
-        return system[0]["coords"] 
+        return system[0].get("coords")
 
     def system_primary_star_oneliner(self, name, current_system=True):
         the_system = self.system(name)
