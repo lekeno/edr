@@ -942,9 +942,15 @@ class InGameMsg(object):
             bar["y"] = int(dy-h)
             bar["x2"] = int(cfg["efficiency"]["w"])
             bar["y2"] = 1
-            index = int(efficiency/mining_stats.max_efficiency * (len(cfg["efficiency"]["rgb"])-1.0))
-            bar["rgb"] = cfg["efficiency"]["rgb"][index]
-            bar["fill"] = cfg["efficiency"]["fill"][index]
+            max_rgb_index = len(cfg["efficiency"]["rgb"]) - 1
+            if max_rgb_index >= 0:
+                rgb_index = int(efficiency/mining_stats.max_efficiency * max_rgb_index)
+                bar["rgb"] = cfg["efficiency"]["rgb"][min(rgb_index, max_rgb_index)]
+
+            max_fill_index = len(cfg["efficiency"]["fill"]) - 1
+            if max_fill_index >= 0:
+                fill_index = int(efficiency/mining_stats.max_efficiency * max_fill_index)
+                bar["fill"] = cfg["efficiency"]["fill"][min(fill_index, max_fill_index)]
             bar["ttl"] = cfg["efficiency"]["ttl"]
             self.__shape(u"mining-graphs-efficiency-bar", bar)
             x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}
