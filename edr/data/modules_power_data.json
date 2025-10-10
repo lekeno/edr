@@ -591,6 +591,10 @@
         "powergen": 0,
         "powerdraw": 0.97
     },
+    "int_multidronecontrol_miningv2_size5_class5": {
+        "powergen": 0,
+        "powerdraw": 1.4
+    },
     "int_dockingcomputer_standard": {
         "powergen": 0,
         "powerdraw": 0.39
@@ -1946,6 +1950,10 @@
     "hpt_mininglaser_turret_medium": {
         "powergen": 0,
         "powerdraw": 0.75
+    },
+    "hpt_miningtoolv2_fixed_large": {
+        "powergen": 0,
+        "powerdraw": 1.5
     },
     "hpt_dumbfiremissilerack_fixed_small": {
         "powergen": 0,
