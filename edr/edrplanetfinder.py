@@ -65,7 +65,11 @@ class EDRPlanetFinder(threading.Thread):
                 return candidates["prime"]
                
         systems = self.edr_systems.systems_within_radius(self.star_system, self.radius)
-        if not systems:
+        if systems is None:
+            return candidates
+
+        if systems is False:
+            self.checker.preliminary_msg = _(u"Couldn't get systems within radius of {}: EDSM API is probably having issues.").format(self.star_system)
             return candidates
 
         if self.shuffle_systems:
