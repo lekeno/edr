@@ -3474,7 +3474,7 @@ class EDRClient(object):
             self.status = "{item}: {system}, {dist} - {station} ({type}), {sc_dist}".format(item=soi_checker.name, system=result['name'], dist=pretty_dist, station=result['station']['name'], type=result['station']['type'], sc_dist=pretty_sc_dist)
             copy(result["name"])
         else:
-            if 'station' not in result:
+            if result and 'station' not in result:
                 EDR_LOG.log("Unsupported search result: {}".format(result), "ERROR")
             
             self.status = _("{}: nothing within [{}LY, {}LS] of {}").format(soi_checker.name, int(radius), int(sc), reference)
