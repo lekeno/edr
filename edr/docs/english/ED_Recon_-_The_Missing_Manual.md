@@ -372,8 +372,11 @@ Manual navigation is also supported (shown when approaching a body or when on th
 Commands:
 
 - `!nav 123.21 -32.21` to set the destination based on its Latitude and Longitude.
-- `!nav off` to disable the navigation feature
+- `!nav off` to disable the navigation feature.
 - `!nav set` to set your current Latitude, Longitude as the reference point for the navigation feature.
+- `!nav next` or `!nav previous` to cycle through custom points of interest.
+- `!nav clear` to clear the current custom point of interest.
+- `!nav reset` to clear all custom points of interest.
 ## Noteworthy Materials
 When approaching a body, EDR will show a list of noteworthy materials (i.e. materials with a density higher than what's typical across the galaxy). Note: this requires prior actions such as scanning the navigation beacon or analyzing the system with the Full Spectrum Scanner, etc.
 
@@ -579,9 +582,8 @@ To improve your efficiency with Exobiology activities, EDR provides the followin
   - Number of genus analyzed vs. total number of known genuses.
   - Name of the genuses analyzed.
   - Number of species analyzed.
-- If you encounter other species along the way, you can record their positions for later. This can be done either via the composition scanner (ship, srv), or by using the “pointing” gesture while on foot. 
-  - These custom POIs can be cycled through/recalled by sending `!nav next` or `!nav previous` commands. 
-  - You can also clear the current POI by sending the `!nav clear` command, and clear all the custom POIs by sending the !nav reset command.
+- If you encounter other species along the way, you can record their positions for later. This can be done either via the composition scanner (ship, srv), or by using the “pointing” gesture while on foot.
+  - These custom POIs can be cycled through/recalled by sending `!nav next` or `!nav previous` commands (see the [Navigation](#navigation) section for more details).
   - Note: these custom POIs are ephemeral (e.g. wiped out when EDMC is closed).
 
     <img alt="Example of a navigator interface that takes you to the next point" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_23.png?raw=true">
@@ -701,8 +703,12 @@ The discord integration offer the following features:
 - Ability to configure if and how messages are forwarded for each channel and for specific commanders. See [customization options below](#customization-options).
 - Ability to forward direct messages sent while you are AFK to a discord server and channel of your choice.
 #### *Outgoing messages*
-- Ability to send specific messages to a discord server and channel of your choice via the `!discord` in-game chat command (e.g. `!discord about to cash in a wing mission, anyone interested in some free credits?`)
-- Ability to forward messages sent over any of the in-game channels (e.g. local, system, wing, squadron, squadron leaders, crew) to a discord server and channel of your choice (configurable per channel).
+- Ability to forward messages sent over any of the in-game channels (e.g. local, system, wing, squadron, squadron leaders, crew) to a discord server and a channel of your choice (configurable per channel).
+
+###### *Sending messages to Discord*
+Ability to send specific messages to a discord server and channel of your choice via the `!discord` in-game chat command (e.g. `!discord about to cash in a wing mission, anyone interested in some free credits?`).
+
+This feature is convenient for sending announcements, coordinating with other players, or simply sharing information without having to leave the game. EDR will forward the message to the `player` channel you have configured in your `user_config.ini` file.
 
 #### *Customization options*
 
@@ -731,6 +737,40 @@ Example of a [good configuration file](https://imgur.com/a/2fflOo0). Explanation
 - per channel overrides (e.g. player, wing, squadron, squad leaders, crew) which removes the mismatching and karma restrictions.
 
 See the `user_discord_players.txt` file in the config folder for further instructions (your custom file should be named `user_discord_players.json` and should not contain any comments, i.e. no line starting with `;`).
+
+##### Advanced forwarding
+
+You can also configure EDR to report other players in the same wing, crew, or power. To do this, create a `user_relationships.json` file in the `config` folder. This file allows you to define forwarding rules based on the player's relationship to you.
+
+The following relationships are supported:
+- `wing`: a player in the same wing as you.
+- `crew`: a player in the same multicrew session as you.
+- `power`: a player pledged to the same power as you.
+
+For each relationship, you can specify the same customization options as for individual commanders (e.g., `blocked`, `matching`, `mismatching`, `min_karma`, `max_karma`, etc.).
+
+Here is an example of a `user_relationships.json` file:
+
+```json
+{
+  "wing": {
+    "blocked": false,
+    "matching": ["wing mission"],
+    "min_karma": -500
+  },
+  "crew": {
+    "blocked": false
+  },
+  "power": {
+    "blocked": true
+  }
+}
+```
+
+In this example:
+- Messages from wing members will be forwarded if they contain the phrase "wing mission" and the sender's karma is above -500.
+- All messages from crew members will be forwarded.
+- Messages from players in the same power will be blocked.
 ## Sending your Fleet Carrier’s Flight plan to discord
 You can either send your Flight Plans to EDR's fc-jumps or to a discord channel of your choosing. For the former, select Public in EDR's options (section: Broadcasts). For the latter, you have 2 options:
 
@@ -785,7 +825,7 @@ If you don’t want to report interactions or fights (e.g. agreed upon PvP), you
 - You can confirm the current configuration by sending `!crimes`. 
 # Gesture triggers
 ## Commands and options
-The use of in-game gestures to trigger EDR features can be disabled or enabled via the `!gesture off` or `!gesture on` chat commands.
+The use of in-game gestures to trigger EDR features can be disabled or enabled via the `!gesture off`, `!gesture on`, `!gestures off`, or `!gestures on` chat commands.
 # Sounds Effects
 ## Commands and options
 Sound effects can be disabled or enabled from the EDR options in EDMC (`File` menu, `Settings`, `EDR` tab, `Feedback` section, `Sound` checkbox), or via the `!audiocue off` or `!audiocue on` chat commands.
