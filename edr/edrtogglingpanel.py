@@ -73,6 +73,7 @@ class ToggledFrame(tk.Frame):
         self.status_frame.configure(background=bg)
         self.status_frame.grid(row=0, column=0, sticky="ew")
         self.grid_columnconfigure(0, weight=1)
+        self.status_frame.grid_propagate(False)
         
         self.sub_frame = tk.Frame(self, relief="flat", borderwidth=0)
         self.sub_frame.configure(background=bg)
