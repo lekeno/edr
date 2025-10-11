@@ -43,7 +43,11 @@ class EDRParkingSystemFinder(threading.Thread):
                 return candidate
         
         systems = self.edr_systems.systems_within_radius(self.star_system, self.radius)
-        if not systems:
+        if systems is None:
+            return None
+
+        if systems is False:
+            EDR_LOG.log(u"Couldn't get systems within radius of {}: EDSM API issue?".format(self.star_system), "ERROR")
             return None
 
         sorted_systems = sorted(systems, key=lambda s: s['distance'])

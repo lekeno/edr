@@ -40,6 +40,10 @@ class EDSMServer(object):
         endpoint = "{}/api-v1/sphere-systems".format(self.EDSM_SERVER)
         results = self.__get(endpoint, params) 
         
+        if not isinstance(results, list):
+            EDR_LOG.log(u"Systems within radius is not a list, EDSM API may be having issues. Response: {}".format(results), "WARNING")
+            return None
+
         if not results:
             EDR_LOG.log(u"Empty systems within radius.", "INFO")
             return []

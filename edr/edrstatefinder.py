@@ -51,9 +51,13 @@ class EDRStateFinder(threading.Thread):
                     return (best_system_so_far, best_grade_so_far)
 
         systems = self.edr_systems.systems_within_radius(self.star_system, self.radius)
-        if not systems:
+        if systems is None:
             return (None, None)
-        
+
+        if systems is False:
+            self.checker.preliminary_msg = _(u"Couldn't get systems within radius of {}: EDSM API is probably having issues.").format(self.star_system)
+            return (None, None)
+
         (best_system_so_far, best_grade_so_far) = self.__search(systems, best_system_so_far, best_grade_so_far)
         if not best_system_so_far:
             shuffle(systems)
