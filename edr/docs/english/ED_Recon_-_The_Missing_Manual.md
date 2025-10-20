@@ -499,7 +499,7 @@ As always, EDR will copy the system info into your clipboard, so that you can qu
 ## Landing
 EDR will show key info about at a station when docking, as well as the location of the landing pad for coriolis, orbis, fleet carriers, and some specific planetary locations.
 
-You can also rotate the station schematic 180 degrees if you prefer to keep the green lights on your left when entering the station. To do so, you will need to edit the `user_igm_config.v7.ini` file (or a higher version if available) in the `config` folder and set `rotate_schematic` to `True`.
+You can also rotate the station schematic 180 degrees if you prefer to keep the green lights on your left when entering the station. To do so, you will need to edit the `user_igm_config.v9.ini` file (or a higher version if available) in the `config` folder and set `rotate_schematic` to `True`.
 
 <img alt="Example of a planetary station interface when requesting the dock" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_17.png?raw=true">
 
@@ -582,7 +582,7 @@ To improve your efficiency with Exobiology activities, EDR provides the followin
   - Number of species analyzed.
 - If you encounter other species along the way, you can record their positions for later. This can be done either via the composition scanner (ship, srv), or by using the “pointing” gesture while on foot. 
   - These custom POIs can be cycled through/recalled by sending `!nav next` or `!nav previous` commands. 
-  - You can also clear the current POI by sending the `!nav clear` command, and clear all the custom POIs by sending the !nav reset command.
+  - You can also clear the current POI by sending the `!nav clear` command, and clear all the custom POIs by sending the `!nav reset` command.
   - Note: these custom POIs are ephemeral (e.g. wiped out when EDMC is closed).
 
     <img alt="Example of a navigator interface that takes you to the next point" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_23.png?raw=true">
@@ -776,7 +776,7 @@ If you have a multi-monitors setup, or a VR headset, you may want to set the ove
 
 Also see [these SteamVR patch notes](https://steamcommunity.com/games/250820/announcements/detail/2969548216412141657) for more details.
 ## Custom overlay
-To customize the overlay, make a copy of the `igm_config.v7.ini` and `igm_config_spacelegs.v7.ini`, found in the config folder, and rename them to `user_igm_config.v7.ini` and `user_igm_config_spacelegs.v7.ini` (note if there are higher versions than v7, then use these version numbers instead).
+To customize the overlay, make a copy of the `igm_config.v9.ini` and `igm_config_spacelegs.v8.ini`, found in the config folder, and rename them to `user_igm_config.v9.ini` and `user_igm_config_spacelegs.v8.ini` (note if there are higher versions than v7, then use these version numbers instead).
 
 The first file is for configuring the overlay when in a ship or srv, while the second file is for configuring the overlay when on foot.
 

@@ -582,6 +582,8 @@ Comme toujours, EDR copiera le nom du système dans votre presse-papiers, afin q
 
 EDR affichera des informations clés sur une station lors d’une demande d’atterrissage. Vous verrez aussi l'emplacement de votre aire d'atterrissage pour les stations Coriolis, Orbis, ainsi que les Fleet Carrier et certaines bases planétaires.
 
+Vous pouvez également faire pivoter le schéma de la station de 180 degrés si vous préférez conserver les feux verts à votre gauche en entrant. Pour cela, modifiez le fichier `user_igm_config.v9.ini` (ou une version supérieure si disponible) dans le dossier `config` et définissez `rotate_schematic` sur `True`.
+
 <img alt="Example of a planetary station interface when requesting the dock" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_17.png?raw=true">
 
 # Fonctionnalités Escadron
@@ -620,10 +622,6 @@ Envoyez les commandes suivantes pour activer ou configurer les alertes en temps 
 - `?outlaws ly 120` pour fixer une distance maximale de 120 années-lumière de votre emplacement.
 - `?outlaws cr -` pour supprimer la condition de prime minimale.
 - `?outlaws ly -` pour supprimer la condition de distance maximale.
-
-## Chasse à la prime: Statistiques et Graphiques
-
-À FAIRE
 
 # Fonctionnalités Powerplay
 
@@ -823,7 +821,9 @@ L'intégration de Discord nécessite les éléments suivants:
 
 ### Configuration des canaux Discord (webhooks)
 
-Dans le dossier de configuration, recherchez un fichier nommé user\_config\_sample.ini et suivez les instructions.
+Dans le dossier config, recherchez le fichier `user_config_sample.ini` et copiez-le en tant que `user_config.ini`. Ce nouveau fichier contient plusieurs sections pour configurer les webhooks Discord. Créez un webhook pour chaque canal vers lequel vous souhaitez transférer des messages, puis collez l'URL du webhook dans le champ correspondant.
+
+Par exemple, pour transférer les messages directs entrants, définissez le paramètre `player_webhook` de la section `[discord_incoming]` sur l'URL de votre webhook.
 
 ### Fonctionnalités
 
@@ -921,11 +921,22 @@ Consultez également ces [notes de mise à jour SteamVR](https://steamcommunity.
 
 ## Overlay personnalisée
 
-Pour personnaliser la superposition, faites une copie de `igm_config.v7.ini` et `igm_config_spacelegs.v7.ini`, trouvés dans le dossier config, et renommez-les en `user_igm_config.v7.ini` et `user_igm_config_spacelegs.v7.ini` (notez s'il existe des versions supérieures que v7, utilisez plutôt ces numéros de version).
+Pour personnaliser la superposition, faites une copie de `igm_config.v9.ini` et `igm_config_spacelegs.v8.ini`, trouvés dans le dossier config, et renommez-les en `user_igm_config.v9.ini` et `user_igm_config_spacelegs.v8.ini` (notez s'il existe des versions supérieures que v7, utilisez plutôt ces numéros de version).
 
 Le premier fichier sert à configurer la superposition à bord d'un vaisseau ou d'un SRV, tandis que le second fichier sert à configurer la superposition quand le commandant est à pied.
 
 Suivez les instructions de chaque fichier pour ajuster les couleurs et les positions des divers éléments/messages. Vous pouvez également désactiver des types de messages spécifiques. Au fur et à mesure que vous apportez des modifications au fichier de configuration de superposition, envoyez la commande `!overlay` pour relire la mise en page, et pour afficher des données de test afin de vérifier vos ajustements.
+
+# Sécurité opérationnelle (OPSEC)
+EDR inclut une fonctionnalité de sécurité opérationnelle (OPSEC) empêchant la transmission d'informations sur certains commandants à EDR Central. Cette fonctionnalité est utile si vous ne souhaitez pas signaler les commandants liés à votre puissance, par exemple.
+
+Par défaut, EDR ne signale pas les commandants :
+- de votre wing ;
+- de votre équipage ;
+- de votre escadron ;
+- de votre puissance
+
+Cette fonctionnalité est activée par défaut. Vous pouvez la désactiver ou la personnaliser via une nouvelle section `[opsec]` dans le fichier `user_config.ini`. Des options de personnalisation avancées sont également disponibles, vous permettant de spécifier une liste de commandants ou de puissances à ne jamais signaler.
 
 # Signalement des crimes
 
