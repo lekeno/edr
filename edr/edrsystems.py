@@ -2547,7 +2547,7 @@ class EDRSystems(object):
 
         if key in self.edsm_systems_within_radius_blocklist:
             EDR_LOG.log(u"Systems within radius for {} is in the blocklist.".format(key), "INFO")
-            return False
+            return None
 
         systems = self.edsm_systems_within_radius_cache.get(key)
         cached = self.edsm_systems_within_radius_cache.has_key(key)
@@ -2560,15 +2560,15 @@ class EDRSystems(object):
                 return sorted(systems, key = lambda i: i['distance'])
 
         systems = self.edsm_server.systems_within_radius(star_system, radius)
-        if systems is not None:
-            systems = sorted(systems, key = lambda i: i['distance']) 
-            self.edsm_systems_within_radius_cache.set(key, systems)
-            EDR_LOG.log(u"Cached systems within {}LY of {}".format(radius, star_system), "DEBUG")
-            return systems
-
-        self.edsm_systems_within_radius_blocklist.add(key)
-        EDR_LOG.log(u"No results from EDSM. Temporary entry to be nice on EDSM's server. Added to blocklist.".format(key), "DEBUG")
-        return False
+        if systems is None:
+            self.edsm_systems_within_radius_blocklist.add(key)
+            EDR_LOG.log(u"No results from EDSM. Temporary entry to be nice on EDSM's server. Added to blocklist.".format(key), "DEBUG")
+            return None
+        
+        systems = sorted(systems, key = lambda i: i['distance']) 
+        self.edsm_systems_within_radius_cache.set(key, systems)
+        EDR_LOG.log(u"Cached systems within {}LY of {}".format(radius, star_system), "DEBUG")
+        return systems
 
     def is_recent(self, timestamp, max_age):
         if timestamp is None:
