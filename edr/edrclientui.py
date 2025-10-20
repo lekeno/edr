@@ -12,10 +12,6 @@ class EDRClientUI(object):
         self.parent = parent
         self.ui = EDRTogglingPanel(self.edr_client._status, self.edr_client._visual_alt_feedback, self.edr_client.edrcommands.process, parent=self.parent)
 
-    def app_ui(self):
-        if self.ui is None:
-            self.ui = EDRTogglingPanel(self.edr_client._status, self.edr_client._visual_alt_feedback, self.edr_client.edrcommands.process, parent=self.parent)
-        
         self.ui.notify(_(u"Troubleshooting"), [
             _(u"If the overlay doesn't show up, try one of the following:"),
             _(u" - In E:D Market Connector: click on the File menu, then Settings, EDR, and select the Overlay checkbox."),
@@ -25,6 +21,8 @@ class EDRClientUI(object):
             _(u"If the overlay hurts your FPS, try turning VSYNC off in Elite's graphics options."),
             u"----",
             _("Join https://edrecon.com/discord for further technical support.")])
+
+    def app_ui(self):
         return self.ui
     
     def refresh_theme(self):

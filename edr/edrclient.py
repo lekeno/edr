@@ -25,7 +25,6 @@ from edsmserver import EDSMServer
 from audiofeedback import EDRSoundEffects
 from edrlog import EDR_LOG
 from ingamemsg import InGameMsg
-from edrtogglingpanel import EDRTogglingPanel
 from edrclientui import EDRClientUI
 from edrsystems import EDRSystems
 from edrfactions import EDRFactions

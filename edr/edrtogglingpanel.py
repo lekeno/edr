@@ -73,7 +73,6 @@ class ToggledFrame(tk.Frame):
         self.status_frame.configure(background=bg)
         self.status_frame.grid(row=0, column=0, sticky="ew")
         self.grid_columnconfigure(0, weight=1)
-        self.status_frame.grid_propagate(False)
         
         self.sub_frame = tk.Frame(self, relief="flat", borderwidth=0)
         self.sub_frame.configure(background=bg)
@@ -114,7 +113,6 @@ class ToggledFrame(tk.Frame):
             self.status_frame.grid_columnconfigure(2, weight=1)
     
     def refresh_theme(self):
-        self.status_frame.grid_propagate(False)
         conf = IGMConfig(config_file='config/igm_alt_config.v4.ini', user_config_file=['config/user_igm_alt_config.v4.ini', 'config/user_igm_alt_config.v3.ini'])
         theme=EDMCConfig.config.get_int('theme') # hat tip to ewanm89@
         if (theme):
