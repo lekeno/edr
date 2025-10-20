@@ -499,6 +499,8 @@ As always, EDR will copy the system info into your clipboard, so that you can qu
 ## Landing
 EDR will show key info about at a station when docking, as well as the location of the landing pad for coriolis, orbis, fleet carriers, and some specific planetary locations.
 
+You can also rotate the station schematic 180 degrees if you prefer to keep the green lights on your left when entering the station. To do so, you will need to edit the `user_igm_config.v9.ini` file (or a higher version if available) in the `config` folder and set `rotate_schematic` to `True`.
+
 <img alt="Example of a planetary station interface when requesting the dock" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_17.png?raw=true">
 
 # Squadron Features
@@ -529,8 +531,7 @@ Send the following command via the in-game chat to control the real-time alerts 
 - `?outlaws ly 120` to set a maximum distance of 120 light years from your location.
 - `?outlaws cr -` to remove the minimum bounty condition.
 - `?outlaws ly -` to remove the maximum distance condition.
-## Bounty Hunting Stats & Graphs
-TODO
+
 # Powerplay features
 ## Powerplay hunting
 If you have been pledged long enough to a power, you can use the following commands to get intel about powerplay enemies:
@@ -581,7 +582,7 @@ To improve your efficiency with Exobiology activities, EDR provides the followin
   - Number of species analyzed.
 - If you encounter other species along the way, you can record their positions for later. This can be done either via the composition scanner (ship, srv), or by using the “pointing” gesture while on foot. 
   - These custom POIs can be cycled through/recalled by sending `!nav next` or `!nav previous` commands. 
-  - You can also clear the current POI by sending the `!nav clear` command, and clear all the custom POIs by sending the !nav reset command.
+  - You can also clear the current POI by sending the `!nav clear` command, and clear all the custom POIs by sending the `!nav reset` command.
   - Note: these custom POIs are ephemeral (e.g. wiped out when EDMC is closed).
 
     <img alt="Example of a navigator interface that takes you to the next point" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_23.png?raw=true">
@@ -693,7 +694,10 @@ The discord integration requires the following:
 - Having [Discord](http://discord.com), and a personal Discord server (or a server that you can administer or can ask an admin to follow the instructions).
 - Read about [webhooks in Discord](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks).
 ### Configuring the Discord channels (webhooks)
-In the config folder, look for a file named user\_config\_sample.ini and follow the instructions.
+In the config folder, look for a file named `user_config_sample.ini` and make a copy of it named `user_config.ini`. In this new file, you will find several sections for configuring Discord webhooks. You will need to create a webhook for each channel you want to forward messages to and then paste the webhook URL in the corresponding field.
+
+For example, to forward incoming direct messages, you would set the `player_webhook` in the `[discord_incoming]` section to your webhook URL.
+
 ### Features
 The discord integration offer the following features:
 #### *Incoming messages*
@@ -772,11 +776,23 @@ If you have a multi-monitors setup, or a VR headset, you may want to set the ove
 
 Also see [these SteamVR patch notes](https://steamcommunity.com/games/250820/announcements/detail/2969548216412141657) for more details.
 ## Custom overlay
-To customize the overlay, make a copy of the `igm_config.v7.ini` and `igm_config_spacelegs.v7.ini`, found in the config folder, and rename them to `user_igm_config.v7.ini` and `user_igm_config_spacelegs.v7.ini` (note if there are higher versions than v7, then use these version numbers instead).
+To customize the overlay, make a copy of the `igm_config.v9.ini` and `igm_config_spacelegs.v8.ini`, found in the config folder, and rename them to `user_igm_config.v9.ini` and `user_igm_config_spacelegs.v8.ini` (note if there are higher versions than v7, then use these version numbers instead).
 
 The first file is for configuring the overlay when in a ship or srv, while the second file is for configuring the overlay when on foot.
 
 Follow the instructions in each file to tweak the colors, and positions of various elements / messages. You can also disable specific types of messages. As you make tweaks to the overlay config file, send the `!overlay` command to reread the layout, display some test data to make further adjustments.
+
+# Operational Security (OPSEC)
+EDR includes an Operational Security (OPSEC) feature to prevent reporting intel on certain commanders to EDR Central. This is useful if you don't want to report on commanders aligned with your power, for example.
+
+By default, EDR will not report on commanders that are:
+- in your wing
+- in your crew
+- in your squadron
+- pledged to your power
+
+This feature is enabled by default. You can disable or customize it via a new `[opsec]` section in the `user_config.ini` file. Advanced customization is also available, allowing you to specify a list of commanders or powers to never report on.
+
 # Crimes reporting
 If you don’t want to report interactions or fights (e.g. agreed upon PvP), you may want to disable crimes reporting. Note that EDR will continue to report sightings and scans.
 

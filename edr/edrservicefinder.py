@@ -73,8 +73,12 @@ class EDRServiceFinder(threading.Thread):
                 return candidates["prime"]
                
         systems = self.edr_systems.systems_within_radius(self.star_system, self.radius)
-        if not systems:
-            return candidates
+        if systems is None:
+            return candidates["prime"] or candidates["alt"]
+
+        if systems is False:
+            self.checker.preliminary_msg = _(u"Couldn't get systems within radius of {}: EDSM API is probably having issues.").format(self.star_system)
+            return None
 
         if self.shuffle_systems:
             shuffle(systems)

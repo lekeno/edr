@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 import requests
 import zipfile
@@ -7,15 +6,15 @@ import os
 import json
 import datetime
 from edrlog import EDR_LOG
-import utils2to3
+
 
 
 
 class EDRAutoUpdater(object):
     REPO = "lekeno/edr"
-    UPDATES = utils2to3.abspathmaker(__file__, 'updates')
-    LATEST = utils2to3.abspathmaker(__file__, 'updates', 'latest.zip')
-    BACKUP = utils2to3.abspathmaker(__file__, 'backup')
+    UPDATES = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'updates')
+    LATEST = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'updates', 'latest.zip')
+    BACKUP = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'backup')
     EDR_PATH = os.path.abspath(os.path.dirname(__file__))
 
     def __init__(self):
@@ -53,7 +52,7 @@ class EDRAutoUpdater(object):
         max_backups = 5
         for i in range(0, nbfiles - max_backups):
             f = files[i]
-            EDR_LOG.log(u"Removing backup {}".format(f), "INFO")
+            EDR_LOG.log("Removing backup {}".format(f), "INFO")
             os.unlink(f)
 
     def make_backup(self):
@@ -86,7 +85,7 @@ class EDRAutoUpdater(object):
         latest_release_api = "https://api.github.com/repos/{}/releases/latest".format(self.REPO)
         response = requests.get(latest_release_api)
         if response.status_code != requests.codes.ok:
-            EDR_LOG.log(u"Couldn't check the latest release on github: {}".format(response.status_code), "WARNING")
+            EDR_LOG.log("Couldn't check the latest release on github: {}".format(response.status_code), "WARNING")
             return None
         json_resp = json.loads(response.content)
         assets = json_resp.get("assets", None)

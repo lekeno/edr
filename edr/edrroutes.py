@@ -9,7 +9,6 @@ from math import sqrt
 import re
 
 from edri18n import _
-import utils2to3
 from edtime import EDTime
 from collections import deque
 from edrutils import pretty_print_number, simplified_body_name
@@ -53,13 +52,7 @@ class BidiWaypointIterator(object):
             return self.current
         
     def empty(self):
-        if self.collection is None:
-            return True
-        
-        if next(self):
-            self.collection.previous()
-            return False
-        return True
+        return not self.collection
 
     def current_wp_sysname(self):
         return self.get_system_name(self.current)
@@ -950,7 +943,7 @@ class EDRRouteStatistics(object):
         return None
     
 class EDRNavigator(object):
-    EDR_JOURNEY_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'navigator.v1.p')
+    EDR_JOURNEY_CACHE = path.join(path.abspath(path.dirname(__file__)), 'cache', 'navigator.v1.p')
     
     def __init__(self):
         self.route = None

@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 from edtime import EDTime
 from edvehicles import EDVehicleFactory
@@ -24,14 +23,14 @@ class EDInstance(object):
     def player(self, cmdr_name):
         if cmdr_name.lower() not in self.players:
             return None
-        return self.players[cmdr_name.lower()][u"player"]
+        return self.players[cmdr_name.lower()]["player"]
 
     def npc(self, name, rank=None, ship_internal_name=None):
         hopefully_unique_name = "{}{}{}".format(name, rank, EDVehicleFactory.canonicalize(ship_internal_name) if ship_internal_name else "")
         if hopefully_unique_name in self.npcs:
-            return self.npcs[hopefully_unique_name][u"pilot"]
+            return self.npcs[hopefully_unique_name]["pilot"]
         if name in self.npc_names_to_npcs:
-            return self.npcs[next(iter(self.npc_names_to_npcs[name]))][u"pilot"]
+            return self.npcs[next(iter(self.npc_names_to_npcs[name]))]["pilot"]
         return None
 
     def blip(self, cmdr_name):
@@ -42,7 +41,7 @@ class EDInstance(object):
     def player_in(self, cmdr):
         now = EDTime.py_epoch_now()
         self.timestamp = now
-        self.players[cmdr.name.lower()] = {u"timestamp": now, u"player": cmdr}
+        self.players[cmdr.name.lower()] = {"timestamp": now, "player": cmdr}
         self._touched = True
 
     def player_out(self, cmdr_name):
@@ -58,7 +57,7 @@ class EDInstance(object):
         now = EDTime.py_epoch_now()
         self.timestamp = now
         hopefully_unique_name = "{}{}{}".format(pilot.name, pilot.rank, pilot.vehicle.name if pilot.vehicle else "")
-        self.npcs[hopefully_unique_name] = {u"timestamp": now, u"pilot": pilot}
+        self.npcs[hopefully_unique_name] = {"timestamp": now, "pilot": pilot}
         if pilot.name in self.npc_names_to_npcs:
             self.npc_names_to_npcs[pilot.name].add(hopefully_unique_name)
         else:
@@ -147,18 +146,18 @@ class EDInstance(object):
 
     def debug_repr(self):
         result = []
-        result.append(u"{} ; last_check:{} ; touched: {}".format(EDTime.t_minus(self.timestamp*1000), EDTime.t_minus(self.last_check_timestamp*1000) if self.last_check_timestamp else "", self._touched))
+        result.append("{} ; last_check:{} ; touched: {}".format(EDTime.t_minus(self.timestamp*1000), EDTime.t_minus(self.last_check_timestamp*1000) if self.last_check_timestamp else "", self._touched))
         for cmdr_name in self.players:
             timestamp, player = self.players[cmdr_name.lower()].values()
             now = EDTime.py_epoch_now()
             if player.is_targeted():
                 timestamp = now
-            result.append(u"Cmdr {} at {}: {} {}".format(cmdr_name, EDTime.t_minus(timestamp*1000), "[TGT]" if player.is_targeted() else "", player.json()))
+            result.append("Cmdr {} at {}: {} {}".format(cmdr_name, EDTime.t_minus(timestamp*1000), "[TGT]" if player.is_targeted() else "", player.json()))
 
         for name in self.npcs:
             timestamp, pilot = self.npcs[name.lower()].values()
             now = EDTime.py_epoch_now()
             if pilot.is_targeted():
                 timestamp = now
-            result.append(u"NPC {} at {}: {} {}".format(name, EDTime.t_minus(timestamp*1000), "[TGT]" if pilot.is_targeted() else "", pilot.json()))
+            result.append("NPC {} at {}: {} {}".format(name, EDTime.t_minus(timestamp*1000), "[TGT]" if pilot.is_targeted() else "", pilot.json()))
         return result

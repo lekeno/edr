@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division
-
 import os
 import pickle
 
@@ -8,19 +6,20 @@ from edrconfig import EDRConfig
 from lrucache import LRUCache
 from edrlog import EDR_LOG
 from edentities import EDPlayerOne
-import utils2to3
+
 
 
 
 class EDRCmdrs(object):
     #TODO these should be player and/or squadron specific
-    EDR_CMDRS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'cmdrs.v7.p')
-    EDR_INARA_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'inara.v7.p')
-    EDR_SQDRDEX_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'sqdrdex.v2.p')
+    EDR_CMDRS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'cmdrs.v7.p')
+    EDR_INARA_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'inara.v7.p')
+    EDR_SQDRDEX_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'sqdrdex.v2.p')
 
-    def __init__(self, edrserver):
+    def __init__(self, edrserver, opsec_config=None):
         self.server = edrserver
         self._player = EDPlayerOne()
+        self.opsec_config = opsec_config
         self.heartbeat_timestamp = None
  
         edr_config = EDRConfig()
@@ -123,9 +122,22 @@ class EDRCmdrs(object):
             EDR_LOG.log(u"Cmdr {cmdr} is in the EDR cache with id={cid}".format(cmdr=cmdr_name,
                                                                            cid=profile.cid if profile else 'N/A'),
                        "DEBUG")
-            return profile
+            if profile and self.opsec_config:
+                if profile.is_opsec(self.player, self.opsec_config):
+                    EDR_LOG.log(u"Cmdr {cmdr} is opsec, not reporting.".format(cmdr=cmdr_name), "INFO")
+                    return profile
+            elif not profile:
+                return profile
 
-        profile = self.server.cmdr(cmdr_name, autocreate)
+        effective_autocreate = autocreate
+        if self.opsec_config and autocreate:
+            # Check Inara for squadron and power info
+            inara_profile = self.__inara_cmdr(cmdr_name, True)
+            if inara_profile and inara_profile.is_opsec(self.player, self.opsec_config):
+                EDR_LOG.log(u"Cmdr {cmdr} is opsec, not reporting.".format(cmdr=cmdr_name), "INFO")
+                effective_autocreate = False
+
+        profile = self.server.cmdr(cmdr_name, effective_autocreate)
 
         if not profile:
             self.cmdrs_cache.set(cmdr_name.lower(), None)

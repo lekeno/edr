@@ -1,14 +1,6 @@
-from __future__ import absolute_import
 from subprocess import call
-
-try:
-    # for Python2
-    import Tkinter as tk
-    import ttk
-except ImportError:
-    # for Python3
-    import tkinter as tk
-    from tkinter import ttk
+import tkinter as tk
+from tkinter import ttk
 
 import sys
 import config as EDMCConfig
@@ -121,7 +113,6 @@ class ToggledFrame(tk.Frame):
             self.status_frame.grid_columnconfigure(2, weight=1)
     
     def refresh_theme(self):
-        self.status_frame.grid_propagate(False)
         conf = IGMConfig(config_file='config/igm_alt_config.v4.ini', user_config_file=['config/user_igm_alt_config.v4.ini', 'config/user_igm_alt_config.v3.ini'])
         theme=EDMCConfig.config.get_int('theme') # hat tip to ewanm89@
         if (theme):

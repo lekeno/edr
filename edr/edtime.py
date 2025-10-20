@@ -24,7 +24,7 @@ class EDTime(comparable.ComparableMixin):
 
     @staticmethod
     def t_minus(js_epoch_then, short=False):
-        return EDTime.t_minus_py(int(js_epoch_then // 1000))
+        return EDTime.t_minus_py(int(js_epoch_then // 1000), short)
 
     @staticmethod
     def t_minus_py(py_epoch_then, short=False):
@@ -56,7 +56,7 @@ class EDTime(comparable.ComparableMixin):
     @staticmethod
     def pretty_print_timespan(timespan, short=False, verbose=False):
         if timespan < 0:
-            return u"0"
+            return u"-" + EDTime.pretty_print_timespan(abs(timespan), short, verbose)
         remaining = timespan
         days = remaining // 86400
         remaining -= days * 86400

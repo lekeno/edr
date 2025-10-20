@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division
-
 import os
 import pickle
 import math
@@ -8,7 +6,6 @@ from edrconfig import EDRConfig
 from lrucache import LRUCache
 from edri18n import _
 from edtime import EDTime
-import utils2to3
 from edrlog import EDR_LOG
 
 class EDRMaterialOutcomes(object):
@@ -158,9 +155,9 @@ class EDRFaction(object):
             return
 
         if self.timestamps["allegiance"] is None or (edsm_last_update > self.timestamps["allegiance"] and "allegiance" in edsm_faction_info):
-            if self.allegiance != edsm_faction_info["allegiance"]:
+            if self.allegiance != edsm_faction_info["allegiance"].lower():
                 EDR_LOG.log("Updating faction {}'s allegiance {} with EDSM info {}".format(self.name, self.allegiance, edsm_faction_info["allegiance"]), "DEBUG")
-                self.allegiance = edsm_faction_info["allegiance"]
+                self.allegiance = edsm_faction_info["allegiance"].lower()
             self.timestamps["allegiance"] = edsm_last_update
         
         if self.timestamps["influence"] is None or (edsm_last_update > self.timestamps["influence"] and "influence" in edsm_faction_info):
@@ -448,9 +445,9 @@ class EDRFactionEDSM(EDRFaction):
         # TODO happiness
 
 class EDRFactions(object):
-    EDR_FACTIONS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edr_factions.v2.p')
-    EDR_CONTROLLING_FACTIONS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edr_controlling_factions.v2.p')
-    EDSM_FACTIONS_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'edsm_factions.v2.p')
+    EDR_FACTIONS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edr_factions.v2.p')
+    EDR_CONTROLLING_FACTIONS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edr_controlling_factions.v2.p')
+    EDSM_FACTIONS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_factions.v2.p')
 
     def __init__(self, edsm_server):
         edr_config = EDRConfig()

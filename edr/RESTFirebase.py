@@ -5,10 +5,10 @@ import pickle
 import os
 
 from edrlog import EDR_LOG
-import utils2to3
+import os
 
 class RESTFirebaseAuth(object):
-    FIREBASE_ANON_AUTH_CACHE = utils2to3.abspathmaker(__file__, 'private', 'fbaa.v2.p')
+    FIREBASE_ANON_AUTH_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'private', 'fbaa.v2.p')
 
     def __init__(self):
         self.email = ""
@@ -25,16 +25,16 @@ class RESTFirebaseAuth(object):
 
     def authenticate(self):
         if self.api_key == "":
-            EDR_LOG.log(u"can't authenticate: empty api key.", "ERROR")
+            EDR_LOG.log("can't authenticate: empty api key.", "ERROR")
             return False
 
         if not self.__login():
-            EDR_LOG.log(u"Authentication failed (login)", "ERROR")
+            EDR_LOG.log("Authentication failed (login)", "ERROR")
             self.__reset()
             return False
 
         if not self.__refresh_fb_token():
-            EDR_LOG.log(u"Authentication failed (FB token)", "ERROR")
+            EDR_LOG.log("Authentication failed (FB token)", "ERROR")
             self.__reset()
             return False
         return True
@@ -79,7 +79,7 @@ class RESTFirebaseAuth(object):
         requestTime = datetime.datetime.now()
         resp = requests.post(endpoint,data=payload)
         if resp.status_code != requests.codes.ok:
-            EDR_LOG.log(u"Refresh of FB token failed. Status code={code}, content={content}".format(code=resp.status_code, content=resp.content), "ERROR")
+            EDR_LOG.log("Refresh of FB token failed. Status code={code}, content={content}".format(code=resp.status_code, content=resp.content), "ERROR")
             return False
 
         self.auth = json.loads(resp.content)
@@ -105,7 +105,7 @@ class RESTFirebaseAuth(object):
             return False
 
         if self.is_auth_expiring():
-            EDR_LOG.log(u"Renewing authentication since the token will expire soon.", "INFO")
+            EDR_LOG.log("Renewing authentication since the token will expire soon.", "INFO")
             self.clear_authentication()
             return self.authenticate()
         return True
@@ -114,7 +114,7 @@ class RESTFirebaseAuth(object):
         if self.api_key == "":
             return False
 
-        EDR_LOG.log(u"Forcing a new authentication.", "INFO")
+        EDR_LOG.log("Forcing a new authentication.", "INFO")
         self.clear_authentication()
         return self.authenticate()
 

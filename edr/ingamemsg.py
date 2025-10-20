@@ -1,5 +1,3 @@
-# coding= utf-8
-from __future__ import division
 import os
 import sys
 import math
@@ -12,14 +10,13 @@ import igmconfig
 from edrlog import EDR_LOG
 import textwrap
 from edri18n import _, _c
-import utils2to3
 from edrlandables import EDRLandables
 from edentities import EDFineOrBounty
 from edrutils import pretty_print_number
 from edtime import EDTime
 
 if sys.platform == "win32":
-    _overlay_dir = utils2to3.pathmaker(__file__, u'EDMCOverlay')
+    _overlay_dir = os.path.join(os.path.dirname(__file__), u'EDMCOverlay')
     if _overlay_dir not in sys.path:
         sys.path.append(_overlay_dir)
 
@@ -195,6 +192,7 @@ class InGameMsg(object):
                 "ttl": conf.ttl(kind, "schema"),
                 "rgb": conf.rgb_list(kind, "schema"),
                 "fill": conf.fill_list(kind, "schema"),
+                "rotate": conf._getboolean(kind, "rotate_schematic")
             }
         }
         if not conf.panel(kind):
@@ -519,7 +517,7 @@ class InGameMsg(object):
             return {"header": header, "body": description}
         
         if station_type in ["asteroid base", 'bernal starport', "coriolis starport", "ocellus starport", "orbis starport", "bernal", "bernal statioport"]:
-            self.__station_schematic(pad)
+            self.__station_schematic(pad, self.cfg["docking-station"]["schema"]["rotate"])
         else:
             self.__landable_schematic(system, station, pad)
         return {"header": header, "body": description}
@@ -566,7 +564,7 @@ class InGameMsg(object):
             }
             self.__vect(u"docking", vect)
     
-    def __station_schematic(self, landing_pad):
+    def __station_schematic(self, landing_pad, rotated=False):
         cfg = self.cfg[u"docking-station"]
         x = cfg["schema"]["x"]
         y = cfg["schema"]["y"]
@@ -576,8 +574,13 @@ class InGameMsg(object):
         cx = int(round(x + w/2.0))
         cy = int(round(y + h/2.0))
         
+        red_light_x = x
+        green_light_x = x+w-(0.03125 * w)
+        if rotated:
+            red_light_x, green_light_x = green_light_x, red_light_x
+
         red_light = {
-            "x": int(x),
+            "x": int(red_light_x),
             "y": int(cy - (0.12962962962962962962962962962963 * h)),
             "x2": max(1, int(0.03125 * w)),
             "y2": max(1,int(2.0*0.12962962962962962962962962962963 * h)),
@@ -588,7 +591,7 @@ class InGameMsg(object):
         self.__shape(u"docking", red_light)
 
         green_light = {
-            "x": int(x+w-(0.03125 * w)),
+            "x": int(green_light_x),
             "y": int(cy - (0.12962962962962962962962962962963 * h)),
             "x2": max(1,int(0.03125 * w)),
             "y2": max(1, int(2.0*0.12962962962962962962962962962963 * h)),
@@ -620,6 +623,9 @@ class InGameMsg(object):
             (sin45, sin45),
             (cos15, sin15),
         ]
+
+        if rotated:
+            dodecagon.reverse()
 
         radials = {
             "outer": [],
@@ -745,51 +751,31 @@ class InGameMsg(object):
             self.__vect(u"docking", wireframe)
         
         pad_lut = {
-            35: [0,1,0,1,1],
-            36: [0,1,1,2,0],
-            37: [0,1,2,4,1],
-            38: [0,1,4,5,1],
-            31: [1,2,0,1,0],
-            32: [1,2,1,2,2],
-            33: [1,2,2,4,1],
-            34: [1,2,4,5,0],
-            26: [2,3,0,1,1],
-            27: [2,3,1,2,0],
-            28: [2,3,2,3,0],
-            29: [2,3,3,4,0],
-            30: [2,3,4,5,1],
-            24: [3,4,0,2,2],
-            25: [3,4,2,5,2],
-            20: [4,5,0,1,1],
-            21: [4,5,1,2,0],
-            22: [4,5,2,4,1],
-            23: [4,5,4,5,1],
-            16: [5,6,0,1,0],
-            17: [5,6,1,2,2],
-            18: [5,6,2,4,1],
-            19: [5,6,4,5,0],
-            11: [6,7,0,1,1],
-            12: [6,7,1,2,0],
-            13: [6,7,2,3,0],
-            14: [6,7,3,4,0],
-            15: [6,7,4,5,1],
-             9: [7,8,0,2,2],
-            10: [7,8,2,5,2],
-             5: [8,9,0,1,1],
-             6: [8,9,1,2,0],
-             7: [8,9,2,4,1],
-             8: [8,9,4,5,1],
-             1: [9,10,0,1,0],
-             2: [9,10,1,2,2],
-             3: [9,10,2,4,1],
-             4: [9,10,4,5,0],
-            41: [10,11,0,1,1],
-            42: [10,11,1,2,0],
-            43: [10,11,2,3,0],
-            44: [10,11,3,4,0],
-            45: [10,11,4,5,1],
-            39: [11,12,0,2,2],
-            40: [11,12,2,5,2],
+            35: [0,1,0,1,1], 38: [0,1,4,5,1], 37: [0,1,2,4,1], 36: [0,1,1,2,0],
+            31: [1,2,0,1,0], 34: [1,2,4,5,0], 33: [1,2,2,4,1], 32: [1,2,1,2,2],
+            26: [2,3,0,1,1], 30: [2,3,4,5,1], 29: [2,3,3,4,0], 28: [2,3,2,3,0], 27: [2,3,1,2,0],
+            24: [3,4,0,2,2], 25: [3,4,2,5,2],
+            20: [4,5,0,1,1], 23: [4,5,4,5,1], 22: [4,5,2,4,1], 21: [4,5,1,2,0],
+            16: [5,6,0,1,0], 19: [5,6,4,5,0], 18: [5,6,2,4,1], 17: [5,6,1,2,2],
+            11: [6,7,0,1,1], 15: [6,7,4,5,1], 14: [6,7,3,4,0], 13: [6,7,2,3,0], 12: [6,7,1,2,0],
+            9: [7,8,0,2,2], 10: [7,8,2,5,2],
+            5: [8,9,0,1,1], 8: [8,9,4,5,1], 7: [8,9,2,4,1], 6: [8,9,1,2,0],
+            1: [9,10,0,1,0], 4: [9,10,4,5,0], 3: [9,10,2,4,1], 2: [9,10,1,2,2],
+            41: [10,11,0,1,1], 45: [10,11,4,5,1], 44: [10,11,3,4,0], 43: [10,11,2,3,0], 42: [10,11,1,2,0],
+            39: [11,12,0,2,2], 40: [11,12,2,5,2],
+        } if rotated else {
+            35: [0,1,0,1,1], 36: [0,1,1,2,0], 37: [0,1,2,4,1], 38: [0,1,4,5,1],
+            31: [1,2,0,1,0], 32: [1,2,1,2,2], 33: [1,2,2,4,1], 34: [1,2,4,5,0],
+            26: [2,3,0,1,1], 27: [2,3,1,2,0], 28: [2,3,2,3,0], 29: [2,3,3,4,0], 30: [2,3,4,5,1],
+            24: [3,4,0,2,2], 25: [3,4,2,5,2],
+            20: [4,5,0,1,1], 21: [4,5,1,2,0], 22: [4,5,2,4,1], 23: [4,5,4,5,1],
+            16: [5,6,0,1,0], 17: [5,6,1,2,2], 18: [5,6,2,4,1], 19: [5,6,4,5,0],
+            11: [6,7,0,1,1], 12: [6,7,1,2,0], 13: [6,7,2,3,0], 14: [6,7,3,4,0], 15: [6,7,4,5,1],
+            9: [7,8,0,2,2], 10: [7,8,2,5,2],
+            5: [8,9,0,1,1], 6: [8,9,1,2,0], 7: [8,9,2,4,1], 8: [8,9,4,5,1],
+            1: [9,10,0,1,0], 2: [9,10,1,2,2], 3: [9,10,2,4,1], 4: [9,10,4,5,0],
+            41: [10,11,0,1,1], 42: [10,11,1,2,0], 43: [10,11,2,3,0], 44: [10,11,3,4,0], 45: [10,11,4,5,1],
+            39: [11,12,0,2,2], 40: [11,12,2,5,2],
         }
 
         pad_loc = pad_lut[landing_pad]
@@ -956,9 +942,15 @@ class InGameMsg(object):
             bar["y"] = int(dy-h)
             bar["x2"] = int(cfg["efficiency"]["w"])
             bar["y2"] = 1
-            index = int(efficiency/mining_stats.max_efficiency * (len(cfg["efficiency"]["rgb"])-1.0))
-            bar["rgb"] = cfg["efficiency"]["rgb"][index]
-            bar["fill"] = cfg["efficiency"]["fill"][index]
+            max_rgb_index = len(cfg["efficiency"]["rgb"]) - 1
+            if max_rgb_index >= 0:
+                rgb_index = int(efficiency/mining_stats.max_efficiency * max_rgb_index)
+                bar["rgb"] = cfg["efficiency"]["rgb"][min(rgb_index, max_rgb_index)]
+
+            max_fill_index = len(cfg["efficiency"]["fill"]) - 1
+            if max_fill_index >= 0:
+                fill_index = int(efficiency/mining_stats.max_efficiency * max_fill_index)
+                bar["fill"] = cfg["efficiency"]["fill"][min(fill_index, max_fill_index)]
             bar["ttl"] = cfg["efficiency"]["ttl"]
             self.__shape(u"mining-graphs-efficiency-bar", bar)
             x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}

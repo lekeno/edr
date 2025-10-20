@@ -1,18 +1,13 @@
-#!/usr/bin/env python
-# coding=utf-8
-from __future__ import absolute_import
-
 import gettext
-# import os # 'os' imported but unused Flake8(F401)
 import sys
 
 import l10n  # Importing localization module
-import utils2to3
+import os
 from edrlog import EDR_LOG
 
 # Constants
 CONTEXT_SEPARATOR = u"|"  # Separator used for contextual message
-L10N_DIR = utils2to3.abspathmaker(__file__, 'l10n')  # Directory for localization files
+L10N_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'l10n')  # Directory for localization files
 LANG_LIST = ["fr", "it", "de"]  # List of supported languages
 
 # Logger

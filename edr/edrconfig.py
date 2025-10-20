@@ -1,23 +1,21 @@
-from __future__ import absolute_import
 
 import os
-try:
-    # for Python2
-    import ConfigParser as cp
-except ImportError:
-    # for Python3
-    import configparser as cp
+import configparser as cp
+from edropsec import EDROpsecConfig
 
-
-import utils2to3
 
 class EDRUserConfig(object):
     def __init__(self, config_file='config/user_config.ini'):
         self.config = cp.ConfigParser()
         try:
-            self.config.read(utils2to3.abspathmaker(__file__, config_file))
+            self.config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), config_file))
         except:
             self.config = None
+
+    def opsec_config(self):
+        if self.config and self.config.has_section('opsec'):
+            return EDROpsecConfig(self.config)
+        return None
 
     def discord_webhook_for_comms(self, channel, incoming=True):
         if self.config:
@@ -43,7 +41,7 @@ class EDRUserConfig(object):
 class EDRConfig(object):
     def __init__(self, config_file='config/config.ini'):
         self.config = cp.ConfigParser()
-        self.config.read(utils2to3.abspathmaker(__file__, config_file))
+        self.config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), config_file))
 
     def edr_version(self):
         return self.config.get('general', 'version')

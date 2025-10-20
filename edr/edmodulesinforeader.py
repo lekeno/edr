@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 import json
 from os.path import join
@@ -20,4 +19,4 @@ class EDModulesInfoReader(object):
                     entry = json.loads(data)
                     return entry
         except:
-            EDR_LOG.log(u"Couldn't process modulesinfo", u"WARNING")
+            EDR_LOG.log("Couldn't process modulesinfo", "WARNING")

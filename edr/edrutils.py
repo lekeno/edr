@@ -1,3 +1,5 @@
+from edri18n import _
+
 def pretty_print_number(number):
     readable = u""
     if number is None:

@@ -1,9 +1,7 @@
-from __future__ import absolute_import
 
 from sys import platform
 import os.path
 
-import utils2to3
 import os
 import configparser as cp
 
@@ -85,13 +83,13 @@ class SFXConfig(object):
     def __init__(self, config_file, user_config_file):
         self.config = cp.ConfigParser()
         self.fallback_config = cp.ConfigParser()
-        self.fallback_config.read(utils2to3.abspathmaker(__file__, config_file))
-        user_cfg_path = utils2to3.abspathmaker(__file__, user_config_file)
+        self.fallback_config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), config_file))
+        user_cfg_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), user_config_file)
         if os.path.exists(user_cfg_path):
-            EDR_LOG.log(u"Using user defined SFX at {}.".format(user_config_file), "INFO")
+            EDR_LOG.log("Using user defined SFX at {}.".format(user_config_file), "INFO")
             self.config.read(user_cfg_path)
         else:
-            EDR_LOG.log(u"No user defined SFX at {}, using {} instead.".format(user_config_file, config_file), "INFO")
+            EDR_LOG.log("No user defined SFX at {}, using {} instead.".format(user_config_file, config_file), "INFO")
             self.config = self.fallback_config
 
     def snd(self, kind, loud=True):
@@ -117,7 +115,7 @@ if platform == 'darwin':
             self.snd = None
             if not audio_filename:
                 return
-            audio_file_path = utils2to3.abspathmaker(__file__, 'sounds', audio_filename)
+            audio_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sounds', audio_filename)
             if os.path.exists(audio_file_path):
                 self.snd = NSSound.alloc().initWithContentsOfFile_byReference_(audio_file_path, False)
             
@@ -133,7 +131,7 @@ elif platform == 'win32':
             self.snd = None
             if not audio_filename:
                 return
-            audio_file_path = utils2to3.abspathmaker(__file__, 'sounds', audio_filename)
+            audio_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sounds', audio_filename)
             if os.path.exists(audio_file_path):
                 self.snd = audio_file_path
 
@@ -150,7 +148,7 @@ elif platform == 'linux':
             self.snd = None
             if not audio_filename:
                 return
-            audio_file_path = utils2to3.abspathmaker(__file__, 'sounds', audio_filename)
+            audio_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sounds', audio_filename)
             if os.path.exists(audio_file_path):
                 self.snd = audio_file_path
 

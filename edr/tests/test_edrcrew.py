@@ -11,14 +11,14 @@ class TestEDCrew(TestCase):
 
         self.assertEqual(crew.captain, captain)
         self.assertAlmostEqual(crew.creation, now, 100)
-        self.assertEqual(crew.members.keys(), [captain])
+        self.assertEqual(list(crew.members.keys()), [captain])
         self.assertAlmostEqual(crew.members[captain], now, 100)
 
         result = crew.add(captain)
         self.assertFalse(result)
         self.assertEqual(crew.captain, captain)
         self.assertAlmostEqual(crew.creation, now, 100)
-        self.assertEqual(crew.members.keys(), [captain])
+        self.assertEqual(list(crew.members.keys()), [captain])
         self.assertAlmostEqual(crew.members[captain], now, 100)
 
         member = "Ozram"
@@ -26,7 +26,7 @@ class TestEDCrew(TestCase):
         self.assertTrue(result)
         self.assertEqual(crew.captain, captain)
         self.assertAlmostEqual(crew.creation, now, 100)
-        self.assertEqual(crew.members.keys(), [captain, member])
+        self.assertEqual(list(crew.members.keys()), [captain, member])
         self.assertAlmostEqual(crew.members[captain], now, 100)
         nower = calendar.timegm(time.gmtime())
         self.assertAlmostEqual(crew.members[member], nower, 100)
@@ -35,7 +35,7 @@ class TestEDCrew(TestCase):
         self.assertFalse(result)
         self.assertEqual(crew.captain, captain)
         self.assertAlmostEqual(crew.creation, now, 100)
-        self.assertEqual(crew.members.keys(), [captain, member])
+        self.assertEqual(list(crew.members.keys()), [captain, member])
         self.assertAlmostEqual(crew.members[captain], now, 100)
         self.assertAlmostEqual(crew.members[member], nower, 100)
 
@@ -43,7 +43,7 @@ class TestEDCrew(TestCase):
         self.assertTrue(result)
         self.assertEqual(crew.captain, captain)
         self.assertAlmostEqual(crew.creation, now, 100)
-        self.assertEqual(crew.members.keys(), [captain])
+        self.assertEqual(list(crew.members.keys()), [captain])
         self.assertAlmostEqual(crew.members[captain], now, 100)
 
     def test_disband(self):

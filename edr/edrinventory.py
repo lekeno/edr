@@ -1,5 +1,3 @@
-# coding= utf-8
-from __future__ import absolute_import
 
 import pickle
 import os
@@ -7,13 +5,12 @@ import re
 import json
 
 from edri18n import _
-import utils2to3
 from edtime import EDTime
 
 #TODO anarchy only microresources...
-ODYSSEY_MATS = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'odyssey_mats.json')).read())
+ODYSSEY_MATS = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', 'odyssey_mats.json')).read())
 
-HORIZONS_MATS = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'horizons_mats.json')).read())
+HORIZONS_MATS = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', 'horizons_mats.json')).read())
 
 MATERIALS_LUT = {
     "zinc": {"localized": _(u"Zinc"), "raw": "Zinc", "category": "raw", "grade": 2},
@@ -381,14 +378,14 @@ INTERNAL_NAMES_LUT = { u'classified scan databanks': 'scandatabanks', u'conducti
     u'surveillance logs': 'surveilleancelogs', u'surveillance log': 'surveilleancelogs'}
 
 class EDRInventory(object):
-    EDR_INVENTORY_ENCODED_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'encoded_mats.v1.p')
-    EDR_INVENTORY_RAW_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'raw_mats.v1.p')
-    EDR_INVENTORY_MANUFACTURED_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'manufactured_mats.v1.p')
-    EDR_INVENTORY_COMPONENT_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'component_mats.v1.p')  
-    EDR_INVENTORY_ITEM_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'item_mats.v1.p')  
-    EDR_INVENTORY_CONSUMABLE_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'consumables.v1.p')
-    EDR_INVENTORY_DATA_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'data_mats.v1.p')
-    EDR_INVENTORY_BACKPACK_CACHE = utils2to3.abspathmaker(__file__, 'cache', 'backpack.v1.p')
+    EDR_INVENTORY_ENCODED_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'encoded_mats.v1.p')
+    EDR_INVENTORY_RAW_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'raw_mats.v1.p')
+    EDR_INVENTORY_MANUFACTURED_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'manufactured_mats.v1.p')
+    EDR_INVENTORY_COMPONENT_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'component_mats.v1.p')
+    EDR_INVENTORY_ITEM_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'item_mats.v1.p')
+    EDR_INVENTORY_CONSUMABLE_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'consumables.v1.p')
+    EDR_INVENTORY_DATA_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'data_mats.v1.p')
+    EDR_INVENTORY_BACKPACK_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'backpack.v1.p')
 
     def __init__(self):
         self.initialized = False

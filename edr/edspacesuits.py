@@ -1,7 +1,7 @@
 from os import stat
 import re
 import json
-import utils2to3
+import os
 from copy import deepcopy
 
 from edtime import EDTime
@@ -236,7 +236,7 @@ class EDOdysseyCloset(object):
         return self.loadouts[loadout_id]
 
 class EDGeneticSampler(object):
-    BIOLOGY = json.loads(open(utils2to3.abspathmaker(__file__, 'data', 'biology.json')).read())
+    BIOLOGY = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', 'biology.json')).read())
     
     def __init__(self):
         self.samples = {}

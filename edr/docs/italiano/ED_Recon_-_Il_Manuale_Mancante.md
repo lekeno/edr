@@ -580,6 +580,8 @@ Come sempre, EDR copierà le informazioni sul sistema negli appunti, in modo da 
 
 L'EDR mostrerà le informazioni chiave su una stazione al momento dell'attracco, così come la posizione della piattaforma di atterraggio per stazioni coriolis, orbis, fleet carrier e alcune specifiche posizioni planetarie.
 
+È anche possibile ruotare lo schema della stazione di 180 gradi se si preferisce mantenere le luci verdi alla propria sinistra quando si entra nella stazione. Per farlo, è necessario modificare il file `user_igm_config.v9.ini` (o una versione successiva, se disponibile) nella cartella `config` e impostare `rotate_schematic` su `True`.
+
 <img alt="Example of a planetary station interface when requesting the dock" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_17.png?raw=true">
 
 # Funzionalità Dedicate allo Squadron
@@ -618,10 +620,6 @@ Inviate il seguente comando tramite la chat di gioco per controllare gli avvisi 
 - `?outlaws ly 120` per impostare una distanza massima di 120 anni luce dalla vostra posizione.
 - `?outlaws cr -` per rimuovere la condizione di taglia minima.
 - `?outlaws ly -` per rimuovere la condizione di distanza massima.
-
-## Statistiche e Grafici della Caccia alle Taglie
-
-DA FARE
 
 # Funzionalità Dedicate al Powerplay
 
@@ -821,7 +819,9 @@ L'integrazione di Discord richiede quanto segue:
 
 ### Configurazione dei canali Discord (webhook)
 
-Nella cartella config, cercate un file chiamato user\_config\_sample.ini e seguite le istruzioni.
+Nella cartella config, cercate un file chiamato `user_config_sample.ini` e creane una copia denominata `user_config.ini`. In questo nuovo file troverai diverse sezioni per la configurazione dei webhook di Discord. Dovrai creare un webhook per ogni canale a cui desideri inoltrare i messaggi e incollare l'URL del webhook nel campo corrispondente.
+
+Ad esempio, per inoltrare i messaggi diretti in arrivo, imposta `player_webhook` nella sezione `[discord_incoming]` all'URL del tuo webhook.
 
 ### Funzionalità
 
@@ -918,11 +918,22 @@ Per ulteriori dettagli, consultare anche [le note della patch SteamVR](https://s
 
 ## Personalizza overlay
 
-Per personalizzare l'overlay, copia `igm_config.v7.ini` e `igm_config_spacelegs.v7.ini`, che si trovano nella cartella config, e rinominarli in `user_igm_config.v7.ini` e `user_igm_config_spacelegs.v7.ini` ( nota: se esistono versioni superiori alla v7, usa piuttosto quei numeri di versione).
+Per personalizzare l'overlay, copia `igm_config.v9.ini` e `igm_config_spacelegs.v8.ini`, che si trovano nella cartella config, e rinominarli in `user_igm_config.v9.ini` e `user_igm_config_spacelegs.v8.ini` ( nota: se esistono versioni superiori alla v7, usa piuttosto quei numeri di versione).
 
 Il primo file serve a configurare l'overlay quando si è a bordo di una nave o di un srv, mentre il secondo file serve a configurare l'overlay quando si è a piedi.
 
 Segui le istruzioni contenute in ogni file per modificare i colori e le posizioni dei vari elementi/messaggi. È anche possibile disabilitare tipi specifici di messaggi. Quando si apportano modifiche al file di configurazione dell'overlay, inviare il comando `!overlay` per rileggere il layout, visualizzare le modifiche si stanno testando e apportare ulteriori modifiche.
+
+# Sicurezza Operativa (OPSEC)
+EDR include una funzionalità di Sicurezza Operativa (OPSEC) per impedire la segnalazione di informazioni su determinati comandanti a EDR Central. Questa funzionalità è utile, ad esempio, se non si desidera segnalare comandanti allineati con la propria forza.
+
+Per impostazione predefinita, EDR non segnalerà i comandanti che sono:
+- nel proprio wing
+- nel proprio equipaggio
+- nel proprio squadrone
+- impegnati con la propria forza
+
+Questa funzionalità è abilitata di default. È possibile disattivarla o personalizzarla tramite una nuova sezione `[opsec]` nel file `user_config.ini`. È disponibile anche una personalizzazione avanzata, che consente di specificare un elenco di comandanti o forze di cui non segnalare mai.
 
 # Segnalazione dei reati
 
