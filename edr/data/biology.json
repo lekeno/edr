@@ -19,7 +19,8 @@
         "$codex_ent_stratum_genus_name;":       { "ccr": 500},
         "$codex_ent_tubus_genus_name;":         { "ccr": 800},
         "$codex_ent_tussocks_genus_name;":      { "ccr": 200},
-        "$codex_ent_ground_struct_ice_name;":   { "ccr": 100}
+        "$codex_ent_ground_struct_ice_name;":   { "ccr": 100},
+        "$codex_ent_ingensradices_genus_name;": { "ccr": 15, "comment": "radicoida"}
     },
     "species": {
         "$codex_ent_aleoids_01_name;": { "credits": 7252500, "name": "Aleoida Arcus"},
@@ -125,7 +126,9 @@
         "$codex_ent_tussocks_13_name;": { "credits": 19010800, "name": "Tussock Stigmasis"},
         "$codex_ent_tussocks_12_name;": { "credits": 7774700, "name": "Tussock Triticum"},
         "$codex_ent_tussocks_02_name;": { "credits": 3227700, "name": "Tussock Ventusa"},
-        "$codex_ent_tussocks_14_name;": { "credits": 14313700, "name": "Tussock Virgam"}
+        "$codex_ent_tussocks_14_name;": { "credits": 14313700, "name": "Tussock Virgam"},
+
+        "$codex_ent_ingensradices_unicus_name;": { "credits": 119037, "name": "Radicoida Unicus"}
     },
     "genuses_int_names": {
         "aleoids": "$codex_ent_aleoids_genus_name;",
@@ -148,7 +151,8 @@
         "tubus": "$codex_ent_tubus_genus_name;",
         "tussocks": "$codex_ent_tussocks_genus_name;",
         "crystalline shard": "$codex_ent_ground_struct_ice_name;",
-        "amphora": "$codex_ent_vents_name;"
+        "amphora": "$codex_ent_vents_name;",
+        "radicoida": "$codex_ent_ingensradices_genus_name;"
     },
     "species_int_names": {
         "aleoida arcus": "$codex_ent_aleoids_01_name;",
@@ -254,6 +258,8 @@
         "tussock stigmasis": "$codex_ent_tussocks_13_name;",
         "tussock triticum": "$codex_ent_tussocks_12_name;",
         "tussock ventusa": "$codex_ent_tussocks_02_name;",
-        "tussock virgam": "$codex_ent_tussocks_14_name;"
+        "tussock virgam": "$codex_ent_tussocks_14_name;",
+
+        "radicoida unicus": "$codex_ent_ingensradices_unicus_name;"
     }
 }

@@ -1731,5 +1731,153 @@
                 "odyssey": "adjusted"
             }
         ]
+    },
+    "hip 87621": {
+        "1": [
+            {
+                "title": "Small biological site 1",
+                "latitude": -22.4788,
+                "longitude": -5.0172,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Medium biological site 2",
+                "latitude": 5.478,
+                "longitude": -5.8847,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Large biological site 3",
+                "latitude": 80.7999,
+                "longitude": 68.2981,
+                "odyssey": "adjusted"
+            }
+        ],
+        "2 a": [
+            {
+                "title": "Small biological site 1",
+                "latitude": 38.5455,
+                "longitude": 102.0038,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Large biological site 2",
+                "latitude": -51.1748,
+                "longitude": 114.8399,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Medium biological site 3",
+                "latitude": -37.1704,
+                "longitude": -89.1629,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Small biological site 4",
+                "latitude": 19.0916,
+                "longitude": -50.8769,
+                "odyssey": "adjusted"
+            }
+        ],
+        "2 b a": [
+            {
+                "title": "Large biological site 1",
+                "latitude": -8.8321,
+                "longitude": 70.826,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Medium biological site 2",
+                "latitude": -18.0296,
+                "longitude": 122.6854,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Large biological site 3",
+                "latitude": 46.9238,
+                "longitude": 72.6814,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Medium biological site 4",
+                "latitude": -10.0768,
+                "longitude": 148.7261,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Small biological site 5",
+                "latitude": 71.9377,
+                "longitude": 8.1711,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Small biological site 6",
+                "latitude": -48.4039,
+                "longitude": -167.4833,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Small biological site 7",
+                "latitude": 33.9845,
+                "longitude": -46.8463,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Medium biological site 8",
+                "latitude": 1.5105,
+                "longitude": -66.1404,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Small biological site 9",
+                "latitude": -25.7545,
+                "longitude": -123.2744,
+                "odyssey": "adjusted"
+            }
+        ],
+        "2 b b": [
+            {
+                "title": "Medium biological site 1",
+                "latitude": -1.799,
+                "longitude": 95.6869,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Small biological site 2",
+                "latitude": 0.3216,
+                "longitude": 74.9205,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Small biological site 3",
+                "latitude": -0.5845,
+                "longitude": 128.3468,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Medium biological site 4",
+                "latitude": -8.8179,
+                "longitude": 24.7118,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Small biological site 5",
+                "latitude": 58.2718,
+                "longitude": -173.9599,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Large biological site 6",
+                "latitude": 67.4392,
+                "longitude": -16.944,
+                "odyssey": "adjusted"
+            },
+            {
+                "title": "Large biological site 7",
+                "latitude": -26.0109,
+                "longitude": -133.4292,
+                "odyssey": "adjusted"
+            }
+        ]
     }
 }
