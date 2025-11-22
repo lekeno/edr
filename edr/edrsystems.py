@@ -1669,7 +1669,10 @@ class EDRSystems(object):
         for s in species:
             actual_genuses.add(species[s]["genusLocalised"])
             cgenus = species[s]["genus"].lower()
-            del togo_genuses[cgenus]
+            if cgenus in togo_genuses:
+                del togo_genuses[cgenus]
+            else:
+                EDR_LOG.log(u"Genus '{}' is not part of the 'togo_genuses': {}".format(cgenus, togo_genuses), "WARNING")
             actual_species.add(species[s]["speciesLocalised"])
         analyzed_genuses = len(actual_genuses)
         analyzed_species = len(actual_species)
