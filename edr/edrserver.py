@@ -78,9 +78,9 @@ class EDRServer(object):
             return False
         
         EDR_LOG.log(u"Checking response: service={}, call={}, status={}".format(service, call, response.status_code), "DEBUG")
-        if response.status_code in [200, 404, 401, 403, 204]:
+        if response.status_code in [200, 404, 204]:
             self.backoff[service].reset()
-        elif response.status_code in [429, 500]:
+        elif response.status_code in [401, 403, 429, 500]:
             self.backoff[service].throttle()
             
         return response.status_code == 200
@@ -416,6 +416,8 @@ class EDRServer(object):
         EDR_LOG.log(u"Post JSON {} to {}".format(json_payload, endpoint), "DEBUG")
         resp = self.__post(endpoint, "EDR", params=params, json=json_payload)
         EDR_LOG.log(u" resp= {}; {}".format(resp.status_code, resp.text), "DEBUG")
+        if resp.status_code in [401, 403]:
+            EDR_LOG.log(u"Auth error when posting JSON {} to {}".format(json_payload, endpoint), "DEBUG")
         return self.__check_response(resp, "EDR", "Post json")
 
     def blip(self, cmdr_id, info):
