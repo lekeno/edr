@@ -9,6 +9,8 @@ import RESTFirebase
 import edrconfig
 from edrlog import EDR_LOG
 from edtime import EDTime
+from lrucache import LRUCache
+from edrconfig import EDR_CONFIG
 
 import requests
 import backoff
@@ -38,6 +40,7 @@ class EDRServer(object):
         self.fc_jump_psa = None
         self.backoff = {"EDR": backoff.Backoff(u"EDR"), "Inara": backoff.Backoff(u"Inara") }
         self.INARA_API_KEY = config.inara_api_key()
+        self.cmdrs_cache = LRUCache(EDR_CONFIG.lru_max_size(), EDR_CONFIG.cmdrs_max_age())
 
     def login(self, email, password):
         self.REST_firebase.api_key = self.EDR_API_KEY
@@ -356,6 +359,10 @@ class EDRServer(object):
         return self.__check_response(resp, "EDR", "Put pledge")            
     
     def cmdr(self, cmdr, autocreate=True):
+        cached_cmdr = self.cmdrs_cache.get(cmdr.lower())
+        if cached_cmdr:
+            return cached_cmdr
+
         if not self.__preflight("cmdr", cmdr):
             EDR_LOG.log(u"Preflight failed for cmdr call.", "DEBUG")
             raise CommsJammedError("cmdr")
@@ -385,6 +392,7 @@ class EDRServer(object):
                 EDR_LOG.log(u"New cmdr:{}".format(json_cmdr), "DEBUG")
                 cmdr_profile.cid = list(json_cmdr.values())[0]
                 cmdr_profile.name = cmdr
+                self.cmdrs_cache.set(cmdr.lower(), cmdr_profile)
             else:
                 return None
         else:
@@ -392,6 +400,7 @@ class EDRServer(object):
             EDR_LOG.log(u"Existing cmdr:{}".format(json_cmdr), "DEBUG")
             cmdr_profile.cid = list(json_cmdr)[0]
             cmdr_profile.from_dict(list(json_cmdr.values())[0])
+            self.cmdrs_cache.set(cmdr.lower(), cmdr_profile)
 
         return cmdr_profile
 
