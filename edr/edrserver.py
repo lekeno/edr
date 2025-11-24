@@ -8,6 +8,7 @@ import edrcmdrprofile
 import RESTFirebase
 import edrconfig
 from edrlog import EDR_LOG
+from edtime import EDTime
 
 import requests
 import backoff
@@ -74,27 +75,32 @@ class EDRServer(object):
         return self.REST_firebase.force_new_auth()
 
     def __check_response(self, response, service, call="Unknown"):
-        if not response:
+        if response is None:
+            EDR_LOG.log(u"No response: service={}, call={}, resp={}".format(service, call, response), "WARNING")
             return False
         
         EDR_LOG.log(u"Checking response: service={}, call={}, status={}".format(service, call, response.status_code), "DEBUG")
-        if response.status_code in [200, 404, 204]:
+        if response.status_code in [200, 404, 401, 403, 204]:
+            EDR_LOG.log(u"Acceptable response => resetting backoff: service={}, call={}, resp={}".format(service, call, response), "DEBUG")
             self.backoff[service].reset()
-        elif response.status_code in [401, 403, 429, 500]:
+        elif response.status_code in [429, 500]:
+            EDR_LOG.log(u"Bad response => throttling: service={}, call={}, resp={}".format(service, call, response), "DEBUG")
             self.backoff[service].throttle()
             
         return response.status_code == 200
 
     def __process_inara_response(self, resp):
-        if not resp:
+        if resp is None:
+            EDR_LOG.log(u"No Inara response: resp={}".format(resp), "WARNING")
             return None
 
         json_resp = json.loads(resp)
         if not json_resp.get("body", None):
+            EDR_LOG.log(u"No Inara body: json_resp={}".format(json_resp), "WARNING")
             return None
         
         body = json_resp["body"]
-        
+        EDR_LOG.log(u"Inara body={}".format(body), "DEBUG")
         try:
             if body["header"]["eventStatus"] == 400:
                 EDR_LOG.log(u"Too many requests for Inara.", "INFO")
@@ -124,6 +130,7 @@ class EDRServer(object):
 
     def __get(self, endpoint, service, params=None, headers=None, attempts=3):
         if self.backoff[service].throttled():
+            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff_until)), "DEBUG")
             return None
         
         while attempts:
@@ -137,6 +144,7 @@ class EDRServer(object):
 
     def __put(self, endpoint, service, json, params=None, headers=None, attempts=3):
         if self.backoff[service].throttled():
+            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff_until)), "DEBUG")
             return None
 
         while attempts:
@@ -150,6 +158,7 @@ class EDRServer(object):
     
     def __delete(self, endpoint, service, params=None, attempts=3):
         if self.backoff[service].throttled():
+            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff_until)), "DEBUG")
             return None
 
         while attempts:
@@ -164,6 +173,7 @@ class EDRServer(object):
 
     def __post(self, endpoint, service, json, params=None, attempts=3):
         if self.backoff[service].throttled():
+            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff_until)), "DEBUG")
             return None
         
         while attempts:
@@ -376,11 +386,11 @@ class EDRServer(object):
 
     def inara_cmdr(self, cmdr):
         if self.player_name is None:
-            return None
+            return False
         
         if self.backoff["Inara"].throttled():
-            EDR_LOG.log(u"Backing off from Inara API calls", "DEBUG")
-            return None
+            EDR_LOG.log("Exponential backoff active for Inara API calls: attempts={}, until={}".format(self.backoff["Inara"].attempts, EDTime.t_plus_py(self.backoff["Inara"].backoff_until)), "DEBUG")
+            return False
 
         EDR_LOG.log(u"Requesting Inara profile for {}".format(cmdr), "INFO")             
         headers = {
@@ -389,15 +399,17 @@ class EDRServer(object):
         }
         requester = quote(self.player_name.encode('utf-8')) if self.player_name else u"-"
         endpoint = "{}/edr/v1/inara/{}/{}".format(self.EDR_SERVER_FUNCTIONS, quote(cmdr.lower().encode('utf-8')), quote(requester))
-        resp = self.__get(endpoint, "EDR", headers=headers)
+        resp = self.__get(endpoint, "Inara", headers=headers)
+        EDR_LOG.log(u"Inara response: endpoint={}, resp={}".format(endpoint, resp), "DEBUG")
 
-        if not self.__check_response(resp, "Inara", "Inara"):
+        if not self.__check_response(resp, "Inara", "Inara via EDR"):
             EDR_LOG.log(u"Inara profile failed. Error code: {}".format(resp.status_code), "ERROR")
-            return None
+            return False
             
         processed = self.__process_inara_response(resp.content)
         if not processed:
-            return None
+            EDR_LOG.log(u"Inara response wasn't processed. Resp: {}".format(resp.content), "ERROR")
+            return False
 
         cmdr_profile = edrcmdrprofile.EDRCmdrProfile()
         cmdr_profile.from_inara_api(processed)
@@ -405,6 +417,7 @@ class EDRServer(object):
 
     def __post_json(self, endpoint, json_payload, service):
         if self.backoff[service].throttled():
+            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff_until)), "DEBUG")
             return None
         
         params = { "auth" : self.auth_token()}
@@ -416,8 +429,6 @@ class EDRServer(object):
         EDR_LOG.log(u"Post JSON {} to {}".format(json_payload, endpoint), "DEBUG")
         resp = self.__post(endpoint, "EDR", params=params, json=json_payload)
         EDR_LOG.log(u" resp= {}; {}".format(resp.status_code, resp.text), "DEBUG")
-        if resp.status_code in [401, 403]:
-            EDR_LOG.log(u"Auth error when posting JSON {} to {}".format(json_payload, endpoint), "DEBUG")
         return self.__check_response(resp, "EDR", "Post json")
 
     def blip(self, cmdr_id, info):
