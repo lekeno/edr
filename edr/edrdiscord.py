@@ -160,7 +160,7 @@ class EDRDiscordWebhook(object):
         raise last_connection_exception
     
     def __check_response(self, response):
-        if not response:
+        if response is None:
             return False
         
         if response.status_code in [200, 204, 404, 401, 403, 204]:
