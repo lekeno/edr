@@ -122,22 +122,12 @@ class EDRCmdrs(object):
             EDR_LOG.log(u"Cmdr {cmdr} is in the EDR cache with id={cid}".format(cmdr=cmdr_name,
                                                                            cid=profile.cid if profile else 'N/A'),
                        "DEBUG")
-            if profile and self.opsec_config:
-                if profile.is_opsec(self.player, self.opsec_config):
-                    EDR_LOG.log(u"Cmdr {cmdr} is opsec, not reporting.".format(cmdr=cmdr_name), "INFO")
-                    return profile
-            elif not profile:
-                return profile
+            return profile
 
-        effective_autocreate = autocreate
-        if self.opsec_config and autocreate:
-            # Check Inara for squadron and power info
-            inara_profile = self.__inara_cmdr(cmdr_name, True)
-            if inara_profile and inara_profile.is_opsec(self.player, self.opsec_config):
-                EDR_LOG.log(u"Cmdr {cmdr} is opsec, not reporting.".format(cmdr=cmdr_name), "INFO")
-                effective_autocreate = False
-
-        profile = self.server.cmdr(cmdr_name, effective_autocreate)
+        try:
+            profile = self.server.cmdr(cmdr_name, autocreate)
+        except:
+            EDR_LOG.log("Exception during call to EDR server cmdr.", "WARNING")
 
         if not profile:
             self.cmdrs_cache.set(cmdr_name.lower(), None)

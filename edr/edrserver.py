@@ -141,7 +141,7 @@ class EDRServer(object):
 
     def __get(self, endpoint, service, params=None, headers=None, attempts=3):
         if self.backoff[service].throttled():
-            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff_until)), "DEBUG")
+            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.self.backoff[service].backoff_until)), "DEBUG")
             return None
         
         while attempts:
@@ -155,7 +155,7 @@ class EDRServer(object):
 
     def __put(self, endpoint, service, json, params=None, headers=None, attempts=3):
         if self.backoff[service].throttled():
-            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff_until)), "DEBUG")
+            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.self.backoff[service].backoff_until)), "DEBUG")
             return None
 
         while attempts:
@@ -169,7 +169,7 @@ class EDRServer(object):
     
     def __delete(self, endpoint, service, params=None, attempts=3):
         if self.backoff[service].throttled():
-            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff_until)), "DEBUG")
+            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.self.backoff[service].backoff_until)), "DEBUG")
             return None
 
         while attempts:
@@ -184,7 +184,7 @@ class EDRServer(object):
 
     def __post(self, endpoint, service, json, params=None, attempts=3):
         if self.backoff[service].throttled():
-            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff_until)), "DEBUG")
+            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.self.backoff[service].backoff_until)), "DEBUG")
             return None
         
         while attempts:
@@ -428,7 +428,7 @@ class EDRServer(object):
 
     def __post_json(self, endpoint, json_payload, service):
         if self.backoff[service].throttled():
-            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff_until)), "DEBUG")
+            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.self.backoff[service].backoff_until)), "DEBUG")
             return None
         
         params = { "auth" : self.auth_token()}
