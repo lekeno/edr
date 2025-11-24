@@ -94,12 +94,23 @@ class EDRServer(object):
             EDR_LOG.log(u"No Inara response: resp={}".format(resp), "WARNING")
             return None
 
-        json_resp = json.loads(resp)
-        if not json_resp.get("body", None):
-            EDR_LOG.log(u"No Inara body: json_resp={}".format(json_resp), "WARNING")
+        EDR_LOG.log(u"Processing Inara response: resp={}".format(resp), "DEBUG")
+
+        body = None
+        try:
+            json_resp = json.loads(resp)
+            if not json_resp.get("body", None):
+                EDR_LOG.log(u"No Inara body: json_resp={}".format(json_resp), "WARNING")
+                return None
+            body = json_resp["body"]
+        except:
+            EDR_LOG.log(u"Exception during extraction of Inara body: resp={}".format(resp), "WARNING")
             return None
         
-        body = json_resp["body"]
+        if body is None:
+            EDR_LOG.log(u"No Inara body: resp={}".format(resp), "WARNING")
+            return None
+        
         EDR_LOG.log(u"Inara body={}".format(body), "DEBUG")
         try:
             if body["header"]["eventStatus"] == 400:
