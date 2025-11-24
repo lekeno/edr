@@ -204,11 +204,13 @@ class EDRCmdrs(object):
                 inara_profile = self.inara_cache.peek(cmdr_name.lower())
                 self.inara_cache.refresh(cmdr_name.lower())
                 EDR_LOG.log(u"Refresh and re-use stale match in Inara cache.", "INFO")
-            else:
-                inara_profile = None
+            elif inara_profile is None:
                 self.inara_cache.set(cmdr_name.lower(), None)
                 EDR_LOG.log(u"No match on Inara. Temporary entry to be nice on Inara's server.",
                            "INFO")
+            else:
+                # Inara call failed
+                inara_profile = None
         return inara_profile
 
     def cmdr(self, cmdr_name, autocreate=True, check_inara_server=False):
