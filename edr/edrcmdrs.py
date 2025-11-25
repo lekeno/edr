@@ -12,8 +12,8 @@ from edentities import EDPlayerOne
 
 class EDRCmdrs(object):
     #TODO these should be player and/or squadron specific
-    EDR_CMDRS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'cmdrs.v7.p')
-    EDR_INARA_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'inara.v7.p')
+    EDR_CMDRS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'cmdrs.v8.p')
+    EDR_INARA_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'inara.v8.p')
     EDR_SQDRDEX_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'sqdrdex.v2.p')
 
     def __init__(self, edrserver, opsec_config=None):
@@ -116,6 +116,7 @@ class EDRCmdrs(object):
             pass
 
     def __edr_cmdr(self, cmdr_name, autocreate):
+        backup_profile = self.cmdrs_cache.peek(cmdr_name.lower())
         profile = self.cmdrs_cache.get(cmdr_name.lower())
         cached = self.cmdrs_cache.has_key(cmdr_name.lower())
         if cached or profile:
@@ -128,11 +129,18 @@ class EDRCmdrs(object):
             profile = self.server.cmdr(cmdr_name, autocreate)
         except:
             EDR_LOG.log("Exception during call to EDR server cmdr.", "WARNING")
+            pass
 
         if not profile:
-            self.cmdrs_cache.set(cmdr_name.lower(), None)
-            EDR_LOG.log(u"No match on EDR. Temporary entry to be nice on EDR's server.", "DEBUG")
-            return None
+            if backup_profile:
+                self.cmdrs_cache.set(cmdr_name.lower(), backup_profile)
+                self.cmdrs_cache.refresh(cmdr_name.lower())
+                EDR_LOG.log(u"No updated profile on EDR. Refresh old profile", "DEBUG")
+                return backup_profile
+            else:
+                self.cmdrs_cache.set(cmdr_name.lower(), None)
+                EDR_LOG.log(u"No match on EDR. Temporary entry to be nice on EDR's server.", "DEBUG")
+                return None
         dex_profile = self.server.cmdrdex(profile.cid)
         if dex_profile:
             EDR_LOG.log(u"EDR CmdrDex entry found for {cmdr}: {id}".format(cmdr=cmdr_name,

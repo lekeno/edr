@@ -141,7 +141,7 @@ class EDRServer(object):
 
     def __get(self, endpoint, service, params=None, headers=None, attempts=3):
         if self.backoff[service].throttled():
-            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.self.backoff[service].backoff_until)), "DEBUG")
+            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff[service].backoff_until)), "DEBUG")
             return None
         
         while attempts:
@@ -155,7 +155,7 @@ class EDRServer(object):
 
     def __put(self, endpoint, service, json, params=None, headers=None, attempts=3):
         if self.backoff[service].throttled():
-            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.self.backoff[service].backoff_until)), "DEBUG")
+            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff[service].backoff_until)), "DEBUG")
             return None
 
         while attempts:
@@ -169,7 +169,7 @@ class EDRServer(object):
     
     def __delete(self, endpoint, service, params=None, attempts=3):
         if self.backoff[service].throttled():
-            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.self.backoff[service].backoff_until)), "DEBUG")
+            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff[service].backoff_until)), "DEBUG")
             return None
 
         while attempts:
@@ -184,7 +184,7 @@ class EDRServer(object):
 
     def __post(self, endpoint, service, json, params=None, attempts=3):
         if self.backoff[service].throttled():
-            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.self.backoff[service].backoff_until)), "DEBUG")
+            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff[service].backoff_until)), "DEBUG")
             return None
         
         while attempts:
@@ -344,7 +344,7 @@ class EDRServer(object):
             endpoint = "{server}/v1/pledges/{uid}/.json".format(server=self.EDR_SERVER, uid=self.uid())
             EDR_LOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
             resp = self.__delete(endpoint, "EDR", params=params)
-            EDR_LOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+            EDR_LOG.log(u"resp= {}".format("None" if resp is None else resp.status_code), "DEBUG")
             return self.__check_response(resp, "EDR", "Delete pledge")
         
         EDR_LOG.log(u"Pledge info for uid {uid} with power:{power}".format(uid=self.uid(), power=power), "INFO")
@@ -352,7 +352,7 @@ class EDRServer(object):
         json = { "cpower": self.nodify(power), "since": int(since*1000), "heartbeat": {".sv": "timestamp"} }
         EDR_LOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = self.__put(endpoint, "EDR", params=params, json=json)
-        EDR_LOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+        EDR_LOG.log(u"resp= {}".format("None" if resp is None else resp.status_code), "DEBUG")
         return self.__check_response(resp, "EDR", "Put pledge")            
     
     def cmdr(self, cmdr, autocreate=True):
@@ -373,7 +373,14 @@ class EDRServer(object):
             EDR_LOG.log(u"{error}, {content}".format(error=resp.status_code, content=resp.text), "DEBUG")
             return None
 
-        if resp.content == 'null' or resp.content == b'null':
+        json_cmdr = None
+        try:
+            json_cmdr = json.loads(resp.content)
+        except:
+            json_cmdr = None
+            pass
+
+        if json_cmdr is None:
             if autocreate and not self.is_anonymous():
                 params = { "auth" : self.auth_token() }
                 endpoint = "{}/v1/cmdrs.json".format(self.EDR_SERVER)
@@ -428,7 +435,7 @@ class EDRServer(object):
 
     def __post_json(self, endpoint, json_payload, service):
         if self.backoff[service].throttled():
-            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.self.backoff[service].backoff_until)), "DEBUG")
+            EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff[service].backoff_until)), "DEBUG")
             return None
         
         params = { "auth" : self.auth_token()}
@@ -479,7 +486,7 @@ class EDRServer(object):
         endpoint = "{server}/v1/stats/legal/{cmdr_id}/.json".format(server=self.EDR_SERVER,cmdr_id=cmdr_id)
         params = {"auth": self.auth_token()}
         resp = self.__get(endpoint, "EDR", params)
-        EDR_LOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+        EDR_LOG.log(u"resp= {}".format("None" if resp is None else resp.status_code), "DEBUG")
 
         if self.__check_response(resp, "EDR", "Legal_Stats"):
             return json.loads(resp.content)
@@ -534,7 +541,7 @@ class EDRServer(object):
         endpoint = "{server}/v1/fc_reports/{system_id}/{uid}/.json".format(server=self.EDR_SERVER, system_id=system_id, uid=self.uid())
         EDR_LOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = self.__put(endpoint, "EDR", params=params, json=report)
-        EDR_LOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+        EDR_LOG.log(u"resp= {}".format("None" if resp is None else resp.status_code), "DEBUG")
         return self.__check_response(resp, "EDR", "Put fcs report")
     
     def fc_presence(self, star_system):
@@ -545,7 +552,7 @@ class EDRServer(object):
         EDR_LOG.log(u"Querying Fleet Carriers in system {}".format(star_system), "INFO")
         params = {"orderBy": '"starSystem"', "equalTo": json.dumps(star_system), "limitToFirst": 1, "auth": self.auth_token()}
         resp = self.__get("{}/v1/fc_presence.json".format(self.EDR_SERVER), "EDR", params)
-        EDR_LOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+        EDR_LOG.log(u"resp= {}".format("None" if resp is None else resp.status_code), "DEBUG")
         if self.__check_response(resp, "EDR", "FC_Presence"):
             result = json.loads(resp.content)
             sid = list(result)[0] if result else None
@@ -562,7 +569,7 @@ class EDRServer(object):
         endpoint = "{server}/v1/fc_materials_reports/{fc_id}/{uid}/.json".format(server=self.EDR_SERVER, fc_id=fc_id, uid=self.uid())
         EDR_LOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = self.__put(endpoint, "EDR", params=params, json=report)
-        EDR_LOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+        EDR_LOG.log(u"resp= {}".format("None" if resp is None else resp.status_code), "DEBUG")
         return self.__check_response(resp, "EDR", "Put fcs materials report")
 
     def report_fc_market(self, fc_id, report):
@@ -574,7 +581,7 @@ class EDRServer(object):
         endpoint = "{server}/v1/fc_market_reports/{fc_id}/{uid}/.json".format(server=self.EDR_SERVER, fc_id=fc_id, uid=self.uid())
         EDR_LOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = self.__put(endpoint, "EDR", params=params, json=report)
-        EDR_LOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+        EDR_LOG.log(u"resp= {}".format("None" if resp is None else resp.status_code), "DEBUG")
         return self.__check_response(resp, "EDR", "Put fcs market report")
     
     def __get_recent(self, path, timespan_seconds, limitToLast=None):
@@ -709,7 +716,7 @@ class EDRServer(object):
         endpoint = "{server}{dex}{cid}/.json".format(server=self.EDR_SERVER, dex=dex_path, cid=cmdr_id)
         EDR_LOG.log(u"Endpoint: {} with {}".format(endpoint, dex_entry), "DEBUG")
         resp = self.__put(endpoint, "EDR", json=dex_entry, params=params)
-        EDR_LOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+        EDR_LOG.log(u"resp= {}".format("None" if resp is None else resp.status_code), "DEBUG")
         return self.__check_response(resp, "EDR")
 
     def __remove_dex(self, dex_path, cmdr_id):
@@ -718,7 +725,7 @@ class EDRServer(object):
         endpoint = "{server}{dex}{cid}.json".format(server=self.EDR_SERVER, dex=dex_path, cid=cmdr_id)
         EDR_LOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = self.__delete(endpoint, "EDR", params=params)
-        EDR_LOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+        EDR_LOG.log(u"resp= {}".format("None" if resp is None else resp.status_code), "DEBUG")
         return self.__check_response(resp, "EDR")
     
     def __dex(self, dex_path, cmdr_id):
@@ -727,7 +734,7 @@ class EDRServer(object):
         endpoint = "{server}{dex}{cid}/.json".format(server=self.EDR_SERVER, dex=dex_path, cid=cmdr_id)
         EDR_LOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = self.__get(endpoint, "EDR", params)
-        EDR_LOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+        EDR_LOG.log(u"resp= {}".format("None" if resp is None else resp.status_code), "DEBUG")
 
         if self.__check_response(resp, "EDR", "Dex"):
             return json.loads(resp.content)
@@ -743,7 +750,7 @@ class EDRServer(object):
         endpoint = "{server}{con}.json".format(server=self.EDR_SERVER, con=contracts_path)
         EDR_LOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = self.__get(endpoint, "EDR", params)
-        EDR_LOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+        EDR_LOG.log(u"resp= {}".format("None" if resp is None else resp.status_code), "DEBUG")
 
         if self.__check_response(resp, "EDR", "Contracts"):
             return json.loads(resp.content)
@@ -759,7 +766,7 @@ class EDRServer(object):
         endpoint = "{server}{con}{cid}/.json".format(server=self.EDR_SERVER, con=contracts_path, cid=cmdr_id)
         EDR_LOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = self.__get(endpoint, "EDR", params)
-        EDR_LOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+        EDR_LOG.log(u"resp= {}".format("None" if resp is None else resp.status_code), "DEBUG")
 
         if self.__check_response(resp, "EDR", "Contract_for"):
             return json.loads(resp.content)
@@ -785,7 +792,7 @@ class EDRServer(object):
         endpoint = "{server}{contract}{cid}/.json".format(server=self.EDR_SERVER, contract=contract_path, cid=cmdr_id)
         EDR_LOG.log(u"Endpoint: {} with {}".format(endpoint, contract_entry), "DEBUG")
         resp = self.__put(endpoint, "EDR", json=contract_entry, params=params)
-        EDR_LOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+        EDR_LOG.log(u"resp= {}".format("None" if resp is None else resp.status_code), "DEBUG")
         return self.__check_response(resp, "EDR", "Update_contract")
 
     def __remove_contract(self, contract_path, cmdr_id):
@@ -794,7 +801,7 @@ class EDRServer(object):
         endpoint = "{server}{contract}{cid}.json".format(server=self.EDR_SERVER, contract=contract_path, cid=cmdr_id)
         EDR_LOG.log(u"Endpoint: {}".format(endpoint), "DEBUG")
         resp = self.__delete(endpoint, "EDR", params=params)
-        EDR_LOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+        EDR_LOG.log(u"resp= {}".format("None" if resp is None else resp.status_code), "DEBUG")
         return self.__check_response(resp, "EDR", "Remove_contract")
 
     def preflight_realtime(self, kind):
@@ -809,7 +816,7 @@ class EDRServer(object):
         EDR_LOG.log(u"Preflight request for {} with {}".format(api_name, json), "DEBUG")
         endpoint = "{server_functions}/edr/v1/preflight/{uid}".format(server_functions=self.EDR_SERVER_FUNCTIONS, uid=self.uid())
         resp = self.__put(endpoint, "EDR", json=json, headers=headers)
-        EDR_LOG.log(u"resp= {}".format(resp.status_code), "DEBUG")
+        EDR_LOG.log(u"resp= {}".format("None" if resp is None else resp.status_code), "DEBUG")
         return self.__check_response(resp, "EDR", "Preflight {}".format(api_name))
 
 class CommsJammedError(Exception):
