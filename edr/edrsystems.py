@@ -213,28 +213,64 @@ class EDRSystems(object):
     def system_id(self, star_system, may_create=False, coords=None):
         if not star_system:
             return None
+        
         system = self.systems_cache.get(star_system.lower())
         cached = self.systems_cache.has_key(star_system.lower())
         if cached and system is None:
             EDR_LOG.log(u"Temporary entry for System {} in the cache".format(star_system), "DEBUG")
             return None
 
+        # Helper function to safely extract and validate the system ID
+        def get_and_validate_sid(system_dict, star_system_name):
+            if not system_dict or not isinstance(system_dict, dict):
+                return None
+            
+            # The expected ID is the only key
+            sid = list(system_dict.keys())[0] if system_dict.keys() else None
+            
+            if not sid:
+                return None
+            
+            # 1. Check if the key is the literal system name (an unexpected placeholder)
+            if sid.lower() == star_system_name.lower():
+                EDR_LOG.log(u"Rejected potential system ID (matches system name): {}".format(sid), "WARNING")
+                return None
+                
+            # 2. Check if the key looks like an internal/common field name
+            if sid.lower() in ["name", "id", "system"]:
+                EDR_LOG.log(u"Rejected potential system ID (matches internal field): {}".format(sid), "WARNING")
+                return None
+            
+            return sid
+
         if cached and system:
-            sid = list(system)[0]
-            if may_create and coords and not "coords" in system[sid]:
+            sid = get_and_validate_sid(system, star_system)
+            
+            if not sid: # If validation failed, treat as if system was not found
+                self.systems_cache.evict(star_system.lower())
+                EDR_LOG.log(u"Cached system {} had an invalid SID. Evicting cache entry.".format(star_system), "ERROR")
+                # Fall through to server fetch below
+
+            # If sid is valid, continue with the rest of the block
+            elif may_create and coords and not "coords" in system[sid]:
                 EDR_LOG.log(u"System {} is in the cache with id={} but missing coords".format(star_system, sid), "DEBUG")
                 system = self.server.system(star_system, may_create, coords)
                 if system:
                     self.systems_cache.set(star_system.lower(), system)
-                sid = list(system)[0]
+                    sid = list(system)[0]
             return sid
 
+        # TODO handle commsjammederror... everywhere...
         system = self.server.system(star_system, may_create, coords)
         if system:
             self.systems_cache.set(star_system.lower(), system)
-            sid = list(system)[0]
-            EDR_LOG.log(u"Cached {}'s info with id={}".format(star_system, sid), "DEBUG")
-            return sid
+            sid = get_and_validate_sid(system, star_system) # Use the validation function
+            
+            if sid:
+                EDR_LOG.log(u"Cached {}'s info with id={}".format(star_system, sid), "DEBUG")
+                return sid
+            else:
+                EDR_LOG.log(u"Server returned a system for {} but the ID was invalid.".format(star_system), "ERROR")
 
         self.systems_cache.set(star_system.lower(), None)
         EDR_LOG.log(u"No match on EDR. Temporary entry to be nice on EDR's server.", "DEBUG")

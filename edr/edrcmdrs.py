@@ -6,8 +6,7 @@ from edrconfig import EDRConfig
 from lrucache import LRUCache
 from edrlog import EDR_LOG
 from edentities import EDPlayerOne
-
-
+from edrserver import CommsJammedError
 
 
 class EDRCmdrs(object):
@@ -66,7 +65,11 @@ class EDRCmdrs(object):
             return False
         self._player.pledged_to(power, time_pledged)
         since = self._player.pledged_since()
-        return self.server.pledged_to(power, since)        
+        try:
+            return self.server.pledged_to(power, since)        
+        except CommsJammedError:
+            EDR_LOG.log(u"Comms jammed: Failed to update pledge status to EDR.", "WARNING")
+            return False
 
     def __squadron_id(self):
         self.__update_squadron_info()
@@ -78,7 +81,13 @@ class EDRCmdrs(object):
             return
         mark_twain_flag = int((EDTime.js_epoch_now() - self.heartbeat_timestamp)/1000) >= self._edr_heartbeat if self.heartbeat_timestamp else True
         if force_update or mark_twain_flag:
-            info = self.server.heartbeat()
+            info = None
+            try:
+                info = self.server.heartbeat()
+            except CommsJammedError:
+                EDR_LOG.log(u"Comms jammed: Failed to get heartbeat from EDR.", "WARNING")
+                info = None
+
             if info:
                 self.heartbeat_timestamp = info["heartbeat"] if "heartbeat" in info else EDTime.js_epoch_now()
                 self._player.squadron_member(info) if "squadronId" in info else self._player.lone_wolf()
@@ -127,9 +136,12 @@ class EDRCmdrs(object):
 
         try:
             profile = self.server.cmdr(cmdr_name, autocreate)
-        except:
-            EDR_LOG.log("Exception during call to EDR server cmdr.", "WARNING")
-            pass
+        except CommsJammedError: # Refined exception handling
+            EDR_LOG.log("Comms jammed: Failed to fetch cmdr profile from EDR server.", "WARNING")
+            profile = None
+        except Exception as e: # Catch other, unexpected exceptions
+            EDR_LOG.log(f"Unexpected exception during call to EDR server cmdr: {e}", "ERROR")
+            profile = None
 
         if not profile:
             if backup_profile:
@@ -141,11 +153,18 @@ class EDRCmdrs(object):
                 self.cmdrs_cache.set(cmdr_name.lower(), None)
                 EDR_LOG.log(u"No match on EDR. Temporary entry to be nice on EDR's server.", "DEBUG")
                 return None
-        dex_profile = self.server.cmdrdex(profile.cid)
+        
+        dex_profile = None
+        try:
+            dex_profile = self.server.cmdrdex(profile.cid)
+        except CommsJammedError:
+            EDR_LOG.log("Comms jammed: Failed to fetch cmdr dex from EDR server.", "WARNING")
+            dex_profile = None
+
         if dex_profile:
-            EDR_LOG.log(u"EDR CmdrDex entry found for {cmdr}: {id}".format(cmdr=cmdr_name,
-                                                        id=profile.cid), "DEBUG")
+            EDR_LOG.log(u"EDR CmdrDex entry found for {cmdr}: {id}".format(cmdr=cmdr_name, id=profile.cid), "DEBUG")
             profile.dex(dex_profile)
+        
         self.cmdrs_cache.set(cmdr_name.lower(), profile)
         EDR_LOG.log(u"Cached EDR profile {cmdr}: {id}".format(cmdr=cmdr_name,
                                                         id=profile.cid), "DEBUG")
@@ -167,7 +186,13 @@ class EDRCmdrs(object):
         if not profile:
             return None
 
-        sqdrdex_dict = self.server.sqdrdex(sqdr_id, profile.cid)
+        sqdrdex_dict = None
+        try:
+            sqdrdex_dict = self.server.sqdrdex(sqdr_id, profile.cid)
+        except CommsJammedError:
+            EDR_LOG.log("Comms jammed: Failed to fetch squadron dex from EDR server.", "WARNING")
+            sqdrdex_dict = None
+
         if sqdrdex_dict:
             EDR_LOG.log(u"EDR SqdrDex {sqid} entry found for {cmdr}@{cid}".format(sqid=sqdr_id,
                                                                     cmdr=cmdr_name, cid=profile.cid
@@ -189,7 +214,11 @@ class EDRCmdrs(object):
                        "DEBUG")
         elif check_inara_server:
             EDR_LOG.log(u"Stale {} or not cached {} in Inara cache. Inara API call for {}.".format(stale, cached, cmdr_name), "INFO")
-            inara_profile = self.server.inara_cmdr(cmdr_name)
+            try: # New try-except for self.server.inara_cmdr(cmdr_name)
+                inara_profile = self.server.inara_cmdr(cmdr_name)
+            except CommsJammedError:
+                EDR_LOG.log("Comms jammed: Failed to fetch Inara profile via EDR server.", "WARNING")
+                inara_profile = None
 
             if inara_profile and inara_profile.name.lower() == cmdr_name.lower():
                 self.inara_cache.set(cmdr_name.lower(), inara_profile)
@@ -256,7 +285,11 @@ class EDRCmdrs(object):
             return self.__tag_cmdr(cmdr_name, tag)
 
     def contracts(self):
-        return self.server.contracts()
+        try:
+            return self.server.contracts()
+        except CommsJammedError:
+            EDR_LOG.log(u"Comms jammed: Failed to get contracts list.", "WARNING")
+            return None
 
     def contract_for(self, cmdr_name):
         if not cmdr_name:
@@ -266,7 +299,11 @@ class EDRCmdrs(object):
         if not profile:
             return False
         
-        return self.server.contract_for(profile.cid)
+        try:
+            return self.server.contract_for(profile.cid)
+        except CommsJammedError:
+            EDR_LOG.log(u"Comms jammed: Failed to get contract for {}.".format(cmdr_name), "WARNING")
+            return False
     
     def place_contract(self, cmdr_name, reward):
         if not cmdr_name:
@@ -279,7 +316,11 @@ class EDRCmdrs(object):
         if not profile:
             return False
         
-        return self.server.place_contract(profile.cid, {"cname": cmdr_name.lower(), "reward": reward})
+        try:
+            return self.server.place_contract(profile.cid, {"cname": cmdr_name.lower(), "reward": reward})
+        except CommsJammedError:
+            EDR_LOG.log(u"Comms jammed: Failed to place contract on {}.".format(cmdr_name), "WARNING")
+            return False
 
     def remove_contract(self, cmdr_name):
         if not cmdr_name:
@@ -289,7 +330,11 @@ class EDRCmdrs(object):
         if not profile:
             return False
         
-        return self.server.remove_contract(profile.cid)
+        try:
+            return self.server.remove_contract(profile.cid)
+        except CommsJammedError:
+            EDR_LOG.log(u"Comms jammed: Failed to remove contract on {}.".format(cmdr_name), "WARNING")
+            return False
 
     def __tag_cmdr(self, cmdr_name, tag):
         EDR_LOG.log(u"Tagging {} with {}".format(cmdr_name, tag), "DEBUG")
@@ -306,7 +351,14 @@ class EDRCmdrs(object):
 
         dex_dict = profile.dex_dict()
         EDR_LOG.log(u"New dex state: {}".format(dex_dict), "DEBUG")
-        success = self.server.update_cmdrdex(profile.cid, dex_dict)
+        
+        success = False
+        try:
+            success = self.server.update_cmdrdex(profile.cid, dex_dict)
+        except CommsJammedError:
+            EDR_LOG.log(u"Comms jammed: Failed to update EDR Dex for {}.".format(cmdr_name), "WARNING")
+            success = False
+
         self.evict(cmdr_name)
         return success
 
@@ -333,7 +385,14 @@ class EDRCmdrs(object):
         augmented_sqdrdex_dict = sqdrdex_dict
         augmented_sqdrdex_dict["level"] = self._player.squadron_info()["squadronLevel"]
         augmented_sqdrdex_dict["by"] = self._player.name
-        success = self.server.update_sqdrdex(sqdr_id, profile.cid, augmented_sqdrdex_dict)
+        
+        success = False # Initialize success before the try block
+        try:
+            success = self.server.update_sqdrdex(sqdr_id, profile.cid, augmented_sqdrdex_dict)
+        except CommsJammedError:
+            EDR_LOG.log(u"Comms jammed: Failed to update Squadron Dex (tag) for {}.".format(cmdr_name), "WARNING")
+            success = False
+
         self.evict(cmdr_name)
         return success
          
@@ -353,7 +412,14 @@ class EDRCmdrs(object):
             return False
 
         dex_dict = profile.dex_dict()
-        success = self.server.update_cmdrdex(profile.cid, dex_dict)
+        
+        success = False # Initialize success
+        try:
+            success = self.server.update_cmdrdex(profile.cid, dex_dict)
+        except CommsJammedError:
+            EDR_LOG.log(u"Comms jammed: Failed to update EDR Dex (memo) for {}.".format(cmdr_name), "WARNING")
+            success = False
+
         self.evict(cmdr_name)
         return success
 
@@ -371,7 +437,14 @@ class EDRCmdrs(object):
             return False
 
         dex_dict = profile.dex_dict()
-        success = self.server.update_cmdrdex(profile.cid, dex_dict)
+        
+        success = False # Initialize success
+        try:
+            success = self.server.update_cmdrdex(profile.cid, dex_dict)
+        except CommsJammedError:
+            EDR_LOG.log(u"Comms jammed: Failed to update EDR Dex (clear memo) for {}.".format(cmdr_name), "WARNING")
+            success = False
+
         self.evict(cmdr_name)
         return success
     
@@ -396,7 +469,14 @@ class EDRCmdrs(object):
 
         dex_dict = profile.dex_dict()
         EDR_LOG.log(u"New dex state: {}".format(dex_dict), "DEBUG")
-        success = self.server.update_cmdrdex(profile.cid, dex_dict)
+        
+        success = False # Initialize success
+        try:
+            success = self.server.update_cmdrdex(profile.cid, dex_dict)
+        except CommsJammedError:
+            EDR_LOG.log(u"Comms jammed: Failed to update EDR Dex (untag) for {}.".format(cmdr_name), "WARNING")
+            success = False
+
         self.evict(cmdr_name)
         return success
 
@@ -423,6 +503,13 @@ class EDRCmdrs(object):
         augmented_sqdrdex_dict = sqdrdex_dict
         augmented_sqdrdex_dict["level"] = self._player.squadron_info()["squadronLevel"]
         augmented_sqdrdex_dict["by"] = self._player.name
-        success = self.server.update_sqdrdex(sqdr_id, profile.cid, augmented_sqdrdex_dict)
+        
+        success = False # Initialize success
+        try:
+            success = self.server.update_sqdrdex(sqdr_id, profile.cid, augmented_sqdrdex_dict)
+        except CommsJammedError:
+            EDR_LOG.log(u"Comms jammed: Failed to update Squadron Dex (untag) for {}.".format(cmdr_name), "WARNING")
+            success = False
+
         self.evict(cmdr_name)
         return success

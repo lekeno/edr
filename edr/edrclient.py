@@ -555,7 +555,7 @@ class EDRClient(object):
     def noteworthy_about_system(self, fsdjump_event):
         if fsdjump_event["SystemSecurity"]:
             self.player.location_security(fsdjump_event["SystemSecurity"])
-        self.edrsystems.system_id(fsdjump_event['StarSystem'], may_create=True, coords=fsdjump_event.get("StarPos", None))
+        self.edrsystems.system_id(fsdjump_event['StarSystem'], may_create=not self.is_anonymous(), coords=fsdjump_event.get("StarPos", None))
         self.edrfactions.process_jump_event(fsdjump_event)
         facts = self.edrresourcefinder.assess_jump(fsdjump_event, self.player.inventory)
         header = _('Rare materials in {} (USS-HGE/EE, Mission Rewards)').format(fsdjump_event['StarSystem'])
@@ -2138,8 +2138,8 @@ class EDRClient(object):
             return its_actually_fine
 
         profile = self.cmdr(cmdr_name, check_inara_server=True)
-        legal = self.edrlegal.summarize(profile.cid)
         if profile and (self.player.name != cmdr_name) and profile.is_dangerous(self.player.powerplay):
+            legal = self.edrlegal.summarize(profile.cid)
             self.status = _("{} is bad news.").format(cmdr_name)
             if self.novel_enough_blip(cmdr_id, blip, cognitive = True, system_wide=system_wide):
                 details = [profile.short_profile(self.player.powerplay)]
@@ -2200,9 +2200,9 @@ class EDRClient(object):
 
         if self.novel_enough_scan(cmdr_id, scan, cognitive = True):
             profile = self.cmdr(cmdr_name, check_inara_server=True)
-            legal = self.edrlegal.summarize(profile.cid)
             bounty = EDFineOrBounty(scan["bounty"]) if scan["bounty"] else None
             if profile and (self.player.name != cmdr_name):
+                legal = self.edrlegal.summarize(profile.cid)
                 if profile.is_dangerous(self.player.powerplay):
                     # Translators: this is shown via EDMC's EDR status line upon contact with a known outlaw
                     self.status = _("{} is bad news.").format(cmdr_name)

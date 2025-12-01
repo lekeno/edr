@@ -271,8 +271,20 @@ class EDRServer(object):
                 if not self.__check_response(resp, "EDR", "Systems"):
                     EDR_LOG.log(u"Failed to create new star system.", "ERROR")
                     return None
-                the_system = json.loads(resp.content)
-                EDR_LOG.log(u"Created system {} in EDR.".format(star_system), "DEBUG")
+
+                # --- FIX START ---
+                # Firebase POST response: {"name": "-<FIREBASE_ID>"}
+                post_response = json.loads(resp.content)
+                
+                if "name" in post_response:
+                    # Create the dictionary structure expected by system_id: {<FIREBASE_ID>: <SYSTEM_DATA>}
+                    new_id = post_response["name"]
+                    the_system = {new_id: payload} # Use the ID from the response and the original data
+                    EDR_LOG.log(u"Created system {} in EDR with new ID: {}.".format(star_system, new_id), "DEBUG")
+                else:
+                    EDR_LOG.log(u"Unexpected response format after system creation.", "ERROR")
+                    return None
+                # --- FIX END ---
             else:
                 return None
         else:
@@ -282,7 +294,7 @@ class EDRServer(object):
                 EDR_LOG.log(u"System {} has no id={}.".format(star_system, sid), "DEBUG")
                 return None
             EDR_LOG.log(u"System {} is in EDR with id={}.".format(star_system, sid), "DEBUG")
-            if may_create and coords and "coords" not in the_system[sid]:
+            if may_create and not self.is_anonymous() and coords and "coords" not in the_system[sid]:
                 EDR_LOG.log(u"Adding coords to system in EDR.", "DEBUG")
                 params = { "auth" : self.auth_token() }
                 payload = {
