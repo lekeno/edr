@@ -855,6 +855,10 @@
         "powergen": 0,
         "powerdraw": 0.9
     },
+    "int_hyperdrive_overcharge_size8_class5": {
+        "powergen": 0,
+        "powerdraw": 1.21
+    },
     "int_hyperdrive_overcharge_size6_class1": {
         "powergen": 0,
         "powerdraw": 0.5
@@ -3578,6 +3582,10 @@
     "int_engine_size2_class5_fast": {
         "powergen": 0,
         "powerdraw": 4
+    },
+    "int_engine_size7_class5_gravityoptimised_mkii": {
+        "powergen": 0,
+        "powerdraw": 9.12
     },
     "hpt_advancedtorppylon_fixed_small": {
         "powergen": 0,
