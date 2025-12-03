@@ -494,7 +494,7 @@
 "hyperdrive_overcharge_size8_class2": { "name":"frame shift drive (8D SCO)", "shortname": "FSD (8D SCO)"},
 "hyperdrive_overcharge_size8_class3": { "name":"frame shift drive (8C SCO)", "shortname": "FSD (8C SCO)"},
 "hyperdrive_overcharge_size8_class4": { "name":"frame shift drive (8B SCO)", "shortname": "FSD (8B SCO)"},
-"hyperdrive_overcharge_size8_class5": { "name":"frame shift drive (8A SCO)", "shortname": "FSD (8A SCO)"},
+"hyperdrive_overcharge_size8_class5": { "name":"mk ii frame shift drive (8A SCO)", "shortname": "Mk II FSD (8A SCO)"},
 "lifesupport_size1_class1": { "name":"life support (1E)", "shortname": "Life (1E)"},
 "lifesupport_size1_class2": { "name":"life support (1D)", "shortname": "Life (1D)"},
 "lifesupport_size1_class3": { "name":"life support (1C)", "shortname": "Life (1C)"},
