@@ -24,6 +24,7 @@ class EDRFleet(object):
         "t11": "lakonminer",
         "panther": "panthermkii",
         "aspx": "asp",
+        "caspian": "explorer_nx",
         "clipper": "empire_trader",
         "dropship": "federation_dropship",
         "beluga": "belugaliner",

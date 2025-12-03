@@ -874,6 +874,21 @@ class EDAspExplorer(EDVehicle):
         self.hull_hardness = 52
         self.hull_base_strength = 378 / 1.8
 
+class EDCaspianExplorer(EDVehicle):
+    def __init__(self):
+        super(EDCaspianExplorer, self).__init__()
+        self.type = u'Caspian Explorer'
+        self.size = EDVehicleSize.LARGE
+        self.seats = 3
+        self.value = 189989758
+        self.shield_base_strength = 196 # TODO reconfirm
+        self.hull_mass = 950 # TODO reconfirm
+        self.hull_hardness = 60 # TODO reconfirm
+        self.hull_base_strength = 621 / 1.8 # TODO reconfirm
+
+    def supports_slf(self):
+        return True
+
 class EDVulture(EDVehicle):
     def __init__(self):
         super(EDVulture, self).__init__()
@@ -1463,6 +1478,7 @@ class EDVehicleFactory(object):
         "type7": EDT7Transporter,
         "type8": EDT8Transporter,
         "asp": EDAspExplorer,
+        "explorer_nx": EDCaspianExplorer,
         "vulture": EDVulture,
         "vulture_taxi": EDVultureFrontlines,
         "empire_trader": EDImperialClipper,
