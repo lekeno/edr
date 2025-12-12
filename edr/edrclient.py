@@ -145,7 +145,8 @@ class EDRClient(object):
         self.edrresourcefinder = EDRResourceFinder(self.edrsystems, self.edrfactions)
         self.edrboi = EDRBodiesOfInterest()
         user_config = EDRUserConfig()
-        self.edrcmdrs = EDRCmdrs(self.server, user_config.opsec_config())
+        self.opsec_config = user_config.opsec_config()
+        self.edrcmdrs = EDRCmdrs(self.server)
         self.edropponents = {
             EDROpponents.OUTLAWS: EDROpponents(self.server, EDROpponents.OUTLAWS, self._realtime_callback),
             EDROpponents.ENEMIES: EDROpponents(self.server, EDROpponents.ENEMIES, self._realtime_callback),
@@ -2138,35 +2139,40 @@ class EDRClient(object):
             return its_actually_fine
 
         profile = self.cmdr(cmdr_name, check_inara_server=True)
-        if profile and (self.player.name != cmdr_name) and profile.is_dangerous(self.player.powerplay):
-            legal = self.edrlegal.summarize(profile.cid)
-            self.status = _("{} is bad news.").format(cmdr_name)
-            if self.novel_enough_blip(cmdr_id, blip, cognitive = True, system_wide=system_wide):
-                details = [profile.short_profile(self.player.powerplay)]
-                if legal:
-                    details.append(legal["overview"])
-                lut = {
-                    "Received text (local)": _("Signal: local comms"),
-                    "Received text (non wing/friend player)": _("Signal: direct comms"),
-                    "Received text (starsystem channel)": _("Signal: system comms"),
-                    "Emote sent (non wing/friend player)": _("Signal: emote"),
-                    "Sent text (non wing/friend player)": _("Signal: direct comms"),
-                    "Ship targeted": _("Signal: targeted"),
-                    "Multicrew (captain)": _("Signal: multicrew captain"),
-                    "Multicrew (crew)": _("Signal: multicrew member"),
+        if profile:
+            if self.opsec_config.is_protected(profile, self.player):
+                EDR_LOG.log("Skipping blip for {} (OPSEC).".format(cmdr_name), "INFO")
+                return True
 
-                }
-                if blip.get("source", "") in lut:
-                    details.append(lut[blip["source"]])
-                header = _("[Caution!] Intel about {}").format(cmdr_name)
-                self.__warning(header, details, clear_before=True, legal=legal)
-                self.cognitive_blips_cache.set(cmdr_id, blip)
-                if self.player.in_open() and self.is_anonymous() and profile.is_dangerous(self.player.powerplay):
-                    self.advertise_full_account(_("You could have helped other EDR users by reporting this outlaw."))
-                elif self.player.in_open() and self.is_anonymous():
-                    self.advertise_full_account(_("You could have helped other EDR users by reporting this enemy."))
-            else:
-                EDR_LOG.log("Skipping warning since a warning was recently shown.", "INFO")
+            if (self.player.name != cmdr_name) and profile.is_dangerous(self.player.powerplay):
+                legal = self.edrlegal.summarize(profile.cid)
+                self.status = _("{} is bad news.").format(cmdr_name)
+                if self.novel_enough_blip(cmdr_id, blip, cognitive = True, system_wide=system_wide):
+                    details = [profile.short_profile(self.player.powerplay)]
+                    if legal:
+                        details.append(legal["overview"])
+                    lut = {
+                        "Received text (local)": _("Signal: local comms"),
+                        "Received text (non wing/friend player)": _("Signal: direct comms"),
+                        "Received text (starsystem channel)": _("Signal: system comms"),
+                        "Emote sent (non wing/friend player)": _("Signal: emote"),
+                        "Sent text (non wing/friend player)": _("Signal: direct comms"),
+                        "Ship targeted": _("Signal: targeted"),
+                        "Multicrew (captain)": _("Signal: multicrew captain"),
+                        "Multicrew (crew)": _("Signal: multicrew member"),
+
+                    }
+                    if blip.get("source", "") in lut:
+                        details.append(lut[blip["source"]])
+                    header = _("[Caution!] Intel about {}").format(cmdr_name)
+                    self.__warning(header, details, clear_before=True, legal=legal)
+                    self.cognitive_blips_cache.set(cmdr_id, blip)
+                    if self.player.in_open() and self.is_anonymous() and profile.is_dangerous(self.player.powerplay):
+                        self.advertise_full_account(_("You could have helped other EDR users by reporting this outlaw."))
+                    elif self.player.in_open() and self.is_anonymous():
+                        self.advertise_full_account(_("You could have helped other EDR users by reporting this enemy."))
+                else:
+                    EDR_LOG.log("Skipping warning since a warning was recently shown.", "INFO")
 
         if not self.novel_enough_blip(cmdr_id, blip, system_wide):
             EDR_LOG.log("Blip is not novel enough to warrant reporting", "INFO")
@@ -2201,42 +2207,47 @@ class EDRClient(object):
         if self.novel_enough_scan(cmdr_id, scan, cognitive = True):
             profile = self.cmdr(cmdr_name, check_inara_server=True)
             bounty = EDFineOrBounty(scan["bounty"]) if scan["bounty"] else None
-            if profile and (self.player.name != cmdr_name):
-                legal = self.edrlegal.summarize(profile.cid)
-                if profile.is_dangerous(self.player.powerplay):
-                    # Translators: this is shown via EDMC's EDR status line upon contact with a known outlaw
-                    self.status = _("{} is bad news.").format(cmdr_name)
-                    details = [profile.short_profile(self.player.powerplay)]
-                    status = ""
-                    if scan["enemy"]:
-                        status += _("PP Enemy (weapons free). ")
-                    if scan["bounty"]:
-                        status += _("Wanted for {} cr").format(EDFineOrBounty(scan["bounty"]).pretty_print())
-                    elif scan["wanted"]:
-                        status += _("Wanted somewhere. A Kill-Warrant-Scan will reveal their highest bounty.")
-                    if status:
-                        details.append(status)
-                    if legal:
-                        details.append(legal["overview"])
-                    header = _("[Caution!] Intel about {}").format(cmdr_name)
-                    self.__warning(header, details, clear_before=True, legal=legal)
-                elif self.intel_even_if_clean or (scan["wanted"] and bounty.is_significant()):
-                    self.status = _("Intel for cmdr {}.").format(cmdr_name)
-                    details = [profile.short_profile(self.player.powerplay)]
-                    if bounty:
-                        details.append(_("Wanted for {} cr").format(EDFineOrBounty(scan["bounty"]).pretty_print()))
-                    elif scan["wanted"]:
-                        details.append(_("Wanted somewhere but it could be minor offenses."))
-                    if legal:
-                        details.append(legal["overview"])
-                    self.__intel(_("Intel about {}").format(cmdr_name), details, clear_before=True, legal=legal)
-                if not self.player.in_solo() and (self.is_anonymous() and (profile.is_dangerous(self.player.powerplay) or (scan["wanted"] and bounty.is_significant()))):
-                    # Translators: this is shown to users who don't yet have an EDR account
-                    self.advertise_full_account(_("You could have helped other EDR users by reporting this outlaw."))
-                elif not self.player.in_solo() and self.is_anonymous() and scan["enemy"] and self.player.power:
-                    # Translators: this is shown to users who don't yet have an EDR account
-                    self.advertise_full_account(_("You could have helped other {power} pledges by reporting this enemy.").format(self.player.power))
-                self.cognitive_scans_cache.set(cmdr_id, scan)
+            if profile:
+                if self.opsec_config.is_protected(profile, self.player):
+                    EDR_LOG.log("Skipping scanned since {} is OPSEC protected.".format(cmdr_name), "INFO")
+                    return True
+
+                if (self.player.name != cmdr_name):
+                    legal = self.edrlegal.summarize(profile.cid)
+                    if profile.is_dangerous(self.player.powerplay):
+                        # Translators: this is shown via EDMC's EDR status line upon contact with a known outlaw
+                        self.status = _("{} is bad news.").format(cmdr_name)
+                        details = [profile.short_profile(self.player.powerplay)]
+                        status = ""
+                        if scan["enemy"]:
+                            status += _("PP Enemy (weapons free). ")
+                        if scan["bounty"]:
+                            status += _("Wanted for {} cr").format(EDFineOrBounty(scan["bounty"]).pretty_print())
+                        elif scan["wanted"]:
+                            status += _("Wanted somewhere. A Kill-Warrant-Scan will reveal their highest bounty.")
+                        if status:
+                            details.append(status)
+                        if legal:
+                            details.append(legal["overview"])
+                        header = _("[Caution!] Intel about {}").format(cmdr_name)
+                        self.__warning(header, details, clear_before=True, legal=legal)
+                    elif self.intel_even_if_clean or (scan["wanted"] and bounty.is_significant()):
+                        self.status = _("Intel for cmdr {}.").format(cmdr_name)
+                        details = [profile.short_profile(self.player.powerplay)]
+                        if bounty:
+                            details.append(_("Wanted for {} cr").format(EDFineOrBounty(scan["bounty"]).pretty_print()))
+                        elif scan["wanted"]:
+                            details.append(_("Wanted somewhere but it could be minor offenses."))
+                        if legal:
+                            details.append(legal["overview"])
+                        self.__intel(_("Intel about {}").format(cmdr_name), details, clear_before=True, legal=legal)
+                    if not self.player.in_solo() and (self.is_anonymous() and (profile.is_dangerous(self.player.powerplay) or (scan["wanted"] and bounty.is_significant()))):
+                        # Translators: this is shown to users who don't yet have an EDR account
+                        self.advertise_full_account(_("You could have helped other EDR users by reporting this outlaw."))
+                    elif not self.player.in_solo() and self.is_anonymous() and scan["enemy"] and self.player.power:
+                        # Translators: this is shown to users who don't yet have an EDR account
+                        self.advertise_full_account(_("You could have helped other {power} pledges by reporting this enemy.").format(self.player.power))
+                    self.cognitive_scans_cache.set(cmdr_id, scan)
 
         if not self.novel_enough_scan(cmdr_id, scan):
             self.status = _("not novel enough (scan).")

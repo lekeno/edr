@@ -20,6 +20,11 @@ class Backoff(object):
         self.backoff_until = EDTime.py_epoch_now() + delay
         EDR_LOG.log("Exponential backoff for {} API calls: attempts={}, until={}".format(self.name, self.attempts, EDTime.t_plus_py(self.backoff_until)), "DEBUG")
 
+    def until(self, expire_at):
+        self.attempts += 1
+        self.backoff_until = expire_at
+        EDR_LOG.log("Backoff for {} API calls: attempts={}, until={}".format(self.name, self.attempts, EDTime.t_plus_py(self.backoff_until)), "DEBUG")
+
     def throttled(self):
         should = EDTime.py_epoch_now() < self.backoff_until
         if should:

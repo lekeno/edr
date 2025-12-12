@@ -3,6 +3,7 @@ import calendar
 import time
 import comparable
 import math
+import email.utils
 from edri18n import _, _c
 
 class EDTime(comparable.ComparableMixin):
@@ -115,6 +116,12 @@ class EDTime(comparable.ComparableMixin):
 
     def from_journal_timestamp(self, journal_timestamp):
         self._datetime = datetime.datetime.strptime(journal_timestamp, '%Y-%m-%dT%H:%M:%S%z')
+
+    def from_http_header(self, date_str):
+        if date_str.isdigit():
+             self._datetime = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=int(date_str))
+        else:
+             self._datetime = email.utils.parsedate_to_datetime(date_str)
 
     def from_edsm_timestamp(self, edsm_timestamp):
         self._datetime = datetime.datetime.strptime(edsm_timestamp+"Z", '%Y-%m-%d %H:%M:%S%z')

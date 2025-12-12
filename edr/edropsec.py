@@ -1,3 +1,4 @@
+
 class EDROpsecConfig(object):
     def __init__(self, user_config):
         self.opsec_enabled = user_config.getboolean('opsec', 'enabled') if user_config.has_option('opsec', 'enabled') else True
@@ -12,8 +13,41 @@ class EDROpsecConfig(object):
         never_report_powers = user_config.get('opsec', 'never_report_powers') if user_config.has_option('opsec', 'never_report_powers') else ''
         self.never_report_powers = set(val.strip() for val in never_report_powers.split(',')) if never_report_powers else set()
 
+    def is_protected(self, cmdr_profile, player):
+        if not cmdr_profile:
+            return False
+
+        if not self.opsec_enabled:
+            return False
+
+        if self.is_never_report_cmdr(cmdr_profile.name):
+            return True
+
+        if self.is_never_report_power(cmdr_profile.powerplay):
+            return True
+
+        if self.power and cmdr_profile.powerplay and player.power and cmdr_profile.powerplay == player.power:
+            return True
+
+        if self.squadron and cmdr_profile.squadron_id and player.squadron and cmdr_profile.squadron_id == player.squadron.inara_id:
+            return True
+
+        if self.wing and player.is_wingmate(cmdr_profile.name):
+            return True
+
+        if self.crew and player.is_crewmate(cmdr_profile.name):
+            return True
+
+        return False
+
     def is_never_report_cmdr(self, cmdr_name):
+        if cmdr_name is None:
+            return False
+        
         return cmdr_name in self.never_report_cmdrs
 
     def is_never_report_power(self, power_name):
+        if power_name is None:
+            return False
+        
         return power_name in self.never_report_powers

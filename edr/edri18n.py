@@ -87,6 +87,7 @@ def set_language(lang):
     else:
         # Set fallback to English if neither custom nor system language available
         translate = gettext.translation('edr', L10N_DIR, fallback=True)
+        language = 'en'
         EDR_LOG.log(u"Failed to set EDMC language parameter, falling back to English.", "INFO")
 
 

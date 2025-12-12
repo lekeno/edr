@@ -12,6 +12,8 @@ from edtime import EDTime
 
 import requests
 import backoff
+import collections
+from edrhttpcache import EDRHttpCache
 
 class EDRServer(object):
 
@@ -37,6 +39,7 @@ class EDRServer(object):
         self.crimes_reporting = None
         self.fc_jump_psa = None
         self.backoff = {"EDR": backoff.Backoff(u"EDR"), "Inara": backoff.Backoff(u"Inara") }
+        self.http_cache = EDRHttpCache()
         self.INARA_API_KEY = config.inara_api_key()
 
     def login(self, email, password):
@@ -83,9 +86,31 @@ class EDRServer(object):
         if response.status_code in [200, 404, 401, 403, 204]:
             EDR_LOG.log(u"Acceptable response => resetting backoff: service={}, call={}, resp={}".format(service, call, response), "DEBUG")
             self.backoff[service].reset()
+            if response.status_code == 200 and "Cache-Control" in response.headers:
+                cc = response.headers["Cache-Control"]
+                if "max-age" in cc:
+                    try:
+                        max_age = int(cc.split("max-age=")[1].split(",")[0])
+                        self.http_cache.set(response.url, response.json(), max_age)
+                        EDR_LOG.log(u"Cached {} for {}s".format(response.url, max_age), "DEBUG")
+                    except:
+                        pass
         elif response.status_code in [429, 500]:
             EDR_LOG.log(u"Bad response => throttling: service={}, call={}, resp={}".format(service, call, response), "DEBUG")
-            self.backoff[service].throttle()
+            retry_after = response.headers.get("Retry-After")
+            epoch = None
+            if retry_after:
+                try:
+                    dt = EDTime()
+                    dt.from_http_header(retry_after)
+                    epoch = dt.as_py_epoch()
+                except:
+                    pass
+            
+            if epoch:
+                self.backoff[service].until(epoch)
+            else:
+                self.backoff[service].throttle()
             
         return response.status_code == 200
 
@@ -140,6 +165,13 @@ class EDRServer(object):
         return None
 
     def __get(self, endpoint, service, params=None, headers=None, attempts=3):
+        req = requests.Request('GET', endpoint, params=params, headers=headers)
+        prepped = self.SESSION.prepare_request(req)
+        cached = self.http_cache.get(prepped.url)
+        if cached is not None:
+            EDR_LOG.log(u"Cache hit for {}".format(prepped.url), "DEBUG")
+            return cached
+
         if self.backoff[service].throttled():
             EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff[service].backoff_until)), "DEBUG")
             return None

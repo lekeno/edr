@@ -539,15 +539,13 @@ class EDRSystems(object):
             return None
 
         the_system = self.edsm_systems_cache.get(name.lower())
-        if the_system:
+        if self.edsm_systems_cache.has_key(name.lower()):
+            EDR_LOG.log(u"System {} is in the cache, and is known to EDSM: {}".format(name, the_system is not None), "DEBUG")
             return the_system
 
         the_system = self.edsm_server.system(name)
-        if the_system:
-            self.edsm_systems_cache.set(name.lower(), the_system)
-            return the_system
-        
-        return None
+        self.edsm_systems_cache.set(name.lower(), the_system)
+        return the_system
 
     def system_coords(self, name):
         system = self.system(name)
@@ -1751,11 +1749,12 @@ class EDRSystems(object):
             return None
 
         bodies = self.edsm_bodies_cache.get(system_name.lower())
-        if not bodies:
-            bodies = self.edsm_server.bodies(system_name)
-            if bodies:
-                self.edsm_bodies_cache.set(system_name.lower(), bodies)
+        if self.edsm_bodies_cache.has_key(system_name.lower()):
+            EDR_LOG.log(u"Bodies for system {} are in the cache, and are known to EDSM: {}".format(system_name, bodies is not None), "DEBUG")
+            return bodies
 
+        bodies = self.edsm_server.bodies(system_name)
+        self.edsm_bodies_cache.set(system_name.lower(), bodies)
         return bodies
 
     def fss_discovery_scan_update(self, scan):
@@ -2255,6 +2254,7 @@ class EDRSystems(object):
         if self.has_recent_crimes(star_system):
             if not self.crimes_cache.has_key(sid) or (self.crimes_cache.has_key(sid) and self.crimes_cache.is_stale(sid)):
                 recent_crimes = self.server.recent_crimes(sid, self.timespan)
+                # TODO should still cache if the answer is no crimes (empty array)...
                 if recent_crimes:
                     self.crimes_cache.set(sid, recent_crimes)
             else:
@@ -2280,7 +2280,7 @@ class EDRSystems(object):
         if self.has_recent_traffic(star_system):
             if not self.traffic_cache.has_key(sid) or (self.traffic_cache.has_key(sid) and self.traffic_cache.is_stale(sid)):
                 recent_traffic = self.server.recent_traffic(sid, self.timespan)
-                if recent_traffic:
+                if recent_traffic is not None:
                     self.traffic_cache.set(sid, recent_traffic)
             else:
                 recent_traffic = self.traffic_cache.get(sid)
@@ -2291,14 +2291,14 @@ class EDRSystems(object):
             return None
 
         traffic = self.edsm_traffic_cache.get(star_system.lower())
-        if traffic is None:
+        if not self.edsm_traffic_cache.has_key(star_system.lower()):
             traffic = self.edsm_server.traffic(star_system)
-        self.edsm_traffic_cache.set(star_system.lower(), traffic)
+            self.edsm_traffic_cache.set(star_system.lower(), traffic)
 
         deaths = self.edsm_deaths_cache.get(star_system.lower())
-        if deaths is None:
+        if not self.edsm_deaths_cache.has_key(star_system.lower()):
             deaths = self.edsm_server.deaths(star_system)
-        self.edsm_deaths_cache.set(star_system.lower(), traffic)
+            self.edsm_deaths_cache.set(star_system.lower(), deaths)
 
         if not deaths and not traffic:
             return None

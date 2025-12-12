@@ -1,13 +1,12 @@
 
 import json
+import requests
 
 from edrconfig import EDRConfig
 from edrlog import EDR_LOG
-
-import requests
-
-
-
+from backoff import Backoff
+from edtime import EDTime
+from edrhttpcache import EDRHttpCache
 
 class EDSMServer(object):
 
@@ -17,6 +16,8 @@ class EDSMServer(object):
         config = EDRConfig()
         self.EDSM_API_KEY = config.edsm_api_key()
         self.EDSM_SERVER = config.edsm_server()
+        self.backoff = Backoff("EDSM")
+        self.http_cache = EDRHttpCache()
 
 
     def system(self, system_name):
@@ -109,14 +110,51 @@ class EDSMServer(object):
 
 
     def __get(self, endpoint, params, attempts=3):
+        if self.backoff.throttled():
+            return None
+
+        req = requests.Request('GET', endpoint, params=params)
+        prepped = self.SESSION.prepare_request(req)
+        cached = self.http_cache.get(prepped.url)
+        if cached is not None:
+            EDR_LOG.log(u"Cache hit for {}".format(prepped.url), "DEBUG")
+            return cached
+
         while attempts:
             try:
                 attempts -= 1
                 resp = EDSMServer.SESSION.get(endpoint, params=params)
                 if resp.status_code != requests.codes.ok:
+                    if resp.status_code == 429 or 500 <= resp.status_code < 600:
+                        retry_after = resp.headers.get("Retry-After")
+                        epoch = None
+                        if retry_after:
+                            try:
+                                dt = EDTime()
+                                dt.from_http_header(retry_after)
+                                epoch = dt.as_py_epoch()
+                            except:
+                                pass
+                        
+                        if epoch:
+                            self.backoff.until(epoch)
+                        else:
+                            self.backoff.throttle()
+                        
                     EDR_LOG.log(u"Failed to get {} from EDSM: {}.".format(params, resp.status_code), "ERROR")
                     return None
                 
+                self.backoff.reset()
+                if "Cache-Control" in resp.headers:
+                    cc = resp.headers["Cache-Control"]
+                    if "max-age" in cc:
+                        try:
+                            max_age = int(cc.split("max-age=")[1].split(",")[0])
+                            self.http_cache.set(prepped.url, json.loads(resp.content), max_age)
+                            EDR_LOG.log(u"Cached {} for {}s".format(prepped.url, max_age), "DEBUG")
+                        except:
+                            pass
+
                 return json.loads(resp.content)
             except requests.exceptions.RequestException as e:
                 last_connection_exception = e

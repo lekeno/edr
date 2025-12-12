@@ -15,10 +15,9 @@ class EDRCmdrs(object):
     EDR_INARA_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'inara.v8.p')
     EDR_SQDRDEX_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'sqdrdex.v2.p')
 
-    def __init__(self, edrserver, opsec_config=None):
+    def __init__(self, edrserver):
         self.server = edrserver
         self._player = EDPlayerOne()
-        self.opsec_config = opsec_config
         self.heartbeat_timestamp = None
  
         edr_config = EDRConfig()

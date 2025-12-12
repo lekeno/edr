@@ -1154,6 +1154,7 @@ def edr_submit_traffic(contact, timestamp, source, witness, system_wide=False):
         EDR_LOG.log(u"Skipping traffic update due to partial status", "INFO")
         return
 
+    # TODO opsec check
     if not EDR_CLIENT.traffic(witness.star_system, report, system_wide):
         EDR_CLIENT.status = _(u"failed to report traffic.")
         EDR_CLIENT.evict_system(witness.star_system)
@@ -1174,6 +1175,8 @@ def report_crime(cmdr, entry):
     :param entry:
     :return:
     """
+    # TODO opsec check
+
     player_one = EDR_CLIENT.player
     if entry["event"] in ["Interdicted", "EscapeInterdiction"]:
         if entry["IsPlayer"]:
