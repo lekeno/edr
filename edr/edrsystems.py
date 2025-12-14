@@ -1,11 +1,8 @@
 import os
-import pickle
 import re
 from math import sqrt, ceil
 
 import datetime
-from re import S
-import sys
 import time
 import collections
 import operator
@@ -14,7 +11,7 @@ import json
 import edtime
 import edrconfig
 from edrlog import EDR_LOG
-import lrucache
+from lrucache import LRUCache
 from edentities import EDFineOrBounty
 from edrutils import pretty_print_number
 from edri18n import _, _c, _edr
@@ -56,147 +53,130 @@ class EDRSystems(object):
         self.edsm_systems_within_radius_blocklist = set()
         edr_config = edrconfig.EDRConfig()
 
-        try:
-            with open(self.EDR_SYSTEMS_CACHE, 'rb') as handle:
-                self.systems_cache = pickle.load(handle)
-        except:
-            self.systems_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                                   edr_config.systems_max_age())
+        # --- EDR Caches ---
+        self.systems_cache = LRUCache.load(
+            file_path=self.EDR_SYSTEMS_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.systems_max_age()
+        )
 
-        try:
-            with open(self.EDR_RAW_MATERIALS_CACHE, 'rb') as handle:
-                self.materials_cache = pickle.load(handle)
-        except:
-            self.materials_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                                   edr_config.materials_max_age())
-        
-        try:
-            with open(self.EDR_NOTAMS_CACHE, 'rb') as handle:
-                self.notams_cache = pickle.load(handle)
-        except:
-            self.notams_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                                  edr_config.notams_max_age())
+        self.materials_cache = LRUCache.load(
+            file_path=self.EDR_RAW_MATERIALS_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.materials_max_age()
+        )
 
-        try:
-            with open(self.EDR_SITREPS_CACHE, 'rb') as handle:
-                self.sitreps_cache = pickle.load(handle) 
-        except:
-            self.sitreps_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                                  edr_config.sitreps_max_age())
+        self.notams_cache = LRUCache.load(
+            file_path=self.EDR_NOTAMS_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.notams_max_age()
+        )
 
-        try:
-            with open(self.EDR_CRIMES_CACHE, 'rb') as handle:
-                self.crimes_cache = pickle.load(handle)
-        except:
-            self.crimes_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                                  edr_config.crimes_max_age())
+        self.sitreps_cache = LRUCache.load(
+            file_path=self.EDR_SITREPS_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.sitreps_max_age()
+        )
 
-        try:
-            with open(self.EDR_FC_REPORTS_CACHE, 'rb') as handle:
-                self.fc_reports_cache = pickle.load(handle)
-        except:
-            self.fc_reports_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                              edr_config.fc_reports_max_age())
+        self.crimes_cache = LRUCache.load(
+            file_path=self.EDR_CRIMES_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.crimes_max_age()
+        )
 
-        try:
-            with open(self.EDR_FC_PRESENCE_CACHE, 'rb') as handle:
-                self.fc_presence_cache = pickle.load(handle)
-        except:
-            self.fc_presence_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                              edr_config.fc_presence_max_age())
+        # --- EDR Fleet Carrier (FC) Caches ---
+        self.fc_reports_cache = LRUCache.load(
+            file_path=self.EDR_FC_REPORTS_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.fc_reports_max_age()
+        )
 
-        try:
-            with open(self.EDR_FC_MATERIALS_CACHE, 'rb') as handle:
-                self.fc_materials_cache = pickle.load(handle)
-        except:
-            self.fc_materials_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                              edr_config.fc_materials_max_age())
-            
-        try:
-            with open(self.EDR_FCS_CACHE, 'rb') as handle:
-                self.fcs_cache = pickle.load(handle)
-        except:
-            self.fcs_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                              edr_config.fc_max_age())
-            
-        try:
-            with open(self.EDR_TRAFFIC_CACHE, 'rb') as handle:
-                self.traffic_cache = pickle.load(handle)
-        except:
-            self.traffic_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                                  edr_config.traffic_max_age())
+        self.fc_presence_cache = LRUCache.load(
+            file_path=self.EDR_FC_PRESENCE_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.fc_presence_max_age()
+        )
 
-        try:
-            with open(self.EDSM_SYSTEMS_CACHE, 'rb') as handle:
-                self.edsm_systems_cache = pickle.load(handle)
-        except:
-            self.edsm_systems_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                                  edr_config.edsm_systems_max_age())
+        self.fc_materials_cache = LRUCache.load(
+            file_path=self.EDR_FC_MATERIALS_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.fc_materials_max_age()
+        )
 
-        try:
-            with open(self.EDSM_BODIES_CACHE, 'rb') as handle:
-                self.edsm_bodies_cache = pickle.load(handle)
-        except:
-            self.edsm_bodies_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                                  edr_config.edsm_bodies_max_age())
-                                            
-        try:
-            with open(self.EDSM_STATIONS_CACHE, 'rb') as handle:
-                self.edsm_stations_cache = pickle.load(handle)
-        except:
-            self.edsm_stations_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                                  edr_config.edsm_stations_max_age())
+        self.fcs_cache = LRUCache.load(
+            file_path=self.EDR_FCS_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.fc_max_age()
+        )
 
-        try:
-            with open(self.EDSM_SYSTEMS_WITHIN_RADIUS_CACHE, 'rb') as handle:
-                self.edsm_systems_within_radius_cache = pickle.load(handle)
-        except:
-            self.edsm_systems_within_radius_cache = lrucache.LRUCache(edr_config.edsm_within_radius_max_size(),
-                                                  edr_config.edsm_systems_max_age())
+        self.traffic_cache = LRUCache.load(
+            file_path=self.EDR_TRAFFIC_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.traffic_max_age()
+        )
 
-        try:
-            with open(self.EDSM_TRAFFIC_CACHE, 'rb') as handle:
-                self.edsm_traffic_cache = pickle.load(handle)
-        except:
-            self.edsm_traffic_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                                  edr_config.edsm_traffic_max_age())
+        # --- EDSM Caches ---
+        self.edsm_systems_cache = LRUCache.load(
+            file_path=self.EDSM_SYSTEMS_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.edsm_systems_max_age()
+        )
 
-        try:
-            with open(self.EDSM_MARKETS_CACHE, 'rb') as handle:
-                self.edsm_markets_cache = pickle.load(handle)
-        except:
-            self.edsm_markets_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                                  edr_config.edsm_markets_max_age())
+        self.edsm_bodies_cache = LRUCache.load(
+            file_path=self.EDSM_BODIES_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.edsm_bodies_max_age()
+        )
 
-        try:
-            with open(self.EDSM_SHIPYARDS_CACHE, 'rb') as handle:
-                self.edsm_shipyards_cache = pickle.load(handle)
-        except:
-            self.edsm_shipyards_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                                  edr_config.edsm_shipyards_max_age())
+        self.edsm_stations_cache = LRUCache.load(
+            file_path=self.EDSM_STATIONS_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.edsm_stations_max_age()
+        )
 
-        try:
-            with open(self.EDSM_OUTFITTING_CACHE, 'rb') as handle:
-                self.edsm_outfitting_cache = pickle.load(handle)
-        except:
-            self.edsm_outfitting_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                                  edr_config.edsm_outfitting_max_age())
+        # Note the different max_size config for this one:
+        self.edsm_systems_within_radius_cache = LRUCache.load(
+            file_path=self.EDSM_SYSTEMS_WITHIN_RADIUS_CACHE,
+            max_size=edr_config.edsm_within_radius_max_size(),
+            max_age_seconds=edr_config.edsm_systems_max_age()
+        )
 
-        try:
-            with open(self.EDSM_SYSTEM_VALUES_CACHE, 'rb') as handle:
-                self.edsm_system_values_cache = pickle.load(handle)
-        except:
-            self.edsm_system_values_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                                  edr_config.edsm_bodies_max_age()) # TODO proper max age value
-        
-        try:
-            with open(self.EDSM_DEATHS_CACHE, 'rb') as handle:
-                self.edsm_deaths_cache = pickle.load(handle)
-        except:
-            self.edsm_deaths_cache = lrucache.LRUCache(edr_config.lru_max_size(),
-                                                  edr_config.edsm_deaths_max_age())
+        self.edsm_traffic_cache = LRUCache.load(
+            file_path=self.EDSM_TRAFFIC_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.edsm_traffic_max_age()
+        )
 
-         
+        self.edsm_markets_cache = LRUCache.load(
+            file_path=self.EDSM_MARKETS_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.edsm_markets_max_age()
+        )
+
+        self.edsm_shipyards_cache = LRUCache.load(
+            file_path=self.EDSM_SHIPYARDS_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.edsm_shipyards_max_age()
+        )
+
+        self.edsm_outfitting_cache = LRUCache.load(
+            file_path=self.EDSM_OUTFITTING_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.edsm_outfitting_max_age()
+        )
+
+        # TODO Note: This line had a comment about the max_age, but we maintain the original logic for now.
+        self.edsm_system_values_cache = LRUCache.load(
+            file_path=self.EDSM_SYSTEM_VALUES_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.edsm_bodies_max_age()
+        )
+
+        self.edsm_deaths_cache = LRUCache.load(
+            file_path=self.EDSM_DEATHS_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.edsm_deaths_max_age()
+        ) 
 
         self.reports_check_interval = edr_config.reports_check_interval()
         self.notams_check_interval = edr_config.notams_check_interval()
@@ -213,91 +193,163 @@ class EDRSystems(object):
     def system_id(self, star_system, may_create=False, coords=None):
         if not star_system:
             return None
+
+        key = star_system.lower()
+        profile = None
+        call_server = False
         
-        system = self.systems_cache.get(star_system.lower())
-        cached = self.systems_cache.has_key(star_system.lower())
-        if cached and system is None:
-            EDR_LOG.log(u"Temporary entry for System {} in the cache".format(star_system), "DEBUG")
-            return None
+        # --- Step 1: Cache Check (Decision-Making Block) ---
+        if self.systems_cache.has_key(key) and not self.systems_cache.is_stale(key):
+            profile = self.systems_cache.peek(key)
+            
+            if profile is None:
+                EDR_LOG.log(u"Negative cache entry for System {} is fresh.".format(star_system), "DEBUG")
+                return profile
 
-        # Helper function to safely extract and validate the system ID
-        def get_and_validate_sid(system_dict, star_system_name):
-            if not system_dict or not isinstance(system_dict, dict):
-                return None
-            
-            # The expected ID is the only key
-            sid = list(system_dict.keys())[0] if system_dict.keys() else None
-            
+            sid = self._get_and_validate_sid(profile, star_system)
             if not sid:
-                return None
-            
-            # 1. Check if the key is the literal system name (an unexpected placeholder)
-            if sid.lower() == star_system_name.lower():
-                EDR_LOG.log(u"Rejected potential system ID (matches system name): {}".format(sid), "WARNING")
-                return None
-                
-            # 2. Check if the key looks like an internal/common field name
-            if sid.lower() in ["name", "id", "system"]:
-                EDR_LOG.log(u"Rejected potential system ID (matches internal field): {}".format(sid), "WARNING")
-                return None
-            
-            return sid
-
-        if cached and system:
-            sid = get_and_validate_sid(system, star_system)
-            
-            if not sid: # If validation failed, treat as if system was not found
-                self.systems_cache.evict(star_system.lower())
+                self.systems_cache.evict(key)
                 EDR_LOG.log(u"Cached system {} had an invalid SID. Evicting cache entry.".format(star_system), "ERROR")
-                # Fall through to server fetch below
+                call_server = True
+            elif may_create and coords and not "coords" in profile.get(sid, {}):
+                EDR_LOG.log(u"Cached system {} is missing coordinates. Forcing update.".format(star_system), "ERROR")
+                call_server = True
+            else:
+                EDR_LOG.log(u"System {} is in the cache with id={}".format(star_system, sid), "DEBUG")
+                return sid
+        else:
+            # Data is missing, stale, or evicted. Must call server.
+            call_server = True
+            if self.systems_cache.has_key(key):
+                # Peek the profile for potential fallback.
+                profile = self.systems_cache.peek(key)
+        
+        # --- Step 2: Server Call (Action-Taking Block) --- 
+        updated_system = None
+        if call_server:
+            EDR_LOG.log(u"Fetching system info for {} from EDR server.".format(star_system), "INFO")
+            try:
+                updated_system = self.server.system(star_system, may_create, coords)
+            except Exception as e:
+                EDR_LOG.log(f"Comms jammed/Failed to fetch system ID for {star_system}: {e}", "WARNING")
+                
+                # Stale Fallback Logic: Use 'profile' peeked in step 1 if server fails.
+                if profile and profile is not None:
+                    self.systems_cache.refresh(key)
+                    EDR_LOG.log(u"Server failed. Re-using and refreshing stale system info.", "INFO")
+                    # Need to validate the stale profile again before returning it
+                    return self._get_and_validate_sid(profile, star_system)
+        
+        # --- Step 3: Success / Negative Caching Logic ---
+        
+        if updated_system:
+            # Server succeeded. Cache new data and return validated SID.
+            self.systems_cache.set(key, updated_system)
+            sid = self._get_and_validate_sid(updated_system, star_system)
 
-            # If sid is valid, continue with the rest of the block
-            elif may_create and coords and not "coords" in system[sid]:
-                EDR_LOG.log(u"System {} is in the cache with id={} but missing coords".format(star_system, sid), "DEBUG")
-                system = self.server.system(star_system, may_create, coords)
-                if system:
-                    self.systems_cache.set(star_system.lower(), system)
-                    sid = list(system)[0]
-            return sid
-
-        # TODO handle commsjammederror... everywhere...
-        system = self.server.system(star_system, may_create, coords)
-        if system:
-            self.systems_cache.set(star_system.lower(), system)
-            sid = get_and_validate_sid(system, star_system) # Use the validation function
-            
             if sid:
                 EDR_LOG.log(u"Cached {}'s info with id={}".format(star_system, sid), "DEBUG")
                 return sid
             else:
-                EDR_LOG.log(u"Server returned a system for {} but the ID was invalid.".format(star_system), "ERROR")
-
-        self.systems_cache.set(star_system.lower(), None)
-        EDR_LOG.log(u"No match on EDR. Temporary entry to be nice on EDR's server.", "DEBUG")
+                # Server returned data, but it failed validation (e.g., mismatched name, odd ID).
+                EDR_LOG.log(u"Server returned a system for {} but the ID was invalid. Treating as no match.".format(star_system), "ERROR")
+                # Fall through to negative cache
+        
+        # Final cleanup: Cache failure/no match as None (Negative Caching)
+        self.systems_cache.set(key, None)
+        EDR_LOG.log(u"No match on EDR/Server failed. Setting temporary None entry.", "DEBUG")
         return None
+
+    # Helper function to safely extract and validate the system ID
+    def _get_and_validate_sid(self, system_dict, star_system_name):
+        if not system_dict or not isinstance(system_dict, dict):
+            return None
+        
+        # The expected ID is the only key
+        sid = list(system_dict.keys())[0] if system_dict.keys() else None
+        
+        if not sid:
+            return None
+        
+        # 1. Check if the key is the literal system name (an unexpected placeholder)
+        if sid.lower() == star_system_name.lower():
+            EDR_LOG.log(u"Rejected potential system ID (matches system name): {}".format(sid), "WARNING")
+            return None
+            
+        # 2. Check if the key looks like an internal/common field name
+        if sid.lower() in ["name", "id", "system"]:
+            EDR_LOG.log(u"Rejected potential system ID (matches internal field): {}".format(sid), "WARNING")
+            return None
+        
+        return sid
 
     def fc_id(self, callsign, name, star_system, may_create=False):
         if not callsign:
             return None
-        fc = self.fcs_cache.get(callsign.lower())
-        cached = self.fcs_cache.has_key(callsign.lower())
-        if cached and fc is None:
-            EDR_LOG.log(u"Temporary entry for FC {} in the cache".format(callsign), "DEBUG")
-            return None
+        
+        key = callsign.lower()
 
-        if cached and fc:
-            fcid = list(fc)[0]
-            return fcid
+        # --- Step 1: Cache Check (Decision-Making Block) ---
+        if self.fcs_cache.has_key(key):
+            
+            # Check for freshness first. If fresh, handle it immediately.
+            if not self.fcs_cache.is_stale(key):
+                profile = self.fcs_cache.peek(key)
+                
+                if profile is None:
+                    # A. Fresh Negative Cache Hit (FC known not to exist). Immediate return.
+                    EDR_LOG.log(u"Negative cache entry for FC {} is fresh.".format(callsign), "DEBUG")
+                    return None # Returns None (the FC ID equivalent of "no match")
 
-        fc = self.server.fc(callsign, name, star_system,  may_create)
-        if fc:
-            self.fcs_cache.set(callsign.lower(), fc)
-            fcid = list(fc)[0]
-            EDR_LOG.log(u"Cached {}'s info with id={}".format(callsign, fcid), "DEBUG")
-            return fcid
+                # B. Fresh FC data hit. Extract and return the ID.
+                fcid = list(profile.keys())[0] if profile.keys() else None
+                if fcid:
+                    EDR_LOG.log(u"FC {} is in the cache with id={}".format(callsign, fcid), "DEBUG")
+                    return fcid
+                
+                # If fresh but contains invalid data (no key/ID), fall through to server call.
+                EDR_LOG.log(u"Cached FC {} had an invalid ID format. Forcing server lookup.".format(callsign), "ERROR")
+                self.fcs_cache.evict(key) # Evict the bad data
 
-        self.fcs_cache.set(callsign.lower(), None)
-        EDR_LOG.log(u"No match on EDR. Temporary entry to be nice on EDR's server.", "DEBUG")
+        # --- Step 2: Server Call (Action-Taking Block) ---
+        
+        # Note: If cache check above returned, we skip this block entirely.
+        # Otherwise, data is missing, stale, or was invalid.
+        
+        updated_fc = None
+        stale_profile = self.fcs_cache.peek(key) # Get stale profile for potential fallback
+        
+        try:
+            EDR_LOG.log(u"Fetching FC info for {} from EDR server.".format(callsign), "INFO")
+            updated_fc = self.server.fc(callsign, name, star_system, may_create)
+        except Exception as e:
+            EDR_LOG.log(f"Comms jammed/Failed to fetch FC ID for {callsign}: {e}", "WARNING")
+            
+            # Stale Fallback Logic: Use 'stale_profile' if server fails.
+            if stale_profile and stale_profile is not None:
+                self.fcs_cache.refresh(key)
+                fcid = list(stale_profile.keys())[0] if stale_profile.keys() else None
+                if fcid:
+                    EDR_LOG.log(u"Server failed. Re-using and refreshing stale FC info for ID={}".format(fcid), "INFO")
+                    return fcid
+
+        # --- Step 3: Success / Negative Caching Logic ---
+        
+        if updated_fc:
+            # Server succeeded. Cache new data and return validated ID.
+            self.fcs_cache.set(key, updated_fc)
+            fcid = list(updated_fc.keys())[0] if updated_fc.keys() else None
+
+            if fcid:
+                EDR_LOG.log(u"Cached {}'s info with id={}".format(callsign, fcid), "DEBUG")
+                return fcid
+            else:
+                EDR_LOG.log(u"Server returned FC data for {} but no ID was found. Treating as no match.".format(callsign), "ERROR")
+                # Fall through to negative cache
+        
+        # Final cleanup: Cache failure/no match as None (Negative Caching)
+        self.fcs_cache.set(key, None)
+        EDR_LOG.log(u"No match on EDR/Server failed. Setting temporary None entry.", "DEBUG")
         return None
 
     def are_bodies_stale(self, star_system):
@@ -347,56 +399,59 @@ class EDRSystems(object):
         return None
 
     def persist(self):
-        with open(self.EDR_SYSTEMS_CACHE, 'wb') as handle:
-            pickle.dump(self.systems_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        with open(self.EDR_RAW_MATERIALS_CACHE, 'wb') as handle:
-            pickle.dump(self.materials_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        with open(self.EDR_NOTAMS_CACHE, 'wb') as handle:
-            pickle.dump(self.notams_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        # --- EDR Caches ---
+        if self.systems_cache:
+            self.systems_cache.save(self.EDR_SYSTEMS_CACHE)
         
-        with open(self.EDR_SITREPS_CACHE, 'wb') as handle:
-            pickle.dump(self.sitreps_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        if self.materials_cache:
+            self.materials_cache.save(self.EDR_RAW_MATERIALS_CACHE)
         
-        with open(self.EDR_TRAFFIC_CACHE, 'wb') as handle:
-            pickle.dump(self.traffic_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        with open(self.EDR_CRIMES_CACHE, 'wb') as handle:
-            pickle.dump(self.crimes_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        with open(self.EDR_FC_REPORTS_CACHE, 'wb') as handle:
-            pickle.dump(self.fc_reports_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        with open(self.EDR_FC_MATERIALS_CACHE, 'wb') as handle:
-            pickle.dump(self.fc_materials_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        if self.notams_cache:
+            self.notams_cache.save(self.EDR_NOTAMS_CACHE)
         
-        with open(self.EDR_FC_PRESENCE_CACHE, 'wb') as handle:
-            pickle.dump(self.fc_presence_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        with open(self.EDR_FCS_CACHE, 'wb') as handle:
-            pickle.dump(self.fcs_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        with open(self.EDSM_SYSTEMS_CACHE, 'wb') as handle:
-            pickle.dump(self.edsm_systems_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        if self.sitreps_cache:
+            self.sitreps_cache.save(self.EDR_SITREPS_CACHE)
         
-        with open(self.EDSM_BODIES_CACHE, 'wb') as handle:
-            pickle.dump(self.edsm_bodies_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        if self.traffic_cache:
+            self.traffic_cache.save(self.EDR_TRAFFIC_CACHE)
         
-        with open(self.EDSM_SYSTEM_VALUES_CACHE, 'wb') as handle:
-            pickle.dump(self.edsm_system_values_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        with open(self.EDSM_STATIONS_CACHE, 'wb') as handle:
-            pickle.dump(self.edsm_stations_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        with open(self.EDSM_SYSTEMS_WITHIN_RADIUS_CACHE, 'wb') as handle:
-            pickle.dump(self.edsm_systems_within_radius_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        with open(self.EDSM_TRAFFIC_CACHE, 'wb') as handle:
-            pickle.dump(self.edsm_traffic_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        with open(self.EDSM_DEATHS_CACHE, 'wb') as handle:
-            pickle.dump(self.edsm_deaths_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        if self.crimes_cache:
+            self.crimes_cache.save(self.EDR_CRIMES_CACHE)
+        
+        # --- EDR Fleet Carrier (FC) Caches ---
+        if self.fc_reports_cache:
+            self.fc_reports_cache.save(self.EDR_FC_REPORTS_CACHE)
+        
+        if self.fc_materials_cache:
+            self.fc_materials_cache.save(self.EDR_FC_MATERIALS_CACHE)
+        
+        if self.fc_presence_cache:
+            self.fc_presence_cache.save(self.EDR_FC_PRESENCE_CACHE)
+        
+        if self.fcs_cache:
+            self.fcs_cache.save(self.EDR_FCS_CACHE)
+        
+        # --- EDSM Caches ---
+        if self.edsm_systems_cache:
+            self.edsm_systems_cache.save(self.EDSM_SYSTEMS_CACHE)
+        
+        if self.edsm_bodies_cache:
+            self.edsm_bodies_cache.save(self.EDSM_BODIES_CACHE)
+        
+        if self.edsm_system_values_cache:
+            self.edsm_system_values_cache.save(self.EDSM_SYSTEM_VALUES_CACHE)
+        
+        if self.edsm_stations_cache:
+            self.edsm_stations_cache.save(self.EDSM_STATIONS_CACHE)
+        
+        if self.edsm_systems_within_radius_cache:
+            self.edsm_systems_within_radius_cache.save(self.EDSM_SYSTEMS_WITHIN_RADIUS_CACHE)
+        
+        if self.edsm_traffic_cache:
+            self.edsm_traffic_cache.save(self.EDSM_TRAFFIC_CACHE)
+        
+        if self.edsm_deaths_cache:
+            self.edsm_deaths_cache.save(self.EDSM_DEATHS_CACHE)
 
     def distance(self, source_system, destination_system):
         if source_system == destination_system:
@@ -2247,19 +2302,61 @@ class EDRSystems(object):
         return False
 
     def recent_crimes(self, star_system):
+        # 1. Get the system ID key
         sid = self.system_id(star_system)
         if not sid:
             return None
-        recent_crimes = None
+        
+        key = sid # Use the System ID as the cache key
+
+        # --- Step 1: Cache Check (Decision-Making Block) ---
+        
+        # Check for freshness first. If fresh, handle it immediately.
+        if self.crimes_cache.has_key(key) and not self.crimes_cache.is_stale(key):
+            recent_crimes = self.crimes_cache.peek(key)
+            
+            # If the cached value is an empty list or the actual crime list, return it.
+            # Note: We assume the profile stored is the list of crimes itself (could be [] or a list of dicts).
+            if recent_crimes is not None:
+                EDR_LOG.log(u"Returning fresh crime data for SID {}".format(key), "DEBUG")
+                return recent_crimes
+            
+            # If profile is None, this implies a negative cache entry that needs eviction (unless we decide to allow None cache entries here).
+            # Since we want to cache '[]', we treat a cached 'None' as invalid for this data type and evict.
+            self.crimes_cache.evict(key)
+            
+        # --- Step 2: Server Call (Action-Taking Block) ---
+
+        updated_crimes = None
+        stale_profile = self.crimes_cache.peek(key) # Get stale profile for potential fallback
+        
+        # Only make the server call if the external 'has_recent_crimes' check passes or if the key is missing/stale
         if self.has_recent_crimes(star_system):
-            if not self.crimes_cache.has_key(sid) or (self.crimes_cache.has_key(sid) and self.crimes_cache.is_stale(sid)):
-                recent_crimes = self.server.recent_crimes(sid, self.timespan)
-                # TODO should still cache if the answer is no crimes (empty array)...
-                if recent_crimes:
-                    self.crimes_cache.set(sid, recent_crimes)
-            else:
-                recent_crimes = self.crimes_cache.get(sid)
-        return recent_crimes
+            try:
+                EDR_LOG.log(u"Fetching recent crimes for {} (SID {}) from EDR server.".format(star_system, key), "INFO")
+                # Note: The server call uses SID, but the timespan is also a factor in the cache TTL
+                updated_crimes = self.server.recent_crimes(key, self.timespan) 
+            except Exception as e:
+                EDR_LOG.log(f"Comms jammed/Failed to fetch crimes for {star_system}: {e}", "WARNING")
+                
+                # Stale Fallback Logic: Use 'stale_profile' if server fails.
+                if stale_profile is not None:
+                    self.crimes_cache.refresh(key)
+                    EDR_LOG.log(u"Server failed. Re-using and refreshing stale crime info.", "INFO")
+                    return stale_profile
+        
+        # --- Step 3: Final Caching and Return ---
+        
+        if updated_crimes is not None:
+            # Cache either the list of crimes (list[dict]) OR the empty list ([]), 
+            # addressing the original TODO.
+            self.crimes_cache.set(key, updated_crimes)
+            EDR_LOG.log(u"Cached {} crime entries for SID {}".format(len(updated_crimes), key), "DEBUG")
+            return updated_crimes
+        
+        # If the server call was skipped (due to self.has_recent_crimes failing) or 
+        # if it failed and there was no stale data, we return None.
+        return None
 
     def has_recent_traffic(self, star_system):
         if self.has_sitrep(star_system):
@@ -2273,18 +2370,64 @@ class EDRSystems(object):
         return False
 
     def recent_traffic(self, star_system):
+        # 1. Get the system ID key
         sid = self.system_id(star_system)
         if not sid:
             return None
-        recent_traffic = None
+        
+        key = sid # Use the System ID as the cache key
+
+        # --- Step 1: Cache Check (Decision-Making Block) ---
+        
+        # Check for freshness first. If fresh, handle it immediately.
+        if self.traffic_cache.has_key(key) and not self.traffic_cache.is_stale(key):
+            recent_traffic = self.traffic_cache.peek(key)
+            
+            # If the cached value is a traffic count, empty list/zero, or None (negative cache), return it.
+            # We assume 'None' or an empty response means 'no traffic data' and should be cached.
+            if recent_traffic is not None:
+                EDR_LOG.log(u"Returning fresh traffic data for SID {}".format(key), "DEBUG")
+                return recent_traffic
+            
+            # Note: If recent_traffic is None, and we are not supposed to cache None, 
+            # we'd fall through to Step 2. Assuming 'None' means 'no result' and 
+            # is functionally stale if found fresh (unless cached by design, which 
+            # we are changing to cache a default/empty value instead of None).
+            
+        # --- Step 2: Server Call (Action-Taking Block) ---
+
+        updated_traffic = None
+        stale_profile = self.traffic_cache.peek(key) # Get stale profile for potential fallback
+        
+        # Only make the server call if the external 'has_recent_traffic' check passes
         if self.has_recent_traffic(star_system):
-            if not self.traffic_cache.has_key(sid) or (self.traffic_cache.has_key(sid) and self.traffic_cache.is_stale(sid)):
-                recent_traffic = self.server.recent_traffic(sid, self.timespan)
-                if recent_traffic is not None:
-                    self.traffic_cache.set(sid, recent_traffic)
-            else:
-                recent_traffic = self.traffic_cache.get(sid)
-        return recent_traffic
+            try:
+                EDR_LOG.log(u"Fetching recent traffic for {} (SID {}) from EDR server.".format(star_system, key), "INFO")
+                # Note: The timespan is used in the request
+                updated_traffic = self.server.recent_traffic(key, self.timespan) 
+            except Exception as e:
+                EDR_LOG.log(f"Comms jammed/Failed to fetch traffic for {star_system}: {e}", "WARNING")
+                
+                # Stale Fallback Logic: Use 'stale_profile' if server fails.
+                if stale_profile is not None:
+                    self.traffic_cache.refresh(key)
+                    EDR_LOG.log(u"Server failed. Re-using and refreshing stale traffic info.", "INFO")
+                    return stale_profile
+        
+        # --- Step 3: Final Caching and Return ---
+        
+        # We must ensure we cache the traffic result, even if it's zero or an empty container, 
+        # but only if the server call actually returned something (i.e., didn't fail/comm jam).
+        if updated_traffic is not None:
+            # Cache the result. This handles non-zero traffic counts, zero counts, 
+            # or empty containers ([]), preventing redundant server calls.
+            self.traffic_cache.set(key, updated_traffic)
+            EDR_LOG.log(u"Cached traffic data for SID {}".format(key), "DEBUG")
+            return updated_traffic
+        
+        # If the server call was skipped (due to self.has_recent_traffic failing) or 
+        # if it failed and there was no stale data, we return None.
+        return None
 
     def summarize_deaths_traffic(self, star_system):
         if not star_system:
@@ -2402,41 +2545,57 @@ class EDRSystems(object):
         return summary
 
     def recent_outlaws(self, star_system, max_age=3600):
+        recent_traffic = self.recent_traffic(star_system)
+        recent_crimes = self.recent_crimes(star_system)
+
         outlaws = {}
-        if self.has_recent_traffic(star_system):
-            recent_traffic = self.recent_traffic(star_system)
-            if recent_traffic is not None: # Should always be true... simplify. TODO
-                for traffic in recent_traffic:
-                    previous_timestamp = outlaws[traffic["cmdr"]][0] if traffic["cmdr"] in outlaws else 0
-                    if traffic["timestamp"] < previous_timestamp:
-                        continue
-                    if not self.is_recent(traffic["timestamp"], max_age*1000):
-                        continue
-                    karma = traffic.get("karma", 0)
-                    if not karma > 0:
-                        karma = min(karma, traffic.get("dkarma", 0))
-                    bounty = EDFineOrBounty(traffic.get("bounty", 0))
-                    if karma <= -100 or bounty.is_significant():
-                        outlaws[traffic["cmdr"]] = [ traffic["timestamp"], karma ]
-        
-        if self.has_recent_crimes(star_system):
-            recent_crimes = self.recent_crimes(star_system)
-            if recent_crimes is not None: # Should always be true... simplify. TODO
-                for crime in recent_crimes:
-                    for criminal in crime["criminals"]:
-                        previous_timestamp = outlaws[criminal["name"]][0] if criminal["name"] in outlaws else 0
-                        if previous_timestamp > crime["timestamp"]:
-                            continue
-                        if not self.is_recent(crime["timestamp"], max_age*1000):
-                            continue
-                        karma = criminal.get("karma", 0)
-                        if not karma > 0:
-                            karma = min(karma, criminal.get("dkarma", 0))
-                        bounty = EDFineOrBounty(criminal.get("bounty", 0))
-                        if karma <= -100 or bounty.is_significant():
-                            outlaws[criminal["name"]] = [ crime["timestamp"], karma]
+        age_ms = max_age * 1000
+
+        if recent_traffic is not None:
+            for traffic in recent_traffic:
+                cmdr_name = traffic["cmdr"]
+                timestamp = traffic["timestamp"]
+
+                previous_timestamp = outlaws.get(cmdr_name, [0])[0]
+                if timestamp < previous_timestamp:
+                    continue
                 
+                if not self.is_recent(timestamp, age_ms):
+                    continue
+                
+                karma = traffic.get("karma", 0)
+                if not karma > 0:
+                    karma = min(karma, traffic.get("dkarma", 0))
+                
+                bounty = EDFineOrBounty(traffic.get("bounty", 0))
+                
+                if karma <= -100 or bounty.is_significant():
+                    outlaws[cmdr_name] = [timestamp, karma]
+    
+        if recent_crimes is not None:
+            for crime in recent_crimes:
+                for criminal in crime["criminals"]:
+                    cmdr_name = criminal["name"]
+                    timestamp = crime["timestamp"]
+
+                    previous_timestamp = outlaws.get(cmdr_name, [0])[0]
+                    if timestamp < previous_timestamp:
+                        continue
+                    
+                    if not self.is_recent(timestamp, age_ms):
+                        continue
+                    
+                    karma = criminal.get("karma", 0)
+                    if not karma > 0:
+                        karma = min(karma, criminal.get("dkarma", 0))
+                    
+                    bounty = EDFineOrBounty(criminal.get("bounty", 0))
+                    
+                    if karma <= -100 or bounty.is_significant():
+                        outlaws[cmdr_name] = [timestamp, karma]
+        
         outlaws = collections.OrderedDict(sorted(outlaws.items(), key=lambda kv: kv[1][0], reverse=True))
+
         return outlaws.keys()
 
     def search_interstellar_factors(self, star_system, callback, with_large_pad = True, with_medium_pad = False, override_radius = None, override_sc_distance = None, permits = []):
@@ -2638,30 +2797,44 @@ class EDRSystems(object):
 
     def __update_if_stale(self):
         updated = False
+
         if self.__are_reports_stale():
             missing_seconds = self.timespan
             now = datetime.datetime.now()
-            if self.sitreps_cache.last_updated:
-                missing_seconds = min(self.timespan, (now - self.sitreps_cache.last_updated).total_seconds())
-            sitreps = self.server.sitreps(missing_seconds)
-            if sitreps:
-                for system_id in sitreps:
-                    self.sitreps_cache.set(system_id, sitreps[system_id])
-            self.sitreps_cache.last_updated = now
-            updated = True
+
+            try:
+                if self.sitreps_cache.last_updated:
+                    missing_seconds = min(self.timespan, (now - self.sitreps_cache.last_updated).total_seconds())
+                
+                sitreps = self.server.sitreps(missing_seconds)
+                
+                if sitreps:
+                    for system_id in sitreps:
+                        self.sitreps_cache.set(system_id, sitreps[system_id])
+                self.sitreps_cache.last_updated = now
+                updated = True
+
+            except Exception as e:
+                EDR_LOG.log("Failed to fetch/update sitreps: {}".format(e), "WARNING")
 
         if self.__are_notams_stale():
             missing_seconds = self.timespan_notams
             now = datetime.datetime.now()
-            if self.notams_cache.last_updated:
-                missing_seconds = min(self.timespan_notams, (now - self.notams_cache.last_updated).total_seconds())
+            
+            try:
+                if self.notams_cache.last_updated:
+                    missing_seconds = min(self.timespan_notams, (now - self.notams_cache.last_updated).total_seconds())
 
-            notams = self.server.notams(missing_seconds)
-            if notams:
-                for system_id in notams:
-                    self.notams_cache.set(system_id, notams[system_id])
-            self.notams_cache.last_updated = now
-            updated = True
+                notams = self.server.notams(missing_seconds)
+                
+                if notams:
+                    for system_id in notams:
+                        self.notams_cache.set(system_id, notams[system_id])
+                
+                self.notams_cache.last_updated = now
+                updated = True
+            except Exception as e:
+                EDR_LOG.log("Failed to fetch/update notams: {}".format(e), "WARNING")
 
         return updated
 

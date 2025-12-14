@@ -93,5 +93,100 @@ class TestEDRCmdrDexProfile(TestCase):
         self.assertEqual(sample.created, created)
         
 
+    def test_iff(self):
+        sample = EDRCmdrDexProfile()
+        created = sample.created
+        
+        sample.iff = u"enemy"
+        self.assertEqual(sample.iff, u"enemy")
+        now = EDTime.js_epoch_now()
+        self.assertAlmostEqual(sample.updated/100.0, now/100.0, 1)
+
+        sample.iff = u"ally"
+        self.assertEqual(sample.iff, u"ally")
+        self.assertTrue(sample.is_ally())
+
+        sample.iff = None
+        self.assertIsNone(sample.iff)
+        self.assertFalse(sample.is_ally())
+
+        # Invalid IFF should be ignored
+        current = sample.iff
+        sample.iff = "invalid"
+        self.assertEqual(sample.iff, current)
+
+    def test_friend(self):
+        sample = EDRCmdrDexProfile()
+        self.assertFalse(sample.friend)
+        
+        sample.friend = True
+        self.assertTrue(sample.friend)
+        now = EDTime.js_epoch_now()
+        self.assertAlmostEqual(sample.updated/100.0, now/100.0, 1)
+
+        sample.friend = False
+        self.assertFalse(sample.friend)
+
+    def test_memo(self):
+        sample = EDRCmdrDexProfile()
+        self.assertIsNone(sample.memo)
+
+        sample.memo = "Test"
+        self.assertEqual(sample.memo, "Test")
+        now = EDTime.js_epoch_now()
+        self.assertAlmostEqual(sample.updated/100.0, now/100.0, 1)
+
+    def test_tag(self):
+        sample = EDRCmdrDexProfile()
+        
+        # Tag as friend
+        self.assertTrue(sample.tag("friend"))
+        self.assertTrue(sample.friend)
+
+        # Tag alignment
+        self.assertTrue(sample.tag("outlaw"))
+        self.assertEqual(sample.alignment, "outlaw")
+
+        # Tag IFF
+        self.assertTrue(sample.tag("enemy"))
+        self.assertEqual(sample.iff, "enemy")
+
+        # Generic tags
+        self.assertTrue(sample.tag("griefer"))
+        self.assertIn("griefer", sample.tags)
+        
+        # Duplicate tag
+        self.assertFalse(sample.tag("griefer"))
+
+        # Case insensitivity / whitespace
+        self.assertTrue(sample.tag("Combat Logger"))
+        self.assertIn("combatlogger", sample.tags)
+
+    def test_untag(self):
+        sample = EDRCmdrDexProfile()
+        sample.tag("friend")
+        sample.tag("outlaw")
+        sample.tag("enemy")
+        sample.tag("griefer")
+
+        # Untag friend
+        self.assertTrue(sample.untag("friend"))
+        self.assertFalse(sample.friend)
+
+        # Untag alignment
+        self.assertTrue(sample.untag("outlaw"))
+        self.assertIsNone(sample.alignment)
+
+        # Untag IFF
+        self.assertTrue(sample.untag("enemy"))
+        self.assertIsNone(sample.iff)
+
+        # Untag generic
+        self.assertTrue(sample.untag("griefer"))
+        self.assertNotIn("griefer", sample.tags)
+
+        # Untag non-existent
+        self.assertFalse(sample.untag("missing"))
+
 if __name__ == '__main__':
     main()

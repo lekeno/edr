@@ -2,17 +2,14 @@
 import datetime
 import time
 import os
-import pickle
+from collections import deque
 
 from lrucache import LRUCache
 from edrconfig import EDRConfig
 from edrlog import EDR_LOG
 from edtime import EDTime
-from collections import deque
 from edentities import EDFineOrBounty
 from edri18n import _, _c
-
-
 
 
 class EDRLegalRecords(object):
@@ -24,25 +21,30 @@ class EDRLegalRecords(object):
         self.timespan = None
         self.records_check_interval = None
         config = EDRConfig()
-        try:
-            with open(self.EDR_LEGAL_RECORDS_CACHE, 'rb') as handle:
-                self.records = pickle.load(handle)
-        except:
-            self.records = LRUCache(config.lru_max_size(), config.legal_records_max_age())
+
+        self.records = LRUCache.load(
+            file_path=self.EDR_LEGAL_RECORDS_CACHE,
+            max_size=config.lru_max_size(),
+            max_age_seconds=config.legal_records_max_age()
+        )
         
         self.timespan = config.legal_records_recent_threshold()
         self.records_check_interval = config.legal_records_check_interval()
     
     def persist(self):
-        with open(self.EDR_LEGAL_RECORDS_CACHE, 'wb') as handle:
-            pickle.dump(self.records, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        if self.records:
+            self.records.save(self.EDR_LEGAL_RECORDS_CACHE)
     
     def summarize(self, cmdr_id):
         if not cmdr_id:
             EDR_LOG.log(u"No cmdr_id, no records for {}".format(cmdr_id), "INFO")
             return None
+        
         self.__update_records_if_stale(cmdr_id)
-        records = self.records.get(cmdr_id)["records"] if self.records.has_key(cmdr_id) else None
+
+        record_entry = self.records.peek(cmdr_id)
+        records = record_entry.get("records") if record_entry and isinstance(record_entry, dict) else None
+        
         if not records:
             EDR_LOG.log(u"No legal records for {}".format(cmdr_id), "INFO")
             return None
@@ -53,6 +55,7 @@ class EDRLegalRecords(object):
         timespan = EDTime.pretty_print_timespan(self.timespan, short=True, verbose=True)
         maxB = u""
         lastB = u""
+        
         if recent_stats["maxBounty"]:
             max_bounty = EDFineOrBounty(recent_stats["maxBounty"]).pretty_print()
             maxB = _(u", max={} cr").format(max_bounty)
@@ -67,22 +70,35 @@ class EDRLegalRecords(object):
         return {"overview": overview, "clean": clean, "wanted": wanted, "bounties": bounties}
 
     def __are_records_stale_for_cmdr(self, cmdr_id):
-        if self.records.get(cmdr_id) is None:
+        record_entry = self.records.peek(cmdr_id)
+
+        if record_entry is None:
             return True
-        last_updated = self.records.get(cmdr_id)["last_updated"]
+        
+        last_updated = record_entry.get("last_updated")
+
+        if last_updated is None:
+            return True
+        
         now = datetime.datetime.now()
-        epoch_now = time.mktime(now.timetuple())
-        epoch_updated = time.mktime(last_updated.timetuple())
-        return (epoch_now - epoch_updated) > self.records_check_interval
+        time_since_update = (now - last_updated).total_seconds()
+        return time_since_update > self.records_check_interval
 
     
     def __update_records_if_stale(self, cmdr_id):
         updated = False
+
         if self.__are_records_stale_for_cmdr(cmdr_id):
-            now = datetime.datetime.now() 
-            records = self.server.legal_stats(cmdr_id)
-            self.records.set(cmdr_id, {"last_updated": now, "records": records})
-            updated = True
+            
+            try:
+                records = self.server.legal_stats(cmdr_id)
+                now = datetime.datetime.now() 
+                self.records.set(cmdr_id, {"last_updated": now, "records": records})
+                updated = True
+            
+            except Exception as e:
+                EDR_LOG.log(f"Failed to fetch/update records for {cmdr_id} - {e}", "ERROR")
+        
         return updated
 
     def __process(self, legal_stats):
@@ -135,16 +151,6 @@ class EDRLegalRecords(object):
     @staticmethod
     def __emptyMonthlyBag():
         return {
-            '0': None,
-            '1': None,
-            '2': None,
-            '3': None,
-            '4': None,
-            '5': None,
-            '6': None,
-            '7': None,
-            '8': None,
-            '9': None,
-            '10': None,
-            '11': None
+            '0': None, '1': None, '2': None, '3': None, '4': None, '5': None, 
+            '6': None, '7': None, '8': None, '9': None, '10': None, '11': None
         }

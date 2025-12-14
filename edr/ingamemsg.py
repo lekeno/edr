@@ -528,6 +528,12 @@ class InGameMsg(object):
         map_data = EDRLandables.map_for(system, station_name, station_type)
         if not map_data:
             return
+        
+        if station_type == "fleetcarrier":
+            # Squadron carriers are also labelled as fleetcarriers
+            # they have twice the number of landing pads, split in
+            # two groups with the same mapping
+            pad = pad % 16
 
         cfg = self.cfg[u"docking-station"]
         x = cfg["schema"]["x"]
@@ -778,7 +784,10 @@ class InGameMsg(object):
             39: [11,12,0,2,2], 40: [11,12,2,5,2],
         }
 
-        pad_loc = pad_lut[landing_pad]
+        pad_loc = pad_lut[landing_pad] if landing_pad in pad_lut else None
+        if pad_loc is None:
+            return
+
         points = []
         pad_scales = [scales[pad_loc[2]], scales[pad_loc[3]]]
         pad_scales[0] = pad_scales[0]-(pad_scales[0]-pad_scales[1])*.1

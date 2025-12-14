@@ -1,5 +1,4 @@
 import os
-import pickle
 import math
 
 from edrconfig import EDRConfig
@@ -453,38 +452,37 @@ class EDRFactions(object):
         edr_config = EDRConfig()
         self.edsm_server = edsm_server
 
-        try:
-            with open(self.EDR_FACTIONS_CACHE, 'rb') as handle:
-                self.factions_cache = pickle.load(handle)
-        except:
-            self.factions_cache = LRUCache(edr_config.lru_max_size(),
-                                                   edr_config.factions_max_age())
-            
-        try:
-            with open(self.EDR_CONTROLLING_FACTIONS_CACHE, 'rb') as handle:
-                self.controlling_factions_cache = pickle.load(handle)
-        except:
-            self.controlling_factions_cache = LRUCache(edr_config.lru_max_size(),
-                                                   edr_config.factions_max_age())
-            
-        try:
-            with open(self.EDSM_FACTIONS_CACHE, 'rb') as handle:
-                self.edsm_factions_cache = pickle.load(handle)
-        except:
-            self.edsm_factions_cache = LRUCache(edr_config.lru_max_size(),
-                                                  edr_config.edsm_factions_max_age())
+        self.factions_cache = LRUCache.load(
+            file_path=self.EDR_FACTIONS_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.factions_max_age()
+        )
+                
+        self.controlling_factions_cache = LRUCache.load(
+            file_path=self.EDR_CONTROLLING_FACTIONS_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.factions_max_age()
+        )
+                
+        self.edsm_factions_cache = LRUCache.load(
+            file_path=self.EDSM_FACTIONS_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.edsm_factions_max_age()
+        )
         
     def persist(self):
-        with open(self.EDR_FACTIONS_CACHE, 'wb') as handle:
-            pickle.dump(self.factions_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        # 1. Save EDR Factions Cache
+        if self.factions_cache:
+            self.factions_cache.save(self.EDR_FACTIONS_CACHE)
 
-        with open(self.EDR_CONTROLLING_FACTIONS_CACHE, 'wb') as handle:
-            pickle.dump(self.controlling_factions_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        # 2. Save EDR Controlling Factions Cache
+        if self.controlling_factions_cache:
+            self.controlling_factions_cache.save(self.EDR_CONTROLLING_FACTIONS_CACHE)
 
-        with open(self.EDSM_FACTIONS_CACHE, 'wb') as handle:
-            pickle.dump(self.edsm_factions_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-    
+        # 3. Save EDSM Factions Cache
+        if self.edsm_factions_cache:
+            self.edsm_factions_cache.save(self.EDSM_FACTIONS_CACHE)
+        
     def process(self, factions, star_system):
         factions_in_system = self.factions_cache.get(star_system.lower()) or {}
         
@@ -662,10 +660,10 @@ class EDRFactions(object):
         if edsm_more_recent and edsm_tracked != factions_in_system.keys():
             EDR_LOG.log("Pruning some factions. Seen in EDSM info={}; Local cache={}".format(edsm_tracked, factions_in_system.keys()), "DEBUG")
             remaining_factions_in_system = {n: factions_in_system[n] for n in edsm_tracked}
-            EDR_LOG.log("Updating local faction cache for {}".format(star_system), "DEBUG")
+            # EDR_LOG.log("Updating local faction cache for {}".format(star_system), "DEBUG")
             self.factions_cache.set(star_system.lower(), remaining_factions_in_system)
         else:
-            EDR_LOG.log("Updating local faction cache for {}".format(star_system), "DEBUG")
+            # EDR_LOG.log("Updating local faction cache for {}".format(star_system), "DEBUG")
             self.factions_cache.set(star_system.lower(), factions_in_system)
 
         return factions_in_system
@@ -711,7 +709,7 @@ class EDRFactions(object):
         factions = self.edsm_factions_cache.get(star_system.lower())
         cached = self.edsm_factions_cache.has_key(star_system.lower())
         if cached or factions:
-            EDR_LOG.log(u"Factions for system {} are in the cache.".format(star_system), "DEBUG")
+            # EDR_LOG.log(u"Factions for system {} are in the cache.".format(star_system), "DEBUG")
             return factions
 
         EDR_LOG.log(u"Factions for system {} are NOT in the cache.".format(star_system), "DEBUG")

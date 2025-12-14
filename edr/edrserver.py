@@ -165,6 +165,9 @@ class EDRServer(object):
         return None
 
     def __get(self, endpoint, service, params=None, headers=None, attempts=3):
+        headers = headers if headers is not None else {}
+        headers.update({"EDR-Version": f"v{self.version}"})
+
         req = requests.Request('GET', endpoint, params=params, headers=headers)
         prepped = self.SESSION.prepare_request(req)
         cached = self.http_cache.get(prepped.url)
@@ -186,6 +189,9 @@ class EDRServer(object):
         raise last_connection_exception
 
     def __put(self, endpoint, service, json, params=None, headers=None, attempts=3):
+        headers = headers if headers is not None else {}
+        headers.update({"EDR-Version": f"v{self.version}"})
+
         if self.backoff[service].throttled():
             EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff[service].backoff_until)), "DEBUG")
             return None
@@ -199,30 +205,36 @@ class EDRServer(object):
                 EDR_LOG.log(u"ConnectionException {} for PUT EDR {}: attempts={}".format(e, service, attempts), u"WARNING")
         raise last_connection_exception
     
-    def __delete(self, endpoint, service, params=None, attempts=3):
+    def __delete(self, endpoint, service, params=None, headers=None, attempts=3):
         if self.backoff[service].throttled():
             EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff[service].backoff_until)), "DEBUG")
             return None
 
+        headers = headers if headers is not None else {}
+        headers.update({"EDR-Version": f"v{self.version}"})
+
         while attempts:
             try:
                 attempts -= 1
-                return EDRServer.SESSION.delete(endpoint, params=params)
+                return EDRServer.SESSION.delete(endpoint, params=params, headers=headers)
             except requests.exceptions.RequestException as e:
                 last_connection_exception = e
                 EDR_LOG.log(u"ConnectionException {} for DELETE EDR {}: attempts={}".format(e, service, attempts), u"WARNING")
         raise last_connection_exception
         
 
-    def __post(self, endpoint, service, json, params=None, attempts=3):
+    def __post(self, endpoint, service, json, params=None, headers=None, attempts=3):
         if self.backoff[service].throttled():
             EDR_LOG.log("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff[service].backoff_until)), "DEBUG")
             return None
+
+        headers = headers if headers is not None else {}
+        headers.update({"EDR-Version": f"v{self.version}"})
         
         while attempts:
             try:
                 attempts -= 1
-                return EDRServer.SESSION.post(endpoint, params=params, json=json)
+                return EDRServer.SESSION.post(endpoint, params=params, json=json, headers=headers)
             except requests.exceptions.RequestException as e:
                 last_connection_exception = e
                 EDR_LOG.log(u"ConnectionException {} for POST EDR {}: attempts={}".format(e, service, attempts), u"WARNING")
@@ -855,7 +867,10 @@ class EDRServer(object):
         return True
 
     def __preflight(self, api_name, param):
-        headers = {"Authorization": "Bearer {}".format(self.auth_token()), "EDR-Version": "v{}".format(self.version) }
+        headers = {
+            "Authorization": "Bearer {}".format(self.auth_token()),
+            "EDR-Version": "v{}".format(self.version)
+        }
         json = { "name": self.player_name, "timestamp": {".sv": "timestamp"}, "param": param, "api": api_name, "mode": self.game_mode, "dlc": self.dlc_name, "group": self.private_group }
         EDR_LOG.log(u"Preflight request for {} with {}".format(api_name, json), "DEBUG")
         endpoint = "{server_functions}/edr/v1/preflight/{uid}".format(server_functions=self.EDR_SERVER_FUNCTIONS, uid=self.uid())

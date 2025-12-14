@@ -1,5 +1,4 @@
 import os
-import pickle
 
 from edtime import EDTime
 from edrconfig import EDRConfig
@@ -23,26 +22,23 @@ class EDRCmdrs(object):
         edr_config = EDRConfig()
         self._edr_heartbeat = edr_config.edr_heartbeat()
  
-        try:
-            with open(self.EDR_CMDRS_CACHE, 'rb') as handle:
-                self.cmdrs_cache = pickle.load(handle)
-        except:
-            self.cmdrs_cache = LRUCache(edr_config.lru_max_size(),
-                                                 edr_config.cmdrs_max_age())
-
-        try:
-            with open(self.EDR_INARA_CACHE, 'rb') as handle:
-                self.inara_cache = pickle.load(handle)
-        except:
-            self.inara_cache = LRUCache(edr_config.lru_max_size(),
-                                                 edr_config.inara_max_age())
+        self.cmdrs_cache = LRUCache.load(
+            file_path=self.EDR_CMDRS_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.cmdrs_max_age()
+        )
         
-        try:
-            with open(self.EDR_SQDRDEX_CACHE, 'rb') as handle:
-                self.sqdrdex_cache = pickle.load(handle)
-        except:
-            self.sqdrdex_cache = LRUCache(edr_config.lru_max_size(),
-                                                 edr_config.sqdrdex_max_age())
+        self.inara_cache = LRUCache.load(
+            file_path=self.EDR_INARA_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.inara_max_age()
+        )
+        
+        self.sqdrdex_cache = LRUCache.load(
+            file_path=self.EDR_SQDRDEX_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.sqdrdex_max_age()
+        )
 
     @property
     def player(self):
@@ -95,14 +91,14 @@ class EDRCmdrs(object):
                 self._player.lone_wolf()
 
     def persist(self):
-        with open(self.EDR_CMDRS_CACHE, 'wb') as handle:
-            pickle.dump(self.cmdrs_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        if self.cmdrs_cache:
+            self.cmdrs_cache.save(self.EDR_CMDRS_CACHE)
 
-        with open(self.EDR_INARA_CACHE, 'wb') as handle:
-            pickle.dump(self.inara_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        if self.inara_cache:
+            self.inara_cache.save(self.EDR_INARA_CACHE)
 
-        with open(self.EDR_SQDRDEX_CACHE, 'wb') as handle:
-            pickle.dump(self.sqdrdex_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        if self.sqdrdex_cache:
+            self.sqdrdex_cache.save(self.EDR_SQDRDEX_CACHE)
 
     def evict(self, cmdr):
         try:
@@ -124,50 +120,46 @@ class EDRCmdrs(object):
             pass
 
     def __edr_cmdr(self, cmdr_name, autocreate):
-        backup_profile = self.cmdrs_cache.peek(cmdr_name.lower())
-        profile = self.cmdrs_cache.get(cmdr_name.lower())
-        cached = self.cmdrs_cache.has_key(cmdr_name.lower())
-        if cached or profile:
-            EDR_LOG.log(u"Cmdr {cmdr} is in the EDR cache with id={cid}".format(cmdr=cmdr_name,
-                                                                           cid=profile.cid if profile else 'N/A'),
-                       "DEBUG")
+        key = cmdr_name.lower()
+        profile = self.cmdrs_cache.peek(key)
+        if profile and not self.cmdrs_cache.is_stale(key):
+            EDR_LOG.log(u"Cmdr {cmdr} is in the EDR cache (FRESH)".format(cmdr=cmdr_name), "DEBUG")
             return profile
 
         try:
-            profile = self.server.cmdr(cmdr_name, autocreate)
-        except CommsJammedError: # Refined exception handling
-            EDR_LOG.log("Comms jammed: Failed to fetch cmdr profile from EDR server.", "WARNING")
-            profile = None
+            updated_profile = self.server.cmdr(cmdr_name, autocreate)
+        except CommsJammedError:
+            EDR_LOG.log("Comms jammed. Failed to fetch cmdr profile from EDR server.", "WARNING")
+            updated_profile = None
         except Exception as e: # Catch other, unexpected exceptions
             EDR_LOG.log(f"Unexpected exception during call to EDR server cmdr: {e}", "ERROR")
-            profile = None
+            updated_profile = None
 
-        if not profile:
-            if backup_profile:
-                self.cmdrs_cache.set(cmdr_name.lower(), backup_profile)
-                self.cmdrs_cache.refresh(cmdr_name.lower())
-                EDR_LOG.log(u"No updated profile on EDR. Refresh old profile", "DEBUG")
-                return backup_profile
+        if not updated_profile:
+            if profile:
+                self.cmdrs_cache.refresh(key)
+                EDR_LOG.log(u"Server failed. Refreshing old profile", "DEBUG")
+                return profile
             else:
-                self.cmdrs_cache.set(cmdr_name.lower(), None)
-                EDR_LOG.log(u"No match on EDR. Temporary entry to be nice on EDR's server.", "DEBUG")
+                self.cmdrs_cache.set(key, None)
+                EDR_LOG.log(u"No server match/fallback. Setting temporary None entry.", "DEBUG")
                 return None
         
         dex_profile = None
         try:
-            dex_profile = self.server.cmdrdex(profile.cid)
+            dex_profile = self.server.cmdrdex(updated_profile.cid)
         except CommsJammedError:
             EDR_LOG.log("Comms jammed: Failed to fetch cmdr dex from EDR server.", "WARNING")
             dex_profile = None
 
         if dex_profile:
             EDR_LOG.log(u"EDR CmdrDex entry found for {cmdr}: {id}".format(cmdr=cmdr_name, id=profile.cid), "DEBUG")
-            profile.dex(dex_profile)
+            updated_profile.dex(dex_profile)
         
-        self.cmdrs_cache.set(cmdr_name.lower(), profile)
+        self.cmdrs_cache.set(key, updated_profile)
         EDR_LOG.log(u"Cached EDR profile {cmdr}: {id}".format(cmdr=cmdr_name,
-                                                        id=profile.cid), "DEBUG")
-        return profile
+                                                        id=updated_profile.cid), "DEBUG")
+        return updated_profile
     
     def __edr_sqdrdex(self, cmdr_name, autocreate):
         sqdr_id = self.__squadron_id()
@@ -203,41 +195,55 @@ class EDRCmdrs(object):
         return profile.sqdrdex_profile
 
     def __inara_cmdr(self, cmdr_name, check_inara_server):
-        inara_profile = None
-        stale = self.inara_cache.is_stale(cmdr_name.lower())
-        cached = self.inara_cache.has_key(cmdr_name.lower())
-        if cached and not stale:
-            inara_profile = self.inara_cache.get(cmdr_name.lower())
-            EDR_LOG.log(u"Cmdr {} is in the Inara cache (name={})".format(cmdr_name,
-                                                                         inara_profile.name if inara_profile else 'N/A'),
-                       "DEBUG")
-        elif check_inara_server:
-            EDR_LOG.log(u"Stale {} or not cached {} in Inara cache. Inara API call for {}.".format(stale, cached, cmdr_name), "INFO")
-            try: # New try-except for self.server.inara_cmdr(cmdr_name)
-                inara_profile = self.server.inara_cmdr(cmdr_name)
-            except CommsJammedError:
-                EDR_LOG.log("Comms jammed: Failed to fetch Inara profile via EDR server.", "WARNING")
-                inara_profile = None
+        key = cmdr_name.lower()
+        profile = self.inara_cache.peek(key)
+        stale = self.inara_cache.is_stale(key)
+        if profile and not stale:
+            EDR_LOG.log(u"Cmdr {cmdr} is in the Inara cache (FRESH)".format(cmdr=cmdr_name), "DEBUG")
+            return profile
 
-            if inara_profile and inara_profile.name.lower() == cmdr_name.lower():
-                self.inara_cache.set(cmdr_name.lower(), inara_profile)
-                EDR_LOG.log(u"Cached Inara profile {}: {},{},{},{}".format(cmdr_name,
-                                                                          inara_profile.name,
-                                                                          inara_profile.squadron,
-                                                                          inara_profile.role,
-                                                                          inara_profile.powerplay), "DEBUG")
-            elif self.inara_cache.has_key(cmdr_name.lower()):
-                inara_profile = self.inara_cache.peek(cmdr_name.lower())
-                self.inara_cache.refresh(cmdr_name.lower())
-                EDR_LOG.log(u"Refresh and re-use stale match in Inara cache.", "INFO")
-            elif inara_profile is None:
-                self.inara_cache.set(cmdr_name.lower(), None)
-                EDR_LOG.log(u"No match on Inara. Temporary entry to be nice on Inara's server.",
-                           "INFO")
+        if not check_inara_server:
+            EDR_LOG.log(u"Cmdr {cmdr} is not in the Inara cache ({cached}) or is stale ({staleness}).".format(
+                cmdr=cmdr_name,
+                cached=profile is not None,
+                staleness=stale),
+                "DEBUG")
+            return None
+
+        updated_profile = None
+        
+        EDR_LOG.log(u"Stale ({stale}) or not cached ({cached}) in Inara cache. Inara API call for {cmdr}.".format(
+                stale=stale,
+                cached=profile is not None,
+                cmdr=cmdr_name),
+                "INFO")
+        try:
+            updated_profile = self.server.inara_cmdr(cmdr_name)
+        except CommsJammedError:
+            EDR_LOG.log("Comms jammed: Failed to fetch Inara profile via EDR server.", "WARNING")
+            updated_profile = None
+        except Exception as e: # Catch other, unexpected exceptions
+            EDR_LOG.log(f"Unexpected exception during call to Inara via EDR server: {e}", "ERROR")
+            updated_profile = None
+
+        if not updated_profile:
+            if profile:
+                self.inara_cache.refresh(key)
+                EDR_LOG.log(u"Inara server failed. Refreshing old profile", "DEBUG")
+                return profile
             else:
-                # Inara call failed
-                inara_profile = None
-        return inara_profile
+                self.inara_cache.set(key, None)
+                EDR_LOG.log(u"No Inara server match/fallback. Setting temporary None entry.", "DEBUG")
+                return None
+        
+        if updated_profile.name.lower() == cmdr_name.lower():
+            self.inara_cache.set(key, updated_profile)
+            EDR_LOG.log(u"Cached fresh Inara profile {}.".format(cmdr_name), "DEBUG")
+            return updated_profile
+        else:
+            self.inara_cache.set(key, None)
+            EDR_LOG.log(u"No strict match on Inara. Setting temporary None entry.", "INFO")
+            return None
 
     def cmdr(self, cmdr_name, autocreate=True, check_inara_server=False):
         profile = self.__edr_cmdr(cmdr_name, autocreate)

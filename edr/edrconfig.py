@@ -1,7 +1,7 @@
 
 import os
 import configparser as cp
-from edropsec import EDROpsecConfig
+from edropsec import EDROpsecConfig, EDROpsecConfigDefault
 
 
 class EDRUserConfig(object):
@@ -15,7 +15,7 @@ class EDRUserConfig(object):
     def opsec_config(self):
         if self.config and self.config.has_section('opsec'):
             return EDROpsecConfig(self.config)
-        return None
+        return EDROpsecConfigDefault()
 
     def discord_webhook_for_comms(self, channel, incoming=True):
         if self.config:

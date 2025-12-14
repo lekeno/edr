@@ -34,12 +34,13 @@ class EDROpponents(object):
         self.realtime = None
 
         config = edrconfig.EDRConfig()
-        try:
-            with open(self.EDR_OPPONENTS_SIGHTINGS_CACHES[opponent_kind], 'rb') as handle:
-                self.sightings = pickle.load(handle)
-        except:
-            self.sightings = lrucache.LRUCache(config.lru_max_size(), config.opponents_max_age(self.kind))
-
+        
+        self.sightings = lrucache.LRUCache.load(
+            file_path=self.EDR_OPPONENTS_SIGHTINGS_CACHES[opponent_kind],
+            max_size=config.lru_max_size(),
+            max_age_seconds=config.opponents_max_age(self.kind)
+        )
+        
         try:
             with open(self.EDR_OPPONENTS_RECENTS_CACHES[opponent_kind], 'rb') as handle:
                 self.recents = pickle.load(handle)
@@ -50,8 +51,9 @@ class EDROpponents(object):
         self.reports_check_interval = config.reports_check_interval()
 
     def persist(self):
-        with open(self.EDR_OPPONENTS_SIGHTINGS_CACHES[self.kind], 'wb') as handle:
-            pickle.dump(self.sightings, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        if self.sightings:
+            self.sightings.save(self.EDR_OPPONENTS_SIGHTINGS_CACHES[self.kind])
+
         with open(self.EDR_OPPONENTS_RECENTS_CACHES[self.kind], 'wb') as handle:
             pickle.dump(self.recents, handle, protocol=pickle.HIGHEST_PROTOCOL)
 

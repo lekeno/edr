@@ -19,11 +19,14 @@ class EDROpsecConfig(object):
 
         if not self.opsec_enabled:
             return False
+        
+        if cmdr_profile.name == player.name:
+            return False
 
-        if self.is_never_report_cmdr(cmdr_profile.name):
+        if self.__is_never_report_cmdr(cmdr_profile.name):
             return True
 
-        if self.is_never_report_power(cmdr_profile.powerplay):
+        if self.__is_never_report_power(cmdr_profile.powerplay):
             return True
 
         if self.power and cmdr_profile.powerplay and player.power and cmdr_profile.powerplay == player.power:
@@ -40,14 +43,25 @@ class EDROpsecConfig(object):
 
         return False
 
-    def is_never_report_cmdr(self, cmdr_name):
+    def __is_never_report_cmdr(self, cmdr_name):
         if cmdr_name is None:
             return False
         
         return cmdr_name in self.never_report_cmdrs
 
-    def is_never_report_power(self, power_name):
+    def __is_never_report_power(self, power_name):
         if power_name is None:
             return False
         
         return power_name in self.never_report_powers
+
+class EDROpsecConfigDefault(EDROpsecConfig):
+    def __init__(self):
+        self.opsec_enabled = True
+        self.wing = True
+        self.crew = True
+        self.squadron = True
+        self.power = True
+
+        self.never_report_cmdrs = set()
+        self.never_report_powers = set()
