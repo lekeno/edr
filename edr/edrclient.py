@@ -917,8 +917,14 @@ class EDRClient(object):
         if not self.visual_feedback:
             # TODO only works if visual feedback is allowed due to how the docking feature is tied to IN_GAME_MSG which can be None if visual feedback is turned off
             return
+    
+        # { "timestamp":"2025-12-15T02:53:15Z", "event":"DockingRequested", "MarketID":3700480256, "StationName":"B6J-0HZ", "StationType":"FleetCarrier", "LandingPads":{ "Small":4, "Medium":4, "Large":8 } }
+        { "timestamp":"2025-12-14T08:55:43Z", "event":"DockingRequested", "MarketID":3700923648, "StationName":"VIME", "StationType":"FleetCarrier", "LandingPads":{ "Small":8, "Medium":8, "Large":16 } }
         if entry["event"] == "DockingGranted":
             station = self.edrsystems.station(self.player.star_system, entry["StationName"], entry["StationType"])
+            totalLandingPads = sum(entry["LandingPads"].values())
+            if entry["StationType"] == "FleetCarrier" and totalLandingPads == 32:
+                station["type"] = "squadron carrier"
             faction = None
             if station and "controllingFaction" in station:
                 controllingFaction = station["controllingFaction"]

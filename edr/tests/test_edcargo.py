@@ -1,6 +1,15 @@
+import sys
+import os
+
+# Add project and edr directories to sys.path
+current_dir = os.path.dirname(__file__)
+edr_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
+root_dir = os.path.abspath(os.path.join(edr_dir, os.pardir))
+sys.path.insert(0, root_dir)
+sys.path.insert(0, edr_dir)
 
 from unittest import TestCase, main
-from edcargo import EDCargo
+from edr.edcargo import EDCargo
 
 class TestEDCargo(TestCase):
     def setUp(self):

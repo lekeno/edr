@@ -11,7 +11,9 @@ class EDCargo(object):
             ed_inventory = cargo_event.get("Inventory", [])
             for item in ed_inventory:
                 name = item.get("Name", None)
-                self.inventory[name] = item.get("Count", 0)
+                if name:
+                    self.inventory[name] = item.get("Count", 0)
+
         except:
             EDR_LOG.log("Couldn't process cargo event {}".format(cargo_event), "WARNING")
 

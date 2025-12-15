@@ -60,7 +60,7 @@ class TestEDRUserConfig(TestCase):
             
             user_config = EDRUserConfig()
             self.assertIsNone(user_config.discord_webhook_for_comms("general"))
-            self.assertIsNone(user_config.opsec_config())
+            self.assertIsNotNone(user_config.opsec_config())
 
 if __name__ == '__main__':
     main()

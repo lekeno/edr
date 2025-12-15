@@ -1,8 +1,5 @@
 import config_tests
 from unittest import TestCase, main
-from unittest.mock import MagicMock
-import sys
-sys.modules["requests"] = MagicMock()
 from edentities import EDRCrew
 import calendar, time
 

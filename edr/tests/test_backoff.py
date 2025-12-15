@@ -1,14 +1,6 @@
 import config_tests
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-import sys
-
-# Mock dependencies before import
-mock_edrlog = MagicMock()
-mock_edtime = MagicMock()
-sys.modules["edrlog"] = mock_edrlog
-sys.modules["edtime"] = mock_edtime
-
 from backoff import Backoff
 
 class TestBackoff(TestCase):
@@ -20,12 +12,11 @@ class TestBackoff(TestCase):
         self.assertEqual(b.attempts, 0)
         self.assertEqual(b.backoff_until, 0)
 
+    @patch('backoff.EDTime')
     @patch('backoff.random.randint')
-    def test_throttle(self, mock_randint):
+    def test_throttle(self, mock_randint, mock_edtime):
         mock_randint.return_value = 5 # Fixed jitter
-        # backoff.py imports EDTime class from edtime module
-        # So backoff.EDTime is sys.modules["edtime"].EDTime
-        mock_edtime.EDTime.py_epoch_now.return_value = 1000
+        mock_edtime.py_epoch_now.return_value = 1000
         
         b = Backoff("Test", base=2, cap=100)
         
@@ -52,23 +43,27 @@ class TestBackoff(TestCase):
         # until = 1000 + 105
         self.assertEqual(b.backoff_until, 1105)
 
-    def test_until(self):
+    @patch('backoff.EDR_LOG')
+    @patch('backoff.EDTime')
+    def test_until(self, mock_edtime, mock_log):
         b = Backoff("Test")
         b.until(5000)
         self.assertEqual(b.attempts, 1)
         self.assertEqual(b.backoff_until, 5000)
 
-    def test_throttled(self):
+    @patch('backoff.EDTime')
+    def test_throttled(self, mock_edtime):
         b = Backoff("Test")
         b.backoff_until = 2000
         
-        mock_edtime.EDTime.py_epoch_now.return_value = 1000
+        mock_edtime.py_epoch_now.return_value = 1000
         self.assertTrue(b.throttled())
         
-        mock_edtime.EDTime.py_epoch_now.return_value = 3000
+        mock_edtime.py_epoch_now.return_value = 3000
         self.assertFalse(b.throttled())
 
-    def test_reset(self):
+    @patch('backoff.EDR_LOG')
+    def test_reset(self, mock_log):
         b = Backoff("Test")
         b.attempts = 5
         b.backoff_until = 9999

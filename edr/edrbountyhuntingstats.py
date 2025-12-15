@@ -8,7 +8,7 @@ class EDRBountyHuntingStats(object):
     def __init__(self):
         self.max = 0
         self.previous_max = 0
-        self.min = 100.0
+        self.min = float('inf')
         self.previous_min = 0
         self.sum_scanned = 0
         self.sum_awarded = 0
@@ -31,7 +31,7 @@ class EDRBountyHuntingStats(object):
 
         self.max = 0
         self.previous_max = 0
-        self.min = 100.0
+        self.min = float('inf')
         self.previous_min = 0
         self.sum_scanned = 0
         self.sum_awarded = 0

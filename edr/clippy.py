@@ -1,5 +1,6 @@
 
 import platform, os
+import ctypes
 
 def __winGetClipboard():
     ctypes.windll.user32.OpenClipboard(0)
@@ -10,15 +11,30 @@ def __winGetClipboard():
     return data
 
 def __winSetClipboard(text):
-    text = str(text)
+    text_bytes = bytes(str(text), 'utf-8')
+    text_len = len(text_bytes)
+
     GMEM_DDESHARE = 0x2000
+    CF_TEXT = 1
+
     ctypes.windll.user32.OpenClipboard(0)
     ctypes.windll.user32.EmptyClipboard()
-    hCd = ctypes.windll.kernel32.GlobalAlloc(GMEM_DDESHARE, len(bytes(text, 'utf-8'))+1)
+
+    hCd = ctypes.windll.kernel32.GlobalAlloc(GMEM_DDESHARE, text_len + 1)
     pchData = ctypes.windll.kernel32.GlobalLock(hCd)
-    ctypes.cdll.msvcrt.strcpy(ctypes.c_char_p(pchData), bytes(text, 'utf-8'))
+    
+    # 1. Get a pointer type that can be written to
+    # 2. Use ctypes.memmove to copy the raw bytes (including the null terminator, which is added after the copy)
+    buffer = (ctypes.c_char * (text_len + 1)).from_address(pchData)
+    
+    # Copy the bytes into the buffer
+    ctypes.memmove(buffer, text_bytes, text_len)
+    
+    # Manually add the null terminator
+    buffer[text_len] = b'\x00'
+
     ctypes.windll.kernel32.GlobalUnlock(hCd)
-    ctypes.windll.user32.SetClipboardData(1, hCd)
+    ctypes.windll.user32.SetClipboardData(CF_TEXT, hCd)
     ctypes.windll.user32.CloseClipboard()
 
 def __macSetClipboard(text):

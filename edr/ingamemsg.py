@@ -516,6 +516,7 @@ class InGameMsg(object):
         if not self.cfg["docking-station"]["enabled"]:
             return {"header": header, "body": description}
         
+        # TODO "StationType":"Dodec", "LandingPads":{ "Small":6, "Medium":9, "Large":5 }
         if station_type in ["asteroid base", 'bernal starport', "coriolis starport", "ocellus starport", "orbis starport", "bernal", "bernal statioport"]:
             self.__station_schematic(pad, self.cfg["docking-station"]["schema"]["rotate"])
         else:
@@ -529,10 +530,10 @@ class InGameMsg(object):
         if not map_data:
             return
         
-        if station_type == "fleetcarrier":
-            # Squadron carriers are also labelled as fleetcarriers
-            # they have twice the number of landing pads, split in
-            # two groups with the same mapping
+        if station_type == "squadron carrier":
+            # Squadron carriers have twice the number of landing pads,
+            # split in two groups with a corrected fleet carrier mapping
+            # (pads 13,14,15,16 have a more natural order)
             pad = pad % 16
 
         cfg = self.cfg[u"docking-station"]
