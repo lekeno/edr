@@ -35,7 +35,7 @@ class EDRCommands(object):
             return self.handle_at_commands(text, recipient)
         elif command == "o7":
             if recipient and not recipient in ["local", "voicechat", "wing", "friend", "starsystem", "squadron", "squadleaders"]:
-                EDR_LOG.log(u"Implicit who command for {}".format(recipient), "INFO")
+                EDR_LOG.info(u"Implicit who command for {}".format(recipient))
                 to_cmdr = recipient
                 if recipient.startswith("$cmdr_decorate:#name="):
                     to_cmdr = recipient[len("$cmdr_decorate:#name="):-1]
@@ -57,32 +57,32 @@ class EDRCommands(object):
                 target = self.edr_client.player.target_pilot()
                 target_cmdr = target.name if target and target.is_human() else None
             if target_cmdr:
-                EDR_LOG.log(u"Explicit who command for {}".format(target_cmdr), "INFO")
+                EDR_LOG.info(u"Explicit who command for {}".format(target_cmdr))
                 self.edr_client.who(target_cmdr)
         elif command == "!crimes":
             self.crimes_command("" if len(command_parts) == 1 else command_parts[1])
         elif command == "!sitrep":
             system = cmdr.star_system if len(command_parts) == 1 else command_parts[1]
-            EDR_LOG.log(u"Sitrep command for {}".format(system), "INFO")
+            EDR_LOG.info(u"Sitrep command for {}".format(system))
             self.edr_client.check_system(system)
         elif command == "!sitreps":
-            EDR_LOG.log(u"Sitreps command", "INFO")
+            EDR_LOG.info(u"Sitreps command")
             self.edr_client.sitreps()
         elif command == "!signals":
-            EDR_LOG.log(u"Signals command", "INFO")
+            EDR_LOG.info(u"Signals command")
             self.edr_client.noteworthy_signals_in_system()
         elif command == "!notams":
-            EDR_LOG.log(u"Notams command", "INFO")
+            EDR_LOG.info(u"Notams command")
             self.edr_client.notams()
         elif command == "!notam":
             system = cmdr.star_system if len(command_parts) == 1 else command_parts[1]
-            EDR_LOG.log(u"Notam command for {}".format(system), "INFO")
+            EDR_LOG.info(u"Notam command for {}".format(system))
             self.edr_client.notam(system)
         elif command == "!outlaws":
-            EDR_LOG.log(u"Outlaws command", "INFO")
+            EDR_LOG.info(u"Outlaws command")
             self.edr_client.outlaws()
         elif command == "!enemies":
-            EDR_LOG.log(u"Enemies command", "INFO")
+            EDR_LOG.info(u"Enemies command")
             self.edr_client.enemies()
         elif command == "!where":
             target_cmdr = None
@@ -92,7 +92,7 @@ class EDRCommands(object):
                 target = self.edr_client.player.target_pilot()
                 target_cmdr = target.name if target and target.is_human() else None
             if target_cmdr:
-                EDR_LOG.log(u"Explicit where command for {}".format(target_cmdr), "INFO")
+                EDR_LOG.info(u"Explicit where command for {}".format(target_cmdr))
                 self.edr_client.where(target_cmdr)
         elif command == "!search":
             resource = None
@@ -103,20 +103,20 @@ class EDRCommands(object):
                     system = better_parts[1].lstrip()
                 resource = better_parts[0].rstrip()
             if resource:
-                EDR_LOG.log(u"Search command for {}".format(resource), "INFO")
+                EDR_LOG.info(u"Search command for {}".format(resource))
                 self.edr_client.search(resource, system)
         elif command in ["!distance", "!d"] and len(command_parts) >= 2:
-            EDR_LOG.log(u"Distance command", "INFO")
+            EDR_LOG.info(u"Distance command")
             systems = " ".join(command_parts[1:]).split(" > ", 1)
             if not systems:
                 EDR_LOG.debug(u"Aborting distance calculation (no params).")
                 return False
             from_sys = systems[0] if len(systems) == 2 else cmdr.star_system
             to_sys = systems[1] if len(systems) == 2 else systems[0]
-            EDR_LOG.log(u"Distance command from {} to {}".format(from_sys, to_sys), "INFO")
+            EDR_LOG.info(u"Distance command from {} to {}".format(from_sys, to_sys))
             self.edr_client.distance(from_sys, to_sys)
         elif command == "!if":
-            EDR_LOG.log(u"Interstellar Factors command", "INFO")
+            EDR_LOG.info(u"Interstellar Factors command")
             search_center = cmdr.star_system
             override_sc_dist = None
             if len(command_parts) >= 2:
@@ -125,7 +125,7 @@ class EDRCommands(object):
                 override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
             self.edr_client.interstellar_factors_near(search_center, override_sc_dist)
         elif command == "!raw":
-            EDR_LOG.log(u"Raw Material Trader command", "INFO")
+            EDR_LOG.info(u"Raw Material Trader command")
             search_center = cmdr.star_system
             override_sc_dist = None
             if len(command_parts) >= 2:
@@ -134,7 +134,7 @@ class EDRCommands(object):
                 override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
             self.edr_client.raw_material_trader_near(search_center, override_sc_dist)
         elif command in ["!encoded", "!enc"]:
-            EDR_LOG.log(u"Encoded Material Trader command", "INFO")
+            EDR_LOG.info(u"Encoded Material Trader command")
             search_center = cmdr.star_system
             override_sc_dist = None
             if len(command_parts) >= 2:
@@ -143,7 +143,7 @@ class EDRCommands(object):
                 override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
             self.edr_client.encoded_material_trader_near(search_center, override_sc_dist)
         elif command in ["!manufactured", "!man"]:
-            EDR_LOG.log(u"Manufactured Material Trader command", "INFO")
+            EDR_LOG.info(u"Manufactured Material Trader command")
             search_center = cmdr.star_system
             override_sc_dist = None
             if len(command_parts) >= 2:
@@ -152,7 +152,7 @@ class EDRCommands(object):
                 override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
             self.edr_client.manufactured_material_trader_near(search_center, override_sc_dist)
         elif command == "!staging":
-            EDR_LOG.log(u"Looking for a staging station", "INFO")
+            EDR_LOG.info(u"Looking for a staging station")
             search_center = cmdr.star_system
             override_sc_dist = None
             if len(command_parts) >= 2:
@@ -164,16 +164,16 @@ class EDRCommands(object):
             if len(command_parts) < 2:
                 return False
             callsign_or_name = " ".join(command_parts[1:]).upper()
-            EDR_LOG.log(u"Looking for a Fleet Carrier in current system with {} in callsign or name".format(callsign_or_name), "INFO")
+            EDR_LOG.info(u"Looking for a Fleet Carrier in current system with {} in callsign or name".format(callsign_or_name))
             self.edr_client.fc_in_current_system(callsign_or_name)
         elif command == "!station":
             if len(command_parts) < 2:
                 return False
             station_name = " ".join(command_parts[1:]).upper()
-            EDR_LOG.log(u"Looking for a Station in current system with {} in its name".format(station_name), "INFO")
+            EDR_LOG.info(u"Looking for a Station in current system with {} in its name".format(station_name))
             self.edr_client.station_in_current_system(station_name)
         elif command == "!rrrfc":
-            EDR_LOG.log(u"Looking for a RRR Fleet Carrier", "INFO")
+            EDR_LOG.info(u"Looking for a RRR Fleet Carrier")
             search_center = cmdr.star_system
             override_radius = None
             if len(command_parts) >= 2:
@@ -182,7 +182,7 @@ class EDRCommands(object):
                 override_radius = int(parameters[1]) if len(parameters) > 1 else None
             self.edr_client.rrr_fc_near(search_center, override_radius)
         elif command == "!rrr":
-            EDR_LOG.log(u"Looking for a RRR Station", "INFO")
+            EDR_LOG.info(u"Looking for a RRR Station")
             search_center = cmdr.star_system
             override_radius = None
             if len(command_parts) >= 2:
@@ -197,10 +197,10 @@ class EDRCommands(object):
                 parameters = [param.strip() for param in " ".join(command_parts[1:]).split("#", 1)]
                 search_center = parameters[0] or cmdr.star_system
                 override_rank = int(parameters[1]) if len(parameters) > 1 else None
-            EDR_LOG.log(u"Looking for a system to park a fleet carrier near {}".format(search_center), "INFO")
+            EDR_LOG.info(u"Looking for a system to park a fleet carrier near {}".format(search_center))
             self.edr_client.parking_system_near(search_center, override_rank)
         elif command in ["!htb", "!humantechbroker"]:
-            EDR_LOG.log(u"Looking for a human tech broker", "INFO")
+            EDR_LOG.info(u"Looking for a human tech broker")
             search_center = cmdr.star_system
             override_sc_dist = None
             if len(command_parts) >= 2:
@@ -209,7 +209,7 @@ class EDRCommands(object):
                 override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
             self.edr_client.human_tech_broker_near(search_center, override_sc_dist)
         elif command in ["!gtb", "!guardiantechbroker"]:
-            EDR_LOG.log(u"Looking for a guardian tech broker", "INFO")
+            EDR_LOG.info(u"Looking for a guardian tech broker")
             search_center = cmdr.star_system
             override_sc_dist = None
             if len(command_parts) >= 2:
@@ -218,7 +218,7 @@ class EDRCommands(object):
                 override_sc_dist = int(parameters[1]) if len(parameters) > 1 else None
             self.edr_client.guardian_tech_broker_near(search_center, override_sc_dist)
         elif command in ["!offbeat"]:
-            EDR_LOG.log(u"Looking for an offbeat station", "INFO")
+            EDR_LOG.info(u"Looking for an offbeat station")
             search_center = cmdr.star_system
             override_sc_dist = None
             if len(command_parts) >= 2:
@@ -236,66 +236,66 @@ class EDRCommands(object):
             service = services[command]
             message = command_parts[1] if len(command_parts) == 2 else "N/A"
             if service == "fuel" and not cmdr.lowish_fuel():
-                EDR_LOG.log(u"EDR Central for {} with {} not allowed (enough fuel)".format(service, message), "INFO")
+                EDR_LOG.info(u"EDR Central for {} with {} not allowed (enough fuel)".format(service, message))
                 self.edr_client.notify_with_details("EDR Central", [_(u"Call rejected: you seem to have enough fuel."), _("Contact Cmdr LeKeno if this is inaccurate")])
                 return False
             if service == "repair" and not cmdr.heavily_damaged():
-                EDR_LOG.log(u"EDR Central for {} with {} not allowed (no serious damage)".format(service, message), "INFO")
+                EDR_LOG.info(u"EDR Central for {} with {} not allowed (no serious damage)".format(service, message))
                 self.edr_client.notify_with_details("EDR Central", [_(u"Call rejected: you seem to have enough hull left."), _("Contact Cmdr LeKeno if this is inaccurate")])
                 return False
             info = self.edr_client.player.json(fuel_info=(service == "fuel"))
             info["message"] = message
-            EDR_LOG.log(u"Message to EDR Central for {} with {}".format(service, message), "INFO")
+            EDR_LOG.info(u"Message to EDR Central for {} with {}".format(service, message))
             self.edr_client.call_central(service, info)
         elif command == "!nav":
             if len(command_parts) < 2:
-                EDR_LOG.log(u"Not enough parameters for navigation command", "INFO")
+                EDR_LOG.info(u"Not enough parameters for navigation command")
                 return False
             if command_parts[1].lower() == "off":
-                EDR_LOG.log(u"Clearing destination", "INFO")
+                EDR_LOG.info(u"Clearing destination")
                 self.edr_client.player.planetary_destination = None
             elif command_parts[1].lower() == "set" and self.edr_client.player.attitude.valid():
-                EDR_LOG.log(u"Setting destination", "INFO")
+                EDR_LOG.info(u"Setting destination")
                 attitude = self.edr_client.player.attitude
                 name = command_parts[2:].lower() if len(command_parts) > 2 else "Navpoint"
                 self.edr_client.navigation(attitude.latitude, attitude.longitude, name)
             elif command_parts[1].lower() == "next":
-                EDR_LOG.log(u"Next custom POI", "INFO")
+                EDR_LOG.info(u"Next custom POI")
                 self.edr_client.player.planetary_destination = None
                 self.edr_client.next_custom_poi()
             elif command_parts[1].lower() == "previous":
-                EDR_LOG.log(u"Previous custom POI", "INFO")
+                EDR_LOG.info(u"Previous custom POI")
                 self.edr_client.player.planetary_destination = None
                 self.edr_client.previous_custom_poi()
             elif command_parts[1].lower() == "clear":
-                EDR_LOG.log(u"Clearing POI", "INFO")
+                EDR_LOG.info(u"Clearing POI")
                 self.edr_client.player.planetary_destination = None
                 self.edr_client.clear_current_custom_poi()
             elif command_parts[1].lower() == "reset":
-                EDR_LOG.log(u"Reset POIs", "INFO")
+                EDR_LOG.info(u"Reset POIs")
                 self.edr_client.player.planetary_destination = None
                 self.edr_client.reset_custom_pois()
             else:
                 lat_long = command_parts[1].split(" ")
                 if len(lat_long) != 2:
-                    EDR_LOG.log(u"Invalid parameters for navigation command", "INFO")
+                    EDR_LOG.info(u"Invalid parameters for navigation command")
                     return False
                 try:
-                    EDR_LOG.log(u"Navigation command", "INFO")
+                    EDR_LOG.info(u"Navigation command")
                     self.edr_client.navigation(float(lat_long[0]), float(lat_long[1]))
                 except:
-                    EDR_LOG.log(u"Couldn't convert parameters for navigation command to lat/long", "INFO")
+                    EDR_LOG.info(u"Couldn't convert parameters for navigation command to lat/long")
                     return False
         elif command == "!ship" and len(command_parts) == 2:
             name_or_type = command_parts[1]
-            EDR_LOG.log(u"Ship search command for {}".format(name_or_type), "INFO")
+            EDR_LOG.info(u"Ship search command for {}".format(name_or_type))
             self.edr_client.where_ship(name_or_type)
         elif command == "!eval" and len(command_parts) == 2:
             eval_type = command_parts[1]
-            EDR_LOG.log(u"Eval command for {}".format(eval_type), "INFO")
+            EDR_LOG.info(u"Eval command for {}".format(eval_type))
             self.edr_client.eval(eval_type)
         elif command == "!contracts" and len(command_parts) == 1:
-            EDR_LOG.log(u"Contracts command", "INFO")
+            EDR_LOG.info(u"Contracts command")
             self.edr_client.contracts()
         elif command == "!contract":
             target_cmdr = cmdr.target
@@ -305,30 +305,30 @@ class EDRCommands(object):
                 target_cmdr = parts[0]
                 if len(parts)>=2:
                     reward = int(parts[1])
-            EDR_LOG.log(u"Contract command on {} with reward of {}".format(target_cmdr, reward), "INFO")
+            EDR_LOG.info(u"Contract command on {} with reward of {}".format(target_cmdr, reward))
             if reward is None:
                 self.edr_client.contract(target_cmdr)
             else:
                 self.edr_client.contract_on(target_cmdr, reward)
         elif command == "!help":
-            EDR_LOG.log(u"Help command", "INFO")
+            EDR_LOG.info(u"Help command")
             self.edr_client.help("" if len(command_parts) == 1 else command_parts[1])
         elif command == "!tip" or command == "!tips":
-            EDR_LOG.log(u"Tip command", "INFO")
+            EDR_LOG.info(u"Tip command")
             self.edr_client.tip("" if len(command_parts) == 1 else command_parts[1])
         elif command == "!clear":
-            EDR_LOG.log(u"Clear command", "INFO")
+            EDR_LOG.info(u"Clear command")
             self.edr_client.clear()
         elif command == "!materials":
             if len(command_parts) == 2:
                 profile = command_parts[1]
-                EDR_LOG.log(u"Configure material profile with {}".format(profile), "INFO")
+                EDR_LOG.info(u"Configure material profile with {}".format(profile))
                 self.edr_client.configure_resourcefinder(profile)
             else:
                 self.edr_client.show_material_profiles()
-                EDR_LOG.log(u"Listing material profiles", "INFO")
+                EDR_LOG.info(u"Listing material profiles")
         elif command == "!biology":
-            EDR_LOG.log(u"Biology info", "INFO")
+            EDR_LOG.info(u"Biology info")
             target = None
             if len(command_parts) >= 2:
                 target = command_parts[1] or cmdr.body
@@ -337,7 +337,7 @@ class EDRCommands(object):
             else:
                 self.edr_client.biology_spots(cmdr.star_system)
         elif command == "!journey":
-            EDR_LOG.log(u"Journey command", "INFO")
+            EDR_LOG.info(u"Journey command")
             if len(command_parts) >= 2:
                 better_parts = command_parts[1].split(" ", 1)
                 if better_parts[0] == "next":
@@ -373,38 +373,38 @@ class EDRCommands(object):
 
     def handle_query_commands(self, cmdr, command, command_parts):
         if command == "?outlaws":
-            EDR_LOG.log(u"Outlaws alerts command", "INFO")
+            EDR_LOG.info(u"Outlaws alerts command")
             param = "" if len(command_parts) == 1 else command_parts[1]
             if param == "":
                 self.edr_client.outlaws_alerts_enabled(silent=False)
             elif param == "on": 
-                EDR_LOG.log(u"Enabling Outlaws alerts", "INFO")
+                EDR_LOG.info(u"Enabling Outlaws alerts")
                 self.edr_client.enable_outlaws_alerts()
             elif param == "off":
-                EDR_LOG.log(u"Disabling Outlaws alerts", "INFO")
+                EDR_LOG.info(u"Disabling Outlaws alerts")
                 self.edr_client.disable_outlaws_alerts()
             elif param.startswith("ly "):
-                EDR_LOG.log(u"Max distance for Outlaws alerts", "INFO")
+                EDR_LOG.info(u"Max distance for Outlaws alerts")
                 self.edr_client.max_distance_outlaws_alerts(param[3:])
             elif param.startswith("cr "):
-                EDR_LOG.log(u"Min bounty for Outlaws alerts", "INFO")
+                EDR_LOG.info(u"Min bounty for Outlaws alerts")
                 self.edr_client.min_bounty_outlaws_alerts(param[3:])
             else:
                 return False
             return True
         elif command == "?enemies":
-            EDR_LOG.log(u"Enemies alerts command", "INFO")
+            EDR_LOG.info(u"Enemies alerts command")
             param = "" if len(command_parts) == 1 else command_parts[1]
             if param == "":
                 self.edr_client.enemies_alerts_enabled(silent=False)
             elif param == "on": 
-                EDR_LOG.log(u"Enabling enemies alerts", "INFO")
+                EDR_LOG.info(u"Enabling enemies alerts")
                 self.edr_client.enable_enemies_alerts()
             elif param == "off":
-                EDR_LOG.log(u"Disabling enemies alerts", "INFO")
+                EDR_LOG.info(u"Disabling enemies alerts")
                 self.edr_client.disable_enemies_alerts()
             elif param.startswith("ly "):
-                EDR_LOG.log(u"Max distance for Enemies alerts", "INFO")
+                EDR_LOG.info(u"Max distance for Enemies alerts")
                 self.edr_client.max_distance_enemies_alerts(param[3:])
             else:
                 return False
@@ -419,26 +419,26 @@ class EDRCommands(object):
             return False
         
         if (command == "#!" or command == "#outlaw"):
-            EDR_LOG.log(u"Tag outlaw command for {}".format(target_cmdr), "INFO")
+            EDR_LOG.info(u"Tag outlaw command for {}".format(target_cmdr))
             self.edr_client.tag_cmdr(target_cmdr, "outlaw")
         elif (command == "#?" or command == "#neutral"):
-            EDR_LOG.log(u"Tag neutral command for {}".format(target_cmdr), "INFO")
+            EDR_LOG.info(u"Tag neutral command for {}".format(target_cmdr))
             self.edr_client.tag_cmdr(target_cmdr, "neutral")
         elif (command == "#+" or command == "#enforcer"):
-            EDR_LOG.log(u"Tag enforcer command for {}".format(target_cmdr), "INFO")
+            EDR_LOG.info(u"Tag enforcer command for {}".format(target_cmdr))
             self.edr_client.tag_cmdr(target_cmdr, "enforcer")
         elif (command == "#s!" or command == "#enemy"):
-            EDR_LOG.log(u"Tag squadron enemy command for {}".format(target_cmdr), "INFO")
+            EDR_LOG.info(u"Tag squadron enemy command for {}".format(target_cmdr))
             self.edr_client.tag_cmdr(target_cmdr, "enemy")
         elif (command == "#s+" or command == "#ally"):
-            EDR_LOG.log(u"Tag squadron ally command for {}".format(target_cmdr), "INFO")
+            EDR_LOG.info(u"Tag squadron ally command for {}".format(target_cmdr))
             self.edr_client.tag_cmdr(target_cmdr, "ally")
         elif (command == "#=" or command == "#friend"):
-            EDR_LOG.log(u"Tag friend command for {}".format(target_cmdr), "INFO")
+            EDR_LOG.info(u"Tag friend command for {}".format(target_cmdr))
             self.edr_client.tag_cmdr(target_cmdr, "friend")
         elif (len(command) > 1 and command[0] == "#"):
             tag = command[1:]
-            EDR_LOG.log(u"Tag command for {} with {}".format(target_cmdr, tag), "INFO")
+            EDR_LOG.info(u"Tag command for {} with {}".format(target_cmdr, tag))
             self.edr_client.tag_cmdr(target_cmdr, tag)
         else:
             return False
@@ -451,32 +451,32 @@ class EDRCommands(object):
             return False
 
         if command == "-#":
-            EDR_LOG.log(u"Remove {} from dex".format(target_cmdr), "INFO")
+            EDR_LOG.info(u"Remove {} from dex".format(target_cmdr))
             self.edr_client.untag_cmdr(target_cmdr, tag=None)
         elif command == "-#!" or command == "-#outlaw":
-            EDR_LOG.log(u"Remove outlaw tag for {}".format(target_cmdr), "INFO")
+            EDR_LOG.info(u"Remove outlaw tag for {}".format(target_cmdr))
             self.edr_client.untag_cmdr(target_cmdr, "outlaw")
         elif command == "-#?" or command == "-#neutral":
-            EDR_LOG.log(u"Remove neutral tag for {}".format(target_cmdr), "INFO")
+            EDR_LOG.info(u"Remove neutral tag for {}".format(target_cmdr))
             self.edr_client.untag_cmdr(target_cmdr, "neutral")
         elif command == "-#+" or command == "-#enforcer":
-            EDR_LOG.log(u"Remove enforcer tag for {}".format(target_cmdr), "INFO")
+            EDR_LOG.info(u"Remove enforcer tag for {}".format(target_cmdr))
             self.edr_client.untag_cmdr(target_cmdr, "enforcer")
         elif command == "-#s!" or command == "-#enemy":
-            EDR_LOG.log(u"Remove squadron enemy tag for {}".format(target_cmdr), "INFO")
+            EDR_LOG.info(u"Remove squadron enemy tag for {}".format(target_cmdr))
             self.edr_client.untag_cmdr(target_cmdr, "enemy")
         elif command == "-#s+" or command == "-#ally":
-            EDR_LOG.log(u"Remove squadron ally tag for {}".format(target_cmdr), "INFO")
+            EDR_LOG.info(u"Remove squadron ally tag for {}".format(target_cmdr))
             self.edr_client.untag_cmdr(target_cmdr, "ally")    
         elif command == "-#=" or command == "-#friend":
-            EDR_LOG.log(u"Remove friend tag for {}".format(target_cmdr), "INFO")
+            EDR_LOG.info(u"Remove friend tag for {}".format(target_cmdr))
             self.edr_client.untag_cmdr(target_cmdr, "friend")
         elif (len(command) > 2 and command[0] == "-#"):
             tag = command[2:]
-            EDR_LOG.log(u"Remove tag {} for {}".format(tag, target_cmdr), "INFO")
+            EDR_LOG.info(u"Remove tag {} for {}".format(tag, target_cmdr))
             self.edr_client.untag_cmdr(target_cmdr, tag)
         elif command == "-@#":
-            EDR_LOG.log(u"Remove memo for {}".format(target_cmdr), "INFO")
+            EDR_LOG.info(u"Remove memo for {}".format(target_cmdr))
             self.edr_client.clear_memo_cmdr(target_cmdr)
         else:
             return False
@@ -492,13 +492,13 @@ class EDRCommands(object):
             if not recipient in ["local", "voicechat", "wing", "friend", "starsystem", "squadron", "squadleaders"]:
                 prefix = "$cmdr_decorate:#name="
                 target_cmdr = recipient[len(prefix):-1] if recipient.startswith(prefix) else recipient
-                EDR_LOG.log(u"Memo command for tagged cmdr {}".format(target_cmdr), "INFO")
+                EDR_LOG.info(u"Memo command for tagged cmdr {}".format(target_cmdr))
             else:
                 target = self.edr_client.player.target_pilot()
                 target_cmdr = target.name if target and target.is_human() else None
         elif command.startswith("@# ") and len(command)>2:
             target_cmdr = command[3:]
-            EDR_LOG.log(u"Memo command for tagged cmdr {}".format(target_cmdr), "INFO")
+            EDR_LOG.info(u"Memo command for tagged cmdr {}".format(target_cmdr))
 
         if target_cmdr:
             return self.edr_client.memo_cmdr(target_cmdr, command_parts[1])
@@ -535,11 +535,11 @@ class EDRCommands(object):
                 self.edr_client.bounty_hunting_guidance() 
                 self.edr_client.player.bounty_hunting_stats.reset()
         elif param == "on":
-            EDR_LOG.log(u"Enabling visual feedback", "INFO")
+            EDR_LOG.info(u"Enabling visual feedback")
             self.edr_client.visual_feedback = True
             self.edr_client.warmup()
         elif param == "off":
-            EDR_LOG.log(u"Disabling visual feedback", "INFO")
+            EDR_LOG.info(u"Disabling visual feedback")
             self.edr_client.notify_with_details("Visual Feedback System", ["disabling"])
             self.edr_client.visual_feedback = False
         else:
@@ -553,11 +553,11 @@ class EDRCommands(object):
             self.edr_client.notify_with_details("EDR crimes report",
                                         ["Enabled" if self.edr_client.crimes_reporting else "Disabled"])
         elif param == "on":
-            EDR_LOG.log(u"Enabling crimes reporting", "INFO")
+            EDR_LOG.info(u"Enabling crimes reporting")
             self.edr_client.crimes_reporting = True
             self.edr_client.notify_with_details("EDR crimes report", ["Enabling"])
         elif param == "off":
-            EDR_LOG.log(u"Disabling crimes reporting", "INFO")
+            EDR_LOG.info(u"Disabling crimes reporting")
             self.edr_client.crimes_reporting = False
             self.edr_client.notify_with_details("EDR crimes report", ["Disabling"])
         else:
@@ -566,20 +566,20 @@ class EDRCommands(object):
 
     def audiocue_command(self, param):
         if param == "on":
-            EDR_LOG.log(u"Enabling audio feedback", "INFO")
+            EDR_LOG.info(u"Enabling audio feedback")
             self.edr_client.audio_feedback = True
             self.edr_client.notify_with_details("EDR audio cues", ["Enabling"])
         elif param == "off":
-            EDR_LOG.log(u"Disabling audio feedback", "INFO")
+            EDR_LOG.info(u"Disabling audio feedback")
             self.edr_client.audio_feedback = False
             self.edr_client.notify_with_details("EDR audio cues", ["Disabling"])
         elif param == "loud":
-            EDR_LOG.log(u"Loud audio feedback", "INFO")
+            EDR_LOG.info(u"Loud audio feedback")
             self.edr_client.loud_audio_feedback()
             self.edr_client.audio_feedback = True
             self.edr_client.notify_with_details("EDR audio cues", ["Enabled", "Loud"])
         elif param == "soft":
-            EDR_LOG.log(u"Soft audio feedback", "INFO")
+            EDR_LOG.info(u"Soft audio feedback")
             self.edr_client.soft_audio_feedback()
             self.edr_client.audio_feedback = True
             self.edr_client.notify_with_details("EDR audio cues", ["Enabled", "Soft"])
@@ -589,11 +589,11 @@ class EDRCommands(object):
     
     def gesture_triggers_command(self, param):
         if param == "on":
-            EDR_LOG.log(u"Enabling gesture triggers", "INFO")
+            EDR_LOG.info(u"Enabling gesture triggers")
             self.edr_client.gesture_triggers = True
             self.edr_client.notify_with_details("EDR gesture triggers", ["Enabling"])
         elif param == "off":
-            EDR_LOG.log(u"Disabling gesture triggers", "INFO")
+            EDR_LOG.info(u"Disabling gesture triggers")
             self.edr_client.gesture_triggers = False
             self.edr_client.notify_with_details("EDR gesture triggers", ["Disabling"])
         else:

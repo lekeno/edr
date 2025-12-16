@@ -37,7 +37,7 @@ class EDRLegalRecords(object):
     
     def summarize(self, cmdr_id):
         if not cmdr_id:
-            EDR_LOG.log(u"No cmdr_id, no records for {}".format(cmdr_id), "INFO")
+            EDR_LOG.info(u"No cmdr_id, no records for {}".format(cmdr_id))
             return None
         
         self.__update_records_if_stale(cmdr_id)
@@ -46,10 +46,10 @@ class EDRLegalRecords(object):
         records = record_entry.get("records") if record_entry and isinstance(record_entry, dict) else None
         
         if not records:
-            EDR_LOG.log(u"No legal records for {}".format(cmdr_id), "INFO")
+            EDR_LOG.info(u"No legal records for {}".format(cmdr_id))
             return None
         
-        EDR_LOG.log(u"Got legal records for {}".format(cmdr_id), "INFO")
+        EDR_LOG.info(u"Got legal records for {}".format(cmdr_id))
         overview = None
         (clean, wanted, bounties, recent_stats) = self.__process(records)
         timespan = EDTime.pretty_print_timespan(self.timespan, short=True, verbose=True)

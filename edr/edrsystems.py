@@ -227,7 +227,7 @@ class EDRSystems(object):
         # --- Step 2: Server Call (Action-Taking Block) --- 
         updated_system = None
         if call_server:
-            EDR_LOG.log(u"Fetching system info for {} from EDR server.".format(star_system), "INFO")
+            EDR_LOG.info(u"Fetching system info for {} from EDR server.".format(star_system))
             try:
                 updated_system = self.server.system(star_system, may_create, coords)
             except Exception as e:
@@ -236,7 +236,7 @@ class EDRSystems(object):
                 # Stale Fallback Logic: Use 'profile' peeked in step 1 if server fails.
                 if profile and profile is not None:
                     self.systems_cache.refresh(key)
-                    EDR_LOG.log(u"Server failed. Re-using and refreshing stale system info.", "INFO")
+                    EDR_LOG.info(u"Server failed. Re-using and refreshing stale system info.")
                     # Need to validate the stale profile again before returning it
                     return self._get_and_validate_sid(profile, star_system)
         
@@ -320,7 +320,7 @@ class EDRSystems(object):
         stale_profile = self.fcs_cache.peek(key) # Get stale profile for potential fallback
         
         try:
-            EDR_LOG.log(u"Fetching FC info for {} from EDR server.".format(callsign), "INFO")
+            EDR_LOG.info(u"Fetching FC info for {} from EDR server.".format(callsign))
             updated_fc = self.server.fc(callsign, name, star_system, may_create)
         except Exception as e:
             EDR_LOG.warning(f"Comms jammed/Failed to fetch FC ID for {callsign}: {e}")
@@ -330,7 +330,7 @@ class EDRSystems(object):
                 self.fcs_cache.refresh(key)
                 fcid = list(stale_profile.keys())[0] if stale_profile.keys() else None
                 if fcid:
-                    EDR_LOG.log(u"Server failed. Re-using and refreshing stale FC info for ID={}".format(fcid), "INFO")
+                    EDR_LOG.info(u"Server failed. Re-using and refreshing stale FC info for ID={}".format(fcid))
                     return fcid
 
         # --- Step 3: Success / Negative Caching Logic ---
@@ -1106,27 +1106,27 @@ class EDRSystems(object):
             # skip SAA complete scanned with no bio signals
             return {}
         
-        EDR_LOG.log("Expected bio on planet {} in system {}".format(planet.get("name", "???"), system_name), "INFO")
+        EDR_LOG.info("Expected bio on planet {} in system {}".format(planet.get("name", "???"), system_name))
         credits = {}
         species = []
         detected_genuses = planet.get("genuses", None)
         genuses = []
-        EDR_LOG.log("Detected genuses: {}".format(detected_genuses), "INFO")
+        EDR_LOG.info("Detected genuses: {}".format(detected_genuses))
         atmosphere = EDRSystems.canonical_atmosphere(planet)
-        EDR_LOG.log("Atm: {}".format(atmosphere), "INFO")
+        EDR_LOG.info("Atm: {}".format(atmosphere))
         gravity = planet.get("gravity", 100) / 9.81
-        EDR_LOG.log("Gravity: {}".format(gravity), "INFO")
+        EDR_LOG.info("Gravity: {}".format(gravity))
         mean_temperature = planet.get("surfaceTemperature", 1000)
-        EDR_LOG.log("Temperature: {}".format(mean_temperature), "INFO")
+        EDR_LOG.info("Temperature: {}".format(mean_temperature))
         planet_class = EDRSystems.canonical_planet_class(planet)
-        EDR_LOG.log("Class: {}".format(planet_class), "INFO")
+        EDR_LOG.info("Class: {}".format(planet_class))
         volcanism = planet["volcanismType"].lower() if planet.get("volcanismType", None) else ""
         luminosity = self.parent_star_luminosity(system_name, planet)
         star_type = self.parent_star_type(system_name, planet)
         distance_from_parent_star = self.parent_star_distance(system_name, planet)
         
-        EDR_LOG.log("parent star type: {}".format(star_type), "INFO")
-        EDR_LOG.log("distance from parent star: {}".format(distance_from_parent_star), "INFO")
+        EDR_LOG.info("parent star type: {}".format(star_type))
+        EDR_LOG.info("distance from parent star: {}".format(distance_from_parent_star))
 
         if atmosphere == "noatmosphere":
             '''
@@ -1177,7 +1177,7 @@ class EDRSystems(object):
             }
         
         if not EDRSystems.__planet_walkable(planet):
-            EDR_LOG.log("High gravity or not landable => no bio expected", "INFO")
+            EDR_LOG.info("High gravity or not landable => no bio expected")
             self.__add_missing_genuses(species, genuses, detected_genuses)
             return {
                 "species": species,
@@ -1518,8 +1518,8 @@ class EDRSystems(object):
 
         self.__add_missing_genuses(species, genuses, detected_genuses)
         
-        EDR_LOG.log("Species: {}".format(species), "INFO")
-        EDR_LOG.log("Genuses: {}".format(genuses), "INFO")
+        EDR_LOG.info("Species: {}".format(species))
+        EDR_LOG.info("Genuses: {}".format(genuses))
         
         return {
             "species": species,
@@ -1585,7 +1585,7 @@ class EDRSystems(object):
 
         the_body = self.body(system_name, body_name)
         if not the_body:
-            EDR_LOG.log("No body for biology on: {}".format(system_name, body_name), "INFO")
+            EDR_LOG.info("No body for biology on: {}".format(system_name, body_name))
             return {}
         return self.__expected_bio_on_planet(the_body, system_name)
 
@@ -2333,7 +2333,7 @@ class EDRSystems(object):
         # Only make the server call if the external 'has_recent_crimes' check passes or if the key is missing/stale
         if self.has_recent_crimes(star_system):
             try:
-                EDR_LOG.log(u"Fetching recent crimes for {} (SID {}) from EDR server.".format(star_system, key), "INFO")
+                EDR_LOG.info(u"Fetching recent crimes for {} (SID {}) from EDR server.".format(star_system, key))
                 # Note: The server call uses SID, but the timespan is also a factor in the cache TTL
                 updated_crimes = self.server.recent_crimes(key, self.timespan) 
             except Exception as e:
@@ -2342,7 +2342,7 @@ class EDRSystems(object):
                 # Stale Fallback Logic: Use 'stale_profile' if server fails.
                 if stale_profile is not None:
                     self.crimes_cache.refresh(key)
-                    EDR_LOG.log(u"Server failed. Re-using and refreshing stale crime info.", "INFO")
+                    EDR_LOG.info(u"Server failed. Re-using and refreshing stale crime info.")
                     return stale_profile
         
         # --- Step 3: Final Caching and Return ---
@@ -2402,7 +2402,7 @@ class EDRSystems(object):
         # Only make the server call if the external 'has_recent_traffic' check passes
         if self.has_recent_traffic(star_system):
             try:
-                EDR_LOG.log(u"Fetching recent traffic for {} (SID {}) from EDR server.".format(star_system, key), "INFO")
+                EDR_LOG.info(u"Fetching recent traffic for {} (SID {}) from EDR server.".format(star_system, key))
                 # Note: The timespan is used in the request
                 updated_traffic = self.server.recent_traffic(key, self.timespan) 
             except Exception as e:
@@ -2411,7 +2411,7 @@ class EDRSystems(object):
                 # Stale Fallback Logic: Use 'stale_profile' if server fails.
                 if stale_profile is not None:
                     self.traffic_cache.refresh(key)
-                    EDR_LOG.log(u"Server failed. Re-using and refreshing stale traffic info.", "INFO")
+                    EDR_LOG.info(u"Server failed. Re-using and refreshing stale traffic info.")
                     return stale_profile
         
         # --- Step 3: Final Caching and Return ---
@@ -2744,7 +2744,7 @@ class EDRSystems(object):
         key = u"{}@{}".format(star_system.lower(), radius)
 
         if key in self.edsm_systems_within_radius_blocklist:
-            EDR_LOG.log(u"Systems within radius for {} is in the blocklist.".format(key), "INFO")
+            EDR_LOG.info(u"Systems within radius for {} is in the blocklist.".format(key))
             return None
 
         systems = self.edsm_systems_within_radius_cache.get(key)

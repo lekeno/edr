@@ -11,16 +11,16 @@ class IGMConfig(object):
         # TODO assumes that there is always 2 user config options...
         user_cfg_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), user_config_file[0])
         if os.path.exists(user_cfg_path):
-            EDR_LOG.log(u"Using user defined layout at {}.".format(user_config_file[0]), "INFO")
+            EDR_LOG.info(u"Using user defined layout at {}.".format(user_config_file[0]))
             self.config.read(user_cfg_path)
         else:
-            EDR_LOG.log(u"No user defined layout at {}, using {} instead.".format(user_config_file[0], user_config_file[1]), "INFO")
+            EDR_LOG.info(u"No user defined layout at {}, using {} instead.".format(user_config_file[0], user_config_file[1]))
             user_cfg_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), user_config_file[1])
             if os.path.exists(user_cfg_path):
-                EDR_LOG.log(u"Using user defined layout at {}.".format(user_config_file[1]), "INFO")
+                EDR_LOG.info(u"Using user defined layout at {}.".format(user_config_file[1]))
                 self.config.read(user_cfg_path)
             else:
-                EDR_LOG.log(u"No user defined layout at {} or {}, using {} instead.".format(user_config_file[0], user_config_file[1], config_file), "INFO")
+                EDR_LOG.info(u"No user defined layout at {} or {}, using {} instead.".format(user_config_file[0], user_config_file[1], config_file))
                 self.config = self.fallback_config
 
     def large_height(self):

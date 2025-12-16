@@ -52,7 +52,7 @@ class EDRAutoUpdater(object):
         max_backups = 5
         for i in range(0, nbfiles - max_backups):
             f = files[i]
-            EDR_LOG.log("Removing backup {}".format(f), "INFO")
+            EDR_LOG.info("Removing backup {}".format(f))
             os.unlink(f)
 
     def make_backup(self):

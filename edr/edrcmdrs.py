@@ -242,7 +242,7 @@ class EDRCmdrs(object):
             return updated_profile
         else:
             self.inara_cache.set(key, None)
-            EDR_LOG.log(u"No strict match on Inara. Setting temporary None entry.", "INFO")
+            EDR_LOG.info(u"No strict match on Inara. Setting temporary None entry.")
             return None
 
     def cmdr(self, cmdr_name, autocreate=True, check_inara_server=False):
@@ -257,12 +257,12 @@ class EDRCmdrs(object):
                 return inara_profile
 
         if inara_profile:
-            EDR_LOG.log(u"Combining info from EDR and Inara for cmdr {}".format(cmdr_name), "INFO")
+            EDR_LOG.info(u"Combining info from EDR and Inara for cmdr {}".format(cmdr_name))
             profile.complement(inara_profile)
         
         squadron_profile = self.__edr_sqdrdex(cmdr_name, autocreate)
         if squadron_profile:
-            EDR_LOG.log(u"Combining info from Squadron for cmdr {}".format(cmdr_name), "INFO")
+            EDR_LOG.info(u"Combining info from Squadron for cmdr {}".format(cmdr_name))
             profile.sqdrdex(squadron_profile.sqdrdex_dict())
 
         return profile

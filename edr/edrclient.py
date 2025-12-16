@@ -59,7 +59,7 @@ class EDRClient(object):
         set_language(config.get_str("language"))
 
         self.edr_version = edr_config.edr_version()
-        EDR_LOG.log("Version {}".format(self.edr_version), "INFO")
+        EDR_LOG.info("Version {}".format(self.edr_version))
 
         self.enemy_alerts_pledge_threshold = edr_config.enemy_alerts_pledge_threshold()
         self.system_novelty_threshold = edr_config.system_novelty_threshold()
@@ -426,7 +426,7 @@ class EDRClient(object):
 
     def pledged_to(self, power, time_pledged=0):
         if self.server.is_anonymous():
-            EDR_LOG.log("Skipping pledged_to call since the user is anonymous.", "INFO")
+            EDR_LOG.info("Skipping pledged_to call since the user is anonymous.")
             return
         nodotpower = power.replace(".", "") if power else None
         if self.edrcmdrs.player_pledged_to(nodotpower, time_pledged):
@@ -450,7 +450,7 @@ class EDRClient(object):
         return (self.is_logged_in() and self.server.is_anonymous())
 
     def warmup(self):
-        EDR_LOG.log("Warming up client.", "INFO")
+        EDR_LOG.info("Warming up client.")
         details = []
         if not self.crimes_reporting:
             details.append(_("Crimes reporting is off (!crimes on to re-enable)"))
@@ -1192,7 +1192,7 @@ class EDRClient(object):
             bio_info = self.edrsystems.biology_on(star_system, body_name)
 
         if not (bio_info and "species" in bio_info):
-            EDR_LOG.log("No bio on {}".format(bio_info), "INFO")
+            EDR_LOG.info("No bio on {}".format(bio_info))
             details.append(_("Expected Bio: none"))
             self.__notify(header, details, clear_before=True)
             return
@@ -1256,7 +1256,7 @@ class EDRClient(object):
             return
         
         if self.player.on_foot:
-            EDR_LOG.log("Player is on foot, so no cutom POI from codex entry needed (not coming from the com scanner", "INFO")
+            EDR_LOG.info("Player is on foot, so no cutom POI from codex entry needed (not coming from the com scanner")
             return
         now = datetime.datetime.now()
         name = entry.get("Name_Localised", "Comp.Scan")
@@ -1391,7 +1391,7 @@ class EDRClient(object):
 
     def check_system(self, star_system, may_create=False, coords=None):
         try:
-            EDR_LOG.log("Check system called: {}".format(star_system), "INFO")
+            EDR_LOG.info("Check system called: {}".format(star_system))
             details = []
             notams = self.edrsystems.active_notams(star_system, may_create, coords)
             if notams:
@@ -1400,7 +1400,7 @@ class EDRClient(object):
             
             if self.edrsystems.has_sitrep(star_system):
                 if star_system == self.player.star_system and self.player.in_bad_neighborhood():
-                    EDR_LOG.log("Sitrep system is known to be an anarchy. Crimes aren't reported.", "INFO")
+                    EDR_LOG.info("Sitrep system is known to be an anarchy. Crimes aren't reported.")
                     # Translators: this is shown via the overlay if the system of interest is an Anarchy (current system or !sitrep <system>)
                     details.append(_c("Sitrep|Anarchy: not all crimes are reported."))
                 if self.edrsystems.has_recent_activity(star_system):
@@ -2097,14 +2097,14 @@ class EDRClient(object):
             profile = self.cmdr(cmdr_name, autocreate, check_inara_server=True)
             if profile:
                 self.status = _("got info about {}").format(cmdr_name)
-                EDR_LOG.log("Who {} : {}".format(cmdr_name, profile.short_profile(self.player.powerplay)), "INFO")
+                EDR_LOG.info("Who {} : {}".format(cmdr_name, profile.short_profile(self.player.powerplay)))
                 legal = self.edrlegal.summarize(profile.cid)
                 details = [profile.short_profile(self.player.powerplay)]
                 if legal:
                     details.append(legal["overview"])
                 self.__intel(_("Intel about {}").format(cmdr_name), details, clear_before=True, legal=legal)
             else:
-                EDR_LOG.log("Who {} : no info".format(cmdr_name), "INFO")
+                EDR_LOG.info("Who {} : no info".format(cmdr_name))
                 self.__intel(_("Intel about {}").format(cmdr_name), [_("No info").format(cmdr=cmdr_name)], clear_before=True)
         except CommsJammedError:
             self.__commsjammed()    
@@ -2245,11 +2245,11 @@ class EDRClient(object):
                 ad_message = _("You could have helped other EDR users by reporting this outlaw.") if profile.is_dangerous(self.player.powerplay) else _("You could have helped other EDR users by reporting this enemy.")
                 self.advertise_full_account(ad_message)
         else:
-            EDR_LOG.log("Skipping warning since a warning was recently shown (cognitive throttle).", "INFO")
+            EDR_LOG.info("Skipping warning since a warning was recently shown (cognitive throttle).")
 
     def blip(self, cmdr_name, blip, system_wide=False):
         if self.player.in_solo() and not system_wide:
-            EDR_LOG.log("Skipping blip since the user is in solo (unexpected).", "INFO")
+            EDR_LOG.info("Skipping blip since the user is in solo (unexpected).")
             return False
 
         cmdr_id = self.cmdr_id(cmdr_name)
@@ -2262,7 +2262,7 @@ class EDRClient(object):
         profile = self.cmdr(cmdr_name, check_inara_server=True)
 
         if self.__is_opsec_protected(profile):
-            EDR_LOG.log("Skipping blip for {} (OPSEC).".format(cmdr_name), "INFO")
+            EDR_LOG.info("Skipping blip for {} (OPSEC).".format(cmdr_name))
             return True # Exit early if protected
 
         # --- B. Cognitive Warning/Intel Display (Call Helper) ---
@@ -2272,7 +2272,7 @@ class EDRClient(object):
         
         # Check if the blip is novel enough to be submitted to the server (standard throttle)
         if not self.novel_enough_blip(cmdr_id, blip, system_wide=system_wide):
-            EDR_LOG.log("Blip is not novel enough to warrant reporting", "INFO")
+            EDR_LOG.info("Blip is not novel enough to warrant reporting")
             return True
 
         # --- D. Caching for Throttle & Anonymous Check ---
@@ -2281,7 +2281,7 @@ class EDRClient(object):
         self.blips_cache.set(cmdr_id, blip) 
 
         if self.is_anonymous():
-            EDR_LOG.log("Skipping blip submission since the user is anonymous.", "INFO")
+            EDR_LOG.info("Skipping blip submission since the user is anonymous.")
             return True
         
         # --- E. Server Submission ---
@@ -2300,7 +2300,7 @@ class EDRClient(object):
 
     def scanned(self, cmdr_name, scan):
         if self.player.in_solo():
-            EDR_LOG.log("Skipping scanned since the user is in solo (unexpected).", "INFO")
+            EDR_LOG.info("Skipping scanned since the user is in solo (unexpected).")
             self.status = _("failed to report scan.")
             return False
 
@@ -2314,7 +2314,7 @@ class EDRClient(object):
 
         profile = self.cmdr(cmdr_name, check_inara_server=True)
         if self.__is_opsec_protected(profile):
-            EDR_LOG.log(f"Skipping scanned since {cmdr_name} is OPSEC protected.", "INFO")
+            EDR_LOG.info(f"Skipping scanned since {cmdr_name} is OPSEC protected.")
             return True
 
         if self.novel_enough_scan(cmdr_id, scan, cognitive = True):
@@ -2322,21 +2322,21 @@ class EDRClient(object):
             
         if not self.novel_enough_scan(cmdr_id, scan):
             self.status = _("not novel enough (scan).")
-            EDR_LOG.log("Scan is not novel enough to warrant reporting", "INFO")
+            EDR_LOG.info("Scan is not novel enough to warrant reporting")
             return True
 
         if self.is_anonymous():
-            EDR_LOG.log("Skipping reporting scan since the user is anonymous.", "INFO")
+            EDR_LOG.info("Skipping reporting scan since the user is anonymous.")
             self.scans_cache.set(cmdr_id, scan)
             return True
 
         if not self.player.in_open():
-            EDR_LOG.log("Scan not submitted due to unconfirmed Open mode", "INFO")
+            EDR_LOG.info("Scan not submitted due to unconfirmed Open mode")
             self.status = _("Scan reporting disabled in solo/private modes.")
             return False
 
         if self.player.has_partial_status():
-            EDR_LOG.log("Scan not submitted due to partial status", "INFO")
+            EDR_LOG.info("Scan not submitted due to partial status")
             return False
 
         self.scans_cache.set(cmdr_id, scan)
@@ -2355,18 +2355,18 @@ class EDRClient(object):
 
     def traffic(self, star_system, traffic, system_wide=False):
         if self.player.in_solo() and not system_wide:
-            EDR_LOG.log("Skipping traffic since the user is in solo (unexpected).", "INFO")
+            EDR_LOG.info("Skipping traffic since the user is in solo (unexpected).")
             return False
 
         try:
             if self.is_anonymous():
-                EDR_LOG.log("Skipping traffic report since the user is anonymous.", "INFO")
+                EDR_LOG.info("Skipping traffic report since the user is anonymous.")
                 return True
 
             sigthed_cmdr = traffic["cmdr"]
             if not self.novel_enough_traffic_report(sigthed_cmdr, traffic):
                 self.status = _("not novel enough (traffic).")
-                EDR_LOG.log("Traffic report is not novel enough to warrant reporting", "INFO")
+                EDR_LOG.info("Traffic report is not novel enough to warrant reporting")
                 return True
 
             sid = self.edrsystems.system_id(star_system, may_create=True)
@@ -2388,21 +2388,21 @@ class EDRClient(object):
 
     def crime(self, star_system, crime):
         if self.player.in_solo():
-            EDR_LOG.log("Skipping crime since the user is in solo (unexpected).", "INFO")
+            EDR_LOG.info("Skipping crime since the user is in solo (unexpected).")
             return False
             
         if not self.crimes_reporting:
-            EDR_LOG.log("Crimes reporting is off (!crimes on to re-enable).", "INFO")
+            EDR_LOG.info("Crimes reporting is off (!crimes on to re-enable).")
             self.status = _("Crimes reporting is off (!crimes on to re-enable)")
             return True
             
         if self.player.in_bad_neighborhood():
-            EDR_LOG.log("Crime not being reported because the player is in an anarchy.", "INFO")
+            EDR_LOG.info("Crime not being reported because the player is in an anarchy.")
             self.status = _("Anarchy system (crimes not reported).")
             return True
 
         if self.is_anonymous():
-            EDR_LOG.log("Skipping crime report since the user is anonymous.", "INFO")
+            EDR_LOG.info("Skipping crime report since the user is anonymous.")
             if crime["victim"] == self.player.name:
                 self.advertise_full_account(_("You could have helped other EDR users or get help by reporting this crime!"))
             return True
@@ -2420,21 +2420,21 @@ class EDRClient(object):
 
     def fight(self, fight):
         if self.player.in_solo():
-            EDR_LOG.log("Skipping fight since the user is in solo (unexpected).", "INFO")
+            EDR_LOG.info("Skipping fight since the user is in solo (unexpected).")
             return False
 
         if not self.crimes_reporting:
-            EDR_LOG.log("Crimes reporting is off (!crimes on to re-enable).", "INFO")
+            EDR_LOG.info("Crimes reporting is off (!crimes on to re-enable).")
             self.status = _("Crimes reporting is off (!crimes on to re-enable)")
             return
             
         if self.player.in_bad_neighborhood():
-            EDR_LOG.log("Fight not being reported because the player is in an anarchy.", "INFO")
+            EDR_LOG.info("Fight not being reported because the player is in an anarchy.")
             self.status = _("Anarchy system (fights not reported).")
             return
 
         if self.is_anonymous():
-            EDR_LOG.log("Skipping fight report since the user is anonymous.", "INFO")
+            EDR_LOG.info("Skipping fight report since the user is anonymous.")
             return
 
         if not self.player.recon_box.forced:
@@ -2450,7 +2450,7 @@ class EDRClient(object):
             return
 
         if not self.novel_enough_fight(fight['cmdr'].lower(), fight):
-            EDR_LOG.log("Skipping fight report (not novel enough).", "INFO")
+            EDR_LOG.info("Skipping fight report (not novel enough).")
             return
 
         star_system = fight["starSystem"]
@@ -2475,11 +2475,11 @@ class EDRClient(object):
 
     def crew_report(self, report):
         if self.player.in_solo():
-            EDR_LOG.log("Skipping crew report since the user is in solo (unexpected).", "INFO")
+            EDR_LOG.info("Skipping crew report since the user is in solo (unexpected).")
             return False
 
         if self.is_anonymous():
-            EDR_LOG.log("Skipping crew report since the user is anonymous.", "INFO")
+            EDR_LOG.info("Skipping crew report since the user is anonymous.")
             if report["captain"] == self.player.name and (report["crimes"] or report["kicked"]):
                 self.advertise_full_account(_("You could have helped other EDR users by reporting this problematic crew member!"))
             return False
@@ -2503,14 +2503,14 @@ class EDRClient(object):
             return
 
         if self.fc_jump_psa == _("Never"):
-            EDR_LOG.log("FC Jump reporting is off.", "INFO")
+            EDR_LOG.info("FC Jump reporting is off.")
             self.status = _("Skipped FC jump announcement.")
             return True
 
         jump_info["owner"] = self.player.name
         if self.fc_jump_psa in [_("Public"), _("Private")]:
             if self.is_anonymous():
-                EDR_LOG.log("Skipping fleet carrier jump report since the user is anonymous.", "INFO")
+                EDR_LOG.info("Skipping fleet carrier jump report since the user is anonymous.")
                 self.status = _("Skipped Public/Private FC jump announcement (EDR account needed).")
                 return True
         
@@ -2530,7 +2530,7 @@ class EDRClient(object):
         self.player.fleet_carrier.jump_cancelled(event)
         
         if self.fc_jump_psa == _("Never"):
-            EDR_LOG.log("FC Jump reporting is off.", "INFO")
+            EDR_LOG.info("FC Jump reporting is off.")
             self.status = _("Skipped FC jump announcement.")
             return True
 
@@ -2538,7 +2538,7 @@ class EDRClient(object):
         status["owner"] = self.player.name
         if self.fc_jump_psa in [_("Public"), _("Private")]:
             if self.is_anonymous():
-                EDR_LOG.log("Skipping fleet carrier jump report since the user is anonymous.", "INFO")
+                EDR_LOG.info("Skipping fleet carrier jump report since the user is anonymous.")
                 self.status = _("Skipped Public/Private FC jump announcement (EDR account needed).")
                 return True
             
@@ -2605,7 +2605,7 @@ class EDRClient(object):
 
     def call_central(self, service, info):
         if self.is_anonymous():
-            EDR_LOG.log("Skipping EDR Central call since the user is anonymous.", "INFO")
+            EDR_LOG.info("Skipping EDR Central call since the user is anonymous.")
             self.advertise_full_account(_("Sorry, this feature only works with an EDR account."), passive=False)
             return False
         
@@ -2650,17 +2650,17 @@ class EDRClient(object):
 
     def tag_cmdr(self, cmdr_name, tag):
         if self.is_anonymous():
-            EDR_LOG.log("Skipping tag cmdr since the user is anonymous.", "INFO")
+            EDR_LOG.info("Skipping tag cmdr since the user is anonymous.")
             self.advertise_full_account(_("Sorry, this feature only works with an EDR account."), passive=False)
             return False
         
         if  tag in ["enemy", "ally"]:
             if not self.player.squadron:
-                EDR_LOG.log("Skipping squadron tag since the user isn't a member of a squadron.", "INFO")
+                EDR_LOG.info("Skipping squadron tag since the user isn't a member of a squadron.")
                 self.notify_with_details(_("Squadron Dex"), [_("You need to join a squadron on https://inara.cz to use this feature."), _("Then, reboot EDR to reflect these changes.")])
                 return False
             elif not self.player.is_empowered_by_squadron():
-                EDR_LOG.log("Skipping squadron tag since the user isn't trusted.", "INFO")
+                EDR_LOG.info("Skipping squadron tag since the user isn't trusted.")
                 self.notify_with_details(_("Squadron Dex"), [_("You need to reach {} to tag enemies or allies.").format(self.player.squadron_empowered_rank())])
                 return False
 
@@ -2676,7 +2676,7 @@ class EDRClient(object):
     
     def memo_cmdr(self, cmdr_name, memo):
         if self.is_anonymous():
-            EDR_LOG.log("Skipping memo cmdr since the user is anonymous.", "INFO")
+            EDR_LOG.info("Skipping memo cmdr since the user is anonymous.")
             self.advertise_full_account(_("Sorry, this feature only works with an EDR account."), passive=False)
             return False
 
@@ -2691,7 +2691,7 @@ class EDRClient(object):
 
     def clear_memo_cmdr(self, cmdr_name):
         if self.is_anonymous():
-            EDR_LOG.log("Skipping clear_memo_cmdr since the user is anonymous.", "INFO")
+            EDR_LOG.info("Skipping clear_memo_cmdr since the user is anonymous.")
             self.advertise_full_account(_("Sorry, this feature only works with an EDR account."), passive=False)
             return False
 
@@ -2706,17 +2706,17 @@ class EDRClient(object):
 
     def untag_cmdr(self, cmdr_name, tag):
         if self.is_anonymous():
-            EDR_LOG.log("Skipping untag cmdr since the user is anonymous.", "INFO")
+            EDR_LOG.info("Skipping untag cmdr since the user is anonymous.")
             self.advertise_full_account(_("Sorry, this feature only works with an EDR account."), passive=False)
             return False
 
         if  tag in ["enemy", "ally"]:
             if not self.player.squadron:
-                EDR_LOG.log("Skipping squadron untag since the user isn't a member of a squadron.", "INFO")
+                EDR_LOG.info("Skipping squadron untag since the user isn't a member of a squadron.")
                 self.notify_with_details(_("Squadron Dex"), [_("You need to join a squadron on https://inara.cz to use this feature."), _("Then, reboot EDR to reflect these changes.")])
                 return False
             elif not self.player.is_empowered_by_squadron():
-                EDR_LOG.log("Skipping squadron untag since the user isn't trusted.", "INFO")
+                EDR_LOG.info("Skipping squadron untag since the user isn't trusted.")
                 self.notify_with_details(_("Squadron Dex"), [_("You need to reach {} to tag enemies or allies.").format(self.player.squadron_empowered_rank())])
                 return False
 
@@ -2746,7 +2746,7 @@ class EDRClient(object):
                 header = _("Intel about {}") if self.player.in_open() else _("Intel about {} (Open)")
                 self.__intel(header.format(cmdr_name), report["readable"], clear_before=True)
             else:
-                EDR_LOG.log("Where {} : no info".format(cmdr_name), "INFO")
+                EDR_LOG.info("Where {} : no info".format(cmdr_name))
                 self.status = _("no info about {}").format(cmdr_name)
                 header = _("Intel about {}") if self.player.in_open() else _("Intel about {} (Open)")
                 self.__intel(header.format(cmdr_name), [_("Not recently sighted or not an outlaw.")], clear_before=True)
@@ -2784,7 +2784,7 @@ class EDRClient(object):
 
     def contracts(self):
         if self.is_anonymous():
-            EDR_LOG.log("Skipping contracts since the user is anonymous.", "INFO")
+            EDR_LOG.info("Skipping contracts since the user is anonymous.")
             self.advertise_full_account(_("Sorry, this feature only works with an EDR account."), passive=False)
             return False
 
@@ -2798,7 +2798,7 @@ class EDRClient(object):
 
     def contract(self, cmdr_name):
         if self.is_anonymous():
-            EDR_LOG.log("Skipping contract since the user is anonymous.", "INFO")
+            EDR_LOG.info("Skipping contract since the user is anonymous.")
             self.advertise_full_account(_("Sorry, this feature only works with an EDR account."), passive=False)
             return False
 
@@ -2808,7 +2808,7 @@ class EDRClient(object):
 
     def contract_on(self, cmdr_name, reward):
         if self.is_anonymous():
-            EDR_LOG.log("Skipping contract since the user is anonymous.", "INFO")
+            EDR_LOG.info("Skipping contract since the user is anonymous.")
             self.advertise_full_account(_("Sorry, this feature only works with an EDR account."), passive=False)
             return False
         
@@ -2847,24 +2847,24 @@ class EDRClient(object):
     def _opponents(self, kind):
         if kind is EDROpponents.ENEMIES:
             if self.is_anonymous():
-                EDR_LOG.log("Skipping enemies since the user is anonymous.", "INFO")
+                EDR_LOG.info("Skipping enemies since the user is anonymous.")
                 self.advertise_full_account(_("Sorry, this feature only works with an EDR account."), passive=False)
                 return False
             elif not self.player.power:
-                EDR_LOG.log("Not pledged to any power, can't have enemies.", "INFO")
+                EDR_LOG.info("Not pledged to any power, can't have enemies.")
                 self.__notify(_("Recently Sighted {kind}").format(kind=_(kind)), [_("You need to be pledged to a power.")], clear_before = True, sfx=False)
                 if self.audio_feedback:
                     self.SFX.failed()
                 return False
         opponents_report = self.edropponents[kind].recent_sightings()
         if not opponents_report:
-            EDR_LOG.log("No recently sighted {}".format(kind), "INFO")
+            EDR_LOG.info("No recently sighted {}".format(kind))
             header = _("Recently Sighted {kind}") if self.player.in_open() else _("Recently Sighted {kind} (Open)")
             self.__sitrep(header.format(kind=_(kind)), [_("No {kind} sighted in the last {timespan}").format(kind=_(kind).lower(), timespan=EDTime.pretty_print_timespan(self.edropponents[kind].timespan))])
             return False
         
         self.status = _("recently sighted {kind}").format(kind=_(kind))
-        EDR_LOG.log("Got recently sighted {}".format(kind), "INFO")
+        EDR_LOG.info("Got recently sighted {}".format(kind))
         header = _("Recently Sighted {kind}") if self.player.in_open() else _("Recently Sighted {kind} (Open)")
         self.__sitrep(header.format(kind=_(kind)), opponents_report)
 
@@ -3230,7 +3230,7 @@ class EDRClient(object):
 
     def pointing_guidance(self, entry):
         if (not self.gesture_triggers):
-            EDR_LOG.log("Gestures setting is off, skipping processing", "INFO")
+            EDR_LOG.info("Gestures setting is off, skipping processing")
             return True
         # TODO add the name of the thing in the header
         target = self.player.remlok_helmet.pointing_at(entry)
@@ -3251,7 +3251,7 @@ class EDRClient(object):
     
     def gesture(self, entry):
         if (not self.gesture_triggers):
-            EDR_LOG.log("Gestures setting is off, skipping processing", "INFO")
+            EDR_LOG.info("Gestures setting is off, skipping processing")
             return
         default_emote_regex = r"^\$HumanoidEmote_DefaultMessage:#player=\$cmdr_decorate:#name=(.+);:#action=\$HumanoidEmote_(.+)_Action[;]+$"
         m = re.match(default_emote_regex, entry.get("Message", ""))
@@ -3270,11 +3270,11 @@ class EDRClient(object):
         
         if action == "point":
             if not (self.player.body and self.player.star_system):
-                EDR_LOG.log("Skipping point gesture: not on/near a body, or no system set", "INFO")
+                EDR_LOG.info("Skipping point gesture: not on/near a body, or no system set")
                 return
 
             if not (self.player.location.on_foot_location.on_planet):
-                EDR_LOG.log("Skipping point gesture: not on a planet", "INFO")
+                EDR_LOG.info("Skipping point gesture: not on a planet")
                 return
 
             now = datetime.datetime.now()
@@ -4042,7 +4042,7 @@ class EDRClient(object):
             return False
          
         details = self.player.routenav.describe_wp_bodies()
-        EDR_LOG.log("Journey show bodies: {}".format(details), "INFO")
+        EDR_LOG.info("Journey show bodies: {}".format(details))
         if details:
             self.notify_with_details(_("EDR Journey: survey targets"), details, clear_before=True)
             return True

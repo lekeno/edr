@@ -765,7 +765,7 @@ class EDPilot(object):
         if system_address:
             self.location.star_system_address = system_address
         if star_system and (self.location.star_system is None or self.location.star_system != star_system):
-            EDR_LOG.log("Updating system info (was missing or obsolete). {old} vs. {system}".format(old=self.location.star_system, system=star_system), "INFO")
+            EDR_LOG.info("Updating system info (was missing or obsolete). {old} vs. {system}".format(old=self.location.star_system, system=star_system))
             self.location.star_system = star_system
             return True
         return False
@@ -773,7 +773,7 @@ class EDPilot(object):
     def update_place_if_obsolete(self, place):
         self._touch()
         if self.location.place is None or self.location.place != place:
-            EDR_LOG.log("Updating place info (was missing or obsolete). {old} vs. {place}".format(old=self.location.place, place=place), "INFO")
+            EDR_LOG.info("Updating place info (was missing or obsolete). {old} vs. {place}".format(old=self.location.place, place=place))
             self.location.place = place
             return True
         return False
@@ -781,7 +781,7 @@ class EDPilot(object):
     def update_body_if_obsolete(self, body):
         self._touch()
         if self.location.body is None or self.location.body != body:
-            EDR_LOG.log("Updating body info (was missing or obsolete). {old} vs. {body}".format(old=self.location.body, body=body), "INFO")
+            EDR_LOG.info("Updating body info (was missing or obsolete). {old} vs. {body}".format(old=self.location.body, body=body))
             self.location.body = body
             return True
         return False

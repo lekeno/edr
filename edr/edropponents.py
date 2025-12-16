@@ -102,10 +102,10 @@ class EDROpponents(object):
     def recent_sightings(self):
         self.__update_opponents_if_stale()
         if not self.recents:
-            EDR_LOG.log(u"No recently sighted {}".format(self.kind), "INFO")
+            EDR_LOG.info(u"No recently sighted {}".format(self.kind))
             return None
         
-        EDR_LOG.log(u"Got recently sighted {}".format(self.kind), "INFO")
+        EDR_LOG.info(u"Got recently sighted {}".format(self.kind))
         summary = []
         now = datetime.datetime.now()
         js_epoch_now = int(1000 * time.mktime(now.timetuple()))

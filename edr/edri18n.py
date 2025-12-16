@@ -51,9 +51,9 @@ def _get_sys_lang():
     finally:
         # Logging the acceptance of the system language for translation
         if select_lang is not None:
-            EDR_LOG.log(u"The system language ({}) is accepted for translation.".format(select_lang), "INFO")
+            EDR_LOG.info(u"The system language ({}) is accepted for translation.".format(select_lang))
         else:
-            EDR_LOG.log(u"The system language is not accepted for translation, English will be used.", "INFO")
+            EDR_LOG.info(u"The system language is not accepted for translation, English will be used.")
 
     return select_lang
 
@@ -78,17 +78,17 @@ def set_language(lang):
         # Set custom language if provided
         language = lang
         translate = gettext.translation('edr', L10N_DIR, fallback=True, languages=[language])
-        EDR_LOG.log(u"The EDMC language parameter is set to custom: lang {}.".format(language), "INFO")
+        EDR_LOG.info(u"The EDMC language parameter is set to custom: lang {}.".format(language))
     elif _sys_lang:
         # Set default language if available
         language = _sys_lang
         translate = gettext.translation('edr', L10N_DIR, fallback=True, languages=[language])
-        EDR_LOG.log(u"The EDMC language parameter is set to default.", "INFO")
+        EDR_LOG.info(u"The EDMC language parameter is set to default.")
     else:
         # Set fallback to English if neither custom nor system language available
         translate = gettext.translation('edr', L10N_DIR, fallback=True)
         language = 'en'
-        EDR_LOG.log(u"Failed to set EDMC language parameter, falling back to English.", "INFO")
+        EDR_LOG.info(u"Failed to set EDMC language parameter, falling back to English.")
 
 
 def ugettext(message):  # Function to translate a message

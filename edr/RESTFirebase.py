@@ -105,7 +105,7 @@ class RESTFirebaseAuth(object):
             return False
 
         if self.is_auth_expiring():
-            EDR_LOG.log("Renewing authentication since the token will expire soon.", "INFO")
+            EDR_LOG.info("Renewing authentication since the token will expire soon.")
             self.clear_authentication()
             return self.authenticate()
         return True
@@ -114,7 +114,7 @@ class RESTFirebaseAuth(object):
         if self.api_key == "":
             return False
 
-        EDR_LOG.log("Forcing a new authentication.", "INFO")
+        EDR_LOG.info("Forcing a new authentication.")
         self.clear_authentication()
         return self.authenticate()
 

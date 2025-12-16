@@ -159,7 +159,7 @@ class EDRBodiesOfInterest(object):
 
         pois = self.custom_points_of_interest(star_system, body_name)
         if not pois:
-            EDR_LOG.log("No pois for {}, {}".format(star_system, body_name), "INFO")
+            EDR_LOG.info("No pois for {}, {}".format(star_system, body_name))
             return None
         
         index = self.__forward_index_custom_pois(star_system, body_name)
@@ -172,7 +172,7 @@ class EDRBodiesOfInterest(object):
             
         pois = self.custom_points_of_interest(star_system, body_name)
         if not pois:
-            EDR_LOG.log("No pois for {}, {}".format(star_system, body_name), "INFO")
+            EDR_LOG.info("No pois for {}, {}".format(star_system, body_name))
             return None
         
         index = self.__rewind_index_custom_pois(star_system, body_name)

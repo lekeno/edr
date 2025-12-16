@@ -46,7 +46,7 @@ class EDSMServer(object):
             return None
 
         if not results:
-            EDR_LOG.log(u"Empty systems within radius.", "INFO")
+            EDR_LOG.info(u"Empty systems within radius.")
             return []
         sorted_results = sorted(results, key=lambda t: t["distance"])
         return sorted_results
@@ -67,7 +67,7 @@ class EDSMServer(object):
         results = self.__get(endpoint, params)
 
         if not results or not results.get('stations', None):
-            EDR_LOG.log(u"No stations in system {}.".format(system_name), "INFO")
+            EDR_LOG.info(u"No stations in system {}.".format(system_name))
             return []
         sorted_results = sorted(results['stations'], key=lambda t: t["distanceToArrival"])
         return sorted_results
