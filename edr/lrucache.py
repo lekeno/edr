@@ -170,7 +170,7 @@ class LRUCache(object):
             with open(file_path, 'wb') as handle:
                 pickle.dump(self, handle, protocol=pickle.HIGHEST_PROTOCOL)
         except Exception as e:
-            EDR_LOG.log(f"Failed to save cache to {file_path}: {e}", "ERROR")
+            EDR_LOG.error(f"Failed to save cache to {file_path}: {e}")
             pass
 
     @classmethod

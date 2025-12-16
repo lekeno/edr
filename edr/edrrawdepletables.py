@@ -745,7 +745,7 @@ class EDRRawDepletables(object):
                     cursor.execute('insert into concentrations(hotspotid, resource, concentration) values (?,?,?)', concentration)
             self.db.commit()
         except:
-            EDR_LOG.log(u"Couldn't open/create the depletables database", "ERROR")
+            EDR_LOG.error(u"Couldn't open/create the depletables database")
             self.db = None
     
     def visit(self, poi_name):

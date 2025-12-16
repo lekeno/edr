@@ -69,7 +69,7 @@ class EDRFleet(object):
                         destination_system TEXT, source_market_id INTEGER, destination_market_id INTEGER)''')
             self.db.commit()
         except:
-            EDR_LOG.log(u"Couldn't open/create the fleet database", "ERROR")
+            EDR_LOG.error(u"Couldn't open/create the fleet database")
             self.db = None
     
     def update(self, event):

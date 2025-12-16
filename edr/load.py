@@ -79,11 +79,11 @@ def prefs_changed(cmdr, is_beta):
 
 def prerequisites(edr_client, is_beta, is_legacy):
     if edr_client.mandatory_update:
-        EDR_LOG.log(u"Out-of-date client, aborting.", "ERROR")
+        EDR_LOG.error(u"Out-of-date client, aborting.")
         return False
 
     if not edr_client.is_logged_in():
-        EDR_LOG.log(u"Not logged in, aborting.", "ERROR")
+        EDR_LOG.error(u"Not logged in, aborting.")
         return False
 
     if is_beta:
@@ -901,11 +901,11 @@ def edr_update_cmdr_status(cmdr, reason_for_update, timestamp):
     :return:
     """
     if cmdr.in_solo():
-        EDR_LOG.log(u"Skipping cmdr update due to Solo mode", "ERROR")
+        EDR_LOG.error(u"Skipping cmdr update due to Solo mode")
         return
 
     if cmdr.has_partial_status():
-        EDR_LOG.log(u"Skipping cmdr update due to partial status", "ERROR")
+        EDR_LOG.error(u"Skipping cmdr update due to partial status")
         return
 
     edt = EDTime()

@@ -147,11 +147,11 @@ class EDRServer(object):
                 self.backoff["Inara"].reset()
                 return None
             if body["events"][0]["eventStatus"] != 200:
-                EDR_LOG.log(u"Error from Inara API. content={}".format(resp), "ERROR")
+                EDR_LOG.error(u"Error from Inara API. content={}".format(resp))
                 self.backoff["Inara"].throttle()
                 return None
         except:
-            EDR_LOG.log(u"Malformed response from Inara API? content={}".format(resp), "ERROR")
+            EDR_LOG.error(u"Malformed response from Inara API? content={}".format(resp))
             self.backoff["Inara"].throttle()
             return None
 
@@ -160,7 +160,7 @@ class EDRServer(object):
             self.backoff["Inara"].reset()
             return data
         except:
-            EDR_LOG.log(u"Malformed cmdr profile response from Inara API? content={}".format(resp), "ERROR")
+            EDR_LOG.error(u"Malformed cmdr profile response from Inara API? content={}".format(resp))
             self.backoff["Inara"].throttle()
         return None
 
@@ -245,7 +245,7 @@ class EDRServer(object):
         resp = self.__get("{}/version/.json".format(self.EDR_SERVER), "EDR")
         
         if not self.__check_response(resp, "EDR", "Version"):
-            EDR_LOG.log(u"Failed to check for version update. code={code}, content={content}".format(code=resp.status_code, content=resp.text), "ERROR")
+            EDR_LOG.error(u"Failed to check for version update. code={code}, content={content}".format(code=resp.status_code, content=resp.text))
             return None
 
         return  json.loads(resp.content)
@@ -260,7 +260,7 @@ class EDRServer(object):
         resp = self.__get("{}/v1/notams.json".format(self.EDR_SERVER), "EDR", params)
 
         if not self.__check_response(resp, "EDR", "notams"):
-            EDR_LOG.log(u"Failed to retrieve notams.", "ERROR")
+            EDR_LOG.error(u"Failed to retrieve notams.")
             return None
         
         return json.loads(resp.content)
@@ -278,7 +278,7 @@ class EDRServer(object):
         resp = self.__get("{}/v1/systems.json".format(self.EDR_SERVER), "EDR", params)
 
         if not self.__check_response(resp, "EDR", "Sitreps"):
-            EDR_LOG.log(u"Failed to retrieve sitreps.", "ERROR")
+            EDR_LOG.error(u"Failed to retrieve sitreps.")
             return None
         
         return json.loads(resp.content)
@@ -293,7 +293,7 @@ class EDRServer(object):
         resp = self.__get("{}/v1/systems.json".format(self.EDR_SERVER), "EDR", params)
 
         if not self.__check_response(resp, "EDR", "system"):
-            EDR_LOG.log(u"Failed to retrieve star system.", "ERROR")
+            EDR_LOG.error(u"Failed to retrieve star system.")
             return None
 
         the_system = None
@@ -313,7 +313,7 @@ class EDRServer(object):
                     }
                 resp = self.__post("{}/v1/systems.json".format(self.EDR_SERVER), "EDR", json=payload, params=params)
                 if not self.__check_response(resp, "EDR", "Systems"):
-                    EDR_LOG.log(u"Failed to create new star system.", "ERROR")
+                    EDR_LOG.error(u"Failed to create new star system.")
                     return None
 
                 # --- FIX START ---
@@ -326,7 +326,7 @@ class EDRServer(object):
                     the_system = {new_id: payload} # Use the ID from the response and the original data
                     EDR_LOG.log(u"Created system {} in EDR with new ID: {}.".format(star_system, new_id), "DEBUG")
                 else:
-                    EDR_LOG.log(u"Unexpected response format after system creation.", "ERROR")
+                    EDR_LOG.error(u"Unexpected response format after system creation.")
                     return None
                 # --- FIX END ---
             else:
@@ -349,7 +349,7 @@ class EDRServer(object):
                 }
                 resp = self.__put("{}/v1/systems/{}/coords/.json".format(self.EDR_SERVER, sid), "EDR", json=payload, params=params)
                 if not self.__check_response(resp, "EDR", "coords"):
-                    EDR_LOG.log(u"Failed to add coords to existing star system.", "ERROR")
+                    EDR_LOG.error(u"Failed to add coords to existing star system.")
                     return the_system
                 EDR_LOG.log(u"Added coords to system {} in EDR with id={} and coords={}.".format(star_system, sid, coords), "DEBUG")
 
@@ -365,7 +365,7 @@ class EDRServer(object):
         resp = self.__get("{}/v1/fcs.json".format(self.EDR_SERVER), "EDR", params)
 
         if not self.__check_response(resp, "EDR", "system"):
-            EDR_LOG.log(u"Failed to retrieve FC.", "ERROR")
+            EDR_LOG.error(u"Failed to retrieve FC.")
             return None
 
         the_fc = None
@@ -377,7 +377,7 @@ class EDRServer(object):
                 payload = {"callsign": callsign, "name": name, "starSystem": star_system, "uid" : self.uid()}
                 resp = self.__post("{}/v1/fcs.json".format(self.EDR_SERVER), "EDR", json=payload, params=params)
                 if not self.__check_response(resp, "EDR", "FCs"):
-                    EDR_LOG.log(u"Failed to create new FC.", "ERROR")
+                    EDR_LOG.error(u"Failed to create new FC.")
                     return None
                 the_fc = json.loads(resp.content)
                 EDR_LOG.log(u"Created FC {} in EDR.".format(callsign), "DEBUG")
@@ -425,7 +425,7 @@ class EDRServer(object):
         resp = self.__get("{}/v1/cmdrs.json".format(self.EDR_SERVER), "EDR", params)
 
         if not self.__check_response(resp, "EDR", "Cmdrs"):
-            EDR_LOG.log(u"Failed to retrieve cmdr id.", "ERROR")
+            EDR_LOG.error(u"Failed to retrieve cmdr id.")
             EDR_LOG.log(u"{error}, {content}".format(error=resp.status_code, content=resp.text), "DEBUG")
             return None
 
@@ -442,7 +442,7 @@ class EDRServer(object):
                 endpoint = "{}/v1/cmdrs.json".format(self.EDR_SERVER)
                 resp = self.__post(endpoint, "EDR", params=params, json={"name": cmdr, "uid" : self.uid(), "requester" : self.player_name})
                 if not self.__check_response(resp, "EDR", "Post cmdr"):
-                    EDR_LOG.log(u"Failed to retrieve cmdr key.", "ERROR")
+                    EDR_LOG.error(u"Failed to retrieve cmdr key.")
                     return None
                 json_cmdr = json.loads(resp.content)
                 EDR_LOG.log(u"New cmdr:{}".format(json_cmdr), "DEBUG")
@@ -477,12 +477,12 @@ class EDRServer(object):
         EDR_LOG.log(u"Inara response: endpoint={}, resp={}".format(endpoint, resp), "DEBUG")
 
         if not self.__check_response(resp, "Inara", "Inara via EDR"):
-            EDR_LOG.log(u"Inara profile failed. Error code: {}".format(resp.status_code), "ERROR")
+            EDR_LOG.error(u"Inara profile failed. Error code: {}".format(resp.status_code))
             return False
             
         processed = self.__process_inara_response(resp.content)
         if not processed:
-            EDR_LOG.log(u"Inara response wasn't processed. Resp: {}".format(resp.content), "ERROR")
+            EDR_LOG.error(u"Inara response wasn't processed. Resp: {}".format(resp.content))
             return False
 
         cmdr_profile = edrcmdrprofile.EDRCmdrProfile()
@@ -652,7 +652,7 @@ class EDRServer(object):
         resp = self.__get(endpoint, "EDR", params)
 
         if not self.__check_response(resp, "EDR", "Get"):
-            EDR_LOG.log(u"Failed to retrieve recent items. Error code: {}".format(resp.status_code), "ERROR")
+            EDR_LOG.error(u"Failed to retrieve recent items. Error code: {}".format(resp.status_code))
             return []
         
         results = json.loads(resp.content)
@@ -707,7 +707,7 @@ class EDRServer(object):
         resp = self.__get(endpoint, "EDR", params)
 
         if not self.__check_response(resp, "EDR", "Heartbeat"):
-            EDR_LOG.log(u"Heartbeat failed. Error code: {}".format(resp.status_code), "ERROR")
+            EDR_LOG.error(u"Heartbeat failed. Error code: {}".format(resp.status_code))
             return None
         EDR_LOG.log(u"Heartbeat response: {}".format(resp.text), "INFO")
         return json.loads(resp.content)
@@ -727,7 +727,7 @@ class EDRServer(object):
         resp = self.__get(endpoint, "EDR", params)
 
         if not self.__check_response(resp, "EDR", "Where"):
-            EDR_LOG.log(u"Failed to retrieve location of an oppponent.", "ERROR")
+            EDR_LOG.error(u"Failed to retrieve location of an oppponent.")
             return None
         
         sighting = json.loads(resp.content)

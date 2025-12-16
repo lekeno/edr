@@ -209,10 +209,10 @@ class EDRSystems(object):
             sid = self._get_and_validate_sid(profile, star_system)
             if not sid:
                 self.systems_cache.evict(key)
-                EDR_LOG.log(u"Cached system {} had an invalid SID. Evicting cache entry.".format(star_system), "ERROR")
+                EDR_LOG.error(u"Cached system {} had an invalid SID. Evicting cache entry.".format(star_system))
                 call_server = True
             elif may_create and coords and not "coords" in profile.get(sid, {}):
-                EDR_LOG.log(u"Cached system {} is missing coordinates. Forcing update.".format(star_system), "ERROR")
+                EDR_LOG.error(u"Cached system {} is missing coordinates. Forcing update.".format(star_system))
                 call_server = True
             else:
                 EDR_LOG.log(u"System {} is in the cache with id={}".format(star_system, sid), "DEBUG")
@@ -252,7 +252,7 @@ class EDRSystems(object):
                 return sid
             else:
                 # Server returned data, but it failed validation (e.g., mismatched name, odd ID).
-                EDR_LOG.log(u"Server returned a system for {} but the ID was invalid. Treating as no match.".format(star_system), "ERROR")
+                EDR_LOG.error(u"Server returned a system for {} but the ID was invalid. Treating as no match.".format(star_system))
                 # Fall through to negative cache
         
         # Final cleanup: Cache failure/no match as None (Negative Caching)
@@ -308,7 +308,7 @@ class EDRSystems(object):
                     return fcid
                 
                 # If fresh but contains invalid data (no key/ID), fall through to server call.
-                EDR_LOG.log(u"Cached FC {} had an invalid ID format. Forcing server lookup.".format(callsign), "ERROR")
+                EDR_LOG.error(u"Cached FC {} had an invalid ID format. Forcing server lookup.".format(callsign))
                 self.fcs_cache.evict(key) # Evict the bad data
 
         # --- Step 2: Server Call (Action-Taking Block) ---
@@ -344,7 +344,7 @@ class EDRSystems(object):
                 EDR_LOG.log(u"Cached {}'s info with id={}".format(callsign, fcid), "DEBUG")
                 return fcid
             else:
-                EDR_LOG.log(u"Server returned FC data for {} but no ID was found. Treating as no match.".format(callsign), "ERROR")
+                EDR_LOG.error(u"Server returned FC data for {} but no ID was found. Treating as no match.".format(callsign))
                 # Fall through to negative cache
         
         # Final cleanup: Cache failure/no match as None (Negative Caching)

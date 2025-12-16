@@ -141,7 +141,7 @@ class EDSMServer(object):
                         else:
                             self.backoff.throttle()
                         
-                    EDR_LOG.log(u"Failed to get {} from EDSM: {}.".format(params, resp.status_code), "ERROR")
+                    EDR_LOG.error(u"Failed to get {} from EDSM: {}.".format(params, resp.status_code))
                     return None
                 
                 self.backoff.reset()

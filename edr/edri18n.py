@@ -38,15 +38,15 @@ def _get_sys_lang():
             select_lang = None
     except AttributeError as e:
         # Handling AttributeError when attempting to retrieve preferred languages
-        EDR_LOG.log("AttributeError occurred: {}.".format(e), "ERROR")
+        EDR_LOG.error("AttributeError occurred: {}.".format(e))
         select_lang = None
     except (IndexError, TypeError, KeyError) as e:
         # Handling specific exceptions
-        EDR_LOG.log(u"Error occurred: {}.".format(e), "ERROR")
+        EDR_LOG.error(u"Error occurred: {}.".format(e))
         select_lang = None
     except Exception as e:
         # Handling other exceptions
-        EDR_LOG.log(u"An unexpected error occurred: {}.".format(e), "ERROR")
+        EDR_LOG.error(u"An unexpected error occurred: {}.".format(e))
         select_lang = None
     finally:
         # Logging the acceptance of the system language for translation

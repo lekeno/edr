@@ -525,7 +525,7 @@ class EDRClient(object):
     def prefs_changed(self):
         set_language(config.get_str("language"))
         if self.mandatory_update:
-            EDR_LOG.log("Out-of-date client, aborting.", "ERROR")
+            EDR_LOG.error("Out-of-date client, aborting.")
             self.__status_update_pending()
             return
 
@@ -1528,7 +1528,7 @@ class EDRClient(object):
                                                                 cid=profile.cid), "DEBUG")
                 return profile.cid
 
-            EDR_LOG.log("Failed to retrieve/create cmdr {}".format(cmdr_name), "ERROR")
+            EDR_LOG.error("Failed to retrieve/create cmdr {}".format(cmdr_name))
             return None
         except CommsJammedError:
             self.__commsjammed()
@@ -2255,7 +2255,7 @@ class EDRClient(object):
         cmdr_id = self.cmdr_id(cmdr_name)
         if cmdr_id is None:
             self.status = _("no cmdr id (contact).")
-            EDR_LOG.log("Can't submit blip (no cmdr id for {}).".format(cmdr_name), "ERROR")
+            EDR_LOG.error("Can't submit blip (no cmdr id for {}).".format(cmdr_name))
             return self.is_anonymous()
 
         # --- A. Profile Retrieval & OPSEC Guard ---
@@ -2307,7 +2307,7 @@ class EDRClient(object):
         cmdr_id = self.cmdr_id(cmdr_name)
         if cmdr_id is None:
             self.status = _("cmdr unknown to EDR.")
-            EDR_LOG.log("Can't submit scan (no cmdr id for {}).".format(cmdr_name), "ERROR")
+            EDR_LOG.error("Can't submit scan (no cmdr id for {}).".format(cmdr_name))
             return self.is_anonymous()
 
         bounty = EDFineOrBounty(scan["bounty"]) if scan.get("bounty") else None
@@ -2344,7 +2344,7 @@ class EDRClient(object):
         try:
             success = self.server.scanned(cmdr_id, scan)
         except Exception as e:
-            EDR_LOG.log(f"Failed to submit scan for {cmdr_name}: {e}", "ERROR")
+            EDR_LOG.error(f"Failed to submit scan for {cmdr_name}: {e}")
 
         if success:
             self.status = _("scan reported for {}.").format(cmdr_name)
@@ -2487,7 +2487,7 @@ class EDRClient(object):
         crew_id = self.cmdr_id(report["crew"])
         if crew_id is None:
             self.status = _("{} is unknown to EDR.").format(report["crew"])
-            EDR_LOG.log("Can't submit crew report (no cmdr id for {}).".format(report["crew"]), "ERROR")
+            EDR_LOG.error("Can't submit crew report (no cmdr id for {}).".format(report["crew"]))
             return False
         
         if self.server.crew_report(crew_id, report):
@@ -3563,7 +3563,7 @@ class EDRClient(object):
             copy(result["name"])
         else:
             if result and 'station' not in result:
-                EDR_LOG.log("Unsupported search result: {}".format(result), "ERROR")
+                EDR_LOG.error("Unsupported search result: {}".format(result))
             
             self.status = _("{}: nothing within [{}LY, {}LS] of {}").format(soi_checker.name, int(radius), int(sc), reference)
             checked = _("checked {} systems").format(soi_checker.systems_counter) 
@@ -3887,7 +3887,7 @@ class EDRClient(object):
             self.notify_with_details(_("EDR Journey"), details, clear_before=True)
             return True
         except Exception as e:
-            EDR_LOG.log("Journey Fetch failed with exception: {}".format(e), "ERROR")
+            EDR_LOG.error("Journey Fetch failed with exception: {}".format(e))
             self.notify_with_details(_("EDR Journey"), [_("Something went wrong.")], clear_before=True)
             pass
 

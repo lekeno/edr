@@ -1606,7 +1606,7 @@ class EDVehicleFactory(object):
 
         vehicle_class = EDVehicleFactory.__vehicle_classes.get(name.lower(), None)
         if vehicle_class is None:
-            EDR_LOG.log("The requested vehicle has not been implemented: {}".format(name), "ERROR")
+            EDR_LOG.error("The requested vehicle has not been implemented: {}".format(name))
             vehicle_class = EDUnknownVehicle
         
         vehicle = vehicle_class()

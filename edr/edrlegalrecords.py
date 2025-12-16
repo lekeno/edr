@@ -97,7 +97,7 @@ class EDRLegalRecords(object):
                 updated = True
             
             except Exception as e:
-                EDR_LOG.log(f"Failed to fetch/update records for {cmdr_id} - {e}", "ERROR")
+                EDR_LOG.error(f"Failed to fetch/update records for {cmdr_id} - {e}")
         
         return updated
 

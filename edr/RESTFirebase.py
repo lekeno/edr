@@ -25,16 +25,16 @@ class RESTFirebaseAuth(object):
 
     def authenticate(self):
         if self.api_key == "":
-            EDR_LOG.log("can't authenticate: empty api key.", "ERROR")
+            EDR_LOG.error("can't authenticate: empty api key.")
             return False
 
         if not self.__login():
-            EDR_LOG.log("Authentication failed (login)", "ERROR")
+            EDR_LOG.error("Authentication failed (login)")
             self.__reset()
             return False
 
         if not self.__refresh_fb_token():
-            EDR_LOG.log("Authentication failed (FB token)", "ERROR")
+            EDR_LOG.error("Authentication failed (FB token)")
             self.__reset()
             return False
         return True
@@ -79,7 +79,7 @@ class RESTFirebaseAuth(object):
         requestTime = datetime.datetime.now()
         resp = requests.post(endpoint,data=payload)
         if resp.status_code != requests.codes.ok:
-            EDR_LOG.log("Refresh of FB token failed. Status code={code}, content={content}".format(code=resp.status_code, content=resp.content), "ERROR")
+            EDR_LOG.error("Refresh of FB token failed. Status code={code}, content={content}".format(code=resp.status_code, content=resp.content))
             return False
 
         self.auth = json.loads(resp.content)
