@@ -507,8 +507,7 @@ class EDRCommands(object):
 
     def overlay_command(self, param):
         if param == "":
-            EDR_LOG.log(u"Visual feedback is {}".format("enabled." if self.edr_client.visual_feedback
-                                                    else "disabled."), "INFO")
+            EDR_LOG.info(u"Visual feedback is {}".format("enabled." if self.edr_client.visual_feedback else "disabled."))
             if not self.edr_client.IN_GAME_MSG:
                 return False
             self.edr_client.IN_GAME_MSG.reconfigure()
@@ -548,8 +547,7 @@ class EDRCommands(object):
 
     def crimes_command(self, param):
         if param == "":
-            EDR_LOG.log(u"Crimes report is {}".format("enabled." if self.edr_client.crimes_reporting
-                                                    else "disabled."), "INFO")
+            EDR_LOG.info(u"Crimes report is {}".format("enabled." if self.edr_client.crimes_reporting else "disabled."))
             self.edr_client.notify_with_details("EDR crimes report",
                                         ["Enabled" if self.edr_client.crimes_reporting else "Disabled"])
         elif param == "on":

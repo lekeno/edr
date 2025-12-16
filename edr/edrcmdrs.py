@@ -157,8 +157,7 @@ class EDRCmdrs(object):
             updated_profile.dex(dex_profile)
         
         self.cmdrs_cache.set(key, updated_profile)
-        EDR_LOG.log(u"Cached EDR profile {cmdr}: {id}".format(cmdr=cmdr_name,
-                                                        id=updated_profile.cid), "DEBUG")
+        EDR_LOG.debug(u"Cached EDR profile {cmdr}: {id}".format(cmdr=cmdr_name, id=updated_profile.cid))
         return updated_profile
     
     def __edr_sqdrdex(self, cmdr_name, autocreate):
@@ -168,9 +167,7 @@ class EDRCmdrs(object):
         key = u"{}:{}".format(sqdr_id, cmdr_name.lower())
         profile = self.sqdrdex_cache.get(key)
         if profile:
-            EDR_LOG.log(u"Cmdr {cmdr} is in the EDR IFF cache for squadron {sqid} with key {key}".format(cmdr=cmdr_name,
-                                                                                    sqid=sqdr_id, key=key),
-                                                                                    "DEBUG")
+            EDR_LOG.debug(u"Cmdr {cmdr} is in the EDR IFF cache for squadron {sqid} with key {key}".format(cmdr=cmdr_name, sqid=sqdr_id, key=key))
             return profile
 
         profile = self.__edr_cmdr(cmdr_name, autocreate)
@@ -185,13 +182,10 @@ class EDRCmdrs(object):
             sqdrdex_dict = None
 
         if sqdrdex_dict:
-            EDR_LOG.log(u"EDR SqdrDex {sqid} entry found for {cmdr}@{cid}".format(sqid=sqdr_id,
-                                                                    cmdr=cmdr_name, cid=profile.cid
-                                                                    ), "DEBUG")
+            EDR_LOG.debug(u"EDR SqdrDex {sqid} entry found for {cmdr}@{cid}".format(sqid=sqdr_id, cmdr=cmdr_name, cid=profile.cid))
             profile.sqdrdex(sqdrdex_dict)
         self.sqdrdex_cache.set(u"{}:{}".format(sqdr_id, cmdr_name.lower()), profile)
-        EDR_LOG.log(u"Cached EDR SqdrDex {sqid} entry for {cmdr}@{cid}".format(sqid=sqdr_id,
-                                                                cmdr=cmdr_name, cid=profile.cid), "DEBUG")
+        EDR_LOG.debug(u"Cached EDR SqdrDex {sqid} entry for {cmdr}@{cid}".format(sqid=sqdr_id, cmdr=cmdr_name, cid=profile.cid))
         return profile.sqdrdex_profile
 
     def __inara_cmdr(self, cmdr_name, check_inara_server):
@@ -203,20 +197,18 @@ class EDRCmdrs(object):
             return profile
 
         if not check_inara_server:
-            EDR_LOG.log(u"Cmdr {cmdr} is not in the Inara cache ({cached}) or is stale ({staleness}).".format(
+            EDR_LOG.debug(u"Cmdr {cmdr} is not in the Inara cache ({cached}) or is stale ({staleness}).".format(
                 cmdr=cmdr_name,
                 cached=profile is not None,
-                staleness=stale),
-                "DEBUG")
+                staleness=stale))
             return None
 
         updated_profile = None
         
-        EDR_LOG.log(u"Stale ({stale}) or not cached ({cached}) in Inara cache. Inara API call for {cmdr}.".format(
+        EDR_LOG.info(u"Stale ({stale}) or not cached ({cached}) in Inara cache. Inara API call for {cmdr}.".format(
                 stale=stale,
                 cached=profile is not None,
-                cmdr=cmdr_name),
-                "INFO")
+                cmdr=cmdr_name))
         try:
             updated_profile = self.server.inara_cmdr(cmdr_name)
         except CommsJammedError:

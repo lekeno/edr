@@ -26,34 +26,33 @@ def _get_sys_lang():
     """
     try:
         # Attempting to get preferred languages from l10n module
-        pref_langs = list(l10n.Locale.preferred_languages())
+        select_lang = None
+        pref_langs = list(l10n.Locale.preferred_languages() or [])
         # Select the first preferred language if it is supported by the list of supported languages.
         # If the preferred language is supported, extract only the primary language from the string;
         # otherwise, set select_lang to None.
-        if pref_langs[0].split("-")[0] in LANG_LIST:
-            # Extract the primary language from the first preferred language
-            select_lang = pref_langs[0].split("-")[0]
-        else:
-            # If the first preferred language is not supported, set select_lang to None
-            select_lang = None
+        if pref_langs:
+            primary_lang = pref_langs[0].split("-")[0]
+            select_lang = primary_lang if primary_lang in LANG_LIST else None
     except AttributeError as e:
         # Handling AttributeError when attempting to retrieve preferred languages
-        EDR_LOG.error("AttributeError occurred: {}.".format(e))
+        EDR_LOG.exception("Failed to retrieve preferred languages (AttributeError).")
         select_lang = None
-    except (IndexError, TypeError, KeyError) as e:
-        # Handling specific exceptions
-        EDR_LOG.error(u"Error occurred: {}.".format(e))
+    except (TypeError, KeyError) as e:
+        # Catching TypeError (e.g., if split returns unexpected type) 
+        # and KeyError (less likely here, but safe)
+        EDR_LOG.exception("Unexpected type/key error during language processing.")
         select_lang = None
     except Exception as e:
         # Handling other exceptions
-        EDR_LOG.error(u"An unexpected error occurred: {}.".format(e))
+        EDR_LOG.exception("An unhandled error occurred during language selection.")
         select_lang = None
     finally:
         # Logging the acceptance of the system language for translation
         if select_lang is not None:
-            EDR_LOG.info(u"The system language ({}) is accepted for translation.".format(select_lang))
+            EDR_LOG.info(f"The system language ({select_lang}) is accepted for translation.")
         else:
-            EDR_LOG.info(u"The system language is not accepted for translation, English will be used.")
+            EDR_LOG.info("The system language is not accepted for translation, English will be used.")
 
     return select_lang
 

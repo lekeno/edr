@@ -155,7 +155,7 @@ class EDRDiscordWebhook(object):
                 resp = EDRDiscordWebhook.SESSION.post(self.webhook_url, json=payload_json, files=files)
                 return self.__check_response(resp)
             except requests.exceptions.RequestException as e:
-                EDR_LOG.log(u"ConnectionException {} for POST Discord Webhook: attempts={}".format(e, attempts), u"WARNING")
+                EDR_LOG.warning(u"ConnectionException {} for POST Discord Webhook: attempts={}".format(e, attempts))
                 last_connection_exception = e
         raise last_connection_exception
     
@@ -703,13 +703,13 @@ class EDRDiscordIntegration(object):
         cfg = self.__combined_cfg(from_cmdr, channel)
 
         if cfg.get("blocked", False):
-            EDR_LOG.log(u"blocked in player cfg: {}".format(cfg), u"DEBUG")
+            EDR_LOG.debug(u"blocked in player cfg: {}".format(cfg))
             return True
 
         if cfg["matching"]:
             try:
                 if not(any(re.compile(regex).match(message) for regex in cfg["matching"])):
-                    EDR_LOG.log(u"no matching in player cfg: {} {}".format(message, cfg["matching"]), u"DEBUG")
+                    EDR_LOG.debug(u"no matching in player cfg: {} {}".format(message, cfg["matching"]))
                     return True
             except:
                 pass
@@ -717,7 +717,7 @@ class EDRDiscordIntegration(object):
         if cfg["mismatching"]:
             try:
                 if any(re.compile(regex).match(message) for regex in cfg["mismatching"]):
-                    EDR_LOG.log(u"mismatching in player cfg: {} {}".format(message, cfg["mismatching"]), u"DEBUG")
+                    EDR_LOG.debug(u"mismatching in player cfg: {} {}".format(message, cfg["mismatching"]))
                     return True
             except:
                 pass
@@ -726,7 +726,7 @@ class EDRDiscordIntegration(object):
             profile = self.edrcmdrs.cmdr(from_cmdr, autocreate=False, check_inara_server=True)
             karma = profile.karma if profile else 0
             karma_check = karma < cfg["min_karma"] or karma > cfg["max_karma"]
-            EDR_LOG.log(u"Karma check is {} ({} < karma < {})".format(karma_check, cfg["min_karma"], cfg["max_karma"]), u"DEBUG")
+            EDR_LOG.debug(u"Karma check is {} ({} < karma < {})".format(karma_check, cfg["min_karma"], cfg["max_karma"]))
             return karma_check
         
         return False

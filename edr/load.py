@@ -449,8 +449,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
         EDR_CLIENT.edrfssinsights.reset()
         ed_player.inception(genesis=True)
         EDR_CLIENT.status = _(u"initialized.")
-        EDR_LOG.log(u"Journal player got created: accurate picture of friends/wings.",
-                   "DEBUG")
+        EDR_LOG.debug(u"Journal player got created: accurate picture of friends/wings.")
         return
 
     if entry["event"] in ["LoadGame"]:
@@ -460,8 +459,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
         EDR_CLIENT.edrfssinsights.reset()
         ed_player.inception(genesis=from_genesis)
         if from_genesis:
-            EDR_LOG.log(u"Heuristics genesis: probably accurate picture of friends/wings.",
-                   "DEBUG")
+            EDR_LOG.debug(u"Heuristics genesis: probably accurate picture of friends/wings.")
         if entry.get("Odyssey", False):
             EDR_CLIENT.set_dlc("Odyssey")
             EDR_LOG.debug(u"DLC is Odyssey")
@@ -950,9 +948,9 @@ def edr_submit_crime(criminal_cmdrs, offence, victim, timestamp):
 
     criminals = []
     for criminal_cmdr in criminal_cmdrs:
-        EDR_LOG.log(u"Appending criminal {} with ship {}, suit {}".format(criminal_cmdr.name,
-                                                                criminal_cmdr.vehicle_type(), criminal_cmdr.spacesuit_type()),
-                   "DEBUG")
+        EDR_LOG.debug(f"Appending criminal {criminal_cmdr.name} ",
+                      f"with ship {criminal_cmdr.vehicle_type()}, ",
+                      f"suit {criminal_cmdr.spacesuit_type()}")
         blob = {"name": criminal_cmdr.name, "enemy": criminal_cmdr.enemy, "wanted": criminal_cmdr.wanted, "bounty": criminal_cmdr.bounty, "fine": criminal_cmdr.fine}
         if criminal_cmdr.vehicle_type():
             blob["ship"] = criminal_cmdr.vehicle_type()
@@ -1265,18 +1263,15 @@ def report_comms(player, entry):
             if entry["From"].startswith("$cmdr_decorate:#name="):
                 from_cmdr = entry["From"][len("$cmdr_decorate:#name="):-1]
             if player.is_friend(from_cmdr) or player.is_wingmate(from_cmdr):
-                EDR_LOG.log(u"Text from {} friend / wing. Can't infer location".format(from_cmdr),
-                           "INFO")
+                EDR_LOG.debug(f"Text from {from_cmdr} friend / wing. Can't infer location")
             else:
                 if player.from_genesis:
-                    EDR_LOG.log(u"Text from {} (not friend/wing) == same location".format(from_cmdr),
-                            "INFO")
+                    EDR_LOG.debug(f"Text from {from_cmdr} (not friend/wing) == same location")
                     contact = player.instanced_player(from_cmdr)
                     edr_submit_contact(contact, entry["timestamp"],
                                     "Received text (non wing/friend player)", player)
                 else:
-                    EDR_LOG.log(u"Received text from {}. Player not created from game start => can't infer location".format(from_cmdr),
-                        "INFO")
+                    EDR_LOG.debug(f"Received text from {from_cmdr}. Player not created from game start => can't infer location")
         elif entry["Channel"] in ["starsystem"]:
             from_cmdr = entry["From"]
             if entry["From"].startswith("$cmdr_decorate:#name="):
@@ -1313,14 +1308,12 @@ def report_comms(player, entry):
             EDR_LOG.info(u"Sent text to {} friend/wing: can't infer location".format(to_cmdr))            
         else:
             if player.from_genesis:
-                EDR_LOG.log(u"Sent text to {} (not friend/wing) == same location".format(to_cmdr),
-                        "INFO")
+                EDR_LOG.info(f"Sent text to {to_cmdr} (not friend/wing) == same location")
                 contact = player.instanced_player(to_cmdr)
                 edr_submit_contact(contact, entry["timestamp"], "Sent text (non wing/friend player)",
                                 player)
             else:
-                EDR_LOG.log(u"Sent text to {}. Player not created from game start => can't infer location".format(to_cmdr),
-                        "INFO")
+                EDR_LOG.warning(f"Sent text to {to_cmdr}. Player not created from game start => can't infer location")
 
     m = re.findall(r"(http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-f][0-9a-f]))+)", entry["Message"], flags=re.IGNORECASE)
     if m:

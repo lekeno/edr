@@ -819,13 +819,16 @@ class EDRSystems(object):
         return None
 
 
-    def station(self, star_system, station_name, station_type):
+    def station(self, star_system, station_name, station_type, pad_count_override=None):
         stations = self.stations_in_system(star_system)
         if not stations:
             return None
             
         for station in stations:
             if station["name"] == station_name:
+                if station_type == "FleetCarrier" and pad_count_override == 32:
+                    station = station.copy()
+                    station["type"] = "squadron carrier"
                 return station
         
         worth_retrying_age = 60*60*6 

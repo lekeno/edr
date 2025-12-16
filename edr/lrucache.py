@@ -95,14 +95,14 @@ class LRUCache(object):
                 return entry["content"]
             else:
                 entry_ttl = entry.get("ttl", self.default_max_age)
-                EDR_LOG.log(u"Stale entry for {key}: {now} - {dt} = {diff} > {mxa}, {content}".format(
+                EDR_LOG.debug(u"Stale entry for {key}: {now} - {dt} = {diff} > {mxa}, {content}".format(
                     key=key, 
                     now=datetime.datetime.now(), 
                     dt=entry["datetime"], 
                     diff=(datetime.datetime.now() - entry["datetime"]), 
                     mxa=entry_ttl,
                     content=entry["content"]
-                ), "DEBUG")
+                ))
                 self.cache.pop(key)
         except KeyError:
             pass

@@ -266,14 +266,12 @@ class EDRClient(object):
             return
 
         if self.is_obsolete(version_range["min"]):
-            EDR_LOG.log("Mandatory update! {version} vs. {min}"
-                       .format(version=self.edr_version, min=version_range["min"]), "ERROR")
+            EDR_LOG.error(f"Mandatory update! {self.edr_version} vs. {version_range['min']}")
             self.mandatory_update = True
             self.autoupdate_pending = version_range.get("autoupdatable", False)
             self.__status_update_pending()
         elif self.is_obsolete(version_range["latest"]):
-            EDR_LOG.log("EDR update available! {version} vs. {latest}"
-                       .format(version=self.edr_version, latest=version_range["latest"]), "INFO")
+            EDR_LOG.info(f"EDR update available! {self.edr_version} vs. {version_range['latest']}")
             self.mandatory_update = False
             self.autoupdate_pending = version_range.get("autoupdatable", False)
             self.__status_update_pending()
@@ -539,8 +537,8 @@ class EDRClient(object):
         config.set("EDRRedactMyInfo", self.anonymous_reports)
         config.set("EDRCrimesReporting", "True" if self.crimes_reporting else "False")
         config.set("EDRFCJumpPSA", self.fc_jump_psa)
-        EDR_LOG.log("Audio cues: {}, {}".format(config.get_str("EDRAudioFeedback"),
-                                                config.get_str("EDRAudioFeedbackVolume")), "DEBUG")
+        EDR_LOG.debug("Audio cues: {}, {}".format(config.get_str("EDRAudioFeedback"),
+                                                config.get_str("EDRAudioFeedbackVolume")))
         EDR_LOG.debug("Anonymous reports: {}".format(config.get_str("EDRRedactMyInfo")))
         EDR_LOG.debug("Crimes reporting: {}".format(config.get_str("EDRCrimesReporting")))
         if self.client_ui:
@@ -914,17 +912,42 @@ class EDRClient(object):
             self.__notify(_('Assisted Navigation'), [_("Invalid destination")], clear_before = True)
 
     def docking_guidance(self, entry):
+        if not hasattr(docking_guidance, "requests_cache"):
+            docking_guidance.requests_cache = {}
+
+        requests_cache = docking_guidance.requests_cache
+
         if not self.visual_feedback:
             # TODO only works if visual feedback is allowed due to how the docking feature is tied to IN_GAME_MSG which can be None if visual feedback is turned off
             return
-    
-        # { "timestamp":"2025-12-15T02:53:15Z", "event":"DockingRequested", "MarketID":3700480256, "StationName":"B6J-0HZ", "StationType":"FleetCarrier", "LandingPads":{ "Small":4, "Medium":4, "Large":8 } }
-        { "timestamp":"2025-12-14T08:55:43Z", "event":"DockingRequested", "MarketID":3700923648, "StationName":"VIME", "StationType":"FleetCarrier", "LandingPads":{ "Small":8, "Medium":8, "Large":16 } }
-        if entry["event"] == "DockingGranted":
-            station = self.edrsystems.station(self.player.star_system, entry["StationName"], entry["StationType"])
-            totalLandingPads = sum(entry["LandingPads"].values())
-            if entry["StationType"] == "FleetCarrier" and totalLandingPads == 32:
-                station["type"] = "squadron carrier"
+
+        market_id = entry.get("MarketID")
+        if not market_id:
+            return # Cannot cache or retrieve without a MarketID
+
+        # --- DockingRequested: Cache the data ---
+        if entry["event"] == "DockingRequested":
+            # Store the essential data in the function's persistent cache
+            if "LandingPads" in entry:
+                requests_cache[market_id] = {
+                    "LandingPads": entry["LandingPads"],
+                    "StationType": entry["StationType"], 
+                }
+            self.IN_GAME_MSG.clear_docking()
+        elif entry["event"] == "DockingGranted":
+            event_station_type = entry["StationType"]
+            
+            request_data = requests_cache.pop(market_id, None)
+            pad_count_override = None
+            if request_data and event_station_type == "FleetCarrier":
+                # Calculate total pads using the pythonic sum() over values()
+                pad_count_override = sum(request_data["LandingPads"].values())
+
+            station = self.edrsystems.station(self.player.star_system,
+                entry["StationName"],
+                entry["StationType"],
+                pad_count_override)
+
             faction = None
             if station and "controllingFaction" in station:
                 controllingFaction = station["controllingFaction"]
@@ -933,6 +956,7 @@ class EDRClient(object):
         
             description = self.describe_station(station, faction)
             summary = self.IN_GAME_MSG.docking(self.player.star_system, station, entry["LandingPad"], faction, description)
+            
             if summary:
                 if self.client_ui:
                     self.client_ui.notify(summary["header"], summary["body"])
@@ -1524,11 +1548,10 @@ class EDRClient(object):
         try:
             profile = self.cmdr(cmdr_name, check_inara_server=False)
             if not (profile is None or profile.cid is None):
-                EDR_LOG.log("Cmdr {cmdr} known as id={cid}".format(cmdr=cmdr_name,
-                                                                cid=profile.cid), "DEBUG")
+                EDR_LOG.debug(f"Cmdr {cmdr_name} known as id={profile.cid}")
                 return profile.cid
 
-            EDR_LOG.error("Failed to retrieve/create cmdr {}".format(cmdr_name))
+            EDR_LOG.error(f"Failed to retrieve/create cmdr {cmdr_name}")
             return None
         except CommsJammedError:
             self.__commsjammed()
@@ -2371,8 +2394,7 @@ class EDRClient(object):
 
             sid = self.edrsystems.system_id(star_system, may_create=True)
             if sid is None:
-                EDR_LOG.log("Failed to report traffic for system {} : no id found.".format(star_system),
-                        "DEBUG")
+                EDR_LOG.debug("Failed to report traffic for system {} : no id found.".format(star_system))
                 return False
 
             success = self.server.traffic(sid, traffic)
@@ -2409,8 +2431,7 @@ class EDRClient(object):
 
         sid = self.edrsystems.system_id(star_system, may_create=True)
         if sid is None:
-            EDR_LOG.log("Failed to report crime in system {} : no id found.".format(star_system),
-                       "DEBUG")
+            EDR_LOG.debug("Failed to report crime in system {} : no id found.".format(star_system))
             return False
 
         if self.server.crime(sid, crime):
@@ -2456,8 +2477,7 @@ class EDRClient(object):
         star_system = fight["starSystem"]
         sid = self.edrsystems.system_id(star_system, may_create=True)
         if sid is None:
-            EDR_LOG.log("Failed to report fight in system {} : no id found.".format(star_system),
-                       "DEBUG")
+            EDR_LOG.debug("Failed to report fight in system {} : no id found.".format(star_system))
             return
         instance_changes = self.player.instance.noteworthy_changes_json()
         if instance_changes:
@@ -2620,8 +2640,7 @@ class EDRClient(object):
         star_system = info["starSystem"]
         sid = self.edrsystems.system_id(star_system, may_create=True)
         if sid is None:
-            EDR_LOG.log("Failed to call central from system {} : no id found.".format(star_system),
-                       "DEBUG")
+            EDR_LOG.debug("Failed to call central from system {} : no id found.".format(star_system))
             return False
         
         info["codeword"] = self.player.recon_box.gen_keycode()

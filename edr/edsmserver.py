@@ -158,5 +158,5 @@ class EDSMServer(object):
                 return json.loads(resp.content)
             except requests.exceptions.RequestException as e:
                 last_connection_exception = e
-                EDR_LOG.log(u"ConnectionException {} for GET EDSM: attempts={}".format(e, attempts), u"WARNING")
+                EDR_LOG.warning(u"ConnectionException {} for GET EDSM: attempts={}".format(e, attempts))
         raise last_connection_exception 
