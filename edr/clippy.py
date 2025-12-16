@@ -1,4 +1,4 @@
-
+import EDR_LOG from edrlog
 import platform, os
 import ctypes
 
@@ -27,8 +27,11 @@ def __winSetClipboard(text):
     # 2. Use ctypes.memmove to copy the raw bytes (including the null terminator, which is added after the copy)
     buffer = (ctypes.c_char * (text_len + 1)).from_address(pchData)
     
-    # Copy the bytes into the buffer
-    ctypes.memmove(buffer, text_bytes, text_len)
+    try:
+        # Copy the bytes into the buffer
+        ctypes.memmove(buffer, text_bytes, text_len)
+    except Exception as e:
+        EDR_LOG.log(e, level=EDR_LOG.ERROR)
     
     # Manually add the null terminator
     buffer[text_len] = b'\x00'

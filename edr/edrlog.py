@@ -10,25 +10,40 @@ if sys.version_info.major == 3:
 
 class EDRLog(object):
 
-    LEVEL_MAPPING = {"DEBUG": logging.DEBUG,  "INFO": logging.INFO, "WARNING": logging.WARNING, "ERROR": logging.ERROR, "CRITICAL": logging.CRITICAL}
     PLUGIN_NAME = os.path.basename(os.path.dirname(__file__))
 
     def __init__(self):
         config = EDRConfig()
         self.logger = logging.getLogger(f'{appname}.{self.PLUGIN_NAME}')
-        level = self.LEVEL_MAPPING.get(config.logging_level(), logging.NOTSET)
+        level_name = config.logging_level()
+        level = logging.getLevelName(level_name.upper())
         self.logger.setLevel(level)
+        
         if not self.logger.hasHandlers():
             logger_channel = logging.StreamHandler()
-            logger_formatter = logging.Formatter(f'%(asctime)s - %(name)s - %(levelname)s - %(module)s:%(lineno)d:%(funcName)s: %(message)s')
+            log_format = f'%(asctime)s - %(name)s - %(levelname)s - %(module)s:%(lineno)d:%(funcName)s: %(message)s'
+            logger_formatter = logging.Formatter(log_format)
+
             logger_formatter.default_time_format = '%Y-%m-%d %H:%M:%S'
             logger_formatter.default_msec_format = '%s.%03d'
+            
             logger_channel.setFormatter(logger_formatter)
             self.logger.addHandler(logger_channel)
 
-    def log(self, msg, level):
-        level = self.LEVEL_MAPPING.get(level, logging.NOTSET)
-        self.logger.log(level, msg)
+    def debug(self, msg, *args, **kwargs):
+        self.logger.debug(msg, *args, **kwargs)
+
+    def info(self, msg, *args, **kwargs):
+        self.logger.info(msg, *args, **kwargs)
+
+    def warning(self, msg, *args, **kwargs):
+        self.logger.warning(msg, *args, **kwargs)
+
+    def error(self, msg, *args, **kwargs):
+        self.logger.error(msg, *args, **kwargs)
+
+    def critical(self, msg, *args, **kwargs):
+        self.logger.critical(msg, *args, **kwargs)
 
 
 EDR_LOG = EDRLog()
