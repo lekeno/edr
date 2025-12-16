@@ -231,7 +231,7 @@ class EDRSystems(object):
             try:
                 updated_system = self.server.system(star_system, may_create, coords)
             except Exception as e:
-                EDR_LOG.log(f"Comms jammed/Failed to fetch system ID for {star_system}: {e}", "WARNING")
+                EDR_LOG.warning(f"Comms jammed/Failed to fetch system ID for {star_system}: {e}")
                 
                 # Stale Fallback Logic: Use 'profile' peeked in step 1 if server fails.
                 if profile and profile is not None:
@@ -273,12 +273,12 @@ class EDRSystems(object):
         
         # 1. Check if the key is the literal system name (an unexpected placeholder)
         if sid.lower() == star_system_name.lower():
-            EDR_LOG.log(u"Rejected potential system ID (matches system name): {}".format(sid), "WARNING")
+            EDR_LOG.warning(u"Rejected potential system ID (matches system name): {}".format(sid))
             return None
             
         # 2. Check if the key looks like an internal/common field name
         if sid.lower() in ["name", "id", "system"]:
-            EDR_LOG.log(u"Rejected potential system ID (matches internal field): {}".format(sid), "WARNING")
+            EDR_LOG.warning(u"Rejected potential system ID (matches internal field): {}".format(sid))
             return None
         
         return sid
@@ -323,7 +323,7 @@ class EDRSystems(object):
             EDR_LOG.log(u"Fetching FC info for {} from EDR server.".format(callsign), "INFO")
             updated_fc = self.server.fc(callsign, name, star_system, may_create)
         except Exception as e:
-            EDR_LOG.log(f"Comms jammed/Failed to fetch FC ID for {callsign}: {e}", "WARNING")
+            EDR_LOG.warning(f"Comms jammed/Failed to fetch FC ID for {callsign}: {e}")
             
             # Stale Fallback Logic: Use 'stale_profile' if server fails.
             if stale_profile and stale_profile is not None:
@@ -737,7 +737,7 @@ class EDRSystems(object):
         common_star_classes = "o,b,a,f,g,k,m,n,l,t,tts,s,w,x,y,h".split(",")
         
         if star_type.lower() not in type_lut and star_type.lower() not in common_star_classes:
-            EDR_LOG.log(u"Unrecognized star type: {}.".format(star_type), "WARNING")
+            EDR_LOG.warning(u"Unrecognized star type: {}.".format(star_type))
         return type_lut.get(star_type.lower(), star_type)
         
 
@@ -1014,7 +1014,7 @@ class EDRSystems(object):
             biome.append(species)
             species_added = True
         elif cgenus == "unknown":
-            EDR_LOG.log("Unknown genus: {}".format(genus), "WARNING")
+            EDR_LOG.warning("Unknown genus: {}".format(genus))
             biome.append(species)
             species_added = True
         else:
@@ -1761,7 +1761,7 @@ class EDRSystems(object):
             if cgenus in togo_genuses:
                 del togo_genuses[cgenus]
             else:
-                EDR_LOG.log(u"Genus '{}' is not part of the 'togo_genuses': {}".format(cgenus, togo_genuses), "WARNING")
+                EDR_LOG.warning(u"Genus '{}' is not part of the 'togo_genuses': {}".format(cgenus, togo_genuses))
             actual_species.add(species[s]["speciesLocalised"])
         analyzed_genuses = len(actual_genuses)
         analyzed_species = len(actual_species)
@@ -2337,7 +2337,7 @@ class EDRSystems(object):
                 # Note: The server call uses SID, but the timespan is also a factor in the cache TTL
                 updated_crimes = self.server.recent_crimes(key, self.timespan) 
             except Exception as e:
-                EDR_LOG.log(f"Comms jammed/Failed to fetch crimes for {star_system}: {e}", "WARNING")
+                EDR_LOG.warning(f"Comms jammed/Failed to fetch crimes for {star_system}: {e}")
                 
                 # Stale Fallback Logic: Use 'stale_profile' if server fails.
                 if stale_profile is not None:
@@ -2406,7 +2406,7 @@ class EDRSystems(object):
                 # Note: The timespan is used in the request
                 updated_traffic = self.server.recent_traffic(key, self.timespan) 
             except Exception as e:
-                EDR_LOG.log(f"Comms jammed/Failed to fetch traffic for {star_system}: {e}", "WARNING")
+                EDR_LOG.warning(f"Comms jammed/Failed to fetch traffic for {star_system}: {e}")
                 
                 # Stale Fallback Logic: Use 'stale_profile' if server fails.
                 if stale_profile is not None:
@@ -2815,7 +2815,7 @@ class EDRSystems(object):
                 updated = True
 
             except Exception as e:
-                EDR_LOG.log("Failed to fetch/update sitreps: {}".format(e), "WARNING")
+                EDR_LOG.warning("Failed to fetch/update sitreps: {}".format(e))
 
         if self.__are_notams_stale():
             missing_seconds = self.timespan_notams
@@ -2834,7 +2834,7 @@ class EDRSystems(object):
                 self.notams_cache.last_updated = now
                 updated = True
             except Exception as e:
-                EDR_LOG.log("Failed to fetch/update notams: {}".format(e), "WARNING")
+                EDR_LOG.warning("Failed to fetch/update notams: {}".format(e))
 
         return updated
 

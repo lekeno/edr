@@ -1335,7 +1335,7 @@ def handle_damage_events(ed_player, entry):
             if ed_player.slf:
                 ed_player.slf.taking_hull_damage(entry["Health"] * 100.0) # HullDamage's Health is normalized to 0.0 ... 1.0
             else:
-                EDR_LOG.log("SLF taking hull damage but player has none...", "WARNING")
+                EDR_LOG.warning("SLF taking hull damage but player has none...")
         else:
             # TODO this could be the SRV too...
             ed_player.mothership.taking_hull_damage(entry["Health"] * 100.0) # HullDamage's Health is normalized to 0.0 ... 1.0
@@ -1356,12 +1356,12 @@ def handle_damage_events(ed_player, entry):
         if ed_player.srv:
             ed_player.srv.destroy()
         else:
-            EDR_LOG.log("SRV got destroyed but player had none...", "WARNING")
+            EDR_LOG.warning("SRV got destroyed but player had none...")
     elif entry["event"] == "FighterDestroyed":
         if ed_player.slf:
             ed_player.slf.destroy()
         else:
-            EDR_LOG.log("SLF got destroyed but player had none...", "WARNING")
+            EDR_LOG.warning("SLF got destroyed but player had none...")
     elif entry["event"] == "SelfDestruct" and ed_player.piloted_vehicle:
         ed_player.piloted_vehicle.destroy() # TODO on foot case?
     else:

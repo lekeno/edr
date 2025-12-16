@@ -1341,7 +1341,7 @@ class EDPlayerOne(EDPlayer):
             if self.slf:
                 self.slf.attacked()
             else:
-                EDR_LOG.log("SLF attacked but player had none", "WARNING")
+                EDR_LOG.warning("SLF attacked but player had none")
         elif target == "You":
             if self.on_foot:
                 self.spacesuit.attacked()
@@ -1351,9 +1351,9 @@ class EDPlayerOne(EDPlayer):
             if self.srv:
                 self.srv.attacked()
             else:
-                EDR_LOG.log("SRV attacked but player had none", "WARNING")
+                EDR_LOG.warning("SRV attacked but player had none")
         else:
-            EDR_LOG.log("Unrecognized target: {}".format(target), "WARNING")
+            EDR_LOG.warning("Unrecognized target: {}".format(target))
 
 
     def pips(self, values):

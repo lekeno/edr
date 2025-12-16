@@ -193,11 +193,11 @@ class LRUCache(object):
                 return cache_instance
                 
         except (FileNotFoundError, EOFError, pickle.UnpicklingError, Exception) as e:
-            # EDR_LOG.log(f"Cache load failed for {file_path}: {e}", "WARNING")
+            # EDR_LOG.warning(f"Cache load failed for {file_path}: {e}")
             
             # Optionally: Clean up corrupt file
             if os.path.exists(file_path):
-                # EDR_LOG.log(f"Deleting corrupt cache file: {file_path}", "WARNING")
+                # EDR_LOG.warning(f"Deleting corrupt cache file: {file_path}")
                 os.remove(file_path)
             
             # Fallback: Return a new, initialized instance

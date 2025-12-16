@@ -19,4 +19,4 @@ class EDModulesInfoReader(object):
                     entry = json.loads(data)
                     return entry
         except:
-            EDR_LOG.log("Couldn't process modulesinfo", "WARNING")
+            EDR_LOG.warning("Couldn't process modulesinfo")

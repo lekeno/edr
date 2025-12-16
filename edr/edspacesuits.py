@@ -174,7 +174,7 @@ class EDSpaceSuit(object):
         other_type = EDSuitFactory.suit_type(event.get("SuitName", "unknown")) 
 
         if other_id != self.id or other_type != self.type:
-            EDR_LOG.log(u"Mismatch between Suit ID ({} vs {}) and/or Type ({} vs. {}), can't update from loadout".format(self.id, other_id, self.type, other_type), "WARNING")
+            EDR_LOG.warning(u"Mismatch between Suit ID ({} vs {}) and/or Type ({} vs. {}), can't update from loadout".format(self.id, other_id, self.type, other_type))
             return
         
         self.loadout.update_from_suitloadout(event)

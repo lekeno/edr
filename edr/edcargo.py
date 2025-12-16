@@ -15,7 +15,7 @@ class EDCargo(object):
                     self.inventory[name] = item.get("Count", 0)
 
         except:
-            EDR_LOG.log("Couldn't process cargo event {}".format(cargo_event), "WARNING")
+            EDR_LOG.warning("Couldn't process cargo event {}".format(cargo_event))
 
     def collect(self, collect_event):
         if collect_event.get("event", None) != "CollectCargo":

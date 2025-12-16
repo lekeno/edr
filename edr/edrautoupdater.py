@@ -85,7 +85,7 @@ class EDRAutoUpdater(object):
         latest_release_api = "https://api.github.com/repos/{}/releases/latest".format(self.REPO)
         response = requests.get(latest_release_api)
         if response.status_code != requests.codes.ok:
-            EDR_LOG.log("Couldn't check the latest release on github: {}".format(response.status_code), "WARNING")
+            EDR_LOG.warning("Couldn't check the latest release on github: {}".format(response.status_code))
             return None
         json_resp = json.loads(response.content)
         assets = json_resp.get("assets", None)

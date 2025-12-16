@@ -415,7 +415,7 @@ class EDRCommands(object):
     def handle_hash_commands(self, command, command_parts, recipient):
         target_cmdr = EDRCommands.get_target_cmdr(command_parts, recipient, self.edr_client.player)
         if target_cmdr is None:
-            EDR_LOG.log(u"Skipping tag command: no valid target", "WARNING")
+            EDR_LOG.warning(u"Skipping tag command: no valid target")
             return False
         
         if (command == "#!" or command == "#outlaw"):
@@ -447,7 +447,7 @@ class EDRCommands(object):
     def handle_minus_commands(self, command, command_parts, recipient):
         target_cmdr = EDRCommands.get_target_cmdr(command_parts, recipient, self.edr_client.player)
         if target_cmdr is None:
-            EDR_LOG.log(u"Skipping untag command: no valid target", "WARNING")
+            EDR_LOG.warning(u"Skipping untag command: no valid target")
             return False
 
         if command == "-#":

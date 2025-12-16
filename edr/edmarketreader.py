@@ -18,4 +18,4 @@ class EDMarketReader(object):
                     entry = json.loads(data)
                     return entry
         except:
-            EDR_LOG.log("Couldn't process market", "WARNING")
+            EDR_LOG.warning("Couldn't process market")

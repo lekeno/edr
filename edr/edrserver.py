@@ -79,7 +79,7 @@ class EDRServer(object):
 
     def __check_response(self, response, service, call="Unknown"):
         if response is None:
-            EDR_LOG.log(u"No response: service={}, call={}, resp={}".format(service, call, response), "WARNING")
+            EDR_LOG.warning(u"No response: service={}, call={}, resp={}".format(service, call, response))
             return False
         
         EDR_LOG.log(u"Checking response: service={}, call={}, status={}".format(service, call, response.status_code), "DEBUG")
@@ -116,7 +116,7 @@ class EDRServer(object):
 
     def __process_inara_response(self, resp):
         if resp is None:
-            EDR_LOG.log(u"No Inara response: resp={}".format(resp), "WARNING")
+            EDR_LOG.warning(u"No Inara response: resp={}".format(resp))
             return None
 
         EDR_LOG.log(u"Processing Inara response: resp={}".format(resp), "DEBUG")
@@ -125,15 +125,15 @@ class EDRServer(object):
         try:
             json_resp = json.loads(resp)
             if not json_resp.get("body", None):
-                EDR_LOG.log(u"No Inara body: json_resp={}".format(json_resp), "WARNING")
+                EDR_LOG.warning(u"No Inara body: json_resp={}".format(json_resp))
                 return None
             body = json_resp["body"]
         except:
-            EDR_LOG.log(u"Exception during extraction of Inara body: resp={}".format(resp), "WARNING")
+            EDR_LOG.warning(u"Exception during extraction of Inara body: resp={}".format(resp))
             return None
         
         if body is None:
-            EDR_LOG.log(u"No Inara body: resp={}".format(resp), "WARNING")
+            EDR_LOG.warning(u"No Inara body: resp={}".format(resp))
             return None
         
         EDR_LOG.log(u"Inara body={}".format(body), "DEBUG")

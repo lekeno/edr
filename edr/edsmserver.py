@@ -42,7 +42,7 @@ class EDSMServer(object):
         results = self.__get(endpoint, params) 
         
         if not isinstance(results, list):
-            EDR_LOG.log(u"Systems within radius is not a list, EDSM API may be having issues. Response: {}".format(results), "WARNING")
+            EDR_LOG.warning(u"Systems within radius is not a list, EDSM API may be having issues. Response: {}".format(results))
             return None
 
         if not results:

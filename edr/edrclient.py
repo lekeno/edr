@@ -1263,7 +1263,7 @@ class EDRClient(object):
         title = "{} ({})".format(name, now.strftime("%H:%M:%S"))
         
         if "Latitude" not in entry or "Longitude" not in entry:
-            EDR_LOG.log("No Lat/Lon for codex", "WARNING")
+            EDR_LOG.warning("No Lat/Lon for codex")
             return
 
         poi = {
@@ -1275,7 +1275,7 @@ class EDRClient(object):
         system_name = entry["System"]
         body_name = self.edrsystems.body_name_with_id(system_name, entry["BodyID"])
         if not body_name:
-            EDR_LOG.log("No body name found for codex with {}, {}".format(system_name, entry["BodyID"]), "WARNING")
+            EDR_LOG.warning("No body name found for codex with {}, {}".format(system_name, entry["BodyID"]))
             return
 
         if self.edrboi.add_custom_poi(system_name, body_name, poi):
@@ -2047,7 +2047,7 @@ class EDRClient(object):
                     EDR_LOG.log("EDR alert not worthy. Distance {} between systems {} and {} exceeds threshold {}".format(distance, origin, event["starSystem"], threshold), "DEBUG")
                     return False
             except ValueError:
-                EDR_LOG.log("Can't compute distance between systems {} and {}: unknown system(s)".format(self.player.star_system, event["starSystem"]), "WARNING")
+                EDR_LOG.warning("Can't compute distance between systems {} and {}: unknown system(s)".format(self.player.star_system, event["starSystem"]))
                 pass
         if self.realtime_params[kind]["min_bounty"]:
             if "bounty" not in event:
@@ -2289,7 +2289,7 @@ class EDRClient(object):
         try:
             success = self.server.blip(cmdr_id, blip)
         except Exception as e:
-            EDR_LOG.log(f"Blip submission failed (network/server error) for {cmdr_id}: {e}", "WARNING")
+            EDR_LOG.warning(f"Blip submission failed (network/server error) for {cmdr_id}: {e}")
             
         if success:
             EDR_LOG.log("Blip successfully submitted.", "DEBUG")
@@ -3326,7 +3326,7 @@ class EDRClient(object):
         system_name = self.player.star_system
         body_name = self.player.body
         if not body_name or body_name.lower() == "unknown":
-            EDR_LOG.log("Can't reset custom POIs, no body name: {}".format(body_name), "WARNING")
+            EDR_LOG.warning("Can't reset custom POIs, no body name: {}".format(body_name))
             return
 
         self.edrboi.reset_custom_poi(system_name, body_name)
@@ -3335,7 +3335,7 @@ class EDRClient(object):
         system_name = self.player.star_system
         body_name = self.player.body
         if not body_name or body_name.lower() == "unknown":
-            EDR_LOG.log("Can't clear current custom POI, no body name: {}".format(body_name), "WARNING")
+            EDR_LOG.warning("Can't clear current custom POI, no body name: {}".format(body_name))
             return
 
         self.edrboi.clear_current_custom_poi(system_name, body_name)

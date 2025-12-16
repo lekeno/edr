@@ -283,7 +283,7 @@ class EDVehicle(object):
         other_type = EDVehicleFactory.canonicalize(event.get("Ship", "unknown")) 
 
         if other_id != self.id or other_type != self.type:
-            EDR_LOG.log(u"Mismatch between ID ({} vs {}) and/or Type ({} vs. {}), can't update from loadout".format(self.id, other_id, self.type, other_type), "WARNING")
+            EDR_LOG.warning(u"Mismatch between ID ({} vs {}) and/or Type ({} vs. {}), can't update from loadout".format(self.id, other_id, self.type, other_type))
             return
 
         self.identity = event.get('ShipIdent', None)
@@ -449,7 +449,7 @@ class EDVehicle(object):
         other_id = event.get("ShipID", None)
         other_type = EDVehicleFactory.canonicalize(event.get("Ship", "unknown")) 
         if other_id != self.id or other_type != self.type:
-            EDR_LOG.log(u"Mismatch between ID ({} vs {}) and/or Type ({} vs. {}), can't update name/identity".format(self.id, other_id, self.type, other_type), "WARNING")
+            EDR_LOG.warning(u"Mismatch between ID ({} vs {}) and/or Type ({} vs. {}), can't update name/identity".format(self.id, other_id, self.type, other_type))
             return
         self.identity = event.get('UserShipId', None)
         self.name = event.get('UserShipName', None)
