@@ -117,7 +117,7 @@ class EDSMServer(object):
         prepped = self.SESSION.prepare_request(req)
         cached = self.http_cache.get(prepped.url)
         if cached is not None:
-            EDR_LOG.log(u"Cache hit for {}".format(prepped.url), "DEBUG")
+            EDR_LOG.debug(u"Cache hit for {}".format(prepped.url))
             return cached
 
         while attempts:
@@ -151,7 +151,7 @@ class EDSMServer(object):
                         try:
                             max_age = int(cc.split("max-age=")[1].split(",")[0])
                             self.http_cache.set(prepped.url, json.loads(resp.content), max_age)
-                            EDR_LOG.log(u"Cached {} for {}s".format(prepped.url, max_age), "DEBUG")
+                            EDR_LOG.debug(u"Cached {} for {}s".format(prepped.url, max_age))
                         except:
                             pass
 

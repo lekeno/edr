@@ -1273,7 +1273,7 @@ class InGameMsg(object):
         if subsys_history:
             last = max(last, subsys_history[-1]["timestamp"])
         shield_down = not shield_up or (shield_history[-1]["value"] <= 0 if shield_history[-1] else False)
-        EDR_LOG.log("shield {}".format(shield_history), "DEBUG")
+        EDR_LOG.debug("shield {}".format(shield_history))
         for t_v in shield_history:
             t = t_v["timestamp"]
             if (last - t) > xspan and len(scaled) >= 2:
@@ -1312,7 +1312,7 @@ class InGameMsg(object):
         cx = x
         cy = y+h
         scaled = []
-        EDR_LOG.log("hull {}".format(hull_history), "DEBUG")
+        EDR_LOG.debug("hull {}".format(hull_history))
         for t_v in hull_history:
             t = t_v["timestamp"]
             if (last - t) > xspan and len(scaled) >= 2:
@@ -1352,7 +1352,7 @@ class InGameMsg(object):
         cx = x
         cy = y+h
         scaled = []
-        EDR_LOG.log("subsys {}".format(subsys_history), "DEBUG")
+        EDR_LOG.debug("subsys {}".format(subsys_history))
         for t_v in subsys_history:
             t = t_v["timestamp"]
             if (last - t) > xspan and len(scaled) >= 2:
@@ -1411,7 +1411,7 @@ class InGameMsg(object):
         default_rgbs = "D8793E,00B3F7,00B3F7,2423E9,2F2DE3,4C37D2,5C5C93,908E46,CC432A,E9332A,CC0000,55552B,616CE2,808080,3FEFFF,FF2600,F56A79,4A0000,4A0000,3B3B3B,6E6E89,FF00DC,B16C00,FF00DC,FF00DC,4CFF00,FF00CC".split(",")
         rgbs = cfg["schema"]["rgb"]
         if not rgbs or len(rgbs) < len(star_classes)+3:
-            EDR_LOG.log("Draw nav route: reverting to default rgbs (length mismatch)", "DEBUG")
+            EDR_LOG.debug("Draw nav route: reverting to default rgbs (length mismatch)")
             rgbs = default_rgbs
         route_rgb = rgbs[0]
         travelled_rgb = rgbs[1]
@@ -1421,13 +1421,13 @@ class InGameMsg(object):
         default_star_markers = "circle,circle,circle,circle,circle,circle,circle,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross,cross".split(",")
         star_markers = cfg["schema"]["marker"]
         if not star_markers or len(star_markers) < len(star_classes):
-            EDR_LOG.log("Draw nav route: reverting to default markers (length mismatch)", "DEBUG")
+            EDR_LOG.debug("Draw nav route: reverting to default markers (length mismatch)")
             star_markers = default_star_markers
 
         default_suffix = ",,,,,,,,, dwarf, blackhole, neutron,,,,,,, exotic,, rogue, nebula, sr nebula, ???".split(",")
         star_suffix = cfg["schema"]["suffix"]
         if not star_suffix or len(star_suffix) < len(star_classes):
-            EDR_LOG.log("Draw nav route: reverting to default suffix (length mismatch)", "DEBUG")
+            EDR_LOG.debug("Draw nav route: reverting to default suffix (length mismatch)")
             star_suffix = default_suffix
 
         
@@ -1480,7 +1480,7 @@ class InGameMsg(object):
         for i, stop in enumerate(navroute.jumps.collection):
             steps += 1
             if steps < inc_steps:
-                EDR_LOG.log("skipping: {} steps: {} vs {}".format(stop.get("StarSystem", None), steps, inc_steps), "DEBUG")
+                EDR_LOG.debug("skipping: {} steps: {} vs {}".format(stop.get("StarSystem", None), steps, inc_steps))
                 continue
             steps = 0
             star_class = stop.get("StarClass", "N/A").lower()
@@ -1625,7 +1625,7 @@ class InGameMsg(object):
         return chunked_lines
 
     def __wrap_text(self, kind, part, text, max_rows):
-        EDR_LOG.log(u"text: {}".format(text), "DEBUG")
+        EDR_LOG.debug(u"text: {}".format(text))
         if text is None:
             return None
         width = self.cfg[kind][part]["len"]
@@ -1646,7 +1646,7 @@ class InGameMsg(object):
         ttl = timeout if timeout else conf["ttl"]
         text = header[:conf["len"]]
         x = self.__adjust_x(kind, "h", text)
-        EDR_LOG.log(u"header={}, row={}, col={}, color={}, ttl={}, size={}".format(header, conf["y"], x, conf["rgb"], ttl, conf["size"]), "DEBUG")
+        EDR_LOG.debug(u"header={}, row={}, col={}, color={}, ttl={}, size={}".format(header, conf["y"], x, conf["rgb"], ttl, conf["size"]))
         self.__display(kind, text, row=conf["y"], col=x, color=conf["rgb"], ttl=ttl, size=conf["size"])
 
     def __msg_body(self, kind, body, timeout=None):
@@ -1663,7 +1663,7 @@ class InGameMsg(object):
                 y = conf["y"] + row_nb * self.cfg["general"][conf["size"]]["h"]
                 conf["cache"].set(row_nb, chunk)
                 x = self.__adjust_x(kind, "b", chunk)
-                EDR_LOG.log(u"line={}, rownb={}, last_row={}, row={}, col={}, color={}, ttl={}, size={}".format(chunk, row_nb, conf["last_row"], y, x, conf["rgb"], ttl, conf["size"]), "DEBUG")
+                EDR_LOG.debug(u"line={}, rownb={}, last_row={}, row={}, col={}, color={}, ttl={}, size={}".format(chunk, row_nb, conf["last_row"], y, x, conf["rgb"], ttl, conf["size"]))
                 self.__display(kind, chunk, row=y, col=x, color=conf["rgb"], size=conf["size"], ttl=ttl)
                 self.__bump_body_row(kind)
 

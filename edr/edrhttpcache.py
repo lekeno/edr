@@ -19,7 +19,7 @@ class EDRHttpCache(object):
         
         # Wrapped content is expected to be { "data": actual_data, "expires": timestamp }
         if datetime.datetime.now() > wrapped_content["expires"]:
-            EDR_LOG.log(u"Expired entry for {}: {}".format(key, wrapped_content["expires"]), "DEBUG")
+            EDR_LOG.debug(u"Expired entry for {}: {}".format(key, wrapped_content["expires"]))
             self.cache.evict(key)
             return None
         

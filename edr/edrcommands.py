@@ -109,7 +109,7 @@ class EDRCommands(object):
             EDR_LOG.log(u"Distance command", "INFO")
             systems = " ".join(command_parts[1:]).split(" > ", 1)
             if not systems:
-                EDR_LOG.log(u"Aborting distance calculation (no params).", "DEBUG")
+                EDR_LOG.debug(u"Aborting distance calculation (no params).")
                 return False
             from_sys = systems[0] if len(systems) == 2 else cmdr.star_system
             to_sys = systems[1] if len(systems) == 2 else systems[0]

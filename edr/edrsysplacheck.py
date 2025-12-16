@@ -94,23 +94,23 @@ class EDRBiologyCheck(EDRSystemPlanetCheck):
     
     def check_planet(self, planet, system_name):
         if not super(EDRBiologyCheck, self).check_planet(planet, system_name):
-            EDR_LOG.log("SystemPlanetCheck check planet failed: {}".format(planet), "DEBUG")
+            EDR_LOG.debug("SystemPlanetCheck check planet failed: {}".format(planet))
             return False
         
         if not self.edrsystems.meets_biome_conditions(planet):
-            EDR_LOG.log("BiologyCheck meets_biome_conditions failed: {}".format(planet), "DEBUG")
+            EDR_LOG.debug("BiologyCheck meets_biome_conditions failed: {}".format(planet))
             return False
     
         genuses = planet.get("genuses", [])
         if genuses and self.genus:
             cgenus = self.genus.lower()
             for g in genuses:
-                EDR_LOG.log("Checking genus {} in {} ".format(cgenus, g), "DEBUG")
+                EDR_LOG.debug("Checking genus {} in {} ".format(cgenus, g))
                 if cgenus in g["Genus"]:
-                    EDR_LOG.log("Found genus {} in {}".format(cgenus, planet), "DEBUG")
+                    EDR_LOG.debug("Found genus {} in {}".format(cgenus, planet))
                     return True
         else:
-            EDR_LOG.log("Found planet {}".format(planet), "DEBUG")
+            EDR_LOG.debug("Found planet {}".format(planet))
             return True
         return False
 

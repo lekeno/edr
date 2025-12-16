@@ -409,7 +409,7 @@ class EDPilot(object):
         
         self.in_spacesuit()
         if entry.get("ShipID", self.mothership.id) != self.mothership.id:
-            EDR_LOG.log("Player disembarked from their ship but the ID was different new:{} vs old:{}".format(entry["ShipID"], self.mothership.id), "DEBUG")
+            EDR_LOG.debug("Player disembarked from their ship but the ID was different new:{} vs old:{}".format(entry["ShipID"], self.mothership.id))
             self.mothership = EDVehicleFactory.unknown_vehicle()
             self.mothership.id = entry["ShipID"]
         self.location.from_entry(entry)
@@ -435,7 +435,7 @@ class EDPilot(object):
             self.in_mothership()
         else:
             if entry.get("ShipID", self.mothership.id) != self.mothership.id:
-                EDR_LOG.log("Player embarked on their ship but the ID was different new:{} vs old:{}".format(entry["ShipID"], self.mothership.id), "DEBUG")
+                EDR_LOG.debug("Player embarked on their ship but the ID was different new:{} vs old:{}".format(entry["ShipID"], self.mothership.id))
                 self.mothership = EDVehicleFactory.unknown_vehicle()
                 self.mothership.id = entry["ShipID"]
             self.in_mothership()
@@ -483,7 +483,7 @@ class EDPilot(object):
         self._touch()
         self.on_foot = False
         if not self.shuttle:
-            EDR_LOG.log("Player in a taxi but we had none", "DEBUG")
+            EDR_LOG.debug("Player in a taxi but we had none")
             self.shuttle = EDVehicleFactory.unknown_taxi()
         self.piloted_vehicle = self.shuttle
 
@@ -831,7 +831,7 @@ class EDPlayer(EDPilot):
 
     def in_blue_tunnel(self, tunnel=True):
         if tunnel != self.blue_tunnel:
-            EDR_LOG.log("Blue Tunnel update: {old} vs. {new}".format(old=self.blue_tunnel, new=tunnel), "DEBUG")
+            EDR_LOG.debug("Blue Tunnel update: {old} vs. {new}".format(old=self.blue_tunnel, new=tunnel))
         self.blue_tunnel = tunnel
 
     def is_trusted_by_squadron(self):

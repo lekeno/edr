@@ -410,22 +410,22 @@ class EDVehicle(object):
         modules_info = reader.process()
         stale = (self.slots_timestamp is None) or (self.module_info_timestamp and (self.slots_timestamp.as_py_epoch() < self.module_info_timestamp.as_py_epoch()))
         if not stale:
-            EDR_LOG.log(u"Modules info: up-to-date", "DEBUG")
+            EDR_LOG.debug(u"Modules info: up-to-date")
             return True
 
         if not modules_info or not modules_info.get("Modules", None):
-            EDR_LOG.log(u"No info on modules!", "DEBUG")
+            EDR_LOG.debug(u"No info on modules!")
             return False
 
         timestamp = EDTime()
         timestamp.from_journal_timestamp(modules_info['timestamp'])
         if self.slots_timestamp and (timestamp.as_py_epoch() < self.slots_timestamp.as_py_epoch() or timestamp.as_py_epoch() < self.module_info_timestamp.as_py_epoch()):
-            EDR_LOG.log(u"Stale info in modulesinfo.json: {} vs. {})".format(timestamp, self.slots_timestamp), "DEBUG")
+            EDR_LOG.debug(u"Stale info in modulesinfo.json: {} vs. {})".format(timestamp, self.slots_timestamp))
             return False
         
-        EDR_LOG.log(u"Trying an update of modules: json@{}, slots@{}, panel looked@{}".format(timestamp, self.slots_timestamp, self.module_info_timestamp), "DEBUG")
+        EDR_LOG.debug(u"Trying an update of modules: json@{}, slots@{}, panel looked@{}".format(timestamp, self.slots_timestamp, self.module_info_timestamp))
         updated = self.slots_timestamp is None
-        EDR_LOG.log(u"This will be our first time with actual info", "DEBUG")
+        EDR_LOG.debug(u"This will be our first time with actual info")
         self.slots_timestamp = timestamp
         modules = modules_info.get("Modules", [])
         for module in modules:
@@ -434,13 +434,13 @@ class EDVehicle(object):
                 module_updated = self.slots[slot_name].update(module)
                 if self.slots[slot_name].power_draw > 0:
                     if module_updated:
-                        EDR_LOG.log(u"{} in {}: power_draw: {}, priority: {}".format(self.slots[slot_name].cname, slot_name, self.slots[slot_name].power_draw, self.slots[slot_name].priority), "DEBUG")
+                        EDR_LOG.debug(u"{} in {}: power_draw: {}, priority: {}".format(self.slots[slot_name].cname, slot_name, self.slots[slot_name].power_draw, self.slots[slot_name].priority))
                     updated |= module_updated
             else:
                 the_module = edmodule.EDModule(module)
                 self.slots[slot_name] = the_module
                 if the_module.power_draw > 0 or the_module.power_generation > 0:
-                    EDR_LOG.log(u"[New] {} in {}: power_draw: {}, priority: {}".format(self.slots[slot_name].cname, slot_name, self.slots[slot_name].power_draw, self.slots[slot_name].priority), "DEBUG")
+                    EDR_LOG.debug(u"[New] {} in {}: power_draw: {}, priority: {}".format(self.slots[slot_name].cname, slot_name, self.slots[slot_name].power_draw, self.slots[slot_name].priority))
                 updated |= the_module.power_draw > 0 or the_module.power_generation > 0
         self.whole_loadout = True
         return updated

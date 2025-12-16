@@ -119,7 +119,7 @@ class EDROpponents(object):
         return summary
 
     def __readable_opponent_sighting(self, sighting, one_liner=False):
-        EDR_LOG.log(u"sighting: {}".format(sighting), "DEBUG")
+        EDR_LOG.debug(u"sighting: {}".format(sighting))
         if not sighting:
             return None
         t_minus = edtime.EDTime.t_minus(sighting["timestamp"], short=True)

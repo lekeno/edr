@@ -160,12 +160,12 @@ class SpanshServer(threading.Thread):
         url = self.api_path + job_id
         response = SpanshServer.SESSION.get(url)
         if response.status_code != 200:
-            EDR_LOG.log("SpanshServer status not 200 OK: {}".format(response.status_code), "DEBUG")
+            EDR_LOG.debug("SpanshServer status not 200 OK: {}".format(response.status_code))
             return None
         
         data = json.loads(response.content)
         if not data:
-            EDR_LOG.log("SpanshServer returned no data", "DEBUG")
+            EDR_LOG.debug("SpanshServer returned no data")
             return None
         return data.get("result", None)
     

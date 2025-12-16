@@ -203,7 +203,7 @@ class EDRSystems(object):
             profile = self.systems_cache.peek(key)
             
             if profile is None:
-                EDR_LOG.log(u"Negative cache entry for System {} is fresh.".format(star_system), "DEBUG")
+                EDR_LOG.debug(u"Negative cache entry for System {} is fresh.".format(star_system))
                 return profile
 
             sid = self._get_and_validate_sid(profile, star_system)
@@ -215,7 +215,7 @@ class EDRSystems(object):
                 EDR_LOG.error(u"Cached system {} is missing coordinates. Forcing update.".format(star_system))
                 call_server = True
             else:
-                EDR_LOG.log(u"System {} is in the cache with id={}".format(star_system, sid), "DEBUG")
+                EDR_LOG.debug(u"System {} is in the cache with id={}".format(star_system, sid))
                 return sid
         else:
             # Data is missing, stale, or evicted. Must call server.
@@ -248,7 +248,7 @@ class EDRSystems(object):
             sid = self._get_and_validate_sid(updated_system, star_system)
 
             if sid:
-                EDR_LOG.log(u"Cached {}'s info with id={}".format(star_system, sid), "DEBUG")
+                EDR_LOG.debug(u"Cached {}'s info with id={}".format(star_system, sid))
                 return sid
             else:
                 # Server returned data, but it failed validation (e.g., mismatched name, odd ID).
@@ -257,7 +257,7 @@ class EDRSystems(object):
         
         # Final cleanup: Cache failure/no match as None (Negative Caching)
         self.systems_cache.set(key, None)
-        EDR_LOG.log(u"No match on EDR/Server failed. Setting temporary None entry.", "DEBUG")
+        EDR_LOG.debug(u"No match on EDR/Server failed. Setting temporary None entry.")
         return None
 
     # Helper function to safely extract and validate the system ID
@@ -298,13 +298,13 @@ class EDRSystems(object):
                 
                 if profile is None:
                     # A. Fresh Negative Cache Hit (FC known not to exist). Immediate return.
-                    EDR_LOG.log(u"Negative cache entry for FC {} is fresh.".format(callsign), "DEBUG")
+                    EDR_LOG.debug(u"Negative cache entry for FC {} is fresh.".format(callsign))
                     return None # Returns None (the FC ID equivalent of "no match")
 
                 # B. Fresh FC data hit. Extract and return the ID.
                 fcid = list(profile.keys())[0] if profile.keys() else None
                 if fcid:
-                    EDR_LOG.log(u"FC {} is in the cache with id={}".format(callsign, fcid), "DEBUG")
+                    EDR_LOG.debug(u"FC {} is in the cache with id={}".format(callsign, fcid))
                     return fcid
                 
                 # If fresh but contains invalid data (no key/ID), fall through to server call.
@@ -341,7 +341,7 @@ class EDRSystems(object):
             fcid = list(updated_fc.keys())[0] if updated_fc.keys() else None
 
             if fcid:
-                EDR_LOG.log(u"Cached {}'s info with id={}".format(callsign, fcid), "DEBUG")
+                EDR_LOG.debug(u"Cached {}'s info with id={}".format(callsign, fcid))
                 return fcid
             else:
                 EDR_LOG.error(u"Server returned FC data for {} but no ID was found. Treating as no match.".format(callsign))
@@ -349,7 +349,7 @@ class EDRSystems(object):
         
         # Final cleanup: Cache failure/no match as None (Negative Caching)
         self.fcs_cache.set(key, None)
-        EDR_LOG.log(u"No match on EDR/Server failed. Setting temporary None entry.", "DEBUG")
+        EDR_LOG.debug(u"No match on EDR/Server failed. Setting temporary None entry.")
         return None
 
     def are_bodies_stale(self, star_system):
@@ -385,17 +385,17 @@ class EDRSystems(object):
         stations = self.edsm_stations_cache.get(star_system.lower())
         cached = self.edsm_stations_cache.has_key(star_system.lower())
         if cached or stations:
-            EDR_LOG.log(u"Stations for system {} are in the cache.".format(star_system), "DEBUG")
+            EDR_LOG.debug(u"Stations for system {} are in the cache.".format(star_system))
             return stations
 
         stations = self.edsm_server.stations_in_system(star_system)
         if stations:
             self.edsm_stations_cache.set(star_system.lower(), stations)
-            EDR_LOG.log(u"Cached {}'s stations".format(star_system), "DEBUG")
+            EDR_LOG.debug(u"Cached {}'s stations".format(star_system))
             return stations
 
         self.edsm_stations_cache.set(star_system.lower(), None)
-        EDR_LOG.log(u"No match on EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
+        EDR_LOG.debug(u"No match on EDSM. Temporary entry to be nice on EDSM's server.")
         return None
 
     def persist(self):
@@ -595,7 +595,7 @@ class EDRSystems(object):
 
         the_system = self.edsm_systems_cache.get(name.lower())
         if self.edsm_systems_cache.has_key(name.lower()):
-            EDR_LOG.log(u"System {} is in the cache, and is known to EDSM: {}".format(name, the_system is not None), "DEBUG")
+            EDR_LOG.debug(u"System {} is in the cache, and is known to EDSM: {}".format(name, the_system is not None))
             return the_system
 
         the_system = self.edsm_server.system(name)
@@ -771,51 +771,51 @@ class EDRSystems(object):
         marketInfo = self.edsm_markets_cache.get(marketId)
         cached = self.edsm_markets_cache.has_key(marketId)
         if cached or marketInfo:
-            EDR_LOG.log(u"Market info for marketId {} is in the cache.".format(marketId), "DEBUG")
+            EDR_LOG.debug(u"Market info for marketId {} is in the cache.".format(marketId))
             return marketInfo
 
         marketInfo = self.edsm_server.market(marketId)
         if marketInfo:
             self.edsm_markets_cache.set(marketId, marketInfo)
-            EDR_LOG.log(u"Cached {}'s market info".format(marketId), "DEBUG")
+            EDR_LOG.debug(u"Cached {}'s market info".format(marketId))
             return marketInfo
 
         self.edsm_markets_cache.set(marketId, None)
-        EDR_LOG.log(u"No match on EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
+        EDR_LOG.debug(u"No match on EDSM. Temporary entry to be nice on EDSM's server.")
         return None
 
     def shipyard(self, shipyardId):
         shipyardInfo = self.edsm_shipyards_cache.get(shipyardId)
         cached = self.edsm_shipyards_cache.has_key(shipyardId)
         if cached or shipyardInfo:
-            EDR_LOG.log(u"shipyard info for shipyardId {} is in the cache.".format(shipyardId), "DEBUG")
+            EDR_LOG.debug(u"shipyard info for shipyardId {} is in the cache.".format(shipyardId))
             return shipyardInfo
 
         shipyardInfo = self.edsm_server.shipyard(shipyardId)
         if shipyardInfo:
             self.edsm_shipyards_cache.set(shipyardId, shipyardInfo)
-            EDR_LOG.log(u"Cached {}'s shipyard info".format(shipyardId), "DEBUG")
+            EDR_LOG.debug(u"Cached {}'s shipyard info".format(shipyardId))
             return shipyardInfo
 
         self.edsm_shipyards_cache.set(shipyardId, None)
-        EDR_LOG.log(u"No match on EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
+        EDR_LOG.debug(u"No match on EDSM. Temporary entry to be nice on EDSM's server.")
         return None
 
     def outfitting(self, outfittingId):
         outfittingInfo = self.edsm_outfittings_cache.get(outfittingId)
         cached = self.edsm_outfittings_cache.has_key(outfittingId)
         if cached or outfittingInfo:
-            EDR_LOG.log(u"outfitting info for outfittingId {} is in the cache.".format(outfittingId), "DEBUG")
+            EDR_LOG.debug(u"outfitting info for outfittingId {} is in the cache.".format(outfittingId))
             return outfittingInfo
 
         outfittingInfo = self.edsm_server.outfitting(outfittingId)
         if outfittingInfo:
             self.edsm_outfittings_cache.set(outfittingId, outfittingInfo)
-            EDR_LOG.log(u"Cached {}'s outfitting info".format(outfittingId), "DEBUG")
+            EDR_LOG.debug(u"Cached {}'s outfitting info".format(outfittingId))
             return outfittingInfo
 
         self.edsm_outfittings_cache.set(outfittingId, None)
-        EDR_LOG.log(u"No match on EDSM. Temporary entry to be nice on EDSM's server.", "DEBUG")
+        EDR_LOG.debug(u"No match on EDSM. Temporary entry to be nice on EDSM's server.")
         return None
 
 
@@ -945,12 +945,12 @@ class EDRSystems(object):
         parent_star = self.__parent_star(system_name, body)
         star_type = "???"
         if not parent_star:
-            EDR_LOG.log("No parent star: {}".format(body.get("name", "unknown body")), "DEBUG")
+            EDR_LOG.debug("No parent star: {}".format(body.get("name", "unknown body")))
             return star_type
     
         raw_type = parent_star.get("subType", "???")
         if raw_type == "???":
-            EDR_LOG.log("Weird star: {}".format(parent_star), "DEBUG")
+            EDR_LOG.debug("Weird star: {}".format(parent_star))
         return self.__star_type_lut(raw_type)
 
     def parent_star_distance(self, system_name, body):
@@ -1805,7 +1805,7 @@ class EDRSystems(object):
 
         bodies = self.edsm_bodies_cache.get(system_name.lower())
         if self.edsm_bodies_cache.has_key(system_name.lower()):
-            EDR_LOG.log(u"Bodies for system {} are in the cache, and are known to EDSM: {}".format(system_name, bodies is not None), "DEBUG")
+            EDR_LOG.debug(u"Bodies for system {} are in the cache, and are known to EDSM: {}".format(system_name, bodies is not None))
             return bodies
 
         bodies = self.edsm_server.bodies(system_name)
@@ -2187,10 +2187,10 @@ class EDRSystems(object):
             if "until" in notam:
                 active &= js_epoch_now <= notam["until"]
             if active and "text" in notam:
-                EDR_LOG.log(u"Active NOTAM: {}".format(notam["text"]), "DEBUG")
+                EDR_LOG.debug(u"Active NOTAM: {}".format(notam["text"]))
                 active_notams.append(_edr(notam["text"]))
             elif active and "l10n" in notam:
-                EDR_LOG.log(u"Active NOTAM: {}".format(notam["l10n"]["default"]), "DEBUG")
+                EDR_LOG.debug(u"Active NOTAM: {}".format(notam["l10n"]["default"]))
                 active_notams.append(_edr(notam["l10n"]))
         return active_notams
 
@@ -2318,7 +2318,7 @@ class EDRSystems(object):
             # If the cached value is an empty list or the actual crime list, return it.
             # Note: We assume the profile stored is the list of crimes itself (could be [] or a list of dicts).
             if recent_crimes is not None:
-                EDR_LOG.log(u"Returning fresh crime data for SID {}".format(key), "DEBUG")
+                EDR_LOG.debug(u"Returning fresh crime data for SID {}".format(key))
                 return recent_crimes
             
             # If profile is None, this implies a negative cache entry that needs eviction (unless we decide to allow None cache entries here).
@@ -2351,7 +2351,7 @@ class EDRSystems(object):
             # Cache either the list of crimes (list[dict]) OR the empty list ([]), 
             # addressing the original TODO.
             self.crimes_cache.set(key, updated_crimes)
-            EDR_LOG.log(u"Cached {} crime entries for SID {}".format(len(updated_crimes), key), "DEBUG")
+            EDR_LOG.debug(u"Cached {} crime entries for SID {}".format(len(updated_crimes), key))
             return updated_crimes
         
         # If the server call was skipped (due to self.has_recent_crimes failing) or 
@@ -2386,7 +2386,7 @@ class EDRSystems(object):
             # If the cached value is a traffic count, empty list/zero, or None (negative cache), return it.
             # We assume 'None' or an empty response means 'no traffic data' and should be cached.
             if recent_traffic is not None:
-                EDR_LOG.log(u"Returning fresh traffic data for SID {}".format(key), "DEBUG")
+                EDR_LOG.debug(u"Returning fresh traffic data for SID {}".format(key))
                 return recent_traffic
             
             # Note: If recent_traffic is None, and we are not supposed to cache None, 
@@ -2422,7 +2422,7 @@ class EDRSystems(object):
             # Cache the result. This handles non-zero traffic counts, zero counts, 
             # or empty containers ([]), preventing redundant server calls.
             self.traffic_cache.set(key, updated_traffic)
-            EDR_LOG.log(u"Cached traffic data for SID {}".format(key), "DEBUG")
+            EDR_LOG.debug(u"Cached traffic data for SID {}".format(key))
             return updated_traffic
         
         # If the server call was skipped (due to self.has_recent_traffic failing) or 
@@ -2751,21 +2751,21 @@ class EDRSystems(object):
         cached = self.edsm_systems_within_radius_cache.has_key(key)
         if cached:
             if not systems:
-                EDR_LOG.log(u"Systems within {} of system {} are not available for a while.".format(radius, star_system), "DEBUG")
+                EDR_LOG.debug(u"Systems within {} of system {} are not available for a while.".format(radius, star_system))
                 return None
             else:
-                EDR_LOG.log(u"Systems within {} of system {} are in the cache.".format(radius, star_system), "DEBUG")
+                EDR_LOG.debug(u"Systems within {} of system {} are in the cache.".format(radius, star_system))
                 return sorted(systems, key = lambda i: i['distance'])
 
         systems = self.edsm_server.systems_within_radius(star_system, radius)
         if systems is None:
             self.edsm_systems_within_radius_blocklist.add(key)
-            EDR_LOG.log(u"No results from EDSM. Temporary entry to be nice on EDSM's server. Added to blocklist.".format(key), "DEBUG")
+            EDR_LOG.debug(u"No results from EDSM. Temporary entry to be nice on EDSM's server. Added to blocklist.".format(key))
             return None
         
         systems = sorted(systems, key = lambda i: i['distance']) 
         self.edsm_systems_within_radius_cache.set(key, systems)
-        EDR_LOG.log(u"Cached systems within {}LY of {}".format(radius, star_system), "DEBUG")
+        EDR_LOG.debug(u"Cached systems within {}LY of {}".format(radius, star_system))
         return systems
 
     def is_recent(self, timestamp, max_age):

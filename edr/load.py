@@ -401,7 +401,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
             ed_player.leave_crew()
             ed_player.leave_vehicle()
             ed_player.in_game = False
-            EDR_LOG.log(u"Player is on the main menu.", "DEBUG")
+            EDR_LOG.debug(u"Player is on the main menu.")
             return
         
         ed_player.in_game = True
@@ -441,7 +441,7 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
         EDR_CLIENT.clear()
         EDR_CLIENT.edrfssinsights.reset()
         ed_player.resurrect(entry["Option"] in ["rebuy", "recover"])
-        EDR_LOG.log(u"Player has been resurrected.", "DEBUG")
+        EDR_LOG.debug(u"Player has been resurrected.")
         return
 
     if entry["event"] in ["Fileheader"] and entry["part"] == 1:
@@ -464,14 +464,14 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
                    "DEBUG")
         if entry.get("Odyssey", False):
             EDR_CLIENT.set_dlc("Odyssey")
-            EDR_LOG.log(u"DLC is Odyssey", "DEBUG")
+            EDR_LOG.debug(u"DLC is Odyssey")
         elif entry.get("Horizons", False):
             EDR_CLIENT.set_dlc("Horizons")
-            EDR_LOG.log(u"DLC is Horizons", "DEBUG")
+            EDR_LOG.debug(u"DLC is Horizons")
         EDR_CLIENT.game_mode(entry["GameMode"], entry.get("Group", None))
         
         ed_player.update_vehicle_or_suit_if_obsolete(entry)
-        EDR_LOG.log(u"Game mode is {}".format(entry["GameMode"]), "DEBUG")
+        EDR_LOG.debug(u"Game mode is {}".format(entry["GameMode"]))
         EDR_CLIENT.warmup()
         return
 
@@ -531,7 +531,7 @@ def handle_engineer_progress(ed_player, entry):
 
 def handle_powerplay_events(ed_player, entry):
     if entry["event"] == "Powerplay":
-        EDR_LOG.log(u"Initial powerplay event: {}".format(entry), "DEBUG")
+        EDR_LOG.debug(u"Initial powerplay event: {}".format(entry))
         EDR_CLIENT.pledged_to(entry["Power"], entry["TimePledged"])
     elif entry["event"] == "PowerplayDefect":
         EDR_CLIENT.pledged_to(entry["ToPower"])
@@ -927,7 +927,7 @@ def edr_update_cmdr_status(cmdr, reason_for_update, timestamp):
     elif cmdr.spacesuit_type():
         report["suit"] = cmdr.spacesuit_type()
 
-    EDR_LOG.log(u"report: {}".format(report), "DEBUG")
+    EDR_LOG.debug(u"report: {}".format(report))
 
     if not EDR_CLIENT.blip(cmdr.name, report):
         EDR_CLIENT.status = _(u"blip failed.")
@@ -1040,7 +1040,7 @@ def edr_submit_crime_self(criminal_cmdr, offence, victim, timestamp):
     elif victim.spacesuit_type():
         report["victimSuit"] = victim.spacesuit_type()
 
-    EDR_LOG.log(u"Perpetrated crime: {}".format(report), "DEBUG")
+    EDR_LOG.debug(u"Perpetrated crime: {}".format(report))
 
     if not EDR_CLIENT.crime(criminal_cmdr.star_system, report):
         EDR_CLIENT.status = _(u"failed to report crime.")
@@ -1229,7 +1229,7 @@ def report_crime(cmdr, entry):
             edr_submit_crime([offender], u"{} (CrimeVictim)".format(entry["CrimeType"]), cmdr, entry["timestamp"])
         else:
             # TODO extract npc name, instance, etc.
-            EDR_LOG.log(u"Ignoring 'CrimeVictim' event: offender={}; instanced_with={}".format(entry["Offender"], player_one.is_instanced_with_player(entry["Offender"])), "DEBUG")
+            EDR_LOG.debug(u"Ignoring 'CrimeVictim' event: offender={}; instanced_with={}".format(entry["Offender"], player_one.is_instanced_with_player(entry["Offender"])))
     elif entry["event"] == "CommitCrime" and "Victim" in entry and player_one.name and (entry["Victim"].lower() != player_one.name.lower()):
         irrelevant_pattern = re.compile(r"^(\$([A-Za-z0-9]+_)+[A-Za-z0-9]+;)$")
         if not irrelevant_pattern.match(entry["Victim"]) and player_one.is_instanced_with_player(entry["Victim"]):
@@ -1241,7 +1241,7 @@ def report_crime(cmdr, entry):
             edr_submit_crime_self(player_one, u"{} (CommitCrime)".format(entry["CrimeType"]), victim, entry["timestamp"])
         else:
             # TODO extract npc name, instance, etc.
-            EDR_LOG.log(u"Ignoring 'CommitCrime' event: Victim={}; instanced_with={}".format(entry["Victim"], player_one.is_instanced_with_player(entry["Victim"])), "DEBUG")
+            EDR_LOG.debug(u"Ignoring 'CommitCrime' event: Victim={}; instanced_with={}".format(entry["Victim"], player_one.is_instanced_with_player(entry["Victim"])))
 
 
 def report_comms(player, entry):
@@ -1644,7 +1644,7 @@ def handle_fleet_events(entry):
 
 def handle_modules_events(ed_player, entry):
     if entry["event"] == "ModuleInfo":
-        EDR_LOG.log(u"ModuleInfo event", "DEBUG")
+        EDR_LOG.debug(u"ModuleInfo event")
         ed_player.mothership.outfit_probably_changed(entry["timestamp"])
 
 def handle_cargo_events(ed_player, entry):

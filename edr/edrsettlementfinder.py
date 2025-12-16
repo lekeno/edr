@@ -89,12 +89,12 @@ class EDRSettlementFinder(threading.Thread):
 
         candidates = self.__search(systems, candidates)
         if not (candidates and candidates.get('prime', None)):
-            EDR_LOG.log(u"Couldn't find any prime candidate so far. Trying again after a shuffle", "DEBUG")
+            EDR_LOG.debug(u"Couldn't find any prime candidate so far. Trying again after a shuffle")
             shuffle(systems)
             candidates = self.__search(systems, candidates)
 
         if not (candidates and candidates.get('prime', None)) and self.edr_systems.in_colonia(self.star_system):
-            EDR_LOG.log(u"Couldn't find any candidate so far. Trying with key Colonia star systems", "DEBUG")
+            EDR_LOG.debug(u"Couldn't find any candidate so far. Trying with key Colonia star systems")
             key_colonia_star_systems = [ "Alberta", "Amatsuboshi", "Asura", "Aurora Astrum", "Benzaiten", "Centralis", "Coeus", "Colonia", "Deriso", "Desy", "Diggidiggi", "Dubbuennel", "Edge Fraternity Landing", "Einheriar", "Eol Procul Centauri", "Helgoland", "Kajuku", "Kinesi", "Kojeara", "Kopernik", "Los", "Luchtaine", "Magellan", "Mriya", "Pennsylvania", "Poe", "Randgnid", "Ratraii", "Saraswati", "Solitude", "Tir", "White Sun" ]
             for star_system in key_colonia_star_systems:
                 system = self.edr_systems.system(star_system)
@@ -115,10 +115,10 @@ class EDRSettlementFinder(threading.Thread):
         if not system:
             return candidates
 
-        EDR_LOG.log(u"System {}".format(system), "DEBUG")
+        EDR_LOG.debug(u"System {}".format(system))
         possibility = self.checker.check_system(system)
         accessible = not system.get('requirePermit', False) or (system.get('requirePermit', False) and system['name'] in self.permits)
-        EDR_LOG.log(u"System {}: possibility {}, accessible {}".format(system['name'], possibility, accessible), "DEBUG")
+        EDR_LOG.debug(u"System {}: possibility {}, accessible {}".format(system['name'], possibility, accessible))
         if not possibility or not accessible:
             return candidates
 
@@ -129,12 +129,12 @@ class EDRSettlementFinder(threading.Thread):
         if candidate:
             check_sc_distance = candidate['distanceToArrival'] <= self.sc_distance
             ambiguous = self.checker.is_ambiguous(candidate, system['name'])
-            EDR_LOG.log(u"System {} has a candidate {}: ambiguous {}, sc_distance {}".format(system['name'], candidate['name'], ambiguous, check_sc_distance), "DEBUG")
+            EDR_LOG.debug(u"System {} has a candidate {}: ambiguous {}, sc_distance {}".format(system['name'], candidate['name'], ambiguous, check_sc_distance))
             if check_sc_distance and not ambiguous:
                 trialed = system
                 trialed['settlement'] = candidate
                 closest = self.edr_systems.closest_settlement(trialed, candidates['prime'])
-                EDR_LOG.log(u"Prime Trial {}, closest {}".format(system['name'], closest['name']), "DEBUG")
+                EDR_LOG.debug(u"Prime Trial {}, closest {}".format(system['name'], closest['name']))
                 candidates['prime'] = closest
             else:
                 if ambiguous:
@@ -142,7 +142,7 @@ class EDRSettlementFinder(threading.Thread):
                 trialed = system
                 trialed['settlement'] = candidate
                 closest = self.edr_systems.closest_settlement(trialed, candidates['alt'])
-                EDR_LOG.log(u"Trial {}, closest {}".format(system['name'], closest['name']), "DEBUG")
+                EDR_LOG.debug(u"Trial {}, closest {}".format(system['name'], closest['name']))
                 candidates['alt'] = closest
         return candidates
 
@@ -153,7 +153,7 @@ class EDRSettlementFinder(threading.Thread):
             return candidates
         for system in systems:
             if self.trials > self.max_trials:
-                EDR_LOG.log(u"Tried too many. Aborting here.", "DEBUG")
+                EDR_LOG.debug(u"Tried too many. Aborting here.")
                 break
 
             if self.exclude_center and self.star_system == system.get("name", None):
@@ -165,7 +165,7 @@ class EDRSettlementFinder(threading.Thread):
             self.checked_systems.append(system.get('name', ""))
 
             if candidates and candidates.get('prime', None):
-                EDR_LOG.log(u"Prime found, breaking here.", "DEBUG")
+                EDR_LOG.debug(u"Prime found, breaking here.")
                 break
 
         return candidates        
@@ -173,7 +173,7 @@ class EDRSettlementFinder(threading.Thread):
     def closest_matching_settlement(self, settlements, system_name):
         overall = None
         for settlement in settlements:
-            EDR_LOG.log(settlement, "DEBUG")
+            EDR_LOG.debug(settlement)
             if not self.checker.check_settlement(settlement, system_name):
                 continue
             
@@ -181,11 +181,11 @@ class EDRSettlementFinder(threading.Thread):
             factionName = factionIDName.get("name", "")
             faction = self.edr_systems.faction_in_system(factionName, system_name)
             if faction and faction.state in self.exclude_states:
-                EDR_LOG.log("Skipping {} due to bad state for the controlling faction: {}".format(settlement, faction), "DEBUG")
+                EDR_LOG.debug("Skipping {} due to bad state for the controlling faction: {}".format(settlement, faction))
                 continue
 
             if self.include_states and faction and faction.state not in self.include_states:
-                EDR_LOG.log("Skipping {} due to state not matching any of the the required state for the controlling faction: {}".format(settlement, faction), "DEBUG")
+                EDR_LOG.debug("Skipping {} due to state not matching any of the the required state for the controlling faction: {}".format(settlement, faction))
                 continue
             
             if overall == None:
@@ -202,13 +202,13 @@ class EDRSettlementFinder(threading.Thread):
         if system.get('requirePermit', False) and not system['name'] in self.permits :
             return None
 
-        EDR_LOG.log("sys: " + system['name'], "DEBUG")
+        EDR_LOG.debug("sys: " + system['name'])
         all_settlements = self.edr_systems.stations_in_system(system['name']) # also returns settlements
         if not all_settlements or not len(all_settlements):
-            EDR_LOG.log("no settlements in " + system['name'], "DEBUG")
+            EDR_LOG.debug("no settlements in " + system['name'])
             return None
         
-        EDR_LOG.log("settlements: {}".format(all_settlements), "DEBUG")
+        EDR_LOG.debug("settlements: {}".format(all_settlements))
 
         if self.shuffle_settlements:
             shuffle(all_settlements)

@@ -541,8 +541,8 @@ class EDRClient(object):
         config.set("EDRFCJumpPSA", self.fc_jump_psa)
         EDR_LOG.log("Audio cues: {}, {}".format(config.get_str("EDRAudioFeedback"),
                                                 config.get_str("EDRAudioFeedbackVolume")), "DEBUG")
-        EDR_LOG.log("Anonymous reports: {}".format(config.get_str("EDRRedactMyInfo")), "DEBUG")
-        EDR_LOG.log("Crimes reporting: {}".format(config.get_str("EDRCrimesReporting")), "DEBUG")
+        EDR_LOG.debug("Anonymous reports: {}".format(config.get_str("EDRRedactMyInfo")))
+        EDR_LOG.debug("Crimes reporting: {}".format(config.get_str("EDRCrimesReporting")))
         if self.client_ui:
             self.client_ui.refresh_theme()
         self.login()
@@ -690,16 +690,16 @@ class EDRClient(object):
         outcome |= self.player.update_body_if_obsolete(None)
 
         if not self.player.routenav.leave_body(star_system, body_name):
-            EDR_LOG.log("RouteNav: no update upon leaving a body {} in {}".format(body_name, star_system), "DEBUG")
+            EDR_LOG.debug("RouteNav: no update upon leaving a body {} in {}".format(body_name, star_system))
             return outcome
         
         wp_sys_name = self.player.routenav.current_wp_sysname()
         if not wp_sys_name or wp_sys_name != star_system:
-            EDR_LOG.log("RouteNav: updated from leave body but system {} is not the current waypoint {}".format(star_system, wp_sys_name), "DEBUG")
+            EDR_LOG.debug("RouteNav: updated from leave body but system {} is not the current waypoint {}".format(star_system, wp_sys_name))
             return outcome
         
         details = self.player.routenav.describe_wp_bodies()
-        EDR_LOG.log("RouteNav: waypoint bodies: {}".format(details), "DEBUG")
+        EDR_LOG.debug("RouteNav: waypoint bodies: {}".format(details))
         if details:
             self.notify_with_details(_("EDR Journey: survey targets"), details, clear_before=True)
         return outcome
@@ -793,7 +793,7 @@ class EDRClient(object):
             return
         fc_report = self.edrfssinsights.fleet_carriers_report(force_reporting)
         if fc_report is not None:
-            EDR_LOG.log("Registering FSS signals; fc_report: {} with sys_address {} and star_system {}".format(fc_report, system_address, override_star_system), "DEBUG")
+            EDR_LOG.debug("Registering FSS signals; fc_report: {} with sys_address {} and star_system {}".format(fc_report, system_address, override_star_system))
             fc_report["reportedBy"] = self.player.name
             if self.edrsystems.update_fc_presence(fc_report):
                 self.edrfssinsights.reported = True
@@ -1307,7 +1307,7 @@ class EDRClient(object):
         distance = destination.distance(current, radius) if radius else None
         
         if distance is None:
-            EDR_LOG.log("No distance info out of System:{}, Body:{}, Place: {}, Radius:{}".format(location.star_system, location.body, location.place, radius), "DEBUG")
+            EDR_LOG.debug("No distance info out of System:{}, Body:{}, Place: {}, Radius:{}".format(location.star_system, location.body, location.place, radius))
             return
         
         threshold = 0.1
@@ -1376,7 +1376,7 @@ class EDRClient(object):
             bearing = poi.bearing(current)
             distance = poi.distance(current, radius) * 1000 if radius else None
             if distance is None:
-                EDR_LOG.log("No distance info out of System:{}, Body:{}, Place: {}, Radius:{}".format(location.star_system, location.body, location.place, radius), "DEBUG")
+                EDR_LOG.debug("No distance info out of System:{}, Body:{}, Place: {}, Radius:{}".format(location.star_system, location.body, location.place, radius))
                 continue
             distances.append(distance)
             distances_summary += _(" [{loc_index}]: {dist}m  >{head:03}<").format(loc_index=i, dist=math.floor(distance), head=bearing)
@@ -1395,7 +1395,7 @@ class EDRClient(object):
             details = []
             notams = self.edrsystems.active_notams(star_system, may_create, coords)
             if notams:
-                EDR_LOG.log("NOTAMs for {}: {}".format(star_system, notams), "DEBUG")
+                EDR_LOG.debug("NOTAMs for {}: {}".format(star_system, notams))
                 details += notams
             
             if self.edrsystems.has_sitrep(star_system):
@@ -1471,7 +1471,7 @@ class EDRClient(object):
             subsys_details = tgt.subsystem_details(target_event["Subsystem"])
 
         if not meaningful:
-            EDR_LOG.log("Target info is not that interesting, skipping", "DEBUG")
+            EDR_LOG.debug("Target info is not that interesting, skipping")
             return False
 
         shield_label = "{:.4g}".format(tgt.shield_health) if tgt.shield_health else "-"
@@ -1501,7 +1501,7 @@ class EDRClient(object):
     def notam(self, star_system):
         summary = self.edrsystems.active_notams(star_system)
         if summary:
-            EDR_LOG.log("NOTAMs for {}: {}".format(star_system, summary), "DEBUG")
+            EDR_LOG.debug("NOTAMs for {}: {}".format(star_system, summary))
             # Translators: this is the heading to show any active NOTAM for a given system {} 
             self.__sitrep(_("NOTAM for {}").format(star_system), summary)
         else:
@@ -2044,7 +2044,7 @@ class EDRClient(object):
                 distance = self.edrsystems.distance(origin, event["starSystem"])
                 threshold = self.realtime_params[kind]["max_distance"]
                 if distance > threshold:
-                    EDR_LOG.log("EDR alert not worthy. Distance {} between systems {} and {} exceeds threshold {}".format(distance, origin, event["starSystem"], threshold), "DEBUG")
+                    EDR_LOG.debug("EDR alert not worthy. Distance {} between systems {} and {} exceeds threshold {}".format(distance, origin, event["starSystem"], threshold))
                     return False
             except ValueError:
                 EDR_LOG.warning("Can't compute distance between systems {} and {}: unknown system(s)".format(self.player.star_system, event["starSystem"]))
@@ -2053,15 +2053,15 @@ class EDRClient(object):
             if "bounty" not in event:
                 return False
             if event["bounty"] < self.realtime_params[kind]["min_bounty"]:
-                EDR_LOG.log("EDR alert not worthy. Bounty {} does not exceeds threshold {}".format(event["bounty"], self.realtime_params[kind]["min_bounty"]), "DEBUG")
+                EDR_LOG.debug("EDR alert not worthy. Bounty {} does not exceeds threshold {}".format(event["bounty"], self.realtime_params[kind]["min_bounty"]))
                 return False
         return self.novel_enough_alert(event["cmdr"].lower(), event)
 
     def _summarize_realtime_alert(self, kind, event):
         summary =  []
-        EDR_LOG.log("realtime {} alerts, handling {}".format(kind, event), "DEBUG")
+        EDR_LOG.debug("realtime {} alerts, handling {}".format(kind, event))
         if not self._worthy_alert(kind, event):
-            EDR_LOG.log("Skipped realtime {} event because it wasn't worth alerting about: {}.".format(kind, event), "DEBUG")
+            EDR_LOG.debug("Skipped realtime {} event because it wasn't worth alerting about: {}.".format(kind, event))
         else:
             location = EDLocation(event["starSystem"], place=event["place"], body=event.get("body", None))
             copy(event["starSystem"])
@@ -2292,9 +2292,9 @@ class EDRClient(object):
             EDR_LOG.warning(f"Blip submission failed (network/server error) for {cmdr_id}: {e}")
             
         if success:
-            EDR_LOG.log("Blip successfully submitted.", "DEBUG")
+            EDR_LOG.debug("Blip successfully submitted.")
         else:
-            EDR_LOG.log("Blip failed (server side) for {} with {}".format(cmdr_id, blip), "DEBUG")
+            EDR_LOG.debug("Blip failed (server side) for {} with {}".format(cmdr_id, blip))
 
         return success
 
@@ -2875,11 +2875,11 @@ class EDRClient(object):
 
         translated_content_details = [_(line) for line in content["details"]]
         if self.visual_feedback:
-            EDR_LOG.log("Show help for {} with header: {} and details: {}".format(section, content["header"], content["details"][0]), "DEBUG")
+            EDR_LOG.debug("Show help for {} with header: {} and details: {}".format(section, content["header"], content["details"][0]))
             self.IN_GAME_MSG.help(_(content["header"]), translated_content_details)
             if self.audio_feedback:
                 self.SFX.help()
-        EDR_LOG.log("[Alt] Show help for {} with header: {} and details: {}".format(section, content["header"], content["details"][0]), "DEBUG")
+        EDR_LOG.debug("[Alt] Show help for {} with header: {} and details: {}".format(section, content["header"], content["details"][0]))
         if self.client_ui:
             self.client_ui.help(_(content["header"]), translated_content_details)
         return True
@@ -2890,11 +2890,11 @@ class EDRClient(object):
             return False
 
         if self.visual_feedback:
-            EDR_LOG.log("Show tip for {} with details: {}".format(category, the_tip), "DEBUG")
+            EDR_LOG.debug("Show tip for {} with details: {}".format(category, the_tip))
             self.__notify(_("EDR pro-tips"), [the_tip], clear_before=True)
             if self.audio_feedback:
                 self.SFX.help()
-        EDR_LOG.log("[Alt] Show tip for {} with details: {}".format(category, the_tip), "DEBUG")
+        EDR_LOG.debug("[Alt] Show tip for {} with details: {}".format(category, the_tip))
         if self.client_ui:
             self.client_ui.help(_("EDR pro-tips"), [the_tip])
         return True
@@ -2910,10 +2910,10 @@ class EDRClient(object):
         if self.audio_feedback:
             self.SFX.sitrep()
         if self.visual_feedback:
-            EDR_LOG.log("sitrep with header: {}; details: {}".format(header, details[0]), "DEBUG")
+            EDR_LOG.debug("sitrep with header: {}; details: {}".format(header, details[0]))
             self.IN_GAME_MSG.clear_sitrep()
             self.IN_GAME_MSG.sitrep(header, details)
-        EDR_LOG.log("[Alt] sitrep with header: {}; details: {}".format(header, details[0]), "DEBUG")
+        EDR_LOG.debug("[Alt] sitrep with header: {}; details: {}".format(header, details[0]))
         if self.client_ui:
             self.client_ui.sitrep(header, details)
 
@@ -2921,11 +2921,11 @@ class EDRClient(object):
         if self.audio_feedback:
             self.SFX.intel()
         if self.visual_feedback:
-            EDR_LOG.log("Intel; details: {}".format(details[0]), "DEBUG")
+            EDR_LOG.debug("Intel; details: {}".format(details[0]))
             if clear_before:
                 self.IN_GAME_MSG.clear_intel()
             self.IN_GAME_MSG.intel(header, details, legal)
-        EDR_LOG.log("[Alt] Intel; details: {}".format(details[0]), "DEBUG")
+        EDR_LOG.debug("[Alt] Intel; details: {}".format(details[0]))
         if self.client_ui:
             self.client_ui.intel(header, details)
 
@@ -2933,11 +2933,11 @@ class EDRClient(object):
         if self.audio_feedback:
             self.SFX.warning()
         if self.visual_feedback:
-            EDR_LOG.log("Warning; details: {}".format(details[0]), "DEBUG")
+            EDR_LOG.debug("Warning; details: {}".format(details[0]))
             if clear_before:
                 self.IN_GAME_MSG.clear_warning()
             self.IN_GAME_MSG.warning(header, details, legal)
-        EDR_LOG.log("[Alt] Warning; details: {}".format(details[0]), "DEBUG")
+        EDR_LOG.debug("[Alt] Warning; details: {}".format(details[0]))
         if self.client_ui:
             self.client_ui.warning(header, details)
     
@@ -2945,11 +2945,11 @@ class EDRClient(object):
         if sfx and self.audio_feedback:
             self.SFX.notify()
         if self.visual_feedback:
-            EDR_LOG.log("Notify about {}; details: {}".format(header, details[0]), "DEBUG")
+            EDR_LOG.debug("Notify about {}; details: {}".format(header, details[0]))
             if clear_before:
                 self.IN_GAME_MSG.clear_notice()
             self.IN_GAME_MSG.notify(header, details)
-        EDR_LOG.log("[Alt] Notify about {}; details: {}".format(header, details[0]), "DEBUG")
+        EDR_LOG.debug("[Alt] Notify about {}; details: {}".format(header, details[0]))
         if self.client_ui:
             self.client_ui.notify(header, details)
 
@@ -3379,9 +3379,9 @@ class EDRClient(object):
                     if self.server.report_fc_market(fc_id, market):
                         details.append(_("Access: all => Market info sent."))
                     else:
-                        EDR_LOG.log("Failed to report FC market update.", "DEBUG")
+                        EDR_LOG.debug("Failed to report FC market update.")
                 else:
-                    EDR_LOG.log("Skip reporting FC market given that the FC is not open to all.", "DEBUG")
+                    EDR_LOG.debug("Skip reporting FC market given that the FC is not open to all.")
                 sale_orders = self.player.fleet_carrier.sale_orders_within(timeframe)
                 purchase_orders = self.player.fleet_carrier.purchase_orders_within(timeframe)
                 summary = self.__summarize_fc_market(sale_orders, purchase_orders)
@@ -3758,7 +3758,7 @@ class EDRClient(object):
         if EDTime.py_epoch_now() - self.searching["timestamp"] < threshold:
             return self.searching["active"]
 
-        EDR_LOG.log("Resetting searching state due to no completion in {} seconds".format(threshold), "DEBUG")
+        EDR_LOG.debug("Resetting searching state due to no completion in {} seconds".format(threshold))
         self.__searching(False)
         return False
         

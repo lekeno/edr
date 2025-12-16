@@ -226,7 +226,7 @@ class EDRCmdrProfile(object):
     
     def complement(self, other_profile):
         if self.name.lower() != other_profile.name.lower():
-            EDR_LOG.log(u"Can't complement profile since it doesn't match: {} vs. {}".format(other_profile.name, self.name), "DEBUG")
+            EDR_LOG.debug(u"Can't complement profile since it doesn't match: {} vs. {}".format(other_profile.name, self.name))
             return False
 
         self.squadron = self.squadron if self.squadron else other_profile.squadron
@@ -244,7 +244,7 @@ class EDRCmdrProfile(object):
             return False
 
         if self.name.lower() != dex_dict.get("name", "").lower():
-            EDR_LOG.log(u"Can't augment with CmdrDex profile since it doesn't match: {} vs. {}".format(dex_dict.get("name", ""), self.name), "DEBUG")
+            EDR_LOG.debug(u"Can't augment with CmdrDex profile since it doesn't match: {} vs. {}".format(dex_dict.get("name", ""), self.name))
             return False
 
         self.dex_profile = EDRCmdrDexProfile(dex_dict)
@@ -268,7 +268,7 @@ class EDRCmdrProfile(object):
         if dex_dict is None:
             return False
         if self.name.lower() != dex_dict.get("name", "").lower():
-            EDR_LOG.log(u"Can't augment with CmdrDex profile since it doesn't match: {} vs. {}".format(dex_dict.get("name", ""), self.name), "DEBUG")
+            EDR_LOG.debug(u"Can't augment with CmdrDex profile since it doesn't match: {} vs. {}".format(dex_dict.get("name", ""), self.name))
             return False
 
         self.sqdrdex_profile = EDRCmdrDexProfile(dex_dict)

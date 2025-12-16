@@ -103,16 +103,16 @@ class RemoteThread(threading.Thread):
                 if msg.event == "keep-alive":
                     continue
                 if msg.event == "auth_revoked":
-                    EDR_LOG.log(u"SSE auth_revoked received", "DEBUG")
+                    EDR_LOG.debug(u"SSE auth_revoked received")
                     self.message_queue.put(msg)
                     self.close()
                     break
                 if msg.event == "cancel":
-                    EDR_LOG.log(u"SSE cancel received", "DEBUG")
+                    EDR_LOG.debug(u"SSE cancel received")
                     self.message_queue.put(msg)
                     self.close()
                     break
-                EDR_LOG.log(u"SSE msg received: {} {}".format(msg.event, msg.data), "DEBUG")
+                EDR_LOG.debug(u"SSE msg received: {} {}".format(msg.event, msg.data))
                 self.message_queue.put(msg)
         except socket.error:
             pass    # this can happen when we close the stream
@@ -138,9 +138,9 @@ class EDRSEEReader():
             while True:
                 msg = self.inbound_queue.get()
                 if not msg:
-                    EDR_LOG.log(u"SSE stop signal received.", "DEBUG")
+                    EDR_LOG.debug(u"SSE stop signal received.")
                     break
-                EDR_LOG.log(u"handling msg: {} {} {}".format(msg.event, msg.data, self.kind), "DEBUG")
+                EDR_LOG.debug(u"handling msg: {} {} {}".format(msg.event, msg.data, self.kind))
                 if msg.event in ["put", "patch"] and msg.data:
                     data = json.loads(msg.data)
                     if data is None or data["data"] is None:
