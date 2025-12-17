@@ -1695,7 +1695,7 @@ class InGameMsg(object):
             self._overlay.send_message(msg_id, text, color, int(col), int(row), ttl=ttl, size=size)
             self.msg_ids.set(msg_id, ttl)
         except Exception as e:
-            EDR_LOG.error(u"In-Game Message failed with {}.".format(e))
+            EDR_LOG.exception(u"In-Game Message failed with {}.".format(e))
             pass
 
     def __shape(self, kind, panel):
@@ -1704,7 +1704,7 @@ class InGameMsg(object):
             self._overlay.send_shape(shape_id, "rect", panel["rgb"], panel["fill"], panel["x"], panel["y"], panel["x2"], panel["y2"], ttl=panel["ttl"])
             self.msg_ids.set(shape_id, panel["ttl"])
         except Exception as e:
-            EDR_LOG.error(u"In-Game Shape failed with {}.".format(e))
+            EDR_LOG.exception(f"In-Game Shape failed with {e}.")
             pass
 
     def __vect(self, kind, vector):
@@ -1716,7 +1716,7 @@ class InGameMsg(object):
             self._overlay.send_raw(raw)
             self.msg_ids.set(vect_id, vector["ttl"])
         except Exception as e:
-            EDR_LOG.error(u"In-Game Vect failed with {}.".format(e))
+            EDR_LOG.exception(f"In-Game Vect failed with {e}.")
             pass
     
     def __clear(self, msg_id):
@@ -1725,7 +1725,7 @@ class InGameMsg(object):
             self.msg_ids.evict(msg_id)
             self.__reset_caches()
         except Exception as e:
-            EDR_LOG.error(u"In-Game Message failed to clear {} with {}.".format(msg_id, e))
+            EDR_LOG.exception(f"In-Game Message failed to clear {msg_id} with {e}.")
             pass
     
     def __reset_caches(self):

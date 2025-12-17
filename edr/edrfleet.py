@@ -69,7 +69,7 @@ class EDRFleet(object):
                         destination_system TEXT, source_market_id INTEGER, destination_market_id INTEGER)''')
             self.db.commit()
         except Exception as e:
-            EDR_LOG.error(f"Couldn't open/create the fleet database: {e}")
+            EDR_LOG.exception(f"Couldn't open/create the fleet database: {e}")
             self.db = None
     
     def update(self, event):
@@ -114,7 +114,7 @@ class EDRFleet(object):
             self.db.commit()
             self.__update()
         except sqlite3.IntegrityError as e:
-            EDR_LOG.error(f"Integrity error in fleet database: {e}")
+            EDR_LOG.exception(f"Integrity error in fleet database: {e}")
 
     def where(self, type_or_name):
         if self.db is None:
@@ -151,7 +151,7 @@ class EDRFleet(object):
                 self.db.execute('DELETE from transits WHERE ship_id=?', (storing_ship_id, ))
                 self.db.commit()
             except sqlite3.IntegrityError as e:
-                EDR_LOG.error(f"Integrity error in fleet database: {e}")
+                EDR_LOG.exception(f"Integrity error in fleet database: {e}")
 
         elif buy_event.get("SellShipID", None):
             self.__sold(buy_event["SellShipID"])

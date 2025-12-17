@@ -151,7 +151,7 @@ class EDRServer(object):
                 self.backoff["Inara"].throttle()
                 return None
         except:
-            EDR_LOG.error(u"Malformed response from Inara API? content={}".format(resp))
+            EDR_LOG.exception(u"Malformed response from Inara API? content={resp}")
             self.backoff["Inara"].throttle()
             return None
 
@@ -160,7 +160,7 @@ class EDRServer(object):
             self.backoff["Inara"].reset()
             return data
         except:
-            EDR_LOG.error(u"Malformed cmdr profile response from Inara API? content={}".format(resp))
+            EDR_LOG.exception(f"Malformed cmdr profile response from Inara API? content={resp}")
             self.backoff["Inara"].throttle()
         return None
 

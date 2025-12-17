@@ -132,7 +132,7 @@ class EDRCmdrs(object):
             EDR_LOG.warning("Comms jammed. Failed to fetch cmdr profile from EDR server.")
             updated_profile = None
         except Exception as e: # Catch other, unexpected exceptions
-            EDR_LOG.error(f"Unexpected exception during call to EDR server cmdr: {e}")
+            EDR_LOG.exception(f"Unexpected exception during call to EDR server cmdr: {e}")
             updated_profile = None
 
         if not updated_profile:
@@ -214,8 +214,8 @@ class EDRCmdrs(object):
         except CommsJammedError:
             EDR_LOG.warning("Comms jammed: Failed to fetch Inara profile via EDR server.")
             updated_profile = None
-        except Exception as e: # Catch other, unexpected exceptions
-            EDR_LOG.error(f"Unexpected exception during call to Inara via EDR server: {e}")
+        except Exception as e:
+            EDR_LOG.exception(f"Unexpected exception during call to Inara via EDR server: {e}")
             updated_profile = None
 
         if not updated_profile:

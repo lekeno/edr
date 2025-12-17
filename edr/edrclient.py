@@ -2367,7 +2367,7 @@ class EDRClient(object):
         try:
             success = self.server.scanned(cmdr_id, scan)
         except Exception as e:
-            EDR_LOG.error(f"Failed to submit scan for {cmdr_name}: {e}")
+            EDR_LOG.exception(f"Failed to submit scan for {cmdr_name}: {e}")
 
         if success:
             self.status = _("scan reported for {}.").format(cmdr_name)
@@ -3906,7 +3906,7 @@ class EDRClient(object):
             self.notify_with_details(_("EDR Journey"), details, clear_before=True)
             return True
         except Exception as e:
-            EDR_LOG.error("Journey Fetch failed with exception: {}".format(e))
+            EDR_LOG.exception(f"Journey Fetch failed with exception: {e}")
             self.notify_with_details(_("EDR Journey"), [_("Something went wrong.")], clear_before=True)
             pass
 

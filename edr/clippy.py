@@ -31,7 +31,7 @@ def __winSetClipboard(text):
         # Copy the bytes into the buffer
         ctypes.memmove(buffer, text_bytes, text_len)
     except Exception as e:
-        EDR_LOG.error(f"Clipboard memmove failed with: {e}")
+        EDR_LOG.exception(f"Clipboard memmove failed with: {e}")
     
     # Manually add the null terminator
     buffer[text_len] = b'\x00'
