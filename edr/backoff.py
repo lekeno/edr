@@ -1,5 +1,5 @@
 
-from edrlog import EDR_LOG
+from edr.edrlog import EDR_LOG
 import random
 from edtime import EDTime
 

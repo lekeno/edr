@@ -3,7 +3,7 @@ import os
 from edtime import EDTime
 from edrconfig import EDRConfig
 from lrucache import LRUCache
-from edrlog import EDR_LOG
+from edr.edrlog import EDR_LOG
 from edentities import EDPlayerOne
 from edrserver import CommsJammedError
 

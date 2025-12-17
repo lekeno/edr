@@ -4,7 +4,7 @@ import re
 
 import edtime
 from edrutils import simplified_body_name
-from edrlog import EDR_LOG
+from edr.edrlog import EDR_LOG
 from edri18n import _
 
 

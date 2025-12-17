@@ -1,17 +1,22 @@
 import sys
 import os
 
-# 1. Get the directory of the current file (edr/tests/)
-current_dir = os.path.dirname(__file__)
+# 1. Directory of this file: .../ProjectRoot/tests/
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
-# 2. Get the parent directory (edr/)
-edr_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
+# 2. Project Root (one level up): .../ProjectRoot/
+# This allows 'from edr.edrlog import EDR_LOG' to work
+root_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
 
-# 3. Get the grandparent directory (EDRecon/ - project root)
-root_dir = os.path.abspath(os.path.join(edr_dir, os.pardir))
+# 3. EDR Module Directory: .../ProjectRoot/edr/
+# This allows internal flat imports like 'import edri18n' to work
+edr_dir = os.path.join(root_dir, 'edr')
 
-# 4. Add both to sys.path
-# Add edr_dir so we can import modules like 'lrucache' directly if needed (though usually best to use package imports)
-# Add root_dir so we can import 'config' and other top-level modules
-sys.path.insert(0, root_dir)
-sys.path.insert(0, edr_dir)
+# 4. Inject into sys.path
+# We use insert(0, ...) to ensure these versions are used even if 
+# another version of EDR is installed in the Python environment.
+if root_dir not in sys.path:
+    sys.path.insert(0, root_dir)
+
+if edr_dir not in sys.path:
+    sys.path.insert(0, edr_dir)

@@ -3,7 +3,7 @@ import json
 import requests
 
 from edrconfig import EDRConfig
-from edrlog import EDR_LOG
+from edr.edrlog import EDR_LOG
 from backoff import Backoff
 from edtime import EDTime
 from edrhttpcache import EDRHttpCache

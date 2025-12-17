@@ -1,7 +1,7 @@
 import config_tests
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from backoff import Backoff
+from edr.backoff import Backoff
 
 class TestBackoff(TestCase):
     def test_init(self):

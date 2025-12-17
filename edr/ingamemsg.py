@@ -7,7 +7,7 @@ from string import ascii_uppercase, digits
 import re
 
 import igmconfig
-from edrlog import EDR_LOG
+from edr.edrlog import EDR_LOG
 import textwrap
 from edri18n import _, _c
 from edrlandables import EDRLandables

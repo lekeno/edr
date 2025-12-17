@@ -23,7 +23,7 @@ from edsitu import EDPlanetaryLocation, EDLocation
 from edrserver import EDRServer, CommsJammedError
 from edsmserver import EDSMServer
 from audiofeedback import EDRSoundEffects
-from edrlog import EDR_LOG
+from edr.edrlog import EDR_LOG
 from ingamemsg import InGameMsg
 from edrclientui import EDRClientUI
 from edrsystems import EDRSystems

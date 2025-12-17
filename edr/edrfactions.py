@@ -5,7 +5,7 @@ from edrconfig import EDRConfig
 from lrucache import LRUCache
 from edri18n import _
 from edtime import EDTime
-from edrlog import EDR_LOG
+from edr.edrlog import EDR_LOG
 
 class EDRMaterialOutcomes(object):
     def __init__(self):

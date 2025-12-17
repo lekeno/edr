@@ -14,7 +14,7 @@ from collections import deque
 from edrutils import pretty_print_number, simplified_body_name
 from edrconfig import EDR_CONFIG
 
-from edrlog import EDR_LOG
+from edr.edrlog import EDR_LOG
 
 
 class BidiWaypointIterator(object):

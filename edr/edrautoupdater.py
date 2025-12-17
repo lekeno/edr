@@ -5,7 +5,7 @@ import errno
 import os
 import json
 import datetime
-from edrlog import EDR_LOG
+from edr.edrlog import EDR_LOG
 
 
 

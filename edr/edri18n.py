@@ -3,7 +3,7 @@ import sys
 
 import l10n  # Importing localization module
 import os
-from edrlog import EDR_LOG
+from edr.edrlog import EDR_LOG
 
 # Constants
 CONTEXT_SEPARATOR = u"|"  # Separator used for contextual message

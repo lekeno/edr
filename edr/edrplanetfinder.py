@@ -1,7 +1,7 @@
 import threading
 from random import shuffle, seed
 from edri18n import _
-from edrlog import EDR_LOG
+from edr.edrlog import EDR_LOG
 
 
 

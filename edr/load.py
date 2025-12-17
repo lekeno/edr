@@ -19,7 +19,7 @@ from edsitu import EDPlanetaryLocation
 from edvehicles import EDVehicleFactory
 from edrrawdepletables import EDRRawDepletables
 from edtime import EDTime
-from edrlog import EDR_LOG
+from edr.edrlog import EDR_LOG
 import edrautoupdater
 from edri18n import _, _c
 

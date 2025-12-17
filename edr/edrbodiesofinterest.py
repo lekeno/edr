@@ -5,7 +5,7 @@ import copy
 
 import os
 from edsitu import EDPlanetaryLocation
-from edrlog import EDR_LOG
+from edr.edrlog import EDR_LOG
 from edrutils import simplified_body_name
 
 

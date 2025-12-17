@@ -8,7 +8,7 @@ import edrhitppoints
 import edmodule
 import edmodulesinforeader
 import edcargoreader
-from edrlog import EDR_LOG
+from edr.edrlog import EDR_LOG
 import edcargo
 import os
 from edshield import EDPowerDistributor, EDShieldGenerator, EDShieldingFactory

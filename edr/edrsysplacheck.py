@@ -1,5 +1,5 @@
 from edri18n import _, _c, _edr
-from edrlog import EDR_LOG
+from edr.edrlog import EDR_LOG
 
 class EDRSystemPlanetCheck(object):
 

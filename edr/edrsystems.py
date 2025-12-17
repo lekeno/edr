@@ -10,7 +10,7 @@ import json
 
 import edtime
 import edrconfig
-from edrlog import EDR_LOG
+from edr.edrlog import EDR_LOG
 from lrucache import LRUCache
 from edentities import EDFineOrBounty
 from edrutils import pretty_print_number

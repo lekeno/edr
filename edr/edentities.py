@@ -8,7 +8,7 @@ from edvehicles import EDVehicleFactory
 from edspacesuits import EDSuitFactory, EDOdysseyCloset
 from edcodex import EDCodex
 from edinstance import EDInstance
-from edrlog import EDR_LOG
+from edr.edrlog import EDR_LOG
 from edrconfig import EDRConfig
 from edreconbox import EDReconBox
 from edrinventory import EDRInventory, EDRRemlokHelmet

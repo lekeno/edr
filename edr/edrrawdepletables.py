@@ -7,7 +7,7 @@ import math
 
 import os
 from edtime import EDTime
-from edrlog import EDR_LOG
+from edr.edrlog import EDR_LOG
 
 
 

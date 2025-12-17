@@ -17,7 +17,7 @@ from lrucache import LRUCache
 from edrafkdetector import EDRAfkDetector
 from edtime import EDTime
 import backoff
-from edrlog import EDR_LOG
+from edr.edrlog import EDR_LOG
 
 
 

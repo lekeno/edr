@@ -7,7 +7,7 @@ import time
 import edrcmdrprofile
 import RESTFirebase
 import edrconfig
-from edrlog import EDR_LOG
+from edr.edrlog import EDR_LOG
 from edtime import EDTime
 
 import requests

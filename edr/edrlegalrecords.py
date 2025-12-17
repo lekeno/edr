@@ -6,7 +6,7 @@ from collections import deque
 
 from lrucache import LRUCache
 from edrconfig import EDRConfig
-from edrlog import EDR_LOG
+from edr.edrlog import EDR_LOG
 from edtime import EDTime
 from edentities import EDFineOrBounty
 from edri18n import _, _c

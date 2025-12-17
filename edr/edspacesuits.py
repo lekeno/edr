@@ -6,7 +6,7 @@ from copy import deepcopy
 
 from edtime import EDTime
 import edrconfig
-from edrlog import EDR_LOG
+from edr.edrlog import EDR_LOG
 
 
 
