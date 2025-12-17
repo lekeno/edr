@@ -3890,9 +3890,9 @@ class EDRClient(object):
 
     def journey_fetch(self):
         try:
-            url_from_clipboard = paste()
-            url_from_clipboard = url_from_clipboard.decode("ascii")
-            if not edrroutes.SpanshServer.recognized_url(url_from_clipboard):
+            raw_url = paste() or ""
+            url_from_clipboard = raw_url.strip()
+            if not url_from_clipboard or not edrroutes.SpanshServer.recognized_url(url_from_clipboard):
                 details = []
                 details.append(_("No recognized URL in the clipboard."))
                 details.append(_("Visit spansh.co.uk, create a route, copy the URL to the clipboard, then resend the '!journey fetch' command"))
@@ -3908,7 +3908,6 @@ class EDRClient(object):
         except Exception as e:
             EDR_LOG.exception(f"Journey Fetch failed with exception: {e}")
             self.notify_with_details(_("EDR Journey"), [_("Something went wrong.")], clear_before=True)
-            pass
 
     def journey_clear(self):
         self.player.routenav.clear_journey()

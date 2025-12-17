@@ -1,6 +1,7 @@
 from edrlog import EDR_LOG
 import platform, os
 import ctypes
+from ctypes import wintypes
 
 if os.name == 'nt' or platform.system() == 'Windows':
     user32 = ctypes.windll.user32
@@ -82,37 +83,32 @@ def __winSetClipboard(text):
     finally:
         user32.CloseClipboard()
 
-def __macSetClipboard(text):
+def __unixSetClipboard(text):
     try:
         text = str(text)
         tool = 'pbcopy' if platform.system() == 'Darwin' else 'xclip -selection clipboard'
-        outf = os.popen(tool, 'w')
-        outf.write(text)
-        outf.close()
+        with os.popen(tool, 'w') as outf:
+            outf.write(text)
     except Exception as e:
         EDR_LOG.exception(f"Mac/Unix SetClipboard failed: {e}")
 
-def __macGetClipboard():
+def __unixGetClipboard():
     try:
         tool = 'pbpaste' if platform.system() == 'Darwin' else 'xclip -selection clipboard -o'
-        outf = os.popen(tool, 'r')
-        content = outf.read()
-        outf.close()
+        with os.popen(tool, 'r') as outf:
+            content = outf.read()
         return content
     except Exception as e:
         EDR_LOG.exception(f"Mac/Unix GetClipboard failed: {e}")
-        return ""
+        return None
 
 if os.name == 'nt' or platform.system() == 'Windows':
     import ctypes
     clipboard_get = __winGetClipboard
     clipboard_set = __winSetClipboard
-elif os.name == 'mac' or platform.system() == 'Darwin':
-    clipboard_get = __macGetClipboard
-    clipboard_set = __macSetClipboard
-elif os.name == 'linux' or platform.system() == 'Linux':
-    clipboard_get = __macGetClipboard
-    clipboard_set = __macSetClipboard
+elif platform.system() in ['Darwin', 'Linux']:
+    clipboard_get = __unixGetClipboard
+    clipboard_set = __unixSetClipboard
 else:
     clipboard_get = lambda: None
     clipboard_set = lambda x: None
