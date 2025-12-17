@@ -11,11 +11,11 @@ from numbers import Number
 from itertools import dropwhile
 
 import os
-from edri18n import _
-from edrconfig import EDRUserConfig, EDRConfig
-from lrucache import LRUCache
+from edr.edri18n import _
+from edr.edrconfig import EDRUserConfig, EDRConfig
+from edr.lrucache import LRUCache
 from edrafkdetector import EDRAfkDetector
-from edtime import EDTime
+from edr.edtime import EDTime
 import backoff
 from edr.edrlog import EDR_LOG
 
@@ -178,7 +178,7 @@ class EDRDiscordIntegration(object):
         self.edrcmdrs = edrcmdrs
         self.afk_detector = EDRAfkDetector()
         user_config = EDRUserConfig()
-        edr_config = EDRConfig()
+        edr_config = EDR_CONFIG
         
         players_cfg_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'config', 'user_discord_players.json')
         try:

@@ -4,9 +4,9 @@ import json
 import copy
 
 import os
-from edsitu import EDPlanetaryLocation
+from edr.edsitu import EDPlanetaryLocation
 from edr.edrlog import EDR_LOG
-from edrutils import simplified_body_name
+from edr.edrutils import simplified_body_name
 
 
 

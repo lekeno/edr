@@ -1,4 +1,4 @@
-import config_tests
+
 from unittest import TestCase, main
 from edrfleetcarrier import EDRFleetCarrier
 import edtime

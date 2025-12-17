@@ -1,6 +1,6 @@
-import config_tests
+
 from unittest import TestCase, main
-from edentities import EDFineOrBounty
+from edr.edentities import EDFineOrBounty
 
 class TestEDFineOrBounty(TestCase):
     def test_significant(self):

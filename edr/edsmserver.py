@@ -2,10 +2,10 @@
 import json
 import requests
 
-from edrconfig import EDRConfig
+from edr.edrconfig import EDR_CONFIG
 from edr.edrlog import EDR_LOG
 from backoff import Backoff
-from edtime import EDTime
+from edr.edtime import EDTime
 from edrhttpcache import EDRHttpCache
 
 class EDSMServer(object):
@@ -13,7 +13,7 @@ class EDSMServer(object):
     SESSION = requests.Session()
 
     def __init__(self):
-        config = EDRConfig()
+        config = EDR_CONFIG
         self.EDSM_API_KEY = config.edsm_api_key()
         self.EDSM_SERVER = config.edsm_server()
         self.backoff = Backoff("EDSM")

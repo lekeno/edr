@@ -3,19 +3,6 @@ from unittest.mock import Mock, patch, MagicMock, mock_open
 import sys
 import os
 
-# Setup paths
-current_dir = os.path.dirname(os.path.abspath(__file__)) # edr/tests/
-edr_dir = os.path.abspath(os.path.join(current_dir, '..')) # edr/
-parent_dir = os.path.abspath(os.path.join(edr_dir, '..')) # folder containing edr/
-
-# 1. Add the parent so 'from edr.module' works
-if parent_dir not in sys.path:
-    sys.path.insert(0, parent_dir)
-
-# 2. Add the edr folder itself so internal 'from edri18n' works
-if edr_dir not in sys.path:
-    sys.path.insert(0, edr_dir)
-
 from edr.edrcmdrs import EDRCmdrs
 
 class TestEDRCmdrs(unittest.TestCase):

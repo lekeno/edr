@@ -1,4 +1,4 @@
-import config_tests
+
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from edrroutes import BidiWaypointIterator, GenericRoute, SpanshServer

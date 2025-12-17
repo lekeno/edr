@@ -1,7 +1,6 @@
-import config_tests
 import unittest
 from unittest.mock import patch
-from edmodule import EDModule, EDResistances
+from edr.edmodule import EDModule, EDResistances
 
 class TestEDModule(unittest.TestCase):
     def setUp(self):
@@ -10,7 +9,7 @@ class TestEDModule(unittest.TestCase):
             "int_powerplant_size2_class1": {"powergen": 6.4, "powerdraw": 0.0},
             "int_hyperdrive_size2_class1": {"powergen": 0.0, "powerdraw": 0.15}
         }
-        self.patcher = patch.dict('edmodule.POWER_DATA', self.mock_power_data, clear=True)
+        self.patcher = patch.dict('edr.edmodule.POWER_DATA', self.mock_power_data, clear=True)
         self.patcher.start()
 
     def tearDown(self):

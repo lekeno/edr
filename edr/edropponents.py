@@ -9,8 +9,8 @@ import edrconfig
 import edrrealtime
 from edr.edrlog import EDR_LOG
 import edtime
-from edentities import EDFineOrBounty
-from edri18n import _, _c
+from edr.edentities import EDFineOrBounty
+from edr.edri18n import _, _c
 
 class EDROpponents(object):
     OUTLAWS = "Outlaws"
@@ -33,7 +33,7 @@ class EDROpponents(object):
         self.realtime_callback = client_callback
         self.realtime = None
 
-        config = edrconfig.EDRConfig()
+        config = edrconfig.EDR_CONFIG
         
         self.sightings = lrucache.LRUCache.load(
             file_path=self.EDR_OPPONENTS_SIGHTINGS_CACHES[opponent_kind],
@@ -61,7 +61,7 @@ class EDROpponents(object):
         if self.kind is not EDROpponents.ENEMIES:
             return
         if not power or self.powerplay is not power:
-            config = edrconfig.EDRConfig()
+            config = edrconfig.EDR_CONFIG
             self.recents = deque(maxlen=config.opponents_max_recents(self.kind))
             self.sightings = lrucache.LRUCache(config.lru_max_size(), config.opponents_max_age(self.kind))
         self.powerplay = power

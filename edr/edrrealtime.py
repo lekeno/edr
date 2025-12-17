@@ -11,7 +11,7 @@ except ImportError:
     from queue import Queue
 
 from sseclient import SSEClient
-from edtime import EDTime
+from edr.edtime import EDTime
 from edr.edrlog import EDR_LOG
 
 class EDRRealtimeUpdates(object):

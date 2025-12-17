@@ -4,8 +4,8 @@ import json
 import os
 from copy import deepcopy
 
-from edtime import EDTime
-import edrconfig
+from edr.edtime import EDTime
+from edr.edrconfig import EDR_CONFIG
 from edr.edrlog import EDR_LOG
 
 
@@ -41,7 +41,7 @@ class EDSpaceSuit(object):
         self.fight = {u"value": False, "large": False, u"timestamp": now}
         self._attacked = {u"value": False, u"timestamp": now}
         self._in_danger = {u"value": False, u"timestamp": now}
-        config = edrconfig.EDR_CONFIG
+        config = EDR_CONFIG
         self.fight_staleness_threshold = config.instance_fight_staleness_threshold()
         self.danger_staleness_threshold = config.instance_danger_staleness_threshold()
 

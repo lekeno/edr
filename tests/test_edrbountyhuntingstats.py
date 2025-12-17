@@ -1,8 +1,7 @@
-import config_tests
 import unittest
 from unittest.mock import patch, MagicMock
-from edrbountyhuntingstats import EDRBountyHuntingStats
-import edtime
+from edr.edrbountyhuntingstats import EDRBountyHuntingStats
+import edr.edtime
 
 class TestEDRBountyHuntingStats(unittest.TestCase):
     def setUp(self):
@@ -12,14 +11,14 @@ class TestEDRBountyHuntingStats(unittest.TestCase):
         
         # Patch EDTime in edrbountyhuntingstats module namespace if possible, 
         # but class usage might require patching where it is imported.
-        # inspecting edrbountyhuntingstats.py: `from edtime import EDTime`
+        # inspecting edrbountyhuntingstats.py: `from edr.edtime import EDTime`
         # so we patch `edrbountyhuntingstats.EDTime`
         
-        self.patcher = patch('edrbountyhuntingstats.EDTime', self.mock_time)
+        self.patcher = patch('edr.edrbountyhuntingstats.EDTime', self.mock_time)
         self.patcher.start()
         
         # Also need to mock EDRConfig to avoid file reads in __init__
-        self.config_patcher = patch('edrbountyhuntingstats.EDRConfig')
+        self.config_patcher = patch('edr.edrbountyhuntingstats.EDRConfig')
         self.mock_config = self.config_patcher.start()
         # Setup expected config return values
         self.mock_config.return_value.lru_max_size.return_value = 100

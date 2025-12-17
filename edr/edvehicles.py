@@ -2,18 +2,18 @@ import re
 import json
 from math import log10
 
-from edtime import EDTime
-import edrconfig
-import edrhitppoints
-import edmodule
-import edmodulesinforeader
-import edcargoreader
+from edr.edtime import EDTime
+from edr.edrconfig import EDR_CONFIG
+from edr.edrhitppoints import EDRHitPPoints
+from edr.edmodule import EDModule
+from edr.edmodulesinforeader import EDModulesInfoReader
+from edr.edcargoreader import EDCargoReader
 from edr.edrlog import EDR_LOG
-import edcargo
+from edr.edcargo import EDCargo
 import os
-from edshield import EDPowerDistributor, EDShieldGenerator, EDShieldingFactory
-from edarmour import EDHullFactory
-from edweapons import EDWeaponFactory
+from edr.edshield import EDPowerDistributor, EDShieldGenerator, EDShieldingFactory
+from edr.edarmour import EDHullFactory
+from edr.edweapons import EDWeaponFactory
 
 class EDVehicleSize(object):
     UNKNOWN = 1
@@ -32,12 +32,12 @@ class EDVehicle(object):
         self._value = None
         self.hot = False
         now = EDTime.py_epoch_now()
-        config = edrconfig.EDR_CONFIG
-        self._hull_health = edrhitppoints.EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
+        config = EDR_CONFIG
+        self._hull_health = EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
         self.hull_mass = 0
         self.hull_hardness = 0
         self.hull_base_strength = 0
-        self._shield_health = edrhitppoints.EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
+        self._shield_health = EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
         self.shield_up = True
         self.shield_base_strength = 0
         self.subsystems = {}
@@ -60,7 +60,7 @@ class EDVehicle(object):
         self.modules = None
         self.power_capacity = None
         self.cargo_capacity = 0
-        self.cargo = edcargo.EDCargo()
+        self.cargo = EDCargo()
         self.whole_loadout = False
         self.distro = EDPowerDistributor()
         self.shield_gen = EDShieldGenerator()
@@ -455,7 +455,7 @@ class EDVehicle(object):
         self.name = event.get('UserShipName', None)
 
     def update_cargo(self):
-        reader = edcargoreader.EDCargoReader()
+        reader = EDCargoReader()
         cargo = reader.process()
         self.cargo.update(cargo)
 
@@ -528,8 +528,8 @@ class EDVehicle(object):
         now = EDTime.ms_epoch_now()
         self.timestamp = now
         if canonical not in self.subsystems:
-            config = edrconfig.EDR_CONFIG
-            self.subsystems[canonical] = edrhitppoints.EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
+            config = EDR_CONFIG
+            self.subsystems[canonical] = EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
         self.subsystems[canonical].update(health)
 
     def subsystem_details(self, subsystem):
@@ -548,8 +548,8 @@ class EDVehicle(object):
         now = EDTime.ms_epoch_now()
         self.timestamp = now
         self.outfit_probably_changed()
-        config = edrconfig.EDR_CONFIG
-        self.subsystems[canonical] = edrhitppoints.EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
+        config = EDR_CONFIG
+        self.subsystems[canonical] = EDRHitPPoints(config.hpp_history_max_points(), config.hpp_history_max_span(), config.hpp_trend_span())
         self.subsystems[canonical].update(None)
     
     def remove_subsystem(self, subsystem):

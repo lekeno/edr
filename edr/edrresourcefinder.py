@@ -11,7 +11,7 @@ from clippy import copy
 from edrfactions import EDRFactions, EDRFaction
 import edrstatecheck
 from edrstatefinder import EDRStateFinder
-from edri18n import _
+from edr.edri18n import _
 from edrrawdepletables import EDRRawDepletables
 
 class EDRResourceFinder(object):

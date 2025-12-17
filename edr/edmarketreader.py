@@ -18,4 +18,4 @@ class EDMarketReader(object):
                     entry = json.loads(data)
                     return entry
         except Exception as e:
-            EDR_LOG.exception(f"Couldn't process market: {e}")
+            EDR_LOG.exception(f"Couldn't process market")

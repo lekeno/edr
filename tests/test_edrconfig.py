@@ -1,8 +1,8 @@
 
-import config_tests
+
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from edrconfig import EDRConfig, EDRUserConfig
+from edr.edrconfig import EDR_CONFIG, EDRUserConfig
 
 class TestEDRConfig(TestCase):
     def test_defaults_and_accessors(self):
@@ -20,7 +20,7 @@ class TestEDRConfig(TestCase):
             # Setup return values for boolean gets
             mock_parser.getboolean.return_value = True
 
-            config = EDRConfig()
+            config = EDR_CONFIG
             
             self.assertEqual(config.edr_version(), "general_version_value")
             self.assertEqual(config.edr_api_key(), "edr_edr_api_key_value")
@@ -45,7 +45,7 @@ class TestEDRConfig(TestCase):
 
             mock_parser.get.side_effect = get_side_effect
             
-            config = EDRConfig()
+            config = EDR_CONFIG
             self.assertEqual(config.edr_heartbeat(), 60)
             self.assertEqual(config.legal_records_recent_threshold(), 72)
 

@@ -1,6 +1,6 @@
-import config_tests
+
 from unittest import TestCase, main
-from edentities import EDPlayerOne
+from edr.edentities import EDPlayerOne
 import edvehicles
 
 class TestEDPlayerOne(TestCase):

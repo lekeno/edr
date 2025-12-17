@@ -8,11 +8,11 @@ from os import path
 from math import sqrt
 import re
 
-from edri18n import _
-from edtime import EDTime
+from edr.edri18n import _
+from edr.edtime import EDTime
 from collections import deque
-from edrutils import pretty_print_number, simplified_body_name
-from edrconfig import EDR_CONFIG
+from edr.edrutils import pretty_print_number, simplified_body_name
+from edr.edrconfig import EDR_CONFIG
 
 from edr.edrlog import EDR_LOG
 

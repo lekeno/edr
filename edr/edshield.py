@@ -1,7 +1,7 @@
 from math import log10
 import re
 
-from edmodule import EDResistances
+from edr.edmodule import EDResistances
 
 class EDShieldBooster(object):
     def __init__(self):

@@ -1,6 +1,6 @@
-import config_tests
+
 from unittest import TestCase, main
-from edtime import EDTime
+from edr.edtime import EDTime
 import calendar, time
 
 class TestEDTime(TestCase):

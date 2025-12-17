@@ -1,6 +1,5 @@
-import config_tests
 import unittest
-from edcodex import EDCodex
+from edr.edcodex import EDCodex
 
 class TestEDCodex(unittest.TestCase):
     def setUp(self):

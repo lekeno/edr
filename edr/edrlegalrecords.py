@@ -4,12 +4,12 @@ import time
 import os
 from collections import deque
 
-from lrucache import LRUCache
-from edrconfig import EDRConfig
+from edr.lrucache import LRUCache
+from edr.edrconfig import EDR_CONFIG
 from edr.edrlog import EDR_LOG
-from edtime import EDTime
-from edentities import EDFineOrBounty
-from edri18n import _, _c
+from edr.edtime import EDTime
+from edr.edentities import EDFineOrBounty
+from edr.edri18n import _, _c
 
 
 class EDRLegalRecords(object):
@@ -20,7 +20,7 @@ class EDRLegalRecords(object):
         
         self.timespan = None
         self.records_check_interval = None
-        config = EDRConfig()
+        config = EDR_CONFIG
 
         self.records = LRUCache.load(
             file_path=self.EDR_LEGAL_RECORDS_CACHE,

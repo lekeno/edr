@@ -1,6 +1,6 @@
 import threading
 from random import shuffle
-from edri18n import _
+from edr.edri18n import _
 from edr.edrlog import EDR_LOG
 
 

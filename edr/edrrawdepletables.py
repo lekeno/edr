@@ -6,7 +6,7 @@ import sqlite3
 import math
 
 import os
-from edtime import EDTime
+from edr.edtime import EDTime
 from edr.edrlog import EDR_LOG
 
 

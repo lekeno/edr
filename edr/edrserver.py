@@ -6,9 +6,9 @@ import time
 
 import edrcmdrprofile
 import RESTFirebase
-import edrconfig
+from edr.edrconfig import EDR_CONFIG
 from edr.edrlog import EDR_LOG
-from edtime import EDTime
+from edr.edtime import EDTime
 
 import requests
 import backoff
@@ -24,7 +24,7 @@ class EDRServer(object):
         return name.lower().replace(" ", "_")
 
     def __init__(self):
-        config = edrconfig.EDRConfig()
+        config = EDR_CONFIG
         self.REST_firebase = RESTFirebase.RESTFirebaseAuth()
         self.EDR_API_KEY = config.edr_api_key()
         self.EDR_SERVER = config.edr_server()
@@ -33,7 +33,7 @@ class EDRServer(object):
         self.game_mode = None
         self.dlc_name = None
         self.private_group = None
-        self.version = edrconfig.EDRConfig().edr_version()
+        self.version = config.edr_version()
         self._throttle_until_timestamp = None
         self.anonymous_reports = None
         self.crimes_reporting = None

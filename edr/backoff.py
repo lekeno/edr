@@ -1,7 +1,7 @@
+import random
 
 from edr.edrlog import EDR_LOG
-import random
-from edtime import EDTime
+from edr.edtime import EDTime
 
 
 

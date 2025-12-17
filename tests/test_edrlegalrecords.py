@@ -1,5 +1,5 @@
 
-import config_tests
+
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 import datetime

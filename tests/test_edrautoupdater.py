@@ -1,10 +1,9 @@
-import config_tests
 import unittest
 from unittest.mock import Mock, patch, mock_open, MagicMock
 import os
 import errno
 import zipfile
-from edrautoupdater import EDRAutoUpdater
+from edr.edrautoupdater import EDRAutoUpdater
 
 class TestEDRAutoUpdater(unittest.TestCase):
     def setUp(self):

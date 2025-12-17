@@ -1,7 +1,5 @@
 from edr.edrlog import EDR_LOG
 
-
-
 class EDCargo(object):
     def __init__(self):
         self.inventory = {}

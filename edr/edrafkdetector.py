@@ -1,4 +1,4 @@
-import edtime
+from edr.edtime import EDTime
 
 class EDRAfkDetector(object):
     PASSIVE_EVENTS = ["Died", "HeatDamage", "FighterDestroyed", "HeatWarning", "HullDamage", "Interdicted", "ShieldState", "SRVDestroyed", "UnderAttack", "CommunityGoal", "CommunityGoalReward", "MissionFailed", "MissionRedirected", "ReceiveText", "Fileheader", "Friends", "DisbandedSquadron", "InvitedToSquadron", "KickedFromSquadron", "SquadronDemotion", "SquadronPromotion", "WonATrophyForSquadron", "Continued", "CrewMemberJoins", "CrewMemberQuits", "CrimeVictim", "Music", "NpcCrewPaidWage", "WingInvite"]
@@ -16,8 +16,8 @@ class EDRAfkDetector(object):
             # unclear
             return True
 
-        last_active = edtime.EDTime()
+        last_active = EDTime()
         last_active.from_journal_timestamp(self.last_active_event["timestamp"])
 
-        now = edtime.EDTime.py_epoch_now()
+        now = EDTime.py_epoch_now()
         return (now - last_active.as_py_epoch()) > self.inactive_threshold_seconds

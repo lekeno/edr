@@ -1,4 +1,4 @@
-import config_tests
+
 from unittest import TestCase, main
 import edvehicles
 import calendar, time

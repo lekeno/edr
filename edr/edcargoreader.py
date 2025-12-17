@@ -4,8 +4,6 @@ from os.path import join
 from config import config
 from edr.edrlog import EDR_LOG
 
-
-
 class EDCargoReader(object):
     def __init__(self):
         self.journal_location = config.get_str('journaldir') or config.default_journal_dir
@@ -19,4 +17,4 @@ class EDCargoReader(object):
                     entry = json.loads(data)
                     return entry
         except Exception as e:
-            EDR_LOG.exception(f"Couldn't process cargo: {e}")
+            EDR_LOG.exception(f"Couldn't process cargo")

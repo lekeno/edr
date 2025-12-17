@@ -18,5 +18,5 @@ class EDModulesInfoReader(object):
                 if data:	# Can be empty if polling while the file is being re-written
                     entry = json.loads(data)
                     return entry
-        except:
-            EDR_LOG.warning("Couldn't process modulesinfo")
+        except Exception as e:
+            EDR_LOG.exception("Couldn't process modulesinfo")

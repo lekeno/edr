@@ -1,25 +1,25 @@
 #from builtins import round
 
 import pickle
-from edsitu import EDLocation, EDAttitude, EDSpaceDimension, EDDestination
+from edr.edsitu import EDLocation, EDAttitude, EDSpaceDimension, EDDestination
 
-from edtime import EDTime
-from edvehicles import EDVehicleFactory 
-from edspacesuits import EDSuitFactory, EDOdysseyCloset
-from edcodex import EDCodex
-from edinstance import EDInstance
+from edr.edtime import EDTime
+from edr.edvehicles import EDVehicleFactory 
+from edr.edspacesuits import EDSuitFactory, EDOdysseyCloset
+from edr.edcodex import EDCodex
+from edr.edinstance import EDInstance
 from edr.edrlog import EDR_LOG
-from edrconfig import EDRConfig
-from edreconbox import EDReconBox
-from edrinventory import EDRInventory, EDRRemlokHelmet
-from edri18n import _, _c
-import edrfleet
-import edrfleetcarrier
-import edrminingstats
-import edrbountyhuntingstats
-import edengineers
-from edrutils import pretty_print_number
-from edrroutes import EDRNavigator
+from edr.edrconfig import EDR_CONFIG
+from edr.edreconbox import EDReconBox
+from edr.edrinventory import EDRInventory, EDRRemlokHelmet
+from edr.edri18n import _, _c
+from edr.edrfleet import EDRFleet
+from edr.edrfleetcarrier import EDRFleetCarrier
+from edr.edrminingstats import EDRMiningStats
+from edr.edrbountyhuntingstats import EDRBountyHuntingStats
+from edr.edengineers import EDEngineers
+from edr.edrutils import pretty_print_number
+from edr.edrroutes import EDRNavigator
 
 import os
 
@@ -191,7 +191,7 @@ class EDFineOrBounty(object):
     def __init__(self, value, faction=None):
         self.value = value
         self.faction = faction
-        config = EDRConfig()
+        config = EDR_CONFIG
         self.threshold = config.intel_bounty_threshold()
     
     def is_significant(self):
@@ -501,7 +501,7 @@ class EDPilot(object):
     def docked_at(self, entry):
         self.docked()
         if entry.get("StationType", None) == "FleetCarrier":
-            self.last_station = edrfleetcarrier.EDRFleetCarrier()
+            self.last_station = EDRFleetCarrier()
             self.last_station.update_from_location_or_docking(entry)
         else:
             self.last_station = None # TODO
@@ -927,15 +927,15 @@ class EDPlayerOne(EDPlayer):
         self.inventory = EDRInventory()
         self.closet = EDOdysseyCloset()
         self.codex = EDCodex()
-        self.fleet = edrfleet.EDRFleet()
+        self.fleet = EDRFleet()
         try:
             with open(self.EDR_FLEET_CARRIER_CACHE, 'rb') as handle:
                 self.fleet_carrier = pickle.load(handle)
         except:
-            self.fleet_carrier = edrfleetcarrier.EDRFleetCarrier()
-        self.mining_stats = edrminingstats.EDRMiningStats()
-        self.bounty_hunting_stats = edrbountyhuntingstats.EDRBountyHuntingStats()
-        self.engineers = edengineers.EDEngineers()
+            self.fleet_carrier = EDRFleetCarrier()
+        self.mining_stats = EDRMiningStats()
+        self.bounty_hunting_stats = EDRBountyHuntingStats()
+        self.engineers = EDEngineers()
         self.destination = EDDestination()
         self.remlok_helmet = EDRRemlokHelmet()
         self.routenav = EDRNavigator()

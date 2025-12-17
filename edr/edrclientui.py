@@ -3,8 +3,8 @@ from tkinter import ttk
 
 import myNotebook as notebook
 import ttkHyperlinkLabel
-from edrtogglingpanel import EDRTogglingPanel
-from edri18n import _
+from edr.edrtogglingpanel import EDRTogglingPanel
+from edr.edri18n import _
 
 class EDRClientUI(object):
     def __init__(self, edr_client, parent):

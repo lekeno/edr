@@ -1,7 +1,6 @@
-import config_tests
 import unittest
 from unittest.mock import MagicMock, patch
-from edengineers import EDEngineers, EDEngineerFactory, EDKitFowler
+from edr.edengineers import EDEngineers, EDEngineerFactory, EDKitFowler
 
 class TestEDEngineers(unittest.TestCase):
     def setUp(self):

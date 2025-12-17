@@ -1,8 +1,8 @@
 import random
 
-import config_tests
+
 from unittest import TestCase, main
-from edrcmdrprofile import EDRCmdrProfile
+from edr.edrcmdrprofile import EDRCmdrProfile
 
 class TestEDRCmdrProfile(TestCase):
     def test_karma(self):

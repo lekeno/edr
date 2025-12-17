@@ -11,10 +11,10 @@ import json
 import edtime
 import edrconfig
 from edr.edrlog import EDR_LOG
-from lrucache import LRUCache
-from edentities import EDFineOrBounty
-from edrutils import pretty_print_number
-from edri18n import _, _c, _edr
+from edr.lrucache import LRUCache
+from edr.edentities import EDFineOrBounty
+from edr.edrutils import pretty_print_number
+from edr.edri18n import _, _c, _edr
 import edrservicecheck
 import edrsysplacheck
 import edrsyssetlcheck
@@ -51,7 +51,7 @@ class EDRSystems(object):
         self.reasonable_sc_distance = 1500
         self.reasonable_hs_radius = 50
         self.edsm_systems_within_radius_blocklist = set()
-        edr_config = edrconfig.EDRConfig()
+        edr_config = edrconfig.EDR_CONFIG
 
         # --- EDR Caches ---
         self.systems_cache = LRUCache.load(
@@ -2276,7 +2276,7 @@ class EDRSystems(object):
             if system_reports is None or "latestCrime" not in system_reports:
                 return False
 
-            edr_config = edrconfig.EDRConfig()
+            edr_config = edrconfig.EDR_CONFIG
             return self.is_recent(system_reports["latestCrime"],
                                   edr_config.crimes_recent_threshold())
         return False
@@ -2287,7 +2287,7 @@ class EDRSystems(object):
             if system_reports is None or "latestOutlaw" not in system_reports:
                 return False
 
-            edr_config = edrconfig.EDRConfig()
+            edr_config = edrconfig.EDR_CONFIG
             return self.is_recent(system_reports["latestOutlaw"],
                                   edr_config.opponents_recent_threshold("outlaws"))
         return False
@@ -2299,7 +2299,7 @@ class EDRSystems(object):
             if system_reports is None or latestEnemy not in system_reports:
                 return False
 
-            edr_config = edrconfig.EDRConfig()
+            edr_config = edrconfig.EDR_CONFIG
             return self.is_recent(system_reports[latestEnemy],
                                   edr_config.opponents_recent_threshold("enemies"))
         return False
@@ -2367,7 +2367,7 @@ class EDRSystems(object):
             if system_reports is None or "latestTraffic" not in system_reports:
                 return False
 
-            edr_config = edrconfig.EDRConfig()
+            edr_config = edrconfig.EDR_CONFIG
             return self.is_recent(system_reports["latestTraffic"],
                                   edr_config.traffic_recent_threshold())
         return False

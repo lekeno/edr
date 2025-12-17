@@ -1,6 +1,6 @@
-import config_tests
+
 from unittest import TestCase, main
-from edentities import EDRCrew
+from edr.edentities import EDRCrew
 import calendar, time
 
 class TestEDCrew(TestCase):

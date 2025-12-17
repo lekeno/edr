@@ -1,8 +1,7 @@
-import config_tests
 import unittest
 from unittest.mock import MagicMock, patch
-from edentities import EDPilot, EDRSquadronMember, EDRPowerplay, EDLocation, EDSpaceDimension
-import edvehicles
+from edr.edentities import EDPilot, EDRSquadronMember, EDRPowerplay, EDLocation, EDSpaceDimension
+from edr.edvehicles import EDVehicleFactory
 
 class TestEDEntities(unittest.TestCase):
 
@@ -37,7 +36,7 @@ class TestEDEntities(unittest.TestCase):
 
     def test_powerplay(self):
         # time_pledged is roughly now - timestamp passed in
-        with patch('edtime.EDTime.py_epoch_now') as mock_now:
+        with patch('edr.edtime.EDTime.py_epoch_now') as mock_now:
             mock_now.return_value = 1000
             
             # Pledged 900 seconds ago
@@ -68,7 +67,7 @@ class TestEDEntities(unittest.TestCase):
         self.assertEqual(pilot.vehicle_type(), "Unknown") # vehicle_type is 'Unknown' initially by default
         
         # Update with a ship
-        ship = edvehicles.EDVehicleFactory.from_internal_name("empire_trader")
+        ship = EDVehicleFactory.from_internal_name("empire_trader")
         pilot.update_vehicle_if_obsolete(ship)
         self.assertEqual(pilot.vehicle_type(), "Imperial Clipper")
         self.assertFalse(pilot.on_foot)
@@ -83,7 +82,7 @@ class TestEDEntities(unittest.TestCase):
         self.assertIsNone(pilot.vehicle_type(), "Should be None when on foot")
         
         # Board SRV
-        srv = edvehicles.EDVehicleFactory.default_srv()
+        srv = EDVehicleFactory.default_srv()
         pilot.update_vehicle_if_obsolete(srv)
         self.assertTrue(pilot.piloted_vehicle.type.startswith("SRV")) # "SRV Scarab"
 

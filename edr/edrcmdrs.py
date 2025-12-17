@@ -1,11 +1,11 @@
 import os
 
-from edtime import EDTime
-from edrconfig import EDRConfig
-from lrucache import LRUCache
+from edr.edtime import EDTime
+from edr.edrconfig import EDR_CONFIG
+from edr.lrucache import LRUCache
 from edr.edrlog import EDR_LOG
-from edentities import EDPlayerOne
-from edrserver import CommsJammedError
+from edr.edentities import EDPlayerOne
+from edr.edrserver import CommsJammedError
 
 
 class EDRCmdrs(object):
@@ -19,7 +19,7 @@ class EDRCmdrs(object):
         self._player = EDPlayerOne()
         self.heartbeat_timestamp = None
  
-        edr_config = EDRConfig()
+        edr_config = EDR_CONFIG
         self._edr_heartbeat = edr_config.edr_heartbeat()
  
         self.cmdrs_cache = LRUCache.load(
@@ -53,7 +53,7 @@ class EDRCmdrs(object):
             self.__update_squadron_info(force_update=True)
 
     def player_pledged_to(self, power, time_pledged=0):
-        edr_config = EDRConfig()
+        edr_config = EDR_CONFIG
         delta = time_pledged - self._player.time_pledged if self._player.time_pledged else time_pledged
         if power == self._player.power and delta <= edr_config.noteworthy_pledge_threshold():
             EDR_LOG.debug(u"Skipping pledged_to (not noteworthy): current vs. proposed {} vs. {}; {} vs {}".format(self._player.power, power, self._player.time_pledged, time_pledged))

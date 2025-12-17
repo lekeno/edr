@@ -1,10 +1,10 @@
 import os
 import math
 
-from edrconfig import EDRConfig
-from lrucache import LRUCache
-from edri18n import _
-from edtime import EDTime
+from edr.edrconfig import EDR_CONFIG
+from edr.lrucache import LRUCache
+from edr.edri18n import _
+from edr.edtime import EDTime
 from edr.edrlog import EDR_LOG
 
 class EDRMaterialOutcomes(object):
@@ -449,7 +449,7 @@ class EDRFactions(object):
     EDSM_FACTIONS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_factions.v2.p')
 
     def __init__(self, edsm_server):
-        edr_config = EDRConfig()
+        edr_config = EDR_CONFIG
         self.edsm_server = edsm_server
 
         self.factions_cache = LRUCache.load(

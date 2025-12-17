@@ -1,7 +1,7 @@
 
 import os
 import configparser as cp
-from edropsec import EDROpsecConfig, EDROpsecConfigDefault
+from edr.edropsec import EDROpsecConfig, EDROpsecConfigDefault
 
 
 class EDRUserConfig(object):
@@ -253,4 +253,13 @@ class EDRConfig(object):
     def navroute_jumps_threshold_to_give_up(self):
         return int(self.config.get('navroute', 'jumps_threshold_to_give_up'))
 
-EDR_CONFIG = EDRConfig()
+
+_edr_config_instance = None
+
+def get_edr_config():
+    global _edr_config_instance
+    if _edr_config_instance is None:
+        _edr_config_instance = EDR_CONFIG
+    return _edr_config_instance
+
+EDR_CONFIG = get_edr_config()

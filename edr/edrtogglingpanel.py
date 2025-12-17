@@ -4,10 +4,10 @@ from tkinter import ttk
 
 import sys
 import config as EDMCConfig
-from igmconfig import IGMConfig
 import ttkHyperlinkLabel
 
-from edri18n import _
+from edr.igmconfig import IGMConfig
+from edr.edri18n import _
 
 class EntryWithPlaceholder(tk.Entry):
     def __init__(self, master=None, placeholder="type here", placeholder_color='grey'):

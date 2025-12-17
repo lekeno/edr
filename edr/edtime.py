@@ -1,12 +1,13 @@
 import datetime
 import calendar
 import time
-import comparable
 import math
 import email.utils
-from edri18n import _, _c
 
-class EDTime(comparable.ComparableMixin):
+from edr.comparable import ComparableMixin
+from edr.edri18n import _, _c
+
+class EDTime(ComparableMixin):
     @staticmethod
     def js_epoch_now():
         return 1000 * calendar.timegm(time.gmtime())

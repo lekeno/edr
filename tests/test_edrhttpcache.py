@@ -1,4 +1,4 @@
-import config_tests
+
 import sys
 import os
 

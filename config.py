@@ -1,3 +1,3 @@
-from edr.edrconfig import EDRConfig
+from edr.edrconfig import EDR_CONFIG
 appname = "EDR"
-config = EDRConfig()
+config = EDR_CONFIG

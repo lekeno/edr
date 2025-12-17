@@ -1,6 +1,6 @@
-import config_tests
+
 from unittest import TestCase, main
-from lrucache import LRUCache
+from edr.lrucache import LRUCache
 import time
 
 class TestLRUCache(TestCase):

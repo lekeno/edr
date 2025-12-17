@@ -1,8 +1,8 @@
 
 from collections import deque
-from edtime import EDTime
-from lrucache import LRUCache
-from edrconfig import EDRConfig
+from edr.edtime import EDTime
+from edr.lrucache import LRUCache
+from edr.edrconfig import EDR_CONFIG
 
 class EDRBountyHuntingStats(object):
     def __init__(self):
@@ -23,7 +23,7 @@ class EDRBountyHuntingStats(object):
         now = EDTime.py_epoch_now()
         self.start = now
         self.current = now
-        edr_config = EDRConfig()
+        edr_config = EDR_CONFIG
         self.scans_cache = LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
         self.last = {"timestamp": now, "bounty": None, "name": None, "distribution_index": 0}
 
@@ -45,7 +45,7 @@ class EDRBountyHuntingStats(object):
         now = EDTime.py_epoch_now()
         self.start = now
         self.current = now
-        edr_config = EDRConfig()
+        edr_config = EDR_CONFIG
         self.scans_cache = LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
         self.last = {"timestamp": now, "bounty": None, "name": None, "distribution_index": 0}
 

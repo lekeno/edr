@@ -9,11 +9,11 @@ import re
 import igmconfig
 from edr.edrlog import EDR_LOG
 import textwrap
-from edri18n import _, _c
+from edr.edri18n import _, _c
 from edrlandables import EDRLandables
-from edentities import EDFineOrBounty
-from edrutils import pretty_print_number
-from edtime import EDTime
+from edr.edentities import EDFineOrBounty
+from edr.edrutils import pretty_print_number
+from edr.edtime import EDTime
 
 if sys.platform == "win32":
     _overlay_dir = os.path.join(os.path.dirname(__file__), u'EDMCOverlay')

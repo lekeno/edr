@@ -16,11 +16,11 @@ import myNotebook as notebook
 from config import config
 
 from edrfleetcarrier import EDRFleetCarrier
-from edrconfig import EDRConfig, EDRUserConfig
-from lrucache import LRUCache
-from edentities import EDFineOrBounty
-from edsitu import EDPlanetaryLocation, EDLocation
-from edrserver import EDRServer, CommsJammedError
+from edr.edrconfig import EDR_CONFIG, EDRUserConfig
+from edr.lrucache import LRUCache
+from edr.edentities import EDFineOrBounty
+from edr.edsitu import EDPlanetaryLocation, EDLocation
+from edr.edrserver import EDRServer, CommsJammedError
 from edsmserver import EDSMServer
 from audiofeedback import EDRSoundEffects
 from edr.edrlog import EDR_LOG
@@ -34,20 +34,20 @@ from edrcmdrs import EDRCmdrs
 from edropponents import EDROpponents
 from randomtips import RandomTips
 from helpcontent import HelpContent
-from edtime import EDTime
+from edr.edtime import EDTime
 from edrlegalrecords import EDRLegalRecords
 from edrxzibit import EDRXzibit
 from edrdiscord import EDRDiscordIntegration
-from edvehicles import EDVehicleFactory
+from edr.edvehicles import EDVehicleFactory
 from edrsysplacheck import EDRGenusCheckerFactory
 from edrsyssetlcheck import EDRSettlementCheckerFactory
 
-from edri18n import _, _c, _edr, set_language
+from edr.edri18n import _, _c, _edr, set_language
 from clippy import copy, paste
 from edrfssinsights import EDRFSSInsights
 from edrcommands import EDRCommands
 import edrroutes
-from edrutils import simplified_body_name, pretty_print_number
+from edr.edrutils import simplified_body_name, pretty_print_number
 
 
 
@@ -55,7 +55,7 @@ class EDRClient(object):
     SFX = EDRSoundEffects()
 
     def __init__(self):
-        edr_config = EDRConfig()
+        edr_config = EDR_CONFIG
         set_language(config.get_str("language"))
 
         self.edr_version = edr_config.edr_version()

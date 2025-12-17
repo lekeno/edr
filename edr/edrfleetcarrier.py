@@ -2,10 +2,9 @@ import copy
 from pickle import TRUE
 import re
 
-import edtime
-from edrutils import simplified_body_name
-from edr.edrlog import EDR_LOG
-from edri18n import _
+from edr.edtime import EDTime
+from edr.edrutils import simplified_body_name
+from edr.edri18n import _
 
 
 class EDRFleetCarrier(object):
@@ -133,10 +132,10 @@ class EDRFleetCarrier(object):
             self.__reset()
         self.id = jump_request_event.get("CarrierID", None)
         self.__update_position()
-        request_time = edtime.EDTime()
+        request_time = EDTime()
         request_time.from_journal_timestamp(jump_request_event["timestamp"])
-        jump_time = edtime.EDTime()
-        lockdown_time = edtime.EDTime()
+        jump_time = EDTime()
+        lockdown_time = EDTime()
         if "DepartureTime" in jump_request_event:
             jump_time.from_journal_timestamp(jump_request_event["DepartureTime"])
             lockdown_time.from_journal_timestamp(jump_request_event["DepartureTime"])
@@ -182,7 +181,7 @@ class EDRFleetCarrier(object):
         return self._position["system"]
 
     def __update_position(self):
-        now = edtime.EDTime.py_epoch_now()
+        now = EDTime.py_epoch_now()
         if self.decommission_time and now > self.decommission_time:
             self.__reset()
             return
@@ -325,7 +324,7 @@ class EDRFleetCarrier(object):
             pass
     
     def __purchase_order(self, item, localized_item, price, quantity):
-        now = edtime.EDTime.py_epoch_now()
+        now = EDTime.py_epoch_now()
         self.purchase_orders[item] = {"price": price, "quantity": quantity, "l10n": localized_item, "timestamp": now}
         self.market_updated = True
         try:
@@ -334,7 +333,7 @@ class EDRFleetCarrier(object):
             pass
 
     def __sale_order(self, item, localized_item, price, quantity):
-        now = edtime.EDTime.py_epoch_now()
+        now = EDTime.py_epoch_now()
         self.sale_orders[item] = {"price": price, "quantity": quantity, "l10n": localized_item, "timestamp": now}
         self.market_updated = True
         try:
@@ -347,7 +346,7 @@ class EDRFleetCarrier(object):
         if self.id is None:
             return None
 
-        since = edtime.EDTime.js_epoch_now()
+        since = EDTime.js_epoch_now()
         if timeframe:
             since -= timeframe*1000
 
@@ -378,7 +377,7 @@ class EDRFleetCarrier(object):
         all = copy.deepcopy(self.sale_orders)
         if timeframe is None:
             return all
-        threshold = edtime.EDTime.py_epoch_now() - timeframe
+        threshold = EDTime.py_epoch_now() - timeframe
         return {item: values for item, values in all.items() if values["timestamp"] >= threshold}
         
 
@@ -386,7 +385,7 @@ class EDRFleetCarrier(object):
         all = copy.deepcopy(self.purchase_orders)
         if timeframe is None:
             return all
-        threshold = edtime.EDTime.py_epoch_now() - timeframe
+        threshold = EDTime.py_epoch_now() - timeframe
         return {item: values for item, values in all.items() if values["timestamp"] >= threshold}
 
     def text_summary(self, timeframe=None):
@@ -430,7 +429,7 @@ class EDRFleetCarrier(object):
             summary += "\n".join(details_purchases)
             summary += "\n"
 
-        timestamp = edtime.EDTime()
+        timestamp = EDTime()
         summary += _("\n ----===<<  As of {}   -   Info provided by ED Recon  >>===----").format(timestamp.as_journal_timestamp())
         
         return summary
@@ -505,7 +504,7 @@ class EDRFleetCarrierBar(object):
     def __init__(self):
         self.items = {}
         self.updated = False
-        self.timestamp = edtime.EDTime()
+        self.timestamp = EDTime()
     
     def from_fcmaterials(self, entry):
         self.items = {}
@@ -514,7 +513,7 @@ class EDRFleetCarrierBar(object):
             return False
 
         items = entry.get("Items", [])
-        self.timestamp = edtime.EDTime()
+        self.timestamp = EDTime()
         if entry.get("timestamp", None):
             self.timestamp.from_journal_timestamp(entry["timestamp"])
         self.updated = True
