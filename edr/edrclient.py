@@ -918,26 +918,31 @@ class EDRClient(object):
         requests_cache = docking_guidance.requests_cache
 
         if not self.visual_feedback:
-            # TODO only works if visual feedback is allowed due to how the docking feature is tied to IN_GAME_MSG which can be None if visual feedback is turned off
+            # Only works if visual feedback is allowed due to 
+            # how the docking feature is tied to IN_GAME_MSG 
+            # (which can be None if visual feedback is turned off)
             return
-
-        market_id = entry.get("MarketID")
-        if not market_id:
-            return # Cannot cache or retrieve without a MarketID
 
         # --- DockingRequested: Cache the data ---
         if entry["event"] == "DockingRequested":
+            self.IN_GAME_MSG.clear_docking()
+            
+            market_id = entry.get("MarketID")
+            if not market_id:
+                return # Cannot cache or retrieve without a MarketID
+            
             # Store the essential data in the function's persistent cache
             if "LandingPads" in entry:
                 requests_cache[market_id] = {
                     "LandingPads": entry["LandingPads"],
                     "StationType": entry["StationType"], 
                 }
-            self.IN_GAME_MSG.clear_docking()
         elif entry["event"] == "DockingGranted":
             event_station_type = entry["StationType"]
             
-            request_data = requests_cache.pop(market_id, None)
+            market_id = entry.get("MarketID")
+            request_data = requests_cache.pop(market_id, None) if market_id else None
+            
             pad_count_override = None
             if request_data and event_station_type == "FleetCarrier":
                 # Calculate total pads using the pythonic sum() over values()
