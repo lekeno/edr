@@ -10,9 +10,9 @@ try:
 except ImportError:
     from queue import Queue
 
-from edr.sseclient import SSEClient
-from edr.edtime import EDTime
-from edr.edrlog import EDR_LOG
+from .sseclient import SSEClient
+from .edtime import EDTime
+from .edrlog import EDR_LOG
 
 class EDRRealtimeUpdates(object):
     def __init__(self, callback, kind, endpoint, authenticator):

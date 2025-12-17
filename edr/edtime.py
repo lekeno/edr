@@ -4,8 +4,8 @@ import time
 import math
 import email.utils
 
-from edr.comparable import ComparableMixin
-from edr.edri18n import _, _c
+from .comparable import ComparableMixin
+from .edri18n import _, _c
 
 class EDTime(ComparableMixin):
     @staticmethod

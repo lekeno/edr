@@ -16,14 +16,14 @@ import myNotebook as notebook
 from config import config
 
 from edrfleetcarrier import EDRFleetCarrier
-from edr.edrconfig import EDR_CONFIG, EDRUserConfig
-from edr.lrucache import LRUCache
-from edr.edentities import EDFineOrBounty
-from edr.edsitu import EDPlanetaryLocation, EDLocation
-from edr.edrserver import EDRServer, CommsJammedError
+from .edrconfig import EDR_CONFIG, EDRUserConfig
+from .lrucache import LRUCache
+from .edentities import EDFineOrBounty
+from .edsitu import EDPlanetaryLocation, EDLocation
+from .edrserver import EDRServer, CommsJammedError
 from edsmserver import EDSMServer
 from audiofeedback import EDRSoundEffects
-from edr.edrlog import EDR_LOG
+from .edrlog import EDR_LOG
 from ingamemsg import InGameMsg
 from edrclientui import EDRClientUI
 from edrsystems import EDRSystems
@@ -34,20 +34,20 @@ from edrcmdrs import EDRCmdrs
 from edropponents import EDROpponents
 from randomtips import RandomTips
 from helpcontent import HelpContent
-from edr.edtime import EDTime
-from edr.edrlegalrecords import EDRLegalRecords
+from .edtime import EDTime
+from .edrlegalrecords import EDRLegalRecords
 from edrxzibit import EDRXzibit
 from edrdiscord import EDRDiscordIntegration
-from edr.edvehicles import EDVehicleFactory
+from .edvehicles import EDVehicleFactory
 from edrsysplacheck import EDRGenusCheckerFactory
 from edrsyssetlcheck import EDRSettlementCheckerFactory
 
-from edr.edri18n import _, _c, _edr, set_language
+from .edri18n import _, _c, _edr, set_language
 from clippy import copy, paste
 from edrfssinsights import EDRFSSInsights
 from edrcommands import EDRCommands
 import edrroutes
-from edr.edrutils import simplified_body_name, pretty_print_number
+from .edrutils import simplified_body_name, pretty_print_number
 
 
 

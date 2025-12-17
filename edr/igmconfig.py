@@ -1,7 +1,7 @@
 import os
 import configparser as cp
 
-from edr.edrlog import EDR_LOG
+from .edrlog import EDR_LOG
 
 class IGMConfig(object):
     def __init__(self, config_file, user_config_file):

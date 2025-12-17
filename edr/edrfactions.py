@@ -1,11 +1,11 @@
 import os
 import math
 
-from edr.edrconfig import EDR_CONFIG
-from edr.lrucache import LRUCache
-from edr.edri18n import _
-from edr.edtime import EDTime
-from edr.edrlog import EDR_LOG
+from .edrconfig import EDR_CONFIG
+from .lrucache import LRUCache
+from .edri18n import _
+from .edtime import EDTime
+from .edrlog import EDR_LOG
 
 class EDRMaterialOutcomes(object):
     def __init__(self):

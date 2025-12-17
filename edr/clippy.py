@@ -1,4 +1,4 @@
-from edr.edrlog import EDR_LOG
+from .edrlog import EDR_LOG
 import platform, os
 import ctypes
 from ctypes import wintypes

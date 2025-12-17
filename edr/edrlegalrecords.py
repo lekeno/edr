@@ -4,12 +4,12 @@ import time
 import os
 from collections import deque
 
-from edr.lrucache import LRUCache
-from edr.edrconfig import EDR_CONFIG
-from edr.edrlog import EDR_LOG
-from edr.edtime import EDTime
-from edr.edentities import EDFineOrBounty
-from edr.edri18n import _, _c
+from .lrucache import LRUCache
+from .edrconfig import EDR_CONFIG
+from .edrlog import EDR_LOG
+from .edtime import EDTime
+from .edentities import EDFineOrBounty
+from .edri18n import _, _c
 
 
 class EDRLegalRecords(object):

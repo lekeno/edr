@@ -3,7 +3,7 @@ import json
 import re
 import os
 
-from edr.edrlog import EDR_LOG
+from .edrlog import EDR_LOG
 
 
 POWER_DATA = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', 'modules_power_data.json')).read())

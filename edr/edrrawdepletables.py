@@ -6,8 +6,8 @@ import sqlite3
 import math
 
 import os
-from edr.edtime import EDTime
-from edr.edrlog import EDR_LOG
+from .edtime import EDTime
+from .edrlog import EDR_LOG
 
 
 

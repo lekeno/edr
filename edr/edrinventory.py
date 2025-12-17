@@ -4,8 +4,8 @@ import os
 import re
 import json
 
-from edr.edri18n import _
-from edr.edtime import EDTime
+from .edri18n import _
+from .edtime import EDTime
 
 #TODO anarchy only microresources...
 ODYSSEY_MATS = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', 'odyssey_mats.json')).read())

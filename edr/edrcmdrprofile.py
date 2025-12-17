@@ -1,6 +1,6 @@
-from edr.edrlog import EDR_LOG
-from edr.edtime import EDTime
-from edr.edri18n import _, _c
+from .edrlog import EDR_LOG
+from .edtime import EDTime
+from .edri18n import _, _c
 
 
 class EDRCmdrDexProfile(object):

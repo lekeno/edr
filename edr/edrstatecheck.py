@@ -1,4 +1,4 @@
-from edr.edri18n import _, _c, _edr
+from .edri18n import _, _c, _edr
 import math
 
 class EDRBasicStateCheck(object):

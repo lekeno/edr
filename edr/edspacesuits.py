@@ -4,9 +4,9 @@ import json
 import os
 from copy import deepcopy
 
-from edr.edtime import EDTime
-from edr.edrconfig import EDR_CONFIG
-from edr.edrlog import EDR_LOG
+from .edtime import EDTime
+from .edrconfig import EDR_CONFIG
+from .edrlog import EDR_LOG
 
 
 

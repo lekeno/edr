@@ -2,18 +2,18 @@ import re
 import json
 from math import log10
 
-from edr.edtime import EDTime
-from edr.edrconfig import EDR_CONFIG
-from edr.edrhitppoints import EDRHitPPoints
-from edr.edmodule import EDModule
-from edr.edmodulesinforeader import EDModulesInfoReader
-from edr.edcargoreader import EDCargoReader
-from edr.edrlog import EDR_LOG
-from edr.edcargo import EDCargo
+from .edtime import EDTime
+from .edrconfig import EDR_CONFIG
+from .edrhitppoints import EDRHitPPoints
+from .edmodule import EDModule
+from .edmodulesinforeader import EDModulesInfoReader
+from .edcargoreader import EDCargoReader
+from .edrlog import EDR_LOG
+from .edcargo import EDCargo
 import os
-from edr.edshield import EDPowerDistributor, EDShieldGenerator, EDShieldingFactory
-from edr.edarmour import EDHullFactory
-from edr.edweapons import EDWeaponFactory
+from .edshield import EDPowerDistributor, EDShieldGenerator, EDShieldingFactory
+from .edarmour import EDHullFactory
+from .edweapons import EDWeaponFactory
 
 class EDVehicleSize(object):
     UNKNOWN = 1

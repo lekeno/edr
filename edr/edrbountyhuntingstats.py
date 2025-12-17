@@ -1,8 +1,8 @@
 
 from collections import deque
-from edr.edtime import EDTime
-from edr.lrucache import LRUCache
-from edr.edrconfig import EDR_CONFIG
+from .edtime import EDTime
+from .lrucache import LRUCache
+from .edrconfig import EDR_CONFIG
 
 class EDRBountyHuntingStats(object):
     def __init__(self):

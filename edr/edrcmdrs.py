@@ -1,11 +1,11 @@
 import os
 
-from edr.edtime import EDTime
-from edr.edrconfig import EDR_CONFIG
-from edr.lrucache import LRUCache
-from edr.edrlog import EDR_LOG
-from edr.edentities import EDPlayerOne
-from edr.edrserver import CommsJammedError
+from .edtime import EDTime
+from .edrconfig import EDR_CONFIG
+from .lrucache import LRUCache
+from .edrlog import EDR_LOG
+from .edentities import EDPlayerOne
+from .edrserver import CommsJammedError
 
 
 class EDRCmdrs(object):

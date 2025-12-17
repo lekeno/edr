@@ -1,4 +1,4 @@
-from edr.edri18n import _
+from .edri18n import _
 
 def pretty_print_number(number):
     readable = u""

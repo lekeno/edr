@@ -1,22 +1,21 @@
 import sys
 import os
 
-# 1. Directory of this file: .../ProjectRoot/tests/
-current_dir = os.path.dirname(os.path.abspath(__file__))
+# Get the directory where your .py files are
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
-# 2. Project Root (one level up): .../ProjectRoot/
-# This allows 'from edr.edrlog import EDR_LOG' to work
-root_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
-
-# 3. EDR Module Directory: .../ProjectRoot/edr/
-# This allows internal flat imports like 'import edri18n' to work
-edr_dir = os.path.join(root_dir, 'edr')
-
-# 4. Inject into sys.path
-# We use insert(0, ...) to ensure these versions are used even if 
-# another version of EDR is installed in the Python environment.
+# Add the root_dir to the path so 'import edrlog' works
 if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
-if edr_dir not in sys.path:
-    sys.path.insert(0, edr_dir)
+# THE TRICK: Map the current directory to the 'edr' module name
+# This allows 'from edr.clippy' to work even if there is no edr/ folder
+try:
+    import edr
+except ImportError:
+    import types
+    # Create a fake module named 'edr'
+    edr_module = types.ModuleType('edr')
+    # Point that module's path to your root directory
+    edr_module.__path__ = [root_dir]
+    sys.modules['edr'] = edr_module

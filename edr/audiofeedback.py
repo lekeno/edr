@@ -5,7 +5,7 @@ import os.path
 import os
 import configparser as cp
 
-from edr.edrlog import EDR_LOG
+from .edrlog import EDR_LOG
 
 class EDRSoundEffects(object):
     def __init__(self, loud=True):

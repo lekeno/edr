@@ -1,25 +1,25 @@
 #from builtins import round
 
 import pickle
-from edr.edsitu import EDLocation, EDAttitude, EDSpaceDimension, EDDestination
+from .edsitu import EDLocation, EDAttitude, EDSpaceDimension, EDDestination
 
-from edr.edtime import EDTime
-from edr.edvehicles import EDVehicleFactory 
-from edr.edspacesuits import EDSuitFactory, EDOdysseyCloset
-from edr.edcodex import EDCodex
-from edr.edinstance import EDInstance
-from edr.edrlog import EDR_LOG
-from edr.edrconfig import EDR_CONFIG
-from edr.edreconbox import EDReconBox
-from edr.edrinventory import EDRInventory, EDRRemlokHelmet
-from edr.edri18n import _, _c
-from edr.edrfleet import EDRFleet
-from edr.edrfleetcarrier import EDRFleetCarrier
-from edr.edrminingstats import EDRMiningStats
-from edr.edrbountyhuntingstats import EDRBountyHuntingStats
-from edr.edengineers import EDEngineers
-from edr.edrutils import pretty_print_number
-from edr.edrroutes import EDRNavigator
+from .edtime import EDTime
+from .edvehicles import EDVehicleFactory 
+from .edspacesuits import EDSuitFactory, EDOdysseyCloset
+from .edcodex import EDCodex
+from .edinstance import EDInstance
+from .edrlog import EDR_LOG
+from .edrconfig import EDR_CONFIG
+from .edreconbox import EDReconBox
+from .edrinventory import EDRInventory, EDRRemlokHelmet
+from .edri18n import _, _c
+from .edrfleet import EDRFleet
+from .edrfleetcarrier import EDRFleetCarrier
+from .edrminingstats import EDRMiningStats
+from .edrbountyhuntingstats import EDRBountyHuntingStats
+from .edengineers import EDEngineers
+from .edrutils import pretty_print_number
+from .edrroutes import EDRNavigator
 
 import os
 

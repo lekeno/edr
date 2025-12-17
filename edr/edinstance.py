@@ -1,6 +1,6 @@
 
-from edr.edtime import EDTime
-from edr.edvehicles import EDVehicleFactory
+from .edtime import EDTime
+from .edvehicles import EDVehicleFactory
 
 class EDInstance(object):
     def __init__(self):

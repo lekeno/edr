@@ -1,8 +1,8 @@
 from os import system
-from edr.edri18n import _, _c
+from .edri18n import _, _c
 import re
 import copy
-from edr.edtime import EDTime
+from .edtime import EDTime
 
 class EDRFSSInsights(object):
     def __init__(self):

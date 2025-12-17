@@ -1,4 +1,4 @@
-from edr.edtime import EDTime
+from .edtime import EDTime
 
 class EDRAfkDetector(object):
     PASSIVE_EVENTS = ["Died", "HeatDamage", "FighterDestroyed", "HeatWarning", "HullDamage", "Interdicted", "ShieldState", "SRVDestroyed", "UnderAttack", "CommunityGoal", "CommunityGoalReward", "MissionFailed", "MissionRedirected", "ReceiveText", "Fileheader", "Friends", "DisbandedSquadron", "InvitedToSquadron", "KickedFromSquadron", "SquadronDemotion", "SquadronPromotion", "WonATrophyForSquadron", "Continued", "CrewMemberJoins", "CrewMemberQuits", "CrimeVictim", "Music", "NpcCrewPaidWage", "WingInvite"]

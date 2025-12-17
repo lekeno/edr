@@ -2,11 +2,11 @@
 import json
 import requests
 
-from edr.edrconfig import EDR_CONFIG
-from edr.edrlog import EDR_LOG
+from .edrconfig import EDR_CONFIG
+from .edrlog import EDR_LOG
 from backoff import Backoff
-from edr.edtime import EDTime
-from edr.edrhttpcache import EDRHttpCache
+from .edtime import EDTime
+from .edrhttpcache import EDRHttpCache
 
 class EDSMServer(object):
 

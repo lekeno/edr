@@ -1,5 +1,5 @@
 
-from edr.edtime import EDTime
+from .edtime import EDTime
 import random
 
 class EDReconBox(object):

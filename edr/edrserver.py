@@ -5,13 +5,13 @@ import calendar
 import time
 import requests
 
-from edr.edrcmdrprofile import EDRCmdrProfile
-from edr.RESTFirebase import RESTFirebaseAuth
-from edr.edrconfig import EDR_CONFIG
-from edr.edrlog import EDR_LOG
-from edr.edtime import EDTime
-from edr.backoff import Backoff
-from edr.edrhttpcache import EDRHttpCache
+from .edrcmdrprofile import EDRCmdrProfile
+from .RESTFirebase import RESTFirebaseAuth
+from .edrconfig import EDR_CONFIG
+from .edrlog import EDR_LOG
+from .edtime import EDTime
+from .backoff import Backoff
+from .edrhttpcache import EDRHttpCache
 
 class EDRServer(object):
 
