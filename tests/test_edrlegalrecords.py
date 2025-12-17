@@ -4,11 +4,11 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 import datetime
 
-from edrlegalrecords import EDRLegalRecords
+from edr.edrlegalrecords import EDRLegalRecords
 
 class TestEDRLegalRecords(TestCase):
     def setUp(self):
-        self.config_patcher = patch('edrlegalrecords.EDRConfig')
+        self.config_patcher = patch('edr.edrlegalrecords.EDR_CONFIG')
         self.MockEDRConfig = self.config_patcher.start()
         
         # Setup config mock return values
@@ -18,16 +18,16 @@ class TestEDRLegalRecords(TestCase):
         self.mock_config_instance.legal_records_recent_threshold.return_value = 7
         self.mock_config_instance.legal_records_check_interval.return_value = 60
 
-        self.lru_patcher = patch('edrlegalrecords.LRUCache')
+        self.lru_patcher = patch('edr.edrlegalrecords.LRUCache')
         self.MockLRUCache = self.lru_patcher.start()
         self.mock_lru_load = self.MockLRUCache.load
         self.mock_records_cache = MagicMock()
         self.mock_lru_load.return_value = self.mock_records_cache
         
-        self.log_patcher = patch('edrlegalrecords.EDR_LOG')
+        self.log_patcher = patch('edr.edrlegalrecords.EDR_LOG')
         self.mock_log = self.log_patcher.start()
 
-        self.time_patcher = patch('edrlegalrecords.EDTime')
+        self.time_patcher = patch('edr.edrlegalrecords.EDTime')
         self.mock_edtime = self.time_patcher.start()
 
         self.addCleanup(self.config_patcher.stop)
@@ -75,7 +75,7 @@ class TestEDRLegalRecords(TestCase):
         self.assertIsNone(self.legal_records.summarize("cmdr1"))
         self.server.legal_stats.assert_called_with("cmdr1")
 
-    @patch('edrlegalrecords.datetime')
+    @patch('edr.edrlegalrecords.datetime')
     def test_process_logic_empty(self, mock_datetime):
         # Inject data into cache
         records = {

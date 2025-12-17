@@ -1,7 +1,7 @@
 
 from unittest import TestCase, main
 from unittest.mock import MagicMock
-from edrroutes import BidiWaypointIterator, GenericRoute, SpanshServer
+from edr.edrroutes import BidiWaypointIterator, GenericRoute, SpanshServer
 
 class TestBidiWaypointIterator(TestCase):
     def test_iteration(self):

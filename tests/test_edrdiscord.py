@@ -21,7 +21,7 @@ from edr.edrdiscord import EDRDiscordIntegration
 
 class TestEDRDiscord(unittest.TestCase):
     def setUp(self):
-        self.edr_config_patch = patch('edr.edrdiscord.EDRConfig')
+        self.edr_config_patch = patch('edr.edrdiscord.EDR_CONFIG')
         self.edr_config_cls = self.edr_config_patch.start()
         self.edr_config_cls.return_value.discord_webhook.return_value = "http://webhook.url"
         # Mock other config methods used in init

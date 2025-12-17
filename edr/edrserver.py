@@ -3,17 +3,15 @@ from urllib.parse import quote
 import json
 import calendar
 import time
+import requests
 
-import edrcmdrprofile
-import RESTFirebase
+from edr.edrcmdrprofile import EDRCmdrProfile
+from edr.RESTFirebase import RESTFirebaseAuth
 from edr.edrconfig import EDR_CONFIG
 from edr.edrlog import EDR_LOG
 from edr.edtime import EDTime
-
-import requests
-import backoff
-import collections
-from edrhttpcache import EDRHttpCache
+from edr.backoff import Backoff
+from edr.edrhttpcache import EDRHttpCache
 
 class EDRServer(object):
 
@@ -24,23 +22,22 @@ class EDRServer(object):
         return name.lower().replace(" ", "_")
 
     def __init__(self):
-        config = EDR_CONFIG
-        self.REST_firebase = RESTFirebase.RESTFirebaseAuth()
-        self.EDR_API_KEY = config.edr_api_key()
-        self.EDR_SERVER = config.edr_server()
-        self.EDR_SERVER_FUNCTIONS = config.edr_server_functions()
+        self.REST_firebase = RESTFirebaseAuth()
+        self.EDR_API_KEY = EDR_CONFIG.edr_api_key()
+        self.EDR_SERVER = EDR_CONFIG.edr_server()
+        self.EDR_SERVER_FUNCTIONS = EDR_CONFIG.edr_server_functions()
         self.player_name = None
         self.game_mode = None
         self.dlc_name = None
         self.private_group = None
-        self.version = config.edr_version()
+        self.version = EDR_CONFIG.edr_version()
         self._throttle_until_timestamp = None
         self.anonymous_reports = None
         self.crimes_reporting = None
         self.fc_jump_psa = None
-        self.backoff = {"EDR": backoff.Backoff(u"EDR"), "Inara": backoff.Backoff(u"Inara") }
+        self.backoff = {"EDR": Backoff(u"EDR"), "Inara": Backoff(u"Inara") }
         self.http_cache = EDRHttpCache()
-        self.INARA_API_KEY = config.inara_api_key()
+        self.INARA_API_KEY = EDR_CONFIG.inara_api_key()
 
     def login(self, email, password):
         self.REST_firebase.api_key = self.EDR_API_KEY
@@ -415,7 +412,7 @@ class EDRServer(object):
         if not self.__preflight("cmdr", cmdr):
             EDR_LOG.debug(u"Preflight failed for cmdr call.")
             raise CommsJammedError("cmdr")
-        cmdr_profile = edrcmdrprofile.EDRCmdrProfile()
+        cmdr_profile = EDRCmdrProfile()
 
         params = {}
         if sys.version_info.major == 2:
@@ -485,7 +482,7 @@ class EDRServer(object):
             EDR_LOG.error(u"Inara response wasn't processed. Resp: {}".format(resp.content))
             return False
 
-        cmdr_profile = edrcmdrprofile.EDRCmdrProfile()
+        cmdr_profile = EDRCmdrProfile()
         cmdr_profile.from_inara_api(processed)
         return cmdr_profile
 

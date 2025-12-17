@@ -5,7 +5,7 @@ import os
 import unittest
 import datetime
 import time
-from edrhttpcache import EDRHttpCache
+from edr.edrhttpcache import EDRHttpCache
 
 class TestEDRHttpCache(unittest.TestCase):
     def test_set_get(self):

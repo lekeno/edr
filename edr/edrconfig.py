@@ -259,7 +259,7 @@ _edr_config_instance = None
 def get_edr_config():
     global _edr_config_instance
     if _edr_config_instance is None:
-        _edr_config_instance = EDR_CONFIG
+        _edr_config_instance = EDRConfig()
     return _edr_config_instance
 
 EDR_CONFIG = get_edr_config()

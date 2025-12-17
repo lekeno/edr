@@ -35,7 +35,7 @@ from edropponents import EDROpponents
 from randomtips import RandomTips
 from helpcontent import HelpContent
 from edr.edtime import EDTime
-from edrlegalrecords import EDRLegalRecords
+from edr.edrlegalrecords import EDRLegalRecords
 from edrxzibit import EDRXzibit
 from edrdiscord import EDRDiscordIntegration
 from edr.edvehicles import EDVehicleFactory

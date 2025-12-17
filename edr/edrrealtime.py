@@ -10,7 +10,7 @@ try:
 except ImportError:
     from queue import Queue
 
-from sseclient import SSEClient
+from edr.sseclient import SSEClient
 from edr.edtime import EDTime
 from edr.edrlog import EDR_LOG
 

@@ -10,7 +10,7 @@ class TestEDRCmdrs(unittest.TestCase):
         self.edr_server = MagicMock()
         
         # Patch dependencies
-        self.edr_config_patch = patch('edr.edrcmdrs.EDRConfig')
+        self.edr_config_patch = patch('edr.edrcmdrs.EDR_CONFIG')
         self.edr_config = self.edr_config_patch.start()
         self.edr_config.return_value.lru_max_size.return_value = 100
         self.edr_config.return_value.cmdrs_max_age.return_value = 3600

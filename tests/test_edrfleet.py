@@ -1,8 +1,8 @@
 
 from unittest import TestCase, main
-from edrfleet import EDRFleet
 import os
 import sqlite3
+from edr.edrfleet import EDRFleet
 
 class TestEDRFleet(TestCase):
     def setUp(self):

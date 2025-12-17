@@ -1,7 +1,7 @@
 
 from unittest import TestCase, main
-from edrfleetcarrier import EDRFleetCarrier
-import edtime
+from edr.edrfleetcarrier import EDRFleetCarrier
+from edr.edtime import EDTime
 
 class TestEDRFleetCarrier(TestCase):
     def test_constructor(self):
@@ -75,7 +75,7 @@ class TestEDRFleetCarrier(TestCase):
     def test_jump_requested(self):
         fc = EDRFleetCarrier()
         fc.id = 123
-        now = edtime.EDTime()
+        now = EDTime()
         jump_request_event = {
             "CarrierID": 123,
             "SystemName": "Alpha Centauri",
@@ -90,7 +90,7 @@ class TestEDRFleetCarrier(TestCase):
     def test_jump_cancelled(self):
         fc = EDRFleetCarrier()
         fc.id = 123
-        now = edtime.EDTime()
+        now = EDTime()
         jump_request_event = {
             "CarrierID": 123,
             "SystemName": "Alpha Centauri",
@@ -140,7 +140,7 @@ class TestEDRFleetCarrier(TestCase):
     def test_decommission(self):
         fc = EDRFleetCarrier()
         fc.id = 123
-        scrap_time = edtime.EDTime()
+        scrap_time = EDTime()
         scrap_time.advance(1000)
         event = {
             "CarrierID": 123,
@@ -156,7 +156,7 @@ class TestEDRFleetCarrier(TestCase):
         fc = EDRFleetCarrier()
         self.assertTrue(fc.is_parked())
         fc.id = 123
-        now = edtime.EDTime()
+        now = EDTime()
         jump_request_event = {
             "CarrierID": 123,
             "SystemName": "Alpha Centauri",
@@ -178,7 +178,7 @@ class TestEDRFleetCarrier(TestCase):
         fc = EDRFleetCarrier()
         self.assertIsNone(fc.json_jump_schedule())
         fc.id = 123
-        now = edtime.EDTime()
+        now = EDTime()
         jump_request_event = {
             "CarrierID": 123,
             "SystemName": "Alpha Centauri",

@@ -1,8 +1,8 @@
 
 from unittest import TestCase, main
-from edrfactions import EDRFaction
-import edtime
-import edrfactions
+from edr.edrfactions import EDRFaction
+from edr.edtime import EDTime
+from edr.edrfactions import EDRFactions
 
 class TestEDRFactionExt(TestCase):
     def test_update_from_ed(self):
@@ -14,7 +14,7 @@ class TestEDRFactionExt(TestCase):
             "Influence": 0.05,
             "Allegiance": "Federation",
             "ActiveStates": [ { "State": "Boom" } ],
-            "timestamp": edtime.EDTime().as_journal_timestamp()
+            "timestamp": EDTime().as_journal_timestamp()
         }
 
         faction.updateFromED(update_info)
@@ -32,7 +32,7 @@ class TestEDRFactionExt(TestCase):
             "influence": 0.05,
             "allegiance": "Federation",
             "activeStates": [ { "state": "Boom" } ],
-            "lastUpdate": edtime.EDTime.py_epoch_now()
+            "lastUpdate": EDTime.py_epoch_now()
         }
 
         faction.updateFromEDSM(update_info)
@@ -75,7 +75,7 @@ class MockEDSMServer(object):
                     "allegiance": "Independent",
                     "influence": 0.041,
                     "activeStates": [],
-                    "lastUpdate": edtime.EDTime.py_epoch_now()
+                    "lastUpdate": EDTime.py_epoch_now()
                 }
             ]
         }
@@ -83,7 +83,7 @@ class MockEDSMServer(object):
 class TestEDRFactions(TestCase):
     def test_process(self):
         edsm_server = MockEDSMServer()
-        factions = edrfactions.EDRFactions(edsm_server)
+        factions = EDRFactions(edsm_server)
         factions_data = [
             { "Name":"Phekda Society", "FactionState":"None", "Government":"Anarchy", "Influence":0.041000, "Allegiance":"Independent", "MyReputation":0.000000 }
         ]
@@ -94,14 +94,14 @@ class TestEDRFactions(TestCase):
 
     def test_get_all(self):
         edsm_server = MockEDSMServer()
-        factions = edrfactions.EDRFactions(edsm_server)
+        factions = EDRFactions(edsm_server)
         phekda_factions = factions.get_all("Phekda")
         self.assertIsNotNone(phekda_factions)
         self.assertIn("phekda society", phekda_factions)
 
     def test_process_jump_event(self):
         edsm_server = MockEDSMServer()
-        factions = edrfactions.EDRFactions(edsm_server)
+        factions = EDRFactions(edsm_server)
         jump_event = {
             "event": "FSDJump",
             "StarSystem": "Phekda",
@@ -116,7 +116,7 @@ class TestEDRFactions(TestCase):
 
     def test_process_fc_jump_event(self):
         edsm_server = MockEDSMServer()
-        factions = edrfactions.EDRFactions(edsm_server)
+        factions = EDRFactions(edsm_server)
         jump_event = {
             "event": "CarrierJump",
             "StarSystem": "Phekda",
@@ -131,7 +131,7 @@ class TestEDRFactions(TestCase):
 
     def test_process_location_event(self):
         edsm_server = MockEDSMServer()
-        factions = edrfactions.EDRFactions(edsm_server)
+        factions = EDRFactions(edsm_server)
         location_event = {
             "event": "Location",
             "StarSystem": "Phekda",
@@ -146,7 +146,7 @@ class TestEDRFactions(TestCase):
 
     def test_get(self):
         edsm_server = MockEDSMServer()
-        factions = edrfactions.EDRFactions(edsm_server)
+        factions = EDRFactions(edsm_server)
         factions_data = [
             { "Name":"Phekda Society", "FactionState":"None", "Government":"Anarchy", "Influence":0.041000, "Allegiance":"Independent", "MyReputation":0.000000 }
         ]
@@ -157,7 +157,7 @@ class TestEDRFactions(TestCase):
 
     def test_get_controlling_faction_allegiance(self):
         edsm_server = MockEDSMServer()
-        factions = edrfactions.EDRFactions(edsm_server)
+        factions = EDRFactions(edsm_server)
         factions_data = [
             { "Name":"Phekda Society", "FactionState":"None", "Government":"Anarchy", "Influence":0.041000, "Allegiance":"Independent", "MyReputation":0.000000 }
         ]
@@ -166,7 +166,7 @@ class TestEDRFactions(TestCase):
 
     def test_get_controlling_faction_state(self):
         edsm_server = MockEDSMServer()
-        factions = edrfactions.EDRFactions(edsm_server)
+        factions = EDRFactions(edsm_server)
         factions_data = [
             { "Name":"Phekda Society", "FactionState":"None", "Government":"Anarchy", "Influence":0.041000, "Allegiance":"Independent", "MyReputation":0.000000 }
         ]

@@ -6,7 +6,7 @@ from edr.edrconfig import EDR_CONFIG
 from edr.edrlog import EDR_LOG
 from backoff import Backoff
 from edr.edtime import EDTime
-from edrhttpcache import EDRHttpCache
+from edr.edrhttpcache import EDRHttpCache
 
 class EDSMServer(object):
 

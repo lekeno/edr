@@ -12,11 +12,11 @@ from itertools import dropwhile
 
 import os
 from edr.edri18n import _
-from edr.edrconfig import EDRUserConfig, EDRConfig
+from edr.edrconfig import EDRUserConfig, EDR_CONFIG
 from edr.lrucache import LRUCache
-from edrafkdetector import EDRAfkDetector
+from edr.edrafkdetector import EDRAfkDetector
 from edr.edtime import EDTime
-import backoff
+from edr.backoff import Backoff
 from edr.edrlog import EDR_LOG
 
 
@@ -120,7 +120,7 @@ class EDRDiscordWebhook(object):
 
     def __init__(self, webhook_url):
         self.webhook_url = webhook_url
-        self.backoff = backoff.Backoff(u"Discord")
+        self.backoff = Backoff(u"Discord")
 
     def send_text(self, text):
         if not self.webhook_url:
