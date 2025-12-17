@@ -31,22 +31,29 @@ class EDRLog(object):
             self.logger.addHandler(logger_channel)
 
     def debug(self, msg, *args, **kwargs):
-        self.logger.debug(msg, *args, **kwargs)
+        self.logger.debug(msg, *args, stacklevel=2, **kwargs)
 
     def info(self, msg, *args, **kwargs):
-        self.logger.info(msg, *args, **kwargs)
+        self.logger.info(msg, *args, stacklevel=2, **kwargs)
 
     def warning(self, msg, *args, **kwargs):
-        self.logger.warning(msg, *args, **kwargs)
+        self.logger.warning(msg, *args, stacklevel=2, **kwargs)
 
     def error(self, msg, *args, **kwargs):
-        self.logger.error(msg, *args, **kwargs)
+        self.logger.error(msg, *args, stacklevel=2, **kwargs)
 
     def exception(self, msg, *args, **kwargs):
-        self.logger.exception(msg, *args, **kwargs)
+        self.logger.exception(msg, *args, stacklevel=2, **kwargs)
 
     def critical(self, msg, *args, **kwargs):
-        self.logger.critical(msg, *args, **kwargs)
+        self.logger.critical(msg, *args, stacklevel=2, **kwargs)
 
+_edr_logger_instance = None
 
-EDR_LOG = EDRLog()
+def get_edr_log():
+    global _edr_logger_instance
+    if _edr_logger_instance is None:
+        _edr_logger_instance = EDRLog()
+    return _edr_logger_instance
+
+EDR_LOG = get_edr_log()
