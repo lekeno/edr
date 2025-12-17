@@ -9,7 +9,7 @@ sys.path.insert(0, root_dir)
 sys.path.insert(0, edr_dir)
 
 from unittest import TestCase, main
-from edr.edcargo import EDCargo
+from edcargo import EDCargo # EDR_INTERNAL
 
 class TestEDCargo(TestCase):
     def setUp(self):

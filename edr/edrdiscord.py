@@ -11,13 +11,13 @@ from numbers import Number
 from itertools import dropwhile
 
 import os
-from .edri18n import _
-from .edrconfig import EDRUserConfig, EDR_CONFIG
-from .lrucache import LRUCache
-from .edrafkdetector import EDRAfkDetector
-from .edtime import EDTime
-from .backoff import Backoff
-from .edrlog import EDR_LOG
+from edri18n import _ # EDR_INTERNAL
+from edrconfig import EDRUserConfig, EDR_CONFIG # EDR_INTERNAL
+from lrucache import LRUCache # EDR_INTERNAL
+from edrafkdetector import EDRAfkDetector # EDR_INTERNAL
+from edtime import EDTime # EDR_INTERNAL
+from backoff import Backoff # EDR_INTERNAL
+from edrlog import EDR_LOG # EDR_INTERNAL
 
 
 

@@ -8,13 +8,13 @@ from os import path
 from math import sqrt
 import re
 
-from .edri18n import _
-from .edtime import EDTime
+from edri18n import _ # EDR_INTERNAL
+from edtime import EDTime # EDR_INTERNAL
 from collections import deque
-from .edrutils import pretty_print_number, simplified_body_name
-from .edrconfig import EDR_CONFIG
+from edrutils import pretty_print_number, simplified_body_name # EDR_INTERNAL
+from edrconfig import EDR_CONFIG # EDR_INTERNAL
 
-from .edrlog import EDR_LOG
+from edrlog import EDR_LOG # EDR_INTERNAL
 
 
 class BidiWaypointIterator(object):

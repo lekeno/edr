@@ -6,8 +6,8 @@ import sys
 import config as EDMCConfig
 import ttkHyperlinkLabel
 
-from .igmconfig import IGMConfig
-from .edri18n import _
+from igmconfig import IGMConfig # EDR_INTERNAL
+from edri18n import _ # EDR_INTERNAL
 
 class EntryWithPlaceholder(tk.Entry):
     def __init__(self, master=None, placeholder="type here", placeholder_color='grey'):

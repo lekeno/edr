@@ -1,6 +1,6 @@
 import threading
-from .edri18n import _
-from .edrlog import EDR_LOG
+from edri18n import _ # EDR_INTERNAL
+from edrlog import EDR_LOG # EDR_INTERNAL
 
 
 

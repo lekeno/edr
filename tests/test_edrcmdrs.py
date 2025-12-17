@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch, MagicMock, mock_open
 import sys
 import os
 
-from edr.edrcmdrs import EDRCmdrs
+from edrcmdrs import EDRCmdrs # EDR_INTERNAL
 
 class TestEDRCmdrs(unittest.TestCase):
     def setUp(self):

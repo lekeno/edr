@@ -10,11 +10,11 @@ import json
 
 import edtime
 import edrconfig
-from .edrlog import EDR_LOG
-from .lrucache import LRUCache
-from .edentities import EDFineOrBounty
-from .edrutils import pretty_print_number
-from .edri18n import _, _c, _edr
+from edrlog import EDR_LOG # EDR_INTERNAL
+from lrucache import LRUCache # EDR_INTERNAL
+from edentities import EDFineOrBounty # EDR_INTERNAL
+from edrutils import pretty_print_number # EDR_INTERNAL
+from edri18n import _, _c, _edr # EDR_INTERNAL
 import edrservicecheck
 import edrsysplacheck
 import edrsyssetlcheck

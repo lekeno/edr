@@ -1,6 +1,6 @@
 
 from unittest import TestCase, main
-from edr.edrutils import pretty_print_number, simplified_body_name
+from edrutils import pretty_print_number, simplified_body_name # EDR_INTERNAL
 
 class TestEDRUtils(TestCase):
     def test_pretty_print_number(self):

@@ -1,6 +1,6 @@
-from .edri18n import _, _c, _edr
-from .edrlog import EDR_LOG
-from .edtime import EDTime
+from edri18n import _, _c, _edr # EDR_INTERNAL
+from edrlog import EDR_LOG # EDR_INTERNAL
+from edtime import EDTime # EDR_INTERNAL
 
 class EDRSystemSettlementCheck(object):
 

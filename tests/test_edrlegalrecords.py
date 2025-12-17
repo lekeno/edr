@@ -4,7 +4,7 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 import datetime
 
-from edr.edrlegalrecords import EDRLegalRecords
+from edrlegalrecords import EDRLegalRecords # EDR_INTERNAL
 
 class TestEDRLegalRecords(TestCase):
     def setUp(self):

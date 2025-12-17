@@ -1,8 +1,8 @@
 
 from collections import deque
 from time import time
-from .edtime import EDTime
-from .edri18n import _
+from edtime import EDTime # EDR_INTERNAL
+from edri18n import _ # EDR_INTERNAL
 import json
 import os
 

@@ -7,10 +7,10 @@ import lrucache
 from collections import deque 
 import edrconfig
 import edrrealtime
-from .edrlog import EDR_LOG
+from edrlog import EDR_LOG # EDR_INTERNAL
 import edtime
-from .edentities import EDFineOrBounty
-from .edri18n import _, _c
+from edentities import EDFineOrBounty # EDR_INTERNAL
+from edri18n import _, _c # EDR_INTERNAL
 
 class EDROpponents(object):
     OUTLAWS = "Outlaws"

@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, mock_open
 import json
-from edr.edrbodiesofinterest import EDRBodiesOfInterest
+from edrbodiesofinterest import EDRBodiesOfInterest # EDR_INTERNAL
 
 class TestEDBodiesOfInterest(unittest.TestCase):
     def setUp(self):

@@ -1,5 +1,5 @@
 from unittest import TestCase, main
-from edr.edinstance import EDInstance
+from edinstance import EDInstance # EDR_INTERNAL
 import calendar, time
 
 class MockCmdr(object):

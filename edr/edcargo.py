@@ -1,4 +1,4 @@
-from .edrlog import EDR_LOG
+from edrlog import EDR_LOG # EDR_INTERNAL
 
 class EDCargo(object):
     def __init__(self):

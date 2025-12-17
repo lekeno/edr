@@ -1,6 +1,6 @@
 
 from unittest import TestCase, main
-from edr.edvehicles import EDVehicleFactory, EDUnknownVehicle, EDSidewinder, EDAnaconda, EDDiamondbackExplorer
+from edvehicles import EDVehicleFactory, EDUnknownVehicle, EDSidewinder, EDAnaconda, EDDiamondbackExplorer # EDR_INTERNAL
 import calendar, time
 import os
 import json

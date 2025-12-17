@@ -1,1 +1,1 @@
-import config_test
+from . import config_tests

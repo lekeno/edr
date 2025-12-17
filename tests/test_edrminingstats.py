@@ -7,7 +7,7 @@ import json
 # Setup paths
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from edr.edrminingstats import EDRMiningStats, EDRMineralStats
+from edrminingstats import EDRMiningStats, EDRMineralStats # EDR_INTERNAL
 
 class TestEDRMiningStats(unittest.TestCase):
     def setUp(self):

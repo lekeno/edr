@@ -2,9 +2,9 @@ import copy
 from pickle import TRUE
 import re
 
-from .edtime import EDTime
-from .edrutils import simplified_body_name
-from .edri18n import _
+from edtime import EDTime # EDR_INTERNAL
+from edrutils import simplified_body_name # EDR_INTERNAL
+from edri18n import _ # EDR_INTERNAL
 
 
 class EDRFleetCarrier(object):

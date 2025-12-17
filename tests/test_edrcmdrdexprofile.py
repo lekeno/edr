@@ -1,7 +1,7 @@
 
 from unittest import TestCase, main
-from edr.edrcmdrprofile import EDRCmdrDexProfile
-from edr.edtime import EDTime
+from edrcmdrprofile import EDRCmdrDexProfile # EDR_INTERNAL
+from edtime import EDTime # EDR_INTERNAL
 
 class TestEDRCmdrDexProfile(TestCase):
     def test_alignments(self):

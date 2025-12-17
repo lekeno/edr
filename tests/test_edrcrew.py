@@ -1,6 +1,6 @@
 
 from unittest import TestCase, main
-from edr.edentities import EDRCrew
+from edentities import EDRCrew # EDR_INTERNAL
 import calendar, time
 
 class TestEDCrew(TestCase):

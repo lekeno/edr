@@ -6,7 +6,7 @@ import os
 # Setup paths
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from edr.edrcommands import EDRCommands
+from edrcommands import EDRCommands # EDR_INTERNAL
 
 class TestEDRCommands(unittest.TestCase):
     def setUp(self):

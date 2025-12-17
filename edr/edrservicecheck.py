@@ -1,7 +1,7 @@
 
-from .edri18n import _, _c, _edr
+from edri18n import _, _c, _edr # EDR_INTERNAL
 from edrsysstacheck import EDRSystemStationCheck, EDRApexSystemStationCheck
-from .edtime import EDTime
+from edtime import EDTime # EDR_INTERNAL
 
 
 class EDRStationServiceCheck(EDRSystemStationCheck):

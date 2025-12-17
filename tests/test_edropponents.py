@@ -7,7 +7,7 @@ import datetime
 # Setup paths
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from edr.edropponents import EDROpponents
+from edropponents import EDROpponents # EDR_INTERNAL
 
 class TestEDROpponents(unittest.TestCase):
     def setUp(self):

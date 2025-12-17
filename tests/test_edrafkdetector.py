@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from edr.edrafkdetector import EDRAfkDetector
+from edrafkdetector import EDRAfkDetector # EDR_INTERNAL
 import edr.edtime
 
 class TestEDRAfkDetector(unittest.TestCase):

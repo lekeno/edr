@@ -1,6 +1,6 @@
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from edr.backoff import Backoff
+from backoff import Backoff # EDR_INTERNAL
 
 class TestBackoff(TestCase):
     def test_init(self):

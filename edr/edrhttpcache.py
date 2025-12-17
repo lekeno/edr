@@ -1,6 +1,6 @@
 import datetime
-from .edrlog import EDR_LOG
-from .lrucache import LRUCache
+from edrlog import EDR_LOG # EDR_INTERNAL
+from lrucache import LRUCache # EDR_INTERNAL
 
 class EDRHttpCache(object):
     def __init__(self):

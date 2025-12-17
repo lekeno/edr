@@ -1,7 +1,7 @@
 
 from unittest import TestCase, main
-from edr.edrfleetcarrier import EDRFleetCarrier
-from edr.edtime import EDTime
+from edrfleetcarrier import EDRFleetCarrier # EDR_INTERNAL
+from edtime import EDTime # EDR_INTERNAL
 
 class TestEDRFleetCarrier(TestCase):
     def test_constructor(self):

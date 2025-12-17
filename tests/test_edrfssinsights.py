@@ -6,7 +6,7 @@ import os
 # Setup paths
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from edr.edrfssinsights import EDRFSSInsights
+from edrfssinsights import EDRFSSInsights # EDR_INTERNAL
 
 class TestEDRFSSInsights(unittest.TestCase):
     def setUp(self):

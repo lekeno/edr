@@ -7,13 +7,13 @@ from string import ascii_uppercase, digits
 import re
 
 import igmconfig
-from .edrlog import EDR_LOG
+from edrlog import EDR_LOG # EDR_INTERNAL
 import textwrap
-from .edri18n import _, _c
+from edri18n import _, _c # EDR_INTERNAL
 from edrlandables import EDRLandables
-from .edentities import EDFineOrBounty
-from .edrutils import pretty_print_number
-from .edtime import EDTime
+from edentities import EDFineOrBounty # EDR_INTERNAL
+from edrutils import pretty_print_number # EDR_INTERNAL
+from edtime import EDTime # EDR_INTERNAL
 
 if sys.platform == "win32":
     _overlay_dir = os.path.join(os.path.dirname(__file__), u'EDMCOverlay')

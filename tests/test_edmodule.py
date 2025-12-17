@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from edr.edmodule import EDModule, EDResistances
+from edmodule import EDModule, EDResistances # EDR_INTERNAL
 
 class TestEDModule(unittest.TestCase):
     def setUp(self):

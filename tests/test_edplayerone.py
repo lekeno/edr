@@ -1,6 +1,6 @@
 
 from unittest import TestCase, main
-from edr.edentities import EDPlayerOne
+from edentities import EDPlayerOne # EDR_INTERNAL
 import edvehicles
 
 class TestEDPlayerOne(TestCase):

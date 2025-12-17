@@ -1,7 +1,7 @@
 from math import log10
 import re
 
-from .edmodule import EDResistances
+from edmodule import EDResistances # EDR_INTERNAL
 
 class EDHullReinforcementPackage(object):
     def __init__(self):

@@ -5,7 +5,7 @@ import os
 # Setup paths
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from edr.edweapons import EDWeaponFactory, EDWeapon, EDDamageFractions
+from edweapons import EDWeaponFactory, EDWeapon, EDDamageFractions # EDR_INTERNAL
 
 class TestEDWeapon(unittest.TestCase):
     def test_factory_plasma(self):

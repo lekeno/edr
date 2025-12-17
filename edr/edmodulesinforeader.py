@@ -2,7 +2,7 @@
 import json
 from os.path import join
 from config import config
-from .edrlog import EDR_LOG
+from edrlog import EDR_LOG # EDR_INTERNAL
 
 
 

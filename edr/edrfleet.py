@@ -5,9 +5,9 @@ import sqlite3
 import math
 
 import os
-from .edvehicles import EDVehicleFactory
-from .edtime import EDTime
-from .edrlog import EDR_LOG
+from edvehicles import EDVehicleFactory # EDR_INTERNAL
+from edtime import EDTime # EDR_INTERNAL
+from edrlog import EDR_LOG # EDR_INTERNAL
 
 
 

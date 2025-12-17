@@ -1,6 +1,6 @@
 import json
-from .edrlog import EDR_LOG
-from .edri18n import _
+from edrlog import EDR_LOG # EDR_INTERNAL
+from edri18n import _ # EDR_INTERNAL
 import os
 
 POWER_DATA = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', 'modules_power_data.json')).read())

@@ -11,7 +11,7 @@ except ImportError:
 # Setup paths
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from edr.edrrealtime import EDRRealtimeUpdates, RemoteThread, EDRSEEReader
+from edrrealtime import EDRRealtimeUpdates, RemoteThread, EDRSEEReader # EDR_INTERNAL
 
 class TestEDRRealtimeUpdates(unittest.TestCase):
     def setUp(self):

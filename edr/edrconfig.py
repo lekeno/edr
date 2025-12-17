@@ -1,7 +1,7 @@
 
 import os
 import configparser as cp
-from .edropsec import EDROpsecConfig, EDROpsecConfigDefault
+from edropsec import EDROpsecConfig, EDROpsecConfigDefault # EDR_INTERNAL
 
 
 class EDRUserConfig(object):

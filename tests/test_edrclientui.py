@@ -12,7 +12,7 @@ sys.modules['tkinter.ttk'] = MagicMock()
 sys.modules['myNotebook'] = MagicMock()
 sys.modules['ttkHyperlinkLabel'] = MagicMock()
 
-from edr.edrclientui import EDRClientUI
+from edrclientui import EDRClientUI # EDR_INTERNAL
 
 class TestEDRClientUI(unittest.TestCase):
     def setUp(self):

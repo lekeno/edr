@@ -1,6 +1,6 @@
 
 from unittest import TestCase, main
-from edr.edrinventory import EDRInventory
+from edrinventory import EDRInventory # EDR_INTERNAL
 
 class TestEDRInventory(TestCase):
     def test_initialize(self):

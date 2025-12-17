@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch, mock_open, MagicMock
 import os
 import errno
 import zipfile
-from edr.edrautoupdater import EDRAutoUpdater
+from edrautoupdater import EDRAutoUpdater # EDR_INTERNAL
 
 class TestEDRAutoUpdater(unittest.TestCase):
     def setUp(self):

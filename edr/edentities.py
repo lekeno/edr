@@ -1,25 +1,25 @@
 #from builtins import round
 
 import pickle
-from .edsitu import EDLocation, EDAttitude, EDSpaceDimension, EDDestination
+from edsitu import EDLocation, EDAttitude, EDSpaceDimension, EDDestination # EDR_INTERNAL
 
-from .edtime import EDTime
-from .edvehicles import EDVehicleFactory 
-from .edspacesuits import EDSuitFactory, EDOdysseyCloset
-from .edcodex import EDCodex
-from .edinstance import EDInstance
-from .edrlog import EDR_LOG
-from .edrconfig import EDR_CONFIG
-from .edreconbox import EDReconBox
-from .edrinventory import EDRInventory, EDRRemlokHelmet
-from .edri18n import _, _c
-from .edrfleet import EDRFleet
-from .edrfleetcarrier import EDRFleetCarrier
-from .edrminingstats import EDRMiningStats
-from .edrbountyhuntingstats import EDRBountyHuntingStats
-from .edengineers import EDEngineers
-from .edrutils import pretty_print_number
-from .edrroutes import EDRNavigator
+from edtime import EDTime # EDR_INTERNAL
+from edvehicles import EDVehicleFactory  # EDR_INTERNAL
+from edspacesuits import EDSuitFactory, EDOdysseyCloset # EDR_INTERNAL
+from edcodex import EDCodex # EDR_INTERNAL
+from edinstance import EDInstance # EDR_INTERNAL
+from edrlog import EDR_LOG # EDR_INTERNAL
+from edrconfig import EDR_CONFIG # EDR_INTERNAL
+from edreconbox import EDReconBox # EDR_INTERNAL
+from edrinventory import EDRInventory, EDRRemlokHelmet # EDR_INTERNAL
+from edri18n import _, _c # EDR_INTERNAL
+from edrfleet import EDRFleet # EDR_INTERNAL
+from edrfleetcarrier import EDRFleetCarrier # EDR_INTERNAL
+from edrminingstats import EDRMiningStats # EDR_INTERNAL
+from edrbountyhuntingstats import EDRBountyHuntingStats # EDR_INTERNAL
+from edengineers import EDEngineers # EDR_INTERNAL
+from edrutils import pretty_print_number # EDR_INTERNAL
+from edrroutes import EDRNavigator # EDR_INTERNAL
 
 import os
 

@@ -2,7 +2,7 @@ import os
 import collections
 import datetime
 import pickle
-from .edrlog import EDR_LOG
+from edrlog import EDR_LOG # EDR_INTERNAL
 
 class LRUCache(object):
     def __init__(self, max_size, default_max_age_seconds):

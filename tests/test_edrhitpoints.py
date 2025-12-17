@@ -6,7 +6,7 @@ import os
 # Setup paths
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from edr.edrhitppoints import EDRHitPPoints
+from edrhitppoints import EDRHitPPoints # EDR_INTERNAL
 
 class TestEDRHitPPoints(unittest.TestCase):
     def setUp(self):

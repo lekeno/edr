@@ -5,7 +5,7 @@ import os
 # Setup paths
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from edr.edshield import EDShieldingFactory, EDShieldGenerator, EDShieldBooster, EDPowerDistributor, EDShieldCellBank
+from edshield import EDShieldingFactory, EDShieldGenerator, EDShieldBooster, EDPowerDistributor, EDShieldCellBank # EDR_INTERNAL
 
 class TestEDShield(unittest.TestCase):
     def test_factory_generator(self):

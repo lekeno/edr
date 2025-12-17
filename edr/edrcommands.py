@@ -1,8 +1,8 @@
-from .edrlog import EDR_LOG
+from edrlog import EDR_LOG # EDR_INTERNAL
 import random
 import codecs
 
-from .edri18n import _
+from edri18n import _ # EDR_INTERNAL
 
 
 class EDRCommands(object):

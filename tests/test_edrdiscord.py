@@ -17,7 +17,7 @@ if parent_dir not in sys.path:
 if edr_dir not in sys.path:
     sys.path.insert(0, edr_dir)
 
-from edr.edrdiscord import EDRDiscordIntegration
+from edrdiscord import EDRDiscordIntegration # EDR_INTERNAL
 
 class TestEDRDiscord(unittest.TestCase):
     def setUp(self):

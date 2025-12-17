@@ -6,7 +6,7 @@ import os
 # Setup paths
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from edr.edreconbox import EDReconBox
+from edreconbox import EDReconBox # EDR_INTERNAL
 
 class TestEDReconBox(unittest.TestCase):
     def setUp(self):

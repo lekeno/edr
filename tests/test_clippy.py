@@ -1,5 +1,5 @@
 import unittest
-from edr.clippy import copy, paste
+from clippy import copy, paste # EDR_INTERNAL
 
 class TestClipboard(unittest.TestCase):
     def test_basic_copy_paste(self):

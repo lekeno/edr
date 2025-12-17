@@ -1,7 +1,7 @@
 """
 Plugin for "EDR"
 """
-from .edspacesuits import EDSpaceSuit
+from edspacesuits import EDSpaceSuit # EDR_INTERNAL
 import sys
 import re
 import random
@@ -14,14 +14,14 @@ except ImportError:
     import plug as edmc_data
 
 from edrclient import EDRClient
-from .edentities import EDPlayer
-from .edsitu import EDPlanetaryLocation
-from .edvehicles import EDVehicleFactory
+from edentities import EDPlayer # EDR_INTERNAL
+from edsitu import EDPlanetaryLocation # EDR_INTERNAL
+from edvehicles import EDVehicleFactory # EDR_INTERNAL
 from edrrawdepletables import EDRRawDepletables
-from .edtime import EDTime
-from .edrlog import EDR_LOG
+from edtime import EDTime # EDR_INTERNAL
+from edrlog import EDR_LOG # EDR_INTERNAL
 import edrautoupdater
-from .edri18n import _, _c
+from edri18n import _, _c # EDR_INTERNAL
 
 EDR_CLIENT = EDRClient()
 

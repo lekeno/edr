@@ -1,6 +1,6 @@
 
 from unittest import TestCase, main
-from edr.lrucache import LRUCache
+from lrucache import LRUCache # EDR_INTERNAL
 import time
 
 class TestLRUCache(TestCase):

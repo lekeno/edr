@@ -1,5 +1,5 @@
 import unittest
-from edr.edcodex import EDCodex
+from edcodex import EDCodex # EDR_INTERNAL
 
 class TestEDCodex(unittest.TestCase):
     def setUp(self):

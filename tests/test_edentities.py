@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
-from edr.edentities import EDPilot, EDRSquadronMember, EDRPowerplay, EDLocation, EDSpaceDimension
-from edr.edvehicles import EDVehicleFactory
+from edentities import EDPilot, EDRSquadronMember, EDRPowerplay, EDLocation, EDSpaceDimension # EDR_INTERNAL
+from edvehicles import EDVehicleFactory # EDR_INTERNAL
 
 class TestEDEntities(unittest.TestCase):
 

@@ -4,7 +4,7 @@ import requests
 import pickle
 import os
 
-from .edrlog import EDR_LOG
+from edrlog import EDR_LOG # EDR_INTERNAL
 import os
 
 class RESTFirebaseAuth(object):

@@ -1,5 +1,5 @@
 from collections import deque
-from .edtime import EDTime
+from edtime import EDTime # EDR_INTERNAL
 
 class EDRHitPPoints(object):
     def __init__(self, history_length, history_max_span, trend_span_s):
