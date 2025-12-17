@@ -4,8 +4,6 @@ import datetime
 import pickle
 from edrlog import EDR_LOG
 
-
-
 class LRUCache(object):
     def __init__(self, max_size, default_max_age_seconds):
         self.capacity = max_size
@@ -193,11 +191,11 @@ class LRUCache(object):
                 return cache_instance
                 
         except (FileNotFoundError, EOFError, pickle.UnpicklingError, Exception) as e:
-            # EDR_LOG.warning(f"Cache load failed for {file_path}: {e}")
+            EDR_LOG.exception(f"Cache load failed for {file_path}: {e}")
             
             # Optionally: Clean up corrupt file
             if os.path.exists(file_path):
-                # EDR_LOG.warning(f"Deleting corrupt cache file: {file_path}")
+                EDR_LOG.warning(f"Deleting corrupt cache file: {file_path}")
                 os.remove(file_path)
             
             # Fallback: Return a new, initialized instance

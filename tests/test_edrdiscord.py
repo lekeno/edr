@@ -5,7 +5,17 @@ import os
 import json
 
 # Setup paths
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+current_dir = os.path.dirname(os.path.abspath(__file__)) # edr/tests/
+edr_dir = os.path.abspath(os.path.join(current_dir, '..')) # edr/
+parent_dir = os.path.abspath(os.path.join(edr_dir, '..')) # folder containing edr/
+
+# 1. Add the parent so 'from edr.module' works
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+# 2. Add the edr folder itself so internal 'from edri18n' works
+if edr_dir not in sys.path:
+    sys.path.insert(0, edr_dir)
 
 from edr.edrdiscord import EDRDiscordIntegration
 
@@ -127,3 +137,6 @@ class TestEDRDiscord(unittest.TestCase):
         success = self.discord.fc_market_update(market_data)
         self.assertTrue(success)
         self.mock_session.post.assert_called()
+
+if __name__ == '__main__':
+    unittest.main()

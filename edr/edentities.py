@@ -1353,7 +1353,7 @@ class EDPlayerOne(EDPlayer):
             else:
                 EDR_LOG.warning("SRV attacked but player had none")
         else:
-            EDR_LOG.warning("Unrecognized target: {}".format(target))
+            EDR_LOG.warning(f"Unrecognized target: {target}")
 
 
     def pips(self, values):

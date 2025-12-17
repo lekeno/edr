@@ -449,7 +449,7 @@ class EDVehicle(object):
         other_id = event.get("ShipID", None)
         other_type = EDVehicleFactory.canonicalize(event.get("Ship", "unknown")) 
         if other_id != self.id or other_type != self.type:
-            EDR_LOG.warning(u"Mismatch between ID ({} vs {}) and/or Type ({} vs. {}), can't update name/identity".format(self.id, other_id, self.type, other_type))
+            EDR_LOG.warning(f"Mismatch between ID {self.id} vs {other_id} and/or Type {self.type} vs {other_type}, can't update name/identity")
             return
         self.identity = event.get('UserShipId', None)
         self.name = event.get('UserShipName', None)

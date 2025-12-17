@@ -3,7 +3,11 @@ import sys
 import os
 
 # Setup paths
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+current_dir = os.path.dirname(__file__)
+edr_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
+root_dir = os.path.abspath(os.path.join(edr_dir, os.pardir))
+sys.path.insert(0, root_dir)
+sys.path.insert(0, edr_dir)
 
 from edr.edarmour import EDHullFactory, EDHullBulkhead, EDHullReinforcementPackage
 

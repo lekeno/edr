@@ -1304,7 +1304,7 @@ class EDRClient(object):
         system_name = entry["System"]
         body_name = self.edrsystems.body_name_with_id(system_name, entry["BodyID"])
         if not body_name:
-            EDR_LOG.warning("No body name found for codex with {}, {}".format(system_name, entry["BodyID"]))
+            EDR_LOG.warning(f"No body name found for codex with {system_name}, {entry['BodyID']}")
             return
 
         if self.edrboi.add_custom_poi(system_name, body_name, poi):
@@ -2075,8 +2075,8 @@ class EDRClient(object):
                     EDR_LOG.debug("EDR alert not worthy. Distance {} between systems {} and {} exceeds threshold {}".format(distance, origin, event["starSystem"], threshold))
                     return False
             except ValueError:
-                EDR_LOG.warning("Can't compute distance between systems {} and {}: unknown system(s)".format(self.player.star_system, event["starSystem"]))
-                pass
+                EDR_LOG.exception(f"Can't compute distance between systems {self.player.star_system} and {event['starSystem']}: unknown system(s)")
+                
         if self.realtime_params[kind]["min_bounty"]:
             if "bounty" not in event:
                 return False
