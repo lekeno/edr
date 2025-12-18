@@ -108,3 +108,7 @@ edr/design notes.txt
 *.p
 edr/db/fleet
 *.docx
+test_sandbox/
+test_sandbox_locked/
+mock_update.zip
+test_updater.py

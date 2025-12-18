@@ -79,7 +79,36 @@ class EDRAutoUpdater(object):
 
     def extract_latest(self):
         with zipfile.ZipFile(self.output, "r") as latest:
-            latest.extractall(EDRAutoUpdater.EDR_PATH)
+            file_names = latest.namelist()
+            # Check if the zip contains the new package marker
+            is_new_structure = any("edr/__init__.py" in f for f in file_names)
+            
+            if is_new_structure:
+                EDR_LOG.info("New package structure detected. Starting surgical cleanup.")
+                for filename in self.OBSOLETE_ROOT_FILES:
+                    fp = os.path.join(self.EDR_PATH, filename)
+                    if os.path.exists(fp):
+                        try:
+                            os.remove(fp)
+                            EDR_LOG.info(f"Cleaned up legacy file: {filename}")
+                        except (OSError, PermissionError) as e:
+                            EDR_LOG.warning(f"Could not remove {filename}: {e}")
+
+                # 2. Clean up __pycache__
+                pycache_path = os.path.join(self.EDR_PATH, "__pycache__")
+                if os.path.exists(pycache_path):
+                    try:
+                        import shutil
+                        # ignore_errors=True is the 'nuclear' option for locked folders
+                        shutil.rmtree(pycache_path, ignore_errors=True)
+                        EDR_LOG.info("Cleaned up __pycache__")
+                    except Exception as e:
+                        EDR_LOG.warning(f"Cleanup: couldn't clear __pycache__: {e}")
+
+            # Extract the new files. 
+            # If it's the new structure, it will create the 'edr/' folder.
+            latest.extractall(self.EDR_PATH)
+            EDR_LOG.info("Update extraction complete.")
 
     def __latest_release_url(self):
         latest_release_api = "https://api.github.com/repos/{}/releases/latest".format(self.REPO)
@@ -92,4 +121,83 @@ class EDRAutoUpdater(object):
         if not assets:
             return None
         return assets[0].get("browser_download_url", None)
+
+    OBSOLETE_ROOT_FILES = [
+        "RESTFirebase.py",
+        "__init__.py",
+        "audiofeedback.py",
+        "backoff.py",
+        "clippy.py",
+        "comparable.py",
+        "edarmour.py",
+        "edcargo.py",
+        "edcargoreader.py",
+        "edcodex.py",
+        "edengineers.py",
+        "edentities.py",
+        "edinstance.py",
+        "edmarketreader.py",
+        "edmodule.py",
+        "edmodulesinforeader.py",
+        "edrafkdetector.py",
+        "edrautoupdater.py",
+        "edrbodiesofinterest.py",
+        "edrbountyhuntingstats.py",
+        "edrclient.py",
+        "edrclientui.py",
+        "edrcmdrprofile.py",
+        "edrcmdrs.py",
+        "edrcommands.py",
+        "edrconfig.py",
+        "edrdiscord.py",
+        "edreconbox.py",
+        "edrfactions.py",
+        "edrfleet.py",
+        "edrfleetcarrier.py",
+        "edrfssinsights.py",
+        "edrhitppoints.py",
+        "edrhttpcache.py",
+        "edri18n.py",
+        "edrinventory.py",
+        "edrlandables.py",
+        "edrlegalrecords.py",
+        "edrlog.py",
+        "edrmarket.py",
+        "edrminingstats.py",
+        "edropponents.py",
+        "edropsec.py",
+        "edrparkingsystemfinder.py",
+        "edrplanetfinder.py",
+        "edrrawdepletables.py",
+        "edrrealtime.py",
+        "edrresourcefinder.py",
+        "edrroutes.py",
+        "edrserver.py",
+        "edrservicecheck.py",
+        "edrservicefinder.py",
+        "edrsettlementfinder.py",
+        "edrstatecheck.py",
+        "edrstatefinder.py",
+        "edrsysplacheck.py",
+        "edrsyssetlcheck.py",
+        "edrsysstacheck.py",
+        "edrsystems.py",
+        "edrtogglingpanel.py",
+        "edrutils.py",
+        "edrxzibit.py",
+        "edshield.py",
+        "edsitu.py",
+        "edsmserver.py",
+        "edspacesuits.py",
+        "edtime.py",
+        "edvehicles.py",
+        "edweapons.py",
+        "helpcontent.py",
+        "igmconfig.py",
+        "ingamemsg.py",
+        "lrucache.py",
+        "randomtips.py",
+        "sseclient.py",
+    ]
+
 
