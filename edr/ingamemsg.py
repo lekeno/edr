@@ -530,10 +530,12 @@ class InGameMsg(object):
         if not map_data:
             return
         
+        suffix = ""
         if station_type == "squadron carrier":
             # Squadron carriers have twice the number of landing pads,
             # split in two groups with a corrected fleet carrier mapping
             # (pads 13,14,15,16 have a more natural order)
+            suffix = "_L" if pad > 16 else "_R"
             pad = pad % 16
 
         cfg = self.cfg[u"docking-station"]
@@ -546,7 +548,8 @@ class InGameMsg(object):
         cx = int(round(x + hw))
         cy = int(round(y + hh))
         the_pad = str(pad)
-        contour = map_data.get("contour", {})
+        
+        contour = map_data.get(f"contour{suffix}", {})
         for element in contour:
             points = contour[element]["points"]
             scaled = [{"x":int(cx+(coords["x"]*hw)), "y":int(cy-(coords["y"]*hh))} for coords in points]

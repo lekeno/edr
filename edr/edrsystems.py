@@ -826,13 +826,16 @@ class EDRSystems(object):
             
         for station in stations:
             if station["name"] == station_name:
-                if station_type == "FleetCarrier" and pad_count_override == 32:
+                if station_type == "FleetCarrier" and pad_count_override > 16:
                     station = station.copy()
                     station["type"] = "squadron carrier"
+                    if station.get("economy", "").lower() in ["fleetcarrier", "fleet carrier"]:
+                        station["economy"] = "squadron carrier"
+                
                 return station
         
         worth_retrying_age = 60*60*6 
-        if station_type == "FleetCarrier" and self.edsm_stations_cache.is_older_than(star_system.lower(), worth_retrying_age):
+        if station_type in ["FleetCarrier", "SquadronCarrier"] and self.edsm_stations_cache.is_older_than(star_system.lower(), worth_retrying_age):
             # FleetCarrier are a bit more dynamic, so evict a lukewarm entry and get a new fresh one in case the info has been reflected since last time
             self.edsm_stations_cache.evict(star_system.lower())
             stations = self.stations_in_system(star_system)

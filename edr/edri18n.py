@@ -2,7 +2,7 @@ import gettext
 import sys
 import os
 
-import edr.l10n
+import l10n
 from edrlog import EDR_LOG # EDR_INTERNAL
 
 # Constants
@@ -27,7 +27,7 @@ def _get_sys_lang():
     try:
         # Attempting to get preferred languages from l10n module
         select_lang = None
-        pref_langs = list(edr.l10n.Locale.preferred_languages() or [])
+        pref_langs = list(l10n.Locale.preferred_languages() or [])
         # Select the first preferred language if it is supported by the list of supported languages.
         # If the preferred language is supported, extract only the primary language from the string;
         # otherwise, set select_lang to None.

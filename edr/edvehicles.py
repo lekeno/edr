@@ -5,7 +5,7 @@ from math import log10
 from edtime import EDTime # EDR_INTERNAL
 from edrconfig import EDR_CONFIG # EDR_INTERNAL
 from edrhitppoints import EDRHitPPoints # EDR_INTERNAL
-from edmodule import EDModule # EDR_INTERNAL
+from edmodule import EDModule, EDResistances # EDR_INTERNAL
 from edmodulesinforeader import EDModulesInfoReader # EDR_INTERNAL
 from edcargoreader import EDCargoReader # EDR_INTERNAL
 from edrlog import EDR_LOG # EDR_INTERNAL
@@ -111,7 +111,7 @@ class EDVehicle(object):
         explosive = (1.0 - self.armour.hull_resistances.explosive) * explosive
         caustic   = (1.0 - self.armour.hull_resistances.caustic)   * caustic
         
-        overall_resistances = edmodule.EDResistances()
+        overall_resistances = EDResistances()
         overall_resistances.thermal = 1.0 - thermal
         overall_resistances.kinetic = 1.0 - kinetic
         overall_resistances.explosive = 1.0 - explosive
@@ -199,7 +199,7 @@ class EDVehicle(object):
         explosive = (1.0 - self.shield_gen.shield_resistances.explosive) * explosive
         caustic   = (1.0 - self.shield_gen.shield_resistances.caustic)   * caustic
         
-        overall_resistances = edmodule.EDResistances()
+        overall_resistances = EDResistances()
         overall_resistances.thermal = 1.0 - thermal
         overall_resistances.kinetic = 1.0 - kinetic
         overall_resistances.explosive = 1.0 - explosive
@@ -309,7 +309,7 @@ class EDVehicle(object):
         self.slots_timestamp = timestamp
         self.module_info_timestamp = self.slots_timestamp # To prevent reading stale data from modulesinfo.json
         for module in self.modules:
-            ed_module = edmodule.EDModule(module)
+            ed_module = EDModule(module)
             if module["Slot"]:
                 self.slots[module['Slot']] = ed_module
 
@@ -376,7 +376,7 @@ class EDVehicle(object):
         self.module_info_timestamp = self.slots_timestamp # To prevent reading stale data from modulesinfo.json
         for name in self.modules:
             module = self.modules[name]
-            ed_module = edmodule.EDModule(module)
+            ed_module = EDModule(module)
             if module["Slot"]:
                 self.slots[module['Slot']] = ed_module
                 
@@ -406,7 +406,7 @@ class EDVehicle(object):
             
 
     def update_modules(self):
-        reader = edmodulesinforeader.EDModulesInfoReader()
+        reader = EDModulesInfoReader()
         modules_info = reader.process()
         stale = (self.slots_timestamp is None) or (self.module_info_timestamp and (self.slots_timestamp.as_py_epoch() < self.module_info_timestamp.as_py_epoch()))
         if not stale:
@@ -437,7 +437,7 @@ class EDVehicle(object):
                         EDR_LOG.debug(u"{} in {}: power_draw: {}, priority: {}".format(self.slots[slot_name].cname, slot_name, self.slots[slot_name].power_draw, self.slots[slot_name].priority))
                     updated |= module_updated
             else:
-                the_module = edmodule.EDModule(module)
+                the_module = EDModule(module)
                 self.slots[slot_name] = the_module
                 if the_module.power_draw > 0 or the_module.power_generation > 0:
                     EDR_LOG.debug(u"[New] {} in {}: power_draw: {}, priority: {}".format(self.slots[slot_name].cname, slot_name, self.slots[slot_name].power_draw, self.slots[slot_name].priority))

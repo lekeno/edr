@@ -1,7 +1,6 @@
 """
 Plugin for "EDR"
 """
-from edspacesuits import EDSpaceSuit # EDR_INTERNAL
 import sys
 import re
 import random
@@ -13,6 +12,7 @@ try:
 except ImportError:
     import plug as edmc_data
 
+from edspacesuits import EDSpaceSuit # EDR_INTERNAL
 from edrclient import EDRClient
 from edentities import EDPlayer # EDR_INTERNAL
 from edsitu import EDPlanetaryLocation # EDR_INTERNAL

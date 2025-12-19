@@ -912,10 +912,10 @@ class EDRClient(object):
             self.__notify(_('Assisted Navigation'), [_("Invalid destination")], clear_before = True)
 
     def docking_guidance(self, entry):
-        if not hasattr(docking_guidance, "requests_cache"):
-            docking_guidance.requests_cache = {}
+        if not hasattr(self, "requests_cache"):
+            self.requests_cache = {}
 
-        requests_cache = docking_guidance.requests_cache
+        requests_cache = self.requests_cache
 
         if not self.visual_feedback:
             # Only works if visual feedback is allowed due to 
@@ -950,7 +950,7 @@ class EDRClient(object):
 
             station = self.edrsystems.station(self.player.star_system,
                 entry["StationName"],
-                entry["StationType"],
+                event_station_type,
                 pad_count_override)
 
             faction = None

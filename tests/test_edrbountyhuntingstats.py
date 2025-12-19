@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 from edrbountyhuntingstats import EDRBountyHuntingStats # EDR_INTERNAL
-import edr.edtime
+from edtime import EDTime # EDR_INTERNAL
 
 class TestEDRBountyHuntingStats(unittest.TestCase):
     def setUp(self):
