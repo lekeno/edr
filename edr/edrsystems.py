@@ -826,7 +826,7 @@ class EDRSystems(object):
             
         for station in stations:
             if station["name"] == station_name:
-                if station_type == "FleetCarrier" and pad_count_override > 16:
+                if pad_count_override and (station_type == "FleetCarrier" and pad_count_override > 16):
                     station = station.copy()
                     station["type"] = "squadron carrier"
                     if station.get("economy", "").lower() in ["fleetcarrier", "fleet carrier"]:
