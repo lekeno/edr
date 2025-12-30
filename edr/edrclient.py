@@ -48,7 +48,7 @@ from edrfssinsights import EDRFSSInsights
 from edrcommands import EDRCommands
 import edrroutes
 from edrutils import simplified_body_name, pretty_print_number # EDR_INTERNAL
-
+from RESTfirebase import AuthState
 
 
 class EDRClient(object):
@@ -433,13 +433,31 @@ class EDRClient(object):
 
     def login(self):
         self.server.logout()
-        if self.server.login(self.email, self.password):
+        result = self.server.login(self.email, self.password)
+        if result == AuthState.SUCCESS:
             # Translators: this is shown on EDMC's status bar when the authentication succeeds
             self.status = _("authenticated (guest).") if self.is_anonymous() else _("authenticated.")
             return True
-        # Translators: this is shown on EDMC's status bar when the authentication fails
-        self.status = _("not authenticated.")
-        return False
+        elif result == AuthState.PENDING_APPROVAL:
+            # The transition state
+            EDR_LOG.info("Account pending for {}, falling back to guest.".format(self.email))
+            
+            # We tell the user it's pending, but immediately try to get a guest token
+            if self.server.login() == AuthState.SUCCESS:
+                self.status = _("Pending approval (Guest mode).")
+                return True
+                
+            self.status = _("Pending approval (Offline).")
+            return False
+        elif result == AuthState.AUTH_FAILED:
+            # Translators: this is shown on EDMC's status bar when the authentication fails
+            self.status = _("Invalid credentials.")
+            return False
+        else:
+            # Translators: this is shown on EDMC's status bar when the authentication fails
+            self.status = _("not authenticated.")
+            EDR_LOG.error(f"Auth failed: {result}")
+            return False
 
     def is_logged_in(self):
         return self.server.is_authenticated()
