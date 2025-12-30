@@ -6,7 +6,7 @@ import time
 import requests
 
 from edrcmdrprofile import EDRCmdrProfile # EDR_INTERNAL
-from RESTFirebase import RESTFirebaseAuth # EDR_INTERNAL
+from RESTFirebase import RESTFirebaseAuth, AuthState # EDR_INTERNAL
 from edrconfig import EDR_CONFIG # EDR_INTERNAL
 from edrlog import EDR_LOG # EDR_INTERNAL
 from edtime import EDTime # EDR_INTERNAL
@@ -39,7 +39,7 @@ class EDRServer(object):
         self.http_cache = EDRHttpCache()
         self.INARA_API_KEY = EDR_CONFIG.inara_api_key()
 
-    def login(self, email, password):
+    def login(self, email="", password=""):
         self.REST_firebase.api_key = self.EDR_API_KEY
         self.REST_firebase.email = email
         self.REST_firebase.password = password

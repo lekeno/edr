@@ -3,9 +3,23 @@ import json
 import requests
 import pickle
 import os
+from enum import Enum
 
 from edrlog import EDR_LOG # EDR_INTERNAL
-import os
+
+class AuthState(Enum):
+    SUCCESS = (1, "Authenticated.")
+    PENDING_APPROVAL = (2, "Pending approval.")
+    INVALID_CREDENTIALS = (3, "Invalid credentials.")
+    EMAIL_NOT_FOUND = (4, "Email not found.")
+    ANONYMOUS_ERROR = (5, "Technical error with guest mode.")
+    NETWORK_ERROR = (6, "Network error.")
+    API_KEY_ERROR = (7, "API key is missing or invalid.")
+    UNKNOWN_ERROR = (8, "Unexpected error.")
+    
+    def __init__(self, id, message):
+        self.id = id
+        self.description = message
 
 class RESTFirebaseAuth(object):
     FIREBASE_ANON_AUTH_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'private', 'fbaa.v2.p')
@@ -22,22 +36,26 @@ class RESTFirebaseAuth(object):
             self.refresh_token = None
         self.timestamp = None
         self.api_key = ""
+        self.last_error = None
 
     def authenticate(self):
         if self.api_key == "":
             EDR_LOG.error("can't authenticate: empty api key.")
-            return False
+            return AuthState.API_KEY_ERROR
 
-        if not self.__login():
-            EDR_LOG.error("Authentication failed (login)")
+        login_status = self.__login()
+        if login_status != AuthState.SUCCESS:
+            if login_status == AuthState.PENDING_APPROVAL:
+                return AuthState.PENDING_APPROVAL
+
             self.__reset()
-            return False
+            return login_status
 
         if not self.__refresh_fb_token():
-            EDR_LOG.error("Authentication failed (FB token)")
             self.__reset()
-            return False
-        return True
+            return AuthState.NETWORK_ERROR
+        
+        return AuthState.SUCCESS
 
     def __login(self):
         payload = {
@@ -60,7 +78,25 @@ class RESTFirebaseAuth(object):
         requestTime = datetime.datetime.now()
         resp = requests.post(endpoint,json=payload)
         if resp.status_code != requests.codes.ok:
-            return False
+            try:
+                error_data = resp.json()
+                error_message = error_data.get("error", {}).get("message", "")
+                
+                if error_message == "USER_DISABLED":
+                    EDR_LOG.warning("Login successful but account is pending approval.")
+                    return AuthState.PENDING_APPROVAL
+                elif error_message == "INVALID_PASSWORD":
+                    EDR_LOG.error("Authentication failed (invalid password).")
+                    return AuthState.INVALID_CREDENTIALS
+                elif error_message == "EMAIL_NOT_FOUND":
+                    EDR_LOG.error("Authentication failed (email not found).")
+                    return AuthState.EMAIL_NOT_FOUND
+                else:
+                    EDR_LOG.error(f"Authentication failed: {error_message}")
+                    return AuthState.UNKNOWN_ERROR
+            except Exception as e:
+                EDR_LOG.exception(f"Authentication failed: {e}")
+                return AuthState.UNKNOWN_ERROR
         
         self.timestamp = requestTime
         auth = json.loads(resp.content)
@@ -69,9 +105,11 @@ class RESTFirebaseAuth(object):
             try:
                 with open(self.FIREBASE_ANON_AUTH_CACHE, 'wb') as handle:
                     pickle.dump(self.refresh_token, handle, protocol=pickle.HIGHEST_PROTOCOL)
-            except:
-                return False
-        return True
+            except Exception as e:
+                EDR_LOG.exception(f"Failed to save anonymous auth cache: {e}")
+                return AuthState.ANONYMOUS_ERROR
+        
+        return AuthState.SUCCESS
 
     def __refresh_fb_token(self):
         payload = { "grant_type": "refresh_token", "refresh_token": self.refresh_token}
