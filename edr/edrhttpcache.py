@@ -25,7 +25,23 @@ class EDRHttpCache(object):
         
         return wrapped_content["data"]
 
-    def set(self, key, content, max_age_seconds):
+    def get_etag(self, key):
+        """Peek at the cache to get the ETag without evicting if stale."""
+        wrapped_content = self.cache.peek(key)
+        return wrapped_content.get("etag") if wrapped_content else None
+
+    def set(self, key, content, max_age_seconds, etag=None):
         expires = datetime.datetime.now() + datetime.timedelta(seconds=max_age_seconds)
-        wrapped_content = { "data": content, "expires": expires }
-        self.cache.set(key, wrapped_content)
+        wrapped_content = { "data": content, "expires": expires, "etag": etag }
+        self.cache.set(key, wrapped_content, ttl_seconds=max_age_seconds)
+
+    def refresh(self, key, max_age_seconds=None):
+        """Updates the expiration and LRU position for a 304 response."""
+        wrapped_content = self.cache.peek(key)
+        if wrapped_content:
+            new_expires = datetime.datetime.now() + datetime.timedelta(seconds=max_age_seconds)
+            wrapped_content["expires"] = new_expires
+            ttl_seconds = max_age_seconds if max_age_seconds is not None else wrapped_content.get('ttl_seconds', 300)
+            self.cache.set(key, wrapped_content, ttl_seconds=ttl_seconds)
+            return True
+        return False

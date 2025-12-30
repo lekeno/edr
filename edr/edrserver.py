@@ -80,18 +80,31 @@ class EDRServer(object):
             return False
         
         EDR_LOG.debug(u"Checking response: service={}, call={}, status={}".format(service, call, response.status_code))
-        if response.status_code in [200, 404, 401, 403, 204]:
+        if response.status_code in [200, 304, 404, 401, 403, 204]:
+            
             EDR_LOG.debug(u"Acceptable response => resetting backoff: service={}, call={}, resp={}".format(service, call, response))
             self.backoff[service].reset()
-            if response.status_code == 200 and "Cache-Control" in response.headers:
-                cc = response.headers["Cache-Control"]
-                if "max-age" in cc:
-                    try:
-                        max_age = int(cc.split("max-age=")[1].split(",")[0])
-                        self.http_cache.set(response.url, response.json(), max_age)
-                        EDR_LOG.debug(u"Cached {} for {}s".format(response.url, max_age))
-                    except:
-                        pass
+
+            etag = response.headers.get("ETag", None)
+            cc = response.headers.get("Cache-Control", None)
+            maxAge = None
+            if cc and "max-age" in cc:
+                try:
+                    maxAge = int(cc.split("max-age=")[1].split(",")[0])
+                except Exception as e:
+                    EDR_LOG.error(f"Error processing cache-control header: {e}")
+            
+            if response.status_code == 200:
+                try:
+                    data = response.json()
+                    self.http_cache.set(response.url, data, max_age=maxAge, etag=etag)
+                except Exception as e:
+                    EDR_LOG.error(f"Failed to parse JKSON for 200 response at {response.url}: {e}")
+                    return False
+                EDR_LOG.debug(u"Cached {} for {}s with etag {}".format(response.url, maxAge, etag))
+            elif response.status_code == 304:
+                self.http_cache.refresh(response.url, max_age=maxAge)
+                EDR_LOG.debug(u"304 Not Modified for {}".format(response.url))
         elif response.status_code in [429, 500]:
             EDR_LOG.debug(u"Bad response => throttling: service={}, call={}, resp={}".format(service, call, response))
             retry_after = response.headers.get("Retry-After")
@@ -109,7 +122,7 @@ class EDRServer(object):
             else:
                 self.backoff[service].throttle()
             
-        return response.status_code == 200
+        return response.status_code in [200, 304]
 
     def __process_inara_response(self, resp):
         if resp is None:
@@ -161,91 +174,155 @@ class EDRServer(object):
             self.backoff["Inara"].throttle()
         return None
 
-    def __get(self, endpoint, service, params=None, headers=None, attempts=3):
+    def __get(self, endpoint, service, params=None, headers=None, attempts=3, call="Unknown"):
         headers = headers if headers is not None else {}
         headers.update({"EDR-Version": f"v{self.version}"})
 
         req = requests.Request('GET', endpoint, params=params, headers=headers)
         prepped = self.SESSION.prepare_request(req)
-        cached = self.http_cache.get(prepped.url)
-        if cached is not None:
-            EDR_LOG.debug(u"Cache hit for {}".format(prepped.url))
-            return cached
+        cache_key = prepped.url
+        
+        cached_data = self.http_cache.get(cache_key)
+        if cached_data is not None:
+            EDR_LOG.debug(u"Cache hit for {}".format(cache_key))
+            return cached_data
+        
+        etag = self.http_cache.get_etag(endpoint)
+        if etag:
+            prepped.headers.update({"If-None-Match": etag})
+            EDR_LOG.debug(u"Conditional GET for {} with ETag {}".format(cache_key, etag))
 
         if self.backoff[service].throttled():
             EDR_LOG.debug("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff[service].backoff_until)))
             return None
         
+        last_connection_exception = None
         while attempts:
             try:
                 attempts -= 1
-                return EDRServer.SESSION.get(endpoint, params=params, headers=headers)
+                resp = EDRServer.SESSION.send(prepped)
+                success = self.__check_response(resp, service, call)
+                
+                if resp.status_code == 304:
+                    EDR_LOG.debug(u"ETag Match (304) for {}".format(cache_key))
+                    return self.http_cache.get(cache_key)
+
+                if success:
+                    return resp.json()
+
+                return None
             except requests.exceptions.RequestException as e:
                 last_connection_exception = e
                 EDR_LOG.warning(u"ConnectionException {} for GET EDR {}: attempts={}".format(e, service, attempts))
-        raise last_connection_exception
+        
+        if last_connection_exception:
+            raise last_connection_exception
+        return None
 
-    def __put(self, endpoint, service, json, params=None, headers=None, attempts=3):
+    def __put(self, endpoint, service, json, params=None, headers=None, attempts=3, call="Unknown"):
         headers = headers if headers is not None else {}
         headers.update({"EDR-Version": f"v{self.version}"})
+
+        req = requests.Request('PUT', endpoint, params=params, json=json, headers=headers)
+        prepped = self.SESSION.prepare_request(req)
 
         if self.backoff[service].throttled():
             EDR_LOG.debug("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff[service].backoff_until)))
             return None
 
+        last_connection_exception = None
         while attempts:
             try:
                 attempts -= 1
-                return EDRServer.SESSION.put(endpoint, params=params, json=json, headers=headers)
+                resp = EDRServer.SESSION.send(prepped)
+
+                if self.__check_response(resp, service, call):
+                    self.http_cache.evict(prepped.url)
+                    try:
+                        return resp.json() if resp.text else {}
+                    except ValueError:
+                        return {}
+                    
+                return None
             except requests.exceptions.RequestException as e:
                 last_connection_exception = e
                 EDR_LOG.warning(u"ConnectionException {} for PUT EDR {}: attempts={}".format(e, service, attempts))
-        raise last_connection_exception
+        
+        if last_connection_exception:
+            raise last_connection_exception
+        return None 
     
-    def __delete(self, endpoint, service, params=None, headers=None, attempts=3):
+    def __delete(self, endpoint, service, params=None, headers=None, attempts=3, call="Unknown"):
+        headers = headers if headers is not None else {}
+        headers.update({"EDR-Version": f"v{self.version}"})
+
+        req = requests.Request('DELETE', endpoint, params=params, headers=headers)
+        prepped = self.SESSION.prepare_request(req)
+
         if self.backoff[service].throttled():
             EDR_LOG.debug("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff[service].backoff_until)))
             return None
 
-        headers = headers if headers is not None else {}
-        headers.update({"EDR-Version": f"v{self.version}"})
-
+        last_connection_exception = None
         while attempts:
             try:
                 attempts -= 1
-                return EDRServer.SESSION.delete(endpoint, params=params, headers=headers)
+                resp = EDRServer.SESSION.send(prepped)
+                
+                if self.__check_response(resp, service, call):
+                    self.http_cache.evict(prepped.url)
+                    return True
+                
+                return False
             except requests.exceptions.RequestException as e:
                 last_connection_exception = e
                 EDR_LOG.warning(u"ConnectionException {} for DELETE EDR {}: attempts={}".format(e, service, attempts))
-        raise last_connection_exception
         
+        if last_connection_exception:
+            raise last_connection_exception
+        return False
 
-    def __post(self, endpoint, service, json, params=None, headers=None, attempts=3):
+    def __post(self, endpoint, service, json, params=None, headers=None, attempts=3, call="Unknown"):
+        headers = headers if headers is not None else {}
+        headers.update({"EDR-Version": f"v{self.version}"})
+
+        req = requests.Request('POST', endpoint, params=params, json=json, headers=headers)
+        prepped = self.SESSION.prepare_request(req)
+
         if self.backoff[service].throttled():
             EDR_LOG.debug("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff[service].backoff_until)))
             return None
-
-        headers = headers if headers is not None else {}
-        headers.update({"EDR-Version": f"v{self.version}"})
         
+        last_connection_exception = None
         while attempts:
             try:
                 attempts -= 1
-                return EDRServer.SESSION.post(endpoint, params=params, json=json, headers=headers)
+                resp = EDRServer.SESSION.send(prepped)
+                
+                if self.__check_response(resp, service, call):
+                    self.http_cache.evict(prepped.url)
+                    try:
+                        return resp.json() if resp.text else {}
+                    except ValueError:
+                        return {}
+                
+                return None
             except requests.exceptions.RequestException as e:
                 last_connection_exception = e
                 EDR_LOG.warning(u"ConnectionException {} for POST EDR {}: attempts={}".format(e, service, attempts))
-        raise last_connection_exception
         
+        if last_connection_exception:
+            raise last_connection_exception
+        return None
 
     def server_version(self):
-        resp = self.__get("{}/version/.json".format(self.EDR_SERVER), "EDR")
+        data = self.__get("{}/version/.json".format(self.EDR_SERVER), "EDR", call="Version")
         
-        if not self.__check_response(resp, "EDR", "Version"):
-            EDR_LOG.error(u"Failed to check for version update. code={code}, content={content}".format(code=resp.status_code, content=resp.text))
+        if data is None:
+            EDR_LOG.error(u"Failed to check for version update.")
             return None
 
-        return  json.loads(resp.content)
+        return data
     
     
     def notams(self, timespan_seconds):
@@ -254,13 +331,13 @@ class EDRServer(object):
         future_epoch_js = 1830000000000
 
         params = {"orderBy": '"timestamp"', "startAt": past_epoch_js, "endAt": future_epoch_js, "auth": self.auth_token(), "limitToLast": 10}
-        resp = self.__get("{}/v1/notams.json".format(self.EDR_SERVER), "EDR", params)
+        data = self.__get("{}/v1/notams.json".format(self.EDR_SERVER), "EDR", call="notams", params=params)
 
-        if not self.__check_response(resp, "EDR", "notams"):
+        if data is None:
             EDR_LOG.error(u"Failed to retrieve notams.")
             return None
         
-        return json.loads(resp.content)
+        return data
 
 
     def sitreps(self, timespan_seconds):
@@ -287,69 +364,56 @@ class EDRServer(object):
             raise CommsJammedError("system")
 
         params = {"orderBy": '"cname"', "equalTo": json.dumps(star_system.lower()), "limitToFirst": 1, "auth": self.auth_token()}
-        resp = self.__get("{}/v1/systems.json".format(self.EDR_SERVER), "EDR", params)
+        the_system = self.__get("{}/v1/systems.json".format(self.EDR_SERVER), "EDR", params, call="System")
 
-        if not self.__check_response(resp, "EDR", "system"):
-            EDR_LOG.error(u"Failed to retrieve star system.")
-            return None
-
-        the_system = None
-        if resp.content == 'null' or resp.content == b'null':
-            EDR_LOG.debug(u"System {} is not recorded in EDR.".format(star_system))
-            if may_create:
-                EDR_LOG.debug(u"Creating system in EDR.")
-                params = { "auth" : self.auth_token() }
-                payload = {"name": star_system, "uid" : self.uid()}
-                if coords:
-                    EDR_LOG.debug(u"With coords: {}".format(coords))
-                    payload["coords"] = {
-                        "x": coords[0],
-                        "y": coords[1],
-                        "z": coords[2],
-                        "uid": self.uid()
-                    }
-                resp = self.__post("{}/v1/systems.json".format(self.EDR_SERVER), "EDR", json=payload, params=params)
-                if not self.__check_response(resp, "EDR", "Systems"):
-                    EDR_LOG.error(u"Failed to create new star system.")
-                    return None
-
-                # --- FIX START ---
-                # Firebase POST response: {"name": "-<FIREBASE_ID>"}
-                post_response = json.loads(resp.content)
-                
-                if "name" in post_response:
-                    # Create the dictionary structure expected by system_id: {<FIREBASE_ID>: <SYSTEM_DATA>}
-                    new_id = post_response["name"]
-                    the_system = {new_id: payload} # Use the ID from the response and the original data
-                    EDR_LOG.debug(u"Created system {} in EDR with new ID: {}.".format(star_system, new_id))
-                else:
-                    EDR_LOG.error(u"Unexpected response format after system creation.")
-                    return None
-                # --- FIX END ---
-            else:
+        if not the_system:
+            if not may_create:
+                EDR_LOG.error(u"Failed to retrieve star system.")
                 return None
-        else:
-            the_system = json.loads(resp.content)
-            sid = list(the_system)[0] if the_system else None
-            if sid is None:
-                EDR_LOG.debug(u"System {} has no id={}.".format(star_system, sid))
-                return None
-            EDR_LOG.debug(u"System {} is in EDR with id={}.".format(star_system, sid))
-            if may_create and not self.is_anonymous() and coords and "coords" not in the_system[sid]:
-                EDR_LOG.debug(u"Adding coords to system in EDR.")
-                params = { "auth" : self.auth_token() }
-                payload = {
+
+            EDR_LOG.debug(f"Creating system {star_system} in EDR.")
+            params = { "auth" : self.auth_token() }
+            payload = {"name": star_system, "uid" : self.uid()}
+            if coords:
+                EDR_LOG.debug(f"With coords: {coords}")
+                payload["coords"] = {
                     "x": coords[0],
                     "y": coords[1],
                     "z": coords[2],
-                    "uid":  self.uid()
+                    "uid": self.uid()
                 }
-                resp = self.__put("{}/v1/systems/{}/coords/.json".format(self.EDR_SERVER, sid), "EDR", json=payload, params=params)
-                if not self.__check_response(resp, "EDR", "coords"):
-                    EDR_LOG.error(u"Failed to add coords to existing star system.")
-                    return the_system
-                EDR_LOG.debug(u"Added coords to system {} in EDR with id={} and coords={}.".format(star_system, sid, coords))
 
+            post_resp = self.__post("{}/v1/systems.json".format(self.EDR_SERVER), "EDR", json=payload, params=params, call="Create_system")
+            if post_resp and "name" in post_resp:
+                new_id = post_resp["name"]
+                EDR_LOG.debug(f"Created system {star_system} in EDR with new ID: {new_id}.")
+                return { new_id: payload }
+
+            EDR_LOG.error(u"Unexpected response format after system creation.")
+            return None        
+        
+        sid = list(the_system)[0]
+        if sid is None:
+            EDR_LOG.debug(f"System {star_system} has no id={sid}.")
+            return None
+        
+        EDR_LOG.debug(f"System {star_system} is in EDR with id={sid}.")
+        if may_create and not self.is_anonymous() and coords and "coords" not in the_system[sid]:
+            EDR_LOG.debug(f"Adding coords to system {star_system} in EDR.")
+            params = { "auth" : self.auth_token() }
+            coord_payload = {
+                "x": coords[0],
+                "y": coords[1],
+                "z": coords[2],
+                "uid":  self.uid()
+            }
+            put_resp = self.__put("{}/v1/systems/{}/coords/.json".format(self.EDR_SERVER, sid), "EDR", json=coord_payload, params=params, call="Add Coords")
+            if put_resp:
+                EDR_LOG.debug(f"Added coords to system {star_system} in EDR with id={sid} and coords={coords}.")
+                the_system[sid]["coords"] = coord_payload
+                return the_system
+            EDR_LOG.error(u"Failed to add coords to existing star system.")
+                
         return the_system
 
     def fc(self, callsign, name, star_system, may_create):
@@ -358,55 +422,57 @@ class EDRServer(object):
             self.refresh_auth()
             raise CommsJammedError("fc")
 
-        params = {"orderBy": '"ccallsign"', "equalTo": json.dumps(callsign.lower()), "limitToFirst": 1, "auth": self.auth_token()}
-        resp = self.__get("{}/v1/fcs.json".format(self.EDR_SERVER), "EDR", params)
+        params = {
+            "orderBy": '"ccallsign"',
+            "equalTo": json.dumps(callsign.lower()),
+            "limitToFirst": 1,
+            "auth": self.auth_token()
+        }
+        the_fc = self.__get("{}/v1/fcs.json".format(self.EDR_SERVER), "EDR", params, call="FC")
 
-        if not self.__check_response(resp, "EDR", "system"):
-            EDR_LOG.error(u"Failed to retrieve FC.")
-            return None
+        if not the_fc:
+            if not may_create:
+                EDR_LOG.error(u"Failed to retrieve FC.")
+                return None
+        
+            EDR_LOG.debug(f"FC {callsign} is not recorded in EDR. Creating it.")
+            params = { "auth" : self.auth_token() }
+            payload = {
+                "callsign": callsign,
+                "name": name,
+                "starSystem": star_system,
+                "uid" : self.uid()
+            }
+            post_resp = self.__post("{}/v1/fcs.json".format(self.EDR_SERVER), "EDR", json=payload, params=params, call="Create FC")
+            if post_resp and "name" in post_resp:
+                new_id = post_resp["name"]
+                EDR_LOG.debug(f"Created FC {callsign} in EDR with new ID: {new_id}.")
+                return { new_id: payload }
+            EDR_LOG.error(u"Failed to create new FC.")
+            return None            
+        
+        fcid = list(the_fc)[0]
+        EDR_LOG.debug(u"FC {} is in EDR with id={}.".format(callsign, fcid))
 
-        the_fc = None
-        if resp.content == 'null' or resp.content == b'null':
-            EDR_LOG.debug(u"FC {} is not recorded in EDR.".format(callsign))
-            if may_create:
-                EDR_LOG.debug(u"Creating FC in EDR.")
-                params = { "auth" : self.auth_token() }
-                payload = {"callsign": callsign, "name": name, "starSystem": star_system, "uid" : self.uid()}
-                resp = self.__post("{}/v1/fcs.json".format(self.EDR_SERVER), "EDR", json=payload, params=params)
-                if not self.__check_response(resp, "EDR", "FCs"):
-                    EDR_LOG.error(u"Failed to create new FC.")
-                    return None
-                the_fc = json.loads(resp.content)
-                EDR_LOG.debug(u"Created FC {} in EDR.".format(callsign))
-            else:
-                return None
-        else:
-            the_fc = json.loads(resp.content)
-            fcid = list(the_fc)[0] if the_fc else None
-            if fcid is None:
-                EDR_LOG.debug(u"FC {} has no id={}.".format(callsign, fcid))
-                return None
-            EDR_LOG.debug(u"FC {} is in EDR with id={}.".format(callsign, fcid))
-            
         return the_fc
 
     def pledged_to(self, power, since):
         params = { "auth": self.auth_token() }
+        endpoint = "{server}/v1/pledges/{uid}/.json".format(server=self.EDR_SERVER, uid=self.uid())
+        
         if power is None:
             EDR_LOG.info(u"Removing pledge info for uid {uid}".format(uid=self.uid))
-            endpoint = "{server}/v1/pledges/{uid}/.json".format(server=self.EDR_SERVER, uid=self.uid())
-            EDR_LOG.debug(u"Endpoint: {}".format(endpoint))
-            resp = self.__delete(endpoint, "EDR", params=params)
-            EDR_LOG.debug(u"resp= {}".format("None" if resp is None else resp.status_code))
-            return self.__check_response(resp, "EDR", "Delete pledge")
+            return self.__delete(endpoint, "EDR", params=params, call="Delete_pledge")
         
         EDR_LOG.info(u"Pledge info for uid {uid} with power:{power}".format(uid=self.uid(), power=power))
-        endpoint = "{server}/v1/pledges/{uid}/.json".format(server=self.EDR_SERVER, uid=self.uid())
-        json = { "cpower": self.nodify(power), "since": int(since*1000), "heartbeat": {".sv": "timestamp"} }
-        EDR_LOG.debug(u"Endpoint: {}".format(endpoint))
-        resp = self.__put(endpoint, "EDR", params=params, json=json)
-        EDR_LOG.debug(u"resp= {}".format("None" if resp is None else resp.status_code))
-        return self.__check_response(resp, "EDR", "Put pledge")            
+        payload = {
+            "cpower": self.nodify(power),
+            "since": int(since*1000),
+            "heartbeat": {".sv": "timestamp"}
+        }
+
+        result = self.__put(endpoint, "EDR", params=params, json=payload, call="Put_pledge")
+        return result is not None
     
     def cmdr(self, cmdr, autocreate=True):
         if not self.__preflight("cmdr", cmdr):
@@ -414,44 +480,34 @@ class EDRServer(object):
             raise CommsJammedError("cmdr")
         cmdr_profile = EDRCmdrProfile()
 
-        params = {}
-        if sys.version_info.major == 2:
-            params = { "orderBy": '"cname"', "equalTo": json.dumps(cmdr.lower().encode('utf-8')), "limitToFirst": 1, "auth": self.auth_token()}
-        else:
-            params = { "orderBy": '"cname"', "equalTo": json.dumps(cmdr.lower()), "limitToFirst": 1, "auth": self.auth_token()}
-        resp = self.__get("{}/v1/cmdrs.json".format(self.EDR_SERVER), "EDR", params)
+        endpoint = "{}/v1/cmdrs.json".format(self.EDR_SERVER)
+        params = {
+            "orderBy": '"cname"', 
+            "equalTo": json.dumps(cmdr.lower()), 
+            "limitToFirst": 1, 
+            "auth": self.auth_token()
+        }
 
-        if not self.__check_response(resp, "EDR", "Cmdrs"):
-            EDR_LOG.error(u"Failed to retrieve cmdr id.")
-            EDR_LOG.debug(u"{error}, {content}".format(error=resp.status_code, content=resp.text))
-            return None
+        json_cmdr = self.__get(endpoint, "EDR", params=params, call="Get_cmdr")
 
-        json_cmdr = None
-        try:
-            json_cmdr = json.loads(resp.content)
-        except:
-            json_cmdr = None
-            pass
-
-        if json_cmdr is None:
+        if not json_cmdr:
             if autocreate and not self.is_anonymous():
-                params = { "auth" : self.auth_token() }
-                endpoint = "{}/v1/cmdrs.json".format(self.EDR_SERVER)
-                resp = self.__post(endpoint, "EDR", params=params, json={"name": cmdr, "uid" : self.uid(), "requester" : self.player_name})
-                if not self.__check_response(resp, "EDR", "Post cmdr"):
-                    EDR_LOG.error(u"Failed to retrieve cmdr key.")
-                    return None
-                json_cmdr = json.loads(resp.content)
-                EDR_LOG.debug(u"New cmdr:{}".format(json_cmdr))
-                cmdr_profile.cid = list(json_cmdr.values())[0]
-                cmdr_profile.name = cmdr
-            else:
-                return None
-        else:
-            json_cmdr = json.loads(resp.content)
-            EDR_LOG.debug(u"Existing cmdr:{}".format(json_cmdr))
-            cmdr_profile.cid = list(json_cmdr)[0]
-            cmdr_profile.from_dict(list(json_cmdr.values())[0])
+                EDR_LOG.debug(f"Cmdr {cmdr} not found. Autocreating.")
+                payload = {"name": cmdr, "uid" : self.uid(), "requester" : self.player_name}
+                post_resp = self.__post(endpoint, "EDR", json=payload)
+                
+                if post_resp and "name" in post_resp:
+                    # In POST, the 'name' key holds the new ID
+                    cmdr_profile.cid = post_resp["name"] 
+                    cmdr_profile.name = cmdr
+                    return cmdr_profile
+                
+                EDR_LOG.error(u"Failed to retrieve cmdr key.")
+            return None
+                
+        EDR_LOG.debug(u"Existing cmdr:{}".format(json_cmdr))
+        cmdr_profile.cid = list(json_cmdr.keys())[0]
+        cmdr_profile.from_dict(list(json_cmdr.values())[0])
 
         return cmdr_profile
 
@@ -468,45 +524,46 @@ class EDRServer(object):
             "Authorization": "ApiKey {}".format(self.INARA_API_KEY),
             "X-EDR-UID": self.uid()
         }
-        requester = quote(self.player_name.encode('utf-8')) if self.player_name else u"-"
-        endpoint = "{}/edr/v1/inara/{}/{}".format(self.EDR_SERVER_FUNCTIONS, quote(cmdr.lower().encode('utf-8')), quote(requester))
-        resp = self.__get(endpoint, "Inara", headers=headers)
-        EDR_LOG.debug(u"Inara response: endpoint={}, resp={}".format(endpoint, resp))
+        requester = quote(self.player_name.encode('utf-8'))
+        endpoint = "{}/edr/v1/inara/{}/{}".format(
+            self.EDR_SERVER_FUNCTIONS,
+            quote(cmdr.lower().encode('utf-8')),
+            requester)
+        
+        json_resp = self.__get(endpoint, "Inara", headers=headers, call="Inara_cmdr_via_EDR")
+        EDR_LOG.debug(f"Inara response: endpoint={endpoint}, resp={json_resp}")
 
-        if not self.__check_response(resp, "Inara", "Inara via EDR"):
-            EDR_LOG.error(u"Inara profile failed. Error code: {}".format(resp.status_code))
+        if not json_resp:
+            EDR_LOG.error(u"Inara profile failed. Error code: {}".format(json_resp.status_code))
             return False
             
-        processed = self.__process_inara_response(resp.content)
+        processed = self.__process_inara_response(json_resp)
         if not processed:
-            EDR_LOG.error(u"Inara response wasn't processed. Resp: {}".format(resp.content))
+            EDR_LOG.error(f"Inara response wasn't processed. Resp: {json_resp}")
             return False
 
         cmdr_profile = EDRCmdrProfile()
         cmdr_profile.from_inara_api(processed)
         return cmdr_profile
 
-    def __post_json(self, endpoint, json_payload, service):
-        if self.backoff[service].throttled():
-            EDR_LOG.debug("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff[service].backoff_until)))
-            return None
-        
+    def __post_json(self, endpoint, json_payload, service, call="Unknown"):
         params = { "auth" : self.auth_token()}
-        if self.anonymous_reports != None:
+        
+        if self.anonymous_reports is not None:
             json_payload["anonymous"] = self.anonymous_reports
-        if self.crimes_reporting != None:
+        if self.crimes_reporting is not None:
             json_payload["creporting"] = self.crimes_reporting
-        endpoint = "{server}{endpoint}.json".format(server=self.EDR_SERVER, endpoint=endpoint)
-        EDR_LOG.debug(u"Post JSON {} to {}".format(json_payload, endpoint))
-        resp = self.__post(endpoint, "EDR", params=params, json=json_payload)
-        EDR_LOG.debug(u" resp= {}; {}".format(resp.status_code, resp.text))
-        return self.__check_response(resp, "EDR", "Post json")
+        
+        full_url = "{server}{endpoint}.json".format(server=self.EDR_SERVER, endpoint=endpoint)
+        EDR_LOG.debug(u"Post JSON {} to {}".format(json_payload, full_url))
+        
+        return self.__post(full_url, service, params=params, json=json_payload, call=call)
 
     def blip(self, cmdr_id, info):
         info["uid"] = self.uid()
         EDR_LOG.info(u"Blip for cmdr {cid} with json:{json}".format(cid=cmdr_id, json=info))
         endpoint = "/v1/blips/{cmdr_id}/".format(cmdr_id=cmdr_id)
-        return self.__post_json(endpoint, info, "EDR")
+        return self.__post_json(endpoint, info, "EDR", call="Blip")
 
     def traffic(self, system_id, info):
         if not self.__preflight("traffic", system_id):
@@ -516,20 +573,20 @@ class EDRServer(object):
         info["uid"] = self.uid()
         EDR_LOG.info(u"Traffic report for system {sid} with json:{json}".format(sid=system_id, json=info))
         endpoint = "/v1/traffic/{system_id}/".format(system_id=system_id)
-        return self.__post_json(endpoint, info, "EDR")
+        return self.__post_json(endpoint, info, "EDR", call="Traffic")
 
     def scanned(self, cmdr_id, info):
         info["uid"] = self.uid()
         EDR_LOG.info(u"Scan for cmdr {cid} with json:{json}".format(cid=cmdr_id, json=info))
         endpoint = "/v1/scans/{cmdr_id}/".format(cmdr_id=cmdr_id)
-        return self.__post_json(endpoint, info, "EDR")
+        return self.__post_json(endpoint, info, "EDR", call="Scanned")
 
     def legal_records(self, cmdr_id, timespan_seconds):
         EDR_LOG.info(u"Fetching legal record for cmdr {cid}".format(cid=cmdr_id))
         endpoint = "/v1/legal/{cmdr_id}/".format(cmdr_id=cmdr_id)
         legal_records_perday = 24
         records_over_timespan = int(max(1, round(timespan_seconds / 86400.0 * legal_records_perday)))
-        return self.__get_recent(endpoint, timespan_seconds, limitToLast=records_over_timespan)
+        return self.__get_recent(endpoint, timespan_seconds, limitToLast=records_over_timespan, call="Recent_legal_records")
 
     def legal_stats(self, cmdr_id):
         if not self.__preflight("legal_stats", cmdr_id):
@@ -538,31 +595,28 @@ class EDRServer(object):
         EDR_LOG.info(u"Fetching legal stats for cmdr {cid}".format(cid=cmdr_id))
         endpoint = "{server}/v1/stats/legal/{cmdr_id}/.json".format(server=self.EDR_SERVER,cmdr_id=cmdr_id)
         params = {"auth": self.auth_token()}
-        resp = self.__get(endpoint, "EDR", params)
-        EDR_LOG.debug(u"resp= {}".format("None" if resp is None else resp.status_code))
+        data = self.__get(endpoint, "EDR", params, call="Legal_Stats")
+        EDR_LOG.debug(u"data= {}".format("None" if data is None else data))
 
-        if self.__check_response(resp, "EDR", "Legal_Stats"):
-            return json.loads(resp.content)
-        else:
-            return None
+        return data
 
     def crime(self, system_id, info):
         info["uid"] = self.uid()
         EDR_LOG.info(u"Crime report for system {sid} with json:{json}".format(sid=system_id, json=info))
         endpoint = "/v1/crimes/{system_id}/".format(system_id=system_id)
-        return self.__post_json(endpoint, info, "EDR")
+        return self.__post_json(endpoint, info, "EDR", call="Crime")
 
     def fight(self, system_id, info):
         info["uid"] = self.uid()
         EDR_LOG.info(u"Fight report for system {sid} with json:{json}".format(sid=system_id, json=info))
         endpoint = "/v1/fights/{system_id}/".format(system_id=system_id)
-        return self.__post_json(endpoint, info, "EDR")
+        return self.__post_json(endpoint, info, "EDR", call="Fight")
 
     def call_central(self, service, system_id, info):
         info["uid"] = self.uid()
         EDR_LOG.info(u"Central call from system {sid} with json:{json}".format(sid=system_id, json=info))
         endpoint = "/v1/central/{service}/{system_id}/".format(service=service, system_id=system_id)
-        return self.__post_json(endpoint, info, "EDR")
+        return self.__post_json(endpoint, info, "EDR", call="Call_Central")
 
     def fc_jump_scheduled(self, flight_plan):
         if self.fc_jump_psa is None:
@@ -570,7 +624,7 @@ class EDRServer(object):
         flight_plan["psa"] = self.fc_jump_psa
         EDR_LOG.info(u"Fleet Carrier jump with json:{json}".format(json=flight_plan))
         endpoint = "/v1/fcjumps/{uid}/".format(uid=self.uid())
-        return self.__post_json(endpoint, flight_plan, "EDR")
+        return self.__post_json(endpoint, flight_plan, "EDR", call="FC_Jump_Scheduled")
 
     def fc_jump_cancelled(self, status):
         if self.fc_jump_psa is None:
@@ -578,24 +632,24 @@ class EDRServer(object):
         EDR_LOG.info(u"Cancelling Fleet Carrier jump")
         status["psa"] = self.fc_jump_psa
         endpoint = "/v1/fcjumps/{uid}/".format(uid=self.uid())
-        return self.__post_json(endpoint, status, "EDR")
+        return self.__post_json(endpoint, status, "EDR", call="FC_Jump_Cancelled")
 
     def crew_report(self, crew_id, report):
         EDR_LOG.info(u"Multicrew session report: {}".format(report))
         endpoint = "/v1/crew_reports/{}/".format(crew_id)
-        return self.__post_json(endpoint, report, "EDR")
+        return self.__post_json(endpoint, report, "EDR", call="Crew_Report")
 
     def report_fcs(self, system_id, report):
         if self.is_anonymous():
             return False
+            
         EDR_LOG.info(u"Reporting Fleet Carriers in system {}: {}".format(system_id, report))
         report["uid"] = self.uid()
         params = { "auth": self.auth_token() }
         endpoint = "{server}/v1/fc_reports/{system_id}/{uid}/.json".format(server=self.EDR_SERVER, system_id=system_id, uid=self.uid())
-        EDR_LOG.debug(u"Endpoint: {}".format(endpoint))
-        resp = self.__put(endpoint, "EDR", params=params, json=report)
-        EDR_LOG.debug(u"resp= {}".format("None" if resp is None else resp.status_code))
-        return self.__check_response(resp, "EDR", "Put fcs report")
+        
+        result = self.__put(endpoint, "EDR", params=params, json=report, call="Report_fcs")
+        return result is not None
     
     def fc_presence(self, star_system):
         if not self.__preflight("fc_presence", star_system):
@@ -604,58 +658,65 @@ class EDRServer(object):
 
         EDR_LOG.info(u"Querying Fleet Carriers in system {}".format(star_system))
         params = {"orderBy": '"starSystem"', "equalTo": json.dumps(star_system), "limitToFirst": 1, "auth": self.auth_token()}
-        resp = self.__get("{}/v1/fc_presence.json".format(self.EDR_SERVER), "EDR", params)
-        EDR_LOG.debug(u"resp= {}".format("None" if resp is None else resp.status_code))
-        if self.__check_response(resp, "EDR", "FC_Presence"):
-            result = json.loads(resp.content)
-            sid = list(result)[0] if result else None
-            return result[sid] if result else None
-        else:
-            return None
+        result = self.__get("{}/v1/fc_presence.json".format(self.EDR_SERVER), "EDR", params, call="FC_Presence")
+        EDR_LOG.debug(f"result= {result}")
+        
+        if result:
+            sid = list(result)[0]
+            return result[sid]
+        
+        return None
 
     def report_fc_materials(self, fc_id, report):
         if self.is_anonymous():
             return False
+
         EDR_LOG.info(u"Reporting Materials on Fleet Carrier {}: {}".format(fc_id, report))
         report["uid"] = self.uid()
         params = { "auth": self.auth_token() }
         endpoint = "{server}/v1/fc_materials_reports/{fc_id}/{uid}/.json".format(server=self.EDR_SERVER, fc_id=fc_id, uid=self.uid())
-        EDR_LOG.debug(u"Endpoint: {}".format(endpoint))
-        resp = self.__put(endpoint, "EDR", params=params, json=report)
-        EDR_LOG.debug(u"resp= {}".format("None" if resp is None else resp.status_code))
-        return self.__check_response(resp, "EDR", "Put fcs materials report")
+        
+        result = self.__put(endpoint, "EDR", params=params, json=report, call="Report_fc_materials")
+        return result is not None
 
     def report_fc_market(self, fc_id, report):
         if self.is_anonymous():
             return False
+        
         EDR_LOG.info(u"Reporting Market info on Fleet Carrier {}: {}".format(fc_id, report))
         report["uid"] = self.uid()
         params = { "auth": self.auth_token() }
         endpoint = "{server}/v1/fc_market_reports/{fc_id}/{uid}/.json".format(server=self.EDR_SERVER, fc_id=fc_id, uid=self.uid())
-        EDR_LOG.debug(u"Endpoint: {}".format(endpoint))
-        resp = self.__put(endpoint, "EDR", params=params, json=report)
-        EDR_LOG.debug(u"resp= {}".format("None" if resp is None else resp.status_code))
-        return self.__check_response(resp, "EDR", "Put fcs market report")
+        
+        result = self.__put(endpoint, "EDR", params=params, json=report, call="Report_fc_market")
+        return result is not None
     
-    def __get_recent(self, path, timespan_seconds, limitToLast=None):
+    def __get_recent(self, path, timespan_seconds, limitToLast=None, call="Get_recent"):
         now_epoch_js = int(1000 * calendar.timegm(time.gmtime()))
         past_epoch_js = int(now_epoch_js - (1000 * timespan_seconds))
 
-        params = { "orderBy": '"timestamp"', "startAt": past_epoch_js, "endAt": now_epoch_js, "auth": self.auth_token()}
+        params = { 
+            "orderBy": '"timestamp"',
+            "startAt": past_epoch_js,
+            "endAt": now_epoch_js,
+            "auth": self.auth_token()
+        }
+
         if limitToLast:
             params["limitToLast"] = limitToLast
+        
         endpoint = "{server}{path}.json".format(server=self.EDR_SERVER, path=path)
         EDR_LOG.debug(u"Get recent; endpoint: {}".format(endpoint))
-        resp = self.__get(endpoint, "EDR", params)
+        results = self.__get(endpoint, "EDR", params, call=call)
 
-        if not self.__check_response(resp, "EDR", "Get"):
+        if results is None:
             EDR_LOG.error(u"Failed to retrieve recent items. Error code: {}".format(resp.status_code))
             return []
         
-        results = json.loads(resp.content)
         if not results:
             EDR_LOG.info(u"Empty recent items.")
             return []
+        
         # When using Firebase's REST API, the filtered results are returned in an undefined order since JSON interpreters don't enforce any ordering.
         # So, sorting has to be done on the client side
         sorted_results = sorted(results.values(), key=lambda t: t["timestamp"], reverse=True)
@@ -668,7 +729,7 @@ class EDRServer(object):
 
         EDR_LOG.info(u"Recent crimes for system {sid}".format(sid=system_id))
         endpoint = "/v1/crimes/{sid}/".format(sid=system_id)
-        return self.__get_recent(endpoint, timespan_seconds, limitToLast=50)
+        return self.__get_recent(endpoint, timespan_seconds, limitToLast=50, call="Recent_crimes")
 
     def recent_traffic(self, system_id, timespan_seconds):
         if not self.__preflight("recent_traffic", system_id):
@@ -677,7 +738,7 @@ class EDRServer(object):
 
         EDR_LOG.info(u"Recent traffic for system {sid}".format(sid=system_id))
         endpoint = "/v1/traffic/{sid}/".format(sid=system_id)
-        return self.__get_recent(endpoint, timespan_seconds, limitToLast=50)
+        return self.__get_recent(endpoint, timespan_seconds, limitToLast=50, call="Recent_traffic")
 
     def recent_outlaws(self, timespan_seconds):
         if not self.__preflight("recent_outlaws", timespan_seconds):
@@ -686,7 +747,7 @@ class EDRServer(object):
 
         EDR_LOG.info(u"Recently sighted outlaws")
         endpoint = "/v1/outlaws/"
-        return self.__get_recent(endpoint, timespan_seconds, limitToLast=50)
+        return self.__get_recent(endpoint, timespan_seconds, limitToLast=50, call="Recent_outlaws")
 
     def recent_enemies(self, timespan_seconds, power):
         if not self.__preflight("recent_enemies", power):
@@ -695,19 +756,20 @@ class EDRServer(object):
 
         EDR_LOG.info(u"Recently sighted enemies")                
         endpoint = "/v1/powerplay/{}/enemies/".format(self.nodify(power))
-        return self.__get_recent(endpoint, timespan_seconds, limitToLast=50)
+        return self.__get_recent(endpoint, timespan_seconds, limitToLast=50, call="Recent_enemies")
 
     def heartbeat(self):
         EDR_LOG.info(u"Sending heartbeat")                
         endpoint = "{}/heartbeat".format(self.EDR_SERVER_FUNCTIONS)
         params = {"uid": self.uid() }
-        resp = self.__get(endpoint, "EDR", params)
+        data = self.__get(endpoint, "EDR", params, call="Heartbeat")
 
-        if not self.__check_response(resp, "EDR", "Heartbeat"):
-            EDR_LOG.error(u"Heartbeat failed. Error code: {}".format(resp.status_code))
+        if data is None:
+            EDR_LOG.error(u"Heartbeat failed.")
             return None
-        EDR_LOG.info(u"Heartbeat response: {}".format(resp.text))
-        return json.loads(resp.content)
+        
+        EDR_LOG.info(u"Heartbeat response: {}".format(data))
+        return data
     
     def where(self, name, power=None):
         if not self.__preflight("where", name):
@@ -715,22 +777,24 @@ class EDRServer(object):
             raise CommsJammedError("where")
 
         EDR_LOG.info(u"Where query for opponent named '{}'".format(name))
-        params = {"orderBy": '"cname"', "equalTo": json.dumps(name.lower()), "limitToFirst": 1, "auth": self.auth_token() }
         endpoint = "{}/v1/".format(self.EDR_SERVER)
         if power:
             endpoint += "powerplay/{}/enemies.json".format(self.nodify(power))
         else:
             endpoint += "outlaws.json"
-        resp = self.__get(endpoint, "EDR", params)
-
-        if not self.__check_response(resp, "EDR", "Where"):
-            EDR_LOG.error(u"Failed to retrieve location of an oppponent.")
-            return None
+        params = {
+            "orderBy": '"cname"',
+            "equalTo": json.dumps(name.lower()),
+            "limitToFirst": 1,
+            "auth": self.auth_token()
+        }
         
-        sighting = json.loads(resp.content)
+        sighting = self.__get(endpoint, "EDR", params, call="Where")
+
         if sighting:
             sid = list(sighting)[0]
             return sighting[sid]
+        
         return None
 
     def update_cmdrdex(self, cmdr_id, dex_entry):
@@ -767,32 +831,28 @@ class EDRServer(object):
         params = { "auth" : self.auth_token()}
         EDR_LOG.info(u"Dex entry for cmdr {cid} with json:{json}".format(cid=cmdr_id, json=dex_entry))
         endpoint = "{server}{dex}{cid}/.json".format(server=self.EDR_SERVER, dex=dex_path, cid=cmdr_id)
-        EDR_LOG.debug(u"Endpoint: {} with {}".format(endpoint, dex_entry))
-        resp = self.__put(endpoint, "EDR", json=dex_entry, params=params)
-        EDR_LOG.debug(u"resp= {}".format("None" if resp is None else resp.status_code))
-        return self.__check_response(resp, "EDR")
+        
+        result = self.__put(endpoint, "EDR", json=dex_entry, params=params, call="Update_dex")
+        return result is not None
 
     def __remove_dex(self, dex_path, cmdr_id):
-        params = { "auth" : self.auth_token()}
         EDR_LOG.info(u"Removing Dex entry for cmdr {cid}".format(cid=cmdr_id))
+        
         endpoint = "{server}{dex}{cid}.json".format(server=self.EDR_SERVER, dex=dex_path, cid=cmdr_id)
-        EDR_LOG.debug(u"Endpoint: {}".format(endpoint))
-        resp = self.__delete(endpoint, "EDR", params=params)
-        EDR_LOG.debug(u"resp= {}".format("None" if resp is None else resp.status_code))
-        return self.__check_response(resp, "EDR")
+        params = { "auth" : self.auth_token()}
+        
+        return self.__delete(endpoint, "EDR", params=params, call="Remove_dex")
     
     def __dex(self, dex_path, cmdr_id):
         EDR_LOG.debug(u"Dex request for {}".format(cmdr_id))
         params = { "auth" : self.auth_token()}
         endpoint = "{server}{dex}{cid}/.json".format(server=self.EDR_SERVER, dex=dex_path, cid=cmdr_id)
         EDR_LOG.debug(u"Endpoint: {}".format(endpoint))
-        resp = self.__get(endpoint, "EDR", params)
-        EDR_LOG.debug(u"resp= {}".format("None" if resp is None else resp.status_code))
+        
+        data = self.__get(endpoint, "EDR", params, call="Dex")
+        EDR_LOG.debug(u"data= {}".format("None" if data is None else data))
 
-        if self.__check_response(resp, "EDR", "Dex"):
-            return json.loads(resp.content)
-        else:
-            return None
+        return data
 
     def contracts(self):
         if self.is_anonymous():
@@ -802,13 +862,10 @@ class EDRServer(object):
         params = { "auth" : self.auth_token()}
         endpoint = "{server}{con}.json".format(server=self.EDR_SERVER, con=contracts_path)
         EDR_LOG.debug(u"Endpoint: {}".format(endpoint))
-        resp = self.__get(endpoint, "EDR", params)
-        EDR_LOG.debug(u"resp= {}".format("None" if resp is None else resp.status_code))
+        data = self.__get(endpoint, "EDR", params, call="Contracts")
+        EDR_LOG.debug(u"data= {}".format("None" if data is None else data))
 
-        if self.__check_response(resp, "EDR", "Contracts"):
-            return json.loads(resp.content)
-        else:
-            return None
+        return data
     
     def contract_for(self, cmdr_id):
         if self.is_anonymous():
@@ -818,13 +875,10 @@ class EDRServer(object):
         params = { "auth" : self.auth_token()}
         endpoint = "{server}{con}{cid}/.json".format(server=self.EDR_SERVER, con=contracts_path, cid=cmdr_id)
         EDR_LOG.debug(u"Endpoint: {}".format(endpoint))
-        resp = self.__get(endpoint, "EDR", params)
-        EDR_LOG.debug(u"resp= {}".format("None" if resp is None else resp.status_code))
+        data = self.__get(endpoint, "EDR", params, call="Contract_for")
+        EDR_LOG.debug(u"data= {}".format("None" if data is None else data))
 
-        if self.__check_response(resp, "EDR", "Contract_for"):
-            return json.loads(resp.content)
-        else:
-            return None
+        return data
 
     def place_contract(self, cmdr_id, contract_entry):
         if self.is_anonymous() or contract_entry is None:
@@ -843,19 +897,17 @@ class EDRServer(object):
         params = { "auth" : self.auth_token()}
         EDR_LOG.info(u"Contract entry for cmdr {cid} with json:{json}".format(cid=cmdr_id, json=contract_entry))
         endpoint = "{server}{contract}{cid}/.json".format(server=self.EDR_SERVER, contract=contract_path, cid=cmdr_id)
-        EDR_LOG.debug(u"Endpoint: {} with {}".format(endpoint, contract_entry))
-        resp = self.__put(endpoint, "EDR", json=contract_entry, params=params)
-        EDR_LOG.debug(u"resp= {}".format("None" if resp is None else resp.status_code))
-        return self.__check_response(resp, "EDR", "Update_contract")
+        
+        result = self.__put(endpoint, "EDR", json=contract_entry, params=params, call="Update_contract")
+        return result is not None
 
     def __remove_contract(self, contract_path, cmdr_id):
-        params = { "auth" : self.auth_token()}
         EDR_LOG.info(u"Removing contract entry for cmdr {cid}".format(cid=cmdr_id))
+        
         endpoint = "{server}{contract}{cid}.json".format(server=self.EDR_SERVER, contract=contract_path, cid=cmdr_id)
-        EDR_LOG.debug(u"Endpoint: {}".format(endpoint))
-        resp = self.__delete(endpoint, "EDR", params=params)
-        EDR_LOG.debug(u"resp= {}".format("None" if resp is None else resp.status_code))
-        return self.__check_response(resp, "EDR", "Remove_contract")
+        params = { "auth" : self.auth_token()}
+        
+        return self.__delete(endpoint, "EDR", params=params, call="Remove_contract")
 
     def preflight_realtime(self, kind):
         api_name = u"realtime_{}".format(kind.lower())
@@ -866,14 +918,23 @@ class EDRServer(object):
     def __preflight(self, api_name, param):
         headers = {
             "Authorization": "Bearer {}".format(self.auth_token()),
-            "EDR-Version": "v{}".format(self.version)
         }
-        json = { "name": self.player_name, "timestamp": {".sv": "timestamp"}, "param": param, "api": api_name, "mode": self.game_mode, "dlc": self.dlc_name, "group": self.private_group }
-        EDR_LOG.debug(u"Preflight request for {} with {}".format(api_name, json))
+
+        payload = { 
+            "name": self.player_name, 
+            "timestamp": {".sv": "timestamp"}, 
+            "param": param, 
+            "api": api_name, 
+            "mode": self.game_mode, 
+            "dlc": self.dlc_name, 
+            "group": self.private_group 
+        }
+        
+        EDR_LOG.debug(u"Preflight request for {} with {}".format(api_name, payload))
         endpoint = "{server_functions}/edr/v1/preflight/{uid}".format(server_functions=self.EDR_SERVER_FUNCTIONS, uid=self.uid())
-        resp = self.__put(endpoint, "EDR", json=json, headers=headers)
-        EDR_LOG.debug(u"resp= {}".format("None" if resp is None else resp.status_code))
-        return self.__check_response(resp, "EDR", "Preflight {}".format(api_name))
+        
+        result = self.__put(endpoint, "EDR", json=payload, headers=headers, call=f"Preflight_{api_name}")
+        return result is not None
 
 class CommsJammedError(Exception):
     def __init__(self, value):
