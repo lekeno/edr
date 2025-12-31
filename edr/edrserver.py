@@ -4,6 +4,7 @@ import json
 import calendar
 import time
 import requests
+import re
 
 from edrcmdrprofile import EDRCmdrProfile # EDR_INTERNAL
 from RESTFirebase import RESTFirebaseAuth, AuthState # EDR_INTERNAL
@@ -78,34 +79,20 @@ class EDRServer(object):
         if response is None:
             EDR_LOG.warning(u"No response: service={}, call={}, resp={}".format(service, call, response))
             return False
+
+        cache_control = response.headers.get("Cache-Control", "")
+        max_age_match = re.search(r"max-age=(\d+)", cache_control)
+        # Default to 0 (no cache) or 300 (5 mins) if the header is missing
+        maxAge = int(max_age_match.group(1)) if max_age_match else 0
+        etag = response.headers.get("ETag", None)
         
         EDR_LOG.debug(u"Checking response: service={}, call={}, status={}".format(service, call, response.status_code))
-        if response.status_code in [200, 304, 404, 401, 403, 204]:
-            
+        if response.status_code in [200, 204, 304, 404]:
             EDR_LOG.debug(u"Acceptable response => resetting backoff: service={}, call={}, resp={}".format(service, call, response))
             self.backoff[service].reset()
-
-            etag = response.headers.get("ETag", None)
-            cc = response.headers.get("Cache-Control", None)
-            maxAge = None
-            if cc and "max-age" in cc:
-                try:
-                    maxAge = int(cc.split("max-age=")[1].split(",")[0])
-                except Exception as e:
-                    EDR_LOG.error(f"Error processing cache-control header: {e}")
+            return True
             
-            if response.status_code == 200:
-                try:
-                    data = response.json()
-                    self.http_cache.set(response.url, data, max_age=maxAge, etag=etag)
-                except Exception as e:
-                    EDR_LOG.error(f"Failed to parse JKSON for 200 response at {response.url}: {e}")
-                    return False
-                EDR_LOG.debug(u"Cached {} for {}s with etag {}".format(response.url, maxAge, etag))
-            elif response.status_code == 304:
-                self.http_cache.refresh(response.url, max_age=maxAge)
-                EDR_LOG.debug(u"304 Not Modified for {}".format(response.url))
-        elif response.status_code in [429, 500]:
+        if response.status_code in [401, 403, 429] or response.status_code >= 500:
             EDR_LOG.debug(u"Bad response => throttling: service={}, call={}, resp={}".format(service, call, response))
             retry_after = response.headers.get("Retry-After")
             epoch = None
@@ -122,25 +109,22 @@ class EDRServer(object):
             else:
                 self.backoff[service].throttle()
             
-        return response.status_code in [200, 304]
+        return False
 
-    def __process_inara_response(self, resp):
-        if resp is None:
-            EDR_LOG.warning(u"No Inara response: resp={}".format(resp))
+    def __process_inara_response(self, json_resp):
+        if json_resp is None:
+            EDR_LOG.warning(u"No Inara response: resp={}".format(json_resp))
             return None
 
-        EDR_LOG.debug(u"Processing Inara response: resp={}".format(resp))
+        EDR_LOG.debug(u"Processing Inara response: resp={}".format(json_resp))
 
         body = None
-        try:
-            json_resp = json.loads(resp)
-            if not json_resp.get("body", None):
-                EDR_LOG.warning(u"No Inara body: json_resp={}".format(json_resp))
-                return None
-            body = json_resp["body"]
-        except:
-            EDR_LOG.warning(u"Exception during extraction of Inara body: resp={}".format(resp))
+        
+        if not json_resp.get("body", None):
+            EDR_LOG.warning(u"No Inara body: json_resp={}".format(json_resp))
             return None
+        
+        body = json_resp["body"]
         
         if body is None:
             EDR_LOG.warning(u"No Inara body: resp={}".format(resp))
@@ -187,7 +171,7 @@ class EDRServer(object):
             EDR_LOG.debug(u"Cache hit for {}".format(cache_key))
             return cached_data
         
-        etag = self.http_cache.get_etag(endpoint)
+        etag = self.http_cache.get_etag(cache_key)
         if etag:
             prepped.headers.update({"If-None-Match": etag})
             EDR_LOG.debug(u"Conditional GET for {} with ETag {}".format(cache_key, etag))
@@ -201,15 +185,25 @@ class EDRServer(object):
             try:
                 attempts -= 1
                 resp = EDRServer.SESSION.send(prepped)
-                success = self.__check_response(resp, service, call)
-                
-                if resp.status_code == 304:
-                    EDR_LOG.debug(u"ETag Match (304) for {}".format(cache_key))
-                    return self.http_cache.get(cache_key)
+                if self.__check_response(resp, service, call):
 
-                if success:
-                    return resp.json()
+                    if resp.status_code == 304:
+                        EDR_LOG.debug(u"ETag Match (304) for {}".format(cache_key))
+                        return self.http_cache.get(cache_key)
+                    
+                    if resp.status_code == 200:
+                        data = resp.json() if resp.text else {}
+                        
+                        cache_control = resp.headers.get("Cache-Control", "")
+                        max_age_match = re.search(r"max-age=(\d+)", cache_control)
+                        maxAge = int(max_age_match.group(1)) if max_age_match else 0
+                        etag = resp.headers.get("ETag", None)
 
+                        self.http_cache.set(prepped.url, data, max_age_seconds=maxAge, etag=etag)
+                        return data
+                    
+                    return None
+                    
                 return None
             except requests.exceptions.RequestException as e:
                 last_connection_exception = e
@@ -348,14 +342,21 @@ class EDRServer(object):
         now_epoch_js = int(1000 * calendar.timegm(time.gmtime()))
         past_epoch_js = int(now_epoch_js - (1000 * timespan_seconds))
 
-        params = {"orderBy": '"timestamp"', "startAt": past_epoch_js, "endAt": now_epoch_js, "auth": self.auth_token(), "limitToLast": 30}
-        resp = self.__get("{}/v1/systems.json".format(self.EDR_SERVER), "EDR", params)
+        params = {
+            "orderBy": '"timestamp"',
+            "startAt": past_epoch_js,
+            "endAt": now_epoch_js,
+            "auth": self.auth_token(),
+            "limitToLast": 30
+        }
+        
+        sitreps_data = self.__get("{}/v1/systems.json".format(self.EDR_SERVER), "EDR", params, call="Sitreps")
 
-        if not self.__check_response(resp, "EDR", "Sitreps"):
+        if sitreps_data is None:
             EDR_LOG.error(u"Failed to retrieve sitreps.")
             return None
         
-        return json.loads(resp.content)
+        return sitreps_data
 
     def system(self, star_system, may_create, coords=None):
         if not self.__preflight("system_id", star_system):
@@ -490,11 +491,17 @@ class EDRServer(object):
 
         json_cmdr = self.__get(endpoint, "EDR", params=params, call="Get_cmdr")
 
+        if json_cmdr is None:
+            # This was a network error or a throttle. Don't autocreate!
+            EDR_LOG.error(u"Could not check for existing cmdr due to network error.")
+            return None
+
         if not json_cmdr:
             if autocreate and not self.is_anonymous():
                 EDR_LOG.debug(f"Cmdr {cmdr} not found. Autocreating.")
+                params = { "auth": self.auth_token() }
                 payload = {"name": cmdr, "uid" : self.uid(), "requester" : self.player_name}
-                post_resp = self.__post(endpoint, "EDR", json=payload)
+                post_resp = self.__post(endpoint, "EDR", json=payload, params=params, call="Create_cmdr")
                 
                 if post_resp and "name" in post_resp:
                     # In POST, the 'name' key holds the new ID
@@ -505,11 +512,18 @@ class EDRServer(object):
                 EDR_LOG.error(u"Failed to retrieve cmdr key.")
             return None
                 
-        EDR_LOG.debug(u"Existing cmdr:{}".format(json_cmdr))
-        cmdr_profile.cid = list(json_cmdr.keys())[0]
-        cmdr_profile.from_dict(list(json_cmdr.values())[0])
-
-        return cmdr_profile
+        try:
+            cid = next(iter(json_cmdr)) 
+            cmdr_data = json_cmdr[cid]
+            
+            cmdr_profile.cid = cid
+            cmdr_profile.from_dict(cmdr_data)
+            
+            EDR_LOG.debug(u"Existing cmdr found: {}".format(cid))
+            return cmdr_profile
+        except (StopIteration, KeyError, IndexError) as e:
+            EDR_LOG.exception(u"Error parsing existing cmdr result: {}".format(e))
+            return None
 
     def inara_cmdr(self, cmdr):
         if self.player_name is None:
@@ -533,17 +547,17 @@ class EDRServer(object):
         json_resp = self.__get(endpoint, "Inara", headers=headers, call="Inara_cmdr_via_EDR")
         EDR_LOG.debug(f"Inara response: endpoint={endpoint}, resp={json_resp}")
 
-        if not json_resp:
+        if json_resp is None:
             EDR_LOG.error(u"Inara profile failed. Error code: {}".format(json_resp.status_code))
             return False
             
-        processed = self.__process_inara_response(json_resp)
-        if not processed:
+        processed_data = self.__process_inara_response(json_resp)
+        if not processed_data:
             EDR_LOG.error(f"Inara response wasn't processed. Resp: {json_resp}")
             return False
 
         cmdr_profile = EDRCmdrProfile()
-        cmdr_profile.from_inara_api(processed)
+        cmdr_profile.from_inara_api(processed_data)
         return cmdr_profile
 
     def __post_json(self, endpoint, json_payload, service, call="Unknown"):

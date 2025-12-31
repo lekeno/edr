@@ -112,13 +112,22 @@ def pgettext(contextual_message):  # Function to translate a contextual message
 
 def edrgettext(message_maybe_localized):  # Function to get a localized message
     global language
+
+    if isinstance(message_maybe_localized, str):
+        return message_maybe_localized
+    
+    if not isinstance(message_maybe_localized, dict):
+        return str(message_maybe_localized) if message_maybe_localized else u""
+
     try:
         return message_maybe_localized[language]
     except KeyError:
         if "default" in message_maybe_localized:
             return message_maybe_localized["default"]
-        else:
-            return message_maybe_localized
+        elif "en" in message_maybe_localized:
+            return message_maybe_localized["en"]
+        
+        return next(iter(message_maybe_localized.values())) if message_maybe_localized else u""
 
 
 _ = ugettext  # Alias for ugettext

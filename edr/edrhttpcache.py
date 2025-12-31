@@ -31,17 +31,41 @@ class EDRHttpCache(object):
         return wrapped_content.get("etag") if wrapped_content else None
 
     def set(self, key, content, max_age_seconds, etag=None):
+        if max_age_seconds is None:
+            max_age_seconds = 0
+    
         expires = datetime.datetime.now() + datetime.timedelta(seconds=max_age_seconds)
         wrapped_content = { "data": content, "expires": expires, "etag": etag }
+        
         self.cache.set(key, wrapped_content, ttl_seconds=max_age_seconds)
 
     def refresh(self, key, max_age_seconds=None):
         """Updates the expiration and LRU position for a 304 response."""
         wrapped_content = self.cache.peek(key)
         if wrapped_content:
+            if max_age_seconds is None:
+                max_age_seconds = wrapped_content.get('ttl_seconds', 300)
+
             new_expires = datetime.datetime.now() + datetime.timedelta(seconds=max_age_seconds)
             wrapped_content["expires"] = new_expires
-            ttl_seconds = max_age_seconds if max_age_seconds is not None else wrapped_content.get('ttl_seconds', 300)
-            self.cache.set(key, wrapped_content, ttl_seconds=ttl_seconds)
+
+            self.cache.set(key, wrapped_content, ttl_seconds=max_age_seconds)
             return True
         return False
+
+
+    def evict(self, key):
+        """Removes an entry from the cache immediately."""
+        EDR_LOG.debug(u"Evicting {} from HTTP cache".format(key))
+        self.cache.evict(key)
+
+    def evict_prefix(self, prefix):
+        """
+        Removes all entries that start with a specific prefix.
+        Useful for clearing all variants of an endpoint (e.g., different auth tokens).
+        """
+        # This assumes the underlying LRUCache.cache is a dict or similar iterable
+        keys_to_remove = [k for k in self.cache.cache.keys() if k.startswith(prefix)]
+        for k in keys_to_remove:
+            EDR_LOG.debug(u"Prefix-evicting {} from HTTP cache".format(k))
+            self.cache.evict(k)

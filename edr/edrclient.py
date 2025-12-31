@@ -48,7 +48,7 @@ from edrfssinsights import EDRFSSInsights
 from edrcommands import EDRCommands
 import edrroutes
 from edrutils import simplified_body_name, pretty_print_number # EDR_INTERNAL
-from RESTfirebase import AuthState
+from RESTFirebase import AuthState
 
 
 class EDRClient(object):
@@ -449,7 +449,11 @@ class EDRClient(object):
                 
             self.status = _("Pending approval (Offline).")
             return False
-        elif result == AuthState.AUTH_FAILED:
+        elif result == AuthState.EMAIL_NOT_FOUND:
+            # Translators: this is shown on EDMC's status bar when the authentication fails
+            self.status = _("Email not found.")
+            return False
+        elif result == AuthState.INVALID_CREDENTIALS:
             # Translators: this is shown on EDMC's status bar when the authentication fails
             self.status = _("Invalid credentials.")
             return False
@@ -1538,8 +1542,10 @@ class EDRClient(object):
         summary = self.edrsystems.systems_with_active_notams()
         if summary:
             details = []
+            safe_summary = [str(s) for s in summary if s is not None]
+            
             # Translators: this shows a ist of systems {} with active NOtice To Air Men via the overlay
-            details.append(_("Active NOTAMs for: {}").format("; ".join(summary)))
+            details.append(_("Active NOTAMs for: {}").format("; ".join(safe_summary)))
             # Translators: this is the heading for the active NOTAMs overlay
             self.__sitrep(_("NOTAMs"), details)
         else:
@@ -1558,8 +1564,16 @@ class EDRClient(object):
         try:
             details = []
             summary = self.edrsystems.systems_with_recent_activity()
+
+            if not summary:
+                return
+            
             for section in summary:
-                details.append("{}: {}".format(section, "; ".join(summary[section])))
+                systems = summary.get(section)
+                if systems:
+                    safe_systems = [str(s) for s in systems if s is not None]
+                    details.append("{}: {}".format(section, "; ".join(safe_systems)))
+            
             if details:
                 header = _("SITREPS") if self.player.in_open() else _("SITREPS (Open)")
                 self.__sitrep(header, details)

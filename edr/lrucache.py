@@ -32,13 +32,12 @@ class LRUCache(object):
         self.__dict__.update(state)
     
     def is_stale(self, key):
-        if not self.has_key(key):
+        if key not in self.cache:
             return True
         
         entry = self.cache[key]
-        entry_ttl = entry.get("ttl", self.default_max_age)
-
-        return (datetime.datetime.now() - entry["datetime"]) > entry_ttl
+        # We can trust that 'ttl' exists because of set() and __setstate__
+        return (datetime.datetime.now() - entry["datetime"]) > entry["ttl"]
 
     def is_older_than(self, key, age):
         if not self.has_key(key):
@@ -83,29 +82,17 @@ class LRUCache(object):
         if self.capacity <= 0:
             return None
 
-        if not self.has_key(key):
+        entry = self.cache.get(key)
+        if not entry:
             return None
 
-        try:
-            entry = self.cache[key]
-            if not self.is_stale(key):
-                self.cache[key] = self.cache.pop(key)
-                return entry["content"]
-            else:
-                entry_ttl = entry.get("ttl", self.default_max_age)
-                EDR_LOG.debug(u"Stale entry for {key}: {now} - {dt} = {diff} > {mxa}, {content}".format(
-                    key=key, 
-                    now=datetime.datetime.now(), 
-                    dt=entry["datetime"], 
-                    diff=(datetime.datetime.now() - entry["datetime"]), 
-                    mxa=entry_ttl,
-                    content=entry["content"]
-                ))
-                self.cache.pop(key)
-        except KeyError:
-            pass
-        
-        return None
+        if self.is_stale(key):
+            EDR_LOG.debug(f"Stale entry for {key}")
+            self.cache.pop(key)
+            return None
+
+        self.cache[key] = self.cache.pop(key)
+        return entry["content"]
 
     def set(self, key, value, ttl_seconds=None):
         if self.capacity <= 0:
@@ -165,11 +152,15 @@ class LRUCache(object):
         Persists the current cache instance to the specified file path.
         """
         try:
+            cache_dir = os.path.dirname(file_path)
+            if cache_dir and not os.path.exists(cache_dir):
+                EDR_LOG.debug(f"Creating missing cache directory: {cache_dir}")
+                os.makedirs(cache_dir)
+
             with open(file_path, 'wb') as handle:
                 pickle.dump(self, handle, protocol=pickle.HIGHEST_PROTOCOL)
         except Exception as e:
             EDR_LOG.exception(f"Failed to save cache to {file_path}: {e}")
-            pass
 
     @classmethod
     def load(cls, file_path, max_size, max_age_seconds):
@@ -177,6 +168,10 @@ class LRUCache(object):
         Attempts to load a serialized LRUCache instance from the given file_path.
         Falls back to creating a new instance on failure.
         """
+        if not os.path.exists(file_path):
+            EDR_LOG.debug(f"No cache file found at {file_path}. Starting fresh.")
+            return cls(max_size, max_age_seconds)
+
         try:
             with open(file_path, 'rb') as handle:
                 # The pickle.load process automatically calls __setstate__ 
@@ -190,13 +185,17 @@ class LRUCache(object):
 
                 return cache_instance
                 
-        except (FileNotFoundError, EOFError, pickle.UnpicklingError, Exception) as e:
-            EDR_LOG.exception(f"Cache load failed for {file_path}: {e}")
+        except (FileNotFoundError):
+            EDR_LOG.debug(f"Cache file {file_path} was empty or missing. Starting fresh.")
+            return cls(max_size, max_age_seconds)
+        except (pickle.UnpicklingError, EOFError, Exception) as e:
+            EDR_LOG.error(f"Cache load failed for {file_path}: {e}. Starting fresh.")
             
-            # Optionally: Clean up corrupt file
             if os.path.exists(file_path):
-                EDR_LOG.warning(f"Deleting corrupt cache file: {file_path}")
-                os.remove(file_path)
+                try:
+                    EDR_LOG.warning(u"Deleting corrupt cache file: {}".format(file_path))
+                    os.remove(file_path)
+                except Exception as del_e:
+                    EDR_LOG.error(u"Failed to delete corrupt file {}: {}".format(file_path, del_e))
             
-            # Fallback: Return a new, initialized instance
             return cls(max_size, max_age_seconds)

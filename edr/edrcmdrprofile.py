@@ -201,8 +201,8 @@ class EDRCmdrProfile(object):
         self.patreon = None
         self.dex_profile = None
         self.sqdrdex_profile = None
-        self.avatar_url = json_cmdr["inaraAvatar"]
-        self.url = json_cmdr["inaraURL"]
+        self.avatar_url = json_cmdr.get("inaraAvatar", None)
+        self.url = json_cmdr.get("inaraURL", None)
 
     def from_dict(self, json_cmdr):
         self.name = json_cmdr.get("name", "")
