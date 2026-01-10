@@ -79,12 +79,6 @@ class EDRServer(object):
         if response is None:
             EDR_LOG.warning(u"No response: service={}, call={}, resp={}".format(service, call, response))
             return False
-
-        cache_control = response.headers.get("Cache-Control", "")
-        max_age_match = re.search(r"max-age=(\d+)", cache_control)
-        # Default to 0 (no cache) or 300 (5 mins) if the header is missing
-        maxAge = int(max_age_match.group(1)) if max_age_match else 0
-        etag = response.headers.get("ETag", None)
         
         EDR_LOG.debug(u"Checking response: service={}, call={}, status={}".format(service, call, response.status_code))
         if response.status_code in [200, 204, 304, 404]:
@@ -125,36 +119,41 @@ class EDRServer(object):
             return None
         
         body = json_resp["body"]
-        
-        if body is None:
-            EDR_LOG.warning(u"No Inara body: resp={}".format(resp))
+
+        if not isinstance(body, dict):
+            EDR_LOG.warning(u"Inara body is not a dictionary (likely an error code): body={}".format(body))
+            if body == 401 or body == 403:
+                self.backoff["Inara"].throttle()
             return None
         
         EDR_LOG.debug(u"Inara body={}".format(body))
         try:
-            if body["header"]["eventStatus"] == 400:
-                EDR_LOG.info(u"Too many requests for Inara.")
+            header = body.get("header", {})
+            if header.get("eventStatus") == 400:
+                EDR_LOG.info(f"Too many requests for Inara.")
                 self.backoff["Inara"].throttle()
                 return None
-            if body["events"][0]["eventStatus"] == 204:
-                EDR_LOG.info(u"cmdr was not found via the Inara API: content={}.".format(resp))
+
+            events = body.get("events", [])
+            if not events:
+                EDR_LOG.warning(u"No Inara events: body={}".format(body))
+                return None
+            
+            event_status = events[0].get("eventStatus")
+            if event_status == 204:
+                EDR_LOG.info(f"cmdr was not found via the Inara API: content={body}")
                 self.backoff["Inara"].reset()
                 return None
-            if body["events"][0]["eventStatus"] != 200:
-                EDR_LOG.error(u"Error from Inara API. content={}".format(resp))
+            if event_status != 200:
+                EDR_LOG.error(f"Error from Inara API. Status: {event_status}; content={body}")
                 self.backoff["Inara"].throttle()
                 return None
-        except:
-            EDR_LOG.exception(u"Malformed response from Inara API? content={resp}")
-            self.backoff["Inara"].throttle()
-            return None
 
-        try:
-            data = body["events"][0]["eventData"]
+            data = events[0].get("eventData")
             self.backoff["Inara"].reset()
             return data
-        except:
-            EDR_LOG.exception(f"Malformed cmdr profile response from Inara API? content={resp}")
+        except Exception as e:
+            EDR_LOG.exception(f"Unexpected error parsing Inara response: {e}")
             self.backoff["Inara"].throttle()
         return None
 
@@ -176,38 +175,43 @@ class EDRServer(object):
             prepped.headers.update({"If-None-Match": etag})
             EDR_LOG.debug(u"Conditional GET for {} with ETag {}".format(cache_key, etag))
 
-        if self.backoff[service].throttled():
-            EDR_LOG.debug("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff[service].backoff_until)))
-            return None
-        
         last_connection_exception = None
-        while attempts:
+        while attempts > 0:
+            attempts -= 1
+            
+            if self.backoff[service].throttled():
+                EDR_LOG.debug("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff[service].backoff_until)))
+                return None
+            
             try:
-                attempts -= 1
                 resp = EDRServer.SESSION.send(prepped)
                 if self.__check_response(resp, service, call):
 
                     if resp.status_code == 304:
                         EDR_LOG.debug(u"ETag Match (304) for {}".format(cache_key))
+                        self.http_cache.refresh(cache_key)
                         return self.http_cache.get(cache_key)
                     
+                    data = {}
                     if resp.status_code == 200:
                         data = resp.json() if resp.text else {}
-                        
-                        cache_control = resp.headers.get("Cache-Control", "")
-                        max_age_match = re.search(r"max-age=(\d+)", cache_control)
-                        maxAge = int(max_age_match.group(1)) if max_age_match else 0
-                        etag = resp.headers.get("ETag", None)
 
-                        self.http_cache.set(prepped.url, data, max_age_seconds=maxAge, etag=etag)
-                        return data
+                        if data is None:
+                            data = {}
+
+                    cache_control = resp.headers.get("Cache-Control", "")
+                    max_age_match = re.search(r"max-age=(\d+)", cache_control)
+                    maxAge = int(max_age_match.group(1)) if max_age_match else 0
+                    etag = resp.headers.get("ETag", None)
                     
-                    return None
-                    
-                return None
+                    self.http_cache.set(cache_key, data, max_age_seconds=maxAge, etag=etag)
+                    return data
+                
+                EDR_LOG.warning(f"Bad response for {call}. Retries left: {attempts}")
             except requests.exceptions.RequestException as e:
                 last_connection_exception = e
                 EDR_LOG.warning(u"ConnectionException {} for GET EDR {}: attempts={}".format(e, service, attempts))
+                time.sleep(1)
         
         if last_connection_exception:
             raise last_connection_exception
@@ -220,14 +224,15 @@ class EDRServer(object):
         req = requests.Request('PUT', endpoint, params=params, json=json, headers=headers)
         prepped = self.SESSION.prepare_request(req)
 
-        if self.backoff[service].throttled():
-            EDR_LOG.debug("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff[service].backoff_until)))
-            return None
-
         last_connection_exception = None
-        while attempts:
+        while attempts > 0:
+            attempts -= 1
+
+            if self.backoff[service].throttled():
+                EDR_LOG.debug("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff[service].backoff_until)))
+                return None
+
             try:
-                attempts -= 1
                 resp = EDRServer.SESSION.send(prepped)
 
                 if self.__check_response(resp, service, call):
@@ -237,10 +242,11 @@ class EDRServer(object):
                     except ValueError:
                         return {}
                     
-                return None
+                EDR_LOG.warning(f"Bad response for PUT {call}. Retries left: {attempts}")
             except requests.exceptions.RequestException as e:
                 last_connection_exception = e
                 EDR_LOG.warning(u"ConnectionException {} for PUT EDR {}: attempts={}".format(e, service, attempts))
+                time.sleep(1)
         
         if last_connection_exception:
             raise last_connection_exception
@@ -253,24 +259,26 @@ class EDRServer(object):
         req = requests.Request('DELETE', endpoint, params=params, headers=headers)
         prepped = self.SESSION.prepare_request(req)
 
-        if self.backoff[service].throttled():
-            EDR_LOG.debug("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff[service].backoff_until)))
-            return None
-
         last_connection_exception = None
-        while attempts:
+        while attempts > 0:
+            attempts -= 1
+
+            if self.backoff[service].throttled():
+                EDR_LOG.debug("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff[service].backoff_until)))
+                return None
+
             try:
-                attempts -= 1
                 resp = EDRServer.SESSION.send(prepped)
                 
                 if self.__check_response(resp, service, call):
                     self.http_cache.evict(prepped.url)
                     return True
                 
-                return False
+                EDR_LOG.warning(f"Bad response for DELETE {call}. Retries left: {attempts}")
             except requests.exceptions.RequestException as e:
                 last_connection_exception = e
                 EDR_LOG.warning(u"ConnectionException {} for DELETE EDR {}: attempts={}".format(e, service, attempts))
+                time.sleep(1)
         
         if last_connection_exception:
             raise last_connection_exception
@@ -283,14 +291,15 @@ class EDRServer(object):
         req = requests.Request('POST', endpoint, params=params, json=json, headers=headers)
         prepped = self.SESSION.prepare_request(req)
 
-        if self.backoff[service].throttled():
-            EDR_LOG.debug("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff[service].backoff_until)))
-            return None
-        
         last_connection_exception = None
-        while attempts:
+        while attempts > 0:
+            attempts -= 1
+
+            if self.backoff[service].throttled():
+                EDR_LOG.debug("Exponential backoff active for {} API calls: attempts={}, until={}".format(service, self.backoff[service].attempts, EDTime.t_plus_py(self.backoff[service].backoff_until)))
+                return None
+            
             try:
-                attempts -= 1
                 resp = EDRServer.SESSION.send(prepped)
                 
                 if self.__check_response(resp, service, call):
@@ -300,7 +309,7 @@ class EDRServer(object):
                     except ValueError:
                         return {}
                 
-                return None
+                EDR_LOG.warning(f"Bad response for POST {call}. Retries left: {attempts}")
             except requests.exceptions.RequestException as e:
                 last_connection_exception = e
                 EDR_LOG.warning(u"ConnectionException {} for POST EDR {}: attempts={}".format(e, service, attempts))
@@ -314,6 +323,10 @@ class EDRServer(object):
         
         if data is None:
             EDR_LOG.error(u"Failed to check for version update.")
+            return None
+
+        if not data:
+            EDR_LOG.error(u"Version information is missing on the server.")
             return None
 
         return data
@@ -367,9 +380,13 @@ class EDRServer(object):
         params = {"orderBy": '"cname"', "equalTo": json.dumps(star_system.lower()), "limitToFirst": 1, "auth": self.auth_token()}
         the_system = self.__get("{}/v1/systems.json".format(self.EDR_SERVER), "EDR", params, call="System")
 
+        if the_system is None:
+            EDR_LOG.error(f"Network error checking for system {star_system}.")
+            return None
+
         if not the_system:
             if not may_create:
-                EDR_LOG.error(u"Failed to retrieve star system.")
+                EDR_LOG.error(f"Failed to retrieve star system {star_system}.")
                 return None
 
             EDR_LOG.debug(f"Creating system {star_system} in EDR.")
@@ -431,9 +448,13 @@ class EDRServer(object):
         }
         the_fc = self.__get("{}/v1/fcs.json".format(self.EDR_SERVER), "EDR", params, call="FC")
 
+        if the_fc is None:
+            EDR_LOG.error(f"Network error checking for FC {callsign}.")
+            return None
+
         if not the_fc:
             if not may_create:
-                EDR_LOG.error(u"Failed to retrieve FC.")
+                EDR_LOG.error(f"Failed to retrieve FC {callsign}.")
                 return None
         
             EDR_LOG.debug(f"FC {callsign} is not recorded in EDR. Creating it.")
@@ -473,7 +494,12 @@ class EDRServer(object):
         }
 
         result = self.__put(endpoint, "EDR", params=params, json=payload, call="Put_pledge")
-        return result is not None
+        
+        if result is None:
+            EDR_LOG.error(f"Failed to update pledge info for {power} due to network error.")
+            return False
+        
+        return True
     
     def cmdr(self, cmdr, autocreate=True):
         if not self.__preflight("cmdr", cmdr):
@@ -509,7 +535,10 @@ class EDRServer(object):
                     cmdr_profile.name = cmdr
                     return cmdr_profile
                 
-                EDR_LOG.error(u"Failed to retrieve cmdr key.")
+                EDR_LOG.error(u"Cmdr did not exist and autocreation failed.")
+                return None
+
+            EDR_LOG.debug(u"Cmdr {} not found in EDR database.".format(cmdr))
             return None
                 
         try:
@@ -548,12 +577,12 @@ class EDRServer(object):
         EDR_LOG.debug(f"Inara response: endpoint={endpoint}, resp={json_resp}")
 
         if json_resp is None:
-            EDR_LOG.error(u"Inara profile failed. Error code: {}".format(json_resp.status_code))
+            EDR_LOG.error(u"Inara profile failed (network error or throttled).")
             return False
             
         processed_data = self.__process_inara_response(json_resp)
         if not processed_data:
-            EDR_LOG.error(f"Inara response wasn't processed. Resp: {json_resp}")
+            EDR_LOG.debuf(f"No profile found in Inara response. Resp: {json_resp}")
             return False
 
         cmdr_profile = EDRCmdrProfile()
@@ -724,11 +753,11 @@ class EDRServer(object):
         results = self.__get(endpoint, "EDR", params, call=call)
 
         if results is None:
-            EDR_LOG.error(u"Failed to retrieve recent items. Error code: {}".format(resp.status_code))
+            EDR_LOG.error(u"Failed to retrieve recent items due to network error.")
             return []
         
         if not results:
-            EDR_LOG.info(u"Empty recent items.")
+            EDR_LOG.info(f"No recent items found for {call}.")
             return []
         
         # When using Firebase's REST API, the filtered results are returned in an undefined order since JSON interpreters don't enforce any ordering.
@@ -804,6 +833,10 @@ class EDRServer(object):
         }
         
         sighting = self.__get(endpoint, "EDR", params, call="Where")
+
+        if sighting is None:
+            EDR_LOG.error(f"Network error or throttled during 'where' query for {name}.")
+            return None
 
         if sighting:
             sid = list(sighting)[0]
