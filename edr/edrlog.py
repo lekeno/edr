@@ -3,7 +3,6 @@ import logging
 import sys
 import os
 from config import appname
-from edrconfig import EDR_CONFIG # EDR_INTERNAL
 
 if sys.version_info.major == 3:
     sys.stdout.reconfigure(encoding="utf-8")
@@ -13,6 +12,7 @@ class EDRLog(object):
     PLUGIN_NAME = os.path.basename(os.path.dirname(__file__))
 
     def __init__(self):
+        from edrconfig import EDR_CONFIG
         config = EDR_CONFIG
         self.logger = logging.getLogger(f'{appname}.{self.PLUGIN_NAME}')
         level_name = config.logging_level()
