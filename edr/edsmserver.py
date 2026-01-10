@@ -1,6 +1,7 @@
 
-import json
 import requests
+import re
+import time
 
 from edrconfig import EDR_CONFIG # EDR_INTERNAL
 from edrlog import EDR_LOG # EDR_INTERNAL
@@ -110,53 +111,66 @@ class EDSMServer(object):
 
 
     def __get(self, endpoint, params, attempts=3):
-        if self.backoff.throttled():
-            return None
-
         req = requests.Request('GET', endpoint, params=params)
         prepped = self.SESSION.prepare_request(req)
-        cached = self.http_cache.get(prepped.url)
+        cache_key = prepped.url
+        
+        cached = self.http_cache.get(cache_key)
         if cached is not None:
-            EDR_LOG.debug(u"Cache hit for {}".format(prepped.url))
+            EDR_LOG.debug(u"Cache hit for {}".format(cache_key))
             return cached
 
-        while attempts:
+        last_connection_exception = None
+        while attempts > 0:
+            attempts -= 1
+
+            if self.backoff.throttled():
+                EDR_LOG.debug(u"EDSM backoff active. Aborting.")
+                return None
+
             try:
-                attempts -= 1
-                resp = EDSMServer.SESSION.get(endpoint, params=params)
-                if resp.status_code != requests.codes.ok:
-                    if resp.status_code == 429 or 500 <= resp.status_code < 600:
-                        retry_after = resp.headers.get("Retry-After")
-                        epoch = None
-                        if retry_after:
-                            try:
-                                dt = EDTime()
-                                dt.from_http_header(retry_after)
-                                epoch = dt.as_py_epoch()
-                            except:
-                                pass
-                        
-                        if epoch:
-                            self.backoff.until(epoch)
-                        else:
-                            self.backoff.throttle()
-                        
-                    EDR_LOG.error(u"Failed to get {} from EDSM: {}.".format(params, resp.status_code))
-                    return None
+                resp = EDSMServer.SESSION.get(endpoint, params=params, timeout=5)
                 
-                self.backoff.reset()
-                if "Cache-Control" in resp.headers:
-                    cc = resp.headers["Cache-Control"]
-                    if "max-age" in cc:
+                if resp.status_code == requests.codes.ok:
+                    self.backoff.reset()
+                    data = resp.json()
+                    
+                    cache_control = resp.headers.get("Cache-Control", "")
+                    max_age_match = re.search(r"max-age=(\d+)", cache_control)
+                    if max_age_match:
+                        max_age = int(max_age_match.group(1))
+                        self.http_cache.set(cache_key, data, max_age)
+                        EDR_LOG.debug(u"Cached {} for {}s".format(cache_key, max_age))
+                    
+                    return data
+
+                if resp.status_code == 429 or 500 <= resp.status_code < 600:
+                    retry_after = resp.headers.get("Retry-After")
+                    epoch = None
+                    if retry_after:
                         try:
-                            max_age = int(cc.split("max-age=")[1].split(",")[0])
-                            self.http_cache.set(prepped.url, json.loads(resp.content), max_age)
-                            EDR_LOG.debug(u"Cached {} for {}s".format(prepped.url, max_age))
+                            dt = EDTime()
+                            dt.from_http_header(retry_after)
+                            epoch = dt.as_py_epoch()
                         except:
                             pass
+                    
+                    if epoch:
+                        self.backoff.until(epoch)
+                    else:
+                        self.backoff.throttle()
+                
+                EDR_LOG.error(u"Failed to get from EDSM: status={}. Attempts left: {}".format(resp.status_code, attempts))
+                
+                if resp.status_code == 404:
+                    return None
 
-                return json.loads(resp.content)
             except requests.exceptions.RequestException as e:
                 last_connection_exception = e
                 EDR_LOG.warning(u"ConnectionException {} for GET EDSM: attempts={}".format(e, attempts))
-        raise last_connection_exception 
+                time.sleep(1) # Grace period before retry
+
+        if last_connection_exception:
+            raise last_connection_exception
+        
+        return None
