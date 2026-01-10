@@ -308,13 +308,9 @@ def handle_movement_events(ed_player, entry):
 def handle_change_events(ed_player, entry):
     outcome = {"updated": False, "reason": None}
     if entry["event"] in ["Location"]:
-        if entry["Docked"]:
-            place = entry["StationName"]
-            outcome["updated"] |= ed_player.update_place_if_obsolete(place)
-            EDR_LOG.info(u"Place changed: {} (location event)".format(place))
-            EDR_CLIENT.docked_at(entry)
         body = entry.get("Body", None)
         outcome["updated"] |= ed_player.update_body_if_obsolete(body)
+        outcome["updated"] |= ed_player.update_place_if_obsolete(entry["Body"])
         EDR_LOG.info(u"Body changed: {} (location event)".format(body))
         ed_player.to_normal_space()
         ed_player.wanted = entry.get("Wanted", False)
@@ -323,6 +319,12 @@ def handle_change_events(ed_player, entry):
         ed_player.location.allegiance = entry.get("SystemAllegiance", None)
         if "StarSystem" in entry:
             EDR_CLIENT.update_star_system_if_obsolete(entry["StarSystem"], entry.get("SystemAddress", None))
+        
+        if entry["Docked"]:
+            place = entry["StationName"]
+            outcome["updated"] |= ed_player.update_place_if_obsolete(place)
+            EDR_LOG.info(u"Place changed: {} (location event)".format(place))
+            EDR_CLIENT.docked_at(entry)
         EDR_CLIENT.process_location_event(entry)
         outcome["reason"] = "Location event"
 
@@ -474,8 +476,10 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
         return
 
     if entry["event"] in ["Loadout"]:
+        EDR_LOG.debug(f"Loadout event {entry}")
         # Sometimes it's not a ship but the spacesuit, maybe the srv too :/
-        if ed_player.mothership.id == entry.get("ShipID", None):
+        if ed_player.mothership.id == entry.get("ShipID", -1):
+            EDR_LOG.debug(f"updating current vehicle {ed_player.mothership.type}")
             ed_player.mothership.update_from_loadout(entry)
             ed_player.mothership.update_cargo()
             if ed_player.mothership.could_use_limpets() and ed_player.is_docked:
@@ -484,8 +488,10 @@ def handle_lifecycle_events(ed_player, entry, state, from_genesis=False):
                 EDR_CLIENT.notify_with_details(_(U"Restock reminder"), [_(u"Don't forget to restock on limpets before heading out."), _(u"Limpets: {}/{}").format(limpets, capacity)])
             global LAST_KNOWN_SHIP_NAME
             LAST_KNOWN_SHIP_NAME = ed_player.mothership.name
+            EDR_LOG.debug(f"new current vehicle {ed_player.mothership.name}")
         else:
-            ed_player.update_vehicle_if_obsolete(EDVehicleFactory.from_load_game_event(entry), piloted=True)
+            updated = ed_player.update_vehicle_if_obsolete(EDVehicleFactory.from_load_game_event(entry), piloted=True)
+            EDR_LOG.debug(f"udpate current vehicle if obsolete: {updated}, {ed_player.mothership.type}")
         return
 
     if entry["event"] in ["SuitLoadout", "SwitchSuitLoadout"]:
