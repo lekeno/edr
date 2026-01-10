@@ -121,10 +121,16 @@ class EDRCmdrs(object):
 
     def __edr_cmdr(self, cmdr_name, autocreate):
         key = cmdr_name.lower()
+        registered = self.cmdrs_cache.has_key(key)
         profile = self.cmdrs_cache.peek(key)
-        if profile and not self.cmdrs_cache.is_stale(key):
-            EDR_LOG.debug(u"Cmdr {cmdr} is in the EDR cache (FRESH)".format(cmdr=cmdr_name))
-            return profile
+        stale = self.cmdrs_cache.is_stale(key)
+        if registered and not stale:
+            if profile:
+                EDR_LOG.debug(f"Cmdr {cmdr_name} is in the EDR cache (FRESH)")
+                return profile
+            else:
+                EDR_LOG.debug(f"Cmdr {cmdr_name} is unknown to EDR (FRESH dummy entry)")
+                return None
 
         try:
             updated_profile = self.server.cmdr(cmdr_name, autocreate)
@@ -136,7 +142,7 @@ class EDRCmdrs(object):
             updated_profile = None
 
         if not updated_profile:
-            if profile:
+            if registered:
                 self.cmdrs_cache.refresh(key)
                 EDR_LOG.debug(u"Server failed. Refreshing old profile")
                 return profile
@@ -190,25 +196,24 @@ class EDRCmdrs(object):
 
     def __inara_cmdr(self, cmdr_name, check_inara_server):
         key = cmdr_name.lower()
+        registered = self.inara_cache.has_key(key)
         profile = self.inara_cache.peek(key)
         stale = self.inara_cache.is_stale(key)
-        if profile and not stale:
-            EDR_LOG.debug(u"Cmdr {cmdr} is in the Inara cache (FRESH)".format(cmdr=cmdr_name))
-            return profile
+        if registered and not stale:
+            if profile:
+                EDR_LOG.debug(f"Cmdr {cmdr_name} is in the Inara cache (FRESH)")
+                return profile
+            else:
+                EDR_LOG.debug(f"Cmdr {cmdr_name} is unknown to Inara (FRESH dummy entry)")
+                return None
 
         if not check_inara_server:
-            EDR_LOG.debug(u"Cmdr {cmdr} is not in the Inara cache ({cached}) or is stale ({staleness}).".format(
-                cmdr=cmdr_name,
-                cached=profile is not None,
-                staleness=stale))
+            EDR_LOG.debug(f"Cmdr {cmdr_name} check vs. Inara cache: cached={registered}; stale={stale}.")
             return None
 
         updated_profile = None
         
-        EDR_LOG.info(u"Stale ({stale}) or not cached ({cached}) in Inara cache. Inara API call for {cmdr}.".format(
-                stale=stale,
-                cached=profile is not None,
-                cmdr=cmdr_name))
+        EDR_LOG.info(f"Inara API call for {cmdr_name}. Inara cache failed: stale={stale}; cached={registered}.")
         try:
             updated_profile = self.server.inara_cmdr(cmdr_name)
         except CommsJammedError:
@@ -219,7 +224,7 @@ class EDRCmdrs(object):
             updated_profile = None
 
         if not updated_profile:
-            if profile:
+            if registered:
                 self.inara_cache.refresh(key)
                 EDR_LOG.debug(u"Inara server failed. Refreshing old profile")
                 return profile
