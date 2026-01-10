@@ -1,4 +1,3 @@
-
 class EDROpsecConfig(object):
     def __init__(self, user_config):
         self.opsec_enabled = user_config.getboolean('opsec', 'enabled') if user_config.has_option('opsec', 'enabled') else True
@@ -23,22 +22,29 @@ class EDROpsecConfig(object):
         if cmdr_profile.name == player.name:
             return False
 
+        from edrlog import EDR_LOG # EDR_INTERNAL
         if self.__is_never_report_cmdr(cmdr_profile.name):
+            EDR_LOG.debug(f"{cmdr_profile.name} is in never_report_cmdrs (OPSEC).")
             return True
 
         if self.__is_never_report_power(cmdr_profile.powerplay):
+            EDR_LOG.debug(f"{cmdr_profile.name} is in never_report_powers (OPSEC).")
             return True
 
         if self.power and cmdr_profile.powerplay and player.power and cmdr_profile.powerplay == player.power:
+            EDR_LOG.debug(f"{cmdr_profile.name} is in the same power (OPSEC).")
             return True
 
         if self.squadron and cmdr_profile.squadron_id and player.squadron and cmdr_profile.squadron_id == player.squadron.inara_id:
+            EDR_LOG.debug(f"{cmdr_profile.name} is in the same squadron (OPSEC).")
             return True
 
         if self.wing and player.is_wingmate(cmdr_profile.name):
+            EDR_LOG.debug(f"{cmdr_profile.name} is in the same wing (OPSEC).")
             return True
 
         if self.crew and player.is_crewmate(cmdr_profile.name):
+            EDR_LOG.debug(f"{cmdr_profile.name} is in the same crew (OPSEC).")
             return True
 
         return False
