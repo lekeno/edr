@@ -83,7 +83,7 @@ class EDRDiscordEmbed(object):
             "text": "via ED Recon",
             "icon_url": "https://lekeno.github.io/favicon-16x16.png"
         }
-        self.timestamp = datetime.utcnow().isoformat()
+        self.timestamp = datetime.now(timezone.utc).isoformat()
     
     def json(self):
         return {
@@ -148,15 +148,13 @@ class EDRDiscordWebhook(object):
         else:
             return self.__post(payload_json)
 
-    def __post(self, payload_json, files=None, attempts=3):
-        while attempts:
-            try:
-                attempts -= 1
-                resp = EDRDiscordWebhook.SESSION.post(self.webhook_url, json=payload_json, files=files)
-                return self.__check_response(resp)
-            except requests.exceptions.RequestException as e:
-                EDR_LOG.warning(u"ConnectionException {} for POST Discord Webhook: attempts={}".format(e, attempts))
-                last_connection_exception = e
+    def __post(self, payload_json, files=None):
+        try:
+            resp = EDRDiscordWebhook.SESSION.post(self.webhook_url, json=payload_json, files=files)
+            return self.__check_response(resp)
+        except requests.exceptions.RequestException as e:
+            EDR_LOG.warning(f"ConnectionException {e} for POST Discord Webhook")
+            last_connection_exception = e
         raise last_connection_exception
     
     def __check_response(self, response):
