@@ -86,11 +86,8 @@ class RESTFirebaseAuth(object):
                     EDR_LOG.warning("Login successful but account is pending approval.")
                     return AuthState.PENDING_APPROVAL
                 elif error_message == "INVALID_PASSWORD":
-                    EDR_LOG.error("Authentication failed (invalid password).")
+                    EDR_LOG.error("Authentication failed (invalid credentials).")
                     return AuthState.INVALID_CREDENTIALS
-                elif error_message == "EMAIL_NOT_FOUND":
-                    EDR_LOG.error("Authentication failed (email not found).")
-                    return AuthState.EMAIL_NOT_FOUND
                 else:
                     EDR_LOG.error(f"Authentication failed: {error_message}")
                     return AuthState.UNKNOWN_ERROR
