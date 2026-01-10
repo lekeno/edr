@@ -688,6 +688,7 @@ class EDPilot(object):
         return self.squadron is None
 
     def has_partial_status(self):
+        EDR_LOG.debug(f"status: {self.mothership} {self.location.star_system} {self.location.place}")
         return self.mothership is None or self.location.star_system is None or self.location.place is None
 
     def update_suit_if_obsolete(self, entry):
