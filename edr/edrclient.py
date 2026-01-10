@@ -449,10 +449,6 @@ class EDRClient(object):
                 
             self.status = _("Pending approval (Offline).")
             return False
-        elif result == AuthState.EMAIL_NOT_FOUND:
-            # Translators: this is shown on EDMC's status bar when the authentication fails
-            self.status = _("Email not found.")
-            return False
         elif result == AuthState.INVALID_CREDENTIALS:
             # Translators: this is shown on EDMC's status bar when the authentication fails
             self.status = _("Invalid credentials.")
@@ -460,7 +456,7 @@ class EDRClient(object):
         else:
             # Translators: this is shown on EDMC's status bar when the authentication fails
             self.status = _("not authenticated.")
-            EDR_LOG.error(f"Auth failed: {result}")
+            EDR_LOG.error(f"Auth failed, other errors.")
             return False
 
     def is_logged_in(self):
