@@ -582,7 +582,7 @@ class EDRServer(object):
             
         processed_data = self.__process_inara_response(json_resp)
         if not processed_data:
-            EDR_LOG.debuf(f"No profile found in Inara response. Resp: {json_resp}")
+            EDR_LOG.debug(f"No profile found in Inara response. Resp: {json_resp}")
             return False
 
         cmdr_profile = EDRCmdrProfile()
