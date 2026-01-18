@@ -23,7 +23,8 @@ class EDRServer(object):
         return name.lower().replace(" ", "_")
 
     def __init__(self):
-        self.REST_firebase = RESTFirebaseAuth()
+        self.version = EDR_CONFIG.edr_version()
+        self.REST_firebase = RESTFirebaseAuth(self.version)
         self.EDR_API_KEY = EDR_CONFIG.edr_api_key()
         self.EDR_SERVER = EDR_CONFIG.edr_server()
         self.EDR_SERVER_FUNCTIONS = EDR_CONFIG.edr_server_functions()
@@ -31,7 +32,6 @@ class EDRServer(object):
         self.game_mode = None
         self.dlc_name = None
         self.private_group = None
-        self.version = EDR_CONFIG.edr_version()
         self._throttle_until_timestamp = None
         self.anonymous_reports = None
         self.crimes_reporting = None
