@@ -4,32 +4,32 @@ import json
 from edmarketreader import EDMarketReader # EDR_INTERNAL
 
 class TestEDMarketReader(unittest.TestCase):
-    @patch('edr.edmarketreader.config')
+    @patch('edmarketreader.config')
     def test_process_valid(self, mock_config):
         mock_config.get_str.return_value = "/tmp/journal"
         mock_data = json.dumps({"timestamp": "2023-01-01T12:00:00Z", "event": "Market", "Items": []})
         
-        with patch('edr.edmarketreader.open', mock_open(read_data=mock_data)):
+        with patch('edmarketreader.open', mock_open(read_data=mock_data)):
             reader = EDMarketReader()
             result = reader.process()
             self.assertEqual(result.get("event"), "Market")
             self.assertEqual(result.get("Items"), [])
 
-    @patch('edr.edmarketreader.config')
+    @patch('edmarketreader.config')
     def test_process_empty(self, mock_config):
         mock_config.get_str.return_value = "/tmp/journal"
         
-        with patch('edr.edmarketreader.open', mock_open(read_data="")):
+        with patch('edmarketreader.open', mock_open(read_data="")):
             reader = EDMarketReader()
             result = reader.process()
             self.assertIsNone(result)
 
-    @patch('edr.edmarketreader.config')
+    @patch('edmarketreader.config')
     def test_process_invalid_json(self, mock_config):
         mock_config.get_str.return_value = "/tmp/journal"
         
-        with patch('edr.edmarketreader.open', mock_open(read_data="{invalid_json")):
-            with patch('edr.edmarketreader.EDR_LOG') as mock_log:
+        with patch('edmarketreader.open', mock_open(read_data="{invalid_json")):
+            with patch('edmarketreader.EDR_LOG') as mock_log:
                 reader = EDMarketReader()
                 result = reader.process()
                 self.assertIsNone(result)

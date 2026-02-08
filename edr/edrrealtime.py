@@ -14,7 +14,7 @@ from sseclient import SSEClient # EDR_INTERNAL
 from edtime import EDTime # EDR_INTERNAL
 from edrlog import EDR_LOG # EDR_INTERNAL
 
-class EDRRealtimeUpdates(object):
+class EDRRealtimeUpdates:
     def __init__(self, callback, kind, endpoint, authenticator):
         self.endpoint = endpoint
         self.authenticator = authenticator
@@ -55,11 +55,11 @@ class ClosableSSEClient(SSEClient):
 
     def __init__(self, *args, **kwargs):
         self.should_connect = True
-        super(ClosableSSEClient, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _connect(self):
         if self.should_connect:
-            super(ClosableSSEClient, self)._connect()
+            super()._connect()
         else:
             raise StopIteration()
 
@@ -84,7 +84,7 @@ class RemoteThread(threading.Thread):
         self.sse = None
         self.authenticator = authenticator
         self.minutes_ago = minutes_ago
-        super(RemoteThread, self).__init__()
+        super().__init__()
 
     def _setup_sse(self):
         if self.sse:
@@ -103,16 +103,16 @@ class RemoteThread(threading.Thread):
                 if msg.event == "keep-alive":
                     continue
                 if msg.event == "auth_revoked":
-                    EDR_LOG.debug(u"SSE auth_revoked received")
+                    EDR_LOG.debug("SSE auth_revoked received")
                     self.message_queue.put(msg)
                     self.close()
                     break
                 if msg.event == "cancel":
-                    EDR_LOG.debug(u"SSE cancel received")
+                    EDR_LOG.debug("SSE cancel received")
                     self.message_queue.put(msg)
                     self.close()
                     break
-                EDR_LOG.debug(u"SSE msg received: {} {}".format(msg.event, msg.data))
+                EDR_LOG.debug("SSE msg received: {} {}".format(msg.event, msg.data))
                 self.message_queue.put(msg)
         except socket.error:
             pass    # this can happen when we close the stream
@@ -132,15 +132,15 @@ class EDRSEEReader():
             self.inbound_queue = inbound_queue
             self.callback = callback
             self.kind = kind
-            super(EDRSEEReader.EDRSEEThread, self).__init__()
+            super().__init__()
 
         def run(self):
             while True:
                 msg = self.inbound_queue.get()
                 if not msg:
-                    EDR_LOG.debug(u"SSE stop signal received.")
+                    EDR_LOG.debug("SSE stop signal received.")
                     break
-                EDR_LOG.debug(u"handling msg: {} {} {}".format(msg.event, msg.data, self.kind))
+                EDR_LOG.debug("handling msg: {} {} {}".format(msg.event, msg.data, self.kind))
                 if msg.event in ["put", "patch"] and msg.data:
                     data = json.loads(msg.data)
                     if data is None or data["data"] is None:

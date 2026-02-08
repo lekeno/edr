@@ -4,13 +4,15 @@ import sys
 import os
 
 # Setup paths
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# Setup paths
+# Add 'edr' directory to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'edr')))
 
 from edrhitppoints import EDRHitPPoints # EDR_INTERNAL
 
 class TestEDRHitPPoints(unittest.TestCase):
     def setUp(self):
-        self.edtime_patch = patch('edr.edrhitppoints.EDTime')
+        self.edtime_patch = patch('edrhitppoints.EDTime')
         self.mock_edtime = self.edtime_patch.start()
         # Default time
         self.mock_edtime.ms_epoch_now.return_value = 10000

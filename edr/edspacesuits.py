@@ -1,16 +1,18 @@
-from os import stat
 import re
 import json
 import os
 from copy import deepcopy
 
-from edtime import EDTime # EDR_INTERNAL
-from edrconfig import EDR_CONFIG # EDR_INTERNAL
-from edrlog import EDR_LOG # EDR_INTERNAL
+from edtime import EDTime
+from edrconfig import EDR_CONFIG
+from edrlog import EDR_LOG
 
 
 
-class EDSuitLoadout(object):
+class EDSuitLoadout:
+    """
+    Suit loadout information.
+    """
     def __init__(self):
         self.id = None
         self.loadout_id = None
@@ -19,13 +21,19 @@ class EDSuitLoadout(object):
         self.modules = []
 
     def update_from_suitloadout(self, event):
+        """
+        Update from SuitLoadout event.
+        """
         self.id = event.get("LoadoutID", None)
         self.name = event.get("LoadoutName", None)
         self.suit_mods = event.get("SuitMods", [])
         self.modules = event.get("Modules", [])
 
 
-class EDSpaceSuit(object):
+class EDSpaceSuit:
+    """
+    Base class for space suits.
+    """
     def __init__(self):
         self.type = None
         self.id = None
@@ -33,40 +41,49 @@ class EDSpaceSuit(object):
         self.loadout = EDSuitLoadout()
         now = EDTime.py_epoch_now()
         self.timestamp = now
-        self._health = {u"value": 1.0, u"timestamp": now}
-        self._oxygen = {u"value": 1.0, u"timestamp": now}
-        self._low_oxygen = {u"value": False, u"timestamp": now}
-        self._low_health = {u"value": False, u"timestamp": now}
+        self._health = {"value": 1.0, "timestamp": now}
+        self._oxygen = {"value": 1.0, "timestamp": now}
+        self._low_oxygen = {"value": False, "timestamp": now}
+        self._low_health = {"value": False, "timestamp": now}
         self.shield_up = True
-        self.fight = {u"value": False, "large": False, u"timestamp": now}
-        self._attacked = {u"value": False, u"timestamp": now}
-        self._in_danger = {u"value": False, u"timestamp": now}
+        self.fight = {"value": False, "large": False, "timestamp": now}
+        self._attacked = {"value": False, "timestamp": now}
+        self._in_danger = {"value": False, "timestamp": now}
         config = EDR_CONFIG
         self.fight_staleness_threshold = config.instance_fight_staleness_threshold()
         self.danger_staleness_threshold = config.instance_danger_staleness_threshold()
 
     @property
     def health(self):
+        """
+        float: Current health (0.0-1.0).
+        """
         return self._health["value"]
 
     @health.setter
     def health(self, new_value):
         now = EDTime.py_epoch_now()
         self.timestamp = now
-        self._health = {u"value": new_value, u"timestamp": now}
+        self._health = {"value": new_value, "timestamp": now}
 
     @property
     def oxygen(self):
+        """
+        float: Current oxygen level (0.0-1.0).
+        """
         return self._oxygen["value"]
 
     @oxygen.setter
     def oxygen(self, new_value):
         now = EDTime.py_epoch_now()
         self.timestamp = now
-        self._oxygen = {u"value": new_value, u"timestamp": now}
+        self._oxygen = {"value": new_value, "timestamp": now}
 
     @property
     def low_health(self):
+        """
+        bool: True if health is low.
+        """
         return self._low_oxygen["value"]
 
     @low_health.setter
@@ -77,6 +94,9 @@ class EDSpaceSuit(object):
 
     @property
     def low_oxygen(self):
+        """
+        bool: True if oxygen is low.
+        """
         return self._low_oxygen["value"]
 
     @low_oxygen.setter
@@ -86,14 +106,18 @@ class EDSpaceSuit(object):
         self._low_oxygen = {"timestamp": now, "value": low}
 
     def json(self):
+        """
+        Returns:
+            dict: JSON representation.
+        """
         result = {
-            u"timestamp": int(self.timestamp * 1000),
-            u"type": self.type,
-            u"health": self.__js_t_v(self._health),
-            u"oxygen": self.__js_t_v(self._oxygen),
-            u"shieldUp": self.shield_up,
-            u"lowHealth":self.__js_t_v(self._low_health),
-            u"lowOxygen":self.__js_t_v(self._low_oxygen),
+            "timestamp": int(self.timestamp * 1000),
+            "type": self.type,
+            "health": self.__js_t_v(self._health),
+            "oxygen": self.__js_t_v(self._oxygen),
+            "shieldUp": self.shield_up,
+            "lowHealth":self.__js_t_v(self._low_health),
+            "lowOxygen":self.__js_t_v(self._low_oxygen),
         }
         
         return result
@@ -107,116 +131,168 @@ class EDSpaceSuit(object):
         return str(self.__dict__)
 
     def reset(self):
+        """
+        Reset suit status.
+        """
         now = EDTime.py_epoch_now()
         self.timestamp = now
         self.health = 100.0
         self.oxygen = 100.0
         self.shield_up = True
-        self.fight = {u"value": False, u"large": False, u"timestamp": now}
-        # self._hardpoints_deployed = {u"value": False, u"timestamp": now} ? SelectedWeapon?
-        self._attacked = {u"value": False, u"timestamp": now}
-        self.heat_damaged = {u"value": False, u"timestamp": now}
-        self._in_danger = {u"value": False, u"timestamp": now}
+        self.fight = {"value": False, "large": False, "timestamp": now}
+        # self._hardpoints_deployed = {"value": False, "timestamp": now} ? SelectedWeapon?
+        self._attacked = {"value": False, "timestamp": now}
+        self.heat_damaged = {"value": False, "timestamp": now}
+        self._in_danger = {"value": False, "timestamp": now}
         
     def destroy(self):
+        """
+        Record suit destruction.
+        """
         now = EDTime.py_epoch_now()
         self.timestamp = now
         self.health = 0.0
 
     def attacked(self):
+        """
+        Record being attacked.
+        """
         now = EDTime.py_epoch_now()
         self.timestamp = now
-        self._attacked = {u"value": True, u"timestamp": now}
+        self._attacked = {"value": True, "timestamp": now}
 
     def under_attack(self):
+        """
+        Returns:
+            bool: True if under attack.
+        """
         if self._attacked["value"]:
             now = EDTime.py_epoch_now()
             return (now >= self._attacked["timestamp"]) and ((now - self._attacked["timestamp"]) <= self.danger_staleness_threshold)
         return False
 
     def safe(self):
+        """
+        Mark as safe.
+        """
         now = EDTime.py_epoch_now()
-        self._attacked = {u"value": False, u"timestamp": now}
-        self.fight = {u"value": False, "large": False, u"timestamp": now}
-        self._in_danger = {u"value": False, u"timestamp": now}
+        self._attacked = {"value": False, "timestamp": now}
+        self.fight = {"value": False, "large": False, "timestamp": now}
+        self._in_danger = {"value": False, "timestamp": now}
     
     def unsafe(self):
+        """
+        Mark as unsafe.
+        """
         now = EDTime.py_epoch_now()
-        self._in_danger = {u"value": True, u"timestamp": now}
+        self._in_danger = {"value": True, "timestamp": now}
 
     def in_danger(self):
+        """
+        Returns:
+            bool: True if in danger.
+        """
         if self._in_danger["value"]:
             now = EDTime.py_epoch_now()
             return (now >= self._in_danger["timestamp"]) and ((now - self._in_danger["timestamp"]) <= self.danger_staleness_threshold)
         return False
 
     def shield_state(self, is_up):
+        """
+        Update shield state.
+
+        Args:
+            is_up (bool): True if shield is up.
+        """
         if not is_up:
             self.shield_health = 0.0
         self.shield_up = is_up
 
     def skirmish(self):
+        """
+        Record skirmish.
+        """
         now = EDTime.py_epoch_now()
-        self.fight = {u"value": True, "large": False, u"timestamp": now}
+        self.fight = {"value": True, "large": False, "timestamp": now}
 
     def battle(self):
+        """
+        Record battle.
+        """
         now = EDTime.py_epoch_now()
-        self.fight = {u"value": True, "large": True, u"timestamp": now}
+        self.fight = {"value": True, "large": True, "timestamp": now}
 
     def in_a_fight(self):
+        """
+        Returns:
+            bool: True if in a fight.
+        """
         if self.fight["value"]:
             now = EDTime.py_epoch_now()
             return (now >= self.fight["timestamp"]) and ((now - self.fight["timestamp"]) <= self.fight_staleness_threshold)
         return False
 
     def update_from_suitloadout(self, event):
+        """
+        Update from SuitLoadout event.
+
+        Args:
+            event (dict): SuitLoadout event.
+        """
         other_id = event.get("SuitID", None)
         other_type = EDSuitFactory.suit_type(event.get("SuitName", "unknown")) 
 
         if other_id != self.id or other_type != self.type:
-            EDR_LOG.warning(u"Mismatch between Suit ID ({} vs {}) and/or Type ({} vs. {}), can't update from loadout".format(self.id, other_id, self.type, other_type))
+            EDR_LOG.warning("Mismatch between Suit ID ({} vs {}) and/or Type ({} vs. {}), can't update from loadout".format(self.id, other_id, self.type, other_type))
             return
         
         self.loadout.update_from_suitloadout(event)
 
 
     def __eq__(self, other):
+        """
+        Equality check.
+        """
         if not isinstance(other, EDSpaceSuit):
             return False
         return self.__dict__ == other.__dict__
         
     def __ne__(self, other):
+        """
+        Inequality check.
+        """
         return not self.__eq__(other)
 
 class EDUnknownSuit(EDSpaceSuit):
     def __init__(self):
-        super(EDUnknownSuit, self).__init__()
-        self.type = u'Unknown'
+        super().__init__()
+        self.type = 'Unknown'
 
 class EDFlightSuit(EDSpaceSuit):
     def __init__(self):
-        super(EDFlightSuit, self).__init__()
-        self.type = u'Flight'
+        super().__init__()
+        self.type = 'Flight'
 
 class EDMaverickSuit(EDSpaceSuit):
     def __init__(self):
-        super(EDMaverickSuit, self).__init__()
-        self.type = u'Maverick'
+        super().__init__()
+        self.type = 'Maverick'
 
 class EDArtemisSuit(EDSpaceSuit):
     def __init__(self):
-        super(EDArtemisSuit, self).__init__()
-        self.type = u'Artemis'
+        super().__init__()
+        self.type = 'Artemis'
 
 
 class EDDominatorSuit(EDSpaceSuit):
     def __init__(self):
-        super(EDDominatorSuit, self).__init__()
-        self.type = u'Dominator'
+        super().__init__()
+        self.type = 'Dominator'
 
-class EDOdysseyCloset(object):
-    # because why not
-
+class EDOdysseyCloset:
+    """
+    Manages player suit loadouts.
+    """
     def __init__(self):
         self.loadouts = {}
         self.genetic_sampler = EDGeneticSampler()
@@ -226,6 +302,15 @@ class EDOdysseyCloset(object):
         #   energy link
 
     def switch_suit_loadout(self, entry):
+        """
+        Switch current suit loadout.
+
+        Args:
+            entry (dict): Journal entry.
+
+        Returns:
+            EDSuitLoadout: New loadout.
+        """
         loadout_id = entry["LoadoutID"] if "LoadoutID" in entry else entry.get("ShipID", -1)
         suit_name = entry["SuitName"] if "SuitName" in entry else entry.get("Ship", "unknown")
         if loadout_id not in self.loadouts or self.loadouts[loadout_id].type != EDSuitFactory.suit_type(suit_name):
@@ -235,7 +320,7 @@ class EDOdysseyCloset(object):
             pass
         return self.loadouts[loadout_id]
 
-class EDGeneticSampler(object):
+class EDGeneticSampler:
     BIOLOGY = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', 'biology.json')).read())
     
     def __init__(self):
@@ -251,6 +336,13 @@ class EDGeneticSampler(object):
         self.last_system_body = {}
     
     def process(self, scan_event, location):
+        """
+        Process biological scan event.
+
+        Args:
+            scan_event (dict): Scan event.
+            location (dict): Scan location.
+        """
         if scan_event["ScanType"] == "Analyse":
             self.reset()
             return
@@ -282,9 +374,19 @@ class EDGeneticSampler(object):
                 self.samples[system_body_id] = [ deepcopy(location) ]
         
     def is_tracking(self):
+        """
+        Returns:
+            bool: True if tracking a genus.
+        """
         return self.genus != {}
 
     def clonal_colony_range(self):
+        """
+        Get clonal colony range for tracked genus.
+
+        Returns:
+            int: Range in meters.
+        """
         if not self.genus:
             return None
 
@@ -297,6 +399,12 @@ class EDGeneticSampler(object):
         return ccr
 
     def tracked_species_credits(self):
+        """
+        Get credits value for tracked species.
+
+        Returns:
+            int: Credits value.
+        """
         if not self.species_tracked():
             return None
         
@@ -309,9 +417,25 @@ class EDGeneticSampler(object):
         return credits
         
     def species_tracked(self):
+        """
+        Get currently tracked species name.
+
+        Returns:
+            str: Species name.
+        """
         return self.species.get("name", None)
 
     def samples_locations(self, system_address=None, body_nb=None):
+        """
+        Get sample locations.
+
+        Args:
+            system_address (int): System address.
+            body_nb (int): Body number.
+
+        Returns:
+            list: List of sample locations.
+        """
         system_address = system_address or self.last_system_body.get("systemAddress", None)
         body_nb = body_nb or self.last_system_body.get("bodyNb", None)
         system_body_id = EDGeneticSampler.__sys_body_id(system_address, body_nb)
@@ -324,6 +448,16 @@ class EDGeneticSampler(object):
         return "S{}-B{}".format(system_address, body_nb)
     
     def has_samples_from(self, star_system_address, body_nb):
+        """
+        Check if samples exist for a body.
+
+        Args:
+            star_system_address (int): System address.
+            body_nb (int): Body number.
+
+        Returns:
+            bool: True if samples exist.
+        """
         if not self.last_system_body:
             return False
         
@@ -335,7 +469,7 @@ class EDGeneticSampler(object):
         
         return self.last_system_body["systemAddress"] == star_system_address and self.last_system_body["bodyNb"] == body_nb
 
-class EDSuitFactory(object):
+class EDSuitFactory:
     __suit_classes = {
         "flightsuit": EDFlightSuit,
         "utilitysuit": EDMaverickSuit,
@@ -346,16 +480,25 @@ class EDSuitFactory(object):
 
     @staticmethod
     def is_spacesuit(name):
+        """
+        Check if name is a spacesuit.
+        """
         return EDSuitFactory.is_player_spacesuit(name) or EDSuitFactory.is_ai_spacesuit(name) 
 
     @staticmethod
     def is_player_spacesuit(name):
+        """
+        Check if name is a player spacesuit.
+        """
         cname = name.lower()
         player_space_suit_regexp = r"^(?:flightsuit|(?:exploration|utility|tactical)suit_class[1-5])$" # TODO confirm that those are the internal names used for players
         return re.match(player_space_suit_regexp, cname)
 
     @staticmethod
     def is_ai_spacesuit(name):
+        """
+        Check if name is an AI spacesuit.
+        """
         cname = name.lower()
         # ai_space_suit_regexp = r"^(?:assault|lightassault|close|ranged)aisuit_class[1-5])$" # TODO use this to tighten up things?
         ai_space_suit_lax_regexp = r"^[a-z0-9_]*aisuit_class[1-5]$"
@@ -363,8 +506,11 @@ class EDSuitFactory(object):
 
     @staticmethod
     def canonicalize_name(name):
+        """
+        Canonicalize suit name.
+        """
         if name is None:
-            return u"unknown" # Note: this shouldn't be translated
+            return "unknown" # Note: this shouldn't be translated
         cname = name.lower()
         player_space_suit_regexp = r"^(flightsuit|explorationsuit|utilitysuit|tacticalsuit)_class[1-5]$" # TODO confirm that those are the internal names used for players
         m = re.match(player_space_suit_regexp, cname)
@@ -374,6 +520,9 @@ class EDSuitFactory(object):
 
     @staticmethod
     def suit_type(internal_name):
+        """
+        Get suit type from internal name.
+        """
         cname = EDSuitFactory.canonicalize_name(internal_name)
         LUT = {
             "flightsuit": "Flight",
@@ -386,6 +535,9 @@ class EDSuitFactory(object):
 
     @staticmethod
     def grade(name):
+        """
+        Get suit grade from name.
+        """
         cname = name.lower()
         player_space_suit_regexp = r"^[a-z0-9_]suit_class([1-5])$" # TODO confirm that those are the internal names used for players
         m = re.match(player_space_suit_regexp, cname)
@@ -393,11 +545,13 @@ class EDSuitFactory(object):
             return m.group(1)
         return 1
 
-    # TODO @staticmethod
-    # def from_edmc_state(state):
+
 
     @staticmethod
     def from_internal_name(internal_name):
+        """
+        Create suit from internal name.
+        """
         suit_name = EDSuitFactory.canonicalize_name(internal_name)
         grade = EDSuitFactory.grade(internal_name)
         suit = EDSuitFactory.__suit_classes.get(suit_name, EDUnknownSuit)()
@@ -406,6 +560,9 @@ class EDSuitFactory(object):
     
     @staticmethod
     def from_load_game_event(event):
+        """
+        Create suit from LoadGame event.
+        """
         suit = EDSuitFactory.from_internal_name(event.get("Ship", 'unknown'))
         suit.id = event.get('ShipID', None)
         suit.identity = event.get('ShipIdent', None) # Always empty?
@@ -415,14 +572,20 @@ class EDSuitFactory(object):
 
     @staticmethod
     def from_suitloadout_event(event):
+        """
+        Create suit from SuitLoadout event.
+        """
         suit = EDSuitFactory.from_internal_name(event.get("SuitName", 'unknown'))
         suit.id = event.get('SuitID', None)
         suit.loadout.update_from_suitloadout(event)
         return suit
 
-    #@staticmethod
-    #def from_stored_ship(ship_info): # TODO suitloadout swapping?
+
         
     @staticmethod
     def unknown_suit():
+        """
+        Returns:
+            EDUnknownSuit: Unknown suit.
+        """
         return EDUnknownSuit()

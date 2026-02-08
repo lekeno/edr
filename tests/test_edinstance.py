@@ -2,7 +2,7 @@ from unittest import TestCase, main
 from edinstance import EDInstance # EDR_INTERNAL
 import calendar, time
 
-class MockCmdr(object):
+class MockCmdr:
     def __init__(self, name):
         self.name = name
     

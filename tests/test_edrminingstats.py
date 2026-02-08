@@ -11,7 +11,7 @@ from edrminingstats import EDRMiningStats, EDRMineralStats # EDR_INTERNAL
 
 class TestEDRMiningStats(unittest.TestCase):
     def setUp(self):
-        self.edtime_patch = patch('edr.edrminingstats.EDTime')
+        self.edtime_patch = patch('edrminingstats.EDTime')
         self.mock_edtime = self.edtime_patch.start()
         self.mock_edtime.py_epoch_now.return_value = 1000
 

@@ -14,21 +14,21 @@ class TestEDRBountyHuntingStats(unittest.TestCase):
         # inspecting edrbountyhuntingstats.py: `from edr.edtime import EDTime`
         # so we patch `edrbountyhuntingstats.EDTime`
         
-        self.patcher = patch('edr.edrbountyhuntingstats.EDTime', self.mock_time)
+        self.patcher = patch('edrbountyhuntingstats.EDTime', self.mock_time)
         self.patcher.start()
         
         # Also need to mock EDRConfig to avoid file reads in __init__
-        self.config_patcher = patch('edr.edrbountyhuntingstats.EDRConfig')
-        self.mock_config = self.config_patcher.start()
+        self.edr_config_patch = patch('edrbountyhuntingstats.EDR_CONFIG')
+        self.mock_config = self.edr_config_patch.start()
         # Setup expected config return values
-        self.mock_config.return_value.lru_max_size.return_value = 100
-        self.mock_config.return_value.blips_max_age.return_value = 3600
+        self.mock_config.lru_max_size.return_value = 100
+        self.mock_config.blips_max_age.return_value = 3600
 
         self.stats = EDRBountyHuntingStats()
 
     def tearDown(self):
         self.patcher.stop()
-        self.config_patcher.stop()
+        self.edr_config_patch.stop()
 
     def test_init_reset(self):
         self.assertEqual(self.stats.max, 0)

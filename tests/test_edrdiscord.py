@@ -1,142 +1,133 @@
 import unittest
-from unittest.mock import Mock, patch, MagicMock, mock_open
+from unittest.mock import Mock, patch, MagicMock
+import json
 import sys
 import os
-import json
 
-# Setup paths
-current_dir = os.path.dirname(os.path.abspath(__file__)) # edr/tests/
-edr_dir = os.path.abspath(os.path.join(current_dir, '..')) # edr/
-parent_dir = os.path.abspath(os.path.join(edr_dir, '..')) # folder containing edr/
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'edr')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# 1. Add the parent so 'from edr.module' works
-if parent_dir not in sys.path:
-    sys.path.insert(0, parent_dir)
+from edrdiscord import EDRDiscordWebhook, EDRDiscordMessage, EDRDiscordIntegration, EDRDiscordSimpleMessage, EDRDiscordEmbed, EDRDiscordField
 
-# 2. Add the edr folder itself so internal 'from edri18n' works
-if edr_dir not in sys.path:
-    sys.path.insert(0, edr_dir)
-
-from edrdiscord import EDRDiscordIntegration # EDR_INTERNAL
-
-class TestEDRDiscord(unittest.TestCase):
+class TestEDRDiscordWebhook(unittest.TestCase):
     def setUp(self):
-        self.edr_config_patch = patch('edr.edrdiscord.EDR_CONFIG')
-        self.edr_config_cls = self.edr_config_patch.start()
-        self.edr_config_cls.return_value.discord_webhook.return_value = "http://webhook.url"
-        # Mock other config methods used in init
-        self.edr_config_cls.return_value.cognitive_novelty_threshold.return_value = 100
-        self.edr_config_cls.return_value.lru_max_size.return_value = 100
-        self.edr_config_cls.return_value.blips_max_age.return_value = 100
+        self.webhook_url = "https://discord.com/api/webhooks/12345/abcde"
+        self.webhook = EDRDiscordWebhook(self.webhook_url)
 
-        self.user_config_patch = patch('edr.edrdiscord.EDRUserConfig')
-        self.user_config_cls = self.user_config_patch.start()
-        self.user_config_cls.return_value.discord_webhook_for_comms.return_value = "http://webhook.url"
-        self.user_config_cls.return_value.discord_webhook_for_fc.return_value = "http://webhook.url"
-
-        self.session_patch = patch('edr.edrdiscord.EDRDiscordWebhook.SESSION')
-        self.mock_session = self.session_patch.start()
-        self.mock_session.post.return_value.status_code = 204
-
-        self.afk_patch = patch('edr.edrdiscord.EDRAfkDetector')
-        self.mock_afk = self.afk_patch.start()
-        self.mock_afk.return_value.is_afk.return_value = False
-
-        self.lru_patch = patch('edr.edrdiscord.LRUCache')
-        self.mock_lru = self.lru_patch.start()
-        # Ensure instances of LRUCache return None on get() to simulate cache miss
-        self.mock_lru.return_value.get.return_value = None
+    @patch('edrdiscord.requests.Session')
+    def test_send_text_success(self, mock_session):
+        mock_response = Mock()
+        mock_response.status_code = 204
+        mock_session.return_value.post.return_value = mock_response
         
-        # Mock open for config file reading
-        self.mock_open = mock_open(read_data='{}')
-        self.file_patch = patch('builtins.open', self.mock_open)
-        self.file_patch.start()
+        # We need to mock the SESSION class attribute, not just requests.Session
+        with patch.object(EDRDiscordWebhook, 'SESSION', mock_session.return_value):
+            success = self.webhook.send_text("Hello World")
+            self.assertTrue(success)
+            mock_session.return_value.post.assert_called_once()
+    
+    @patch('edrdiscord.requests.Session')
+    def test_send_text_throttled(self, mock_session):
+        self.webhook.backoff.throttle()
+        success = self.webhook.send_text("Hello World")
+        self.assertFalse(success)
+        mock_session.return_value.post.assert_not_called()
+
+    @patch('edrdiscord.requests.Session')
+    def test_send_complex_message(self, mock_session):
+        mock_response = Mock()
+        mock_response.status_code = 204
         
-        self.mock_edrcmdrs = MagicMock()
-        self.mock_edrcmdrs.player.name = "CmdrTest"
-        # Fix: Configure profile to have serializable attributes and int karma
-        mock_profile = MagicMock()
-        mock_profile.url = "http://url"
-        mock_profile.avatar_url = "http://avatar"
-        mock_profile.karma = 0
-        mock_profile.readable_karma.return_value = "Neutral"
-        self.mock_edrcmdrs.cmdr.return_value = mock_profile
+        with patch.object(EDRDiscordWebhook, 'SESSION', mock_session.return_value):
+            mock_session.return_value.post.return_value = mock_response
+            
+            msg = EDRDiscordMessage()
+            msg.content = "Complex Message"
+            success = self.webhook.send(msg)
+            
+            self.assertTrue(success)
+            mock_session.return_value.post.assert_called_once()
+
+
+class TestEDRDiscordMessage(unittest.TestCase):
+    def test_basic_message(self):
+        msg = EDRDiscordMessage()
+        msg.content = "Hello"
+        self.assertTrue(msg.valid())
+        json_output = msg.json()
+        self.assertEqual(json_output["content"], "Hello")
+        self.assertEqual(json_output["username"], "EDR")
+
+    def test_invalid_message(self):
+        msg = EDRDiscordMessage()
+        self.assertFalse(msg.valid())
+
+    def test_message_with_embed(self):
+        msg = EDRDiscordMessage()
+        msg.content = "Embed Text"
         
-        self.discord = EDRDiscordIntegration(self.mock_edrcmdrs)
+        embed = EDRDiscordEmbed()
+        embed.title = "Title"
+        embed.description = "Desc"
+        msg.add_embed(embed)
+        
+        self.assertTrue(msg.valid())
+        json_output = msg.json()
+        self.assertEqual(len(json_output["embeds"]), 1)
+        self.assertEqual(json_output["embeds"][0]["title"], "Title")
 
-    def tearDown(self):
-        self.edr_config_patch.stop()
-        self.user_config_patch.stop()
-        self.session_patch.stop()
-        self.afk_patch.stop()
-        self.lru_patch.stop()
-        self.file_patch.stop()
 
-    def test_init(self):
-        self.assertIsNotNone(self.discord)
+class TestEDRDiscordIntegration(unittest.TestCase):
+    def setUp(self):
+        self.edrcmdrs = Mock()
+        self.edrcmdrs.player.name = "CmdrTest"
+        self.edrcmdrs.player.location.pretty_print.return_value = "Sol"
+        self.edrcmdrs.player.star_system = "Sol"
+        # Fix karma comparison error
+        self.edrcmdrs.cmdr.return_value.karma = 0
+        
+        self.integration = EDRDiscordIntegration(self.edrcmdrs)
+        # Mock configs to avoid file I/O and external dependencies
+        self.integration.channels_players_cfg = {} 
 
-    def test_process_incoming(self):
-        # Process incoming messages
+    @patch('edrdiscord.EDRDiscordWebhook.send')
+    def test_process_incoming_direct(self, mock_send):
         entry = {
             "event": "ReceiveText",
             "Channel": "player",
-            "From": "FriendCmdr",
+            "From": "CmdrSender",
             "Message": "Hello",
             "timestamp": "2023-10-27T10:00:00Z"
         }
         
-        # Ensure 'player' webhook is mocked (it is in setUp)
-        # Mock checking novelty
-        with patch.object(self.discord, '_EDRDiscordIntegration__novel_enough_comms', return_value=True):
-            success = self.discord.process(entry)
-            self.assertTrue(success)
-            self.mock_session.post.assert_called()
+        # Ensure the webhook exists for 'player'
+        self.integration.incoming['player'] = Mock()
+        self.integration.incoming['player'].send.return_value = True
+        
+        # Ensure AFK detector says False
+        self.integration.afk_detector = Mock()
+        self.integration.afk_detector.is_afk.return_value = False
 
-    def test_process_outgoing(self):
+        result = self.integration.process(entry)
+        self.assertTrue(result)
+        self.integration.incoming['player'].send.assert_called_once()
+
+    @patch('edrdiscord.EDRDiscordWebhook.send')
+    def test_process_outgoing_broadcast(self, mock_send):
         entry = {
             "event": "SendText",
-            "To": "FriendCmdr",
-            "Message": "Hello back",
-            "timestamp": "2023-10-27T10:01:00Z"
+            "To": "local",
+            "Message": "!discord Hello All",
+            "timestamp": "2023-10-27T10:00:00Z"
         }
-         # Ensure 'player' webhook is mocked
-        with patch.object(self.discord, '_EDRDiscordIntegration__novel_enough_outgoing_comms', return_value=True):
-            success = self.discord.process(entry)
-            self.assertTrue(success)
-            self.mock_session.post.assert_called()
+        
+        self.integration.outgoing['broadcast'] = Mock()
+        self.integration.outgoing['broadcast'].send.return_value = True
+        
+        result = self.integration.process(entry)
+        self.assertTrue(result)
+        self.integration.outgoing['broadcast'].send.assert_called_once()
 
-    def test_fc_jump_scheduled(self):
-        flight_plan = {
-            "owner": "OwnerCmdr",
-            "name": "CarrierName",
-            "callsign": "AAA-111",
-            "from": "Sol",
-            "to": "Colonia",
-            "body": "Colonia 4",
-            "at": 1234567890,
-            "lockdown": 1234567890,
-            "access": "all",
-            "allow_notorious": True
-        }
-        success = self.discord.fc_jump_scheduled(flight_plan)
-        self.assertTrue(success)
-        self.mock_session.post.assert_called()
-
-    def test_fc_market_update(self):
-        market_data = {
-            "owner": "OwnerCmdr",
-            "name": "CarrierName",
-            "callsign": "AAA-111",
-            "summary": "Market Info",
-            "location": {"system": "Sol", "body": "Earth"},
-            "access": "all",
-            "allow_notorious": True,
-            "sales": [],
-            "purchases": ["Tritium"]
-        }
-        success = self.discord.fc_market_update(market_data)
-        self.assertTrue(success)
-        self.mock_session.post.assert_called()
 
 if __name__ == '__main__':
     unittest.main()

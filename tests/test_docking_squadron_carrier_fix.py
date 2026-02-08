@@ -2,6 +2,13 @@ import sys
 import os
 from unittest.mock import MagicMock
 
+# Mock EDMCOverlay and other generic EDMC modules before importing edrclient
+sys.modules['EDMCOverlay'] = MagicMock()
+sys.modules['EDMCOverlay.edmcoverlay'] = MagicMock()
+sys.modules['myNotebook'] = MagicMock()
+sys.modules['ttkHyperlinkLabel'] = MagicMock()
+sys.modules['config'] = MagicMock()
+
 from edrclient import EDRClient # EDR_INTERNAL
 
 def test_docking_guidance_cache():

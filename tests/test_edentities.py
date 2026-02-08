@@ -36,7 +36,7 @@ class TestEDEntities(unittest.TestCase):
 
     def test_powerplay(self):
         # time_pledged is roughly now - timestamp passed in
-        with patch('edr.edtime.EDTime.py_epoch_now') as mock_now:
+        with patch('edtime.EDTime.py_epoch_now') as mock_now:
             mock_now.return_value = 1000
             
             # Pledged 900 seconds ago
@@ -105,6 +105,20 @@ class TestEDEntities(unittest.TestCase):
         pilot.to_super_space()
         self.assertFalse(pilot.in_normal_space())
         self.assertTrue(pilot.in_supercruise())
+
+    def test_edplayerone_initialization(self):
+        from edentities import EDPlayerOne
+        player = EDPlayerOne("The Braben")
+        self.assertEqual(player.name, "The Braben")
+        self.assertTrue(player.is_human())
+        self.assertEqual(player.fleet_carrier.name, None) # Default empty
+
+        # Test simple transitions
+        player.to_super_space()
+        self.assertTrue(player.in_supercruise())
+        
+        player.to_normal_space()
+        self.assertTrue(player.in_normal_space())
 
 if __name__ == '__main__':
     unittest.main()

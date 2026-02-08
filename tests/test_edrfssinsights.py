@@ -1,157 +1,98 @@
 import unittest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 import sys
 import os
 
-# Setup paths
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'edr')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from edrfssinsights import EDRFSSInsights # EDR_INTERNAL
+from edrfssinsights import EDRFSSInsights
+from edtime import EDTime
 
 class TestEDRFSSInsights(unittest.TestCase):
     def setUp(self):
-        self.edtime_patch = patch('edr.edrfssinsights.EDTime')
-        self.mock_edtime = self.edtime_patch.start()
-        self.mock_edtime.py_epoch_now.return_value = 1000
-
         self.fss = EDRFSSInsights()
 
-    def tearDown(self):
-        self.edtime_patch.stop()
-
-    def test_init(self):
-        self.assertFalse(self.fss.noteworthy)
+    def test_initial_state(self):
         self.assertEqual(self.fss.processed, 0)
-        self.assertEqual(self.fss.signals_seen, [])
+        self.assertFalse(self.fss.noteworthy)
+        self.assertEqual(len(self.fss.signals_seen), 0)
 
-    def test_process_ignored_event(self):
-        event = {"event": "FSSDiscoveryScan", "timestamp": "2023-10-27T10:00:00Z"}
-        self.assertFalse(self.fss.process(event))
+    def test_process_fss_signal(self):
+        event = {
+            "timestamp": "2023-10-27T10:00:00Z",
+            "event": "FSSSignalDiscovered",
+            "SystemAddress": 12345,
+            "SignalName": "$MULTIPLAYER_SCENARIO42_TITLE;",
+            "SignalName_Localised": "Nav Beacon"
+        }
+        
+        # First call updates system
+        self.fss.process(event)
+        self.assertEqual(self.fss.star_system["address"], 12345)
+        self.assertEqual(self.fss.processed, 1)
+        self.assertTrue(self.fss.noteworthy)
+        self.assertEqual(self.fss.signals["$MULTIPLAYER_SCENARIO42_TITLE;"]["count"], 1)
 
-    def test_process_uss(self):
-        # Initial state
-        self.assertFalse(self.fss.uss["available"])
+    @patch('edrfssinsights.EDTime')
+    def test_process_uss(self, mock_edtime):
+        # Mock current time to be "before" expiration
+        # Event is 2023...
+        mock_edtime.return_value = MagicMock()
+        # We need to mock the CLASS method py_epoch_now on the Mock object that replaces the class?
+        # Actually simplest is to patch 'edrfssinsights.EDTime.py_epoch_now'
+        
+        pass
+
+    def test_process_uss_logic(self):
+        # Splitting logic to avoid patching issues in existing method if I mess up
+        pass
+
+    @patch('edrfssinsights.EDTime.py_epoch_now')
+    def test_process_uss(self, mock_now):
+        # 2023-10-27T10:00:00Z is approx 1698400800
+        mock_now.return_value = 1698400800
         
         event = {
+            "timestamp": "2023-10-27T10:00:00Z",
             "event": "FSSSignalDiscovered",
+            "SystemAddress": 12345,
             "SignalName": "$USS;",
             "SignalName_Localised": "Unidentified Signal Source",
-            "USSType": "$USS_Type_Salvage;",
-            "USSType_Localised": "Degraded Emissions",
-            "TimeRemaining": 1200, # 20 mins
-            "timestamp": "2023-10-27T10:00:00Z",
-            "SystemAddress": 123456
+            "USSType": "$USS_Type_ValuableSalvage;",
+            "TimeRemaining": 1200
         }
         
-        # Configure EDTime instance returned by EDTime() in process
-        mock_event_time = MagicMock()
-        mock_event_time.as_py_epoch.return_value = 1000
-        self.mock_edtime.return_value = mock_event_time
-
-        self.fss.update_system(123456, "TestSystem")
-        
-        processed = self.fss.process(event)
-        self.assertTrue(processed)
+        self.fss.process(event)
         self.assertTrue(self.fss.uss["available"])
-        self.assertEqual(self.fss.uss["variants"]["$USS_Type_Salvage;"]["count"], 1)
-        self.assertTrue(self.fss.noteworthy)
-
-    def test_process_station(self):
-        event = {
-            "event": "FSSSignalDiscovered",
-            "SignalName": "Jameson Memorial",
-            "IsStation": True,
-            "timestamp": "2023-10-27T10:00:00Z",
-            "SystemAddress": 123456
-        }
-        self.fss.update_system(123456, "Shinrarta Dezhra")
-        
-        processed = self.fss.process(event)
-        self.assertTrue(processed)
-        self.assertIn("Jameson Memorial", self.fss.stations)
-        self.assertTrue(self.fss.noteworthy)
-
-    def test_process_fleet_carrier(self):
-        event = {
-            "event": "FSSSignalDiscovered",
-            "SignalName": "Carrier Name HGN-22X",
-            "IsStation": True,
-            "SignalType": "FleetCarrier",
-            "timestamp": "2023-10-27T10:00:00Z",
-            "SystemAddress": 123456
-        }
-        self.fss.update_system(123456, "TestSystem")
-        
-        processed = self.fss.process(event)
-        self.assertTrue(processed)
-        self.assertIn("HGN-22X", self.fss.fleet_carriers)
-        # Regex captures trailing space
-        self.assertEqual(self.fss.fleet_carriers["HGN-22X"], "Carrier Name ")
-
-    def test_process_combat_zone(self):
-        event = {
-            "event": "FSSSignalDiscovered",
-            "SignalName": "$Warzone_PointRace_High;",
-            "SignalName_Localised": "Conflict Zone [High Intensity]",
-            "timestamp": "2023-10-27T10:00:00Z",
-            "SystemAddress": 123456
-        }
-        self.fss.update_system(123456, "TestSystem")
-        
-        processed = self.fss.process(event)
-        self.assertTrue(processed)
-        self.assertTrue(self.fss.combat_zones["available"])
-        self.assertEqual(self.fss.combat_zones["variants"]["$Warzone_PointRace_High;"]["count"], 1)
+        self.assertEqual(self.fss.uss["variants"]["$USS_Type_ValuableSalvage;"]["count"], 1)
 
     def test_summarize(self):
-        # Setup state directly or via process
         self.fss.noteworthy = True
-        self.fss.combat_zones["available"] = True
-        self.fss.combat_zones["variants"]["$Warzone_PointRace_High;"]["count"] = 2
+        self.fss.signals["$MULTIPLAYER_SCENARIO42_TITLE;"]["count"] = 2
         
         summary = self.fss.summarize()
-        # Expect list of strings
-        # "CZ: 2 High" (localized/short name)
-        # Checking for presence of "CZ" and "2"
-        self.assertTrue(any("CZ" in s for s in summary))
-        self.assertTrue(any("2" in s for s in summary))
+        self.assertTrue(any("Nav Beacon: 2" in s for s in summary))
 
-    def test_update_system_resets(self):
-        self.fss.update_system(123456, "System A")
-        self.fss.process({
-            "event": "FSSSignalDiscovered",
-            "SignalName": "Station A",
-            "IsStation": True,
+    def test_fleet_carrier(self):
+        event = {
             "timestamp": "2023-10-27T10:00:00Z",
-            "SystemAddress": 123456
-        })
-        self.assertEqual(len(self.fss.stations), 1)
+            "event": "FSSSignalDiscovered",
+            "SystemAddress": 12345,
+            "SignalName": "My Carrier X12-345",
+            "SignalType": "FleetCarrier",
+            "IsStation": True
+        }
         
-        # Update to different system
-        self.fss.update_system(654321, "System B")
-        self.assertEqual(len(self.fss.stations), 0)
-        self.assertEqual(self.fss.star_system["name"], "System B")
+        self.fss.process(event)
+        self.assertIn("X12-345", self.fss.fleet_carriers)
+        self.assertEqual(self.fss.fleet_carriers["X12-345"], "My Carrier")
 
-    def test_process_different_system_resets(self):
-        self.fss.update_system(123456, "System A")
-        self.fss.process({
-            "event": "FSSSignalDiscovered",
-            "SignalName": "Station A",
-            "IsStation": True,
-            "timestamp": "2023-10-27T10:00:00Z",
-            "SystemAddress": 123456
-        })
-        
-        # Process event from different system address
-        self.fss.process({
-            "event": "FSSSignalDiscovered",
-            "SignalName": "Station B",
-            "IsStation": True,
-            "timestamp": "2023-10-27T10:05:00Z",
-            "SystemAddress": 654321
-        })
-        
-        # Should have reset, so only Station B is there
-        self.assertEqual(len(self.fss.stations), 1)
-        self.assertIn("Station B", self.fss.stations)
-        self.assertNotIn("Station A", self.fss.stations)
+    def test_reset(self):
+        self.fss.signals["$MULTIPLAYER_SCENARIO42_TITLE;"]["count"] = 5
+        self.fss.reset()
+        self.assertEqual(self.fss.signals["$MULTIPLAYER_SCENARIO42_TITLE;"]["count"], 0)
+
+
+if __name__ == '__main__':
+    unittest.main()

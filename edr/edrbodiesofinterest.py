@@ -10,7 +10,7 @@ from edrutils import simplified_body_name # EDR_INTERNAL
 
 
 
-class EDRBodiesOfInterest(object):
+class EDRBodiesOfInterest:
     def __init__(self, dlc=None):
         filename = "{}_boi.json".format(dlc) if dlc else "boi.json"
         self.boi = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', filename)).read())

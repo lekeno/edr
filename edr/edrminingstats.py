@@ -6,7 +6,7 @@ from edri18n import _ # EDR_INTERNAL
 import json
 import os
 
-class EDRMineralStats(object):
+class EDRMineralStats:
     def __init__(self, name, internal_name, symbol):
         self.name = name
         self.internal_name = internal_name
@@ -47,7 +47,7 @@ class EDRMineralStats(object):
         return (self.sum / overall_prospected_nb)*100.0
 
 
-class EDRMiningStats(object):
+class EDRMiningStats:
     MINERALS_LUT = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', 'mining.json')).read())
 
     def __init__(self):

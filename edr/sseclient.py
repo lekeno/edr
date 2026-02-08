@@ -10,7 +10,7 @@ import requests
 # however, assumes that a system will provide consistent line endings.
 end_of_field = re.compile(r'\r\n\r\n|\r\r|\n\n')
 
-class SSEClient(object):
+class SSEClient:
     def __init__(self, url, last_id=None, retry=3000, session=None, chunk_size=1024, **kwargs):
         self.url = url
         self.last_id = last_id
@@ -32,7 +32,7 @@ class SSEClient(object):
         self.requests_kwargs['headers']['Accept'] = 'text/event-stream'
 
         # Keep data here as it streams in
-        self.buf = u''
+        self.buf = ''
 
         self._connect()
 
@@ -98,7 +98,7 @@ class SSEClient(object):
     next = __next__
 
 
-class Event(object):
+class Event:
 
     sse_line_pattern = re.compile('(?P<name>[^:]*):?( ?(?P<value>.*))?')
 

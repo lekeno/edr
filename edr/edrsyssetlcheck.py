@@ -1,10 +1,16 @@
-from edri18n import _, _c, _edr # EDR_INTERNAL
-from edrlog import EDR_LOG # EDR_INTERNAL
-from edtime import EDTime # EDR_INTERNAL
+from edri18n import _, _c, _edr
+from edrlog import EDR_LOG
+from edtime import EDTime
 
-class EDRSystemSettlementCheck(object):
+class EDRSystemSettlementCheck:
+    """
+    Checks if a system settlement meets criteria.
+    """
 
     def __init__(self):
+        """
+        Initialize with defaults.
+        """
         self.max_distance = 50
         self.max_sc_distance = 1500
         self.name = None
@@ -15,9 +21,15 @@ class EDRSystemSettlementCheck(object):
 
 
     def set_dlc(self, name):
+        """
+        Set DLC compatibility.
+        """
         self.dlc_name = name
 
     def check_system(self, system):
+        """
+        Check if system is within max distance.
+        """
         self.systems_counter = self.systems_counter + 1
         if not system:
             return False
@@ -28,6 +40,9 @@ class EDRSystemSettlementCheck(object):
         return system['distance'] <= self.max_distance
 
     def check_settlement(self, settlement, system_name=None):
+        """
+        Check if settlement is valid and within range.
+        """
         EDR_LOG.debug("Checking SysSettl: {}".format(settlement['name']))
         if not settlement:
             EDR_LOG.debug("Failed SysSettlCheck: nothing")
@@ -49,7 +64,9 @@ class EDRSystemSettlementCheck(object):
         return settlement['distanceToArrival'] < self.max_sc_distance
     
     def is_ambiguous(self, settlement, system_name=None):
-        
+        """
+        Check if settlement data is too old.
+        """
         timestamps = settlement.get("updateTime", None)
         if not timestamps:
             return True
@@ -67,14 +84,20 @@ class EDRSystemSettlementCheck(object):
     
 
 class EDRSystemOdySettlementCheck(EDRSystemSettlementCheck):
+    """
+    Checks if it is an Odyssey settlement.
+    """
 
     def __init__(self):
-        super(EDRSystemOdySettlementCheck, self).__init__()
+        super().__init__()
 
     def check_settlement(self, settlement, system_name=None):
+        """
+        Verify Odyssey settlement type.
+        """
         EDR_LOG.debug("Checking SysOdySettl: {}".format(settlement['name']))
         backup = self.settlements_counter
-        if not super(EDRSystemOdySettlementCheck, self).check_settlement(settlement):
+        if not super().check_settlement(settlement):
             EDR_LOG.debug("failed check from SystemOdySettlementCheck")
             return False
         
@@ -86,8 +109,14 @@ class EDRSystemOdySettlementCheck(EDRSystemSettlementCheck):
         return True
     
 class EDROdySettlementCheck(EDRSystemOdySettlementCheck):
+    """
+    Detailed check for Odyssey settlements (BGS, Economy, Govt, etc.).
+    """
 
     def __init__(self, edrsystems):
+        """
+        Initialize with EDRSystems instance.
+        """
         super().__init__()
         self.economies = set()
         self.exclude_economies = set()
@@ -107,6 +136,9 @@ class EDROdySettlementCheck(EDRSystemOdySettlementCheck):
         self.edrsystems = edrsystems
 
     def check_settlement(self, settlement, system_name=None):
+        """
+        Check if settlement matches detailed criteria.
+        """
         EDR_LOG.debug("Checking Odyssey Settlement {}; details: {}".format(settlement['name'], settlement))
         if not super().check_settlement(settlement):
             EDR_LOG.debug("Failed basic checks")
@@ -172,6 +204,9 @@ class EDROdySettlementCheck(EDRSystemOdySettlementCheck):
         return True
     
     def is_ambiguous(self, settlement, system_name=None):
+        """
+        Check ambiguity (unknown BGS state, old data).
+        """
         if super().is_ambiguous(settlement):
             return True
         
@@ -201,6 +236,9 @@ class EDROdySettlementCheck(EDRSystemOdySettlementCheck):
 
 
 class EDRCZSettlementChecker(EDROdySettlementCheck):
+    """
+    Checks for Combat Zone settlements.
+    """
     def __init__(self, system):
         super().__init__(system)
         self.bgs_states.add("civil war")
@@ -208,6 +246,9 @@ class EDRCZSettlementChecker(EDROdySettlementCheck):
         self.exclude_bgs_states = set()
 
 class EDRRetoreSettlementChecker(EDROdySettlementCheck):
+    """
+    Checks for Restore settlements (infrastructure failure, etc.).
+    """
     def __init__(self, system):
         super().__init__(system)
         self.bgs_states.add("civil unrest")
@@ -221,7 +262,10 @@ class EDRRetoreSettlementChecker(EDROdySettlementCheck):
         self.bgs_states.add("infrastructure failure")
         self.bgs_states.add("outbreak")
 
-class EDRSettlementCheckerFactory(object):
+class EDRSettlementCheckerFactory:
+    """
+    Factory for creating settlement checkers based on search queries.
+    """
     COMBOS_LUT = {
         _("abandoned"): EDRRetoreSettlementChecker,
         _("restore"): EDRRetoreSettlementChecker,
@@ -321,6 +365,9 @@ class EDRSettlementCheckerFactory(object):
 
     @staticmethod
     def recognized_settlement(settlement_conditions):
+        """
+        Check if conditions match a recognized settlement type.
+        """
         cconditions = settlement_conditions.lower().strip().replace(" ", "")
         cconditions = cconditions.split(",")
 
@@ -342,6 +389,9 @@ class EDRSettlementCheckerFactory(object):
     
     @staticmethod
     def get_checker(words_salad, override_sc_distance, edrsystems):
+        """
+        Create a settlement checker from a query string.
+        """
         words_salad = words_salad.lower().strip().replace(" ","")
 
         if words_salad in EDRSettlementCheckerFactory.COMBOS_LUT:
@@ -415,6 +465,9 @@ class EDRSettlementCheckerFactory(object):
 
     @staticmethod
     def recognized_candidates(words_salad):
+        """
+        Get valid candidate keywords for settlement search.
+        """
         words_salad = words_salad.lower().strip()
 
         keys = list(EDRSettlementCheckerFactory.COMBOS_LUT.keys())

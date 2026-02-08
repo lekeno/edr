@@ -7,7 +7,7 @@ from edrutils import simplified_body_name # EDR_INTERNAL
 from edri18n import _ # EDR_INTERNAL
 
 
-class EDRFleetCarrier(object):
+class EDRFleetCarrier:
     def __init__(self):
         self.id = None
         self.type = "FleetCarrier"
@@ -500,7 +500,7 @@ class EDRFleetCarrier(object):
             if name:
                 self.services[role]["crew"] = name
 
-class EDRFleetCarrierBar(object):
+class EDRFleetCarrierBar:
     def __init__(self):
         self.items = {}
         self.updated = False

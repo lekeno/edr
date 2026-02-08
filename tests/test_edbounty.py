@@ -22,10 +22,10 @@ class TestEDFineOrBounty(TestCase):
         self.assertEqual(bounty.pretty_print(), "999")
 
         bounty = EDFineOrBounty(1000)
-        self.assertEqual(bounty.pretty_print(), "1.0 k")
+        self.assertEqual(bounty.pretty_print(), "1 k")
 
         bounty = EDFineOrBounty(9999)
-        self.assertEqual(bounty.pretty_print(), "10.0 k")
+        self.assertEqual(bounty.pretty_print(), "10 k")
 
         bounty = EDFineOrBounty(12345)
         self.assertEqual(bounty.pretty_print(), "12 k")

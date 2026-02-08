@@ -1,65 +1,72 @@
 from copy import deepcopy
 import datetime
 import itertools
-from sys import float_repr_style
 import time
 import random
 import math
 import re
 import json
-import webbrowser
+import webbrowser # For navigation routes via Spansh
 
 import tkinter as tk
-from tkinter import ttk
-import ttkHyperlinkLabel
-import myNotebook as notebook
 from config import config
 
-from edrfleetcarrier import EDRFleetCarrier
-from edrconfig import EDR_CONFIG, EDRUserConfig # EDR_INTERNAL
+from edrfleetcarrier import EDRFleetCarrier # EDR_INTERNAL
+from edrconfig import EDR_CONFIG, EDRUserConfig, __version__ # EDR_INTERNAL
 from lrucache import LRUCache # EDR_INTERNAL
 from edentities import EDFineOrBounty # EDR_INTERNAL
 from edsitu import EDPlanetaryLocation, EDLocation # EDR_INTERNAL
 from edrserver import EDRServer, CommsJammedError # EDR_INTERNAL
-from edsmserver import EDSMServer
-from audiofeedback import EDRSoundEffects
+from edsmserver import EDSMServer # EDR_INTERNAL
+from audiofeedback import EDRSoundEffects # EDR_INTERNAL
 from edrlog import EDR_LOG # EDR_INTERNAL
-from ingamemsg import InGameMsg
-from edrclientui import EDRClientUI
-from edrsystems import EDRSystems
-from edrfactions import EDRFactions
-from edrresourcefinder import EDRResourceFinder
-from edrbodiesofinterest import EDRBodiesOfInterest
-from edrcmdrs import EDRCmdrs
-from edropponents import EDROpponents
-from randomtips import RandomTips
-from helpcontent import HelpContent
+from ingamemsg import InGameMsg # EDR_INTERNAL
+from edrclientui import EDRClientUI # EDR_INTERNAL
+from edrsystems import EDRSystems # EDR_INTERNAL
+from edrfactions import EDRFactions # EDR_INTERNAL
+from edrresourcefinder import EDRResourceFinder # EDR_INTERNAL
+from edrbodiesofinterest import EDRBodiesOfInterest # EDR_INTERNAL
+from edrcmdrs import EDRCmdrs  # EDR_INTERNAL
+from edropponents import EDROpponents  # EDR_INTERNAL
+from randomtips import RandomTips  # EDR_INTERNAL
+from helpcontent import HelpContent  # EDR_INTERNAL
 from edtime import EDTime # EDR_INTERNAL
 from edrlegalrecords import EDRLegalRecords # EDR_INTERNAL
-from edrxzibit import EDRXzibit
+from edrxzibit import EDRXzibit  # EDR_INTERNAL
 from edrdiscord import EDRDiscordIntegration
 from edvehicles import EDVehicleFactory # EDR_INTERNAL
-from edrsysplacheck import EDRGenusCheckerFactory
-from edrsyssetlcheck import EDRSettlementCheckerFactory
+from edrsysplacheck import EDRGenusCheckerFactory  # EDR_INTERNAL
+from edrsyssetlcheck import EDRSettlementCheckerFactory  # EDR_INTERNAL
 
 from edri18n import _, _c, _edr, set_language # EDR_INTERNAL
 from clippy import copy, paste
 from edrfssinsights import EDRFSSInsights
 from edrcommands import EDRCommands
 import edrroutes
-from edrutils import simplified_body_name, pretty_print_number # EDR_INTERNAL
+from edrutils import simplified_body_name, pretty_print_number, compare_versions, is_valid_semver # EDR_INTERNAL
+
 from RESTFirebase import AuthState
 
 
-class EDRClient(object):
+class EDRClient:
+    """
+    The main client class for EDR.
+    Manages state, servers, UI, and event processing.
+    """
     SFX = EDRSoundEffects()
 
     def __init__(self):
+        """
+        Initialize the EDR Client.
+        Sets up configuration, caches, servers, and initial state.
+        """
         edr_config = EDR_CONFIG
         set_language(config.get_str("language"))
 
-        self.edr_version = edr_config.edr_version()
-        EDR_LOG.info("Version {}".format(self.edr_version))
+        self.edr_version = __version__
+        if not is_valid_semver(self.edr_version):
+            EDR_LOG.warning(f"Current version {self.edr_version} does not follow strict semantic versioning standards!")
+        EDR_LOG.info(f"Version {self.edr_version}")
 
         self.enemy_alerts_pledge_threshold = edr_config.enemy_alerts_pledge_threshold()
         self.system_novelty_threshold = edr_config.system_novelty_threshold()
@@ -94,11 +101,11 @@ class EDRClient(object):
         
         visual_feedback_type = _("Enabled") if config.get_str("EDRVisualFeedback") == "True" else _("Disabled")
         standalone_overlay = False
-        if config.get_str("EDRVisualFeedback2") != None:
+        if config.get_str("EDRVisualFeedback2") is not None:
             visual_feedback_type = config.get_str("EDRVisualFeedback2")
             standalone_overlay = visual_feedback_type == _("Standalone (for VR or multi-display)")
         visual = 1 if visual_feedback_type != _("Disabled") else 0
-        self.IN_GAME_MSG = InGameMsg(standalone = standalone_overlay) if visual else None
+        self.IN_GAME_MSG = InGameMsg(standalone=standalone_overlay) if visual else None
         self._visual_feedback_type = tk.StringVar(value=visual_feedback_type)
         self._visual_feedback = True if visual else False
 
@@ -112,7 +119,6 @@ class EDRClient(object):
 
         g_triggers = 1 if config.get_str("EDRGestureTriggers") == "True" else 0
         self._gesture_triggers = tk.IntVar(value=g_triggers)
-        
         
         self.server = EDRServer()
         crimes_reporting = 1 if config.get_str("EDRCrimesReporting") == "True" else 0
@@ -133,7 +139,6 @@ class EDRClient(object):
             self.server.fc_jump_psa = fc_jump_psa == _("Public")
         self._fc_jump_psa = tk.StringVar(value=fc_jump_psa)
 
-        
         self.realtime_params = {
             EDROpponents.OUTLAWS: self.__get_realtime_params("EDROutlawsAlerts"),
             EDROpponents.ENEMIES: self.__get_realtime_params("EDREnemiesAlerts")
@@ -164,6 +169,15 @@ class EDRClient(object):
         self.edrcommands = EDRCommands(self)
         
     def __get_realtime_params(self, kind):
+        """
+        Retrieve realtime parameters for a specific kind of event.
+
+        Args:
+            kind (str): The kind of event (e.g., 'EDROutlawsAlerts').
+
+        Returns:
+            dict: Dictionary with min_bounty and max_distance.
+        """
         def get_config_value(pattern, kind):
             value = None
             key = pattern.format(kind)
@@ -185,18 +199,27 @@ class EDRClient(object):
         return { "min_bounty": min_bounty, "max_distance": max_distance} 
     
     def loud_audio_feedback(self):
+        """
+        Enable loud audio feedback.
+        """
         config.set("EDRAudioFeedbackVolume", "loud")
         self.SFX.loud()
         # Translators: this is shown on EDMC's status bar when a user enables loud audio cues
         self.status = _("loud audio cues.")
 
     def soft_audio_feedback(self):
+        """
+        Enable soft audio feedback.
+        """
         config.set("EDRAudioFeedbackVolume", "soft")
         self.SFX.soft()
         # Translators: this is shown on EDMC's status bar when a user enables soft audio cues
         self.status = _("soft audio cues.")
 
     def apply_config(self):
+        """
+        Apply configuration from EDMC settings.
+        """
         c_email = config.get_str("EDREmail")
         c_password = config.get_str("EDRPassword")
         c_visual_feedback_type = config.get_str("EDRVisualFeedback2") or (_("Enabled") if config.get_str("EDRVisualFeedback") == "True" else _("Disabled"))
@@ -257,6 +280,9 @@ class EDRClient(object):
 
 
     def check_version(self):
+        """
+        Check for EDR updates and handle version obsolescence.
+        """
         version_range = self.server.server_version()
         self.motd = _edr(version_range["l10n_motd"])
 
@@ -277,14 +303,33 @@ class EDRClient(object):
             self.__status_update_pending()
 
     def is_obsolete(self, advertised_version):
-        return list(map(int, self.edr_version.split('.'))) < list(map(int, advertised_version.split('.')))
+        """
+        Check if the current version is older than the advertised version.
+
+        Args:
+            advertised_version (str): The version string to compare against.
+
+        Returns:
+            bool: True if current version is older, False otherwise.
+        """
+        if not is_valid_semver(advertised_version):
+            EDR_LOG.warning(f"Advertised version {advertised_version} does not follow strict semantic versioning standards!")
+        return compare_versions(self.edr_version, advertised_version) == -1
 
     @property
     def player(self):
+        """
+        Returns:
+            EDRPlayer: The player object.
+        """
         return self.edrcmdrs.player
 
     @property
     def email(self):
+        """
+        Returns:
+            str: The user's email.
+        """
         return self._email.get()
 
     @email.setter
@@ -293,6 +338,10 @@ class EDRClient(object):
 
     @property
     def password(self):
+        """
+        Returns:
+            str: The user's password.
+        """
         return self._password.get()
 
     @password.setter
@@ -301,6 +350,10 @@ class EDRClient(object):
 
     @property
     def status(self):
+        """
+        Returns:
+            str: The current status text.
+        """
         return self._status.get()
 
     @status.setter
@@ -309,7 +362,14 @@ class EDRClient(object):
         if self.client_ui:
             self.client_ui.nolink()
 
-    def linkable_status(self, link, new_status = None):
+    def linkable_status(self, link, new_status=None):
+        """
+        Set status with a link.
+
+        Args:
+            link (str): The URL to link to.
+            new_status (str, optional): The status text.
+        """
         short_link = (link[:30] + '…') if link and len(link) > 30 else link
         self._status.set(new_status if new_status else short_link)
         if self.client_ui:
@@ -317,12 +377,16 @@ class EDRClient(object):
 
     @property
     def visual_feedback(self):
+        """
+        Returns:
+            bool: True if visual feedback is enabled.
+        """
         if self._visual_feedback == 0:
             return False
         
         if not self.IN_GAME_MSG:
              standalone_overlay = self.visual_feedback_type == _("Standalone (for VR or multi-display)")
-             self.IN_GAME_MSG = InGameMsg(standalone = standalone_overlay)
+             self.IN_GAME_MSG = InGameMsg(standalone=standalone_overlay)
         return True
 
     @visual_feedback.setter
@@ -331,15 +395,22 @@ class EDRClient(object):
 
     @property
     def visual_alt_feedback(self):
+        """
+        Returns:
+            bool: True if alternative visual feedback is enabled.
+        """
         return self._visual_alt_feedback.get() == 1
 
     @visual_alt_feedback.setter
     def visual_alt_feedback(self, new_value):
         self._visual_alt_feedback.set(new_value)
 
-
     @property
     def audio_feedback(self):
+        """
+        Returns:
+            bool: True if audio feedback is enabled.
+        """
         return self._audio_feedback.get() == 1
 
     @audio_feedback.setter
@@ -348,6 +419,10 @@ class EDRClient(object):
 
     @property
     def gesture_triggers(self):
+        """
+        Returns:
+            bool: True if gesture triggers are enabled.
+        """
         return self._gesture_triggers.get() == 1
 
     @gesture_triggers.setter
@@ -356,6 +431,10 @@ class EDRClient(object):
 
     @property
     def anonymous_reports(self):
+        """
+        Returns:
+            str: Anonymous reporting setting ('Auto', 'Always', 'Never').
+        """
         return self._anonymous_reports.get()
 
     @anonymous_reports.setter
@@ -368,6 +447,10 @@ class EDRClient(object):
 
     @property
     def crimes_reporting(self):
+        """
+        Returns:
+            bool: True if crimes reporting is enabled.
+        """
         return self._crimes_reporting.get() == 1
 
     @crimes_reporting.setter
@@ -376,6 +459,10 @@ class EDRClient(object):
 
     @property
     def fc_jump_psa(self):
+        """
+        Returns:
+            str: Fleet Carrier jump PSA setting ('Never', 'Public', 'Private', 'Direct').
+        """
         return self._fc_jump_psa.get()
 
     @fc_jump_psa.setter
@@ -388,6 +475,10 @@ class EDRClient(object):
 
     @property
     def visual_feedback_type(self):
+        """
+        Returns:
+            str: Visual feedback type setting.
+        """
         return self._visual_feedback_type.get()
 
     @visual_feedback_type.setter
@@ -404,18 +495,37 @@ class EDRClient(object):
             if self.IN_GAME_MSG and self.IN_GAME_MSG.standalone_overlay != standalone_overlay:
                 self.IN_GAME_MSG.shutdown()
                 self.IN_GAME_MSG = None
-                self.IN_GAME_MSG = InGameMsg(standalone = standalone_overlay)
+                self.IN_GAME_MSG = InGameMsg(standalone=standalone_overlay)
 
     def player_name(self, name):
+        """
+        Set the player name.
+
+        Args:
+            name (str): The player name.
+        """
         self.edrcmdrs.set_player_name(name)
         self.server.set_player_name(name)
 
-    def game_mode(self, mode, group = None):
+    def game_mode(self, mode, group=None):
+        """
+        Set the current game mode.
+
+        Args:
+            mode (str): Game mode (e.g. 'Open', 'Solo', 'Group').
+            group (str, optional): Private group name.
+        """
         self.player.game_mode = mode
         self.player.private_group = group  
         self.server.set_game_mode(mode, group)
 
     def set_dlc(self, dlc):
+        """
+        Set the active DLC context.
+
+        Args:
+            dlc (str): DLC name (e.g. 'Horizons', 'Odyssey').
+        """
         self.player.dlc_name = dlc
         self.server.set_dlc(dlc)
         self.edrsystems.set_dlc(dlc)
@@ -423,6 +533,13 @@ class EDRClient(object):
         self.edrresourcefinder.set_dlc(dlc)
 
     def pledged_to(self, power, time_pledged=0):
+        """
+        Update powerplay pledge status.
+
+        Args:
+            power (str): Power name.
+            time_pledged (int): Timestamp of pledge.
+        """
         if self.server.is_anonymous():
             EDR_LOG.info("Skipping pledged_to call since the user is anonymous.")
             return
@@ -432,6 +549,12 @@ class EDRClient(object):
                 self.edropponents[kind].pledged_to(nodotpower, time_pledged)
 
     def login(self):
+        """
+        Attempt to log in to the EDR server.
+
+        Returns:
+            bool: True if successful or pending, False otherwise.
+        """
         self.server.logout()
         result = self.server.login(self.email, self.password)
         if result == AuthState.SUCCESS:
@@ -440,7 +563,7 @@ class EDRClient(object):
             return True
         elif result == AuthState.PENDING_APPROVAL:
             # The transition state
-            EDR_LOG.info("Account pending for {}, falling back to guest.".format(self.email))
+            EDR_LOG.info(f"Account pending for {self.email}, falling back to guest.")
             
             # We tell the user it's pending, but immediately try to get a guest token
             if self.server.login() == AuthState.SUCCESS:
@@ -456,16 +579,27 @@ class EDRClient(object):
         else:
             # Translators: this is shown on EDMC's status bar when the authentication fails
             self.status = _("not authenticated.")
-            EDR_LOG.error(f"Auth failed, other errors.")
+            EDR_LOG.error("Auth failed, other errors.")
             return False
 
     def is_logged_in(self):
+        """
+        Returns:
+            bool: True if authenticated.
+        """
         return self.server.is_authenticated()
 
     def is_anonymous(self):
+        """
+        Returns:
+            bool: True if logged in as guest/anonymous.
+        """
         return (self.is_logged_in() and self.server.is_anonymous())
 
     def warmup(self):
+        """
+        Perform startup tasks: status checks, audio cues, overlays intro.
+        """
         EDR_LOG.info("Warming up client.")
         details = []
         if not self.crimes_reporting:
@@ -489,6 +623,12 @@ class EDRClient(object):
             self.client_ui.enable_entry()
 
     def shutdown(self, everything=False):
+        """
+        Perform shutdown tasks: persistance, logout.
+
+        Args:
+            everything (bool): If True, also logs out.
+        """
         self.edrcmdrs.persist()
         self.player.persist()
         self.edrsystems.persist()
@@ -509,12 +649,30 @@ class EDRClient(object):
         self.server.logout()
 
     def app_ui(self, parent):
+        """
+        Build the main application UI.
+
+        Args:
+            parent: Parent UI element.
+
+        Returns:
+            The application UI frame.
+        """
         if self.client_ui is None:
             self.client_ui = EDRClientUI(self, parent)
         self.check_version()
         return self.client_ui.app_ui()
 
     def prefs_ui(self, parent):
+        """
+        Build the preferences UI.
+
+        Args:
+            parent: Parent UI element.
+
+        Returns:
+            The preferences UI frame.
+        """
         return self.client_ui.prefs_ui(parent)
 
     def __status_update_pending(self):
@@ -528,17 +686,26 @@ class EDRClient(object):
             self.linkable_status(link, status)
 
     def on_foot(self):
+        """
+        Handle transition to on-foot state.
+        """
         self.player.in_spacesuit()
         if self.IN_GAME_MSG:
             self.IN_GAME_MSG.on_foot_layout()
         
 
     def in_ship(self):
+        """
+        Handle transition to in-ship state.
+        """
         self.player.in_spacesuit()
         if self.IN_GAME_MSG:
             self.IN_GAME_MSG.in_ship_layout()
 
     def prefs_changed(self):
+        """
+        Handle changes in preferences.
+        """
         set_language(config.get_str("language"))
         if self.mandatory_update:
             EDR_LOG.error("Out-of-date client, aborting.")
@@ -555,21 +722,38 @@ class EDRClient(object):
         config.set("EDRRedactMyInfo", self.anonymous_reports)
         config.set("EDRCrimesReporting", "True" if self.crimes_reporting else "False")
         config.set("EDRFCJumpPSA", self.fc_jump_psa)
-        EDR_LOG.debug("Audio cues: {}, {}".format(config.get_str("EDRAudioFeedback"),
-                                                config.get_str("EDRAudioFeedbackVolume")))
-        EDR_LOG.debug("Anonymous reports: {}".format(config.get_str("EDRRedactMyInfo")))
-        EDR_LOG.debug("Crimes reporting: {}".format(config.get_str("EDRCrimesReporting")))
+        EDR_LOG.debug(f"Audio cues: {config.get_str('EDRAudioFeedback')}, {config.get_str('EDRAudioFeedbackVolume')}")
+        EDR_LOG.debug(f"Anonymous reports: {config.get_str('EDRRedactMyInfo')}")
+        EDR_LOG.debug(f"Crimes reporting: {config.get_str('EDRCrimesReporting')}")
         if self.client_ui:
             self.client_ui.refresh_theme()
         self.login()
 
     def process_sent_message(self, entry):
+        """
+        Process a message sent by the user (chat).
+
+        Args:
+            entry (dict): The journal entry of the sent message.
+
+        Returns:
+            bool: True if processed, False otherwise.
+        """
         if self.client_ui:
             self.client_ui.enable_entry()
         
         return self.edrcommands.process(entry["Message"], entry.get("To", None))
 
     def noteworthy_about_system(self, fsdjump_event):
+        """
+        Check and notify about noteworthy details of the current system.
+
+        Args:
+            fsdjump_event (dict): The FSDJump journal event.
+
+        Returns:
+            bool: True if noteworthy information was found/displayed.
+        """
         if fsdjump_event["SystemSecurity"]:
             self.player.location_security(fsdjump_event["SystemSecurity"])
         self.edrsystems.system_id(fsdjump_event['StarSystem'], may_create=not self.is_anonymous(), coords=fsdjump_event.get("StarPos", None))
@@ -594,10 +778,16 @@ class EDRClient(object):
             else:
                 return False
             
-        self.__notify(header, facts, clear_before = True)
+        self.__notify(header, facts, clear_before=True)
         return True
 
     def noteworthy_about_settlement(self, entry):
+        """
+        Check and notify about noteworthy details of a settlement.
+
+        Args:
+            entry (dict): The approach settlement journal event.
+        """
         self.edrfactions.process_approach_event(entry, self.player.star_system)
         if "StationFaction" not in entry or "Name" not in entry:
             return
@@ -613,6 +803,16 @@ class EDRClient(object):
         self.__notify(header, details, clear_before=True)
 
     def describe_ed_settlement(self, entry, faction):
+        """
+        Generate a description of a settlement.
+
+        Args:
+            entry (dict): The settlement data.
+            faction (EDRFaction): The controlling faction.
+
+        Returns:
+            list: List of description strings.
+        """
         details = []
         if entry["event"] != "ApproachSettlement":
             return details
@@ -655,10 +855,22 @@ class EDRClient(object):
         return details
 
     def docked_at(self, docking_entry):
+        """
+        Handle docking event.
+
+        Args:
+            docking_entry (dict): The docking journal event.
+        """
         self.player.docked_at(docking_entry)
         self.edrfactions.process_docking_event(docking_entry, self.player.star_system)
 
     def process_location_event(self, entry):
+        """
+        Process the location journal event.
+
+        Args:
+            entry (dict): The location event.
+        """
         if not (entry and entry.get("event", "") == "Location"):
             return
 
@@ -667,6 +879,16 @@ class EDRClient(object):
         self.check_system(entry["StarSystem"], may_create=True, coords=entry.get("StarPos", None))
         
     def noteworthy_about_body(self, star_system, body_name):
+        """
+        Check and notify about noteworthy details of a stellar body.
+
+        Args:
+            star_system (str): The star system name.
+            body_name (str): The body name.
+
+        Returns:
+            bool: True if noteworthy information was found/displayed.
+        """
         route_facts = self.player.routenav.noteworthy_about_body(star_system, body_name)
         
         pois = self.edrboi.points_of_interest(star_system, body_name)
@@ -700,6 +922,16 @@ class EDRClient(object):
             self.__notify(header, details, clear_before = True)
 
     def leave_body(self, star_system, body_name):
+        """
+        Handle leaving a stellar body.
+
+        Args:
+            star_system (str): The star system name.
+            body_name (str): The body name.
+
+        Returns:
+            bool: True if an update was triggered.
+        """
         place = "Supercruise"
         self.player.planetary_destination = None
         outcome = self.player.update_place_if_obsolete(place)
@@ -722,6 +954,16 @@ class EDRClient(object):
         
 
     def __biome_progress_oneliner(self, star_system, body_id_or_name):
+        """
+        Generate a one-liner progress report for biome analysis.
+
+        Args:
+            star_system (str): The star system.
+            body_id_or_name (str/int): The body name or ID.
+
+        Returns:
+            str: The progress string or None.
+        """
         progress = self.edrsystems.analyzed_biome(star_system, body_id_or_name)
         genus_analyzed = progress["genuses"].get("analyzed", None)
         genus_detected = progress["genuses"].get("detected", None)
@@ -746,6 +988,12 @@ class EDRClient(object):
         return _("Progress: {}{}").format(genus_bit, species_bit)
 
     def noteworthy_about_scan(self, scan_event):
+        """
+        Check and notify about noteworthy details of a scan event.
+
+        Args:
+            scan_event (dict): The scan journal event.
+        """
         if scan_event["event"] != "Scan" or not scan_event["ScanType"] in ["Detailed", "Basic", "AutoScan"]:
             return
         
@@ -795,6 +1043,14 @@ class EDRClient(object):
 
     
     def register_fss_signals(self, system_address=None, override_star_system=None, force_reporting=False):
+        """
+        Register FSS signals and potentially report them.
+
+        Args:
+            system_address (int, optional): The system address.
+            override_star_system (str, optional): Override the star system name.
+            force_reporting (bool): Force reporting even if already reported.
+        """
         self.edrfssinsights.update_system(system_address or self.player.star_system_address, override_star_system or self.player.star_system)
         if self.edrfssinsights.reported:
             if force_reporting:
@@ -820,6 +1076,15 @@ class EDRClient(object):
 
     
     def noteworthy_about_signal(self, fss_event):
+        """
+        Check and notify about noteworthy details of an FSS signal.
+
+        Args:
+            fss_event (dict): The FSS signal discovered event.
+
+        Returns:
+            bool: True if noteworthy information was found/displayed.
+        """
         self.edrfssinsights.process(fss_event)
         facts = self.edrresourcefinder.assess_signal(fss_event, self.player.location, self.player.inventory)
         if facts:
@@ -828,6 +1093,12 @@ class EDRClient(object):
             return True
 
     def noteworthy_signals_in_system(self):
+        """
+        Check and notify about noteworthy signals in the current system.
+
+        Returns:
+            bool: True if noteworthy signals were found/displayed.
+        """
         self.edrfssinsights.update(self.player.star_system)
         
         if not self.edrfssinsights.noteworthy:
@@ -840,6 +1111,15 @@ class EDRClient(object):
         return True
 
     def process_scan(self, scan_event):
+        """
+        Process a scan event (space or organic).
+
+        Args:
+            scan_event (dict): The scan journal event.
+
+        Returns:
+            bool: Result of the scan processing.
+        """
         if scan_event["event"] == "Scan":
             return self.__process_space_scan(scan_event)
         elif scan_event["event"] == "ScanOrganic":
@@ -899,17 +1179,42 @@ class EDRClient(object):
         return False
         
     def __process_space_scan(self, scan_event):
+        """
+        Process a space scan event.
+
+        Args:
+            scan_event (dict): The scan journal event.
+        """
         self.edrsystems.reflect_scan(self.player.star_system, scan_event["BodyName"], scan_event)
         if "Materials" not in scan_event:
             return False
         self.edrsystems.materials_info(self.player.star_system, scan_event["BodyName"], scan_event["Materials"])
 
     def closest_poi_on_body(self, star_system, body_name, attitude):
+        """
+        Find the closest Point of Interest on a body.
+
+        Args:
+            star_system (str): The star system.
+            body_name (str): The body name.
+            attitude (EDAttitude): The reference attitude.
+
+        Returns:
+            dict: The closest POI or None.
+        """
         body = self.edrsystems.body(star_system, body_name)
         radius = body.get("radius", None) if body else None
         return self.edrboi.closest_point_of_interest(star_system, body_name, attitude, radius)
 
     def navigation(self, latitude, longitude, title="Navpoint"):
+        """
+        Set a navigation destination.
+
+        Args:
+            latitude (float): Destination latitude.
+            longitude (float): Destination longitude.
+            title (str): Title for the navpoint.
+        """
         position = {"latitude": float(latitude), "longitude": float(longitude)}
         boi = {}
         poi = {}
@@ -930,6 +1235,12 @@ class EDRClient(object):
             self.__notify(_('Assisted Navigation'), [_("Invalid destination")], clear_before = True)
 
     def docking_guidance(self, entry):
+        """
+        Handle docking guidance logic.
+
+        Args:
+            entry (dict): The docking event entry.
+        """
         if not hasattr(self, "requests_cache"):
             self.requests_cache = {}
 
@@ -989,6 +1300,16 @@ class EDRClient(object):
             self.IN_GAME_MSG.clear_docking()
 
     def describe_station(self, station, faction):
+        """
+        Generate a description for a station.
+
+        Args:
+            station (dict): The station data.
+            faction (EDRFaction): The controlling faction.
+
+        Returns:
+            list: List of description strings.
+        """
         if not station:
             return
         station_type = (station.get("type","N/A") or "N/A").lower()
@@ -1079,6 +1400,12 @@ class EDRClient(object):
         return details
 
     def destination_guidance(self, destination):
+        """
+        Provide guidance towards a destination.
+
+        Args:
+            destination (str): The destination name.
+        """
         if not self.player.set_destination(destination):
             return
 
@@ -1143,6 +1470,12 @@ class EDRClient(object):
                 return
 
     def system_value(self, star_system=None):
+        """
+        Notify about the estimated value of a system.
+
+        Args:
+            star_system (str, optional): The system name. Defaults to current system.
+        """
         # avoid belts since it's noisy and worthless
         if star_system is None:
             star_system = self.player.star_system
@@ -1205,6 +1538,12 @@ class EDRClient(object):
             self.__notify(_("Estimated value of {}").format(star_system), details, clear_before= True)
 
     def saa_scan_complete(self, entry):
+        """
+        Handle a Surface Area Analysis (SAA) scan completion.
+
+        Args:
+            entry (dict): The SAA scan complete journal event.
+        """
         self.edrsystems.saa_scan_complete(self.player.star_system, entry)
         self.player.location.from_entry(entry)
         
@@ -1225,6 +1564,13 @@ class EDRClient(object):
         
         
     def biology_on(self, body_name, star_system=None):
+        """
+        Check and notify about biology on a body.
+
+        Args:
+            body_name (str): The body name.
+            star_system (str, optional): The system name.
+        """
         star_system = star_system or self.player.star_system
         bio_info = self.edrsystems.biology_on(star_system, body_name)
         
@@ -1251,6 +1597,12 @@ class EDRClient(object):
         self.__notify(header, details, clear_before=True)
 
     def biology_spots(self, star_system):
+        """
+        Check and notify about bodies suitable for exobiology in a system.
+
+        Args:
+            star_system (str): The system name.
+        """
         bio_info = self.edrsystems.biology_spots(star_system)
         body_count = self.edrsystems.body_count(star_system)
         header = _("Bodies suitable for exobiology in {}").format(star_system)
@@ -1264,6 +1616,12 @@ class EDRClient(object):
         self.__notify(header, details, clear_before=True)
 
     def body_signals_found(self, entry):
+        """
+        Handle finding signals on a body (SAASignalsFound).
+
+        Args:
+            entry (dict): The SAASignalsFound journal event.
+        """
         self.edrsystems.body_signals_found(self.player.star_system, entry)
         body_name = entry["BodyName"]
         details = []
@@ -1290,9 +1648,21 @@ class EDRClient(object):
             self.__notify(_('Signals on {}').format(body_name), details, clear_before = True)
 
     def reflect_fss_discovery_scan(self, entry):
+        """
+        Update systems info based on FSSDiscoveryScan.
+
+        Args:
+            entry (dict): The FSSDiscoveryScan journal event.
+        """
         self.edrsystems.fss_discovery_scan_update(entry)
         
     def process_codex_entry(self, entry):
+        """
+        Process a CodexEntry event (for bio/geo signals).
+
+        Args:
+            entry (dict): The CodexEntry journal event.
+        """
         if entry.get("event", "") != "CodexEntry":
             return
 
@@ -1337,6 +1707,9 @@ class EDRClient(object):
         
  
     def show_navigation(self):
+        """
+        Display navigation guidance to the current destination.
+        """
         current = self.player.attitude
         destination = self.player.planetary_destination
 
@@ -1373,6 +1746,9 @@ class EDRClient(object):
         self.status = _("> {:03} < for Lat:{:.4f} Lon:{:.4f}").format(bearing, destination.latitude, destination.longitude)
 
     def try_custom_poi(self):
+        """
+        Attempt to set a custom POI as destination based on current attitude.
+        """
         current = self.player.attitude
         if not current or not current.valid():
             return
@@ -1393,6 +1769,9 @@ class EDRClient(object):
         self.player.planetary_destination = EDPlanetaryLocation(poi)
     
     def biology_guidance(self):
+        """
+        Provide guidance for exobiological sampling.
+        """
         current = self.player.attitude
         if not current or not current.valid():
             return
@@ -1437,6 +1816,14 @@ class EDRClient(object):
         self.status = _("Value: {} cr; Gene diversity: +{}m => {}").format(pretty_print_number(credits), ccr, distances_summary)
 
     def check_system(self, star_system, may_create=False, coords=None):
+        """
+        Check a system for NOTAMs, sitreps, and recent activity.
+
+        Args:
+            star_system (str): The system name.
+            may_create (bool): Whether to create the system if unknown.
+            coords (dict, optional): System coordinates.
+        """
         try:
             EDR_LOG.info("Check system called: {}".format(star_system))
             details = []
@@ -1482,6 +1869,9 @@ class EDRClient(object):
             self.__commsjammed()
 
     def mining_guidance(self):
+        """
+        Provide guidance for mining activities.
+        """
         if self.visual_feedback:
             self.IN_GAME_MSG.mining_guidance(self.player.mining_stats)
             if self.audio_feedback:
@@ -1491,6 +1881,12 @@ class EDRClient(object):
             self.status = _("[Yield: {:.2f}%]   [Items: {} ({:.0f}/hour)]").format(self.player.mining_stats.last["proportion"], self.player.mining_stats.refined_nb, self.player.mining_stats.item_per_hour())
     
     def bounty_hunting_guidance(self, turn_off=False):
+        """
+        Provide guidance for bounty hunting.
+
+        Args:
+            turn_off (bool): Whether to clear the guidance.
+        """
         if self.visual_feedback:
             if turn_off:
                 self.IN_GAME_MSG.clear_bounty_hunting_guidance()
@@ -1504,6 +1900,13 @@ class EDRClient(object):
         self.status = _("[Last: {} cr [{}]]   [Totals: {} cr/hour ({} awarded)]").format(bounty.pretty_print(), self.player.bounty_hunting_stats.last["name"], self.player.bounty_hunting_stats.awarded_nb, credits_per_hour.pretty_print())
 
     def target_guidance(self, target_event, turn_off=False):
+        """
+        Provide guidance about the current target.
+
+        Args:
+            target_event (dict): The ship target journal event.
+            turn_off (bool): Whether to clear the guidance.
+        """
         if turn_off or (not target_event or not self.player.target_pilot() or not self.player.target_pilot().vehicle):
             if self.visual_feedback:
                 self.IN_GAME_MSG.clear_target_guidance()
@@ -1535,6 +1938,9 @@ class EDRClient(object):
                 self.SFX.target()
 
     def notams(self):
+        """
+        Show active NOTAMs (Notice to Air Men).
+        """
         summary = self.edrsystems.systems_with_active_notams()
         if summary:
             details = []
@@ -1548,6 +1954,12 @@ class EDRClient(object):
             self.__sitrep(_("NOTAMs"), [_("No active NOTAMs.")])
 
     def notam(self, star_system):
+        """
+        Show active NOTAMs for a specific system.
+
+        Args:
+            star_system (str): The star system.
+        """
         summary = self.edrsystems.active_notams(star_system)
         if summary:
             EDR_LOG.debug("NOTAMs for {}: {}".format(star_system, summary))
@@ -1557,6 +1969,9 @@ class EDRClient(object):
             self.__sitrep(_("NOTAM for {}").format(star_system), [_("No active NOTAMs.")])
 
     def sitreps(self):
+        """
+        Show Situation Reports (SITREPs) for systems with recent activity.
+        """
         try:
             details = []
             summary = self.edrsystems.systems_with_recent_activity()
@@ -1578,6 +1993,15 @@ class EDRClient(object):
 
 
     def cmdr_id(self, cmdr_name):
+        """
+        Get the CID (Commander ID) for a commander name.
+
+        Args:
+            cmdr_name (str): The commander name.
+
+        Returns:
+            str: The CID or None.
+        """
         try:
             profile = self.cmdr(cmdr_name, check_inara_server=False)
             if not (profile is None or profile.cid is None):
@@ -1591,6 +2015,17 @@ class EDRClient(object):
             return None
 
     def cmdr(self, cmdr_name, autocreate=True, check_inara_server=False):
+        """
+        Get or create a commander profile.
+
+        Args:
+            cmdr_name (str): The commander name.
+            autocreate (bool): Whether to create a profile if one doesn't exist.
+            check_inara_server (bool): Whether to check Inara for data.
+
+        Returns:
+            EDRCmdrProfile: The commander profile or None.
+        """
         try:
             return self.edrcmdrs.cmdr(cmdr_name, autocreate, check_inara_server)
         except CommsJammedError:
@@ -1598,6 +2033,13 @@ class EDRClient(object):
             return None
 
     def eval_mission(self, entry, passive=True):
+        """
+        Evaluate a mission for potential rewards or items.
+
+        Args:
+            entry (dict): The mission journal event.
+            passive (bool): If True, suppresses output if nothing noteworthy.
+        """
         if entry["event"] not in ["MissionAccepted", "MissionCompleted"]:
             return
         if entry["event"] == "MissionAccepted":
@@ -1638,6 +2080,12 @@ class EDRClient(object):
                 self.__notify(_("Mission rewards eval"), [_("Nothing noteworthy to share")], clear_before=True)
 
     def eval(self, eval_type):
+        """
+        Evaluate items, loadouts, or other categories.
+
+        Args:
+            eval_type (str): The type of evaluation (e.g. 'power', 'backpack').
+        """
         canonical_commands = ["power", "backpack", "locker", "bar", "bar stock", "bar demand"]
         synonym_commands = {"power": ["priority", "pp", "priorities"]}
         supported_commands = set(canonical_commands + synonym_commands["power"])
@@ -1666,6 +2114,9 @@ class EDRClient(object):
             self.eval_bar(stock=False)
 
     def eval_build(self):
+        """
+        Evaluate ship build/loadout (power priorities).
+        """
         if not self.player.mothership.update_modules():
             self.notify_with_details(_("Loadout information is stale"), [_("Congrats, yo've found a bug in Elite!"), _("The modules info isn't updated right away :("), _("Try again after moving around or relog and check your modules.")])
             return
@@ -1696,6 +2147,12 @@ class EDRClient(object):
         self.__notify(_("Basic Power Assessment (β; oddities? relog, look at your modules)"), formatted_assessment, clear_before=True)
 
     def eval_backpack(self, passive=False):
+        """
+        Evaluate backpack contents for usefulness (Odyssey).
+
+        Args:
+            passive (bool): If True, suppresses output if nothing noteworthy.
+        """
         micro_resources = dict(sorted(self.player.inventory.all_in_backpack().items(), key=lambda item: item[1], reverse=True))
         if micro_resources:
             details = self.__eval_micro_resources(micro_resources, from_backpack=True)
@@ -1707,6 +2164,12 @@ class EDRClient(object):
             self.__notify(_("Backpack assessment"), [_("Empty backpack?")], clear_before=True)
 
     def eval_locker(self, passive=False):
+        """
+        Evaluate ship locker contents (Odyssey).
+
+        Args:
+            passive (bool): If True, suppresses output if nothing noteworthy.
+        """
         micro_resources = dict(sorted(self.player.inventory.all_in_locker().items(), key=lambda item: item[1], reverse=True))
         if micro_resources:
             details = self.__eval_micro_resources(micro_resources)
@@ -1718,6 +2181,15 @@ class EDRClient(object):
             self.__notify(_("Storage assessment"), [_("Empty ship locker?")], clear_before=True)
 
     def eval_bar(self, stock=True):
+        """
+        Evaluate Carrier Bar stock or demand.
+
+        Args:
+            stock (bool): If True checks stock, else checks demand.
+
+        Returns:
+            bool: True if evaluation was successful/noteworthy.
+        """
         header = _("Bar: stock assessment") if stock else _("Bar: demand assessment")
         if not self.player.last_station or not self.player.last_station.type == "FleetCarrier" or not self.player.last_station.bar:
             self.__notify(header, [_("Unexpected state: either no fleet carrier, or no bar?")], clear_before = True)
@@ -1860,6 +2332,12 @@ class EDRClient(object):
         return summary
 
     def evict_system(self, star_system):
+        """
+        Evict a system from caches.
+
+        Args:
+            star_system (str): The system name.
+        """
         self.edrsystems.evict(star_system)
 
     def __novel_enough_situation(self, new, old, cognitive = False, system_wide=False):
@@ -1905,19 +2383,62 @@ class EDRClient(object):
         return False
 
     def novel_enough_alert(self, alert_for_cmdr, alert):
+        """
+        Check if an alert is novel enough to be reported.
+
+        Args:
+            alert_for_cmdr (str): The notification key.
+            alert (dict): The alert data.
+
+        Returns:
+            bool: True if novel.
+        """
         last_alert = self.alerts_cache.get(alert_for_cmdr)
         return self.__novel_enough_situation(alert, last_alert)
 
     def novel_enough_blip(self, cmdr_id, blip, cognitive = False, system_wide=False):
+        """
+        Check if a blip is novel enough.
+
+        Args:
+            cmdr_id (str): Commander ID.
+            blip (dict): Blip data.
+            cognitive (bool): Use cognitive cache.
+            system_wide (bool): Check system-wide novelty.
+
+        Returns:
+            bool: True if novel.
+        """
         last_blip = self.cognitive_blips_cache.get(cmdr_id) if cognitive else self.blips_cache.get(cmdr_id)
         return self.__novel_enough_situation(blip, last_blip, cognitive, system_wide)
 
     def novel_enough_scan(self, cmdr_id, scan, cognitive = False):
+        """
+        Check if a scan is novel enough.
+
+        Args:
+            cmdr_id (str): Commander ID.
+            scan (dict): Scan data.
+            cognitive (bool): Use cognitive cache.
+
+        Returns:
+            bool: True if novel.
+        """
         last_scan = self.cognitive_scans_cache.get(cmdr_id) if cognitive else self.scans_cache.get(cmdr_id)
         novel_situation = self.__novel_enough_situation(scan, last_scan, cognitive)
         return novel_situation or (scan["wanted"] != last_scan["wanted"]) or (scan["bounty"] != last_scan["bounty"])
 
     def novel_enough_traffic_report(self, sighted_cmdr, report):
+        """
+        Check if a traffic report is novel enough.
+
+        Args:
+            sighted_cmdr (str): Sighted commander name.
+            report (dict): Traffic report data.
+
+        Returns:
+            bool: True if novel.
+        """
         last_report = self.traffic_cache.get(sighted_cmdr)
         return self.__novel_enough_situation(report, last_report)
 
@@ -1964,13 +2485,41 @@ class EDRClient(object):
         return False
 
     def novel_enough_fight(self, involved_cmdr, fight):
+        """
+        Check if a fight report is novel enough.
+
+        Args:
+            involved_cmdr (str): Commander involved.
+            fight (dict): Fight data.
+
+        Returns:
+            bool: True if novel.
+        """
         last_fight = self.fights_cache.get(involved_cmdr)
         return self.__novel_enough_fight(fight, last_fight)
 
     def outlaws_alerts_enabled(self, silent=True):
+        """
+        Check if outlaw alerts are enabled.
+
+        Args:
+            silent (bool): If True, suppresses output.
+
+        Returns:
+            bool: True if enabled.
+        """
         return self._alerts_enabled(EDROpponents.OUTLAWS, silent)
     
     def enemies_alerts_enabled(self, silent=True):
+        """
+        Check if enemy alerts are enabled.
+
+        Args:
+            silent (bool): If True, suppresses output.
+
+        Returns:
+            bool: True if enabled.
+        """
         return self._alerts_enabled(EDROpponents.ENEMIES, silent)
 
     def _alerts_enabled(self, kind, silent=True):
@@ -1985,9 +2534,21 @@ class EDRClient(object):
         return enabled
     
     def enable_outlaws_alerts(self, silent=False):
+        """
+        Enable outlaw alerts.
+
+        Args:
+            silent (bool): If True, suppresses output.
+        """
         self._enable_alerts(EDROpponents.OUTLAWS, silent)
     
     def enable_enemies_alerts(self, silent=False):
+        """
+        Enable enemy alerts.
+
+        Args:
+            silent (bool): If True, suppresses output.
+        """
         self._enable_alerts(EDROpponents.ENEMIES, silent)
 
     def _enable_alerts(self, kind, silent=False):
@@ -2016,9 +2577,21 @@ class EDRClient(object):
             self.__commsjammed()
         
     def disable_outlaws_alerts(self, silent=False):
+        """
+        Disable outlaw alerts.
+
+        Args:
+            silent (bool): If True, suppresses output.
+        """
         self._disable_alerts(EDROpponents.OUTLAWS, silent)
 
     def disable_enemies_alerts(self, silent=False):
+        """
+        Disable enemy alerts.
+
+        Args:
+            silent (bool): If True, suppresses output.
+        """
         self._disable_alerts(EDROpponents.ENEMIES, silent)
 
     def _disable_alerts(self, kind, silent=False):
@@ -2032,9 +2605,21 @@ class EDRClient(object):
             self.notify_with_details(_("EDR Alerts"), [details])
 
     def min_bounty_outlaws_alerts(self, min_bounty):
+        """
+        Set minimum bounty for outlaw alerts.
+
+        Args:
+            min_bounty (int): Minimum bounty amount.
+        """
         self._min_bounty_alerts(EDROpponents.OUTLAWS, min_bounty)
 
     def min_bounty_enemies_alerts(self, min_bounty):
+        """
+        Set minimum bounty for enemy alerts.
+
+        Args:
+            min_bounty (int): Minimum bounty amount.
+        """
         self._min_bounty_alerts(EDROpponents.ENEMIES, min_bounty)
 
     def _min_bounty_alerts(self, kind, min_bounty):
@@ -2056,9 +2641,21 @@ class EDRClient(object):
 
 
     def max_distance_outlaws_alerts(self, max_distance):
+        """
+        Set maximum distance for outlaw alerts.
+
+        Args:
+            max_distance (int): Maximum distance in light years.
+        """
         self._max_distance_alerts(EDROpponents.OUTLAWS, max_distance)
 
     def max_distance_enemies_alerts(self, max_distance):
+        """
+        Set maximum distance for enemy alerts.
+
+        Args:
+            max_distance (int): Maximum distance in light years.
+        """
         self._max_distance_alerts(EDROpponents.ENEMIES, max_distance)
 
     def _max_distance_alerts(self, kind, max_distance):
@@ -2149,6 +2746,13 @@ class EDRClient(object):
         return summary
 
     def who(self, cmdr_name, autocreate=False):
+        """
+        Display intel about a commander.
+
+        Args:
+            cmdr_name (str): The commander name.
+            autocreate (bool): Whether to create the profile if missing.
+        """
         try:
             profile = self.cmdr(cmdr_name, autocreate, check_inara_server=True)
             if profile:
@@ -2166,6 +2770,13 @@ class EDRClient(object):
             self.__commsjammed()    
 
     def distance(self, from_system, to_system):
+        """
+        Calculate and display distance between two systems.
+
+        Args:
+            from_system (str): Origin system.
+            to_system (str): Destination system.
+        """
         details = []
         distance = None
         try:
@@ -2304,6 +2915,17 @@ class EDRClient(object):
             EDR_LOG.info("Skipping warning since a warning was recently shown (cognitive throttle).")
 
     def blip(self, cmdr_name, blip, system_wide=False):
+        """
+        Report a contact blip.
+
+        Args:
+            cmdr_name (str): The commander name.
+            blip (dict): The blip data.
+            system_wide (bool, optional): Whether the blip is system-wide.
+
+        Returns:
+            bool: True if processed successfully, False otherwise.
+        """
         if self.player.in_solo() and not system_wide:
             EDR_LOG.info("Skipping blip since the user is in solo (unexpected).")
             return False
@@ -2355,6 +2977,16 @@ class EDRClient(object):
         return success
 
     def scanned(self, cmdr_name, scan):
+        """
+        Report a scan event.
+
+        Args:
+            cmdr_name (str): The commander name.
+            scan (dict): The scan data.
+
+        Returns:
+            bool: True if processed/reported successfully.
+        """
         if self.player.in_solo():
             EDR_LOG.info("Skipping scanned since the user is in solo (unexpected).")
             self.status = _("failed to report scan.")
@@ -2410,6 +3042,17 @@ class EDRClient(object):
         return success
 
     def traffic(self, star_system, traffic, system_wide=False):
+        """
+        Report traffic.
+
+        Args:
+            star_system (str): The star system.
+            traffic (dict): The traffic data.
+            system_wide (bool, optional): Whether it's system-wide traffic.
+
+        Returns:
+            bool: True if processed/reported successfully.
+        """
         if self.player.in_solo() and not system_wide:
             EDR_LOG.info("Skipping traffic since the user is in solo (unexpected).")
             return False
@@ -2442,6 +3085,16 @@ class EDRClient(object):
 
 
     def crime(self, star_system, crime):
+        """
+        Report a crime.
+
+        Args:
+            star_system (str): The star system.
+            crime (dict): The crime data.
+
+        Returns:
+            bool: True if processed/reported successfully.
+        """
         if self.player.in_solo():
             EDR_LOG.info("Skipping crime since the user is in solo (unexpected).")
             return False
@@ -2473,6 +3126,12 @@ class EDRClient(object):
         return False
 
     def fight(self, fight):
+        """
+        Report a fight.
+
+        Args:
+            fight (dict): The fight data.
+        """
         if self.player.in_solo():
             EDR_LOG.info("Skipping fight since the user is in solo (unexpected).")
             return False
@@ -2527,6 +3186,15 @@ class EDRClient(object):
                     self.fights_cache.set(change["cmdr"].lower(), change)
 
     def crew_report(self, report):
+        """
+        Report a multicrew session.
+
+        Args:
+            report (dict): The crew report data.
+
+        Returns:
+            bool: True if processed/reported successfully.
+        """
         if self.player.in_solo():
             EDR_LOG.info("Skipping crew report since the user is in solo (unexpected).")
             return False
@@ -2549,6 +3217,15 @@ class EDRClient(object):
         return False
 
     def fc_jump_requested(self, event):
+        """
+        Handle Fleet Carrier jump request.
+
+        Args:
+            event (dict): The jump request event.
+
+        Returns:
+            bool: True if processed successfully.
+        """
         self.advertise_advanced_feature("parking")
         self.player.fleet_carrier.jump_requested(event)
         jump_info = self.player.fleet_carrier.json_jump_schedule()
@@ -2580,6 +3257,15 @@ class EDRClient(object):
         return False
     
     def fc_jump_cancelled(self, event):
+        """
+        Handle Fleet Carrier jump cancellation.
+
+        Args:
+            event (dict): The jump cancelled event.
+
+        Returns:
+            bool: True if processed successfully.
+        """
         self.player.fleet_carrier.jump_cancelled(event)
         
         if self.fc_jump_psa == _("Never"):
@@ -2606,6 +3292,12 @@ class EDRClient(object):
         return False
 
     def fc_jumped(self, entry):
+        """
+        Handle Fleet Carrier jump completion.
+
+        Args:
+            entry (dict): The jump completed event.
+        """
         self.edrfssinsights.reset()
         self.edrfssinsights.update_system(entry.get("SystemAddress", None), entry["StarSystem"])
         self.update_star_system_if_obsolete(entry["StarSystem"], entry.get("SystemAddress", None))
@@ -2613,6 +3305,15 @@ class EDRClient(object):
         self.edrfactions.process_fc_jump_event(entry)
 
     def fc_materials(self, entry):
+        """
+        Handle Fleet Carrier materials event.
+
+        Args:
+            entry (dict): The FCMaterials event.
+
+        Returns:
+            bool: True if updated successfully.
+        """
         if self.player.last_station == None or self.player.last_station.type != "FleetCarrier":
             self.player.last_station = EDRFleetCarrier()
         
@@ -2624,6 +3325,12 @@ class EDRClient(object):
         return True
 
     def ack_station_pending_reports(self):
+        """
+        Acknowledge pending reports for the current station/FC.
+
+        Returns:
+            bool: True if acknowledged or not needed.
+        """
         if self.player.last_station == None:
             return False
         if self.player.last_station.type != "FleetCarrier":
@@ -2657,6 +3364,16 @@ class EDRClient(object):
         return self._throttle_until_timestamp - now_epoch
 
     def call_central(self, service, info):
+        """
+        Request a service from EDR Central (e.g. Fuel Rats, repair).
+
+        Args:
+            service (str): The service name.
+            info (dict): Information about the situation.
+
+        Returns:
+            bool: True if the request was sent successfully.
+        """
         if self.is_anonymous():
             EDR_LOG.info("Skipping EDR Central call since the user is anonymous.")
             self.advertise_full_account(_("Sorry, this feature only works with an EDR account."), passive=False)
@@ -2701,6 +3418,16 @@ class EDRClient(object):
         return False
 
     def tag_cmdr(self, cmdr_name, tag):
+        """
+        Tag a commander (e.g. enemy, ally).
+
+        Args:
+            cmdr_name (str): The commander name.
+            tag (str): The tag.
+
+        Returns:
+            bool: True if tagged successfully.
+        """
         if self.is_anonymous():
             EDR_LOG.info("Skipping tag cmdr since the user is anonymous.")
             self.advertise_full_account(_("Sorry, this feature only works with an EDR account."), passive=False)
@@ -2727,6 +3454,16 @@ class EDRClient(object):
         return success
     
     def memo_cmdr(self, cmdr_name, memo):
+        """
+        Add a memo/note to a commander.
+
+        Args:
+            cmdr_name (str): The commander name.
+            memo (str): The memo content.
+
+        Returns:
+            bool: True if memo added successfully.
+        """
         if self.is_anonymous():
             EDR_LOG.info("Skipping memo cmdr since the user is anonymous.")
             self.advertise_full_account(_("Sorry, this feature only works with an EDR account."), passive=False)
@@ -2742,6 +3479,15 @@ class EDRClient(object):
         return success
 
     def clear_memo_cmdr(self, cmdr_name):
+        """
+        Clear the memo for a commander.
+
+        Args:
+            cmdr_name (str): The commander name.
+
+        Returns:
+            bool: True if memo cleared successfully.
+        """
         if self.is_anonymous():
             EDR_LOG.info("Skipping clear_memo_cmdr since the user is anonymous.")
             self.advertise_full_account(_("Sorry, this feature only works with an EDR account."), passive=False)
@@ -2757,6 +3503,16 @@ class EDRClient(object):
         return success
 
     def untag_cmdr(self, cmdr_name, tag):
+        """
+        Remove a tag from a commander.
+
+        Args:
+            cmdr_name (str): The commander name.
+            tag (str): The tag to remove.
+
+        Returns:
+            bool: True if tag removed successfully.
+        """
         if self.is_anonymous():
             EDR_LOG.info("Skipping untag cmdr since the user is anonymous.")
             self.advertise_full_account(_("Sorry, this feature only works with an EDR account."), passive=False)
@@ -2786,6 +3542,12 @@ class EDRClient(object):
         return success
 
     def where(self, cmdr_name):
+        """
+        Locate a commander (last sighting).
+
+        Args:
+            cmdr_name (str): The commander name.
+        """
         report = {}
         try:
             for kind in self.edropponents:
@@ -2806,6 +3568,12 @@ class EDRClient(object):
             self.__commsjammed()
 
     def where_ship(self, name_or_type):
+        """
+        Locate a stored ship.
+
+        Args:
+            name_or_type (str): Ship name or type.
+        """
         results = self.player.fleet.where(name_or_type)
         if results:
             hits = []
@@ -2835,6 +3603,12 @@ class EDRClient(object):
                 self.SFX.failed()
 
     def contracts(self):
+        """
+        List active contracts/bounties placed by the user.
+
+        Returns:
+            bool: True if active (not anonymous).
+        """
         if self.is_anonymous():
             EDR_LOG.info("Skipping contracts since the user is anonymous.")
             self.advertise_full_account(_("Sorry, this feature only works with an EDR account."), passive=False)
@@ -2849,6 +3623,15 @@ class EDRClient(object):
         return True
 
     def contract(self, cmdr_name):
+        """
+        Show contract details for a specific commander.
+
+        Args:
+            cmdr_name (str): The commander name.
+
+        Returns:
+            bool: True if processed successfully.
+        """
         if self.is_anonymous():
             EDR_LOG.info("Skipping contract since the user is anonymous.")
             self.advertise_full_account(_("Sorry, this feature only works with an EDR account."), passive=False)
@@ -2859,6 +3642,16 @@ class EDRClient(object):
         return True
 
     def contract_on(self, cmdr_name, reward):
+        """
+        Place or remove a contract on a commander.
+
+        Args:
+            cmdr_name (str): The commander name.
+            reward (int): The reward amount (0 to remove).
+
+        Returns:
+            bool: True if processed successfully.
+        """
         if self.is_anonymous():
             EDR_LOG.info("Skipping contract since the user is anonymous.")
             self.advertise_full_account(_("Sorry, this feature only works with an EDR account."), passive=False)
@@ -2883,6 +3676,12 @@ class EDRClient(object):
         return False
 
     def outlaws(self):
+        """
+        Show recently sighted outlaws.
+
+        Returns:
+            bool/list: False if failed, else list of sightings.
+        """
         try:
             return self._opponents(EDROpponents.OUTLAWS)
         except CommsJammedError:
@@ -2890,6 +3689,12 @@ class EDRClient(object):
             return False
 
     def enemies(self):
+        """
+        Show recently sighted enemies.
+
+        Returns:
+            bool/list: False if failed, else list of sightings.
+        """
         try:
             return self._opponents(EDROpponents.ENEMIES)
         except CommsJammedError:
@@ -2921,6 +3726,15 @@ class EDRClient(object):
         self.__sitrep(header.format(kind=_(kind)), opponents_report)
 
     def help(self, section):
+        """
+        Show help for a specific section.
+
+        Args:
+            section (str): The help section.
+
+        Returns:
+            bool: True if help exists.
+        """
         content = self.help_content.get(section)
         if not content:
             return False
@@ -2937,6 +3751,15 @@ class EDRClient(object):
         return True
 
     def tip(self, category=None):
+        """
+        Show a random tip.
+
+        Args:
+            category (str, optional): The tip category.
+
+        Returns:
+            bool: True if a tip was shown.
+        """
         the_tip = self.tips.tip(category)
         if not the_tip:
             return False
@@ -2952,6 +3775,9 @@ class EDRClient(object):
         return True
 
     def clear(self):
+        """
+        Clear the overlay messages.
+        """
         if self.visual_feedback:
             self.IN_GAME_MSG.clear()
         if self.client_ui:
@@ -3011,12 +3837,37 @@ class EDRClient(object):
             self.SFX.jammed()
 
     def notify_with_details(self, notice, details, clear_before=False):
+        """
+        Show a notification with details.
+
+        Args:
+            notice (str): The notification title.
+            details (list): List of details strings.
+            clear_before (bool): clear previous notifications.
+        """
         self.__notify(notice, details, clear_before)
 
     def warn_with_details(self, warning, details):
+        """
+        Show a warning with details.
+
+        Args:
+            warning (str): The warning title.
+            details (list): List of details strings.
+        """
         self.__warning(warning, details)
     
     def advertise_full_account(self, context, passive=True):
+        """
+        Advertise EDR account benefits.
+
+        Args:
+            context (str): The context for the advertisement.
+            passive (bool): If True, respects novelty threshold.
+
+        Returns:
+            bool: True if advertised.
+        """
         now = datetime.datetime.now()
         now_epoch = time.mktime(now.timetuple())            
         if passive and self.previous_ad:
@@ -3028,6 +3879,15 @@ class EDRClient(object):
         return True
 
     def advertise_advanced_feature(self, feature_name):
+        """
+        Advertise an advanced feature.
+
+        Args:
+            feature_name (str): The feature key.
+
+        Returns:
+            bool: True if advertised.
+        """
         if feature_name not in self.feature_ads or self.feature_ads[feature_name]["advertised"]:
             return False
 
@@ -3053,6 +3913,13 @@ class EDRClient(object):
         return True
 
     def interstellar_factors_near(self, star_system, override_sc_distance = None):
+        """
+        Search for Interstellar Factors near a system.
+
+        Args:
+            star_system (str): The reference system.
+            override_sc_distance (int, optional): Max supercruise distance.
+        """
         if not self.__search_prerequisites(star_system):
             return
 
@@ -3069,6 +3936,13 @@ class EDRClient(object):
             self.notify_with_details(_("EDR Search"), [_("Unknown system")])
 
     def raw_material_trader_near(self, star_system, override_sc_distance = None):
+        """
+        Search for Raw Material Traders near a system.
+
+        Args:
+            star_system (str): The reference system.
+            override_sc_distance (int, optional): Max supercruise distance.
+        """
         if not self.__search_prerequisites(star_system):
             return
 
@@ -3085,6 +3959,13 @@ class EDRClient(object):
             self.notify_with_details(_("EDR Search"), [_("Unknown system")])
         
     def encoded_material_trader_near(self, star_system, override_sc_distance = None):
+        """
+        Search for Encoded Material Traders near a system.
+
+        Args:
+            star_system (str): The reference system.
+            override_sc_distance (int, optional): Max supercruise distance.
+        """
         if not self.__search_prerequisites(star_system):
             return
 
@@ -3102,6 +3983,13 @@ class EDRClient(object):
 
 
     def manufactured_material_trader_near(self, star_system, override_sc_distance = None):
+        """
+        Search for Manufactured Material Traders near a system.
+
+        Args:
+            star_system (str): The reference system.
+            override_sc_distance (int, optional): Max supercruise distance.
+        """
         if not self.__search_prerequisites(star_system):
             return
         
@@ -3119,6 +4007,13 @@ class EDRClient(object):
 
 
     def staging_station_near(self, star_system, override_sc_distance = None):
+        """
+        Search for a staging station (shipyard+outfitting) near a system.
+
+        Args:
+            star_system (str): The reference system.
+            override_sc_distance (int, optional): Max supercruise distance.
+        """
         if not self.__search_prerequisites(star_system):
             return
 
@@ -3135,6 +4030,13 @@ class EDRClient(object):
             self.__notify(_("EDR Search"), [_("Unknown system")], clear_before = True)
 
     def parking_system_near(self, star_system, override_rank = None):
+        """
+        Search for a parking system (for Fleet Carriers) near a system.
+
+        Args:
+            star_system (str): The reference system.
+            override_rank (int, optional): Min security rank? (context specific).
+        """
         self.feature_ads["parking"]["advertised"] = True # no need to advertise since the user clearly knows about it
         if not self.__search_prerequisites(star_system):
             return
@@ -3154,6 +4056,13 @@ class EDRClient(object):
             self.__notify(_("EDR Search"), [_("Unknown system")], clear_before = True)
 
     def rrr_fc_near(self, star_system, override_radius = None):
+        """
+        Search for a RRR (Refuel, Repair, Restock) Fleet Carrier near a system.
+
+        Args:
+            star_system (str): The reference system.
+            override_radius (int, optional): Max search radius.
+        """
         if not self.__search_prerequisites(star_system):
             return
 
@@ -3173,6 +4082,13 @@ class EDRClient(object):
             self.__notify(_("EDR Search"), [_("Unknown system")], clear_before = True)
 
     def rrr_near(self, star_system, override_radius = None):
+        """
+        Search for a RRR (Refuel, Repair, Restock) station near a system.
+
+        Args:
+            star_system (str): The reference system.
+            override_radius (int, optional): Max search radius.
+        """
         if not self.__search_prerequisites(star_system):
             return
 
@@ -3192,6 +4108,12 @@ class EDRClient(object):
             self.__notify(_("EDR Search"), [_("Unknown system")], clear_before = True)
 
     def fc_in_current_system(self, callsign_or_name):
+        """
+        Find a Fleet Carrier in the current system.
+
+        Args:
+            callsign_or_name (str): The callsign or name to search for.
+        """
         fcs = self.edrfssinsights.fuzzy_match_fleet_carriers(callsign_or_name)
         callsign = callsign_or_name
         fc_name = "Fleet Carrier"
@@ -3217,6 +4139,15 @@ class EDRClient(object):
         self.__notify(header, details, clear_before=True)
 
     def describe_fleet_carrier(self, fc):
+        """
+        Format Fleet Carrier details.
+
+        Args:
+            fc (dict): The FC data.
+
+        Returns:
+            list: List of descriptive strings.
+        """
         fc_other_services = (fc.get("otherServices", []) or []) 
         details = []
         
@@ -3250,6 +4181,16 @@ class EDRClient(object):
         return details
 
     def station_in_current_system(self, station_name, passive=False):
+        """
+        Find a Station in the current system.
+
+        Args:
+            station_name (str): The station name.
+            passive (bool): If True, suppresses output if not found.
+
+        Returns:
+            bool: True if found.
+        """
         stations = self.edrsystems.fuzzy_stations(self.player.star_system, station_name)
         if stations is None:
             if not passive:
@@ -3281,6 +4222,15 @@ class EDRClient(object):
         return True
 
     def pointing_guidance(self, entry):
+        """
+        Provide guidance based on what the player is pointing at (Odyssey).
+
+        Args:
+            entry (dict): The journal event.
+
+        Returns:
+            bool: True if guidance was provided.
+        """
         if (not self.gesture_triggers):
             EDR_LOG.info("Gestures setting is off, skipping processing")
             return True
@@ -3302,6 +4252,12 @@ class EDRClient(object):
         return True
     
     def gesture(self, entry):
+        """
+        Handle gesture events (Odyssey emotes).
+
+        Args:
+            entry (dict): The journal event.
+        """
         if (not self.gesture_triggers):
             EDR_LOG.info("Gestures setting is off, skipping processing")
             return
@@ -3375,6 +4331,9 @@ class EDRClient(object):
             pass        
     
     def reset_custom_pois(self):
+        """
+        Reset custom Points of Interest (POIs) for the current body.
+        """
         system_name = self.player.star_system
         body_name = self.player.body
         if not body_name or body_name.lower() == "unknown":
@@ -3384,6 +4343,9 @@ class EDRClient(object):
         self.edrboi.reset_custom_poi(system_name, body_name)
     
     def clear_current_custom_poi(self):
+        """
+        Clear the currently selected custom POI.
+        """
         system_name = self.player.star_system
         body_name = self.player.body
         if not body_name or body_name.lower() == "unknown":
@@ -3393,9 +4355,15 @@ class EDRClient(object):
         self.edrboi.clear_current_custom_poi(system_name, body_name)
     
     def next_custom_poi(self):
+        """
+        Select the next custom POI.
+        """
         return self.__next_previous_custom_poi(True)
     
     def previous_custom_poi(self):
+        """
+        Select the previous custom POI.
+        """
         return self.__next_previous_custom_poi(False)
 
     def __next_previous_custom_poi(self, next):
@@ -3413,6 +4381,9 @@ class EDRClient(object):
         self.player.planetary_destination = EDPlanetaryLocation(poi)
 
     def fleet_carrier_update(self):
+        """
+        Update Fleet Carrier market data (if owner).
+        """
         if self.player.fleet_carrier.has_market_changed():
             timeframe = 60*15
             market = self.player.fleet_carrier.json_market(timeframe)
@@ -3449,6 +4420,12 @@ class EDRClient(object):
                 self.__notify(_("Fleet Carrier status summary"), details, clear_before=True)
 
     def carrier_trade(self, entry):
+        """
+        Handle Carrier Trade Order events.
+
+        Args:
+            entry (dict): The journal event.
+        """
         if entry.get("event", "") != "CarrierTradeOrder":
             return
         item = entry.get("Commodity", None)
@@ -3462,6 +4439,12 @@ class EDRClient(object):
         self.player.fleet_carrier.trade_order(entry)
 
     def hyperspace_jump(self, system):
+        """
+        Handle Hyperspace Jump events.
+
+        Args:
+            system (str): The destination system name.
+        """
         self.player.to_hyper_space()
         if self.player.piloted_vehicle:
             self.player.routenav.fsd_range(self.player.piloted_vehicle.max_jump_range)
@@ -3476,6 +4459,16 @@ class EDRClient(object):
             self.journey_show_waypoint()
 
     def update_star_system_if_obsolete(self, system, address=None):
+        """
+        Update the current star system if the stored one is obsolete.
+
+        Args:
+            system (str): The new system name.
+            address (int, optional): The system address.
+
+        Returns:
+            bool: True if updated.
+        """
         updated = self.player.update_star_system_if_obsolete(system, address)
         if updated:
             if self.player.piloted_vehicle:
@@ -3486,6 +4479,16 @@ class EDRClient(object):
         return updated
 
     def system_guidance(self, system_name, passive=False):
+        """
+        Provide guidance/intel about a system.
+
+        Args:
+            system_name (str): The system name.
+            passive (bool): If True, suppresses output if no info.
+
+        Returns:
+            bool: True if info found/displayed.
+        """
         description = self.edrsystems.describe_system(system_name, self.player.star_system == system_name)
         if not description:
             if not passive:
@@ -3497,6 +4500,17 @@ class EDRClient(object):
         return True
 
     def body_guidance(self, system_name, body_name, passive=False):
+        """
+        Provide guidance/intel about a body.
+
+        Args:
+            system_name (str): The system name.
+            body_name (str): The body name.
+            passive (bool): If True, suppresses output if no info.
+
+        Returns:
+            bool: True if info found/displayed.
+        """
         description = self.edrsystems.describe_body(system_name, body_name, self.player.star_system == system_name)
         if not description:
             if not passive:
@@ -3518,6 +4532,13 @@ class EDRClient(object):
         return True
         
     def human_tech_broker_near(self, star_system, override_sc_distance = None):
+        """
+        Search for Human Tech Brokers near a system.
+
+        Args:
+            star_system (str): The reference system.
+            override_sc_distance (int, optional): Max supercruise distance.
+        """
         if not self.__search_prerequisites(star_system):
             return
 
@@ -3534,6 +4555,13 @@ class EDRClient(object):
             self.__notify(_("EDR Search"), [_("Unknown system")], clear_before = True)
     
     def guardian_tech_broker_near(self, star_system, override_sc_distance = None):
+        """
+        Search for Guardian Tech Brokers near a system.
+
+        Args:
+            star_system (str): The reference system.
+            override_sc_distance (int, optional): Max supercruise distance.
+        """
         if not self.__search_prerequisites(star_system):
             return
 
@@ -3550,6 +4578,13 @@ class EDRClient(object):
             self.__notify(_("EDR Search"), [_("Unknown system")], clear_before = True)
 
     def offbeat_station_near(self, star_system, override_sc_distance = None):
+        """
+        Search for offbeat/rare stations (e.g. asteroid bases) near a system.
+
+        Args:
+            star_system (str): The reference system.
+            override_sc_distance (int, optional): Max supercruise distance.
+        """
         if not self.__search_prerequisites(star_system):
             return
 
@@ -3566,6 +4601,13 @@ class EDRClient(object):
             self.__notify(_("EDR Search"), [_("Unknown system")], clear_before = True)
 
     def search_genus_near(self, genus, star_system):
+        """
+        Search for planets with a specific biology genus.
+
+        Args:
+            genus (str): The genus name.
+            star_system (str): The reference system.
+        """
         if not self.__search_prerequisites(star_system):
             return
 
@@ -3582,6 +4624,13 @@ class EDRClient(object):
             self.__notify(_("EDR Search"), [_("Unknown system")], clear_before = True)
 
     def search_settlement_near(self, settlement, star_system):
+        """
+        Search for a specific settlement type or name.
+
+        Args:
+            settlement (str): The settlement query.
+            star_system (str): The reference system.
+        """
         if not self.__search_prerequisites(star_system):
             return
 
@@ -3781,6 +4830,15 @@ class EDRClient(object):
         self.__searching(False)
 
     def configure_resourcefinder(self, raw_profile):
+        """
+        Configure the resource finder profile.
+
+        Args:
+            raw_profile (str): The profile name.
+
+        Returns:
+            bool: True if successfully configured.
+        """
         canonical_raw_profile = raw_profile.lower()
         adjusted_profile = None if canonical_raw_profile == "default" else canonical_raw_profile
         result = self.edrresourcefinder.configure(adjusted_profile)
@@ -3795,6 +4853,9 @@ class EDRClient(object):
         return result
 
     def show_material_profiles(self):
+        """
+        List available material profiles.
+        """
         profiles = self.edrresourcefinder.profiles()
         self.__notify(_("Available materials profiles"), [" ;; ".join(profiles)], clear_before=True)
 
@@ -3815,6 +4876,13 @@ class EDRClient(object):
         return False
         
     def search(self, thing, star_system):
+        """
+        General search entry point (resource, genus, settlement, etc).
+
+        Args:
+            thing (str): The search query.
+            star_system (str): The reference system.
+        """
         cresource = self.edrresourcefinder.canonical_name(thing)
         if EDRGenusCheckerFactory.recognized_genus(thing):
             self.search_genus_near(thing, star_system)
@@ -3833,6 +4901,13 @@ class EDRClient(object):
         
 
     def search_resource(self, resource, star_system):
+        """
+        Search for a materials/resource.
+
+        Args:
+            resource (str): The resource name.
+            star_system (str): The reference system.
+        """
         if not star_system:
             return
         
@@ -3896,6 +4971,13 @@ class EDRClient(object):
 
 
     def journey_new_adv(self, destination=None, genre=None):
+        """
+        Create a new advanced journey (via Spansh).
+
+        Args:
+            destination (str, optional): The destination system.
+            genre (str, optional): The route genre (e.g. 'neutron').
+        """
         range = None
         if self.player.piloted_vehicle and self.player.piloted_vehicle.max_jump_range:
             range = int(self.player.piloted_vehicle.max_jump_range)
@@ -3911,6 +4993,15 @@ class EDRClient(object):
         self.notify_with_details(_("EDR Journey"), details, clear_before=True)
 
     def journey_load(self, filename):
+        """
+        Load a journey from a CSV file.
+
+        Args:
+            filename (str): The filename.
+
+        Returns:
+            bool: True if loaded successfully.
+        """
         route = edrroutes.CSVJourney(filename)
         if route:
             self.player.routenav.set_journey(route)
@@ -3922,6 +5013,12 @@ class EDRClient(object):
         return False
 
     def journey_fetch(self):
+        """
+        Fetch a journey from Spansh using a URL in clipboard.
+
+        Returns:
+            bool: True if fetch initiated.
+        """
         try:
             raw_url = paste() or ""
             url_from_clipboard = raw_url.strip()
@@ -3943,15 +5040,27 @@ class EDRClient(object):
             self.notify_with_details(_("EDR Journey"), [_("Something went wrong.")], clear_before=True)
 
     def journey_clear(self):
+        """
+        Clear the current journey.
+        """
         self.player.routenav.clear_journey()
         details = []
         details.append(_("Route successfully cleared."))
         self.notify_with_details(_("EDR Journey"), details, clear_before=True)
 
     def nav_route_clear(self):
+        """
+        Clear the in-game navigation route.
+        """
         self.player.routenav.clear_route()
 
     def nav_route_set(self, navroute):
+        """
+        Set the in-game navigation route.
+
+        Args:
+            navroute (dict): The route data.
+        """
         self.player.routenav.set_route(navroute)
         if self.visual_feedback:
             self.IN_GAME_MSG.navroute(self.player.routenav)
@@ -3992,6 +5101,12 @@ class EDRClient(object):
         return details
 
     def journey_next(self):
+        """
+        Advance to the next waypoint in the journey.
+
+        Returns:
+            bool: True if advanced successfully.
+        """
         if self.player.routenav.no_journey():
             details = []
             details.append(_("No route."))
@@ -4021,6 +5136,12 @@ class EDRClient(object):
 
 
     def journey_previous(self):
+        """
+        Go back to the previous waypoint in the journey.
+
+        Returns:
+            bool: True if moved back successfully.
+        """
         if self.player.routenav.no_journey():
             details = []
             details.append(_("No route."))
@@ -4049,6 +5170,12 @@ class EDRClient(object):
         return False
 
     def journey_show_waypoint(self):
+        """
+        Show details about the current waypoint.
+
+        Returns:
+            bool: True if shown.
+        """
         if self.player.routenav.no_journey():
             self.notify_with_details(_("EDR Journey"), [("No active route."), ("Send '!journey new' or '!journey load' to define a route.")])
             return False
@@ -4064,6 +5191,15 @@ class EDRClient(object):
         return False
     
     def journey_show_overview(self, passive=False):
+        """
+        Show an overview of the journey status.
+
+        Args:
+            passive (bool): If True, suppresses output if no journey.
+
+        Returns:
+            bool: True if shown.
+        """
         if self.player.routenav.no_journey() and not passive:
             self.notify_with_details(_("EDR Journey"), [_("No active route."), _("Send '!journey new' or '!journey load' to define a route.")])
             return False
@@ -4079,6 +5215,12 @@ class EDRClient(object):
         return False
 
     def journey_smart_behavior(self):
+        """
+        Perform context-aware journey action (create, fetch, or show).
+
+        Returns:
+            bool: True if an action was taken.
+        """
         if self.player.routenav.no_journey():
             if self.journey_fetch():
                 return True
@@ -4089,6 +5231,12 @@ class EDRClient(object):
             return self.journey_show_overview()
 
     def journey_show_bodies(self):
+        """
+        Show bodies of interest for the current waypoint.
+
+        Returns:
+            bool: True if shown.
+        """
         if self.player.routenav.no_journey():
             return False
          
@@ -4103,6 +5251,16 @@ class EDRClient(object):
         return False
     
     def journey_check_bodies(self, bodies_names, star_system=None):
+        """
+        Check off visited bodies in the journey.
+
+        Args:
+            bodies_names (list): List of body names.
+            star_system (str, optional): The system name.
+
+        Returns:
+            bool: True if bodies were checked off.
+        """
         if self.player.routenav.no_journey():
             return False
 

@@ -191,11 +191,11 @@ class EDRTogglingPanel(ToggledFrame):
 
     def __push_message(self, kind, header, body):
         self.output.config(state="normal")
-        self.output.insert(1.0,u"\n", ("body_"+kind))
+        self.output.insert(1.0,"\n", ("body_"+kind))
         body.reverse()
         for line in body:
             self.output.insert(1.0, line, ("body_"+kind))
-            self.output.insert(1.0, u"\n", ("body_"+kind))
+            self.output.insert(1.0, "\n", ("body_"+kind))
         self.output.insert(1.0, header, ("header_"+kind))
         self.output.insert(1.0, "\n", ("header_"+kind))
         self.output.config(state="disabled")
@@ -216,10 +216,7 @@ class EDRTogglingPanel(ToggledFrame):
         theme=EDMCConfig.config.get_int('theme') # hat tip to ewanm89@
         if (theme):
             conf = IGMConfig(config_file='config/igm_alt_themed_config.v4.ini', user_config_file=['config/user_igm_alt_themed_config.v4.ini', 'config/user_igm_alt_themed_config.v3.ini'])
-        if sys.version_info.major == 2:
-            super(EDRTogglingPanel, self).refresh_theme()
-        else:
-            super().refresh_theme()
+        super().refresh_theme()
         self.bg_color = conf.rgb("general", "fill")
         self.fg_color = conf.rgb("general", "body")
         self.configure(background=self.bg_color)

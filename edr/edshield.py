@@ -3,7 +3,10 @@ import re
 
 from edmodule import EDResistances # EDR_INTERNAL
 
-class EDShieldBooster(object):
+class EDShieldBooster:
+    """
+    Shield booster module.
+    """
     def __init__(self):
         # TODO make this a child of EDModule, reflect powerdraw etc.
         self.strength_bonus = 0
@@ -11,6 +14,12 @@ class EDShieldBooster(object):
         self.enabled = True # TODO take into account actual state
     
     def update_from(self, module):
+        """
+        Update from module data.
+
+        Args:
+            module (dict): Module data.
+        """
         engineering = module.get("Engineering", {})
         modifiers = engineering.get("Modifiers", [])
         for m in modifiers:
@@ -26,7 +35,10 @@ class EDShieldBooster(object):
             if m.get("Label", "") == "ExplosiveResistance" and "Value" in m:
                 self.resistances.explosive = m["Value"] / 100.0
 
-class EDShieldCellBank(object):
+class EDShieldCellBank:
+    """
+    Shield cell bank module.
+    """
     def __init__(self):
         # TODO make this a child of EDModule, reflect powerdraw etc.
         self.charges = 0
@@ -37,6 +49,12 @@ class EDShieldCellBank(object):
         self.enabled = True # TODO take into account actual state
     
     def update_from(self, module):
+        """
+        Update from module data.
+
+        Args:
+            module (dict): Module data.
+        """
         engineering = module.get("Engineering", {})
         modifiers = engineering.get("Modifiers", [])
         for m in modifiers:
@@ -53,24 +71,41 @@ class EDShieldCellBank(object):
                 self.charge_rate = m["Value"]
 
     def strength(self):
+        """
+        Returns:
+            float: Strength per charge.
+        """
         return self.duration * self.charge_rate
 
     def total_strength(self):
+        """
+        Returns:
+            float: Total strength.
+        """
         return self.charges * self.strength()
 
-class EDGuardianShieldReinforcementPackage(object):
+class EDGuardianShieldReinforcementPackage:
+    """
+    Guardian Shield Reinforcement Package.
+    """
     def __init__(self):
         self.strength = 100
         self.enabled = True # TODO take into account actual state, although this might always be true?
     
     def update_from(self, module):
+        """
+        Update from module data.
+        """
         # should not happen since these can't be modified
         pass
 
-class EDShieldGenerator(object):
+class EDShieldGenerator:
+    """
+    Shield generator module.
+    """
     RATING_BOOST_LUT = {"A": 1.3, "B": 1.225, "C": 1.15, "D": 1.075, "E": 1}
     RATING_MULTIPLIERS = {"A": [.7, 1.2, 1.7], "B": [.6, 1.1, 1.6], "C": [.5, 1.0, 1.5], "D": [.4, .9, 1.4], "E": [.3, .8, 1.3], "fast": [.4, .9, 1.4], "strong": [1.0, 1.5, 2.0]}
-
+    
     def __init__(self):
         self.rating = "E"
         self.max_hull_mass = 0
@@ -83,9 +118,18 @@ class EDShieldGenerator(object):
         self.enabled = True # TODO take into account actual state (powered, etc)
 
     def reset(self):
+        """
+        Reset internal state.
+        """
         pass
 
     def configure(self, internal_name):
+        """
+        Configure based on internal name.
+        
+        Args:
+            internal_name (str): Internal module name.
+        """
         sg_regexp = r"^int_shieldgenerator_size[1-8]_class([1-5]).*$"
         m = re.match(sg_regexp, internal_name)
         if not m:
@@ -106,6 +150,12 @@ class EDShieldGenerator(object):
         self.max_multiplier = multipliers[2]
 
     def update_from(self, module):
+        """
+        Update from module data.
+        
+        Args:
+            module (dict): Module data.
+        """
         engineering = module.get("Engineering", {})
         modifiers = engineering.get("Modifiers", [])
         for m in modifiers:
@@ -132,6 +182,16 @@ class EDShieldGenerator(object):
                 self.min_hull_mass  = self.min_hull_mass * ratio
                 
     def strength(self, hull_mass, base_strength):
+        """
+        Calculate shield strength.
+        
+        Args:
+            hull_mass (float): Hull mass.
+            base_strength (float): Base field strength.
+            
+        Returns:
+            float: Calculated strength.
+        """
         if base_strength == 0:
             return 0
 
@@ -146,13 +206,25 @@ class EDShieldGenerator(object):
         return shield_strength
 
 
-class EDPowerDistributor(object):
+class EDPowerDistributor:
+    """
+    Power distributor module.
+    """
     def __init__(self):
         self.sys = 2
         self.eng = 2
         self.wep = 2
 
     def update(self, pips):
+        """
+        Update pip settings.
+        
+        Args:
+            pips (list): List of pips [Sys, Eng, Weap].
+            
+        Returns:
+            bool: True if changed.
+        """
         if pips:
             sys = pips[0] / 2.0
             eng = pips[1] / 2.0
@@ -165,360 +237,369 @@ class EDPowerDistributor(object):
         return False
 
     def reset(self):
+        """
+        Reset pips to default.
+        """
         # TODO does Elite keep the pips as is or does it reset them, after a death/hangar in&out/... ?
         self.sys = 2
         self.eng = 2
         self.wep = 2
 
     def sys_resistance(self):
+        """
+        Calculate system resistance factor.
+        
+        Returns:
+            float: Resistance factor.
+        """
         return pow(self.sys, 0.85) * 0.6 / pow(4, 0.85)
 
 class EDShieldBoosterE(EDShieldBooster):
     def __init__(self):
-        super(EDShieldBoosterE, self).__init__()
+        super().__init__()
         self.strength_bonus = 0.04
 
 class EDShieldBoosterD(EDShieldBooster):
     def __init__(self):
-        super(EDShieldBoosterD, self).__init__()
+        super().__init__()
         self.strength_bonus = 0.08
         
 
 class EDShieldBoosterC(EDShieldBooster):
     def __init__(self):
-        super(EDShieldBoosterC, self).__init__()
+        super().__init__()
         self.strength_bonus = 0.12
         
 
 class EDShieldBoosterB(EDShieldBooster):
     def __init__(self):
-        super(EDShieldBoosterB, self).__init__()
+        super().__init__()
         self.strength_bonus = 0.16
         
 
 class EDShieldBoosterA(EDShieldBooster):
     def __init__(self):
-        super(EDShieldBoosterA, self).__init__()
+        super().__init__()
         self.strength_bonus = 0.20
         
 
 class EDGsrp1E(EDGuardianShieldReinforcementPackage):
     def __init__(self):
-        super(EDGsrp1E, self).__init__()
+        super().__init__()
         self.strength = 44
 
 class EDGsrp1D(EDGuardianShieldReinforcementPackage):
     def __init__(self):
-        super(EDGsrp1D, self).__init__()
+        super().__init__()
         self.strength = 61
 
 class EDGsrp2E(EDGuardianShieldReinforcementPackage):
     def __init__(self):
-        super(EDGsrp2E, self).__init__()
+        super().__init__()
         self.strength = 83
 
 class EDGsrp2D(EDGuardianShieldReinforcementPackage):
     def __init__(self):
-        super(EDGsrp2D, self).__init__()
+        super().__init__()
         self.strength = 105
 
 class EDGsrp3E(EDGuardianShieldReinforcementPackage):
     def __init__(self):
-        super(EDGsrp3E, self).__init__()
+        super().__init__()
         self.strength = 127
 
 class EDGsrp3D(EDGuardianShieldReinforcementPackage):
     def __init__(self):
-        super(EDGsrp3D, self).__init__()
+        super().__init__()
         self.strength = 143
 
 class EDGsrp4E(EDGuardianShieldReinforcementPackage):
     def __init__(self):
-        super(EDGsrp4E, self).__init__()
+        super().__init__()
         self.strength = 165
 
 class EDGsrp4D(EDGuardianShieldReinforcementPackage):
     def __init__(self):
-        super(EDGsrp4D, self).__init__()
+        super().__init__()
         self.strength = 182
 
 class EDGsrp5E(EDGuardianShieldReinforcementPackage):
     def __init__(self):
-        super(EDGsrp5E, self).__init__()
+        super().__init__()
         self.strength = 198
 
 class EDGsrp5D(EDGuardianShieldReinforcementPackage):
     def __init__(self):
-        super(EDGsrp5D, self).__init__()
+        super().__init__()
         self.strength = 215
         
 class EDShieldGenSize8(EDShieldGenerator):
     def __init__(self):
-        super(EDShieldGenSize8, self).__init__()
+        super().__init__()
         self.min_hull_mass = 900
         self.opt_hull_mass = 1800
         self.max_hull_mass = 4500
 
 class EDShieldGenSize7(EDShieldGenerator):
     def __init__(self):
-        super(EDShieldGenSize7, self).__init__()
+        super().__init__()
         self.min_hull_mass = 530
         self.opt_hull_mass = 1060
         self.max_hull_mass = 2650
 
 class EDShieldGenSize6(EDShieldGenerator):
     def __init__(self):
-        super(EDShieldGenSize6, self).__init__()
+        super().__init__()
         self.min_hull_mass = 270	
         self.opt_hull_mass = 540
         self.max_hull_mass = 1350
 
 class EDShieldGenSize5(EDShieldGenerator):
     def __init__(self):
-        super(EDShieldGenSize5, self).__init__()
+        super().__init__()
         self.min_hull_mass = 203	
         self.opt_hull_mass = 405
         self.max_hull_mass = 1013
 
 class EDShieldGenSize4(EDShieldGenerator):
     def __init__(self):
-        super(EDShieldGenSize4, self).__init__()
+        super().__init__()
         self.min_hull_mass = 143
         self.opt_hull_mass = 285	
         self.max_hull_mass = 713
 
 class EDShieldGenSize3(EDShieldGenerator):
     def __init__(self):
-        super(EDShieldGenSize3, self).__init__()
+        super().__init__()
         self.min_hull_mass = 83
         self.opt_hull_mass = 165
         self.max_hull_mass = 413
 
 class EDShieldGenSize2(EDShieldGenerator):
     def __init__(self):
-        super(EDShieldGenSize2, self).__init__()
+        super().__init__()
         self.min_hull_mass = 28
         self.opt_hull_mass = 55
         self.max_hull_mass = 138
 
 class EDShieldGenSize1(EDShieldGenerator):
     def __init__(self):
-        super(EDShieldGenSize1, self).__init__()
+        super().__init__()
         self.min_hull_mass = 13
         self.opt_hull_mass = 25
         self.max_hull_mass = 63
 
 class EDScbSize6A(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize6A, self).__init__()
+        super().__init__()
         self.charges = 5
         self.duration = 8
         self.charge_rate = 46
 
 class EDScbSize6B(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize6B, self).__init__()
+        super().__init__()
         self.charges = 6
         self.duration = 8
         self.charge_rate = 39
 
 class EDScbSize6C(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize6C, self).__init__()
+        super().__init__()
         self.charges = 5
         self.duration = 8
         self.charge_rate = 33
 
 class EDScbSize6D(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize6D, self).__init__()
+        super().__init__()
         self.charges = 4
         self.duration = 8
         self.charge_rate = 26
 
 class EDScbSize6E(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize6E, self).__init__()
+        super().__init__()
         self.charges = 6
         self.duration = 8
         self.charge_rate = 20
 
 class EDScbSize5A(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize5A, self).__init__()
+        super().__init__()
         self.charges = 4
         self.duration = 5
         self.charge_rate = 48
 
 class EDScbSize5B(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize5B, self).__init__()
+        super().__init__()
         self.charges = 5
         self.duration = 5
         self.charge_rate = 41
 
 class EDScbSize5C(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize5C, self).__init__()
+        super().__init__()
         self.charges = 4
         self.duration = 5
         self.charge_rate = 35
 
 class EDScbSize5D(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize5D, self).__init__()
+        super().__init__()
         self.charges = 3
         self.duration = 5
         self.charge_rate = 28
 
 class EDScbSize5E(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize5E, self).__init__()
+        super().__init__()
         self.charges = 5
         self.duration = 5
         self.charge_rate = 21
 
 class EDScbSize4A(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize4A, self).__init__()
+        super().__init__()
         self.charges = 4
         self.duration = 3
         self.charge_rate = 46
 
 class EDScbSize4B(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize4B, self).__init__()
+        super().__init__()
         self.charges = 5
         self.duration = 3
         self.charge_rate = 39
 
 class EDScbSize4C(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize4C, self).__init__()
+        super().__init__()
         self.charges = 4
         self.duration = 3
         self.charge_rate = 33
 
 class EDScbSize4D(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize4D, self).__init__()
+        super().__init__()
         self.charges = 3
         self.duration = 3
         self.charge_rate = 26
 
 class EDScbSize4E(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize4E, self).__init__()
+        super().__init__()
         self.charges = 5
         self.duration = 3
         self.charge_rate = 12
 
 class EDScbSize3A(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize3A, self).__init__()
+        super().__init__()
         self.charges = 4
         self.duration = 2
         self.charge_rate = 41
 
 class EDScbSize3B(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize3B, self).__init__()
+        super().__init__()
         self.charges = 5
         self.duration = 2
         self.charge_rate = 35
 
 class EDScbSize3C(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize3C, self).__init__()
+        super().__init__()
         self.charges = 4
         self.duration = 2
         self.charge_rate = 29
 
 class EDScbSize3D(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize3D, self).__init__()
+        super().__init__()
         self.charges = 3
         self.duration = 2
         self.charge_rate = 23
 
 class EDScbSize3E(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize3E, self).__init__()
+        super().__init__()
         self.charges = 5
         self.duration = 2
         self.charge_rate = 17
 
 class EDScbSize2A(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize2A, self).__init__()
+        super().__init__()
         self.charges = 4
         self.duration = 2
         self.charge_rate = 32
 
 class EDScbSize2B(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize2B, self).__init__()
+        super().__init__()
         self.charges = 5
         self.duration = 2
         self.charge_rate = 28
 
 class EDScbSize2C(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize2C, self).__init__()
+        super().__init__()
         self.charges = 4
         self.duration = 2
         self.charge_rate = 23
 
 class EDScbSize2D(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize2D, self).__init__()
+        super().__init__()
         self.charges = 3
         self.duration = 2
         self.charge_rate = 18
 
 class EDScbSize2E(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize2E, self).__init__()
+        super().__init__()
         self.charges = 5
         self.duration = 2
         self.charge_rate = 14
 
 class EDScbSize1A(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize1A, self).__init__()
+        super().__init__()
         self.charges = 3
         self.duration = 1
         self.charge_rate = 28
 
 class EDScbSize1B(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize1B, self).__init__()
+        super().__init__()
         self.charges = 4
         self.duration = 1
         self.charge_rate = 24
 
 class EDScbSize1C(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize1C, self).__init__()
+        super().__init__()
         self.charges = 3
         self.duration = 1
         self.charge_rate = 20
 
 class EDScbSize1D(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize1D, self).__init__()
+        super().__init__()
         self.charges = 1
         self.duration = 1
         self.charge_rate = 12.5
 
 class EDScbSize1E(EDShieldCellBank):
     def __init__(self):
-        super(EDScbSize1E, self).__init__()
+        super().__init__()
         self.charges = 4
         self.duration = 1
         self.charge_rate = 12
 
-class EDShieldingFactory(object):
+class EDShieldingFactory:
     __module_classes = {
         "shieldbooster_size0_class1": EDShieldBoosterE,
         "shieldbooster_size0_class2": EDShieldBoosterD,
@@ -621,26 +702,38 @@ class EDShieldingFactory(object):
 
     @staticmethod
     def normalize_module_name(name):
+        """
+        Normalize module name.
+        """
         normalized = name.lower()
         
         # suffix _name or _name; is not used in loadout or afmurepair events 
-        if normalized.endswith(u"_name"):
-            useless_suffix_length = len(u"_name")
+        if normalized.endswith("_name"):
+            useless_suffix_length = len("_name")
             normalized = normalized[:-useless_suffix_length]
-        elif normalized.endswith(u"_name;"):
-            useless_suffix_length = len(u"_name;")
+        elif normalized.endswith("_name;"):
+            useless_suffix_length = len("_name;")
             normalized = normalized[:-useless_suffix_length]
 
-        if normalized.startswith(u"$"):
+        if normalized.startswith("$"):
             normalized = normalized[1:]
 
         # just get rid of prefixes because sometimes int_ becomes ext_ depending on the event
-        if normalized.startswith((u"int_", u"ext_", u"hpt_")):
+        if normalized.startswith(("int_", "ext_", "hpt_")):
             normalized = normalized[4:]
         return normalized
 
     @staticmethod
     def from_internal_name(internal_name):
+        """
+        Create module from internal name.
+
+        Args:
+            internal_name (str): Internal module name.
+
+        Returns:
+            object: Shielding module instance or None.
+        """
         cname = EDShieldingFactory.normalize_module_name(internal_name)
         if cname in EDShieldingFactory.__module_classes:
             shielding = EDShieldingFactory.__module_classes[cname]()
@@ -651,6 +744,15 @@ class EDShieldingFactory(object):
 
     @staticmethod
     def from_module(module):
+        """
+        Create module from module data.
+
+        Args:
+            module (dict): Module data.
+
+        Returns:
+            object: Shielding module instance or None.
+        """
         internal_name = module.get("Item", "N/A")
         cname = EDShieldingFactory.normalize_module_name(internal_name)
         if cname in EDShieldingFactory.__module_classes:

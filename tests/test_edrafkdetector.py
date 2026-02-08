@@ -36,20 +36,18 @@ class TestEDRAfkDetector(unittest.TestCase):
         # We need to control EDTime behavior entirely or just mock py_epoch_now
         
         # Let's say event was at T=1000
-        with patch('edr.edtime.EDTime') as MockEDTime:
+        with patch('edrafkdetector.EDTime') as MockEDTime:
             # Instance mock
             mock_time_instance = MockEDTime.return_value
             mock_time_instance.as_py_epoch.return_value = 1000
             
-            # Static method mock
-            with patch('edr.edtime.EDTime.py_epoch_now') as mock_now:
-                # Case 1: Not AFK (elapsed < 300)
-                mock_now.return_value = 1100 # 100 seconds elapsed
-                self.assertFalse(self.detector.is_afk())
-                
-                # Case 2: AFK (elapsed > 300)
-                mock_now.return_value = 1400 # 400 seconds elapsed
-                self.assertTrue(self.detector.is_afk())
+            # Case 1: Not AFK (elapsed < 300)
+            MockEDTime.py_epoch_now.return_value = 1100 # 100 seconds elapsed
+            self.assertFalse(self.detector.is_afk())
+            
+            # Case 2: AFK (elapsed >= 300)
+            MockEDTime.py_epoch_now.return_value = 1400 # 400 seconds elapsed
+            self.assertTrue(self.detector.is_afk())
 
 if __name__ == '__main__':
     unittest.main()

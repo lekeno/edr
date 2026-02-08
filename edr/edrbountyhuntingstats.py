@@ -4,7 +4,7 @@ from edtime import EDTime # EDR_INTERNAL
 from lrucache import LRUCache # EDR_INTERNAL
 from edrconfig import EDR_CONFIG # EDR_INTERNAL
 
-class EDRBountyHuntingStats(object):
+class EDRBountyHuntingStats:
     def __init__(self):
         self.max = 0
         self.previous_max = 0

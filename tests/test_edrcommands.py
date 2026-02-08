@@ -14,7 +14,7 @@ class TestEDRCommands(unittest.TestCase):
         self.edr_client.player.target_pilot.return_value = None # Default no target
         self.edr_commands = EDRCommands(self.edr_client)
 
-        self.logger_patch = patch('edr.edrcommands.EDR_LOG')
+        self.logger_patch = patch('edrcommands.EDR_LOG')
         self.mock_logger = self.logger_patch.start()
 
     def tearDown(self):

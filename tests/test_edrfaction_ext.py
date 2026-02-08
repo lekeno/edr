@@ -64,7 +64,7 @@ class TestEDRFactionExt(TestCase):
         faction.allegiance = 'empire'
         self.assertTrue(faction.chance_of_rare_mats())
 
-class MockEDSMServer(object):
+class MockEDSMServer:
     def factions_in_system(self, system_name):
         return {
             "name": system_name,

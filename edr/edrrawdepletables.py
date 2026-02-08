@@ -11,7 +11,7 @@ from edrlog import EDR_LOG # EDR_INTERNAL
 
 
 
-class EDRRawDepletables(object):
+class EDRRawDepletables:
     
     HOTSPOTS = [
         ('Sol', 'Europa', 0.13, 2528, 'ice geysers [permit]', -1), # gone?

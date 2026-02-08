@@ -6,13 +6,13 @@ class TestEDRUtils(TestCase):
     def test_pretty_print_number(self):
         self.assertEqual(pretty_print_number(100), "100")
         self.assertEqual(pretty_print_number(999), "999")
-        self.assertEqual(pretty_print_number(1000), "1.0 k")
+        self.assertEqual(pretty_print_number(1000), "1 k")
         self.assertEqual(pretty_print_number(1500), "1.5 k")
-        self.assertEqual(pretty_print_number(9999), "10.0 k")
+        self.assertEqual(pretty_print_number(9999), "10 k")
         self.assertEqual(pretty_print_number(10000), "10 k")
         self.assertEqual(pretty_print_number(15000), "15 k")
         self.assertEqual(pretty_print_number(999999), "999 k")
-        self.assertEqual(pretty_print_number(1000000), "1.0 m")
+        self.assertEqual(pretty_print_number(1000000), "1 m")
         
         self.assertEqual(pretty_print_number(None), "N/A")
 

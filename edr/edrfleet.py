@@ -11,7 +11,7 @@ from edrlog import EDR_LOG # EDR_INTERNAL
 
 
 
-class EDRFleet(object):
+class EDRFleet:
 
     SHIP_TYPE_LUT = {
         "fdl": "ferdelance",

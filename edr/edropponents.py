@@ -12,7 +12,7 @@ import edtime
 from edentities import EDFineOrBounty # EDR_INTERNAL
 from edri18n import _, _c # EDR_INTERNAL
 
-class EDROpponents(object):
+class EDROpponents:
     OUTLAWS = "Outlaws"
     ENEMIES = "Enemies"
 
@@ -102,10 +102,10 @@ class EDROpponents(object):
     def recent_sightings(self):
         self.__update_opponents_if_stale()
         if not self.recents:
-            EDR_LOG.info(u"No recently sighted {}".format(self.kind))
+            EDR_LOG.info("No recently sighted {}".format(self.kind))
             return None
         
-        EDR_LOG.info(u"Got recently sighted {}".format(self.kind))
+        EDR_LOG.info("Got recently sighted {}".format(self.kind))
         summary = []
         now = datetime.datetime.now()
         js_epoch_now = int(1000 * time.mktime(now.timetuple()))
@@ -119,39 +119,39 @@ class EDROpponents(object):
         return summary
 
     def __readable_opponent_sighting(self, sighting, one_liner=False):
-        EDR_LOG.debug(u"sighting: {}".format(sighting))
+        EDR_LOG.debug("sighting: {}".format(sighting))
         if not sighting:
             return None
         t_minus = edtime.EDTime.t_minus(sighting["timestamp"], short=True)
         if one_liner:
-            cmdr = (sighting["cmdr"][:29] + u'…') if len(sighting["cmdr"]) > 30 else sighting["cmdr"]
-            starSystem = (sighting["starSystem"][:50] + u'…') if len(sighting["starSystem"]) > 50 else sighting["starSystem"]    
+            cmdr = (sighting["cmdr"][:29] + '…') if len(sighting["cmdr"]) > 30 else sighting["cmdr"]
+            starSystem = (sighting["starSystem"][:50] + '…') if len(sighting["starSystem"]) > 50 else sighting["starSystem"]    
             if sighting.get("bounty", 0) > 0:
                 neat_bounty = EDFineOrBounty(sighting["bounty"]).pretty_print()
                 # Translators: this is a one-liner for the recently sighted opponents; Keep it short! T{t:<2} is to show how long ago e.g. T-4H (4 hours ago) 
-                return _(u"{t:<2}: {name} in {system}, wanted for {bounty}").format(t=t_minus, name=cmdr, system=starSystem, bounty=neat_bounty)
+                return _("{t:<2}: {name} in {system}, wanted for {bounty}").format(t=t_minus, name=cmdr, system=starSystem, bounty=neat_bounty)
             else:
                 # Translators: this is a one-liner for the recently sighted opponents; Keep it short! T{t:<2} is to show how long ago e.g. T-4H (4 hours ago) 
-                return _(u"{t:<2}: {name} in {system}").format(t=t_minus, name=cmdr, system=starSystem)
+                return _("{t:<2}: {name} in {system}").format(t=t_minus, name=cmdr, system=starSystem)
         
         readable = []
         
         # Translators: this is for a recently sighted outlaw; T{t} is to show how long ago, e.g. T-2h43m 
-        location = _(u"{t} {name} sighted in {system}").format(t=t_minus, name=sighting["cmdr"], system=sighting["starSystem"])
+        location = _("{t} {name} sighted in {system}").format(t=t_minus, name=sighting["cmdr"], system=sighting["starSystem"])
         if sighting["place"] and sighting["place"] != sighting["starSystem"]:
             if sighting["place"].startswith(sighting["starSystem"]+" "):
                 # Translators: this is a continuation of the previous item (location of recently sighted outlaw) and shows a place in the system (e.g. supercruise, Cleve Hub) 
-                location += _(u", {place}").format(place=sighting["place"].partition(sighting["starSystem"]+" ")[2])
+                location += _(", {place}").format(place=sighting["place"].partition(sighting["starSystem"]+" ")[2])
             else:
-                location += _(u", {place}").format(place=sighting["place"])
+                location += _(", {place}").format(place=sighting["place"])
         readable.append(location)
         if sighting["ship"] != "Unknown":
             # Translators: this is for the recently sighted outlaw feature; it shows which ship they were flying at the time
-            readable.append(_(u"Spaceship: {}").format(sighting["ship"]))
+            readable.append(_("Spaceship: {}").format(sighting["ship"]))
         if sighting.get("bounty", 0) > 0:
             neat_bounty = EDFineOrBounty(sighting["bounty"]).pretty_print()
             # Translators: this is for the recently sighted outlaw feature; it shows their bounty if any
-            readable.append(_(u"Wanted for {} credits").format(neat_bounty))
+            readable.append(_("Wanted for {} credits").format(neat_bounty))
         return readable
 
     def __are_sightings_stale(self):

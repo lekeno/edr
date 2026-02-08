@@ -10,18 +10,16 @@ from hashlib import md5
 from numbers import Number
 from itertools import dropwhile
 
-import os
-from edri18n import _ # EDR_INTERNAL
-from edrconfig import EDRUserConfig, EDR_CONFIG # EDR_INTERNAL
-from lrucache import LRUCache # EDR_INTERNAL
-from edrafkdetector import EDRAfkDetector # EDR_INTERNAL
-from edtime import EDTime # EDR_INTERNAL
-from backoff import Backoff # EDR_INTERNAL
-from edrlog import EDR_LOG # EDR_INTERNAL
+from edri18n import _  # EDR_INTERNAL
+from edrconfig import EDRUserConfig, EDR_CONFIG  # EDR_INTERNAL
+from lrucache import LRUCache  # EDR_INTERNAL
+from edrafkdetector import EDRAfkDetector  # EDR_INTERNAL
+from edtime import EDTime  # EDR_INTERNAL
+from backoff import Backoff  # EDR_INTERNAL
+from edrlog import EDR_LOG  # EDR_INTERNAL
 
 
-
-class EDRDiscordSimpleMessage(object):
+class EDRDiscordSimpleMessage:
     def __init__(self, message):
         self.content = message
 
@@ -29,7 +27,11 @@ class EDRDiscordSimpleMessage(object):
         return self.__dict__
 
 
-class EDRDiscordMessage(object):
+class EDRDiscordMessage:
+    """
+    Represents a message to be sent to Discord.
+    """
+
     def __init__(self):
         self.username = "EDR"
         self.avatar_url = "https://lekeno.github.io/icon-192x192.png"
@@ -40,7 +42,7 @@ class EDRDiscordMessage(object):
 
     def json(self):
         base = self.__dict__
-        base["embeds"] = [ embed.json() for embed in self.embeds]
+        base["embeds"] = [embed.json() for embed in self.embeds]
         return base
 
     def valid(self):
@@ -52,16 +54,20 @@ class EDRDiscordMessage(object):
                 return False
 
         return True
-    
+
     def add_embed(self, discord_embed):
         self.embeds.append(discord_embed)
 
     def add_file(self, filename, name):
         with open(filename, "rb") as f:
-            self.files.append({"file": f.read(), "filename":name})
+            self.files.append({"file": f.read(), "filename": name})
 
 
-class EDRDiscordEmbed(object):
+class EDRDiscordEmbed:
+    """
+    Represents an embed in a Discord message.
+    """
+
     def __init__(self):
         self.title = ""
         self.url = ""
@@ -84,7 +90,7 @@ class EDRDiscordEmbed(object):
             "icon_url": "https://lekeno.github.io/favicon-16x16.png"
         }
         self.timestamp = datetime.now(timezone.utc).isoformat()
-    
+
     def json(self):
         return {
             "title": self.title,
@@ -92,16 +98,22 @@ class EDRDiscordEmbed(object):
             "description": self.description,
             "color": self.color,
             "author": self.author,
-            "fields": [ field.json() for field in self.fields],
+            "fields": [field.json() for field in self.fields],
             "image": self.image,
             "thumbnails": self.thumbnail,
             "footer": self.footer,
             "timestamp": self.timestamp
         }
 
+    def valid(self):
+        return True
 
 
-class EDRDiscordField(object):
+class EDRDiscordField:
+    """
+    Represents a field within a Discord embed.
+    """
+
     def __init__(self, name, value, inline=False):
         self.name = name
         self.value = value
@@ -115,30 +127,48 @@ class EDRDiscordField(object):
         }
 
 
-class EDRDiscordWebhook(object):
+class EDRDiscordWebhook:
     SESSION = requests.Session()
 
     def __init__(self, webhook_url):
         self.webhook_url = webhook_url
-        self.backoff = Backoff(u"Discord")
+        self.backoff = Backoff("Discord")
 
     def send_text(self, text):
+        """
+        Send a simple text message via the webhook.
+
+        Args:
+            text (str): The text message to send.
+
+        Returns:
+            bool: True if successful, False otherwise.
+        """
         if not self.webhook_url:
             return False
         if self.backoff.throttled():
             return False
-    
+
         message = EDRDiscordSimpleMessage(text)
         payload_json = message.json()
-        
-        return self.__post(payload_json)        
+
+        return self.__post(payload_json)
 
     def send(self, discord_message):
+        """
+        Send a complex Discord message via the webhook.
+
+        Args:
+            discord_message (EDRDiscordMessage): The message object to send.
+
+        Returns:
+            bool: True if successful, False otherwise.
+        """
         if not self.webhook_url:
             return False
         if self.backoff.throttled():
             return False
-    
+
         resp = None
         payload_json = discord_message.json()
         if discord_message.files:
@@ -156,11 +186,11 @@ class EDRDiscordWebhook(object):
             EDR_LOG.warning(f"ConnectionException {e} for POST Discord Webhook")
             last_connection_exception = e
         raise last_connection_exception
-    
+
     def __check_response(self, response):
         if response is None:
             return False
-        
+
         if response.status_code in [200, 204, 404, 401, 403, 204]:
             self.backoff.reset()
             pass
@@ -170,15 +200,27 @@ class EDRDiscordWebhook(object):
 
         return response.status_code in [200, 204]
 
+
 # TODO localization
-class EDRDiscordIntegration(object):
+class EDRDiscordIntegration:
+    """
+    Handles integration with Discord for sending notifications and messages.
+    """
+
     def __init__(self, edrcmdrs):
+        """
+        Initialize the Discord integration.
+
+        Args:
+            edrcmdrs: The EDRCmdrs object managing commander profiles.
+        """
         self.edrcmdrs = edrcmdrs
         self.afk_detector = EDRAfkDetector()
         user_config = EDRUserConfig()
         edr_config = EDR_CONFIG
-        
-        players_cfg_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'config', 'user_discord_players.json')
+
+        players_cfg_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'config',
+                                        'user_discord_players.json')
         try:
             self.channels_players_cfg = json.loads(open(players_cfg_path).read())
         except:
@@ -196,11 +238,12 @@ class EDRDiscordIntegration(object):
             "voicechat": EDRDiscordWebhook(user_config.discord_webhook_for_comms("voicechat")),
             "player": EDRDiscordWebhook(user_config.discord_webhook_for_comms("player")),
         }
-        
+
         self.outgoing = {
             "broadcast": EDRDiscordWebhook(user_config.discord_webhook_for_comms("broadcast", incoming=False)),
             "squadron": EDRDiscordWebhook(user_config.discord_webhook_for_comms("squadron", incoming=False)),
-            "squadleaders": EDRDiscordWebhook(user_config.discord_webhook_for_comms("squadronleaders", incoming=False)),
+            "squadleaders": EDRDiscordWebhook(
+                user_config.discord_webhook_for_comms("squadronleaders", incoming=False)),
             "wing": EDRDiscordWebhook(user_config.discord_webhook_for_comms("wing", incoming=False)),
             "crew": EDRDiscordWebhook(user_config.discord_webhook_for_comms("crew", incoming=False)),
             "chat": EDRDiscordWebhook(user_config.discord_webhook_for_comms("crew", incoming=False)),
@@ -214,13 +257,22 @@ class EDRDiscordIntegration(object):
             "jump": EDRDiscordWebhook(user_config.discord_webhook_for_fc("jump")),
             "market": EDRDiscordWebhook(user_config.discord_webhook_for_fc("market"))
         }
-        
+
         self.cognitive_novelty_threshold = edr_config.cognitive_novelty_threshold()
         self.cognitive_comms_cache = LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
         self.cognitive_outgoing_comms_cache = LRUCache(edr_config.lru_max_size(), edr_config.blips_max_age())
 
     def process(self, entry):
-        self.afk_detector.process(entry) # TODO move AFK state to player.
+        """
+        Process a journal entry for potential Discord notifications.
+
+        Args:
+            entry (dict): The journal entry.
+
+        Returns:
+            bool: True if a message was sent, False otherwise.
+        """
+        self.afk_detector.process(entry)  # TODO move AFK state to player.
 
         if entry["event"] == "ReceiveText" and entry.get("Channel", "N/A") != "npc":
             return self.__process_incoming(entry)
@@ -229,6 +281,15 @@ class EDRDiscordIntegration(object):
         return False
 
     def fc_jump_scheduled(self, jump_info):
+        """
+        Send a notification about a scheduled Fleet Carrier jump.
+
+        Args:
+            jump_info (dict): Details about the jump.
+
+        Returns:
+            bool: True if sent, False otherwise.
+        """
         if not self.fc or not self.fc["jump"]:
             return False
         dm = self.__create_discord_fc_jump_psa(jump_info)
@@ -238,6 +299,15 @@ class EDRDiscordIntegration(object):
         return self.fc["jump"].send(dm)
 
     def fc_market_update(self, market_info):
+        """
+        Send a notification about a Fleet Carrier market update.
+
+        Args:
+            market_info (dict): Details about the market update.
+
+        Returns:
+            bool: True if sent, False otherwise.
+        """
         if not self.fc or not self.fc["market"]:
             return False
         dm = self.__create_discord_fc_market_psa(market_info)
@@ -254,35 +324,36 @@ class EDRDiscordIntegration(object):
         channel = entry.get("Channel", None)
         if channel is None and "From" in entry:
             # multi-crew appears to be incoming but without channel
-            if entry["From"] not in ["chat", "voicechat", "wing", "crew", "squadron", "squadronleaders", "starsystem", "local", "friend", "player"]:
+            if entry["From"] not in ["chat", "voicechat", "wing", "crew", "squadron", "squadronleaders", "starsystem",
+                                     "local", "friend", "player"]:
                 channel = "player"
             else:
                 channel = entry["From"]
         if self.afk_detector.is_afk() and self.incoming["afk"] and channel in ["player", "friend"]:
             return self.incoming["afk"].send(dm)
-        
+
         if not (channel in self.incoming and self.incoming[channel]):
             return False
 
         return self.incoming[channel].send(dm)
-    
+
     def __cmdrname_to_discord_color(self, name):
         saturation = [x / 100 for x in range(10, 91, 20)]
         lightness = [x / 100 for x in range(20, 81, 20)]
-        
+
         hash = crc32(name.encode("utf-8")) & 0xFFFFFFFF
         h = hash % 359
-        
+
         hash //= 360
         s = saturation[hash % len(saturation)]
-        
+
         hash //= len(saturation)
         l = lightness[hash % len(lightness)]
 
         h /= 360
         q = l * (1 + s) if l < 0.5 else l + s - l * s
         p = 2 * l - q
-        
+
         rgb = []
         for c in (h + 1 / 3, h, h - 1 / 3):
             if c < 0:
@@ -307,33 +378,31 @@ class EDRDiscordIntegration(object):
         from_cmdr = entry.get("From", player.name)
         if from_cmdr.startswith("$cmdr_decorate:#name="):
             from_cmdr = entry["From"][len("$cmdr_decorate:#name="):-1]
-        
-            
+
         channel = entry.get("Channel", "unknown")
         message = entry.get("Message", "")
-             
-        
+
         if self.__unfit(from_cmdr, message, channel):
             return False
 
         cfg = self.__combined_cfg(from_cmdr, channel)
 
         sender_profile = self.edrcmdrs.cmdr(from_cmdr, autocreate=False, check_inara_server=False)
-        
+
         description_lut = {
-            "player": _(u"Direct"),
-            "friend": _(u"Direct"),
-            "local": _(u"Local: `{location}`").format(location=player.location.pretty_print()),
-            "starsystem": _(u"System: `{location}`").format(location=player.star_system),
-            "squadron": _(u"Squadron"),
-            "squadleaders": _(u"Squadron Leaders"),
-            "wing": _(u"Wing"),
-            "crew": _(u"Crew"),
-            "chat": _(u"Crew"),
-            "voicechat": _(u"Voice"),
-            "unknown": _(u"Unknown")
+            "player": _("Direct"),
+            "friend": _("Direct"),
+            "local": _("Local: `{location}`").format(location=player.location.pretty_print()),
+            "starsystem": _("System: `{location}`").format(location=player.star_system),
+            "squadron": _("Squadron"),
+            "squadleaders": _("Squadron Leaders"),
+            "wing": _("Wing"),
+            "crew": _("Crew"),
+            "chat": _("Crew"),
+            "voicechat": _("Voice"),
+            "unknown": _("Unknown")
         }
-        
+
         dm = EDRDiscordMessage()
         dm.content = self.__discord_escape(message, add_spoiler_tags=cfg["spoiler"])
         dm.username = cfg["name"]
@@ -342,7 +411,7 @@ class EDRDiscordIntegration(object):
 
         if self.__novel_enough_comms(from_cmdr, entry):
             de = EDRDiscordEmbed()
-            de.title = _(u"Channel")
+            de.title = _("Channel")
             de.description = description_lut.get(channel, channel)
             de.author = {
                 "name": cfg["name"],
@@ -357,9 +426,9 @@ class EDRDiscordIntegration(object):
             }
 
             if sender_profile:
-                df = EDRDiscordField(_(u"EDR Karma"), format(sender_profile.readable_karma(details=True)), True)
+                df = EDRDiscordField(_("EDR Karma"), format(sender_profile.readable_karma(details=True)), True)
                 de.fields.append(df)
-            
+
             dm.add_embed(de)
             self.cognitive_comms_cache.set(from_cmdr, entry)
         return dm
@@ -368,35 +437,35 @@ class EDRDiscordIntegration(object):
         player = self.edrcmdrs.player
         from_cmdr = player.name
         to_cmdr = None
-        
+
         channel = entry.get("To", "unknown")
         message = entry.get("Message", "")
         c_channel = channel
         if c_channel not in ["local", "starsystem", "squadron", "squadleaders", "wing", "crew", "chat", "voicechat"]:
             c_channel = "player"
             to_cmdr = entry.get("To", "unknown")
-             
+
         cfg = self.__combined_cfg(from_cmdr, c_channel)
 
         sender_profile = self.edrcmdrs.cmdr(from_cmdr, autocreate=False, check_inara_server=False)
         receiver_profile = None
         if to_cmdr:
             receiver_profile = self.edrcmdrs.cmdr(to_cmdr, autocreate=False, check_inara_server=False)
-        
+
         description_lut = {
-            "player": _(u"Direct"),
-            "friend": _(u"Direct"),
-            "local": _(u"Local: `{location}`").format(location=player.location.pretty_print()),
-            "starsystem": _(u"System: `{location}`").format(location=player.star_system),
-            "squadron": _(u"Squadron"),
-            "squadleaders": _(u"Squadron Leaders"),
-            "wing": _(u"Wing"),
-            "crew": _(u"Crew"),
-            "chat": _(u"Crew"),
-            "voicechat": _(u"Voice"),
-            "unknown": _(u"Unknown")
+            "player": _("Direct"),
+            "friend": _("Direct"),
+            "local": _("Local: `{location}`").format(location=player.location.pretty_print()),
+            "starsystem": _("System: `{location}`").format(location=player.star_system),
+            "squadron": _("Squadron"),
+            "squadleaders": _("Squadron Leaders"),
+            "wing": _("Wing"),
+            "crew": _("Crew"),
+            "chat": _("Crew"),
+            "voicechat": _("Voice"),
+            "unknown": _("Unknown")
         }
-        
+
         dm = EDRDiscordMessage()
         dm.content = self.__discord_escape(message, add_spoiler_tags=cfg["spoiler"])
         dm.username = cfg["name"]
@@ -405,7 +474,7 @@ class EDRDiscordIntegration(object):
 
         if self.__novel_enough_comms(from_cmdr, entry):
             de = EDRDiscordEmbed()
-            de.title = _(u"Channel")
+            de.title = _("Channel")
             de.description = description_lut.get(c_channel, c_channel)
             if to_cmdr:
                 de.description += _(" to: {}").format(to_cmdr)
@@ -422,16 +491,16 @@ class EDRDiscordIntegration(object):
             }
 
             if sender_profile:
-                df = EDRDiscordField(_(u"EDR Karma"), format(sender_profile.readable_karma(details=True)), True)
+                df = EDRDiscordField(_("EDR Karma"), format(sender_profile.readable_karma(details=True)), True)
                 de.fields.append(df)
-            
+
             dm.add_embed(de)
             self.cognitive_comms_cache.set(from_cmdr, entry)
 
         if to_cmdr and self.__novel_enough_outgoing_comms(to_cmdr, entry):
             to_cfg = self.__combined_cfg(to_cmdr, c_channel)
             de = EDRDiscordEmbed()
-            de.title = _(u"Receiver")
+            de.title = _("Receiver")
             de.description = to_cmdr
             de.author = {
                 "name": to_cfg["name"],
@@ -446,42 +515,47 @@ class EDRDiscordIntegration(object):
             }
 
             if receiver_profile:
-                df = EDRDiscordField(_(u"EDR Karma"), format(receiver_profile.readable_karma(details=True)), True)
-                de.fields.append(df)            
-        
+                df = EDRDiscordField(_("EDR Karma"), format(receiver_profile.readable_karma(details=True)), True)
+                de.fields.append(df)
+
             dm.add_embed(de)
             self.cognitive_outgoing_comms_cache.set(to_cmdr, entry)
 
         return dm
 
-
     def __create_discord_fc_jump_psa(self, jump_info):
         player = self.edrcmdrs.player
         from_cmdr = player.name
         channel = "fc"
-        
+
         cfg = self.__combined_cfg(from_cmdr, channel)
-        
+
         sender_profile = self.edrcmdrs.cmdr(from_cmdr, autocreate=False, check_inara_server=False)
 
         dm = EDRDiscordMessage()
         if not jump_info["to"]:
-            dm.content = "`{}` has cancelled their fleet carrier jump ({} | {}).".format(jump_info["owner"], jump_info["name"], jump_info["callsign"])
+            dm.content = "`{}` has cancelled their fleet carrier jump ({} | {}).".format(jump_info["owner"],
+                                                                                        jump_info["name"],
+                                                                                        jump_info["callsign"])
             return dm
-        
-        dm.content = "`{}` has scheduled a fleet carrier jump from `{}` to `{}` - `{}`.".format(jump_info["owner"], jump_info["from"], jump_info["to"], jump_info["body"])
-        
+
+        dm.content = "`{}` has scheduled a fleet carrier jump from `{}` to `{}` - `{}`.".format(jump_info["owner"],
+                                                                                               jump_info["from"],
+                                                                                               jump_info["to"],
+                                                                                               jump_info["body"])
+
         dm.username = cfg["name"]
         dm.avatar_url = cfg["icon_url"]
         dm.tts = cfg["tts"]
 
         de = EDRDiscordEmbed()
-        de.title = _(u"Flight Plan")
+        de.title = _("Flight Plan")
         departureTime = EDTime()
         departureTime.from_js_epoch(jump_info["at"])
         lockdownTime = EDTime()
         lockdownTime.from_js_epoch(jump_info["lockdown"])
-        de.description = _("```From     :    {}\nTo       :    {}\nBody     :    {}\nTime(UTC):    {}```").format(jump_info["from"], jump_info["to"], jump_info["body"], departureTime.as_hhmmss())
+        de.description = _("```From     :    {}\nTo       :    {}\nBody     :    {}\nTime(UTC):    {}```").format(
+            jump_info["from"], jump_info["to"], jump_info["body"], departureTime.as_hhmmss())
         de.author = {
             "name": "{} | {}".format(jump_info["name"], jump_info["callsign"]),
             "url": cfg["url"],
@@ -495,12 +569,14 @@ class EDRDiscordIntegration(object):
         }
         de.thumbnail = {
             "url": "https://lekeno.github.io/fc-jump.png"
-        }   
+        }
 
         if sender_profile:
-            df = EDRDiscordField(_(u"Landing"), _("```Access   :    {}\nNotorious:    {}\nLockdown(UTC):    {}```").format(self.__readable_fc_docking(jump_info["access"]), self.__readable_fc_notorious(jump_info["allow_notorious"]), lockdownTime.as_hhmmss()), True)
+            df = EDRDiscordField(_("Landing"), _("```Access   :    {}\nNotorious:    {}\nLockdown(UTC):    {}```").format(
+                self.__readable_fc_docking(jump_info["access"]), self.__readable_fc_notorious(jump_info["allow_notorious"]),
+                lockdownTime.as_hhmmss()), True)
             de.fields.append(df)
-        
+
         dm.add_embed(de)
         return dm
 
@@ -523,7 +599,7 @@ class EDRDiscordIntegration(object):
             "squadronfriends": "Squadmates & friends",
             "all": "Anybody"
         }
-        
+
         return dockingLUT.get(access, "?")
 
     def __readable_fc_notorious(self, allow_notorious):
@@ -533,29 +609,34 @@ class EDRDiscordIntegration(object):
         player = self.edrcmdrs.player
         from_cmdr = player.name
         channel = "fc"
-        
+
         cfg = self.__combined_cfg(from_cmdr, channel)
-        
+
         sender_profile = self.edrcmdrs.cmdr(from_cmdr, autocreate=False, check_inara_server=False)
 
         dm = EDRDiscordMessage()
         if not market_info["sales"] and not market_info["purchases"]:
-            dm.content = "`{}` no longer trading items at their fleet carrier ({} | {}).".format(market_info["owner"], market_info["name"], market_info["callsign"])
+            dm.content = "`{}` no longer trading items at their fleet carrier ({} | {}).".format(market_info["owner"],
+                                                                                                 market_info["name"],
+                                                                                                 market_info["callsign"])
             return dm
-        
-        trading_kinds =  []
+
+        trading_kinds = []
         if market_info["sales"]:
             trading_kinds.append(_("selling"))
         if market_info["purchases"]:
             trading_kinds.append(_("buying"))
-        dm.content = "`{}` is {} items at their fleet carrier ({} | {}).".format(market_info["owner"], " & ".join(trading_kinds), market_info["name"], market_info["callsign"])
-        
+        dm.content = "`{}` is {} items at their fleet carrier ({} | {}).".format(market_info["owner"],
+                                                                                " & ".join(trading_kinds),
+                                                                                market_info["name"],
+                                                                                market_info["callsign"])
+
         dm.username = cfg["name"]
         dm.avatar_url = cfg["icon_url"]
         dm.tts = cfg["tts"]
 
         de = EDRDiscordEmbed()
-        de.title = _(u"Bar / Market trading")
+        de.title = _("Bar / Market trading")
         de.description = market_info["summary"]
         de.author = {
             "name": "{} | {}".format(market_info["name"], market_info["callsign"]),
@@ -570,18 +651,20 @@ class EDRDiscordIntegration(object):
         }
         de.thumbnail = {
             "url": "https://lekeno.github.io/fc-trade.png"
-        }   
+        }
 
         if sender_profile:
-            df = EDRDiscordField(_(u"Landing"), _("```Access   :    {}\nNotorious:    {}```").format(self.__readable_fc_docking(market_info["access"]), self.__readable_fc_notorious(market_info["allow_notorious"])), True)
+            df = EDRDiscordField(_("Landing"), _("```Access   :    {}\nNotorious:    {}```").format(
+                self.__readable_fc_docking(market_info["access"]),
+                self.__readable_fc_notorious(market_info["allow_notorious"])), True)
             de.fields.append(df)
-            df = EDRDiscordField(_(u"Location"), _("```System:    {}\nBody  :    {}```").format(market_info["location"]["system"], market_info["location"]["body"] or "N/A"), True)
+            df = EDRDiscordField(_("Location"), _("```System:    {}\nBody  :    {}```").format(
+                market_info["location"]["system"], market_info["location"]["body"] or "N/A"), True)
             de.fields.append(df)
-        
+
         dm.add_embed(de)
         return dm
 
-                
     def __process_outgoing(self, entry):
         dm = self.__create_outgoing_discord_message(entry)
         if not dm:
@@ -593,7 +676,7 @@ class EDRDiscordIntegration(object):
                 return False
 
             if command == "!discord" and self.outgoing["broadcast"]:
-                dm.content = " ".join(command_parts[1:]) # no escaping
+                dm.content = " ".join(command_parts[1:])  # no escaping
                 return self.outgoing["broadcast"].send(dm)
             return False
 
@@ -603,14 +686,15 @@ class EDRDiscordIntegration(object):
 
         if not channel in self.outgoing:
             return False
-        
+
         dm.content = self.__discord_escape(entry["Message"])
         return self.outgoing[channel].send(dm)
 
     def __default_cfg(self, cmdr_name):
         random.seed(len(cmdr_name))
         style = random.choice(["identicon", "retro", "monsterid", "wavatar", "robohash"])
-        gravatar_url = u"https://www.gravatar.com/avatar/{}?d={}&f=y".format(md5(cmdr_name.encode('utf-8')).hexdigest(), style)
+        gravatar_url = "https://www.gravatar.com/avatar/{}?d={}&f=y".format(md5(cmdr_name.encode('utf-8')).hexdigest(),
+                                                                            style)
         default_cfg = {
             "name": cmdr_name,
             "color": 8421246,
@@ -626,13 +710,13 @@ class EDRDiscordIntegration(object):
             "min_karma": -1000,
             "max_karma": 1000
         }
-        
+
         profile = self.edrcmdrs.cmdr(cmdr_name, autocreate=False, check_inara_server=True)
         if profile:
             default_cfg["color"] = self.__karma_to_discord_color(profile.readable_karma(prefix=False))
             default_cfg["url"] = profile.url or default_cfg["url"]
             default_cfg["icon_url"] = profile.avatar_url or default_cfg["icon_url"]
-            
+
         return default_cfg
 
     def __combined_cfg(self, cmdr, channel):
@@ -646,7 +730,7 @@ class EDRDiscordIntegration(object):
 
         cfg.update(channel_level_cfg.get("", {}))
         cfg.update(channel_level_cfg.get(cmdr, {}))
-        
+
         return cfg
 
     def __karma_to_discord_color(self, readable_karma):
@@ -665,7 +749,7 @@ class EDRDiscordIntegration(object):
         new_edt = EDTime()
         new_edt.from_journal_timestamp(new_comms["timestamp"])
         enough_time_has_passed = new_edt.elapsed_threshold(last_comms["timestamp"], self.cognitive_novelty_threshold)
-        
+
         new_channel = new_comms["Channel"] if "Channel" in new_comms else new_comms.get("To", None)
         last_channel = last_comms["Channel"] if "Channel" in last_comms else last_comms.get("To", None)
         new_from = new_comms["From"] if "From" in new_comms else sender
@@ -681,7 +765,7 @@ class EDRDiscordIntegration(object):
         new_edt = EDTime()
         new_edt.from_journal_timestamp(new_comms["timestamp"])
         enough_time_has_passed = new_edt.elapsed_threshold(last_comms["timestamp"], self.cognitive_novelty_threshold)
-        
+
         new_channel = new_comms["Channel"] if "Channel" in new_comms else new_comms.get("To", None)
         last_channel = last_comms["Channel"] if "Channel" in last_comms else last_comms.get("To", None)
         new_from = new_comms["From"] if "From" in new_comms else receiver
@@ -690,32 +774,31 @@ class EDRDiscordIntegration(object):
         return enough_time_has_passed or (new_channel != last_channel or new_from != last_from)
 
     def __discord_escape(self, message, add_spoiler_tags=False):
-        escaped_message = message.replace(u'@', u'@​\u200b')
+        escaped_message = message.replace('@', '@​\u200b')
         if add_spoiler_tags:
-            escaped_message = escaped_message.replace(u'||', u'|​\u200b|​\u200b')
-            return u"||{}||".format(escaped_message)
+            escaped_message = escaped_message.replace('||', '|​\u200b|​\u200b')
+            return "||{}||".format(escaped_message)
         return escaped_message
-
 
     def __unfit(self, from_cmdr, message, channel):
         cfg = self.__combined_cfg(from_cmdr, channel)
 
         if cfg.get("blocked", False):
-            EDR_LOG.debug(u"blocked in player cfg: {}".format(cfg))
+            EDR_LOG.debug("blocked in player cfg: {}".format(cfg))
             return True
 
         if cfg["matching"]:
             try:
-                if not(any(re.compile(regex).match(message) for regex in cfg["matching"])):
-                    EDR_LOG.debug(u"no matching in player cfg: {} {}".format(message, cfg["matching"]))
+                if not (any(re.compile(regex).match(message) for regex in cfg["matching"])):
+                    EDR_LOG.debug("no matching in player cfg: {} {}".format(message, cfg["matching"]))
                     return True
             except:
                 pass
-        
+
         if cfg["mismatching"]:
             try:
                 if any(re.compile(regex).match(message) for regex in cfg["mismatching"]):
-                    EDR_LOG.debug(u"mismatching in player cfg: {} {}".format(message, cfg["mismatching"]))
+                    EDR_LOG.debug("mismatching in player cfg: {} {}".format(message, cfg["mismatching"]))
                     return True
             except:
                 pass
@@ -724,7 +807,7 @@ class EDRDiscordIntegration(object):
             profile = self.edrcmdrs.cmdr(from_cmdr, autocreate=False, check_inara_server=True)
             karma = profile.karma if profile else 0
             karma_check = karma < cfg["min_karma"] or karma > cfg["max_karma"]
-            EDR_LOG.debug(u"Karma check is {} ({} < karma < {})".format(karma_check, cfg["min_karma"], cfg["max_karma"]))
+            EDR_LOG.debug("Karma check is {} ({} < karma < {})".format(karma_check, cfg["min_karma"], cfg["max_karma"]))
             return karma_check
-        
+
         return False

@@ -1,9 +1,19 @@
-from edri18n import _, _c, _edr # EDR_INTERNAL
-from edrlog import EDR_LOG # EDR_INTERNAL
+from edri18n import _, _c, _edr
+from edrlog import EDR_LOG
 
-class EDRSystemPlanetCheck(object):
+class EDRSystemPlanetCheck:
+    """
+    Checks if a planet meets specific criteria (conditions, distance, etc.).
+    """
 
     def __init__(self, edrsystems, sc_override=1500):
+        """
+        Initialize the check.
+
+        Args:
+            edrsystems: EDRSystems instance.
+            sc_override: Max supercruise distance.
+        """
         self.max_distance = 50
         self.max_sc_distance = sc_override
         self.name = None
@@ -22,9 +32,15 @@ class EDRSystemPlanetCheck(object):
         self.volcanisms = set()
         
     def set_dlc(self, name):
+        """
+        Set DLC compatibility.
+        """
         self.dlc_name = name
 
     def check_system(self, system):
+        """
+        Check if system is within max distance.
+        """
         self.systems_counter = self.systems_counter + 1
         if not system:
             return False
@@ -35,6 +51,9 @@ class EDRSystemPlanetCheck(object):
         return system['distance'] <= self.max_distance
 
     def check_planet(self, planet, system_name):
+        """
+        Check if planet meets all criteria.
+        """
         self.planets_counter = self.planets_counter + 1
         if not planet:
             return False
@@ -84,16 +103,19 @@ class EDRAmmoniaAtmosphereCheck(EDRSystemPlanetCheck):
         self.atmospheres = set(["ammonia"])
 
 class EDRBiologyCheck(EDRSystemPlanetCheck):
-
+    """
+    Base class for biological checks.
+    """
     def __init__(self, edrsystems, sc_override=1500):
-        super(EDRBiologyCheck, self).__init__(edrsystems, sc_override)
+        super().__init__(edrsystems, sc_override)
         self.name = _('Biology')
         self.genus = None
 
-    
-    
     def check_planet(self, planet, system_name):
-        if not super(EDRBiologyCheck, self).check_planet(planet, system_name):
+        """
+        Check if planet meets biological conditions.
+        """
+        if not super().check_planet(planet, system_name):
             EDR_LOG.debug("SystemPlanetCheck check planet failed: {}".format(planet))
             return False
         
@@ -115,9 +137,11 @@ class EDRBiologyCheck(EDRSystemPlanetCheck):
         return False
 
 class EDRWaterBiologyCheck(EDRBiologyCheck):
-
+    """
+    Checks for biology in water/water-rich atmospheres.
+    """
     def __init__(self, edrsystems, sc_override=1500):
-        super(EDRWaterBiologyCheck, self).__init__(edrsystems, sc_override)
+        super().__init__(edrsystems, sc_override)
         self.name = _('Biology & water atmosphere')
         self.atmospheres = set(["water", "waterrich"])
 
@@ -125,18 +149,21 @@ class EDRWaterBiologyCheck(EDRBiologyCheck):
     
     
 class EDRAleoidaCheck(EDRBiologyCheck):
-
+    """
+    Base check for Aleoida genus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
-        super(EDRAleoidaCheck, self).__init__(edrsystems, sc_override)
+        super().__init__(edrsystems, sc_override)
         self.name = _('Aleoida')
         self.genus = "$codex_ent_aleoids_genus_name;"
         self.planet_classes = set(["rocky", "highmetalcontent"])
         self.atmospheres = set(["ammonia", "carbondioxide", "carbondioxiderich"])
 
-    
-    
     def check_planet(self, planet, system_name):
-        if not super(EDRAleoidaCheck, self).check_planet(planet, system_name):
+        """
+        Check specific conditions for Aleoida (temperature/atmosphere).
+        """
+        if not super().check_planet(planet, system_name):
             return False
         
         atmosphere = self.edrsystems.canonical_atmosphere(planet)
@@ -147,7 +174,9 @@ class EDRAleoidaCheck(EDRBiologyCheck):
         return True
     
 class EDRAleoidaArcusCheck(EDRAleoidaCheck):
-
+    """
+    Checks for Aleoida Arcus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Aleoida Arcus')
@@ -159,7 +188,9 @@ class EDRAleoidaArcusCheck(EDRAleoidaCheck):
     
     
 class EDRAleoidaCoronamusCheck(EDRAleoidaCheck):
-
+    """
+    Checks for Aleoida Coronamus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Aleoida Coronamus')
@@ -171,7 +202,9 @@ class EDRAleoidaCoronamusCheck(EDRAleoidaCheck):
     
     
 class EDRAleoidaGravisCheck(EDRAleoidaCheck):
-
+    """
+    Checks for Aleoida Gravis.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Aleoida Gravis')
@@ -183,7 +216,9 @@ class EDRAleoidaGravisCheck(EDRAleoidaCheck):
     
     
 class EDRAleoidaLaminiaeCheck(EDRAleoidaCheck):
-
+    """
+    Checks for Aleoida Laminiae.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Aleoida Laminiae')
@@ -193,7 +228,9 @@ class EDRAleoidaLaminiaeCheck(EDRAleoidaCheck):
     
     
 class EDRAleoidaSpicaCheck(EDRAleoidaCheck):
-
+    """
+    Checks for Aleoida Spica.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Aleoida Spica')
@@ -202,28 +239,36 @@ class EDRAleoidaSpicaCheck(EDRAleoidaCheck):
 
 
 class EDRBacteriumCheck(EDRBiologyCheck):
-
+    """
+    Base check for Bacterium genus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
-        super(EDRBacteriumCheck, self).__init__(edrsystems, sc_override)
+        super().__init__(edrsystems, sc_override)
         self.name = _('Bacterium')
         self.genus = "$codex_ent_bacterial_genus_name;"
     
 class EDRBacteriumNebulusCheck(EDRBacteriumCheck):
-
+    """
+    Checks for Bacterium Nebulus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Bacterium Nebulus')
         self.atmospheres = set(["helium"])
 
 class EDRBacteriumAciesCheck(EDRBacteriumCheck):
-
+    """
+    Checks for Bacterium Acies.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Bacterium Acies')
         self.atmospheres = set(["neon", "neonrich"])
     
 class EDRBacteriumOmentumCheck(EDRBacteriumCheck):
-
+    """
+    Checks for Bacterium Omentum.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Bacterium Omentum')
@@ -231,7 +276,9 @@ class EDRBacteriumOmentumCheck(EDRBacteriumCheck):
         self.volcanisms = set(["nitrogen", "ammonia"])
 
 class EDRBacteriumScopulumCheck(EDRBacteriumCheck):
-
+    """
+    Checks for Bacterium Scopulum.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Bacterium Scopulum')
@@ -239,7 +286,9 @@ class EDRBacteriumScopulumCheck(EDRBacteriumCheck):
         self.volcanisms = set(["carbon", "methane"])
 
 class EDRBacteriumVerrataCheck(EDRBacteriumCheck):
-
+    """
+    Checks for Bacterium Verrata.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Bacterium Verrata')
@@ -247,56 +296,72 @@ class EDRBacteriumVerrataCheck(EDRBacteriumCheck):
         self.volcanisms = set(["water"])
 
 class EDRBacteriumBullarisCheck(EDRBacteriumCheck):
-
+    """
+    Checks for Bacterium Bullaris.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Bacterium Bullaris')
         self.atmospheres = set(["methane", "methanerich"])
 
 class EDRBacteriumVesiculaCheck(EDRBacteriumCheck):
-
+    """
+    Checks for Bacterium Vesicula.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Bacterium Vesicula')
         self.atmospheres = set(["argon", "argonrich"])
 
 class EDRBacteriumInformemCheck(EDRBacteriumCheck):
-
+    """
+    Checks for Bacterium Informem.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Bacterium Informem')
         self.atmospheres = set(["nitrogen"])
 
 class EDRBacteriumVoluCheck(EDRBacteriumCheck):
-
+    """
+    Checks for Bacterium Volu.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Bacterium Volu')
         self.atmospheres = set(["oxygen"])
 
 class EDRBacteriumAlcyoneumCheck(EDRBacteriumCheck):
-
+    """
+    Checks for Bacterium Alcyoneum.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Bacterium Alcyoneum')
         self.atmospheres = set(["ammonia"])
 
 class EDRBacteriumAurasusCheck(EDRBacteriumCheck):
-
+    """
+    Checks for Bacterium Aurasus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Bacterium Aurasus')
         self.atmospheres = set(["carbon", "carbondioxide"])
 
 class EDRBacteriumCerbrusCheck(EDRBacteriumCheck):
-
+    """
+    Checks for Bacterium Cerbrus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Bacterium Cerbrus')
         self.atmospheres = set(["water", "waterrich", "sulphurdioxide"])
 
 class EDRBacteriumTelaCheck(EDRBacteriumCheck):
-
+    """
+    Checks for Bacterium Tela.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Bacterium Tela')
@@ -304,16 +369,21 @@ class EDRBacteriumTelaCheck(EDRBacteriumCheck):
         self.volcanisms = set(["helium", "iron", "silicate"])
     
 class EDRCactoidaCheck(EDRBiologyCheck):
-
+    """
+    Base check for Cactoida genus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
-        super(EDRCactoidaCheck, self).__init__(edrsystems, sc_override)
+        super().__init__(edrsystems, sc_override)
         self.name = _('Cactoida')
         self.genus = "$codex_ent_cactoida_genus_name;"
         self.planet_classes = set(["rocky", "highmetalcontent"])
         self.atmospheres = set(["ammonia", "carbondioxide", "carbondioxiderich", "water"])
     
     def check_planet(self, planet, system_name):
-        if not super(EDRCactoidaCheck, self).check_planet(planet, system_name):
+        """
+        Check conditions for Cactoida.
+        """
+        if not super().check_planet(planet, system_name):
             return False
         
         atmosphere = self.edrsystems.canonical_atmosphere(planet)
@@ -324,7 +394,9 @@ class EDRCactoidaCheck(EDRBiologyCheck):
         return True
 
 class EDRCactoidaCortexumCheck(EDRCactoidaCheck):
-
+    """
+    Checks for Cactoida Cortexum.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Cactoida Cortexum')
@@ -336,7 +408,9 @@ class EDRCactoidaCortexumCheck(EDRCactoidaCheck):
         
 
 class EDRCactoidaPullulantaCheck(EDRCactoidaCheck):
-
+    """
+    Checks for Cactoida Pullulanta.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Cactoida Pullulanta')
@@ -348,7 +422,9 @@ class EDRCactoidaPullulantaCheck(EDRCactoidaCheck):
     
     
 class EDRCactoidaLapisCheck(EDRCactoidaCheck):
-
+    """
+    Checks for Cactoida Lapis.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Cactoida Lapis')
@@ -358,7 +434,9 @@ class EDRCactoidaLapisCheck(EDRCactoidaCheck):
           
     
 class EDRCactoidaPeperatisCheck(EDRCactoidaCheck):
-
+    """
+    Checks for Cactoida Peperatis.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Cactoida Peperatis')
@@ -368,7 +446,9 @@ class EDRCactoidaPeperatisCheck(EDRCactoidaCheck):
           
 
 class EDRCactoidaVermisCheck(EDRCactoidaCheck):
-
+    """
+    Checks for Cactoida Vermis.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Cactoida Vermis')
@@ -378,9 +458,11 @@ class EDRCactoidaVermisCheck(EDRCactoidaCheck):
     
 
 class EDRClypeusCheck(EDRBiologyCheck):
-
+    """
+    Base check for Clypeus genus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
-        super(EDRClypeusCheck, self).__init__(edrsystems, sc_override)
+        super().__init__(edrsystems, sc_override)
         self.name = _('Clypeus')
         self.genus = "$codex_ent_clypeus_genus_name;"
         self.planet_classes = set(["rocky", "highmetalcontent"])
@@ -390,7 +472,9 @@ class EDRClypeusCheck(EDRBiologyCheck):
     
     
 class EDRClypeusLacrimanCheck(EDRClypeusCheck):
-
+    """
+    Checks for Clypeus Lacriman.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Clypeus Lacriman')
@@ -401,7 +485,9 @@ class EDRClypeusLacrimanCheck(EDRClypeusCheck):
     
 
 class EDRClypeusMargaritusCheck(EDRClypeusCheck):
-
+    """
+    Checks for Clypeus Margaritus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Clypeus Margaritus')
@@ -410,7 +496,9 @@ class EDRClypeusMargaritusCheck(EDRClypeusCheck):
         self.min_temperature = 190    
     
 class EDRClypeusSpeculumiCheck(EDRClypeusCheck):
-
+    """
+    Checks for Clypeus Speculumi.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Clypeus Speculumi')
@@ -421,15 +509,19 @@ class EDRClypeusSpeculumiCheck(EDRClypeusCheck):
 
 
 class EDRConchaCheck(EDRBiologyCheck):
-
+    """
+    Base check for Concha genus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
-        super(EDRConchaCheck, self).__init__(edrsystems, sc_override)
+        super().__init__(edrsystems, sc_override)
         self.name = _('Concha')
         self.genus = "$codex_ent_conchas_genus_name;"
         self.atmospheres = set(["ammonia", "carbondioxide", "carbondioxiderich", "water", "waterrich", "nitrogen"])
     
 class EDRConchaAureolasCheck(EDRConchaCheck):
-
+    """
+    Checks for Concha Aureolas.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Concha Aureolas')
@@ -438,16 +530,20 @@ class EDRConchaAureolasCheck(EDRConchaCheck):
     
         
 class EDRConchaBiconcavisCheck(EDRConchaCheck):
-
+    """
+    Checks for Concha Biconcavis.
+    """
     def __init__(self, edrsystems, sc_override=1500):
-        super(EDRConchaBiconcavisCheck, self).__init__(edrsystems, sc_override)
+        super().__init__(edrsystems, sc_override)
         self.name = _('Concha Biconcavis')
         self.atmospheres = set(["nitrogen"])
 
     
     
 class EDRConchaLabiataCheck(EDRConchaCheck):
-
+    """
+    Checks for Concha Labiata.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Concha Labiata')
@@ -457,13 +553,18 @@ class EDRConchaLabiataCheck(EDRConchaCheck):
     
 
 class EDRConchaRenibusCheck(EDRConchaCheck):
-
+    """
+    Checks for Concha Renibus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Concha Renibus')
         self.atmospheres = set(["carbondioxide", "carbondioxiderich", "water", "waterrich"])
     
     def check_planet(self, planet, system_name):
+        """
+        Check conditions for Concha Renibus.
+        """
         if not super().check_planet(planet, system_name):
             return False
         
@@ -475,15 +576,20 @@ class EDRConchaRenibusCheck(EDRConchaCheck):
         return True
 
 class EDRElectricaeCheck(EDRBiologyCheck):
-
+    """
+    Base check for Electricae genus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
-        super(EDRElectricaeCheck, self).__init__(edrsystems, sc_override)
+        super().__init__(edrsystems, sc_override)
         self.name = _('Electricae')
         self.genus = "$codex_ent_electricae_genus_name;"
         self.planet_classes = set(["icy"])
         self.atmospheres = set(["helium", "neon", "argon"])
     
     def check_planet(self, planet, system_name):
+        """
+        Check conditions for Electricae (Nebula or Star Type).
+        """
         if not super().check_planet(planet, system_name):
             return False
         
@@ -500,14 +606,18 @@ class EDRElectricaeCheck(EDRBiologyCheck):
         return near_nebula
 
 class EDRElectricaePlumaCheck(EDRElectricaeCheck):
-
+    """
+    Checks for Electricae Pluma.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Electricae Pluma')
         self.genus = "$codex_ent_electricae_genus_name;"
 
 class EDRElectricaeRadialemCheck(EDRElectricaeCheck):
-
+    """
+    Checks for Electricae Radialem.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Electricae Radialem')
@@ -515,6 +625,9 @@ class EDRElectricaeRadialemCheck(EDRElectricaeCheck):
         self.parent_star_types = set()
 
     def check_planet(self, planet, system_name):
+        """
+        Check conditions for Electricae Radialem (Nebula).
+        """
         if not super().check_planet(planet, system_name):
             return False
         
@@ -522,15 +635,19 @@ class EDRElectricaeRadialemCheck(EDRElectricaeCheck):
     
 
 class EDRFonticuluaCheck(EDRBiologyCheck):
-
+    """
+    Base check for Fonticulua genus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
-        super(EDRFonticuluaCheck, self).__init__(edrsystems, sc_override)
+        super().__init__(edrsystems, sc_override)
         self.name = _('Fonticulua')
         self.genus = "$codex_ent_fonticulus_genus_name;"
         self.planet_classes = set(["icy", "rockyice"])
 
 class EDRFonticuluaCampestrisCheck(EDRFonticuluaCheck):
-
+    """
+    Checks for Fonticulua Campestris.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Fonticulua Campestris')
@@ -538,7 +655,9 @@ class EDRFonticuluaCampestrisCheck(EDRFonticuluaCheck):
         self.atmospheres = set(["argon"])
 
 class EDRFonticuluaDigitosCheck(EDRFonticuluaCheck):
-
+    """
+    Checks for Fonticulua Digitos.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Fonticulua Digitos')
@@ -546,7 +665,9 @@ class EDRFonticuluaDigitosCheck(EDRFonticuluaCheck):
         self.atmospheres = set(["methane", "methanerich"])
 
 class EDRFonticuluaFluctusCheck(EDRFonticuluaCheck):
-
+    """
+    Checks for Fonticulua Fluctus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Fonticulua Fluctus')
@@ -554,7 +675,9 @@ class EDRFonticuluaFluctusCheck(EDRFonticuluaCheck):
         self.atmospheres = set(["oxygen"])
     
 class EDRFonticuluaLapidaCheck(EDRFonticuluaCheck):
-
+    """
+    Checks for Fonticulua Lapida.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Fonticulua Lapida')
@@ -562,7 +685,9 @@ class EDRFonticuluaLapidaCheck(EDRFonticuluaCheck):
         self.atmospheres = set(["nitrogen"])
 
 class EDRFonticuluaSegmentatusCheck(EDRFonticuluaCheck):
-
+    """
+    Checks for Fonticulua Segmentatus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Fonticulua Segmentatus')
@@ -570,7 +695,9 @@ class EDRFonticuluaSegmentatusCheck(EDRFonticuluaCheck):
         self.atmospheres = set(["neon", "neonrich"])
 
 class EDRFonticuluaUpupamCheck(EDRFonticuluaCheck):
-
+    """
+    Checks for Fonticulua Upupam.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Fonticulua Upupam')
@@ -579,7 +706,9 @@ class EDRFonticuluaUpupamCheck(EDRFonticuluaCheck):
 
     
 class EDRFrutexaCheck(EDRBiologyCheck):
-
+    """
+    Base check for Frutexa genus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Frutexa')
@@ -588,6 +717,9 @@ class EDRFrutexaCheck(EDRBiologyCheck):
         self.atmospheres = set(["ammonia", "carbondioxide", "carbondioxiderich", "water", "waterrich", "sulphurdioxide"])    
     
     def check_planet(self, planet, system_name):
+        """
+        Check conditions for Frutexa.
+        """
         if not super().check_planet(planet, system_name):
             return False
         
@@ -600,8 +732,10 @@ class EDRFrutexaCheck(EDRBiologyCheck):
                 
         return True
 
-class EDRFrutexaAcusCheck(EDRBiologyCheck):
-
+class EDRFrutexaAcusCheck(EDRFrutexaCheck):
+    """
+    Checks for Frutexa Acus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Frutexa Acus')
@@ -610,8 +744,10 @@ class EDRFrutexaAcusCheck(EDRBiologyCheck):
         self.atmospheres = set(["carbondioxide", "carbondioxiderich"])
         self.max_temperature = 195
 
-class EDRFrutexaCollumCheck(EDRBiologyCheck):
-
+class EDRFrutexaCollumCheck(EDRFrutexaCheck):
+    """
+    Checks for Frutexa Collum.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Frutexa Collum')
@@ -619,8 +755,10 @@ class EDRFrutexaCollumCheck(EDRBiologyCheck):
         self.planet_classes = set(["rocky"])
         self.atmospheres = set(["sulphurdioxide"])
 
-class EDRFrutexaFeraCheck(EDRBiologyCheck):
-
+class EDRFrutexaFeraCheck(EDRFrutexaCheck):
+    """
+    Checks for Frutexa Fera.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Frutexa Fera')
@@ -629,8 +767,10 @@ class EDRFrutexaFeraCheck(EDRBiologyCheck):
         self.atmospheres = set(["carbondioxide", "carbondioxiderich"])
         self.max_temperature = 195
 
-class EDRFrutexaFlabellumCheck(EDRBiologyCheck):
-
+class EDRFrutexaFlabellumCheck(EDRFrutexaCheck):
+    """
+    Checks for Frutexa Flabellum.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Frutexa Flabellum')
@@ -638,8 +778,10 @@ class EDRFrutexaFlabellumCheck(EDRBiologyCheck):
         self.planet_classes = set(["rocky"])
         self.atmospheres = set(["ammonia"])
 
-class EDRFrutexaFlammasisCheck(EDRBiologyCheck):
-
+class EDRFrutexaFlammasisCheck(EDRFrutexaCheck):
+    """
+    Checks for Frutexa Flammasis.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Frutexa Flammasis')
@@ -647,8 +789,10 @@ class EDRFrutexaFlammasisCheck(EDRBiologyCheck):
         self.planet_classes = set(["rocky"])
         self.atmospheres = set(["ammonia"])
 
-class EDRFrutexaMetallicumCheck(EDRBiologyCheck):
-
+class EDRFrutexaMetallicumCheck(EDRFrutexaCheck):
+    """
+    Checks for Frutexa Metallicum.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Frutexa Metallicum')
@@ -657,6 +801,9 @@ class EDRFrutexaMetallicumCheck(EDRBiologyCheck):
         self.atmospheres = set(["ammonia", "carbondioxide", "carbondioxiderich"])
     
     def check_planet(self, planet, system_name):
+        """
+        Check conditions for Frutexa Metallicum.
+        """
         if not super().check_planet(planet, system_name):
             return False
         
@@ -667,8 +814,10 @@ class EDRFrutexaMetallicumCheck(EDRBiologyCheck):
         
         return True
 
-class EDRFrutexaSponsaeCheck(EDRBiologyCheck):
-
+class EDRFrutexaSponsaeCheck(EDRFrutexaCheck):
+    """
+    Checks for Frutexa Sponsae.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Frutexa Sponsae')
@@ -678,7 +827,9 @@ class EDRFrutexaSponsaeCheck(EDRBiologyCheck):
 
     
 class EDRFungoidaCheck(EDRBiologyCheck):
-
+    """
+    Base check for Fungoida genus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Fungoida')
@@ -686,6 +837,9 @@ class EDRFungoidaCheck(EDRBiologyCheck):
         self.atmospheres = set(["ammonia", "methane", "methanerich", "argon", "argonrich", "carbondioxide", "carbondioxiderich", "water", "waterrich"])
 
     def check_planet(self, planet, system_name):
+        """
+        Check conditions for Fungoida.
+        """
         if not super().check_planet(planet, system_name):
             return False
         
@@ -696,54 +850,63 @@ class EDRFungoidaCheck(EDRBiologyCheck):
                 
         return True
     
-class EDRFungoidaBullarumCheck(EDRBiologyCheck):
-
+class EDRFungoidaBullarumCheck(EDRFungoidaCheck):
+    """
+    Checks for Fungoida Bullarum.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Fungoida Bullarum')
-        self.genus = "$codex_ent_fungoids_genus_name;"
         self.atmospheres = set(["argon", "argonrich"])    
 
-class EDRFungoidaGelataCheck(EDRBiologyCheck):
-
+class EDRFungoidaGelataCheck(EDRFungoidaCheck):
+    """
+    Checks for Fungoida Gelata.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Fungoida Gelata')
-        self.genus = "$codex_ent_fungoids_genus_name;"
         self.atmospheres = set(["carbondioxide", "carbondioxiderich", "water", "waterrich"])
         self.min_temperature = 180
         self.max_temperature = 195
 
-class EDRFungoidaSetisisCheck(EDRBiologyCheck):
-
+class EDRFungoidaSetisisCheck(EDRFungoidaCheck):
+    """
+    Checks for Fungoida Setisis.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Fungoida Setisis')
-        self.genus = "$codex_ent_fungoids_genus_name;"
         self.atmospheres = set(["ammonia", "methane", "methanerich"])
     
-class EDRFungoidaStabitisCheck(EDRBiologyCheck):
-
+class EDRFungoidaStabitisCheck(EDRFungoidaCheck):
+    """
+    Checks for Fungoida Stabitis.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Fungoida Stabitis')
-        self.genus = "$codex_ent_fungoids_genus_name;"
         self.atmospheres = set(["carbondioxide", "carbondioxiderich", "water", "waterrich"])
         self.min_temperature = 180
         self.max_temperature = 195
     
 
 class EDROsseusCheck(EDRBiologyCheck):
-
+    """
+    Base check for Osseus genus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
-        super(EDROsseusCheck, self).__init__(edrsystems, sc_override)
+        super().__init__(edrsystems, sc_override)
         self.name = _('Osseus')
         self.genus = "$codex_ent_osseus_genus_name;"
         self.planet_classes = set(["rocky", "highmetalcontent", "rockyice"])
         self.atmospheres = set(["ammonia", "methane", "methanerich", "argon", "argonrich", "carbondioxide", "carbondioxiderich", "water", "waterrich", "nitrogen"])
 
     def check_planet(self, planet, system_name):
-        if not super(EDROsseusCheck, self).check_planet(planet, system_name):
+        """
+        Check conditions for Osseus.
+        """
+        if not super().check_planet(planet, system_name):
             return False
         
         atmosphere = self.edrsystems.canonical_atmosphere(planet)
@@ -754,7 +917,9 @@ class EDROsseusCheck(EDRBiologyCheck):
         return True
     
 class EDROsseusCornibusCheck(EDROsseusCheck):
-
+    """
+    Checks for Osseus Cornibus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Osseus Cornibus')
@@ -764,7 +929,9 @@ class EDROsseusCornibusCheck(EDROsseusCheck):
         self.max_temperature = 195
 
 class EDROsseusDiscusCheck(EDROsseusCheck):
-
+    """
+    Checks for Osseus Discus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Osseus Discus')
@@ -772,7 +939,9 @@ class EDROsseusDiscusCheck(EDROsseusCheck):
         self.atmospheres = set(["water", "waterrich"])
 
 class EDROsseusFractusCheck(EDROsseusCheck):
-
+    """
+    Checks for Osseus Fractus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Osseus Fractus')
@@ -782,7 +951,9 @@ class EDROsseusFractusCheck(EDROsseusCheck):
         self.max_temperature = 190
     
 class EDROsseusPellebantusCheck(EDROsseusCheck):
-
+    """
+    Checks for Osseus Pellebantus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Osseus Pellebantus')
@@ -792,7 +963,9 @@ class EDROsseusPellebantusCheck(EDROsseusCheck):
         self.max_temperature = 195
     
 class EDROsseusPumiceCheck(EDROsseusCheck):
-
+    """
+    Checks for Osseus Pumice.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Osseus Pumice')
@@ -802,7 +975,9 @@ class EDROsseusPumiceCheck(EDROsseusCheck):
         self.max_temperature = 190
 
 class EDROsseusSpiralisCheck(EDROsseusCheck):
-
+    """
+    Checks for Osseus Spiralis.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Osseus Spiralis')
@@ -811,16 +986,20 @@ class EDROsseusSpiralisCheck(EDROsseusCheck):
 
 
 class EDRReceptaCheck(EDRBiologyCheck):
-
+    """
+    Base check for Recepta genus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
-        super(EDRReceptaCheck, self).__init__(edrsystems, sc_override)
+        super().__init__(edrsystems, sc_override)
         self.name = _('Recepta')
         self.genus = "$codex_ent_recepta_genus_name;"
         self.planet_classes = set(["rocky", "highmetalcontent", "icy", "rockyice"])
         self.atmospheres = set(["sulphurdioxide"])
 
 class EDRReceptaDeltahedronixCheck(EDRReceptaCheck):
-
+    """
+    Checks for Recepta Deltahedronix.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Recepta Deltahedronix')
@@ -828,7 +1007,9 @@ class EDRReceptaDeltahedronixCheck(EDRReceptaCheck):
         self.atmospheres = set(["sulphurdioxide"])
 
 class EDRReceptaUmbruxCheck(EDRReceptaCheck):
-
+    """
+    Checks for Recepta Umbrux.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Recepta Umbrux')
@@ -836,7 +1017,9 @@ class EDRReceptaUmbruxCheck(EDRReceptaCheck):
         self.atmospheres = set(["sulphurdioxide"])
     
 class EDRReceptaConditivusCheck(EDRReceptaCheck):
-
+    """
+    Checks for Recepta Conditivus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Recepta Conditivus')
@@ -845,9 +1028,11 @@ class EDRReceptaConditivusCheck(EDRReceptaCheck):
 
         
 class EDRStratumCheck(EDRBiologyCheck):
-
+    """
+    Base check for Stratum genus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
-        super(EDRStratumCheck, self).__init__(edrsystems, sc_override)
+        super().__init__(edrsystems, sc_override)
         self.name = _('Stratum')
         self.genus = "$codex_ent_stratum_genus_name;"
         self.min_temperature = 165
@@ -855,7 +1040,10 @@ class EDRStratumCheck(EDRBiologyCheck):
         self.atmospheres = set(["oxygen", "ammonia", "water", "waterrich", "carbondioxide", "carbondioxiderich", "sulphurdioxide"])
 
     def check_planet(self, planet, system_name):
-        if not super(EDRStratumCheck, self).check_planet(planet, system_name):
+        """
+        Check conditions for Stratum.
+        """
+        if not super().check_planet(planet, system_name):
             return False
         
         planet_class = self.edrsystems.canonical_planet_class(planet)
@@ -868,7 +1056,9 @@ class EDRStratumCheck(EDRBiologyCheck):
         return False
 
 class EDRStratumAraneamusCheck(EDRBiologyCheck):
-
+    """
+    Checks for Stratum Araneamus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Stratum Araneamus')
@@ -878,7 +1068,9 @@ class EDRStratumAraneamusCheck(EDRBiologyCheck):
         self.atmospheres = set(["sulphurdioxide"])
 
 class EDRStratumCucumisisCheck(EDRBiologyCheck):
-
+    """
+    Checks for Stratum Cucumisis.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Stratum Cucumisis')
@@ -888,7 +1080,9 @@ class EDRStratumCucumisisCheck(EDRBiologyCheck):
         self.atmospheres = set(["carbondioxide", "sulphurdioxide"])
 
 class EDRStratumExcutitusCheck(EDRBiologyCheck):
-
+    """
+    Checks for Stratum Excutitus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Stratum Excutitus')
@@ -899,7 +1093,9 @@ class EDRStratumExcutitusCheck(EDRBiologyCheck):
         self.atmospheres = set(["carbondioxide", "sulphurdioxide"])
 
 class EDRStratumFrigusCheck(EDRBiologyCheck):
-
+    """
+    Checks for Stratum Frigus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Stratum Frigus')
@@ -909,7 +1105,9 @@ class EDRStratumFrigusCheck(EDRBiologyCheck):
         self.atmospheres = set(["carbondioxide", "sulphurdioxide"])
 
 class EDRStratumLaminamusCheck(EDRBiologyCheck):
-
+    """
+    Checks for Stratum Laminamus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Stratum Laminamus')
@@ -919,7 +1117,9 @@ class EDRStratumLaminamusCheck(EDRBiologyCheck):
         self.atmospheres = set(["ammonia"])
 
 class EDRStratumLimaxusCheck(EDRBiologyCheck):
-
+    """
+    Checks for Stratum Limaxus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Stratum Limaxus')
@@ -930,7 +1130,9 @@ class EDRStratumLimaxusCheck(EDRBiologyCheck):
         self.atmospheres = set(["sulphurdioxide", "carbondioxide"])
 
 class EDRStratumPaleasCheck(EDRBiologyCheck):
-
+    """
+    Checks for Stratum Paleas.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Stratum Paleas')
@@ -940,9 +1142,11 @@ class EDRStratumPaleasCheck(EDRBiologyCheck):
         self.atmospheres = set(["ammonia", "water", "carbondioxide"])
 
 class EDRStratumTectonicasCheck(EDRBiologyCheck):
-
+    """
+    Checks for Stratum Tectonicas.
+    """
     def __init__(self, edrsystems, sc_override=1500):
-        super(EDRStratumTectonicasCheck, self).__init__(edrsystems, sc_override)
+        super().__init__(edrsystems, sc_override)
         self.name = _('Stratum Tectonicas')
         self.genus = "$codex_ent_stratum_genus_name;"
         self.min_temperature = 165
@@ -951,16 +1155,21 @@ class EDRStratumTectonicasCheck(EDRBiologyCheck):
 
 
 class EDRTubusCheck(EDRBiologyCheck):
-
+    """
+    Base check for Tubus genus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
-        super(EDRTubusCheck, self).__init__(edrsystems, sc_override)
+        super().__init__(edrsystems, sc_override)
         self.name = _('Tubus')
         self.genus = "$codex_ent_tubus_genus_name;"
         self.planet_classes = set(["rocky", "highmetalcontent"])
         self.atmospheres = set(["ammonia", "carbondioxide", "carbondioxiderich"])
 
     def check_planet(self, planet, system_name):
-        if not super(EDRTubusCheck, self).check_planet(planet, system_name):
+        """
+        Check conditions for Tubus.
+        """
+        if not super().check_planet(planet, system_name):
             return False
         
         planet_class = self.edrsystems.canonical_planet_class(planet)
@@ -971,7 +1180,9 @@ class EDRTubusCheck(EDRBiologyCheck):
         return True
     
 class EDRTubusCavasCheck(EDRBiologyCheck):
-
+    """
+    Checks for Tubus Cavas.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Tubus Cavas')
@@ -982,6 +1193,9 @@ class EDRTubusCavasCheck(EDRBiologyCheck):
         self.max_temperature = 190
     
     def check_planet(self, planet, system_name):
+        """
+        Check conditions for Tubus Cavas.
+        """
         if not super().check_planet(planet, system_name):
             return False
         
@@ -993,7 +1207,9 @@ class EDRTubusCavasCheck(EDRBiologyCheck):
         return True
     
 class EDRTubusCompagibusCheck(EDRBiologyCheck):
-
+    """
+    Checks for Tubus Compagibus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Tubus Compagibus')
@@ -1005,7 +1221,9 @@ class EDRTubusCompagibusCheck(EDRBiologyCheck):
         self.max_temperature = 190
     
 class EDRTubusConiferCheck(EDRBiologyCheck):
-
+    """
+    Checks for Tubus Conifer.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Tubus Conifer')
@@ -1017,7 +1235,9 @@ class EDRTubusConiferCheck(EDRBiologyCheck):
         self.max_temperature = 190
 
 class EDRTubusRosariumCheck(EDRBiologyCheck):
-
+    """
+    Checks for Tubus Rosarium.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Tubus Rosarium')
@@ -1028,7 +1248,9 @@ class EDRTubusRosariumCheck(EDRBiologyCheck):
         self.min_temperature = 160
     
 class EDRTubusSororibusCheck(EDRBiologyCheck):
-
+    """
+    Checks for Tubus Sororibus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Tubus Sororibus')
@@ -1041,16 +1263,21 @@ class EDRTubusSororibusCheck(EDRBiologyCheck):
 
 
 class EDRTussockCheck(EDRBiologyCheck):
-
+    """
+    Base check for Tussock genus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
-        super(EDRTussockCheck, self).__init__(edrsystems, sc_override)
+        super().__init__(edrsystems, sc_override)
         self.name = _('Tussock')
         self.genus = "$codex_ent_tussocks_genus_name;"
         self.planet_classes = set(["rocky"])
         self.atmospheres = set(["ammonia", "methane", "methanerich", "argon", "argonrich", "carbondioxide", "carbondioxiderich", "water", "waterrich", "sulphurdioxide"])
     
     def check_planet(self, planet, system_name):
-        if not super(EDRTussockCheck, self).check_planet(planet, system_name):
+        """
+        Check conditions for Tussock.
+        """
+        if not super().check_planet(planet, system_name):
             return False
         
         atmosphere = self.edrsystems.canonical_atmosphere(planet)
@@ -1061,7 +1288,9 @@ class EDRTussockCheck(EDRBiologyCheck):
         return True
 
 class EDRTussockAlbataCheck(EDRBiologyCheck):
-
+    """
+    Checks for Tussock Albata.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Tussock Albata')
@@ -1072,7 +1301,9 @@ class EDRTussockAlbataCheck(EDRBiologyCheck):
         self.max_temperature = 180
         
 class EDRTussockCapillumCheck(EDRBiologyCheck):
-
+    """
+    Checks for Tussock Capillum.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Tussock Capillum')
@@ -1081,7 +1312,9 @@ class EDRTussockCapillumCheck(EDRBiologyCheck):
         self.atmospheres = set(["argon", "methane"])
         
 class EDRTussockCaputusCheck(EDRBiologyCheck):
-
+    """
+    Checks for Tussock Caputus.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Tussock Caputus')
@@ -1092,7 +1325,9 @@ class EDRTussockCaputusCheck(EDRBiologyCheck):
         self.max_temperature = 190
     
 class EDRTussockCatenaCheck(EDRBiologyCheck):
-
+    """
+    Checks for Tussock Catena.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Tussock Catena')
@@ -1101,7 +1336,9 @@ class EDRTussockCatenaCheck(EDRBiologyCheck):
         self.atmospheres = set(["ammonia"])
 
 class EDRTussockCultroCheck(EDRBiologyCheck):
-
+    """
+    Checks for Tussock Cultro.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Tussock Cultro')
@@ -1110,7 +1347,9 @@ class EDRTussockCultroCheck(EDRBiologyCheck):
         self.atmospheres = set(["ammonia"])
         
 class EDRTussockDivisaCheck(EDRBiologyCheck):
-
+    """
+    Checks for Tussock Divisa.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Tussock Divisa')
@@ -1119,7 +1358,9 @@ class EDRTussockDivisaCheck(EDRBiologyCheck):
         self.atmospheres = set(["ammonia"])
     
 class EDRTussockIgnisCheck(EDRBiologyCheck):
-
+    """
+    Checks for Tussock Ignis.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Tussock Ignis')
@@ -1130,7 +1371,9 @@ class EDRTussockIgnisCheck(EDRBiologyCheck):
         self.max_temperature = 170
         
 class EDRTussockPennataCheck(EDRBiologyCheck):
-
+    """
+    Checks for Tussock Pennata.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Tussock Pennata')
@@ -1141,7 +1384,9 @@ class EDRTussockPennataCheck(EDRBiologyCheck):
         self.max_temperature = 155
         
 class EDRTussockPennatisCheck(EDRBiologyCheck):
-
+    """
+    Checks for Tussock Pennatis.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Tussock Pennatis')
@@ -1151,7 +1396,9 @@ class EDRTussockPennatisCheck(EDRBiologyCheck):
         self.max_temperature = 195
     
 class EDRTussockPropagitoCheck(EDRBiologyCheck):
-
+    """
+    Checks for Tussock Propagito.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Tussock Propagito')
@@ -1161,7 +1408,9 @@ class EDRTussockPropagitoCheck(EDRBiologyCheck):
         self.max_temperature = 195
     
 class EDRTussockSerratiCheck(EDRBiologyCheck):
-
+    """
+    Checks for Tussock Serrati.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Tussock Serrati')
@@ -1172,7 +1421,9 @@ class EDRTussockSerratiCheck(EDRBiologyCheck):
         self.max_temperature = 175
         
 class EDRTussockStigmasisCheck(EDRTussockCheck):
-
+    """
+    Checks for Tussock Stigmasis.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Tussock Stigmasis')
@@ -1183,7 +1434,9 @@ class EDRTussockStigmasisCheck(EDRTussockCheck):
     
     
 class EDRTussockTriticumCheck(EDRBiologyCheck):
-
+    """
+    Checks for Tussock Triticum.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Tussock Triticum')
@@ -1194,7 +1447,9 @@ class EDRTussockTriticumCheck(EDRBiologyCheck):
         self.max_temperature = 195
     
 class EDRTussockVentusaCheck(EDRBiologyCheck):
-
+    """
+    Checks for Tussock Ventusa.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Tussock Ventusa')
@@ -1205,7 +1460,9 @@ class EDRTussockVentusaCheck(EDRBiologyCheck):
         self.max_temperature = 160
         
 class EDRTussockVirgamCheck(EDRBiologyCheck):
-
+    """
+    Checks for Tussock Virgam.
+    """
     def __init__(self, edrsystems, sc_override=1500):
         super().__init__(edrsystems, sc_override)
         self.name = _('Tussock Virgam')
@@ -1213,7 +1470,10 @@ class EDRTussockVirgamCheck(EDRBiologyCheck):
         self.planet_classes = set(["rocky"])
         self.atmospheres = set(["water"])
         
-class EDRGenusCheckerFactory(object):
+class EDRGenusCheckerFactory:
+    """
+    Factory for creating biology checks based on genus/species names.
+    """
     GENUS_LUT = {
         "aleoida": EDRAleoidaCheck,
         "aleoida arcus": EDRAleoidaArcusCheck,
@@ -1337,11 +1597,17 @@ class EDRGenusCheckerFactory(object):
 
     @staticmethod
     def recognized_genus(genus):
+        """
+        Check if genus is recognized.
+        """
         cgenus = genus.lower()
         return cgenus in EDRGenusCheckerFactory.GENUS_LUT
 
     @staticmethod
     def recognized_candidates(genus):
+        """
+        Get recognized candidates for genus search.
+        """
         cgenus = genus.lower()
         keys = EDRGenusCheckerFactory.GENUS_LUT.keys()
         matches = [k for k in keys if cgenus in k or k.startswith(cgenus)]
@@ -1350,5 +1616,8 @@ class EDRGenusCheckerFactory(object):
 
     @staticmethod
     def get_checker(genus, edrsystems, override_sc):
+        """
+        Get a checker instance for the given genus.
+        """
         cgenus = genus.lower()
         return EDRGenusCheckerFactory.GENUS_LUT.get(cgenus, EDRBiologyCheck)(edrsystems, override_sc)

@@ -21,8 +21,9 @@ class AuthState(Enum):
         self.id = id
         self.description = message
 
-class RESTFirebaseAuth(object):
-    FIREBASE_ANON_AUTH_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'private', 'fbaa.v2.p')
+class RESTFirebaseAuth:
+    FIREBASE_ANON_AUTH_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'private', 'fbaa.v2.json')
+    FIREBASE_ANON_AUTH_CACHE_LEGACY = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'private', 'fbaa.v2.p')
 
     def __init__(self, version):
         self.email = ""
@@ -30,9 +31,18 @@ class RESTFirebaseAuth(object):
         self.auth = None
         self.anonymous = True
         self.version = version
+        
+        # Migration: Nuke legacy pickle file if it exists
+        if os.path.exists(self.FIREBASE_ANON_AUTH_CACHE_LEGACY):
+            try:
+                os.remove(self.FIREBASE_ANON_AUTH_CACHE_LEGACY)
+                EDR_LOG.info("Removed legacy pickle auth file to enforce security upgrade.")
+            except Exception as e:
+                EDR_LOG.warning(f"Could not remove legacy pickle file: {e}")
+
         try:
-            with open(self.FIREBASE_ANON_AUTH_CACHE, 'rb') as handle:
-                self.refresh_token = pickle.load(handle)
+            with open(self.FIREBASE_ANON_AUTH_CACHE, 'r') as handle:
+                self.refresh_token = json.load(handle)
         except:
             self.refresh_token = None
         self.timestamp = None
@@ -138,8 +148,13 @@ class RESTFirebaseAuth(object):
             self.refresh_token = auth['refreshToken']
             if self.anonymous:
                 try:
-                    with open(self.FIREBASE_ANON_AUTH_CACHE, 'wb') as handle:
-                        pickle.dump(self.refresh_token, handle, protocol=pickle.HIGHEST_PROTOCOL)
+                    # Enforce creating private directory with restricted permissions
+                    private_dir = os.path.dirname(self.FIREBASE_ANON_AUTH_CACHE)
+                    if not os.path.exists(private_dir):
+                        os.makedirs(private_dir, mode=0o700)
+                    
+                    with open(self.FIREBASE_ANON_AUTH_CACHE, 'w') as handle:
+                        json.dump(self.refresh_token, handle)
                 except Exception as e:
                     EDR_LOG.exception(f"Failed to save anonymous auth cache: {e}")
                     return AuthState.ANONYMOUS_ERROR
@@ -240,8 +255,8 @@ class RESTFirebaseAuth(object):
         self.clear_authentication()
         if os.path.exists(self.FIREBASE_ANON_AUTH_CACHE):
             try:
-                with open(self.FIREBASE_ANON_AUTH_CACHE, 'rb') as handle:
-                    self.refresh_token = pickle.load(handle)
+                with open(self.FIREBASE_ANON_AUTH_CACHE, 'r') as handle:
+                    self.refresh_token = json.load(handle)
             except:
                 self.refresh_token = None
         else:

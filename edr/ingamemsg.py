@@ -16,18 +16,22 @@ from edrutils import pretty_print_number # EDR_INTERNAL
 from edtime import EDTime # EDR_INTERNAL
 
 if sys.platform == "win32":
-    _overlay_dir = os.path.join(os.path.dirname(__file__), u'EDMCOverlay')
+    _overlay_dir = os.path.join(os.path.dirname(__file__), 'EDMCOverlay')
     if _overlay_dir not in sys.path:
         sys.path.append(_overlay_dir)
 
 try:
     from EDMCOverlay import edmcoverlay
 except ImportError:
-    raise Exception(str(sys.path))
+    try:
+        from .EDMCOverlay import edmcoverlay
+    except ImportError:
+        EDR_LOG.error("Could not import EDMCOverlay!")
+        edmcoverlay = None
 
 import lrucache
 
-class InGameMsg(object):   
+class InGameMsg:   
     MESSAGE_KINDS = ["intel", "warning", "sitrep", "notice", "help", "navigation", "docking", "mining", "bounty-hunting", "target-guidance", "biology"]
     LEGAL_KINDS = ["intel", "warning"] 
 
@@ -134,7 +138,7 @@ class InGameMsg(object):
         }
 
     def legal_config(self, kind, conf):
-        kind = u"{}-legal".format(kind)
+        kind = "{}-legal".format(kind)
         self.cfg[kind] = {
             "enabled": conf._getboolean(kind, "enabled"),
             "clean": {
@@ -385,7 +389,7 @@ class InGameMsg(object):
         self.__clear_if_needed()
         if "panel" in self.cfg["intel"]:
             self.__shape("intel", self.cfg["intel"]["panel"])
-        kind_legal = u"intel-legal"
+        kind_legal = "intel-legal"
         if "panel" in self.cfg[kind_legal] and self.cfg[kind_legal].get("enabled", False):
             self.__shape(kind_legal, self.cfg[kind_legal]["panel"])
         self.__msg_header("intel", header)
@@ -405,7 +409,7 @@ class InGameMsg(object):
         self.__clear_if_needed()
         if "panel" in self.cfg["warning"]:
             self.__shape("warning", self.cfg["warning"]["panel"])
-        kind_legal = u"warning-legal"
+        kind_legal = "warning-legal"
         if "panel" in self.cfg[kind_legal] and self.cfg[kind_legal].get("enabled", False):
             self.__shape(kind_legal, self.cfg[kind_legal]["panel"])
         self.__msg_header("warning", header)
@@ -452,21 +456,21 @@ class InGameMsg(object):
         self.clear_navigation()
         if "panel" in self.cfg["navigation"]:
             self.__shape("navigation", self.cfg["navigation"]["panel"])
-        header = u"› {:03} ‹     ↓ {:02} ↓".format(bearing, pitch) if pitch else u"> {:03} <".format(bearing)
+        header = "› {:03} ‹     ↓ {:02} ↓".format(bearing, pitch) if pitch else "> {:03} <".format(bearing)
         details = [destination.title] if destination.title else []
         if distance >= 1.0:
-            details.append(_(u"Dis: {}km").format(int(distance)))
+            details.append(_("Dis: {}km").format(int(distance)))
         else:
-            details.append(_(u"Dis: {}m").format(int(distance*1000)))
-        details.append(_(u"Lat: {:.4f}").format(destination.latitude))
-        details.append(_(u"Lon: {:.4f}").format(destination.longitude))
+            details.append(_("Dis: {}m").format(int(distance*1000)))
+        details.append(_("Lat: {:.4f}").format(destination.latitude))
+        details.append(_("Lon: {:.4f}").format(destination.longitude))
         if destination.heading is not None:
-            details.append(_(u"Head: > {:03} <").format(destination.heading))
+            details.append(_("Head: > {:03} <").format(destination.heading))
         if destination.altitude:
             if destination.altitude >= 1.0:
-                details.append(_(u"Alt: {}km").format(int(destination.altitude)))
+                details.append(_("Alt: {}km").format(int(destination.altitude)))
             else:
-                details.append(_(u"Alt: {}m").format(destination.altitude))
+                details.append(_("Alt: {}m").format(destination.altitude))
         self.__msg_header("navigation", header)
         self.__msg_body("navigation", details)
 
@@ -485,11 +489,11 @@ class InGameMsg(object):
         details.append(_("Gene diversity: +{}m").format(ccr))
         i = 1
         for distance in distances_meters:
-            check = u"◌" if distance < ccr else u"●"
+            check = "◌" if distance < ccr else "●"
             if distance > ccr and distance >= 10000:
-                details.append(_(u"{} Sample #{}: ≥10km  ›{:03}‹").format(check, i, bearings[i-1]))
+                details.append(_("{} Sample #{}: ≥10km  ›{:03}‹").format(check, i, bearings[i-1]))
             else:
-                details.append(_(u"{} Sample #{}: {}m  ›{:03}‹").format(check, i, math.floor(distance), bearings[i-1]))
+                details.append(_("{} Sample #{}: {}m  ›{:03}‹").format(check, i, math.floor(distance), bearings[i-1]))
             i += 1
         self.__msg_header("biology", header)
         self.__msg_body("biology", details)
@@ -506,10 +510,10 @@ class InGameMsg(object):
         if "panel" in self.cfg["docking-station"] and self.cfg["docking-station"].get("enabled", False):
             self.__shape("docking-station", self.cfg["docking-station"]["panel"])
         
-        economy = u"{}/{}".format(station["economy"], station["secondEconomy"]) if station["secondEconomy"] else station["economy"]
+        economy = "{}/{}".format(station["economy"], station["secondEconomy"]) if station["secondEconomy"] else station["economy"]
         station_type = (station.get("type","N/A") or "N/A").lower()
 
-        header = u"{} ({})".format(station["name"], economy)
+        header = "{} ({})".format(station["name"], economy)
         self.__msg_header("docking", header)
         self.__msg_body("docking", description)
 
@@ -538,7 +542,7 @@ class InGameMsg(object):
             suffix = "_L" if pad > 16 else "_R"
             pad = pad % 16
 
-        cfg = self.cfg[u"docking-station"]
+        cfg = self.cfg["docking-station"]
         x = cfg["schema"]["x"]
         y = cfg["schema"]["y"]
         w = cfg["schema"]["w"]
@@ -554,12 +558,12 @@ class InGameMsg(object):
             points = contour[element]["points"]
             scaled = [{"x":int(cx+(coords["x"]*hw)), "y":int(cy-(coords["y"]*hh))} for coords in points]
             vect = {
-                "id": u"landable-{}".format(element),
+                "id": "landable-{}".format(element),
                 "color": contour[element]["active"] if element == the_pad else contour[element]["color"],
                 "ttl": cfg["schema"]["ttl"],
                 "vector": scaled
             }
-            self.__vect(u"docking", vect)
+            self.__vect("docking", vect)
         
         pads_guidance = map_data.get("pads-guidance", {})
         if the_pad in pads_guidance:
@@ -567,15 +571,15 @@ class InGameMsg(object):
             points = guidance["points"]
             scaled = [{"x":int(cx+(coords["x"]*hw)), "y":int(cy-(coords["y"]*hh))} for coords in points]
             vect = {
-                "id": u"guidance-{}".format(pad),
+                "id": "guidance-{}".format(pad),
                 "color": guidance["color"],
                 "ttl": cfg["schema"]["ttl"],
                 "vector": scaled
             }
-            self.__vect(u"docking", vect)
+            self.__vect("docking", vect)
     
     def __station_schematic(self, landing_pad, rotated=False):
-        cfg = self.cfg[u"docking-station"]
+        cfg = self.cfg["docking-station"]
         x = cfg["schema"]["x"]
         y = cfg["schema"]["y"]
         w = cfg["schema"]["w"]
@@ -598,7 +602,7 @@ class InGameMsg(object):
             "fill": cfg["schema"]["fill"][0],
             "ttl": cfg["schema"]["ttl"],
         }
-        self.__shape(u"docking", red_light)
+        self.__shape("docking", red_light)
 
         green_light = {
             "x": int(green_light_x),
@@ -609,7 +613,7 @@ class InGameMsg(object):
             "fill": cfg["schema"]["fill"][1],
             "ttl": cfg["schema"]["ttl"],
         }
-        self.__shape(u"docking", green_light)
+        self.__shape("docking", green_light)
 
         # dodecaedron
         w = w-4
@@ -657,12 +661,12 @@ class InGameMsg(object):
             elif s == major_scales[-1]:
                 radials["inner"] = points
             wireframe = {
-                "id": u"station-wireframe-{}".format(s),
+                "id": "station-wireframe-{}".format(s),
                 "color": cfg["schema"]["rgb"][2+i],
                 "ttl": cfg["schema"]["ttl"],
                 "vector": points
             }
-            self.__vect(u"docking", wireframe)
+            self.__vect("docking", wireframe)
             i = i+1
 
         i = 0
@@ -675,12 +679,12 @@ class InGameMsg(object):
                 y = int(round(cy + dy*ry))
                 points.append({"x": x, "y": y})
             wireframe = {
-                "id": u"station-wireframe-1-{}".format(s),
+                "id": "station-wireframe-1-{}".format(s),
                 "color": cfg["schema"]["rgb"][2+i],
                 "ttl": cfg["schema"]["ttl"],
                 "vector": points
             }
-            self.__vect(u"docking", wireframe)
+            self.__vect("docking", wireframe)
             
             points = []
             for (dx, dy) in dodecagon[4:8]:
@@ -688,12 +692,12 @@ class InGameMsg(object):
                 y = int(round(cy + dy*ry))
                 points.append({"x": x, "y": y})
             wireframe = {
-                "id": u"station-wireframe-2-{}".format(s),
+                "id": "station-wireframe-2-{}".format(s),
                 "color": cfg["schema"]["rgb"][2+i],
                 "ttl": cfg["schema"]["ttl"],
                 "vector": points
             }
-            self.__vect(u"docking", wireframe)
+            self.__vect("docking", wireframe)
 
             points = []
             for (dx, dy) in dodecagon[8:12]:
@@ -701,12 +705,12 @@ class InGameMsg(object):
                 y = int(round(cy + dy*ry))
                 points.append({"x": x, "y": y})
             wireframe = {
-                "id": u"station-wireframe-3-{}".format(s),
+                "id": "station-wireframe-3-{}".format(s),
                 "color": cfg["schema"]["rgb"][2+i],
                 "ttl": cfg["schema"]["ttl"],
                 "vector": points
             }
-            self.__vect(u"docking", wireframe)
+            self.__vect("docking", wireframe)
             i = i+1
 
         s = scales[3]
@@ -718,12 +722,12 @@ class InGameMsg(object):
             y = int(round(cy + dy*ry))
             points.append({"x": x, "y": y})
         wireframe = {
-            "id": u"station-wireframe-1-{}".format(s),
+            "id": "station-wireframe-1-{}".format(s),
             "color": cfg["schema"]["rgb"][3],
             "ttl": cfg["schema"]["ttl"],
             "vector": points
         }
-        self.__vect(u"docking", wireframe)
+        self.__vect("docking", wireframe)
         
         points = []
         for (dx, dy) in dodecagon[6:8]:
@@ -731,12 +735,12 @@ class InGameMsg(object):
             y = int(round(cy + dy*ry))
             points.append({"x": x, "y": y})
         wireframe = {
-            "id": u"station-wireframe-2-{}".format(s),
+            "id": "station-wireframe-2-{}".format(s),
             "color": cfg["schema"]["rgb"][3],
             "ttl": cfg["schema"]["ttl"],
             "vector": points
         }
-        self.__vect(u"docking", wireframe)
+        self.__vect("docking", wireframe)
 
         points = []
         for (dx, dy) in dodecagon[10:12]:
@@ -744,21 +748,21 @@ class InGameMsg(object):
             y = int(round(cy + dy*ry))
             points.append({"x": x, "y": y})
         wireframe = {
-            "id": u"station-wireframe-3-{}".format(s),
+            "id": "station-wireframe-3-{}".format(s),
             "color": cfg["schema"]["rgb"][3],
             "ttl": cfg["schema"]["ttl"],
             "vector": points
         }
-        self.__vect(u"docking", wireframe)
+        self.__vect("docking", wireframe)
         
         for o,i in zip(radials["outer"], radials["inner"]):
             wireframe = {
-                "id": u"station-radial-{}-{}-{}-{}".format(o["x"], o["y"], i["x"], i["y"]),
+                "id": "station-radial-{}-{}-{}-{}".format(o["x"], o["y"], i["x"], i["y"]),
                 "color": cfg["schema"]["rgb"][5],
                 "ttl": cfg["schema"]["ttl"],
                 "vector": [o,i]
             }
-            self.__vect(u"docking", wireframe)
+            self.__vect("docking", wireframe)
         
         pad_lut = {
             35: [0,1,0,1,1], 38: [0,1,4,5,1], 37: [0,1,2,4,1], 36: [0,1,1,2,0],
@@ -813,19 +817,19 @@ class InGameMsg(object):
         points.append(points[1])
         points.append(points[0])
         pad_highlight = {
-            "id": u"station-pad-{}".format(landing_pad),
+            "id": "station-pad-{}".format(landing_pad),
             "color": cfg["schema"]["rgb"][6+pad_loc[4]],
             "ttl": cfg["schema"]["ttl"],
             "vector": points
         }
-        self.__vect(u"docking", pad_highlight)
+        self.__vect("docking", pad_highlight)
 
 
     def __legal_vizualization(self, legal, kind):
         cleans = legal["clean"]
         wanteds = legal["wanted"]
         bounties = legal["bounties"]
-        cfg = self.cfg[u"{}-legal".format(kind)]
+        cfg = self.cfg["{}-legal".format(kind)]
         maxBounty = max(bounties)
         maxCW = max(cleans + wanteds)
         ystep = {"clean": maxCW / float(cfg["clean"]["h"]), "wanted": maxCW / float(cfg["wanted"]["h"]), "bounties": maxBounty / float(cfg["bounties"]["h"])} 
@@ -856,7 +860,7 @@ class InGameMsg(object):
             bar["rgb"] = cfg["clean"]["rgb"][m] or self.__cleancolor(clean, kind) 
             bar["fill"] = self.__cleancolor(clean, kind)
             bar["ttl"] = cfg["clean"]["ttl"]
-            self.__shape(u"{}-clean-bar".format(kind), bar)
+            self.__shape("{}-clean-bar".format(kind), bar)
 
             dx = cfg["wanted"]["x"]
             dy = cfg["wanted"]["y"]
@@ -869,7 +873,7 @@ class InGameMsg(object):
             bar["rgb"] = cfg["wanted"]["rgb"][m] or self.__wantedcolor(wanted, kind) 
             bar["fill"] = self.__wantedcolor(wanted, kind)
             bar["ttl"] = cfg["wanted"]["ttl"]
-            self.__shape(u"{}-wanted-bar".format(kind), bar)
+            self.__shape("{}-wanted-bar".format(kind), bar)
 
             dx = cfg["bounties"]["x"]
             dy = cfg["bounties"]["y"]
@@ -896,27 +900,27 @@ class InGameMsg(object):
         if "panel" in self.cfg["mining-graphs"] and self.cfg["mining-graphs"].get("enabled", False):
             self.__shape("mining-graphs", self.cfg["mining-graphs"]["panel"])
         
-        header = _(u"Mining Stats")
+        header = _("Mining Stats")
         details = []
         has_stuff = len(mining_stats.last["minerals_stats"]) > 0
         if has_stuff:
             detailed_stats = mining_stats.last["minerals_stats"]
-            header = _(u"Mining Stats - MNR: {}").format(",".join(m.symbol for m in detailed_stats))
-            details.append(_(u"MNR %: {:>6.2f}  [{}/{}; {}]").format(detailed_stats[0].last["proportion"], detailed_stats[0].symbol, mining_stats.last["materials"], mining_stats.last["raw"]))
-            details.append(_(u"MAX %: {:>6.2f}").format(detailed_stats[0].max))
-            details.append(_(u"AVG %: {:>6.2f}").format(detailed_stats[0].yield_average(mining_stats.prospected_nb)))
+            header = _("Mining Stats - MNR: {}").format(",".join(m.symbol for m in detailed_stats))
+            details.append(_("MNR %: {:>6.2f}  [{}/{}; {}]").format(detailed_stats[0].last["proportion"], detailed_stats[0].symbol, mining_stats.last["materials"], mining_stats.last["raw"]))
+            details.append(_("MAX %: {:>6.2f}").format(detailed_stats[0].max))
+            details.append(_("AVG %: {:>6.2f}").format(detailed_stats[0].yield_average(mining_stats.prospected_nb)))
         elif mining_stats.depleted:
-            details.append(u"")
-            details.append(_(u">> DEPLETED <<"))
-            details.append(u"")
+            details.append("")
+            details.append(_(">> DEPLETED <<"))
+            details.append("")
         else:
-            details.append(u"")
-            details.append(_(u">> WORTHLESS <<"))
-            details.append(u"")
+            details.append("")
+            details.append(_(">> WORTHLESS <<"))
+            details.append("")
         
         
-        details.append(_(u"ITM/H: {:>6.0f} [TGT: {:.0f}]").format(mining_stats.item_per_hour(), mining_stats.max_efficiency))
-        details.append(_(u"ITM #: {:>6}").format(mining_stats.refined_nb))
+        details.append(_("ITM/H: {:>6.0f} [TGT: {:.0f}]").format(mining_stats.item_per_hour(), mining_stats.max_efficiency))
+        details.append(_("ITM #: {:>6}").format(mining_stats.refined_nb))
         self.__msg_header("mining", header)
         self.__msg_body("mining", details)
 
@@ -929,7 +933,7 @@ class InGameMsg(object):
         if mining_stats.last["minerals_stats"]:
             self.__mineral_stats_vizualization(mining_stats.last["minerals_stats"][0], mining_stats.prospected_nb)
         
-        cfg = self.cfg[u"mining-graphs"]
+        cfg = self.cfg["mining-graphs"]
         max_efficiency = mining_stats.max_efficiency
         ystep = {"efficiency": max_efficiency / float(cfg["efficiency"]["h"])} 
         x = {"efficiency": 0}
@@ -965,11 +969,11 @@ class InGameMsg(object):
                 fill_index = int(efficiency/mining_stats.max_efficiency * max_fill_index)
                 bar["fill"] = cfg["efficiency"]["fill"][min(fill_index, max_fill_index)]
             bar["ttl"] = cfg["efficiency"]["ttl"]
-            self.__shape(u"mining-graphs-efficiency-bar", bar)
+            self.__shape("mining-graphs-efficiency-bar", bar)
             x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}
 
     def __mineral_stats_vizualization(self, mineral_stats, prospected_nb):
-        cfg = self.cfg[u"mining-graphs"]
+        cfg = self.cfg["mining-graphs"]
         max_yield = max(50, mineral_stats.max)
         max_distribution = max(mineral_stats.distribution["bins"][1:])
         ystep = {"yield": max_yield / float(cfg["yield"]["h"])} 
@@ -1002,7 +1006,7 @@ class InGameMsg(object):
                 index = int(proportion/100.0 * (len(cfg["yield"]["fill"])-1.0))
                 bar["fill"] = cfg["yield"]["fill"][index]
                 bar["ttl"] = cfg["yield"]["ttl"]
-                self.__shape(u"mining-graphs-yield-bar", bar)
+                self.__shape("mining-graphs-yield-bar", bar)
             x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}
         
         avg = mineral_stats.yield_average(prospected_nb)
@@ -1016,7 +1020,7 @@ class InGameMsg(object):
         index = int(avg/100.0 * (len(cfg["yield"]["fill"])-1.0))
         bar["fill"] = cfg["yield"]["fill"][index]
         bar["ttl"] = cfg["yield"]["ttl"]
-        self.__shape(u"mining-graphs-yield-avg-bar", bar)
+        self.__shape("mining-graphs-yield-avg-bar", bar)
 
 
         y = {"distribution": cfg["distribution"]["w"]+cfg["distribution"]["s"]}
@@ -1035,7 +1039,7 @@ class InGameMsg(object):
             bar["rgb"] = cfg["distribution"]["rgb"][index]
             bar["fill"] = cfg["distribution"]["fill"][index]
             bar["ttl"] = cfg["distribution"]["ttl"]
-            self.__shape(u"mining-graphs-distribution-bar", bar)
+            self.__shape("mining-graphs-distribution-bar", bar)
             i = i+1
             y = {category: y[category] + cfg[category]["w"] + cfg[category]["s"] for category in y}
 
@@ -1050,7 +1054,7 @@ class InGameMsg(object):
         bar["rgb"] = cfg["distribution"]["rgb"][index]
         bar["fill"] = cfg["distribution"]["fill"][index]
         bar["ttl"] = cfg["distribution"]["ttl"]
-        self.__shape(u"mining-graphs-distribution-last-mark", bar)
+        self.__shape("mining-graphs-distribution-last-mark", bar)
 
     def bounty_hunting_guidance(self, bounty_hunting_stats):
         if not self.cfg["bounty-hunting"].get("enabled", None):
@@ -1063,7 +1067,7 @@ class InGameMsg(object):
         if "panel" in self.cfg["bounty-hunting-graphs"] and self.cfg["bounty-hunting-graphs"].get("enabled", False):
             self.__shape("bounty-hunting-graphs", self.cfg["bounty-hunting-graphs"]["panel"])
         
-        header = _(u"Bounty Hunting Stats")
+        header = _("Bounty Hunting Stats")
         details = []
         last_bounty = EDFineOrBounty(bounty_hunting_stats.last["bounty"])
         max_bounty = EDFineOrBounty(bounty_hunting_stats.max)
@@ -1071,11 +1075,11 @@ class InGameMsg(object):
         cr_h = EDFineOrBounty(bounty_hunting_stats.credits_per_hour())
         tgt = EDFineOrBounty(bounty_hunting_stats.max_efficiency)
         total_awarded = EDFineOrBounty(bounty_hunting_stats.sum_awarded)
-        details.append(_(u"BOUNTY: {} cr [{}]").format(last_bounty.pretty_print(), bounty_hunting_stats.last["name"]))
-        details.append(_(u"MAX B.: {} cr").format(max_bounty.pretty_print()))
-        details.append(_(u"AVG B.: {} cr").format(avg_bounty.pretty_print()))
-        details.append(_(u"CR / H: {} [TGT: {}]").format(cr_h.pretty_print(), tgt.pretty_print()))
-        details.append(_(u"TOTALS: {} cr [{} rewards]").format(total_awarded.pretty_print(), bounty_hunting_stats.awarded_nb))
+        details.append(_("BOUNTY: {} cr [{}]").format(last_bounty.pretty_print(), bounty_hunting_stats.last["name"]))
+        details.append(_("MAX B.: {} cr").format(max_bounty.pretty_print()))
+        details.append(_("AVG B.: {} cr").format(avg_bounty.pretty_print()))
+        details.append(_("CR / H: {} [TGT: {}]").format(cr_h.pretty_print(), tgt.pretty_print()))
+        details.append(_("TOTALS: {} cr [{} rewards]").format(total_awarded.pretty_print(), bounty_hunting_stats.awarded_nb))
         self.__msg_header("bounty-hunting", header)
         self.__msg_body("bounty-hunting", details)
         
@@ -1084,7 +1088,7 @@ class InGameMsg(object):
         self.__bounty_hunting_vizualization(bounty_hunting_stats)
     
     def __bounty_hunting_vizualization(self, bounty_hunting_stats):
-        cfg = self.cfg[u"bounty-hunting-graphs"]
+        cfg = self.cfg["bounty-hunting-graphs"]
         max_bounty = max(bounty_hunting_stats.max_normal_bounty, bounty_hunting_stats.max)
         max_distribution = max(bounty_hunting_stats.distribution["bins"][1:])
         max_efficiency = bounty_hunting_stats.max_efficiency
@@ -1118,7 +1122,7 @@ class InGameMsg(object):
                 index = int(scan/max_bounty * (len(cfg["bounty"]["fill"])-1.0))
                 bar["fill"] = cfg["bounty"]["fill"][index]
                 bar["ttl"] = cfg["bounty"]["ttl"]
-                self.__shape(u"bounty-hunting-graphs-bounty-bar", bar)
+                self.__shape("bounty-hunting-graphs-bounty-bar", bar)
             x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}
         
         avg = bounty_hunting_stats.bounty_average()
@@ -1132,7 +1136,7 @@ class InGameMsg(object):
         index = int(avg/max_bounty * (len(cfg["bounty"]["fill"])-1.0))
         bar["fill"] = cfg["bounty"]["fill"][index]
         bar["ttl"] = cfg["bounty"]["ttl"]
-        self.__shape(u"bounty-hunting-graphs-bounty-avg-bar", bar)
+        self.__shape("bounty-hunting-graphs-bounty-avg-bar", bar)
 
 
         y = {"distribution": cfg["distribution"]["w"]+cfg["distribution"]["s"]}
@@ -1151,7 +1155,7 @@ class InGameMsg(object):
             bar["rgb"] = cfg["distribution"]["rgb"][index]
             bar["fill"] = cfg["distribution"]["fill"][index]
             bar["ttl"] = cfg["distribution"]["ttl"]
-            self.__shape(u"bounty-hunting-graphs-distribution-bar", bar)
+            self.__shape("bounty-hunting-graphs-distribution-bar", bar)
             i = i+1
             y = {category: y[category] + cfg[category]["w"] + cfg[category]["s"] for category in y}
 
@@ -1164,7 +1168,7 @@ class InGameMsg(object):
         bar["rgb"] = cfg["distribution"]["rgb"][index]
         bar["fill"] = cfg["distribution"]["fill"][index]
         bar["ttl"] = cfg["distribution"]["ttl"]
-        self.__shape(u"bounty-hunting-graphs-distribution-last-mark", bar)
+        self.__shape("bounty-hunting-graphs-distribution-last-mark", bar)
 
 
         x = {"efficiency": 0}
@@ -1181,7 +1185,7 @@ class InGameMsg(object):
             bar["rgb"] = cfg["efficiency"]["rgb"][index]
             bar["fill"] = cfg["efficiency"]["fill"][index]
             bar["ttl"] = cfg["efficiency"]["ttl"]
-            self.__shape(u"bounty-hunting-graphs-efficiency-bar", bar)
+            self.__shape("bounty-hunting-graphs-efficiency-bar", bar)
             x = {category: x[category] + cfg[category]["w"] + cfg[category]["s"] for category in x}
 
     def target_guidance(self, target, subsys_details=None):
@@ -1197,38 +1201,38 @@ class InGameMsg(object):
         if "panel" in self.cfg["target-guidance-graphs"] and self.cfg["target-guidance-graphs"].get("enabled", False):
             self.__shape("target-guidance-graphs", self.cfg["target-guidance-graphs"]["panel"])
         
-        header = _(u"{prefix}{cmdr} ({ship})").format(prefix=_(u"CMDR ") if target.is_human() else "", cmdr=target.name, ship=tgt_vehicle.type)
+        header = _("{prefix}{cmdr} ({ship})").format(prefix=_("CMDR ") if target.is_human() else "", cmdr=target.name, ship=tgt_vehicle.type)
         details = []
         
         shield_stats = tgt_vehicle.shield_health_stats()
-        shield_label = u"{:.4g}".format(tgt_vehicle.shield_health) if tgt_vehicle.shield_health else u"-"
+        shield_label = "{:.4g}".format(tgt_vehicle.shield_health) if tgt_vehicle.shield_health else "-"
         delta_shield = ""
         signal = "●" if tgt_vehicle.shield_up and shield_stats.last_value() else "◌"
         trend = shield_stats.trend()
         if int(trend) > 0:
             signal = "▴" if tgt_vehicle.shield_up and shield_stats.last_value() > 0 else "▵"
             if trend < 60*60:
-                delta_shield = _(u"[{} to 100%/UP]").format(EDTime.pretty_print_timespan(int(trend), short=True, verbose=False))
+                delta_shield = _("[{} to 100%/UP]").format(EDTime.pretty_print_timespan(int(trend), short=True, verbose=False))
         elif int(trend) < 0:
             signal = "▾"
             if trend > -60*60:
-                delta_shield = _(u"[{} to   0%]").format(EDTime.pretty_print_timespan(int(-trend), short=True, verbose=False))
-        details.append(_(u"SHLD{}: {}% {}").format(signal, shield_label, delta_shield))
+                delta_shield = _("[{} to   0%]").format(EDTime.pretty_print_timespan(int(-trend), short=True, verbose=False))
+        details.append(_("SHLD{}: {}% {}").format(signal, shield_label, delta_shield))
 
         hull_stats = tgt_vehicle.hull_health_stats()
-        hull_label = u"{:.4g}".format(tgt_vehicle.hull_health) if tgt_vehicle.hull_health else u"-"
+        hull_label = "{:.4g}".format(tgt_vehicle.hull_health) if tgt_vehicle.hull_health else "-"
         delta_hull = ""
         signal = "●"
         trend = hull_stats.trend()
         if int(trend) > 0:
             signal = "▴"
             if trend < 60*60:
-                delta_hull = _(u"[{} to 100%]").format(EDTime.pretty_print_timespan(int(trend), short=True, verbose=False))
+                delta_hull = _("[{} to 100%]").format(EDTime.pretty_print_timespan(int(trend), short=True, verbose=False))
         elif int(trend) < 0:
             signal = "▾"
             if trend > -60*60:
-                delta_hull = _(u"[{} to   0%]").format(EDTime.pretty_print_timespan(int(-trend), short=True, verbose=False))
-        details.append(_(u"HULL{}: {}% {}").format(signal, hull_label, delta_hull))
+                delta_hull = _("[{} to   0%]").format(EDTime.pretty_print_timespan(int(-trend), short=True, verbose=False))
+        details.append(_("HULL{}: {}% {}").format(signal, hull_label, delta_hull))
 
         if subsys_details:
             signal = "●"
@@ -1238,12 +1242,12 @@ class InGameMsg(object):
                 if int(trend) > 0:
                     signal = "▴"
                     if trend < 60*60:
-                        delta_subsys = _(u"[{} to 100%]").format(EDTime.pretty_print_timespan(int(trend), short=True, verbose=False))
+                        delta_subsys = _("[{} to 100%]").format(EDTime.pretty_print_timespan(int(trend), short=True, verbose=False))
                 elif int(trend) < 0:
                     signal = "▾"
                     if trend > -60*60:
-                        delta_subsys = _(u"[{} to   0%]").format(EDTime.pretty_print_timespan(int(-trend), short=True, verbose=False))
-            details.append(_(u"{subsys}{signal}: {hp:.4g}% {delta}").format(subsys=subsys_details["shortname"], signal=signal, hp=subsys_details["stats"].last_value(), delta=delta_subsys))
+                        delta_subsys = _("[{} to   0%]").format(EDTime.pretty_print_timespan(int(-trend), short=True, verbose=False))
+            details.append(_("{subsys}{signal}: {hp:.4g}% {delta}").format(subsys=subsys_details["shortname"], signal=signal, hp=subsys_details["stats"].last_value(), delta=delta_subsys))
         self.__msg_header("target-guidance", header)
         self.__msg_body("target-guidance", details)
 
@@ -1259,7 +1263,7 @@ class InGameMsg(object):
         if len(shield_history) == 0 or len(hull_history) == 0:
             return
 
-        cfg = self.cfg[u"target-guidance-graphs"]
+        cfg = self.cfg["target-guidance-graphs"]
         xspan = max(shield_stats.history_max_span_ms, hull_stats.history_max_span_ms)
         if subsys_history:
             xspan = max(xspan, subsys_stats.history_max_span_ms)
@@ -1291,21 +1295,21 @@ class InGameMsg(object):
             else:
                 scaled.append(s)
         vect = {
-            "id": u"shield-sparkline",
+            "id": "shield-sparkline",
             "color": cfg["shield"]["rgb"][1] if shield_down else cfg["shield"]["rgb"][0],
             "ttl": cfg["shield"]["ttl"],
             "vector": scaled
         }
-        self.__vect(u"target-guidance", vect)
+        self.__vect("target-guidance", vect)
 
         x = 1.0 - shield_stats.trend_span_ms / xspan
         vect = {
-            "id": u"shield-trend-span",
+            "id": "shield-trend-span",
             "color": cfg["shield"]["rgb"][2],
             "ttl": cfg["shield"]["ttl"],
             "vector": [{"x":int(cx+x*w), "y":int(cy-.5*h-1)}, {"x":int(cx+x*w), "y":int(cy-.5*h+1)}]
         }
-        self.__vect(u"target-guidance", vect)
+        self.__vect("target-guidance", vect)
             
 
         x = cfg["hull"]["x"]
@@ -1330,21 +1334,21 @@ class InGameMsg(object):
             else:
                 scaled.append(s)
         vect = {
-            "id": u"hull-sparkline",
+            "id": "hull-sparkline",
             "color": cfg["hull"]["rgb"][0],
             "ttl": cfg["hull"]["ttl"],
             "vector": scaled
         }
-        self.__vect(u"target-guidance", vect)
+        self.__vect("target-guidance", vect)
         
         x = 1.0 - hull_stats.trend_span_ms / xspan
         vect = {
-            "id": u"hull-trend-span",
+            "id": "hull-trend-span",
             "color": cfg["hull"]["rgb"][1],
             "ttl": cfg["hull"]["ttl"],
             "vector": [{"x":int(cx+x*w), "y":int(cy-.5*h-1)}, {"x":int(cx+x*w), "y":int(cy-.5*h+1)}]
         }
-        self.__vect(u"target-guidance", vect)
+        self.__vect("target-guidance", vect)
 
         if not subsys_history or len(subsys_history) == 0:
             return
@@ -1369,21 +1373,21 @@ class InGameMsg(object):
             else:
                 scaled.append(s)
         vect = {
-            "id": u"subsys-sparkline",
+            "id": "subsys-sparkline",
             "color": cfg["subsys"]["rgb"][0],
             "ttl": cfg["subsys"]["ttl"],
             "vector": scaled
         }
-        self.__vect(u"target-guidance", vect)
+        self.__vect("target-guidance", vect)
 
         x = 1.0 - subsys_stats.trend_span_ms / xspan
         vect = {
-            "id": u"subsys-trend-span",
+            "id": "subsys-trend-span",
             "color": cfg["subsys"]["rgb"][1],
             "ttl": cfg["subsys"]["ttl"],
             "vector": [{"x":int(cx+x*w), "y":int(cy-.5*h-1)}, {"x":int(cx+x*w), "y":int(cy-.5*h+1)}]
         }
-        self.__vect(u"target-guidance", vect)
+        self.__vect("target-guidance", vect)
 
     def navroute(self, route_navigator):
         if not self.cfg["navroute"].get("enabled", None):
@@ -1551,10 +1555,10 @@ class InGameMsg(object):
             y += inc_y
 
         if vects["travelled"]["vector"]:
-            self.__vect(u"navroute-map-travelled", vects["travelled"])
+            self.__vect("navroute-map-travelled", vects["travelled"])
         
         if vects["remaining"]["vector"]:
-            self.__vect(u"navroute-map-remaining", vects["remaining"])
+            self.__vect("navroute-map-remaining", vects["remaining"])
 
     def clear(self):
         msg_ids = list(self.msg_ids.keys())
@@ -1628,7 +1632,7 @@ class InGameMsg(object):
         return chunked_lines
 
     def __wrap_text(self, kind, part, text, max_rows):
-        EDR_LOG.debug(u"text: {}".format(text))
+        EDR_LOG.debug("text: {}".format(text))
         if text is None:
             return None
         width = self.cfg[kind][part]["len"]
@@ -1649,7 +1653,7 @@ class InGameMsg(object):
         ttl = timeout if timeout else conf["ttl"]
         text = header[:conf["len"]]
         x = self.__adjust_x(kind, "h", text)
-        EDR_LOG.debug(u"header={}, row={}, col={}, color={}, ttl={}, size={}".format(header, conf["y"], x, conf["rgb"], ttl, conf["size"]))
+        EDR_LOG.debug("header={}, row={}, col={}, color={}, ttl={}, size={}".format(header, conf["y"], x, conf["rgb"], ttl, conf["size"]))
         self.__display(kind, text, row=conf["y"], col=x, color=conf["rgb"], ttl=ttl, size=conf["size"])
 
     def __msg_body(self, kind, body, timeout=None):
@@ -1666,7 +1670,7 @@ class InGameMsg(object):
                 y = conf["y"] + row_nb * self.cfg["general"][conf["size"]]["h"]
                 conf["cache"].set(row_nb, chunk)
                 x = self.__adjust_x(kind, "b", chunk)
-                EDR_LOG.debug(u"line={}, rownb={}, last_row={}, row={}, col={}, color={}, ttl={}, size={}".format(chunk, row_nb, conf["last_row"], y, x, conf["rgb"], ttl, conf["size"]))
+                EDR_LOG.debug("line={}, rownb={}, last_row={}, row={}, col={}, color={}, ttl={}, size={}".format(chunk, row_nb, conf["last_row"], y, x, conf["rgb"], ttl, conf["size"]))
                 self.__display(kind, chunk, row=y, col=x, color=conf["rgb"], size=conf["size"], ttl=ttl)
                 self.__bump_body_row(kind)
 
@@ -1698,7 +1702,7 @@ class InGameMsg(object):
             self._overlay.send_message(msg_id, text, color, int(col), int(row), ttl=ttl, size=size)
             self.msg_ids.set(msg_id, ttl)
         except Exception as e:
-            EDR_LOG.exception(u"In-Game Message failed with {}.".format(e))
+            EDR_LOG.exception("In-Game Message failed with {}.".format(e))
             pass
 
     def __shape(self, kind, panel):
@@ -1736,7 +1740,7 @@ class InGameMsg(object):
             self.cfg[kind]["b"]["cache"].reset()
     
     def __bountycolor(self, bounty, kind):
-        kind = u"{}-legal".format(kind)
+        kind = "{}-legal".format(kind)
         cfg = self.cfg[kind]["bounties"]
         if bounty > 0:
             try:
@@ -1748,7 +1752,7 @@ class InGameMsg(object):
         return cfg["fill"][0]
 
     def __cleancolor(self, clean, kind):
-        kind = u"{}-legal".format(kind)
+        kind = "{}-legal".format(kind)
         cfg = self.cfg[kind]["clean"]
         if clean > 0:
             try:
@@ -1760,7 +1764,7 @@ class InGameMsg(object):
         return cfg["fill"][0]
     
     def __wantedcolor(self, wanted, kind):
-        kind = u"{}-legal".format(kind)
+        kind = "{}-legal".format(kind)
         cfg = self.cfg[kind]["wanted"]
         if wanted > 0:
             try:

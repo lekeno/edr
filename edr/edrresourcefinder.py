@@ -14,7 +14,7 @@ from edrstatefinder import EDRStateFinder
 from edri18n import _ # EDR_INTERNAL
 from edrrawdepletables import EDRRawDepletables
 
-class EDRResourceFinder(object):
+class EDRResourceFinder:
 
     RAW_MATS = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', 'raw.json')).read())
     RAW_MATS_PROFILES = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', 'raw_profiles.json')).read())
@@ -215,21 +215,21 @@ class EDRResourceFinder(object):
 
     def mission_reward_only(self, resource, reference_system, callback):
         return [
-            _(u"Mission reward only."),
-            _(u"Higher chance when allied to the factions giving missions."),
-            _(u"Stacking passenger missions seems quite efficient."),
+            _("Mission reward only."),
+            _("Higher chance when allied to the factions giving missions."),
+            _("Stacking passenger missions seems quite efficient."),
         ]
 
     def ambiguous_p_c(self, resource, reference_system, callback):
         return [
-            _(u" - '!search pr c' for proprietary composites"),
-            _(u" - '!search po c' for polymer capacitors"),
+            _(" - '!search pr c' for proprietary composites"),
+            _(" - '!search po c' for polymer capacitors"),
         ]
 
     def ambiguous_c_c(self, resource, reference_system, callback):
         return [
-            _(u" - '!search c ce' for conductive ceramics"),
-            _(u" - '!search c co' for configurable components"),
+            _(" - '!search c ce' for conductive ceramics"),
+            _(" - '!search c co' for configurable components"),
         ]
     
     def recommend_crashed_site_or_depletable(self, resource, reference_system, callback):
@@ -251,30 +251,30 @@ class EDRResourceFinder(object):
             to_bugkiller = self.edr_systems.distance(reference_system, "HIP 16613")
             to_jameson = self.edr_systems.distance(reference_system, "HIP 12099")
             if to_bugkiller <= to_jameson:
-                pretty_dist = _(u"{distance:.3g}").format(distance=to_bugkiller) if to_bugkiller < 50.0 else _(u"{distance}").format(distance=int(to_bugkiller))
+                pretty_dist = _("{distance:.3g}").format(distance=to_bugkiller) if to_bugkiller < 50.0 else _("{distance}").format(distance=int(to_bugkiller))
                 copy("HIP 16613")
                 return [
-                    _(u"HIP 16613 ({}LY), Planet 1 A (1.4k LS), -11.0093 | -95.6755").format(pretty_dist),
-                    _(u"Bring: advanced scanner, SRV."),
-                    _(u"Scan the 3 COMMS Control of the crashed Anaconda, repeat."),
+                    _("HIP 16613 ({}LY), Planet 1 A (1.4k LS), -11.0093 | -95.6755").format(pretty_dist),
+                    _("Bring: advanced scanner, SRV."),
+                    _("Scan the 3 COMMS Control of the crashed Anaconda, repeat."),
                 ]
             else:
-                pretty_dist = _(u"{distance:.3g}").format(distance=to_jameson) if to_jameson < 50.0 else _(u"{distance}").format(distance=int(to_jameson))
+                pretty_dist = _("{distance:.3g}").format(distance=to_jameson) if to_jameson < 50.0 else _("{distance}").format(distance=int(to_jameson))
                 copy("HIP 12099")
                 return [
-                    _(u"HIP 12099 ({}LY), Planet 1 B (1.1k LS), -54.3803 | -50.3575").format(pretty_dist),
-                    _(u"Bring: advanced scanner, SRV."),
-                    _(u"Crashed Cobra MK III with 4 COMMS Control, scannable from a fixed position."),
+                    _("HIP 12099 ({}LY), Planet 1 B (1.1k LS), -54.3803 | -50.3575").format(pretty_dist),
+                    _("Bring: advanced scanner, SRV."),
+                    _("Crashed Cobra MK III with 4 COMMS Control, scannable from a fixed position."),
                 ]
         
         if resource.lower() in ["classified scan fragment", "unusual encrypted files", "tagged encrypted codes", "specialized legacy firmware"]:
             distance = self.edr_systems.distance(reference_system, "Koli Discii")
-            pretty_dist = _(u"{distance:.3g}").format(distance=distance) if distance < 50.0 else _(u"{distance}").format(distance=int(distance))
+            pretty_dist = _("{distance:.3g}").format(distance=distance) if distance < 50.0 else _("{distance}").format(distance=int(distance))
             copy("Koli Discii")
             return [
-                _(u"Koli Discii ({}LY), Planet C 6 A (91k LS), 28.577 | 7.219").format(pretty_dist),
-                _(u"Bring: advanced scanner, SRV."),
-                _(u"Scan the 3 COMMS Control of the crashed Anaconda, repeat."), # TODO confirm the name of the things
+                _("Koli Discii ({}LY), Planet C 6 A (91k LS), 28.577 | 7.219").format(pretty_dist),
+                _("Bring: advanced scanner, SRV."),
+                _("Scan the 3 COMMS Control of the crashed Anaconda, repeat."), # TODO confirm the name of the things
             ]
         
         to_koli = self.edr_systems.distance(reference_system, "Koli Discii")
@@ -284,41 +284,41 @@ class EDRResourceFinder(object):
         to_thoth = self.edr_systems.distance(reference_system, "Thoth")
         if resource.lower() in ["antimony", "tellurium", "ruthenium"]:
             #if to_renet < to_hip and to_renet < to_koli and to_renet < to_thoth:
-            #    what = _(u"Break the cargo rack of the crashed Anaconda, repeat.")
-            #    pretty_dist = _(u"{distance:.3g}").format(distance=to_renet) if to_renet < 50.0 else _(u"{distance}").format(distance=int(to_renet))
+            #    what = _("Break the cargo rack of the crashed Anaconda, repeat.")
+            #    pretty_dist = _("{distance:.3g}").format(distance=to_renet) if to_renet < 50.0 else _("{distance}").format(distance=int(to_renet))
             #    copy("Renet")
             #    return [
-            #        _(u"Renet ({}LY), Planet B 1 (378 LS), 14 | 135").format(pretty_dist),
-            #        _(u"Bring: SRV."),
+            #        _("Renet ({}LY), Planet B 1 (378 LS), 14 | 135").format(pretty_dist),
+            #        _("Bring: SRV."),
             #        what
             #    ]
             #elif to_thoth < to_hip and to_thoth < to_koli and to_thoth < to_renet:
             if to_thoth < to_hip and to_thoth < to_koli:
-                what = _(u"Break the cargo rack of the crashed Anaconda, repeat.")
-                pretty_dist = _(u"{distance:.3g}").format(distance=to_thoth) if to_thoth < 50.0 else _(u"{distance}").format(distance=int(to_thoth))
+                what = _("Break the cargo rack of the crashed Anaconda, repeat.")
+                pretty_dist = _("{distance:.3g}").format(distance=to_thoth) if to_thoth < 50.0 else _("{distance}").format(distance=int(to_thoth))
                 copy("Thoth")
                 return [
-                    _(u"Thoth ({}LY), Planet 1 A (69 LS), -2.77 | 16.67").format(pretty_dist),
-                    _(u"Bring: SRV."),
+                    _("Thoth ({}LY), Planet 1 A (69 LS), -2.77 | 16.67").format(pretty_dist),
+                    _("Bring: SRV."),
                     what
                 ]
 
-        what = _(u"Scan the 3 COMMS Control of the crashed Anaconda, repeat.") if self.__is_data(resource) else _(u"Break the 3 cargo racks of the crashed Anaconda, repeat.")
+        what = _("Scan the 3 COMMS Control of the crashed Anaconda, repeat.") if self.__is_data(resource) else _("Break the 3 cargo racks of the crashed Anaconda, repeat.")
             
         if to_hip < to_koli:
-            pretty_dist = _(u"{distance:.3g}").format(distance=to_hip) if to_hip < 50.0 else _(u"{distance}").format(distance=int(to_hip))
+            pretty_dist = _("{distance:.3g}").format(distance=to_hip) if to_hip < 50.0 else _("{distance}").format(distance=int(to_hip))
             copy("HIP 16613")
             return [
-                _(u"HIP 16613 ({}LY), Planet 1 A (1.4k LS), -11.0093 | -95.6755").format(pretty_dist),
-                _(u"Bring: advanced scanner, SRV."),
+                _("HIP 16613 ({}LY), Planet 1 A (1.4k LS), -11.0093 | -95.6755").format(pretty_dist),
+                _("Bring: advanced scanner, SRV."),
                 what
             ]
         
-        pretty_dist = _(u"{distance:.3g}").format(distance=to_koli) if to_koli < 50.0 else _(u"{distance}").format(distance=int(to_koli))
+        pretty_dist = _("{distance:.3g}").format(distance=to_koli) if to_koli < 50.0 else _("{distance}").format(distance=int(to_koli))
         copy("Koli Discii")
         return [
-            _(u"Koli Discii ({}LY), Planet C 6 A (91k LS), 28.577 | 7.219").format(pretty_dist),
-            _(u"Bring: advanced scanner, SRV."),
+            _("Koli Discii ({}LY), Planet C 6 A (91k LS), 28.577 | 7.219").format(pretty_dist),
+            _("Bring: advanced scanner, SRV."),
             what
         ]
 
@@ -338,7 +338,7 @@ class EDRResourceFinder(object):
     
     def from_research_facility_5592(self, resource, reference_system, callback):
         distance = self.edr_systems.distance(reference_system, "HR 5991")
-        pretty_dist = _(u"{distance:.3g}").format(distance=distance) if distance < 50.0 else _(u"{distance}").format(distance=int(distance))
+        pretty_dist = _("{distance:.3g}").format(distance=distance) if distance < 50.0 else _("{distance}").format(distance=int(distance))
         probabilities = {
             'chemical manipulators': 1.03125,
             'compound shielding': 0.75,
@@ -357,22 +357,22 @@ class EDRResourceFinder(object):
         }
 
         probability = probabilities.get(resource.lower(), None)
-        first_line = _(u"HR 5991 ({}LY), Planet 1 B (2180 LS), Research Facility 5592 at 33.4701 | -2.1706").format(pretty_dist)
+        first_line = _("HR 5991 ({}LY), Planet 1 B (2180 LS), Research Facility 5592 at 33.4701 | -2.1706").format(pretty_dist)
         if probability:
-            first_line += _(u" {resource} @ {probability}%").format(resource=resource, probability=int(100*probability))
+            first_line += _(" {resource} @ {probability}%").format(resource=resource, probability=int(100*probability))
         alt_distance = self.edr_systems.distance(reference_system, "Hyades Sector DR-V c2-23")
-        alt_pretty_dist = _(u"{distance:.3g}").format(distance=alt_distance) if alt_distance < 50.0 else _(u"{distance}").format(distance=int(alt_distance))
+        alt_pretty_dist = _("{distance:.3g}").format(distance=alt_distance) if alt_distance < 50.0 else _("{distance}").format(distance=int(alt_distance))
         copy("HR 5991")
         return [
             first_line,
-            _(u"Bring: advanced scanner, SRV."),
-            _(u"Roam around to grab materials, repeat."),
-            _(u"Alternative: 'Dav's hope' in Hyades Sector DR-V c2-23 ({}LY).").format(alt_pretty_dist)
+            _("Bring: advanced scanner, SRV."),
+            _("Roam around to grab materials, repeat."),
+            _("Alternative: 'Dav's hope' in Hyades Sector DR-V c2-23 ({}LY).").format(alt_pretty_dist)
         ]
     
     def from_dav_hope(self, resource, reference_system, callback):
         distance = self.edr_systems.distance(reference_system, "Hyades Sector DR-V c2-23")
-        pretty_dist = _(u"{distance:.3g}").format(distance=distance) if distance < 50.0 else _(u"{distance}").format(distance=int(distance))
+        pretty_dist = _("{distance:.3g}").format(distance=distance) if distance < 50.0 else _("{distance}").format(distance=int(distance))
         probabilities = {
             "chemical manipulators": 1.286,
             "compound shielding": 0.744,
@@ -395,35 +395,35 @@ class EDRResourceFinder(object):
         }
 
         probability = probabilities.get(resource.lower(), None)
-        first_line = _(u"Hyades Sector DR-V c2-23 ({}LY), Planet A 5 (60 LS), Dav's Hope at 44.8180 | -31.3893").format(pretty_dist)
+        first_line = _("Hyades Sector DR-V c2-23 ({}LY), Planet A 5 (60 LS), Dav's Hope at 44.8180 | -31.3893").format(pretty_dist)
         if probability:
-            first_line += _(u" {resource} @ {probability}%").format(resource=resource, probability=int(100*probability))
+            first_line += _(" {resource} @ {probability}%").format(resource=resource, probability=int(100*probability))
         copy("Hyades Sector DR-V c2-23")
         return [
             first_line,
-            _(u"Bring: advanced scanner, SRV."),
-            _(u"Roam around to grab materials, repeat."),
-            _(u"Search online for 'Dav's hope map' to find out which spots drop {}.").format(resource)
+            _("Bring: advanced scanner, SRV."),
+            _("Roam around to grab materials, repeat."),
+            _("Search online for 'Dav's hope map' to find out which spots drop {}.").format(resource)
         ]
 
     def from_isinor(self, resource, reference_system, callback):
         alternative = None
         if resource == "peculiar shield frequency data":
-            alternative = _(u"Alt: scan combat/pirate (RES) ships, hack mega-ships.")
+            alternative = _("Alt: scan combat/pirate (RES) ships, hack mega-ships.")
         elif resource == "unexpected emission data":
-            alternative = _(u"Alt: scan combat/pirate (RES)/authority (CZ) ships, private data beacons in USS - Encoded Emissions.")
+            alternative = _("Alt: scan combat/pirate (RES)/authority (CZ) ships, private data beacons in USS - Encoded Emissions.")
         elif resource == "untypical shield scans":
-            alternative = _(u"Alt: combat/pirate (RES)/authority (CZ) ships.")
+            alternative = _("Alt: combat/pirate (RES)/authority (CZ) ships.")
         elif resource == "aberrant shield pattern analysis":
-            alternative = _(u"Alt: scan combat/pirate (RES) ships.")
+            alternative = _("Alt: scan combat/pirate (RES) ships.")
 
         distance = self.edr_systems.distance(reference_system, "Isinor")
-        pretty_dist = _(u"{distance:.3g}").format(distance=distance) if distance < 50.0 else _(u"{distance}").format(distance=int(distance))
+        pretty_dist = _("{distance:.3g}").format(distance=distance) if distance < 50.0 else _("{distance}").format(distance=int(distance))
         copy("Isinor")
         return [
-            _(u"Isinor ({}LY), Planet A 5 (60 LS), Permit locked (missions or exploration data for 'Chapter of Isinor')").format(pretty_dist),
-            _(u"Bring: permit, decent shields"),
-            _(u"Drop on 'Unauthorised Installation' or 'Convoy beacon', scan ships, repeat."),
+            _("Isinor ({}LY), Planet A 5 (60 LS), Permit locked (missions or exploration data for 'Chapter of Isinor')").format(pretty_dist),
+            _("Bring: permit, decent shields"),
+            _("Drop on 'Unauthorised Installation' or 'Convoy beacon', scan ships, repeat."),
             alternative
         ]
 
@@ -464,21 +464,21 @@ class EDRResourceFinder(object):
         
         finder = EDRStateFinder(reference_system, checker, self.edr_systems, callback)
         finder.within_radius(min(60, self.radius))
-        finder.permits_in_possesion(self.permits)
+        finder.permits_in_possession(self.permits)
         finder.start()
 
         return True
 
     def from_combat_authority_scans_encoded_emissions(self, resource, reference_system, callback):
         return [
-            _(u"Scan combat or authority ships, e.g. pirates in RES, military ships in CZ."),
-            _(u"Scan private data beacons found in 'Encoded Emissions' sources")
+            _("Scan combat or authority ships, e.g. pirates in RES, military ships in CZ."),
+            _("Scan private data beacons found in 'Encoded Emissions' sources")
         ]
 
     def mat_trader_mining_all(self, resource, reference_system, callback):
         return  [
-            _(u"Can be found by mining asteroids in planet rings."),
-            _(u"More efficient: exchange other materials at a raw material trader, send !raw to find the closest one.")
+            _("Can be found by mining asteroids in planet rings."),
+            _("More efficient: exchange other materials at a raw material trader, send !raw to find the closest one.")
         ]
     
     def recommend_planet_or_crashed_site_or_depletable(self, resource, reference_system, callback):
@@ -601,27 +601,27 @@ class EDRResourceFinder(object):
                 best_distance = distance
                 best = planet
         
-        pretty_dist = _(u"{distance:.3g}").format(distance=best_distance) if best_distance < 50.0 else _(u"{distance}").format(distance=int(best_distance))
+        pretty_dist = _("{distance:.3g}").format(distance=best_distance) if best_distance < 50.0 else _("{distance}").format(distance=int(best_distance))
         copy(best["name"])
         if best.get("type", None) == "crystals":
             return [
-                _(u'{} ({}LY), Planet {} ({}LS, {}G), {} @ biological sites').format(best['name'], pretty_dist, best['planet'], best['distanceToArrival'], best['gravity'], resource),
-                _(u"Bring: detailed surface scanner, SRV, synth materials for SRV fuel and ammo."),
-                _(u"Surface scan the planet to find biological sites."),
-                _(u"Land, deploy SRV to break crystalline shards, scoop grade 4 materials.")
+                _('{} ({}LY), Planet {} ({}LS, {}G), {} @ biological sites').format(best['name'], pretty_dist, best['planet'], best['distanceToArrival'], best['gravity'], resource),
+                _("Bring: detailed surface scanner, SRV, synth materials for SRV fuel and ammo."),
+                _("Surface scan the planet to find biological sites."),
+                _("Land, deploy SRV to break crystalline shards, scoop grade 4 materials.")
             ]
         elif best.get("type", None) == "brain tree site":
             return [
-                _(u'{} ({}LY), Planet {} ({}LS, {}G), {} @ brain tree site').format(best['name'], pretty_dist, best['planet'], best['distanceToArrival'], best['gravity'], resource),
-                _(u"Bring: detailed surface scanner, SRV, synth materials for SRV fuel and ammo."),
-                _(u"Approach the planet to get navigation guidance to the brain tree site(s)."),
-                _(u"Land, deploy SRV to break brain trees, scoop grade 4 materials.")
+                _('{} ({}LY), Planet {} ({}LS, {}G), {} @ brain tree site').format(best['name'], pretty_dist, best['planet'], best['distanceToArrival'], best['gravity'], resource),
+                _("Bring: detailed surface scanner, SRV, synth materials for SRV fuel and ammo."),
+                _("Approach the planet to get navigation guidance to the brain tree site(s)."),
+                _("Land, deploy SRV to break brain trees, scoop grade 4 materials.")
             ]            
         else:
             return [
-                _(u'{} ({}LY), Planet {} ({}LS, {}G), {} @ {}%').format(best['name'], pretty_dist, best['planet'], best['distanceToArrival'], best['gravity'], resource, int(100*best['concentration'])),
-                _(u"Bring: advanced scanner, SRV."),
-                _(u"Break some rocks. Higher chances of Very Rare and Rare resources in metallic meteorite, metallic outcrop and mesosiderite.")
+                _('{} ({}LY), Planet {} ({}LS, {}G), {} @ {}%').format(best['name'], pretty_dist, best['planet'], best['distanceToArrival'], best['gravity'], resource, int(100*best['concentration'])),
+                _("Bring: advanced scanner, SRV."),
+                _("Break some rocks. Higher chances of Very Rare and Rare resources in metallic meteorite, metallic outcrop and mesosiderite.")
             ]
 
     def recommend_prospecting_planet_for_selenium(self, resource, reference_system, callback):
@@ -644,13 +644,13 @@ class EDRResourceFinder(object):
                 if best_distance <= good_enough_distance:
                     break
         
-        pretty_dist = _(u"{distance:.3g}").format(distance=best_distance) if best_distance < 50.0 else _(u"{distance}").format(distance=int(best_distance))
+        pretty_dist = _("{distance:.3g}").format(distance=best_distance) if best_distance < 50.0 else _("{distance}").format(distance=int(best_distance))
         copy(best["name"])
         return [
-            _(u'{} ({}LY), Planet {} ({}LS, {}G), Selenium @ geological sites').format(best['name'], pretty_dist, best['planet'], best['distanceToArrival'], round(best['gravity'],2)),
-            _(u"Bring: detailed surface scanner, SRV, synth materials for SRV fuel and ammo."),
-            _(u"Surface scan the planet to find geological sites."),
-            _(u"Land, deploy SRV to break crystalline fragments, scoop selenium.")
+            _('{} ({}LY), Planet {} ({}LS, {}G), Selenium @ geological sites').format(best['name'], pretty_dist, best['planet'], best['distanceToArrival'], round(best['gravity'],2)),
+            _("Bring: detailed surface scanner, SRV, synth materials for SRV fuel and ammo."),
+            _("Surface scan the planet to find geological sites."),
+            _("Land, deploy SRV to break crystalline fragments, scoop selenium.")
         ]
     
     def recommend_raw_depletable(self, resource, reference_system, callback):
@@ -667,13 +667,13 @@ class EDRResourceFinder(object):
                 best_distance = distance
                 best = hotspot
         
-        pretty_dist = _(u"{distance:.3g}").format(distance=best_distance) if best_distance < 50.0 else _(u"{distance}").format(distance=int(best_distance))
+        pretty_dist = _("{distance:.3g}").format(distance=best_distance) if best_distance < 50.0 else _("{distance}").format(distance=int(best_distance))
         copy(best[0])
         return [
-            _(u'{} ({}LY), Planet {} ({}LS, {}G), {} @ {}%').format(best[0], pretty_dist, best[1], best[3], best[2], best[4], int(100*best[6])),
-            _(u"Bring: SRV, synth materials for SRV fuel and ammo."),
-            _(u"Get within 500LS of the planet to find the tourist spot."),
-            _(u"Land, deploy SRV to break the crystals, and scoop high grade materials.")
+            _('{} ({}LY), Planet {} ({}LS, {}G), {} @ {}%').format(best[0], pretty_dist, best[1], best[3], best[2], best[4], int(100*best[6])),
+            _("Bring: SRV, synth materials for SRV fuel and ammo."),
+            _("Get within 500LS of the planet to find the tourist spot."),
+            _("Land, deploy SRV to break the crystals, and scoop high grade materials.")
         ]
 
     def recommend_prospecting_ring(self, resource, reference_system, callback):
@@ -758,31 +758,31 @@ class EDRResourceFinder(object):
                 best_distance = distance
                 best = ring
         
-        pretty_dist = _(u"{distance:.3g}").format(distance=best_distance) if best_distance < 50.0 else _(u"{distance}").format(distance=int(best_distance))
+        pretty_dist = _("{distance:.3g}").format(distance=best_distance) if best_distance < 50.0 else _("{distance}").format(distance=int(best_distance))
         copy(best["system"])
 
-        resource_grade = _(u"{}{}").format(resource, u"+"*best['tuple'])
-        by_line = _(u"by Cmdr {}").format(best['by']) if best['by'] else u""
+        resource_grade = _("{}{}").format(resource, "+"*best['tuple'])
+        by_line = _("by Cmdr {}").format(best['by']) if best['by'] else ""
         return [
-                _(u'{sys} ({sdist}LY), {body} ({bdist}LS): {grade} {by}').format(sys=best['system'], sdist=pretty_dist, body=best['ring'], bdist=best['distanceToRing'], grade=resource_grade, by=by_line),
-                _(u"Bring: detailed surface scanner, prospector & collector limpets, mining lasers."),
-                _(u"Scan the ring to find overlapping {} hotspots.").format(resource),
-                _(u"Drop in there, prospect asteroids, mine the ones with {}, collect, repeat.").format(resource)
+                _('{sys} ({sdist}LY), {body} ({bdist}LS): {grade} {by}').format(sys=best['system'], sdist=pretty_dist, body=best['ring'], bdist=best['distanceToRing'], grade=resource_grade, by=by_line),
+                _("Bring: detailed surface scanner, prospector & collector limpets, mining lasers."),
+                _("Scan the ring to find overlapping {} hotspots.").format(resource),
+                _("Drop in there, prospect asteroids, mine the ones with {}, collect, repeat.").format(resource)
         ]
 
 
     def from_hacking(self, resource, reference_system, callback):
         pois = {
-            'Atins': {'name': 'Atins', 'loc': 'Scientific Installation near Planet 1', 'bring': _(u"Bring: 2 recon controllers, limpets, silent running ship."), 'what': _(u'Scan the installation, then the Comms array. Hack it. Run silent before the hacking begins / ends, avoid scans. Repeat.'), 'distanceToArrival': 11},
-            'Kemurukamar': {'name': 'Kemurukamar', 'loc': 'Pirate Cove near Planet A 1', 'bring': _(u"Bring: 2-3 recon controllers, limpets, silent running ship."), 'what': _(u"Scan the stranded mega-ship 'Blazin’ Dynamo', then the Comms and Data arrays. Hack them. Run silent before the hacking begins / ends, avoid scans. Repeat."), 'distanceToArrival': 1913},
+            'Atins': {'name': 'Atins', 'loc': 'Scientific Installation near Planet 1', 'bring': _("Bring: 2 recon controllers, limpets, silent running ship."), 'what': _('Scan the installation, then the Comms array. Hack it. Run silent before the hacking begins / ends, avoid scans. Repeat.'), 'distanceToArrival': 11},
+            'Kemurukamar': {'name': 'Kemurukamar', 'loc': 'Pirate Cove near Planet A 1', 'bring': _("Bring: 2-3 recon controllers, limpets, silent running ship."), 'what': _("Scan the stranded mega-ship 'Blazin’ Dynamo', then the Comms and Data arrays. Hack them. Run silent before the hacking begins / ends, avoid scans. Repeat."), 'distanceToArrival': 1913},
         }
 
         alts = {
-            "modified embedded firmware": _(u'Alt: scans of data points at L3M / M3M / M4M settlements. Installation, mega-ships. Mission rewards.'),
-            "divergent scan data":  _(u"Alt: scans of data points at settlements, authority/military ships, data beacons in 'Encoded Emissions', satellites. Installations, mega-ships. Mission rewards."),
-            "security firmware patch":  _(u'Alt: scans of data points at M4M / L3M / M2M settlements. Installations, mega-ships.'),
-            "open symmetric keys":  _(u"Alt: scans of data points at M5M / L2M / M2M settlements, data beacons in 'Encoded Emissions', satellites. Installations, mega-ships."),
-            "classified scan databanks": _(u"Alt: scans of data points at M4L / M1L / M3L settlements, haulage ships. Installation, mega-ships."),
+            "modified embedded firmware": _('Alt: scans of data points at L3M / M3M / M4M settlements. Installation, mega-ships. Mission rewards.'),
+            "divergent scan data":  _("Alt: scans of data points at settlements, authority/military ships, data beacons in 'Encoded Emissions', satellites. Installations, mega-ships. Mission rewards."),
+            "security firmware patch":  _('Alt: scans of data points at M4M / L3M / M2M settlements. Installations, mega-ships.'),
+            "open symmetric keys":  _("Alt: scans of data points at M5M / L2M / M2M settlements, data beacons in 'Encoded Emissions', satellites. Installations, mega-ships."),
+            "classified scan databanks": _("Alt: scans of data points at M4L / M1L / M3L settlements, haulage ships. Installation, mega-ships."),
         }
 
         hacking_poi_lut = {
@@ -830,20 +830,20 @@ class EDRResourceFinder(object):
                 best_distance = distance
                 best = candidate
         
-        pretty_dist = _(u"{distance:.3g}").format(distance=best_distance) if best_distance < 50.0 else _(u"{distance}").format(distance=int(best_distance))
+        pretty_dist = _("{distance:.3g}").format(distance=best_distance) if best_distance < 50.0 else _("{distance}").format(distance=int(best_distance))
         poi = pois[best['poi']]
 
         copy(poi['name'])
         if best.get('gravity', None):
             return [
-                _(u'{} ({}LY), {} ({}LS, {}G), {} @ {}%').format(poi['name'], pretty_dist, poi['loc'], poi['distanceToArrival'], poi['gravity'], resource, int(100*best['probability'])),
+                _('{} ({}LY), {} ({}LS, {}G), {} @ {}%').format(poi['name'], pretty_dist, poi['loc'], poi['distanceToArrival'], poi['gravity'], resource, int(100*best['probability'])),
                 poi['bring'],
                 poi['what'],
                 alts[resource]
             ]
         else:
             return [
-                _(u'{} ({}LY), {} ({}LS), {} @ {}%').format(poi['name'], pretty_dist, poi['loc'], poi['distanceToArrival'], resource, int(100*best['probability'])),
+                _('{} ({}LY), {} ({}LS), {} @ {}%').format(poi['name'], pretty_dist, poi['loc'], poi['distanceToArrival'], resource, int(100*best['probability'])),
                 poi['bring'],
                 poi['what'],
                 alts[resource]
@@ -852,8 +852,8 @@ class EDRResourceFinder(object):
 
     def from_high_energy_wakes(self, resource, reference_system, callback):
         return [
-            _(u'Captured by scanning high energy wakes.'),
-            _(u'Higher chances in high population (high traffic) systems')
+            _('Captured by scanning high energy wakes.'),
+            _('Higher chances in high population (high traffic) systems')
         ]
 
     def assess_jump(self, fsdjump_event, inventory):
@@ -906,5 +906,5 @@ class EDRResourceFinder(object):
             grade = (material["Percent"] - reference["typical"]) / (reference["highest"] - reference["typical"])
             chance = '+' * int(min(5, round(abs(grade)*5, 0)))
             oneliner = inventory.oneliner(name)
-            noteworthy.append(_(u"{raw} {chance} @ {actual:.1f}% (median={typical:.1f}%; max={max:.1f}%)").format(raw=oneliner, chance=chance, actual=material["Percent"], typical=reference["typical"], max=reference["highest"]))
+            noteworthy.append(_("{raw} {chance} @ {actual:.1f}% (median={typical:.1f}%; max={max:.1f}%)").format(raw=oneliner, chance=chance, actual=material["Percent"], typical=reference["typical"], max=reference["highest"]))
         return noteworthy

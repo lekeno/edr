@@ -1,14 +1,17 @@
-from edrlog import EDR_LOG # EDR_INTERNAL
-import platform, os
+from edrlog import EDR_LOG  # EDR_INTERNAL
+import platform
+import os
 import ctypes
 from ctypes import wintypes
+import subprocess
 
+
+# Setup Windows ctypes if necessary
 if os.name == 'nt' or platform.system() == 'Windows':
     user32 = ctypes.windll.user32
     kernel32 = ctypes.windll.kernel32
 
     # CRITICAL FIX: Define 32/64-bit agnostic return types and arguments
-    # c_void_p and c_size_t scale automatically between 4 and 8 bytes.
     kernel32.GlobalAlloc.restype = wintypes.HGLOBAL
     kernel32.GlobalAlloc.argtypes = [wintypes.UINT, ctypes.c_size_t]
 
@@ -23,10 +26,15 @@ if os.name == 'nt' or platform.system() == 'Windows':
     user32.SetClipboardData.restype = wintypes.HANDLE
     user32.SetClipboardData.argtypes = [wintypes.UINT, wintypes.HANDLE]
 
-    # Ensures memmove handles lengths as 64-bit on 64-bit systems
     ctypes.memmove.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_size_t]
 
-def __winGetClipboard():
+
+def _win_get_clipboard():
+    """Retrieve text from the Windows clipboard.
+
+    Returns:
+        str: clipboard content or None if failed.
+    """
     CF_UNICODETEXT = 13
     if not user32.OpenClipboard(0):
         return None
@@ -37,7 +45,7 @@ def __winGetClipboard():
         p_contents = kernel32.GlobalLock(handle)
         if not p_contents:
             return None
-        
+
         # Interpret pointer as a Unicode string directly
         data = ctypes.c_wchar_p(p_contents).value
         kernel32.GlobalUnlock(handle)
@@ -48,7 +56,16 @@ def __winGetClipboard():
     finally:
         user32.CloseClipboard()
 
-def __winSetClipboard(text):
+
+def _win_set_clipboard(text):
+    """Set text to the Windows clipboard.
+
+    Args:
+        text (str): Content to copy to clipboard.
+
+    Returns:
+        bool: True if successful, False otherwise.
+    """
     # Use Unicode (UTF-16 LE) for native Windows compatibility
     text_bytes = str(text).encode('utf-16-le')
     text_len = len(text_bytes)
@@ -63,11 +80,11 @@ def __winSetClipboard(text):
         # Allocate +2 bytes for the Unicode null terminator
         h_mem = kernel32.GlobalAlloc(GMEM_MOVEABLE, text_len + 2)
         p_data = kernel32.GlobalLock(h_mem)
-        
+
         if p_data:
             try:
                 ctypes.memmove(p_data, text_bytes, text_len)
-                ctypes.memset(p_data + text_len, 0, 2) # Null terminate
+                ctypes.memset(p_data + text_len, 0, 2)  # Null terminate
             except Exception as e:
                 EDR_LOG.exception(f"Clipboard memmove failed: {e}")
             finally:
@@ -83,35 +100,51 @@ def __winSetClipboard(text):
     finally:
         user32.CloseClipboard()
 
-def __unixSetClipboard(text):
+
+def _unix_set_clipboard(text):
+    """Set text to the Unix/Mac clipboard.
+
+    Args:
+        text (str): Content to copy to clipboard.
+    """
     try:
         text = str(text)
-        tool = 'pbcopy' if platform.system() == 'Darwin' else 'xclip -selection clipboard'
-        with os.popen(tool, 'w') as outf:
-            outf.write(text)
+        if platform.system() == 'Darwin':
+            subprocess.run(['pbcopy'], input=text, check=True, text=True)
+        else:
+            subprocess.run(['xclip', '-selection', 'clipboard'], input=text, check=True, text=True)
     except Exception as e:
         EDR_LOG.exception(f"Mac/Unix SetClipboard failed: {e}")
 
-def __unixGetClipboard():
+
+def _unix_get_clipboard():
+    """Retrieve text from the Unix/Mac clipboard.
+
+    Returns:
+        str: clipboard content or None if failed.
+    """
     try:
-        tool = 'pbpaste' if platform.system() == 'Darwin' else 'xclip -selection clipboard -o'
-        with os.popen(tool, 'r') as outf:
-            content = outf.read()
-        return content
+        if platform.system() == 'Darwin':
+            result = subprocess.run(['pbpaste'], capture_output=True, check=True, text=True)
+        else:
+            result = subprocess.run(['xclip', '-selection', 'clipboard', '-o'], capture_output=True, check=True, text=True)
+        return result.stdout
     except Exception as e:
         EDR_LOG.exception(f"Mac/Unix GetClipboard failed: {e}")
         return None
 
+
+# Platform detection and assignment
 if os.name == 'nt' or platform.system() == 'Windows':
-    import ctypes
-    clipboard_get = __winGetClipboard
-    clipboard_set = __winSetClipboard
+    clipboard_get = _win_get_clipboard
+    clipboard_set = _win_set_clipboard
 elif platform.system() in ['Darwin', 'Linux']:
-    clipboard_get = __unixGetClipboard
-    clipboard_set = __unixSetClipboard
+    clipboard_get = _unix_get_clipboard
+    clipboard_set = _unix_set_clipboard
 else:
     clipboard_get = lambda: None
     clipboard_set = lambda x: None
 
+# Exported aliases
 copy = clipboard_set
 paste = clipboard_get

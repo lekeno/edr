@@ -1,29 +1,48 @@
 import json
-from edrlog import EDR_LOG # EDR_INTERNAL
-from edri18n import _ # EDR_INTERNAL
 import os
+from edrlog import EDR_LOG
+from edri18n import _
 
-POWER_DATA = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', 'modules_power_data.json')).read())
 
+class EDRXzibit:
+    """
+    Assess ship module configuration and power priorities.
+    """
+    
+    POWER_DATA = None
 
-class EDRXzibit(object):
- 
+    @classmethod
+    def load_power_data(cls):
+        if cls.POWER_DATA is None:
+            try:
+                data_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', 'modules_power_data.json')
+                with open(data_path, 'r') as f:
+                    cls.POWER_DATA = json.load(f)
+            except Exception as e:
+                EDR_LOG.error(f"Failed to load power data: {e}")
+                cls.POWER_DATA = {}
+
     def __init__(self, vehicle):
-        EDR_LOG.debug(u"Xzibit is checking your ship")
+        self.load_power_data()
+        EDR_LOG.debug("Xzibit is checking your ship")
         self.power_capacity = vehicle.power_capacity
-        EDR_LOG.debug(u" Power cap: {}".format(self.power_capacity))
-        self.per_prio = {"1": { "modules": []}, "2": { "modules": []}, "3": { "modules": []}, "4": { "modules": []}, "5": { "modules": []}}
+        EDR_LOG.debug(f" Power cap: {self.power_capacity}")
+        self.per_prio = {"1": {"modules": []}, "2": {"modules": []}, "3": {"modules": []}, "4": {"modules": []}, "5": {"modules": []}}
         for slot in vehicle.slots:
             ed_module = vehicle.slots[slot]
-            EDR_LOG.debug(u" {}: {}".format(slot, ed_module))
+            EDR_LOG.debug(f" {slot}: {ed_module}")
             if ed_module.is_valid():
                 prio = str(ed_module.priority)
-                EDR_LOG.debug(u"  added to prio {}".format(prio))
-                self.per_prio[prio]["modules"].append(ed_module)
+                EDR_LOG.debug(f"  added to prio {prio}")
+                if prio in self.per_prio:
+                    self.per_prio[prio]["modules"].append(ed_module)
 
     def assess_power_priorities(self):
+        """
+        Assess power priorities for different failure states.
+        """
         if not self.power_capacity:
-            EDR_LOG.debug(u"A ship without any power?!")
+            EDR_LOG.debug("A ship without any power?!")
             return None
 
         assessment = {}
@@ -37,39 +56,40 @@ class EDRXzibit(object):
         threshold = self.power_capacity * percent
         within_modules = set()
         within_priorities = []
-        EDR_LOG.debug(u"Looking at what's functional within {}MW".format(threshold))
+        EDR_LOG.debug(f"Looking at what's functional within {threshold}MW")
+        
         for pri in sorted(self.per_prio.keys()):
-            EDR_LOG.debug(u" P{} is next. Power draw: {}MW so far".format(pri, power_draw))
+            EDR_LOG.debug(f" P{pri} is next. Power draw: {power_draw}MW so far")
             if power_draw > threshold:
-                EDR_LOG.debug(u" {} is over the cap {} => aborting".format(power_draw, threshold))
+                EDR_LOG.debug(f" {power_draw} is over the cap {threshold} => aborting")
                 break
             
             tentative_within_modules = set()
             for ed_module in self.per_prio[pri]["modules"]:
-                if not ed_module.on and not ed_module.generic_name() in required:
-                    EDR_LOG.debug(u" skipping {}".format(ed_module))
+                if not ed_module.on and (required is None or ed_module.generic_name() not in required):
+                    EDR_LOG.debug(f" skipping {ed_module}")
                     continue
                 tentative_within_modules.add(ed_module.generic_name())
                 power_draw += ed_module.power_draw
-                EDR_LOG.debug(u" adding {}. Power draw so far: {} vs. {}".format(ed_module, power_draw, threshold))
+                EDR_LOG.debug(f" adding {ed_module}. Power draw so far: {power_draw} vs. {threshold}")
                 
             if power_draw > threshold:
-                EDR_LOG.debug(u" {} is over the cap {} => not adding anything from {}".format(power_draw, threshold, tentative_within_modules))
+                EDR_LOG.debug(f" {power_draw} is over the cap {threshold} => not adding anything from {tentative_within_modules}")
                 break
             
-            within_priorities.append(u"P{}".format(pri))
+            within_priorities.append(f"P{pri}")
             within_modules |= tentative_within_modules
 
-        EDR_LOG.debug(u" within modules: {}".format(within_modules))
-        EDR_LOG.debug(u" within priorities: {}".format(within_priorities))
+        EDR_LOG.debug(f" within modules: {within_modules}")
+        EDR_LOG.debug(f" within priorities: {within_priorities}")
         return {"modules": within_modules, "priorities": within_priorities}
 
     def _assess_busted_powerplant(self):
-        required = set(["int_hyperdrive"])
+        required = {"int_hyperdrive"}
         functional = self._functional_at(.2, required)
         assessment = {
-            "situation": _(u"Busted PP (20 pct for 5s; {0:.2f}MW)").format(self.power_capacity * .2),
-            "annotation": u", ".join(functional["priorities"]),
+            "situation": _("Busted PP (20 pct for 5s; {0:.2f}MW)").format(self.power_capacity * .2),
+            "annotation": ", ".join(functional["priorities"]),
             "grade": 0.0,
         }
 
@@ -79,92 +99,91 @@ class EDRXzibit(object):
             assessment["grade"] = 0.2
 
         if 'int_hyperdrive' not in functional["modules"]:
-            assessment["recommendation"] = _(u"Keep your FSD below the 20 pct line.")
+            assessment["recommendation"] = _("Keep your FSD below the 20 pct line.")
         else:
             assessment["grade"] = 1.0
-            assessment["praise"] = _(u"Good job on keeping your FSD below the 20 pct line.")
+            assessment["praise"] = _("Good job on keeping your FSD below the 20 pct line.")
 
         return assessment
 
-
     def _assess_recovered_powerplant(self):
-        required = set(['int_hyperdrive', 'int_engine'])
+        required = {'int_hyperdrive', 'int_engine'}
         if self._has_shield():
             required.add('int_shieldgenerator')
         functional = self._functional_at(.5, required)
         assessment = {
-            "situation": _(u"Recovered PP (50 pct after 5s; {0:.2f}MW)").format(self.power_capacity * .5),
-            "annotation": u", ".join(functional["priorities"]),
+            "situation": _("Recovered PP (50 pct after 5s; {0:.2f}MW)").format(self.power_capacity * .5),
+            "annotation": ", ".join(functional["priorities"]),
             "grade": 0.0,
         }
         
-        missing = [EDRXzibit.__readable_name(module) for module in required - functional["modules"]]
+        missing = [self._readable_name(module) for module in required - functional["modules"]]
         if len(functional["modules"]) == 0:
             assessment["grade"] = 0
-            assessment["recommendation"] = _(u"Keep your {} below the 50 pct line.").format(', '.join(missing))
+            assessment["recommendation"] = _("Keep your {} below the 50 pct line.").format(', '.join(missing))
             return assessment
 
         if not required.issubset(functional["modules"]):
-            present = [EDRXzibit.__readable_name(module) for module in required.intersection(functional["modules"])]
+            present = [self._readable_name(module) for module in required.intersection(functional["modules"])]
             if present:
                 assessment["grade"] = 1.0/len(required) * len(present)
-                assessment["recommendation"] = _(u"Keep your {} below the 50 pct line.").format(', '.join(missing))
-                assessment["praise"] = _(u"Good job with your {}.").format(', '.join(present))
+                assessment["recommendation"] = _("Keep your {} below the 50 pct line.").format(', '.join(missing))
+                assessment["praise"] = _("Good job with your {}.").format(', '.join(present))
             else:
                 assessment["grade"] = 0.2
-                assessment["recommendation"] = _(u"Keep your {} below the 50 pct line.").format(', '.join(missing))
+                assessment["recommendation"] = _("Keep your {} below the 50 pct line.").format(', '.join(missing))
         else:
-            assessment["grade"] = 1.0,
-            assessment["praise"] = _(u"Good job on keeping your {} below 50 pct.").format(', '.join(missing))
+            assessment["grade"] = 1.0
+            assessment["praise"] = _("Good job on keeping your {} below 50 pct.").format(', '.join(missing))
             
         return assessment
     
     def _assess_malfunctioning_powerplant(self):
-        required = set(['int_hyperdrive', 'int_engine'])
+        required = {'int_hyperdrive', 'int_engine'}
         if self._has_shield():
             required.add('int_shieldgenerator')
         functional = self._functional_at(.4, required)
         assessment = {
-            "situation": _(u"Malfunctioning PP (40 pct for 5s; {0:.2f}MW)").format(self.power_capacity * .4),
-            "annotation": u", ".join(functional["priorities"]),
+            "situation": _("Malfunctioning PP (40 pct for 5s; {0:.2f}MW)").format(self.power_capacity * .4),
+            "annotation": ", ".join(functional["priorities"]),
             "grade": 0.0,
         }
         
-        missing = [EDRXzibit.__readable_name(module) for module in required - functional["modules"]]
+        missing = [self._readable_name(module) for module in required - functional["modules"]]
         if len(functional["modules"]) == 0:
             assessment["grade"] = 0
-            assessment["recommendation"] = _(u"Keep your {} below the 40 pct line.").format(', '.join(missing))
+            assessment["recommendation"] = _("Keep your {} below the 40 pct line.").format(', '.join(missing))
             return assessment
 
         if not required.issubset(functional["modules"]):
-            present = [EDRXzibit.__readable_name(module) for module in required.intersection(functional["modules"])]
+            present = [self._readable_name(module) for module in required.intersection(functional["modules"])]
             if present:
                 assessment["grade"] = 1.0/len(required) * len(present)
-                assessment["recommendation"] = _(u"Keep your {} below the 40 pct line.").format(', '.join(missing))
-                assessment["praise"] = _(u"Good job with your {}.").format(', '.join(present))
+                assessment["recommendation"] = _("Keep your {} below the 40 pct line.").format(', '.join(missing))
+                assessment["praise"] = _("Good job with your {}.").format(', '.join(present))
             else:
                 assessment["grade"] = 0.2
-                assessment["recommendation"] = _(u"Keep your {} below the 40 pct line.").format(', '.join(missing))
+                assessment["recommendation"] = _("Keep your {} below the 40 pct line.").format(', '.join(missing))
         else:
-            assessment["grade"] = 1.0,
-            assessment["praise"] = _(u"Good job on keeping your {} below 40 pct.").format(', '.join(missing))
+            assessment["grade"] = 1.0
+            assessment["praise"] = _("Good job on keeping your {} below 40 pct.").format(', '.join(missing))
             
         return assessment
 
     @staticmethod
-    def __readable_name(name):
+    def _readable_name(name):
         lut = { 
-            "int_hyperdrive": _(u"FSD"),
-            "int_engine": _(u"thruster"),
-            "int_shieldgenerator": _(u"shield"),
-            'int_dockingcomputer_standard': _(u"docking computer"),
-            'int_dockingcomputer_advanced': _(u"docking computer"),
-            'int_dockingcomputer': _(u"docking computer"),
-            'hpt_cargoscanner': _(u"cargo scanner"),
-            'int_fuelscoop': _(u"fuel scoop"),
-            'hpt_crimescanner': _(u"bounty scanner"),
-            'int_supercruiseassist': _(u"supercruise assist"),
-            'int_detailedsurfacescanner_tiny': _(u"surface scanner"),
+            "int_hyperdrive": _("FSD"),
+            "int_engine": _("thruster"),
+            "int_shieldgenerator": _("shield"),
+            'int_dockingcomputer_standard': _("docking computer"),
+            'int_dockingcomputer_advanced': _("docking computer"),
+            'int_dockingcomputer': _("docking computer"),
+            'hpt_cargoscanner': _("cargo scanner"),
+            'int_fuelscoop': _("fuel scoop"),
+            'hpt_crimescanner': _("bounty scanner"),
+            'int_supercruiseassist': _("supercruise assist"),
+            'int_detailedsurfacescanner_tiny': _("surface scanner"),
         }
 
         return lut.get(name, name)

@@ -11,23 +11,21 @@ from edropponents import EDROpponents # EDR_INTERNAL
 
 class TestEDROpponents(unittest.TestCase):
     def setUp(self):
-        self.config_patch = patch('edrconfig.EDRConfig')
+        self.config_patch = patch('edrconfig.EDR_CONFIG')
         self.mock_config = self.config_patch.start()
+        self.addCleanup(self.config_patch.stop)
         
-        # Patch edentities.EDRConfig because it is imported via 'from edrconfig import'
-        self.edentities_config_patch = patch('edentities.EDRConfig')
-        self.mock_edentities_config = self.edentities_config_patch.start()
-        self.mock_edentities_config.return_value = self.mock_config.return_value
+        self.mock_config.lru_max_size.return_value = 100
+        self.mock_config.opponents_max_age.return_value = 3600
+        self.mock_config.opponents_max_recents.return_value = 10
+        self.mock_config.opponents_recent_threshold.return_value = 600
+        self.mock_config.reports_check_interval.return_value = 300
+        self.mock_config.intel_bounty_threshold.return_value = 50000
 
-        self.mock_config.return_value.lru_max_size.return_value = 100
-        self.mock_config.return_value.opponents_max_age.return_value = 3600
-        self.mock_config.return_value.opponents_max_recents.return_value = 10
-        self.mock_config.return_value.opponents_recent_threshold.return_value = 600
-        self.mock_config.return_value.reports_check_interval.return_value = 300
-        self.mock_config.return_value.intel_bounty_threshold.return_value = 50000
-
-        self.lru_patch = patch('edr.edropponents.lrucache.LRUCache')
+        self.lru_patch = patch('edropponents.lrucache.LRUCache')
         self.mock_lru = self.lru_patch.start()
+        self.addCleanup(self.lru_patch.stop)
+        
         # Mock load to return a fresh mock instead of None
         self.mock_cache_instance = MagicMock()
         self.mock_lru.load.return_value = self.mock_cache_instance
@@ -37,23 +35,21 @@ class TestEDROpponents(unittest.TestCase):
         self.mock_server = MagicMock()
         self.mock_callback = MagicMock()
 
-        # Suppress pickle loading
-        self.pickle_patch = patch('edr.edropponents.pickle')
+        # Patch pickle and open inside edr.edropponents to avoid global side effects
+        self.pickle_patch = patch('edropponents.pickle')
         self.mock_pickle = self.pickle_patch.start()
+        self.addCleanup(self.pickle_patch.stop)
         self.mock_pickle.load.return_value = []
         
-        # Suppress file open
-        self.open_patch = patch('builtins.open', mock_open())
+        self.open_patch = patch('edropponents.open', create=True)
         self.mock_open = self.open_patch.start()
+        self.addCleanup(self.open_patch.stop)
+        self.mock_open.return_value.__enter__.return_value = MagicMock()
 
         self.opponents = EDROpponents(self.mock_server, EDROpponents.OUTLAWS, self.mock_callback)
 
     def tearDown(self):
-        self.edentities_config_patch.stop()
-        self.config_patch.stop()
-        self.lru_patch.stop()
-        self.pickle_patch.stop()
-        self.open_patch.stop()
+        pass
 
     def test_init(self):
         self.mock_lru.load.assert_called_once()

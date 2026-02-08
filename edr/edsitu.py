@@ -7,25 +7,29 @@ except ImportError:
     import plug as edmc_data
 
 
-class EDSpaceDimension(object):
+class EDSpaceDimension:
     UNKNOWN = 0
     NORMAL_SPACE = 1
     SUPER_SPACE = 2
     HYPER_SPACE = 3
 
-class EDPlanetaryLocation(object):
+
+class EDPlanetaryLocation:
+    """
+    Represents coordinates on a planetary body.
+    """
     def __init__(self, poi=None):
-        self.latitude = poi[u"latitude"] if poi else None
-        self.longitude = poi[u"longitude"] if poi else None
-        self.altitude = poi.get(u"altitude", 0.0) if poi else None
-        self.heading = poi.get(u"heading", None) if poi else None
-        self.title = poi.get(u"title", None) if poi else None
+        self.latitude = poi["latitude"] if poi else None
+        self.longitude = poi["longitude"] if poi else None
+        self.altitude = poi.get("altitude", 0.0) if poi else None
+        self.heading = poi.get("heading", None) if poi else None
+        self.title = poi.get("title", None) if poi else None
 
     def update(self, attitude_bag):
-        self.latitude = attitude_bag.get(u"latitude", None)
-        self.longitude = attitude_bag.get(u"longitude", None)
-        self.altitude = attitude_bag.get(u"altitude", None)
-        self.heading = attitude_bag.get(u"heading", None)
+        self.latitude = attitude_bag.get("latitude", None)
+        self.longitude = attitude_bag.get("longitude", None)
+        self.altitude = attitude_bag.get("altitude", None)
+        self.heading = attitude_bag.get("heading", None)
 
     def update_from_obj(self, attitude):
         self.latitude = attitude.latitude
@@ -49,12 +53,14 @@ class EDPlanetaryLocation(object):
         lat2 = math.radians(loc.latitude)
         a = math.sin(dlat/2.0) * math.sin(dlat/2.0) + math.sin(dlon/2.0) * math.sin(dlon/2.0) * math.cos(lat1) * math.cos(lat2)
         c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0-a))
+        
         alt1 = self.altitude
         alt2 = loc.altitude
         dist = planet_radius * c
+        
         if (alt1 is not None and alt2 is not None) and dist <= 10.0:
             dist = math.sqrt((planet_radius * c)**2 + (alt1 - alt2)**2)
-        # TODO check if other callers actually needed the rounding and int()
+        
         return dist
 
     def bearing(self, loc):
@@ -75,26 +81,32 @@ class EDPlanetaryLocation(object):
         pitch = -math.degrees(math.atan(loc.altitude / distance))
         return int(round(pitch, 0))
 
-class EDOnFootLocation(object):
+
+class EDOnFootLocation:
+    """
+    Represents the state of being on foot or in a vehicle/building.
+    """
     def __init__(self):
         self.on_foot = False
         self.in_hangar = False
         self.in_station = False
         self.on_planet = False
         self.in_social_space = False
-        self.in_social_space = False
         self.outside = False
         
     def update(self, flags2):
-        self.on_foot = flags2 & edmc_data.Flags2OnFoot
-        self.in_station = flags2 & edmc_data.Flags2OnFootInStation
-        self.on_planet = flags2 & edmc_data.Flags2OnFootOnPlanet
-        self.in_hangar = flags2 & edmc_data.Flags2OnFootInHangar
-        self.in_social_space = flags2 & edmc_data.Flags2OnFootSocialSpace
-        self.outside = flags2 & edmc_data.Flags2OnFootExterior
+        self.on_foot = bool(flags2 & edmc_data.Flags2OnFoot)
+        self.in_station = bool(flags2 & edmc_data.Flags2OnFootInStation)
+        self.on_planet = bool(flags2 & edmc_data.Flags2OnFootOnPlanet)
+        self.in_hangar = bool(flags2 & edmc_data.Flags2OnFootInHangar)
+        self.in_social_space = bool(flags2 & edmc_data.Flags2OnFootSocialSpace)
+        self.outside = bool(flags2 & edmc_data.Flags2OnFootExterior)
 
 
-class EDLocation(object):
+class EDLocation:
+    """
+    Represents the overall location state of the Commander (System, Body, Docked, etc.)
+    """
     def __init__(self, star_system=None, body=None, place=None, security=None, space_dimension=EDSpaceDimension.UNKNOWN):
         self.star_system = star_system
         self.place = place
@@ -162,21 +174,25 @@ class EDLocation(object):
         self.space_dimension = EDSpaceDimension.HYPER_SPACE
 
     def is_anarchy_or_lawless(self):
-        return self.security in [u"$GAlAXY_MAP_INFO_state_anarchy;", u"$GALAXY_MAP_INFO_state_lawless;"]
+        return self.security in ["$GAlAXY_MAP_INFO_state_anarchy;", "$GALAXY_MAP_INFO_state_lawless;"]
 
     def pretty_print(self):
         if self.star_system is None:
-            return u"Unknown"
-        location = u"{system}".format(system=self.star_system)
+            return "Unknown"
+        location = f"{self.star_system}"
         if self.place and self.place != self.star_system:
             if self.place.startswith(self.star_system + " "):
                 # Translators: this is a continuation of the previous item (location of recently sighted outlaw) and shows a place in the system (e.g. supercruise, Cleve Hub) 
-                location += u", {place}".format(place=self.place.partition(self.star_system + u" ")[2])
+                location += f", {self.place.partition(self.star_system + ' ')[2]}"
             else:
-                location += u", {place}".format(place=self.place)
+                location += f", {self.place}"
         return location
 
-class EDAttitude(object):
+
+class EDAttitude:
+    """
+    Represents orientation and position details (Latitude, Longitude, Heading).
+    """
     def __init__(self):
         self.latitude = None
         self.longitude = None
@@ -203,7 +219,11 @@ class EDAttitude(object):
     def __repr__(self):
         return str(self.__dict__)
 
-class EDDestination(object):
+
+class EDDestination:
+    """
+    Represents a navigation target.
+    """
     def __init__(self):
         self.system = None
         self.body = None
@@ -237,13 +257,13 @@ class EDDestination(object):
         return True
 
     def is_system(self):
-        return self.system != None and self.body == 0
+        return self.system is not None and self.body == 0
 
     def is_fleet_carrier(self):
         if not self.is_valid():
             return False
             
-        if self.body == 0: # TODO do FC near the sun have body set to 1?
+        if self.body == 0: 
             return False
         
         fc_regexp = r"^(?:.+ )?([A-Z0-9]{3}-[A-Z0-9]{3})$"

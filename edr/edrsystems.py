@@ -10,11 +10,11 @@ import json
 
 import edtime
 import edrconfig
-from edrlog import EDR_LOG # EDR_INTERNAL
-from lrucache import LRUCache # EDR_INTERNAL
-from edentities import EDFineOrBounty # EDR_INTERNAL
-from edrutils import pretty_print_number # EDR_INTERNAL
-from edri18n import _, _c, _edr # EDR_INTERNAL
+from edrlog import EDR_LOG  # EDR_INTERNAL
+from lrucache import LRUCache  # EDR_INTERNAL
+from edentities import EDFineOrBounty  # EDR_INTERNAL
+from edrutils import pretty_print_number  # EDR_INTERNAL
+from edri18n import _, _c, _edr  # EDR_INTERNAL
 import edrservicecheck
 import edrsysplacheck
 import edrsyssetlcheck
@@ -23,19 +23,25 @@ import edrparkingsystemfinder
 import edrplanetfinder
 import edrsettlementfinder
 
-class EDRSystems(object):
+
+class EDRSystems:
+    """
+    Manages system information, including EDSM data, caches, and fleet carrier details.
+    """
     EDR_SYSTEMS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'systems.v5.p')
     EDR_RAW_MATERIALS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'raw_materials.v1.p')
     EDSM_BODIES_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_bodies.v1.p')
     EDSM_SYSTEMS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_systems.v3.p')
     EDSM_STATIONS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_stations.v1.p')
-    EDSM_SYSTEMS_WITHIN_RADIUS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_systems_radius.v2.p')
+    EDSM_SYSTEMS_WITHIN_RADIUS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache',
+                                                    'edsm_systems_radius.v2.p')
     EDSM_TRAFFIC_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_traffic.v1.p')
     EDSM_DEATHS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_deaths.v1.p')
     EDSM_MARKETS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_markets.v1.p')
     EDSM_SHIPYARDS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_shipyards.v1.p')
     EDSM_OUTFITTING_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_outfitting.v1.p')
-    EDSM_SYSTEM_VALUES_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_system_values.v1.p')
+    EDSM_SYSTEM_VALUES_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache',
+                                            'edsm_system_values.v1.p')
     EDR_NOTAMS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'notams.v2.p')
     EDR_SITREPS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'sitreps.v3.p')
     EDR_TRAFFIC_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'traffic.v2.p')
@@ -48,6 +54,14 @@ class EDRSystems(object):
     BIOLOGY = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', 'biology.json')).read())
 
     def __init__(self, server, edsm_server, factions):
+        """
+        Initialize the EDRSystems manager.
+
+        Args:
+            server: The EDR server instance.
+            edsm_server: The EDSM server instance.
+            factions: The EDRFactions instance.
+        """
         self.reasonable_sc_distance = 1500
         self.reasonable_hs_radius = 50
         self.edsm_systems_within_radius_blocklist = set()
@@ -176,7 +190,7 @@ class EDRSystems(object):
             file_path=self.EDSM_DEATHS_CACHE,
             max_size=edr_config.lru_max_size(),
             max_age_seconds=edr_config.edsm_deaths_max_age()
-        ) 
+        )
 
         self.reports_check_interval = edr_config.reports_check_interval()
         self.notams_check_interval = edr_config.notams_check_interval()
@@ -188,34 +202,48 @@ class EDRSystems(object):
         self.dlc_name = None
 
     def set_dlc(self, name):
+        """
+        Set the DLC name.
+        """
         self.dlc_name = name
 
     def system_id(self, star_system, may_create=False, coords=None):
+        """
+        Get the system ID for a given star system.
+
+        Args:
+            star_system: The name of the star system.
+            may_create: Whether to create the system on the server if not found.
+            coords: Optional coordinates of the system.
+
+        Returns:
+            The system ID or None if not found.
+        """
         if not star_system:
             return None
 
         key = star_system.lower()
         profile = None
         call_server = False
-        
+
         # --- Step 1: Cache Check (Decision-Making Block) ---
         if self.systems_cache.has_key(key) and not self.systems_cache.is_stale(key):
             profile = self.systems_cache.peek(key)
-            
+
             if profile is None:
-                EDR_LOG.debug(u"Negative cache entry for System {} is fresh.".format(star_system))
+                EDR_LOG.debug("Negative cache entry for System {} is fresh.".format(star_system))
                 return profile
 
             sid = self._get_and_validate_sid(profile, star_system)
             if not sid:
                 self.systems_cache.evict(key)
-                EDR_LOG.error(u"Cached system {} had an invalid SID. Evicting cache entry.".format(star_system))
+                EDR_LOG.error("Cached system {} had an invalid SID. Evicting cache entry.".format(star_system))
                 call_server = True
-            elif may_create and coords and not "coords" in profile.get(sid, {}):
-                EDR_LOG.error(u"Cached system {} is missing coordinates. Forcing update.".format(star_system))
+            elif may_create and coords and "coords" not in profile.get(sid, {}):
+                EDR_LOG.error("Cached system {} is missing coordinates. Forcing update.".format(star_system))
                 call_server = True
             else:
-                EDR_LOG.debug(u"System {} is in the cache with id={}".format(star_system, sid))
+                EDR_LOG.debug("System {} is in the cache with id={}".format(star_system, sid))
                 return sid
         else:
             # Data is missing, stale, or evicted. Must call server.
@@ -223,275 +251,333 @@ class EDRSystems(object):
             if self.systems_cache.has_key(key):
                 # Peek the profile for potential fallback.
                 profile = self.systems_cache.peek(key)
-        
-        # --- Step 2: Server Call (Action-Taking Block) --- 
+
+        # --- Step 2: Server Call (Action-Taking Block) ---
         updated_system = None
         if call_server:
-            EDR_LOG.info(u"Fetching system info for {} from EDR server.".format(star_system))
+            EDR_LOG.info("Fetching system info for {} from EDR server.".format(star_system))
             try:
                 updated_system = self.server.system(star_system, may_create, coords)
             except Exception as e:
                 EDR_LOG.warning(f"Comms jammed/Failed to fetch system ID for {star_system}: {e}")
-                
+
                 # Stale Fallback Logic: Use 'profile' peeked in step 1 if server fails.
                 if profile and profile is not None:
                     self.systems_cache.refresh(key)
-                    EDR_LOG.info(u"Server failed. Re-using and refreshing stale system info.")
+                    EDR_LOG.info("Server failed. Re-using and refreshing stale system info.")
                     # Need to validate the stale profile again before returning it
                     return self._get_and_validate_sid(profile, star_system)
-        
+
         # --- Step 3: Success / Negative Caching Logic ---
-        
+
         if updated_system:
             # Server succeeded. Cache new data and return validated SID.
             self.systems_cache.set(key, updated_system)
             sid = self._get_and_validate_sid(updated_system, star_system)
 
             if sid:
-                EDR_LOG.debug(u"Cached {}'s info with id={}".format(star_system, sid))
+                EDR_LOG.debug("Cached {}'s info with id={}".format(star_system, sid))
                 return sid
             else:
                 # Server returned data, but it failed validation (e.g., mismatched name, odd ID).
-                EDR_LOG.error(u"Server returned a system for {} but the ID was invalid. Treating as no match.".format(star_system))
+                EDR_LOG.error("Server returned a system for {} but the ID was invalid. Treating as no match.".format(
+                    star_system))
                 # Fall through to negative cache
-        
+
         # Final cleanup: Cache failure/no match as None (Negative Caching)
         self.systems_cache.set(key, None)
-        EDR_LOG.debug(u"No match on EDR/Server failed. Setting temporary None entry.")
+        EDR_LOG.debug("No match on EDR/Server failed. Setting temporary None entry.")
         return None
 
     # Helper function to safely extract and validate the system ID
     def _get_and_validate_sid(self, system_dict, star_system_name):
+        """
+        Safely extract and validate the system ID.
+
+        Args:
+            system_dict: The dictionary containing system info.
+            star_system_name: The expected name of the star system.
+
+        Returns:
+            The validated system ID or None.
+        """
         if not system_dict or not isinstance(system_dict, dict):
             return None
-        
+
         # The expected ID is the only key
         sid = list(system_dict.keys())[0] if system_dict.keys() else None
-        
+
         if not sid:
             return None
-        
+
         # 1. Check if the key is the literal system name (an unexpected placeholder)
         if sid.lower() == star_system_name.lower():
-            EDR_LOG.warning(u"Rejected potential system ID (matches system name): {}".format(sid))
+            EDR_LOG.warning("Rejected potential system ID (matches system name): {}".format(sid))
             return None
-            
+
         # 2. Check if the key looks like an internal/common field name
         if sid.lower() in ["name", "id", "system"]:
-            EDR_LOG.warning(u"Rejected potential system ID (matches internal field): {}".format(sid))
+            EDR_LOG.warning("Rejected potential system ID (matches internal field): {}".format(sid))
             return None
-        
+
         return sid
 
     def fc_id(self, callsign, name, star_system, may_create=False):
+        """
+        Get the ID for a fleet carrier.
+
+        Args:
+            callsign: The fleet carrier callsign.
+            name: The fleet carrier name.
+            star_system: The current star system.
+            may_create: Whether to create the FC entry on the server if not found.
+
+        Returns:
+            The fleet carrier ID or None.
+        """
         if not callsign:
             return None
-        
+
         key = callsign.lower()
 
         # --- Step 1: Cache Check (Decision-Making Block) ---
         if self.fcs_cache.has_key(key):
-            
+
             # Check for freshness first. If fresh, handle it immediately.
             if not self.fcs_cache.is_stale(key):
                 profile = self.fcs_cache.peek(key)
-                
+
                 if profile is None:
                     # A. Fresh Negative Cache Hit (FC known not to exist). Immediate return.
-                    EDR_LOG.debug(u"Negative cache entry for FC {} is fresh.".format(callsign))
-                    return None # Returns None (the FC ID equivalent of "no match")
+                    EDR_LOG.debug("Negative cache entry for FC {} is fresh.".format(callsign))
+                    return None  # Returns None (the FC ID equivalent of "no match")
 
                 # B. Fresh FC data hit. Extract and return the ID.
                 fcid = list(profile.keys())[0] if profile.keys() else None
                 if fcid:
-                    EDR_LOG.debug(u"FC {} is in the cache with id={}".format(callsign, fcid))
+                    EDR_LOG.debug("FC {} is in the cache with id={}".format(callsign, fcid))
                     return fcid
-                
+
                 # If fresh but contains invalid data (no key/ID), fall through to server call.
-                EDR_LOG.error(u"Cached FC {} had an invalid ID format. Forcing server lookup.".format(callsign))
-                self.fcs_cache.evict(key) # Evict the bad data
+                EDR_LOG.error("Cached FC {} had an invalid ID format. Forcing server lookup.".format(callsign))
+                self.fcs_cache.evict(key)  # Evict the bad data
 
         # --- Step 2: Server Call (Action-Taking Block) ---
-        
+
         # Note: If cache check above returned, we skip this block entirely.
         # Otherwise, data is missing, stale, or was invalid.
-        
+
         updated_fc = None
-        stale_profile = self.fcs_cache.peek(key) # Get stale profile for potential fallback
-        
+        stale_profile = self.fcs_cache.peek(key)  # Get stale profile for potential fallback
+
         try:
-            EDR_LOG.info(u"Fetching FC info for {} from EDR server.".format(callsign))
+            EDR_LOG.info("Fetching FC info for {} from EDR server.".format(callsign))
             updated_fc = self.server.fc(callsign, name, star_system, may_create)
         except Exception as e:
             EDR_LOG.warning(f"Comms jammed/Failed to fetch FC ID for {callsign}: {e}")
-            
+
             # Stale Fallback Logic: Use 'stale_profile' if server fails.
             if stale_profile and stale_profile is not None:
                 self.fcs_cache.refresh(key)
                 fcid = list(stale_profile.keys())[0] if stale_profile.keys() else None
                 if fcid:
-                    EDR_LOG.info(u"Server failed. Re-using and refreshing stale FC info for ID={}".format(fcid))
+                    EDR_LOG.info("Server failed. Re-using and refreshing stale FC info for ID={}".format(fcid))
                     return fcid
 
         # --- Step 3: Success / Negative Caching Logic ---
-        
+
         if updated_fc:
             # Server succeeded. Cache new data and return validated ID.
             self.fcs_cache.set(key, updated_fc)
             fcid = list(updated_fc.keys())[0] if updated_fc.keys() else None
 
             if fcid:
-                EDR_LOG.debug(u"Cached {}'s info with id={}".format(callsign, fcid))
+                EDR_LOG.debug("Cached {}'s info with id={}".format(callsign, fcid))
                 return fcid
             else:
-                EDR_LOG.error(u"Server returned FC data for {} but no ID was found. Treating as no match.".format(callsign))
+                EDR_LOG.error(
+                    "Server returned FC data for {} but no ID was found. Treating as no match.".format(callsign))
                 # Fall through to negative cache
-        
+
         # Final cleanup: Cache failure/no match as None (Negative Caching)
         self.fcs_cache.set(key, None)
-        EDR_LOG.debug(u"No match on EDR/Server failed. Setting temporary None entry.")
+        EDR_LOG.debug("No match on EDR/Server failed. Setting temporary None entry.")
         return None
 
     def are_bodies_stale(self, star_system):
+        """
+        Check if bodies cache for a system is stale.
+        """
         if not star_system:
             return False
         return self.edsm_bodies_cache.is_stale(star_system.lower())
 
     def are_stations_stale(self, star_system):
+        """
+        Check if stations cache for a system is stale.
+        """
         if not star_system:
             return False
         return self.edsm_stations_cache.is_stale(star_system.lower())
 
     def are_settlements_stale(self, star_system):
+        """
+        Check if settlements cache for a system is stale.
+        """
         return self.are_stations_stale(star_system)
 
     def fuzzy_stations(self, star_system, station_name):
+        """
+        Find stations in a system matching a fuzzy name.
+        """
         if station_name is None or station_name == "":
             return []
 
         stations = self.stations_in_system(star_system)
         if not stations:
             return []
-        
+
         return [station for station in stations if (station_name.lower() in station["name"].lower())]
-        
 
     def fleet_carrier(self, star_system, callsign):
+        """
+        Get fleet carrier details.
+        """
         return self.station(star_system, callsign, "FleetCarrier")
 
     def stations_in_system(self, star_system):
+        """
+        Get all stations in a system.
+        """
         if not star_system:
             return None
         stations = self.edsm_stations_cache.get(star_system.lower())
         cached = self.edsm_stations_cache.has_key(star_system.lower())
         if cached or stations:
-            EDR_LOG.debug(u"Stations for system {} are in the cache.".format(star_system))
+            EDR_LOG.debug("Stations for system {} are in the cache.".format(star_system))
             return stations
 
         stations = self.edsm_server.stations_in_system(star_system)
         if stations:
             self.edsm_stations_cache.set(star_system.lower(), stations)
-            EDR_LOG.debug(u"Cached {}'s stations".format(star_system))
+            EDR_LOG.debug("Cached {}'s stations".format(star_system))
             return stations
 
         self.edsm_stations_cache.set(star_system.lower(), None)
-        EDR_LOG.debug(u"No match on EDSM. Temporary entry to be nice on EDSM's server.")
+        EDR_LOG.debug("No match on EDSM. Temporary entry to be nice on EDSM's server.")
         return None
 
     def persist(self):
+        """
+        Save all caches to disk.
+        """
         # --- EDR Caches ---
         if self.systems_cache:
             self.systems_cache.save(self.EDR_SYSTEMS_CACHE)
-        
+
         if self.materials_cache:
             self.materials_cache.save(self.EDR_RAW_MATERIALS_CACHE)
-        
+
         if self.notams_cache:
             self.notams_cache.save(self.EDR_NOTAMS_CACHE)
-        
+
         if self.sitreps_cache:
             self.sitreps_cache.save(self.EDR_SITREPS_CACHE)
-        
+
         if self.traffic_cache:
             self.traffic_cache.save(self.EDR_TRAFFIC_CACHE)
-        
+
         if self.crimes_cache:
             self.crimes_cache.save(self.EDR_CRIMES_CACHE)
-        
+
         # --- EDR Fleet Carrier (FC) Caches ---
         if self.fc_reports_cache:
             self.fc_reports_cache.save(self.EDR_FC_REPORTS_CACHE)
-        
+
         if self.fc_materials_cache:
             self.fc_materials_cache.save(self.EDR_FC_MATERIALS_CACHE)
-        
+
         if self.fc_presence_cache:
             self.fc_presence_cache.save(self.EDR_FC_PRESENCE_CACHE)
-        
+
         if self.fcs_cache:
             self.fcs_cache.save(self.EDR_FCS_CACHE)
-        
+
         # --- EDSM Caches ---
         if self.edsm_systems_cache:
             self.edsm_systems_cache.save(self.EDSM_SYSTEMS_CACHE)
-        
+
         if self.edsm_bodies_cache:
             self.edsm_bodies_cache.save(self.EDSM_BODIES_CACHE)
-        
+
         if self.edsm_system_values_cache:
             self.edsm_system_values_cache.save(self.EDSM_SYSTEM_VALUES_CACHE)
-        
+
         if self.edsm_stations_cache:
             self.edsm_stations_cache.save(self.EDSM_STATIONS_CACHE)
-        
+
         if self.edsm_systems_within_radius_cache:
             self.edsm_systems_within_radius_cache.save(self.EDSM_SYSTEMS_WITHIN_RADIUS_CACHE)
-        
+
         if self.edsm_traffic_cache:
             self.edsm_traffic_cache.save(self.EDSM_TRAFFIC_CACHE)
-        
+
         if self.edsm_deaths_cache:
             self.edsm_deaths_cache.save(self.EDSM_DEATHS_CACHE)
 
     def distance(self, source_system, destination_system):
+        """
+        Calculate the distance between two systems.
+        """
         if source_system == destination_system:
             return 0
         source = self.system(source_system)
         destination = self.system(destination_system)
- 
+
         if source and destination:
             source_coords = source[0]["coords"]
-            dest_coords = destination[0]["coords"] 
-            return sqrt((dest_coords["x"] - source_coords["x"])**2 + (dest_coords["y"] - source_coords["y"])**2 + (dest_coords["z"] - source_coords["z"])**2)
+            dest_coords = destination[0]["coords"]
+            return sqrt((dest_coords["x"] - source_coords["x"]) ** 2 + (dest_coords["y"] - source_coords["y"]) ** 2 + (
+                        dest_coords["z"] - source_coords["z"]) ** 2)
         raise ValueError('Unknown system')
 
     def distance_with_coords(self, source_system, dest_coords):
+        """
+        Calculate the distance between a system and a set of coordinates.
+        """
         source = self.system(source_system)
-        
+
         if source:
             source_coords = source[0]["coords"]
-            return sqrt((dest_coords["x"] - source_coords["x"])**2 + (dest_coords["y"] - source_coords["y"])**2 + (dest_coords["z"] - source_coords["z"])**2)
+            return sqrt((dest_coords["x"] - source_coords["x"]) ** 2 + (dest_coords["y"] - source_coords["y"]) ** 2 + (
+                        dest_coords["z"] - source_coords["z"]) ** 2)
         raise ValueError('Unknown system')
-    
+
     def near_nebula(self, system_name):
+        """
+        Check if the system is near a known nebula.
+        """
         distanceSol = self.distance("sol", system_name)
-        
+
         for nbatch in EDRSystems.NEBULAE:
             if "rangeSol" in nbatch and abs(distanceSol - nbatch["rangeSol"]) <= 500:
                 for n in nbatch:
                     if self.distance_with_coords(system_name, nbatch[n]["coords"]) < nbatch[n]["range"]:
                         return True
-        
+
         return False
 
     def has_planet_type(self, system_name, planet_types):
+        """
+        Check if the system has a planet of the given type.
+        """
         if not system_name:
             return False
 
         bodies = self.bodies(system_name)
         if not bodies:
             return False
-        
+
         for b in bodies:
             subType = self.canonical_planet_class(b)
             if subType in planet_types:
@@ -499,6 +585,9 @@ class EDRSystems(object):
         return False
 
     def update_fc_presence(self, fc_report):
+        """
+        Update fleet carrier presence in a system.
+        """
         star_system = fc_report.get("starSystem", None)
         if star_system is None:
             return False
@@ -514,6 +603,9 @@ class EDRSystems(object):
         return False
 
     def update_fc_materials(self, star_system, fc_materials):
+        """
+        Update fleet carrier materials (market/barman/shipyard/outfitting).
+        """
         if star_system is None:
             return False
 
@@ -525,7 +617,7 @@ class EDRSystems(object):
         fcid = self.fc_id(callsign, name, star_system, may_create=True)
         if not fcid:
             return False
-        
+
         fc_materials["starSystem"] = star_system
         if self.__novel_enough_fc_materials(fcid, fc_materials):
             success = self.server.report_fc_materials(fcid, fc_materials)
@@ -536,6 +628,9 @@ class EDRSystems(object):
         return False
 
     def __novel_enough_fc_report(self, sid, fc_report):
+        """
+        Check if the FC report is different enough from the cached one.
+        """
         if not self.fc_reports_cache.has_key(sid):
             return True
 
@@ -547,6 +642,9 @@ class EDRSystems(object):
         return different_count or different_fcs
 
     def __novel_enough_fc_materials(self, fcid, fc_materials):
+        """
+        Check if the FC materials are different enough from the cached ones.
+        """
         if not self.fc_materials_cache.has_key(fcid):
             return True
 
@@ -574,6 +672,9 @@ class EDRSystems(object):
         return False
 
     def fleet_carriers(self, star_system):
+        """
+        Get all fleet carriers in a star system.
+        """
         if star_system is None:
             return {}
         sid = self.system_id(star_system)
@@ -590,12 +691,15 @@ class EDRSystems(object):
 
     
     def system(self, name):
+        """
+        Get EDSM system details.
+        """
         if not name:
             return None
 
         the_system = self.edsm_systems_cache.get(name.lower())
         if self.edsm_systems_cache.has_key(name.lower()):
-            EDR_LOG.debug(u"System {} is in the cache, and is known to EDSM: {}".format(name, the_system is not None))
+            EDR_LOG.debug("System {} is in the cache, and is known to EDSM: {}".format(name, the_system is not None))
             return the_system
 
         the_system = self.edsm_server.system(name)
@@ -603,6 +707,9 @@ class EDRSystems(object):
         return the_system
 
     def system_coords(self, name):
+        """
+        Get coordinates for a system.
+        """
         system = self.system(name)
         if not system:
             return None
@@ -610,19 +717,39 @@ class EDRSystems(object):
         return system[0]["coords"] 
 
     def system_primary_star_oneliner(self, name, current_system=True):
+        """
+        Get a one-line description of the system's primary star.
+
+        Args:
+            name: The system name.
+            current_system: Whether this is the current system.
+
+        Returns:
+            str: A one-line description of the primary star.
+        """
         the_system = self.system(name)
         if not the_system:
             return None
         the_system = the_system[0]
-        if not "primaryStar" in the_system:
+        if "primaryStar" not in the_system:
             return None
-        
+
         star = the_system["primaryStar"]
         raw_type = star.get("type", "???")
         star_type = self.__star_type_lut(raw_type)
         return _("Star: {} [Fuel]").format(star_type) if star.get("isScoopable", False) else _("Star: {}").format(star_type)
 
     def describe_system(self, name, current_system=True):
+        """
+        Get a detailed description of the system, including government, allegiance, economy, etc.
+
+        Args:
+            name: The system name.
+            current_system: Whether this is the current system.
+
+        Returns:
+            list: A list of description strings.
+        """
         the_system = self.system(name)
         if not the_system:
             return None
@@ -633,19 +760,22 @@ class EDRSystems(object):
 
         if "information" in the_system:
             info = ""
-            info += _("Gvt: {}  ").format(the_system["information"]["government"]) if the_system["information"].get("government", None) else ""
-            info += _("Alg: {}  ").format(the_system["information"]["allegiance"]) if the_system["information"].get("allegiance", None) else ""
+            info += _("Gvt: {}  ").format(the_system["information"]["government"]) if the_system["information"].get(
+                "government", None) else ""
+            info += _("Alg: {}  ").format(the_system["information"]["allegiance"]) if the_system["information"].get(
+                "allegiance", None) else ""
             population = the_system["information"].get("population", None)
-            if population != None:
+            if population is not None:
                 population = pretty_print_number(population)
                 info += _("Pop: {}  ").format(population)
-    
+
             if info:
                 details.append(info)
-            
+
             info = ""
-            info += _("Sec: {}  ").format(the_system["information"]["security"]) if the_system["information"].get("security", None) else ""
-            
+            info += _("Sec: {}  ").format(the_system["information"]["security"]) if the_system["information"].get(
+                "security", None) else ""
+
             economy = the_system["information"].get("economy", None)
             second_economy = the_system["information"].get("secondEconomy", None)
             if second_economy:
@@ -655,36 +785,42 @@ class EDRSystems(object):
                     info += _("Eco: -/{}  ").format(second_economy)
             elif economy:
                 info += _("Eco: {}  ").format(economy)
-                
-            
-            info += _("Res: {}  ").format(the_system["information"]["reserve"]) if the_system["information"].get("reserve", None) else ""
-            
+
+            info += _("Res: {}  ").format(the_system["information"]["reserve"]) if the_system["information"].get(
+                "reserve", None) else ""
+
             if info:
                 details.append(info)
-            
+
             info = ""
-            info += _("Sta: {}  ").format(the_system["information"]["factionState"]) if the_system["information"].get("factionState", None) else ""
+            info += _("Sta: {}  ").format(the_system["information"]["factionState"]) if the_system["information"].get(
+                "factionState", None) else ""
             factionName = the_system["information"].get("faction", None)
             if factionName:
                 faction = self.factions.get(factionName, name)
                 if faction and faction.isPMF:
-                    info += _("Fac: {}  PMF: {}").format(factionName, u"●" if faction.isPMF else u"◌")
+                    info += _("Fac: {}  PMF: {}").format(factionName, "●" if faction.isPMF else "◌")
                 else:
                     info += _("Fac: {}  ").format(factionName)
-            
+
             if info:
                 details.append(info)
 
         return details
 
     def __describe_star(self, star, system_name):
+        """
+        Helper to describe a star.
+        """
         raw_type = star.get("subType", "???")
         star_type = self.__star_type_lut(raw_type)
         star_info = []
-        star_info.append(_("Star: {} [Fuel]").format(star_type) if star.get("isScoopable", False) else _("Star: {}").format(star_type))
+        star_info.append(_("Star: {} [Fuel]").format(star_type) if star.get("isScoopable", False) else _(
+            "Star: {}").format(star_type))
         value = self.body_value(system_name, star.get("name", ""))
         if value:
-            star_info.append(_("Max value: {} cr @ {} LS").format(pretty_print_number(value["valueMax"]), pretty_print_number(value["distance"])))
+            star_info.append(_("Max value: {} cr @ {} LS").format(pretty_print_number(value["valueMax"]),
+                                                                  pretty_print_number(value["distance"])))
         return star_info
 
     def __star_type_lut(self, star_type):
@@ -737,11 +873,14 @@ class EDRSystems(object):
         common_star_classes = "o,b,a,f,g,k,m,n,l,t,tts,s,w,x,y,h".split(",")
         
         if star_type.lower() not in type_lut and star_type.lower() not in common_star_classes:
-            EDR_LOG.warning(u"Unrecognized star type: {}.".format(star_type))
+            EDR_LOG.warning("Unrecognized star type: {}.".format(star_type))
         return type_lut.get(star_type.lower(), star_type)
         
 
     def __describe_primary_star(self, star, system_name, current_system=True):
+        """
+        Helper to describe the primary star.
+        """
         raw_type = star.get("type", "???")
         star_type = self.__star_type_lut(raw_type)
         star_info = []
@@ -768,54 +907,60 @@ class EDRSystems(object):
         return star_info
 
     def market(self, marketId):
+        """
+        Get market information for a given market ID.
+        """
         marketInfo = self.edsm_markets_cache.get(marketId)
         cached = self.edsm_markets_cache.has_key(marketId)
         if cached or marketInfo:
-            EDR_LOG.debug(u"Market info for marketId {} is in the cache.".format(marketId))
+            EDR_LOG.debug("Market info for marketId {} is in the cache.".format(marketId))
             return marketInfo
 
         marketInfo = self.edsm_server.market(marketId)
         if marketInfo:
             self.edsm_markets_cache.set(marketId, marketInfo)
-            EDR_LOG.debug(u"Cached {}'s market info".format(marketId))
+            EDR_LOG.debug("Cached {}'s market info".format(marketId))
             return marketInfo
 
         self.edsm_markets_cache.set(marketId, None)
-        EDR_LOG.debug(u"No match on EDSM. Temporary entry to be nice on EDSM's server.")
+        EDR_LOG.debug("No match on EDSM. Temporary entry to be nice on EDSM's server.")
         return None
 
     def shipyard(self, shipyardId):
+        """
+        Get shipyard information for a given shipyard ID.
+        """
         shipyardInfo = self.edsm_shipyards_cache.get(shipyardId)
         cached = self.edsm_shipyards_cache.has_key(shipyardId)
         if cached or shipyardInfo:
-            EDR_LOG.debug(u"shipyard info for shipyardId {} is in the cache.".format(shipyardId))
+            EDR_LOG.debug("shipyard info for shipyardId {} is in the cache.".format(shipyardId))
             return shipyardInfo
 
         shipyardInfo = self.edsm_server.shipyard(shipyardId)
         if shipyardInfo:
             self.edsm_shipyards_cache.set(shipyardId, shipyardInfo)
-            EDR_LOG.debug(u"Cached {}'s shipyard info".format(shipyardId))
+            EDR_LOG.debug("Cached {}'s shipyard info".format(shipyardId))
             return shipyardInfo
 
         self.edsm_shipyards_cache.set(shipyardId, None)
-        EDR_LOG.debug(u"No match on EDSM. Temporary entry to be nice on EDSM's server.")
+        EDR_LOG.debug("No match on EDSM. Temporary entry to be nice on EDSM's server.")
         return None
 
     def outfitting(self, outfittingId):
         outfittingInfo = self.edsm_outfittings_cache.get(outfittingId)
         cached = self.edsm_outfittings_cache.has_key(outfittingId)
         if cached or outfittingInfo:
-            EDR_LOG.debug(u"outfitting info for outfittingId {} is in the cache.".format(outfittingId))
+            EDR_LOG.debug("outfitting info for outfittingId {} is in the cache.".format(outfittingId))
             return outfittingInfo
 
         outfittingInfo = self.edsm_server.outfitting(outfittingId)
         if outfittingInfo:
             self.edsm_outfittings_cache.set(outfittingId, outfittingInfo)
-            EDR_LOG.debug(u"Cached {}'s outfitting info".format(outfittingId))
+            EDR_LOG.debug("Cached {}'s outfitting info".format(outfittingId))
             return outfittingInfo
 
         self.edsm_outfittings_cache.set(outfittingId, None)
-        EDR_LOG.debug(u"No match on EDSM. Temporary entry to be nice on EDSM's server.")
+        EDR_LOG.debug("No match on EDSM. Temporary entry to be nice on EDSM's server.")
         return None
 
 
@@ -849,7 +994,7 @@ class EDRSystems(object):
         if not system_name or not body_name:
             return None
 
-        self.materials_cache.set(u"{}:{}".format(system_name.lower(), body_name.lower()), info)
+        self.materials_cache.set("{}:{}".format(system_name.lower(), body_name.lower()), info)
 
     def describe_body(self, system_name, body_name, current_system=True):
         belt = bool(re.match(r"^(.*) \S+ (?:Belt Cluster [0-9]+)$", body_name))
@@ -1571,7 +1716,7 @@ class EDRSystems(object):
         if not system_name or not body_name:
             return None
 
-        materials = self.materials_cache.get(u"{}:{}".format(system_name.lower(), body_name.lower()))
+        materials = self.materials_cache.get("{}:{}".format(system_name.lower(), body_name.lower()))
         if not materials:
             the_body = self.body(system_name, body_name)
             if not the_body:
@@ -1767,7 +1912,7 @@ class EDRSystems(object):
             if cgenus in togo_genuses:
                 del togo_genuses[cgenus]
             else:
-                EDR_LOG.warning(u"Genus '{}' is not part of the 'togo_genuses': {}".format(cgenus, togo_genuses))
+                EDR_LOG.warning("Genus '{}' is not part of the 'togo_genuses': {}".format(cgenus, togo_genuses))
             actual_species.add(species[s]["speciesLocalised"])
         analyzed_genuses = len(actual_genuses)
         analyzed_species = len(actual_species)
@@ -1811,7 +1956,7 @@ class EDRSystems(object):
 
         bodies = self.edsm_bodies_cache.get(system_name.lower())
         if self.edsm_bodies_cache.has_key(system_name.lower()):
-            EDR_LOG.debug(u"Bodies for system {} are in the cache, and are known to EDSM: {}".format(system_name, bodies is not None))
+            EDR_LOG.debug("Bodies for system {} are in the cache, and are known to EDSM: {}".format(system_name, bodies is not None))
             return bodies
 
         bodies = self.edsm_server.bodies(system_name)
@@ -1854,17 +1999,17 @@ class EDRSystems(object):
         bodies = self.bodies(system_name)
         if not bodies:
             bodies = []
-        
+
         the_body = None
         for b in bodies:
             if b.get("name", "").lower() == body_name.lower():
                 the_body = b
                 break
-                
+
         new_body = the_body is None
         if new_body:
             the_body = {}
-        
+
         kv_lut = {
             "timestamp": {"k": "updateTime", "v": lambda v: v.replace("T", " ").replace("Z", "") if v else ""},
             "event": None,
@@ -1872,9 +2017,10 @@ class EDRSystems(object):
             "BodyID": {"k": "bodyId", "v": lambda v: v},
             "SystemAddress": None,
         }
-        
-        adj_kv = lambda k: kv_lut[k] if k in kv_lut else ({"k": k[:1].lower() + k[1:], "v": lambda v: v} if k else None)
-        
+
+        adj_kv = lambda k: kv_lut[k] if k in kv_lut else (
+            {"k": k[:1].lower() + k[1:], "v": lambda v: v} if k else None)
+
         for key in scan:
             new_kv = adj_kv(key)
             if new_kv:
@@ -1882,30 +2028,37 @@ class EDRSystems(object):
 
         the_body["wasEfficient"] = scan["ProbesUsed"] <= scan["EfficiencyTarget"]
         the_body["mapped"] = True
-        
+
         if new_body:
             bodies.append(the_body)
-        
+
         self.edsm_bodies_cache.set(system_name.lower(), bodies)
 
     def body_signals_found(self, system_name, scan):
+        """
+        Record signals found on a body in a system.
+
+        Args:
+            system_name: The name of the system.
+            scan: The scan data dict containing signals.
+        """
         body_name = scan.get("BodyName", None)
         if not body_name:
             return
         bodies = self.bodies(system_name)
         if not bodies:
             bodies = []
-        
+
         the_body = None
         for b in bodies:
             if b.get("name", "").lower() == body_name.lower():
                 the_body = b
                 break
-                
+
         new_body = the_body is None
         if new_body:
             the_body = {}
-        
+
         kv_lut = {
             "timestamp": {"k": "updateTime", "v": lambda v: v.replace("T", " ").replace("Z", "") if v else ""},
             "event": None,
@@ -1913,9 +2066,10 @@ class EDRSystems(object):
             "BodyID": {"k": "bodyId", "v": lambda v: v},
             "SystemAddress": None,
         }
-        
-        adj_kv = lambda k: kv_lut[k] if k in kv_lut else ({"k": k[:1].lower() + k[1:], "v": lambda v: v} if k else None)
-        
+
+        adj_kv = lambda k: kv_lut[k] if k in kv_lut else (
+            {"k": k[:1].lower() + k[1:], "v": lambda v: v} if k else None)
+
         for key in scan:
             new_kv = adj_kv(key)
             if new_kv:
@@ -1923,20 +2077,45 @@ class EDRSystems(object):
 
         if new_body:
             bodies.append(the_body)
-        
+
         self.edsm_bodies_cache.set(system_name.lower(), bodies)
 
-
     def are_factions_stale(self, star_system):
+        """
+        Check if the factions data for a system is stale.
+
+        Args:
+            star_system: The name of the system.
+
+        Returns:
+            bool: True if stale, False otherwise.
+        """
         if not star_system:
             return False
         return self.factions.are_factions_stale(star_system.lower())
-    
 
     def system_state(self, star_system):
+        """
+        Get the state of the controlling faction in a system.
+
+        Args:
+            star_system: The name of the system.
+
+        Returns:
+            tuple: (state, timestamp)
+        """
         return self.factions.getControllingFactionState(star_system)
 
     def system_value(self, system_name):
+        """
+        Get the estimated value of the system.
+
+        Args:
+            system_name: The name of the system.
+
+        Returns:
+            dict: The value data including total estimated value and valuable bodies.
+        """
         value = self.edsm_system_values_cache.get(system_name.lower())
         if not value:
             value = self.edsm_server.system_value(system_name)
@@ -1947,7 +2126,7 @@ class EDRSystems(object):
         bodies = self.bodies(system_name)
         if not bodies:
             bodies = [{}]
-        
+
         body_values = {b["bodyName"]: b for b in value.get("valuableBodies", [])}
         totalMappedValue = 0
         totalHonkValue = 0
@@ -2193,10 +2372,10 @@ class EDRSystems(object):
             if "until" in notam:
                 active &= js_epoch_now <= notam["until"]
             if active and "text" in notam:
-                EDR_LOG.debug(u"Active NOTAM: {}".format(notam["text"]))
+                EDR_LOG.debug("Active NOTAM: {}".format(notam["text"]))
                 active_notams.append(_edr(notam["text"]))
             elif active and "l10n" in notam:
-                EDR_LOG.debug(u"Active NOTAM: {}".format(notam["l10n"]["default"]))
+                EDR_LOG.debug("Active NOTAM: {}".format(notam["l10n"]["default"]))
                 active_notams.append(_edr(notam["l10n"]))
         return active_notams
 
@@ -2241,35 +2420,35 @@ class EDRSystems(object):
         summary_outlaws = []
         systems_with_recent_outlaws = sorted(systems_with_recent_outlaws.items(), key=lambda t: t[1], reverse=True)
         for system in systems_with_recent_outlaws:
-            summary_outlaws.append(u"{} {}".format(system[0], edtime.EDTime.t_minus(system[1], short=True)))
+            summary_outlaws.append("{} {}".format(system[0], edtime.EDTime.t_minus(system[1], short=True)))
         if summary_outlaws:
             # Translators: this is for the sitreps feature; it's the title of a section to show systems with sighted outlaws 
-            summary[_c(u"sitreps section|✪ Outlaws")] = summary_outlaws
+            summary[_c("sitreps section|✪ Outlaws")] = summary_outlaws
         
         if pledged_to:
             summary_enemies = []
             systems_with_recent_enemies = sorted(systems_with_recent_enemies.items(), key=lambda t: t[1], reverse=True)
             for system in systems_with_recent_enemies:
-                summary_enemies.append(u"{} {}".format(system[0], edtime.EDTime.t_minus(system[1], short=True)))
+                summary_enemies.append("{} {}".format(system[0], edtime.EDTime.t_minus(system[1], short=True)))
             if summary_enemies:
                 # Translators: this is for the sitreps feature; it's the title of a section to show systems with sighted enemies (powerplay) 
-                summary[_c(u"sitreps section|✪ Enemies")] = summary_enemies
+                summary[_c("sitreps section|✪ Enemies")] = summary_enemies
 
         summary_crimes = []
         systems_with_recent_crimes = sorted(systems_with_recent_crimes.items(), key=lambda t: t[1], reverse=True)
         for system in systems_with_recent_crimes:
-            summary_crimes.append(u"{} {}".format(system[0], edtime.EDTime.t_minus(system[1], short=True)))
+            summary_crimes.append("{} {}".format(system[0], edtime.EDTime.t_minus(system[1], short=True)))
         if summary_crimes:
             # Translators: this is for the sitreps feature; it's the title of a section to show systems with reported crimes
-            summary[_c(u"sitreps section|✪ Crimes")] = summary_crimes
+            summary[_c("sitreps section|✪ Crimes")] = summary_crimes
 
         summary_traffic = []
         systems_with_recent_traffic = sorted(systems_with_recent_traffic.items(), key=lambda t: t[1], reverse=True)
         for system in systems_with_recent_traffic:
-            summary_traffic.append(u"{} {}".format(system[0], edtime.EDTime.t_minus(system[1], short=True)))
+            summary_traffic.append("{} {}".format(system[0], edtime.EDTime.t_minus(system[1], short=True)))
         if summary_traffic:
             # Translators: this is for the sitreps feature; it's the title of a section to show systems with traffic
-            summary[_c(u"sitreps section|✪ Traffic")] = summary_traffic
+            summary[_c("sitreps section|✪ Traffic")] = summary_traffic
 
         return summary
 
@@ -2324,7 +2503,7 @@ class EDRSystems(object):
             # If the cached value is an empty list or the actual crime list, return it.
             # Note: We assume the profile stored is the list of crimes itself (could be [] or a list of dicts).
             if recent_crimes is not None:
-                EDR_LOG.debug(u"Returning fresh crime data for SID {}".format(key))
+                EDR_LOG.debug("Returning fresh crime data for SID {}".format(key))
                 return recent_crimes
             
             # If profile is None, this implies a negative cache entry that needs eviction (unless we decide to allow None cache entries here).
@@ -2339,7 +2518,7 @@ class EDRSystems(object):
         # Only make the server call if the external 'has_recent_crimes' check passes or if the key is missing/stale
         if self.has_recent_crimes(star_system):
             try:
-                EDR_LOG.info(u"Fetching recent crimes for {} (SID {}) from EDR server.".format(star_system, key))
+                EDR_LOG.info("Fetching recent crimes for {} (SID {}) from EDR server.".format(star_system, key))
                 # Note: The server call uses SID, but the timespan is also a factor in the cache TTL
                 updated_crimes = self.server.recent_crimes(key, self.timespan) 
             except Exception as e:
@@ -2348,7 +2527,7 @@ class EDRSystems(object):
                 # Stale Fallback Logic: Use 'stale_profile' if server fails.
                 if stale_profile is not None:
                     self.crimes_cache.refresh(key)
-                    EDR_LOG.info(u"Server failed. Re-using and refreshing stale crime info.")
+                    EDR_LOG.info("Server failed. Re-using and refreshing stale crime info.")
                     return stale_profile
         
         # --- Step 3: Final Caching and Return ---
@@ -2357,7 +2536,7 @@ class EDRSystems(object):
             # Cache either the list of crimes (list[dict]) OR the empty list ([]), 
             # addressing the original TODO.
             self.crimes_cache.set(key, updated_crimes)
-            EDR_LOG.debug(u"Cached {} crime entries for SID {}".format(len(updated_crimes), key))
+            EDR_LOG.debug("Cached {} crime entries for SID {}".format(len(updated_crimes), key))
             return updated_crimes
         
         # If the server call was skipped (due to self.has_recent_crimes failing) or 
@@ -2392,7 +2571,7 @@ class EDRSystems(object):
             # If the cached value is a traffic count, empty list/zero, or None (negative cache), return it.
             # We assume 'None' or an empty response means 'no traffic data' and should be cached.
             if recent_traffic is not None:
-                EDR_LOG.debug(u"Returning fresh traffic data for SID {}".format(key))
+                EDR_LOG.debug("Returning fresh traffic data for SID {}".format(key))
                 return recent_traffic
             
             # Note: If recent_traffic is None, and we are not supposed to cache None, 
@@ -2408,7 +2587,7 @@ class EDRSystems(object):
         # Only make the server call if the external 'has_recent_traffic' check passes
         if self.has_recent_traffic(star_system):
             try:
-                EDR_LOG.info(u"Fetching recent traffic for {} (SID {}) from EDR server.".format(star_system, key))
+                EDR_LOG.info("Fetching recent traffic for {} (SID {}) from EDR server.".format(star_system, key))
                 # Note: The timespan is used in the request
                 updated_traffic = self.server.recent_traffic(key, self.timespan) 
             except Exception as e:
@@ -2417,7 +2596,7 @@ class EDRSystems(object):
                 # Stale Fallback Logic: Use 'stale_profile' if server fails.
                 if stale_profile is not None:
                     self.traffic_cache.refresh(key)
-                    EDR_LOG.info(u"Server failed. Re-using and refreshing stale traffic info.")
+                    EDR_LOG.info("Server failed. Re-using and refreshing stale traffic info.")
                     return stale_profile
         
         # --- Step 3: Final Caching and Return ---
@@ -2428,7 +2607,7 @@ class EDRSystems(object):
             # Cache the result. This handles non-zero traffic counts, zero counts, 
             # or empty containers ([]), preventing redundant server calls.
             self.traffic_cache.set(key, updated_traffic)
-            EDR_LOG.debug(u"Cached traffic data for SID {}".format(key))
+            EDR_LOG.debug("Cached traffic data for SID {}".format(key))
             return updated_traffic
         
         # If the server call was skipped (due to self.has_recent_traffic failing) or 
@@ -2488,10 +2667,10 @@ class EDRSystems(object):
                     else:
                         summary_traffic[traffic["cmdr"]] = traffic["timestamp"]
                 for cmdr in summary_traffic:
-                    summary_sighted.append(u"{} {}".format(cmdr, edtime.EDTime.t_minus(summary_traffic[cmdr], short=True)))
+                    summary_sighted.append("{} {}".format(cmdr, edtime.EDTime.t_minus(summary_traffic[cmdr], short=True)))
                 if summary_sighted:
                     # Translators: this is for the sitrep feature; it's a section to show sighted cmdrs in the system of interest
-                    summary[_c(u"sitrep section|✪ Sighted")] = summary_sighted
+                    summary[_c("sitrep section|✪ Sighted")] = summary_sighted
         
         if self.has_recent_crimes(star_system):
             summary_interdictors = []
@@ -2520,33 +2699,33 @@ class EDRSystems(object):
                                 enemies[criminal["name"]] = [crime["timestamp"], karma]
                 for criminal in summary_crimes:
                     if summary_crimes[criminal][1] == "Murder":
-                        summary_destroyers.append(u"{} {}".format(criminal, edtime.EDTime.t_minus(summary_crimes[criminal][0], short=True)))
+                        summary_destroyers.append("{} {}".format(criminal, edtime.EDTime.t_minus(summary_crimes[criminal][0], short=True)))
                     elif summary_crimes[criminal][1] in ["Interdicted", "Interdiction"]:
-                        summary_interdictors.append(u"{} {}".format(criminal, edtime.EDTime.t_minus(summary_crimes[criminal][0], short=True)))
+                        summary_interdictors.append("{} {}".format(criminal, edtime.EDTime.t_minus(summary_crimes[criminal][0], short=True)))
                 if summary_interdictors:
                     # Translators: this is for the sitrep feature; it's a section to show cmdrs who have been reported as interdicting another cmdr in the system of interest
-                    summary[_c(u"sitrep section|✪ Interdictors")] = summary_interdictors
+                    summary[_c("sitrep section|✪ Interdictors")] = summary_interdictors
                 if summary_destroyers:
                     # Translators: this is for the sitrep feature; it's a section to show cmdrs who have been reported as responsible for destroying the ship of another cmdr in the system of interest; use a judgement-neutral term
-                    summary[_c(u"sitreps section|✪ Destroyers")] = summary_destroyers
+                    summary[_c("sitreps section|✪ Destroyers")] = summary_destroyers
         
         wanted_cmdrs = sorted(wanted_cmdrs.items(), key=operator.itemgetter(1), reverse=True)
         if wanted_cmdrs:
             summary_wanted = []
             for wanted in wanted_cmdrs:
-                summary_wanted.append(u"{} {}".format(wanted[0], edtime.EDTime.t_minus(wanted[1][0], short=True)))
+                summary_wanted.append("{} {}".format(wanted[0], edtime.EDTime.t_minus(wanted[1][0], short=True)))
             if summary_wanted:
                 # Translators: this is for the sitrep feature; it's a section to show wanted cmdrs who have been sighted in the system of interest
-                summary[_c(u"sitreps section|✪ Outlaws")] = summary_wanted
+                summary[_c("sitreps section|✪ Outlaws")] = summary_wanted
         
         enemies = sorted(enemies.items(), key=operator.itemgetter(1), reverse=True)
         if enemies:
             summary_enemies = []
             for enemy in enemies:
-                summary_enemies.append(u"{} {}".format(enemies[0], edtime.EDTime.t_minus(enemies[1][0], short=True)))
+                summary_enemies.append("{} {}".format(enemies[0], edtime.EDTime.t_minus(enemies[1][0], short=True)))
             if summary_enemies:
                 # Translators: this is for the sitrep feature; it's a section to show enemy cmdrs who have been sighted in the system of interest
-                summary[_c(u"sitreps section|✪ Enemies")] = summary_enemies
+                summary[_c("sitreps section|✪ Enemies")] = summary_enemies
 
         return summary
 
@@ -2681,7 +2860,7 @@ class EDRSystems(object):
         finder.with_medium_pad(with_medium_pad)
         finder.within_radius(radius)
         finder.within_supercruise_distance(sc_distance)
-        finder.permits_in_possesion(permits)
+        finder.permits_in_possession(permits)
         finder.shuffling(shuffle_systems, shuffle_stations)
         finder.ignore_center(exclude_center)
         finder.set_dlc(self.dlc_name)
@@ -2719,7 +2898,7 @@ class EDRSystems(object):
         finder = edrplanetfinder.EDRPlanetFinder(star_system, checker, self, callback)
         finder.within_radius(radius)
         finder.within_supercruise_distance(sc_distance)
-        finder.permits_in_possesion(permits)
+        finder.permits_in_possession(permits)
         finder.shuffling(shuffle_systems, shuffle_planets)
         finder.ignore_center(exclude_center)
         finder.set_dlc(self.dlc_name)
@@ -2734,7 +2913,7 @@ class EDRSystems(object):
         finder = edrsettlementfinder.EDRSettlementFinder(star_system, checker, self, callback)
         finder.within_radius(radius)
         finder.within_supercruise_distance(sc_distance)
-        finder.permits_in_possesion(permits)
+        finder.permits_in_possession(permits)
         finder.shuffling(shuffle_systems, shuffle_planets)
         finder.ignore_center(exclude_center)
         finder.ignore_states(exclude_states)
@@ -2747,31 +2926,31 @@ class EDRSystems(object):
             return None
 
         radius = override_radius if override_radius is not None and override_radius >= 0 else self.reasonable_hs_radius
-        key = u"{}@{}".format(star_system.lower(), radius)
+        key = "{}@{}".format(star_system.lower(), radius)
 
         if key in self.edsm_systems_within_radius_blocklist:
-            EDR_LOG.info(u"Systems within radius for {} is in the blocklist.".format(key))
+            EDR_LOG.info("Systems within radius for {} is in the blocklist.".format(key))
             return None
 
         systems = self.edsm_systems_within_radius_cache.get(key)
         cached = self.edsm_systems_within_radius_cache.has_key(key)
         if cached:
             if not systems:
-                EDR_LOG.debug(u"Systems within {} of system {} are not available for a while.".format(radius, star_system))
+                EDR_LOG.debug("Systems within {} of system {} are not available for a while.".format(radius, star_system))
                 return None
             else:
-                EDR_LOG.debug(u"Systems within {} of system {} are in the cache.".format(radius, star_system))
+                EDR_LOG.debug("Systems within {} of system {} are in the cache.".format(radius, star_system))
                 return sorted(systems, key = lambda i: i['distance'])
 
         systems = self.edsm_server.systems_within_radius(star_system, radius)
         if systems is None:
             self.edsm_systems_within_radius_blocklist.add(key)
-            EDR_LOG.debug(u"No results from EDSM. Temporary entry to be nice on EDSM's server. Added to blocklist.".format(key))
+            EDR_LOG.debug("No results from EDSM. Temporary entry to be nice on EDSM's server. Added to blocklist.".format(key))
             return None
         
         systems = sorted(systems, key = lambda i: i['distance']) 
         self.edsm_systems_within_radius_cache.set(key, systems)
-        EDR_LOG.debug(u"Cached systems within {}LY of {}".format(radius, star_system))
+        EDR_LOG.debug("Cached systems within {}LY of {}".format(radius, star_system))
         return systems
 
     def is_recent(self, timestamp, max_age):
