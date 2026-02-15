@@ -1,8 +1,7 @@
-
 from unittest import TestCase, main
 import os
 import sqlite3
-from edrfleet import EDRFleet # EDR_INTERNAL
+from edr.models.edrfleet import EDRFleet # EDR_INTERNAL
 
 class TestEDRFleet(TestCase):
     def setUp(self):

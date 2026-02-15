@@ -3,10 +3,9 @@ from unittest.mock import MagicMock, patch
 import os
 import sys
 
-# Add the 'edr' directory to sys.path to ensure modules can be imported
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'edr')))
+# sys.path injection removed
 
-from edrsystems import EDRSystems
+from edr.controllers.edrsystems import EDRSystems
 
 class TestEDRSystems(unittest.TestCase):
     def setUp(self):

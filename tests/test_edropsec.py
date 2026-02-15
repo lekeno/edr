@@ -1,7 +1,7 @@
 
 from unittest import TestCase, main
 from unittest.mock import MagicMock
-from edropsec import EDROpsecConfig # EDR_INTERNAL
+from edr.core.edropsec import EDROpsecConfig
 
 class TestEDROpsecConfig(TestCase):
     def test_init_defaults(self):

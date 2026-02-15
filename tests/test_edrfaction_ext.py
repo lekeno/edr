@@ -1,8 +1,7 @@
 
 from unittest import TestCase, main
-from edrfactions import EDRFaction # EDR_INTERNAL
-from edtime import EDTime # EDR_INTERNAL
-from edrfactions import EDRFactions # EDR_INTERNAL
+from edr.controllers.edrfactions import EDRFaction, EDRFactions
+from edr.utils.edtime import EDTime
 
 class TestEDRFactionExt(TestCase):
     def test_update_from_ed(self):

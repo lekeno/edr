@@ -9,7 +9,7 @@ root_dir = os.path.abspath(os.path.join(edr_dir, os.pardir))
 sys.path.insert(0, root_dir)
 sys.path.insert(0, edr_dir)
 
-from edarmour import EDHullFactory, EDHullBulkhead, EDHullReinforcementPackage # EDR_INTERNAL
+from edr.models.edarmour import EDHullFactory, EDHullBulkhead, EDHullReinforcementPackage
 
 class TestEDArmour(unittest.TestCase):
     def test_factory_bulkheads(self):

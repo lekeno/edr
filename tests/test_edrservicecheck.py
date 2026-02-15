@@ -1,6 +1,7 @@
 
 import unittest
-from edr.edrservicecheck import (
+import unittest
+from edr.controllers.edrservicecheck import (
     EDRStationServiceCheck,
     EDRStationFacilityCheck,
     EDRStagingCheck,

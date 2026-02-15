@@ -1,16 +1,17 @@
+
 import unittest
 from unittest.mock import Mock, patch, MagicMock, mock_open
 import sys
 import os
 
-from edrcmdrs import EDRCmdrs # EDR_INTERNAL
+from edr.models.edrcmdrs import EDRCmdrs
 
 class TestEDRCmdrs(unittest.TestCase):
     def setUp(self):
         self.edr_server = MagicMock()
         
         # Patch dependencies
-        self.edr_config_patch = patch('edrcmdrs.EDR_CONFIG')
+        self.edr_config_patch = patch('edr.models.edrcmdrs.EDR_CONFIG')
         self.edr_config = self.edr_config_patch.start()
         self.edr_config.return_value.lru_max_size.return_value = 100
         self.edr_config.return_value.cmdrs_max_age.return_value = 3600
@@ -24,7 +25,7 @@ class TestEDRCmdrs(unittest.TestCase):
         self.mock_inara_cache = MagicMock()
         self.mock_sqdrdex_cache = MagicMock()
 
-        self.lru_cache_patch = patch('edrcmdrs.LRUCache')
+        self.lru_cache_patch = patch('edr.models.edrcmdrs.LRUCache')
         self.lru_cache_cls = self.lru_cache_patch.start()
         # Return different mocks sequentially
         self.lru_cache_cls.load.side_effect = [
@@ -33,7 +34,7 @@ class TestEDRCmdrs(unittest.TestCase):
             self.mock_sqdrdex_cache
         ]
 
-        self.ed_player_one_patch = patch('edrcmdrs.EDPlayerOne')
+        self.ed_player_one_patch = patch('edr.models.edrcmdrs.EDPlayerOne')
         self.ed_player_one_cls = self.ed_player_one_patch.start()
         self.ed_player_one_cls.return_value = MagicMock()
         self.ed_player_one_cls.return_value.name = "CmdrTest"

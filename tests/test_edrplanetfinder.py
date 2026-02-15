@@ -1,7 +1,7 @@
 
 import unittest
 from unittest.mock import MagicMock, patch
-from edrplanetfinder import EDRPlanetFinder
+from edr.controllers.edrplanetfinder import EDRPlanetFinder
 
 class TestEDRPlanetFinder(unittest.TestCase):
     def setUp(self):
@@ -10,7 +10,7 @@ class TestEDRPlanetFinder(unittest.TestCase):
         self.callback = MagicMock()
         self.finder = EDRPlanetFinder("Sol", self.checker, self.edr_systems, self.callback)
         # Mock translation
-        self.patcher = patch('edrplanetfinder._', side_effect=lambda x: x)
+        self.patcher = patch('edr.controllers.edrplanetfinder._', side_effect=lambda x: x)
         self.patcher.start()
 
     def tearDown(self):

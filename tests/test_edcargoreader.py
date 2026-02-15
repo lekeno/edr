@@ -4,7 +4,7 @@ import tempfile
 import shutil
 import os
 import json
-from edcargoreader import EDCargoReader # EDR_INTERNAL
+from edr.models.edcargoreader import EDCargoReader # EDR_INTERNAL
 
 class TestEDCargoReader(unittest.TestCase):
     def setUp(self):
@@ -12,13 +12,13 @@ class TestEDCargoReader(unittest.TestCase):
         self.addCleanup(shutil.rmtree, self.test_dir)
         
         # Patch the config object imported in edcargoreader
-        self.config_patcher = patch('edcargoreader.config')
+        self.config_patcher = patch('edr.models.edcargoreader.config')
         self.mock_config = self.config_patcher.start()
         # Setup mock behavior
         self.mock_config.get_str.side_effect = lambda key: self.test_dir if key == 'journaldir' else None
         self.mock_config.default_journal_dir = self.test_dir
         
-        self.log_patcher = patch('edcargoreader.EDR_LOG')
+        self.log_patcher = patch('edr.models.edcargoreader.EDR_LOG')
         self.mock_log = self.log_patcher.start()
         
         self.addCleanup(self.config_patcher.stop)

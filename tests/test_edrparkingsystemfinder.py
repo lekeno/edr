@@ -1,12 +1,13 @@
 
 import unittest
 from unittest.mock import MagicMock, patch
-from edrparkingsystemfinder import EDRParkingSystemFinder
+from edr.controllers.edrparkingsystemfinder import EDRParkingSystemFinder
 
 class TestEDRParkingSystemFinder(unittest.TestCase):
     def setUp(self):
         self.edr_systems = MagicMock()
         self.callback = MagicMock()
+        self.patcher = patch('edr.controllers.edrparkingsystemfinder._', side_effect=lambda x: x)
         self.finder = EDRParkingSystemFinder("Sol", self.edr_systems, self.callback)
 
     def test_init(self):

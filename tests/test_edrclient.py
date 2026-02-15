@@ -3,41 +3,47 @@ from unittest.mock import MagicMock, patch, PropertyMock
 import sys
 import os
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'edr')))
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Mock external EDMC modules
-sys.modules['myNotebook'] = MagicMock()
-sys.modules['EDMCOverlay'] = MagicMock()
-sys.modules['ttkHyperlinkLabel'] = MagicMock()
-sys.modules['tkinter'] = MagicMock()
-import tkinter
-sys.modules['tkinter.ttk'] = MagicMock()
-
-# Configure Tkinter mocks
-def mock_string_var(value=None):
-    mock = MagicMock()
-    mock.get.return_value = value
-    def set_val(new_val):
-        mock.get.return_value = new_val
-    mock.set.side_effect = set_val
-    return mock
-
-def mock_int_var(value=0):
-    mock = MagicMock()
-    mock.get.return_value = value
-    def set_val(new_val):
-        mock.get.return_value = new_val
-    mock.set.side_effect = set_val
-    return mock
-
-tkinter.StringVar = mock_string_var
-tkinter.IntVar = mock_int_var
-
-import edrclient
 
 class TestEDRClient(unittest.TestCase):
     def setUp(self):
+        # Configure Tkinter mocks
+        def mock_string_var(value=None):
+            mock = MagicMock()
+            mock.get.return_value = value
+            def set_val(new_val):
+                mock.get.return_value = new_val
+            mock.set.side_effect = set_val
+            return mock
+
+        def mock_int_var(value=0):
+            mock = MagicMock()
+            mock.get.return_value = value
+            def set_val(new_val):
+                mock.get.return_value = new_val
+            mock.set.side_effect = set_val
+            return mock
+
+        self.mock_tkinter = MagicMock()
+        self.mock_tkinter.StringVar = mock_string_var
+        self.mock_tkinter.IntVar = mock_int_var
+
+        # Create mocks for dependencies
+        self.modules_patcher = patch.dict('sys.modules', {
+            'myNotebook': MagicMock(),
+            'EDMCOverlay': MagicMock(),
+            'ttkHyperlinkLabel': MagicMock(),
+            'tkinter': self.mock_tkinter,
+            'tkinter.ttk': MagicMock(),
+        })
+        self.modules_patcher.start()
+        
+        # Reload edrclient to use our mocks
+        import importlib
+        import edr.controllers.edrclient
+        importlib.reload(edr.controllers.edrclient)
+        from edr.controllers import edrclient
+
         # Mocking config before initializing EDRClient because it reads config in __init__
         # Use patch.object to ensure we patch the exact module we loaded
         self.mock_config_patcher = patch.object(edrclient, 'config')
@@ -46,7 +52,7 @@ class TestEDRClient(unittest.TestCase):
         self.mock_config.get_int.return_value = 0
         
         # Mock EDR_CONFIG
-        self.mock_edr_config_patcher = patch('edrclient.EDR_CONFIG')
+        self.mock_edr_config_patcher = patch('edr.controllers.edrclient.EDR_CONFIG')
         self.mock_edr_config = self.mock_edr_config_patcher.start()
         self.mock_edr_config.lru_max_size.return_value = 100
         self.mock_edr_config.blips_max_age.return_value = 60
@@ -63,22 +69,22 @@ class TestEDRClient(unittest.TestCase):
         self.mock_edr_config.edr_needs_u_novelty_threshold.return_value = 1000
         
         # Mock dependent classes to avoid complex initialization
-        self.mock_server_patcher = patch('edrclient.EDRServer')
+        self.mock_server_patcher = patch('edr.controllers.edrclient.EDRServer')
         self.mock_server_class = self.mock_server_patcher.start()
         
-        self.mock_edsm_server_patcher = patch('edrclient.EDSMServer')
+        self.mock_edsm_server_patcher = patch('edr.controllers.edrclient.EDSMServer')
         self.mock_edsm_server = self.mock_edsm_server_patcher.start()
         
-        self.mock_ui_patcher = patch('edrclient.EDRClientUI')
+        self.mock_ui_patcher = patch('edr.controllers.edrclient.EDRClientUI')
         self.mock_ui = self.mock_ui_patcher.start()
 
-        self.mock_edrsystems_patcher = patch('edrclient.EDRSystems')
+        self.mock_edrsystems_patcher = patch('edr.controllers.edrclient.EDRSystems')
         self.mock_edrsystems_class = self.mock_edrsystems_patcher.start()
 
-        self.mock_edrcmdrs_patcher = patch('edrclient.EDRCmdrs')
+        self.mock_edrcmdrs_patcher = patch('edr.controllers.edrclient.EDRCmdrs')
         self.mock_edrcmdrs = self.mock_edrcmdrs_patcher.start()
         
-        self.mock_ingamemsg_patcher = patch('edrclient.InGameMsg')
+        self.mock_ingamemsg_patcher = patch('edr.controllers.edrclient.InGameMsg')
         self.mock_ingamemsg = self.mock_ingamemsg_patcher.start()
         
         self.client = edrclient.EDRClient()
@@ -92,6 +98,11 @@ class TestEDRClient(unittest.TestCase):
         self.mock_edrsystems_patcher.stop()
         self.mock_edrcmdrs_patcher.stop()
         self.mock_ingamemsg_patcher.stop()
+        self.modules_patcher.stop()
+        
+        # Remove polluted modules from sys.modules so next test imports them fresh
+        sys.modules.pop('edr.controllers.edrclient', None)
+        sys.modules.pop('edr.ui.edrclientui', None)
 
     def test_init(self):
         self.assertIsNotNone(self.client)
@@ -106,7 +117,7 @@ class TestEDRClient(unittest.TestCase):
             "timestamp": "2023-01-01T12:00:00Z"
         }
         
-        with patch('edrclient.EDRClient.player', new_callable=PropertyMock) as mock_player_prop:
+        with patch('edr.controllers.edrclient.EDRClient.player', new_callable=PropertyMock) as mock_player_prop:
             mock_player = MagicMock()
             mock_player_prop.return_value = mock_player
             mock_player.in_solo.return_value = False
@@ -132,7 +143,7 @@ class TestEDRClient(unittest.TestCase):
             "bounty": 1000
         }
         
-        with patch('edrclient.EDRClient.player', new_callable=PropertyMock) as mock_player_prop:
+        with patch('edr.controllers.edrclient.EDRClient.player', new_callable=PropertyMock) as mock_player_prop:
             mock_player = MagicMock()
             mock_player_prop.return_value = mock_player
             mock_player.in_solo.return_value = False
@@ -171,7 +182,7 @@ class TestEDRClient(unittest.TestCase):
         cmdr_name = "Cmdr Enemy"
         tag = "enemy"
         
-        with patch('edrclient.EDRClient.player', new_callable=PropertyMock) as mock_player_prop:
+        with patch('edr.controllers.edrclient.EDRClient.player', new_callable=PropertyMock) as mock_player_prop:
             mock_player = MagicMock()
             mock_player_prop.return_value = mock_player
             mock_player.in_solo.return_value = False
@@ -190,7 +201,7 @@ class TestEDRClient(unittest.TestCase):
     def test_interstellar_factors(self):
         star_system = "Shinrarta Dezhra"
         
-        with patch('edrclient.EDRClient.player', new_callable=PropertyMock) as mock_player_prop:
+        with patch('edr.controllers.edrclient.EDRClient.player', new_callable=PropertyMock) as mock_player_prop:
             mock_player = MagicMock()
             mock_player_prop.return_value = mock_player
             mock_player.needs_large_landing_pad.return_value = True
@@ -210,7 +221,7 @@ class TestEDRClient(unittest.TestCase):
         mock_routenav.journey_next.return_value = True
         mock_routenav.current_wp_sysname.return_value = "Colonia"
         
-        with patch('edrclient.EDRClient.player', new_callable=PropertyMock) as mock_player_prop:
+        with patch('edr.controllers.edrclient.EDRClient.player', new_callable=PropertyMock) as mock_player_prop:
             mock_player = MagicMock()
             mock_player_prop.return_value = mock_player
             mock_player.routenav = mock_routenav

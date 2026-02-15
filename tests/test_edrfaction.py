@@ -1,6 +1,6 @@
 
 from unittest import TestCase, main
-from edrfactions import EDRFaction # EDR_INTERNAL
+from edr.controllers.edrfactions import EDRFaction
 
 class TestEDRFaction(TestCase):
     def test_constructor(self):

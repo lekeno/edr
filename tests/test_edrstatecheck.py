@@ -1,6 +1,6 @@
 
 import unittest
-from edr.edrstatecheck import (
+from edr.controllers.edrstatecheck import (
     EDRBasicStateCheck,
     EDRPharmaceuticalIsolatorsCheck,
     EDRImperialShieldingCheck,

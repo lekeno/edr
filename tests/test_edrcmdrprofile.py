@@ -2,7 +2,7 @@ import random
 
 
 from unittest import TestCase, main
-from edrcmdrprofile import EDRCmdrProfile # EDR_INTERNAL
+from edr.models.edrcmdrprofile import EDRCmdrProfile
 
 class TestEDRCmdrProfile(TestCase):
     def test_karma(self):

@@ -1,6 +1,6 @@
 
 from unittest import TestCase, main
-from edentities import EDFineOrBounty # EDR_INTERNAL
+from edr.models.edentities import EDFineOrBounty
 
 class TestEDFineOrBounty(TestCase):
     def test_significant(self):

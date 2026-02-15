@@ -3,12 +3,9 @@ from unittest.mock import Mock, patch, MagicMock
 import os
 import sys
 
-# Add the 'edr' directory to the path so we can import modules from it
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'edr'))
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
-from edrfactions import EDRFactions, EDRFaction, EDRMaterialOutcomes
-from edtime import EDTime
+# sys.path injection removed
+from edr.controllers.edrfactions import EDRFactions, EDRFaction, EDRMaterialOutcomes
+from edr.utils.edtime import EDTime
 
 class TestEDRMaterialOutcomes(unittest.TestCase):
     def test_combine_probabilities(self):
@@ -123,7 +120,7 @@ class TestEDRFaction(unittest.TestCase):
 class TestEDRFactions(unittest.TestCase):
     def setUp(self):
         self.edsm_server = MagicMock()
-        with patch('edrfactions.LRUCache') as MockLRU:
+        with patch('edr.controllers.edrfactions.LRUCache') as MockLRU:
              self.factions = EDRFactions(self.edsm_server)
              # Mock the internal caches
              self.factions.factions_cache = MagicMock()

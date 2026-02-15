@@ -1,7 +1,7 @@
 
 import unittest
 from unittest.mock import MagicMock, patch
-from edrstatefinder import EDRStateFinder
+from edr.controllers.edrstatefinder import EDRStateFinder
 
 class TestEDRStateFinder(unittest.TestCase):
     def setUp(self):
@@ -11,7 +11,7 @@ class TestEDRStateFinder(unittest.TestCase):
         self.callback = MagicMock()
         self.finder = EDRStateFinder("Sol", self.checker, self.edr_systems, self.callback)
         # Mock translation to avoid import issues
-        self.patcher = patch('edrstatefinder._', side_effect=lambda x: x)
+        self.patcher = patch('edr.controllers.edrstatefinder._', side_effect=lambda x: x)
         self.patcher.start()
 
     def tearDown(self):

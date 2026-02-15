@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from edrafkdetector import EDRAfkDetector # EDR_INTERNAL
-import edr.edtime
+from edr.controllers.edrafkdetector import EDRAfkDetector
+from edr.utils.edtime import EDTime
 
 class TestEDRAfkDetector(unittest.TestCase):
     def setUp(self):
@@ -36,7 +36,7 @@ class TestEDRAfkDetector(unittest.TestCase):
         # We need to control EDTime behavior entirely or just mock py_epoch_now
         
         # Let's say event was at T=1000
-        with patch('edrafkdetector.EDTime') as MockEDTime:
+        with patch('edr.controllers.edrafkdetector.EDTime') as MockEDTime:
             # Instance mock
             mock_time_instance = MockEDTime.return_value
             mock_time_instance.as_py_epoch.return_value = 1000

@@ -2,6 +2,11 @@
 Plugin for "EDR"
 """
 import sys
+import os
+
+# Add the src directory to sys.path to allow importing the edr package
+sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+
 import re
 import random
 import codecs
@@ -12,16 +17,16 @@ try:
 except ImportError:
     import plug as edmc_data
 
-from edspacesuits import EDSpaceSuit  # EDR_INTERNAL
-from edrclient import EDRClient
-from edentities import EDPlayer  # EDR_INTERNAL
-from edsitu import EDPlanetaryLocation  # EDR_INTERNAL
-from edvehicles import EDVehicleFactory  # EDR_INTERNAL
-from edrrawdepletables import EDRRawDepletables
-from edtime import EDTime  # EDR_INTERNAL
-from edrlog import EDR_LOG  # EDR_INTERNAL
-import edrautoupdater
-from edri18n import _, _c  # EDR_INTERNAL
+from edr.models.edspacesuits import EDSpaceSuit  # EDR_INTERNAL
+from edr.controllers.edrclient import EDRClient
+from edr.models.edentities import EDPlayer  # EDR_INTERNAL
+from edr.models.edsitu import EDPlanetaryLocation  # EDR_INTERNAL
+from edr.models.edvehicles import EDVehicleFactory  # EDR_INTERNAL
+from edr.models.edrrawdepletables import EDRRawDepletables
+from edr.utils.edtime import EDTime  # EDR_INTERNAL
+from edr.core.edrlog import EDR_LOG  # EDR_INTERNAL
+from edr import edrautoupdater
+from edr.core.edri18n import _, _c  # EDR_INTERNAL
 
 EDR_CLIENT = EDRClient()
 

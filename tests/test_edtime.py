@@ -1,6 +1,6 @@
 
 from unittest import TestCase, main
-from edtime import EDTime # EDR_INTERNAL
+from edr.utils.edtime import EDTime # EDR_INTERNAL
 import calendar, time
 
 class TestEDTime(TestCase):

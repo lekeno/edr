@@ -4,9 +4,8 @@ import sys
 import os
 
 # Setup paths
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from edrcommands import EDRCommands # EDR_INTERNAL
+# sys.path injection removed
+from edr.controllers.edrcommands import EDRCommands
 
 class TestEDRCommands(unittest.TestCase):
     def setUp(self):
@@ -14,7 +13,7 @@ class TestEDRCommands(unittest.TestCase):
         self.edr_client.player.target_pilot.return_value = None # Default no target
         self.edr_commands = EDRCommands(self.edr_client)
 
-        self.logger_patch = patch('edrcommands.EDR_LOG')
+        self.logger_patch = patch('edr.controllers.edrcommands.EDR_LOG')
         self.mock_logger = self.logger_patch.start()
 
     def tearDown(self):

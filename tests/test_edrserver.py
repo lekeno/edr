@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
-from edrserver import EDRServer  # EDR_INTERNAL
-from edrconfig import EDRConfig # EDR_INTERNAL
+from edr.controllers.edrserver import EDRServer  # EDR_INTERNAL
+from edr.core.edrconfig import EDRConfig # EDR_INTERNAL
 
 class TestEDRServer(unittest.TestCase):
     def setUp(self):
@@ -13,7 +13,7 @@ class TestEDRServer(unittest.TestCase):
         self.assertEqual(EDRServer.nodify("Mixed 123"), "mixed_123")
         self.assertEqual(EDRServer.nodify("  Spaces  "), "__spaces__") # Should it trim? Logic says replace only.
 
-    @patch('edrserver.EDR_CONFIG')
+    @patch('edr.controllers.edrserver.EDR_CONFIG')
     def test_initialization(self, mock_config):
         mock_config.edr_version.return_value = "1.0.0"
         mock_config.edr_api_key.return_value = "fake_key"
@@ -22,7 +22,7 @@ class TestEDRServer(unittest.TestCase):
         self.assertEqual(server.version, "1.0.0")
         self.assertEqual(server.EDR_API_KEY, "fake_key")
 
-    @patch('edrserver.RESTFirebaseAuth')
+    @patch('edr.controllers.edrserver.RESTFirebaseAuth')
     def test_login(self, mock_auth_cls):
         mock_auth_instance = mock_auth_cls.return_value
         mock_auth_instance.authenticate.return_value = {"status": "success"}

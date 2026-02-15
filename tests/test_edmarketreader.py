@@ -1,35 +1,35 @@
 import unittest
 from unittest.mock import Mock, patch, mock_open
 import json
-from edmarketreader import EDMarketReader # EDR_INTERNAL
+from edr.models.edmarketreader import EDMarketReader # EDR_INTERNAL
 
 class TestEDMarketReader(unittest.TestCase):
-    @patch('edmarketreader.config')
+    @patch('edr.models.edmarketreader.config')
     def test_process_valid(self, mock_config):
         mock_config.get_str.return_value = "/tmp/journal"
         mock_data = json.dumps({"timestamp": "2023-01-01T12:00:00Z", "event": "Market", "Items": []})
         
-        with patch('edmarketreader.open', mock_open(read_data=mock_data)):
+        with patch('edr.models.edmarketreader.open', mock_open(read_data=mock_data)):
             reader = EDMarketReader()
             result = reader.process()
             self.assertEqual(result.get("event"), "Market")
             self.assertEqual(result.get("Items"), [])
 
-    @patch('edmarketreader.config')
+    @patch('edr.models.edmarketreader.config')
     def test_process_empty(self, mock_config):
         mock_config.get_str.return_value = "/tmp/journal"
         
-        with patch('edmarketreader.open', mock_open(read_data="")):
+        with patch('edr.models.edmarketreader.open', mock_open(read_data="")):
             reader = EDMarketReader()
             result = reader.process()
             self.assertIsNone(result)
 
-    @patch('edmarketreader.config')
+    @patch('edr.models.edmarketreader.config')
     def test_process_invalid_json(self, mock_config):
         mock_config.get_str.return_value = "/tmp/journal"
         
-        with patch('edmarketreader.open', mock_open(read_data="{invalid_json")):
-            with patch('edmarketreader.EDR_LOG') as mock_log:
+        with patch('edr.models.edmarketreader.open', mock_open(read_data="{invalid_json")):
+            with patch('edr.models.edmarketreader.EDR_LOG') as mock_log:
                 reader = EDMarketReader()
                 result = reader.process()
                 self.assertIsNone(result)

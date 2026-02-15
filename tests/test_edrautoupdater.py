@@ -5,7 +5,8 @@ import os
 import sys
 import tempfile
 import shutil
-from edrautoupdater import EDRAutoUpdater
+import zipfile
+from edr.edrautoupdater import EDRAutoUpdater
 
 class TestEDRAutoUpdater(unittest.TestCase):
     def setUp(self):
@@ -19,7 +20,7 @@ class TestEDRAutoUpdater(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
 
-    @patch('edrautoupdater.requests')
+    @patch('edr.edrautoupdater.requests')
     def test_download_latest_success(self, mock_requests):
         updater = EDRAutoUpdater()
         updater.updates = self.updater_target_dir
@@ -55,6 +56,40 @@ class TestEDRAutoUpdater(unittest.TestCase):
         
         files = os.listdir(self.backup_target_dir)
         self.assertEqual(len(files), 5)
+
+    def test_extract_latest_migration(self):
+        # Setup: Simulate old flat install
+        # Create dummy flat files that should be removed
+        obsolete_files = ['edrclient.py', 'edrutils.py', '__init__.py']
+        
+        for f in obsolete_files:
+            with open(os.path.join(self.edr_path, f), 'w') as fh:
+                fh.write("old code")
+        
+        # Verify they exist
+        for f in obsolete_files:
+            self.assertTrue(os.path.exists(os.path.join(self.edr_path, f)))
+
+        # Create a mock update zip with the NEW structure
+        updater = EDRAutoUpdater()
+        updater.EDR_PATH = self.edr_path
+        updater.updates = self.updater_target_dir
+        updater.output = os.path.join(self.updater_target_dir, 'latest.zip')
+        
+        with zipfile.ZipFile(updater.output, 'w') as zf:
+            zf.writestr('edr/__init__.py', '')
+            zf.writestr('edr/edrclient.py', 'new code')
+
+        # Run extraction
+        self.assertTrue(updater.extract_latest())
+
+        # Verify obsolete files are gone
+        for f in obsolete_files:
+            self.assertFalse(os.path.exists(os.path.join(self.edr_path, f)), f"File {f} should have been deleted")
+
+        # Verify new files exist
+        self.assertTrue(os.path.exists(os.path.join(self.edr_path, 'edr', '__init__.py')))
+        self.assertTrue(os.path.exists(os.path.join(self.edr_path, 'edr', 'edrclient.py')))
 
 if __name__ == '__main__':
     unittest.main()

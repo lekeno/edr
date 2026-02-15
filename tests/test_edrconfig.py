@@ -2,7 +2,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 import configparser
-from edr.edrconfig import EDRConfig, EDRUserConfig
+from edr.core.edrconfig import EDRConfig, EDRUserConfig
 
 class TestEDRConfig(unittest.TestCase):
     def setUp(self):

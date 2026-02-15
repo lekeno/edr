@@ -3,18 +3,13 @@ from unittest.mock import Mock, patch
 import sys
 import os
 
-# Setup paths
-# Setup paths
-# Add 'edr' directory to sys.path so we can import modules directly
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'edr')))
-
-from edreconbox import EDReconBox # EDR_INTERNAL
+from edr.ui.edreconbox import EDReconBox
 
 class TestEDReconBox(unittest.TestCase):
     def setUp(self):
         # Patching 'edreconbox.EDTime' because we import edreconbox as a top-level module
         # via sys.path modification that includes the 'edr' directory.
-        self.edtime_patch = patch('edreconbox.EDTime')
+        self.edtime_patch = patch('edr.ui.edreconbox.EDTime')
         self.mock_edtime = self.edtime_patch.start()
         self.mock_edtime.py_epoch_now.return_value = 1000
 

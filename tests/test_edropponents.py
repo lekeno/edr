@@ -4,14 +4,12 @@ import sys
 import os
 import datetime
 
-# Setup paths
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from edropponents import EDROpponents # EDR_INTERNAL
+# sys.path injection removed
+from edr.controllers.edropponents import EDROpponents # EDR_INTERNAL
 
 class TestEDROpponents(unittest.TestCase):
     def setUp(self):
-        self.config_patch = patch('edrconfig.EDR_CONFIG')
+        self.config_patch = patch('edr.core.edrconfig.EDR_CONFIG')
         self.mock_config = self.config_patch.start()
         self.addCleanup(self.config_patch.stop)
         
@@ -22,7 +20,7 @@ class TestEDROpponents(unittest.TestCase):
         self.mock_config.reports_check_interval.return_value = 300
         self.mock_config.intel_bounty_threshold.return_value = 50000
 
-        self.lru_patch = patch('edropponents.lrucache.LRUCache')
+        self.lru_patch = patch('edr.utils.lrucache.LRUCache')
         self.mock_lru = self.lru_patch.start()
         self.addCleanup(self.lru_patch.stop)
         
@@ -36,12 +34,12 @@ class TestEDROpponents(unittest.TestCase):
         self.mock_callback = MagicMock()
 
         # Patch pickle and open inside edr.edropponents to avoid global side effects
-        self.pickle_patch = patch('edropponents.pickle')
+        self.pickle_patch = patch('edr.controllers.edropponents.pickle')
         self.mock_pickle = self.pickle_patch.start()
         self.addCleanup(self.pickle_patch.stop)
         self.mock_pickle.load.return_value = []
         
-        self.open_patch = patch('edropponents.open', create=True)
+        self.open_patch = patch('edr.controllers.edropponents.open', create=True)
         self.mock_open = self.open_patch.start()
         self.addCleanup(self.open_patch.stop)
         self.mock_open.return_value.__enter__.return_value = MagicMock()

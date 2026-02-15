@@ -1,10 +1,10 @@
 import unittest
 from unittest.mock import MagicMock, patch
-from edrservicefinder import EDRServiceFinder
-from edrparkingsystemfinder import EDRParkingSystemFinder
-from edrplanetfinder import EDRPlanetFinder
-from edrsettlementfinder import EDRSettlementFinder
-from edrstatefinder import EDRStateFinder
+from edr.controllers.edrservicefinder import EDRServiceFinder
+from edr.controllers.edrparkingsystemfinder import EDRParkingSystemFinder
+from edr.controllers.edrplanetfinder import EDRPlanetFinder
+from edr.controllers.edrsettlementfinder import EDRSettlementFinder
+from edr.controllers.edrstatefinder import EDRStateFinder
 
 class TestEDRFinders(unittest.TestCase):
     def setUp(self):

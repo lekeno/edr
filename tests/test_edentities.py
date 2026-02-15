@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
-from edentities import EDPilot, EDRSquadronMember, EDRPowerplay, EDLocation, EDSpaceDimension # EDR_INTERNAL
-from edvehicles import EDVehicleFactory # EDR_INTERNAL
+from edr.models.edentities import EDPilot, EDRSquadronMember, EDRPowerplay, EDLocation, EDSpaceDimension # EDR_INTERNAL
+from edr.models.edvehicles import EDVehicleFactory # EDR_INTERNAL
 
 class TestEDEntities(unittest.TestCase):
 
@@ -36,7 +36,7 @@ class TestEDEntities(unittest.TestCase):
 
     def test_powerplay(self):
         # time_pledged is roughly now - timestamp passed in
-        with patch('edtime.EDTime.py_epoch_now') as mock_now:
+        with patch('edr.utils.edtime.EDTime.py_epoch_now') as mock_now:
             mock_now.return_value = 1000
             
             # Pledged 900 seconds ago
@@ -107,7 +107,7 @@ class TestEDEntities(unittest.TestCase):
         self.assertTrue(pilot.in_supercruise())
 
     def test_edplayerone_initialization(self):
-        from edentities import EDPlayerOne
+        from edr.models.edentities import EDPlayerOne
         player = EDPlayerOne("The Braben")
         self.assertEqual(player.name, "The Braben")
         self.assertTrue(player.is_human())

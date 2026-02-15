@@ -1,7 +1,7 @@
 
 import unittest
 from unittest.mock import patch, MagicMock
-import edri18n
+import edr.core.edri18n as edri18n
 
 class TestEDRI18n(unittest.TestCase):
     def setUp(self):
@@ -16,19 +16,19 @@ class TestEDRI18n(unittest.TestCase):
         self.translate_patcher.stop()
         self.language_patcher.stop()
 
-    @patch('edri18n.l10n')
+    @patch('edr.core.edri18n.l10n')
     def test_get_sys_lang_supported(self, mock_l10n):
         mock_l10n.Locale.preferred_languages.return_value = ["fr-CA", "en-US"]
         lang = edri18n._get_sys_lang()
         self.assertEqual(lang, "fr")
 
-    @patch('edri18n.l10n')
+    @patch('edr.core.edri18n.l10n')
     def test_get_sys_lang_unsupported(self, mock_l10n):
         mock_l10n.Locale.preferred_languages.return_value = ["es-ES"] # Spanish not in LANG_LIST
         lang = edri18n._get_sys_lang()
         self.assertIsNone(lang)
 
-    @patch('edri18n.gettext.translation')
+    @patch('edr.core.edri18n.gettext.translation')
     def test_set_language_custom(self, mock_gh):
         edri18n.set_language("de")
         self.assertEqual(edri18n.LANGUAGE, "de")

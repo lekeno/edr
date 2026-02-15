@@ -2,7 +2,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 import logging
-from edr.edrlog import EDRLog
+from edr.core.edrlog import EDRLog
 
 class TestEDRLog(unittest.TestCase):
     def test_singleton(self):

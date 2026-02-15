@@ -3,11 +3,10 @@ from unittest.mock import Mock, patch
 import sys
 import os
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'edr')))
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from edrfssinsights import EDRFSSInsights
-from edtime import EDTime
+
+from edr.controllers.edrfssinsights import EDRFSSInsights
+from edr.utils.edtime import EDTime
 
 class TestEDRFSSInsights(unittest.TestCase):
     def setUp(self):
@@ -34,7 +33,7 @@ class TestEDRFSSInsights(unittest.TestCase):
         self.assertTrue(self.fss.noteworthy)
         self.assertEqual(self.fss.signals["$MULTIPLAYER_SCENARIO42_TITLE;"]["count"], 1)
 
-    @patch('edrfssinsights.EDTime')
+    @patch('edr.controllers.edrfssinsights.EDTime')
     def test_process_uss(self, mock_edtime):
         # Mock current time to be "before" expiration
         # Event is 2023...
@@ -48,7 +47,7 @@ class TestEDRFSSInsights(unittest.TestCase):
         # Splitting logic to avoid patching issues in existing method if I mess up
         pass
 
-    @patch('edrfssinsights.EDTime.py_epoch_now')
+    @patch('edr.controllers.edrfssinsights.EDTime.py_epoch_now')
     def test_process_uss(self, mock_now):
         # 2023-10-27T10:00:00Z is approx 1698400800
         mock_now.return_value = 1698400800

@@ -1,7 +1,7 @@
 
 import unittest
 from unittest.mock import MagicMock, patch
-from edrxzibit import EDRXzibit
+from edr.models.edrxzibit import EDRXzibit # EDR_INTERNAL
 
 class TestEDRXzibit(unittest.TestCase):
     def setUp(self):

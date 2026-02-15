@@ -9,17 +9,16 @@ except ImportError:
     from Queue import Queue
 
 # Setup paths
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from edrrealtime import EDRRealtimeUpdates, RemoteThread, EDRSEEReader # EDR_INTERNAL
+# sys.path injection removed
+from edr.controllers.edrrealtime import EDRRealtimeUpdates, RemoteThread, EDRSEEReader # EDR_INTERNAL
 
 class TestEDRRealtimeUpdates(unittest.TestCase):
     def setUp(self):
         self.mock_callback = MagicMock()
         
         # Patch globally for the test class scope to catch _reset() re-instantiations
-        self.remote_patch = patch('edrrealtime.RemoteThread')
-        self.reader_patch = patch('edrrealtime.EDRSEEReader')
+        self.remote_patch = patch('edr.controllers.edrrealtime.RemoteThread')
+        self.reader_patch = patch('edr.controllers.edrrealtime.EDRSEEReader')
         
         self.mock_remote_class = self.remote_patch.start()
         self.mock_reader_class = self.reader_patch.start()
@@ -67,7 +66,7 @@ class TestRemoteThread(unittest.TestCase):
         # but we need to prevent network calls.
         self.thread = RemoteThread(self.queue, "http://endpoint", self.authenticator)
 
-    @patch('edrrealtime.ClosableSSEClient')
+    @patch('edr.controllers.edrrealtime.ClosableSSEClient')
     def test_run_processes_messages(self, MockSSE):
         # Setup mock SSE stream
         msg1 = MagicMock()
@@ -96,7 +95,7 @@ class TestEDRSEEReader(unittest.TestCase):
         self.queue = Queue()
         self.callback = MagicMock()
         # Prevent thread start in init
-        with patch('edrrealtime.EDRSEEReader.setup_see_thread') as mock_setup:
+        with patch('edr.controllers.edrrealtime.EDRSEEReader.setup_see_thread') as mock_setup:
             self.reader = EDRSEEReader(self.queue, self.callback, "test_kind")
             self.mock_setup = mock_setup
 

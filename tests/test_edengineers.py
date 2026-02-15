@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import MagicMock, patch
-from edengineers import EDEngineers, EDEngineerFactory, EDKitFowler # EDR_INTERNAL
+from edr.models.edengineers import EDEngineers, EDEngineerFactory, EDKitFowler
 
 class TestEDEngineers(unittest.TestCase):
     def setUp(self):

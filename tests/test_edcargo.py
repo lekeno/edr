@@ -1,15 +1,7 @@
-import sys
-import os
-
-# Add project and edr directories to sys.path
-current_dir = os.path.dirname(__file__)
-edr_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
-root_dir = os.path.abspath(os.path.join(edr_dir, os.pardir))
-sys.path.insert(0, root_dir)
-sys.path.insert(0, edr_dir)
+# sys.path injection removed (handled by config_tests.py)
 
 from unittest import TestCase, main
-from edcargo import EDCargo # EDR_INTERNAL
+from edr.models.edcargo import EDCargo # EDR_INTERNAL
 
 class TestEDCargo(TestCase):
     def setUp(self):

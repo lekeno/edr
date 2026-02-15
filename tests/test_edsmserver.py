@@ -1,26 +1,26 @@
 
 import unittest
 from unittest.mock import MagicMock, patch, PropertyMock
-from edsmserver import EDSMServer
+from edr.controllers.edsmserver import EDSMServer
 import json
 import requests
 
 class TestEDSMServer(unittest.TestCase):
     def setUp(self):
         # Mock dependencies
-        self.config_patcher = patch('edsmserver.EDR_CONFIG')
+        self.config_patcher = patch('edr.controllers.edsmserver.EDR_CONFIG')
         self.mock_config = self.config_patcher.start()
         self.mock_config.edsm_api_key.return_value = "TEST_API_KEY"
         self.mock_config.edsm_server.return_value = "https://www.edsm.net"
         
-        self.cache_patcher = patch('edsmserver.EDRHttpCache')
+        self.cache_patcher = patch('edr.controllers.edsmserver.EDRHttpCache')
         self.mock_cache = self.cache_patcher.start()
         
-        self.backoff_patcher = patch('edsmserver.Backoff')
+        self.backoff_patcher = patch('edr.controllers.edsmserver.Backoff')
         self.mock_backoff = self.backoff_patcher.start()
         
         # Patch the SESSION on the CLASS
-        self.session_patcher = patch('edsmserver.EDSMServer.SESSION')
+        self.session_patcher = patch('edr.controllers.edsmserver.EDSMServer.SESSION')
         self.mock_session = self.session_patcher.start()
         
         self.server = EDSMServer()

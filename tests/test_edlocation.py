@@ -1,5 +1,5 @@
 from unittest import TestCase, main
-from edentities import EDLocation # EDR_INTERNAL
+from edr.models.edsitu import EDLocation
 
 class TestEDLocation(TestCase):
     def test_is_anarchy_or_lawless(self):

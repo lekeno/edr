@@ -1,7 +1,7 @@
 
 import unittest
 from unittest.mock import MagicMock, patch
-from edrsettlementfinder import EDRSettlementFinder
+from edr.controllers.edrsettlementfinder import EDRSettlementFinder
 
 class TestEDRSettlementFinder(unittest.TestCase):
     def setUp(self):
@@ -10,7 +10,7 @@ class TestEDRSettlementFinder(unittest.TestCase):
         self.callback = MagicMock()
         self.finder = EDRSettlementFinder("Sol", self.checker, self.edr_systems, self.callback)
         # Mock translation
-        self.patcher = patch('edrsettlementfinder._', side_effect=lambda x: x)
+        self.patcher = patch('edr.controllers.edrsettlementfinder._', side_effect=lambda x: x)
         self.patcher.start()
 
     def tearDown(self):
@@ -39,7 +39,7 @@ class TestEDRSettlementFinder(unittest.TestCase):
         # Current system fails
         self.edr_systems.system.return_value = None
         
-        # Neighbor system
+        # Neighbors
         self.edr_systems.systems_within_radius.return_value = [{"name": "Neighbor"}]
         self.checker.check_system.return_value = True
         

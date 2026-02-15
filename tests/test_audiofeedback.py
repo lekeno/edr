@@ -4,26 +4,26 @@ from unittest.mock import patch, MagicMock
 import sys
 import os
 
-from audiofeedback import EDRSoundEffects, SFXConfig, AudioFeedback
+from edr.utils.audiofeedback import EDRSoundEffects, SFXConfig, AudioFeedback
 
 class TestAudioFeedback(unittest.TestCase):
-    @patch('audiofeedback.os.path.exists')
-    @patch('audiofeedback.cp.ConfigParser')
+    @patch('edr.utils.audiofeedback.os.path.exists')
+    @patch('edr.utils.audiofeedback.cp.ConfigParser')
     def test_sfx_config_defaults(self, mock_cp, mock_exists):
         mock_exists.return_value = False # No user config
         sfx = SFXConfig("default.ini", "user.ini")
         # Should fallback
         self.assertEqual(sfx.config, sfx.fallback_config)
 
-    @patch('audiofeedback.os.path.exists')
-    @patch('audiofeedback.cp.ConfigParser')
+    @patch('edr.utils.audiofeedback.os.path.exists')
+    @patch('edr.utils.audiofeedback.cp.ConfigParser')
     def test_sfx_config_user(self, mock_cp, mock_exists):
         mock_exists.return_value = True # Has user config
         sfx = SFXConfig("default.ini", "user.ini")
         sfx.config.read.assert_called()
 
-    @patch('audiofeedback.SFXConfig')
-    @patch('audiofeedback.AudioFeedback')
+    @patch('edr.utils.audiofeedback.SFXConfig')
+    @patch('edr.utils.audiofeedback.AudioFeedback')
     def test_edr_sound_effects_init(self, MockAudio, MockConfig):
         MockConfig.return_value.snd.return_value = "sound.wav"
         

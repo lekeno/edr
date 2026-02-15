@@ -4,17 +4,15 @@ import json
 import sys
 import os
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'edr')))
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from edrdiscord import EDRDiscordWebhook, EDRDiscordMessage, EDRDiscordIntegration, EDRDiscordSimpleMessage, EDRDiscordEmbed, EDRDiscordField
+# sys.path injection removed
+from edr.controllers.edrdiscord import EDRDiscordWebhook, EDRDiscordMessage, EDRDiscordIntegration, EDRDiscordSimpleMessage, EDRDiscordEmbed, EDRDiscordField
 
 class TestEDRDiscordWebhook(unittest.TestCase):
     def setUp(self):
         self.webhook_url = "https://discord.com/api/webhooks/12345/abcde"
         self.webhook = EDRDiscordWebhook(self.webhook_url)
 
-    @patch('edrdiscord.requests.Session')
+    @patch('edr.controllers.edrdiscord.requests.Session')
     def test_send_text_success(self, mock_session):
         mock_response = Mock()
         mock_response.status_code = 204
@@ -26,14 +24,14 @@ class TestEDRDiscordWebhook(unittest.TestCase):
             self.assertTrue(success)
             mock_session.return_value.post.assert_called_once()
     
-    @patch('edrdiscord.requests.Session')
+    @patch('edr.controllers.edrdiscord.requests.Session')
     def test_send_text_throttled(self, mock_session):
         self.webhook.backoff.throttle()
         success = self.webhook.send_text("Hello World")
         self.assertFalse(success)
         mock_session.return_value.post.assert_not_called()
 
-    @patch('edrdiscord.requests.Session')
+    @patch('edr.controllers.edrdiscord.requests.Session')
     def test_send_complex_message(self, mock_session):
         mock_response = Mock()
         mock_response.status_code = 204
@@ -90,7 +88,7 @@ class TestEDRDiscordIntegration(unittest.TestCase):
         # Mock configs to avoid file I/O and external dependencies
         self.integration.channels_players_cfg = {} 
 
-    @patch('edrdiscord.EDRDiscordWebhook.send')
+    @patch('edr.controllers.edrdiscord.EDRDiscordWebhook.send')
     def test_process_incoming_direct(self, mock_send):
         entry = {
             "event": "ReceiveText",
@@ -112,7 +110,7 @@ class TestEDRDiscordIntegration(unittest.TestCase):
         self.assertTrue(result)
         self.integration.incoming['player'].send.assert_called_once()
 
-    @patch('edrdiscord.EDRDiscordWebhook.send')
+    @patch('edr.controllers.edrdiscord.EDRDiscordWebhook.send')
     def test_process_outgoing_broadcast(self, mock_send):
         entry = {
             "event": "SendText",

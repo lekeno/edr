@@ -1,11 +1,7 @@
 import unittest
-import sys
-import os
+# sys.path injection removed
 
-# Setup paths
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from edshield import EDShieldingFactory, EDShieldGenerator, EDShieldBooster, EDPowerDistributor, EDShieldCellBank # EDR_INTERNAL
+from edr.models.edshield import EDShieldingFactory, EDShieldGenerator, EDShieldBooster, EDPowerDistributor, EDShieldCellBank # EDR_INTERNAL
 
 class TestEDShield(unittest.TestCase):
     def test_factory_generator(self):

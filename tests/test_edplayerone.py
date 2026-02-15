@@ -1,7 +1,7 @@
 
 from unittest import TestCase, main
-from edentities import EDPlayerOne # EDR_INTERNAL
-import edvehicles
+from edr.models.edentities import EDPlayerOne # EDR_INTERNAL
+import edr.models.edvehicles as edvehicles
 
 class TestEDPlayerOne(TestCase):
     def test_in_solo_private(self):

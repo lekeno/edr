@@ -1,5 +1,6 @@
 import unittest
-from edrsysstacheck import EDRSystemStationCheck, EDRApexSystemStationCheck
+from unittest.mock import patch
+from edr.controllers.edrsysstacheck import EDRSystemStationCheck, EDRApexSystemStationCheck
 
 class TestEDRSystemStationCheck(unittest.TestCase):
     def setUp(self):

@@ -2,12 +2,12 @@
 import unittest
 from unittest.mock import MagicMock, patch
 import datetime
-from edr.edrlegalrecords import EDRLegalRecords
+from edr.models.edrlegalrecords import EDRLegalRecords
 
 class TestEDRLegalRecords(unittest.TestCase):
     def setUp(self):
         self.server = MagicMock()
-        with patch('edr.edrlegalrecords.EDR_CONFIG') as mock_config:
+        with patch('edr.models.edrlegalrecords.EDR_CONFIG') as mock_config:
             mock_config.lru_max_size.return_value = 100
             mock_config.legal_records_max_age.return_value = 3600
             mock_config.legal_records_recent_threshold.return_value = 30 * 24 * 3600

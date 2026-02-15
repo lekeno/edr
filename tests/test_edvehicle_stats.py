@@ -3,14 +3,12 @@ import sys
 import os
 
 # Setup paths
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-# Also add edr directory itself to resolve imports like 'edrconfig' if they are top-level
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../edr')))
+# sys.path injection removed
 
-from edr.edmodule import EDModule, EDResistances
-from edr.edvehicles import EDSidewinder, EDAnaconda
-from edr.edshield import EDShieldGenerator, EDShieldBooster, EDGuardianShieldReinforcementPackage
-from edr.edarmour import EDHullReinforcementPackage
+from edr.models.edmodule import EDModule, EDResistances
+from edr.models.edvehicles import EDSidewinder, EDAnaconda
+from edr.models.edshield import EDShieldGenerator, EDShieldBooster, EDGuardianShieldReinforcementPackage
+from edr.models.edarmour import EDHullReinforcementPackage
 
 class TestEDVehicleStats(unittest.TestCase):
     def test_shield_strength_no_boosters(self):

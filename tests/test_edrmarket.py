@@ -1,7 +1,7 @@
 
 import unittest
 from unittest.mock import patch, MagicMock
-from edrmarket import EDRMarket
+from edr.models.edrmarket import EDRMarket
 
 class TestEDRMarket(unittest.TestCase):
     def setUp(self):
@@ -13,7 +13,7 @@ class TestEDRMarket(unittest.TestCase):
         self.assertEqual(self.market.normalize_commodity_name("indite"), "indite")
         self.assertEqual(self.market.normalize_commodity_name("$palladium_name;"), "palladium")
     
-    @patch('edrmarket.EDMarketReader')
+    @patch('edr.models.edrmarket.EDMarketReader')
     def test_update_success(self, MockReader):
         # Mock the reader
         mock_reader_instance = MockReader.return_value
@@ -50,7 +50,7 @@ class TestEDRMarket(unittest.TestCase):
         self.assertIn('gold', self.market.commodities)
         self.assertEqual(self.market.commodities['gold']['buyPrice'], 9500)
 
-    @patch('edrmarket.EDMarketReader')
+    @patch('edr.models.edrmarket.EDMarketReader')
     def test_update_failure(self, MockReader):
         MockReader.return_value.process.return_value = None
         result = self.market.update()

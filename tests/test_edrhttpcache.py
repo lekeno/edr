@@ -6,10 +6,10 @@ import datetime
 import time
 
 # Add 'edr' directory path to allow imports
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'edr')))
 
-from edrhttpcache import EDRHttpCache
-from lrucache import LRUCache
+
+from edr.utils.edrhttpcache import EDRHttpCache
+from edr.utils.lrucache import LRUCache
 
 class TestEDRHttpCache(unittest.TestCase):
     def test_set_get(self):
