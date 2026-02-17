@@ -100,7 +100,7 @@ ENV/
 # mypy
 .mypy_cache/
 edr/config/config.ini
-.vscode/
+.vscode
 edr/data/cmdrsdex.json
 edr/data/cmdrsdex.0.5.0.beta.3.json
 edr/private/fbaa.p
@@ -116,3 +116,5 @@ test_updater.py
 # Private/Sensitive Data
 edr/private/
 edr/db/rawdepletables
+edr/backup/
+edr/updates/
