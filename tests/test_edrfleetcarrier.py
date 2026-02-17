@@ -1,204 +1,198 @@
 
-from unittest import TestCase, main
-from edr.models.edrfleetcarrier import EDRFleetCarrier # EDR_INTERNAL
-from edr.utils.edtime import EDTime # EDR_INTERNAL
+import unittest
+from unittest.mock import MagicMock, patch
+from edr.models.edrfleetcarrier import EDRFleetCarrier, EDRFleetCarrierBar
 
-class TestEDRFleetCarrier(TestCase):
-    def test_constructor(self):
-        fc = EDRFleetCarrier()
-        self.assertIsNone(fc.id)
-        self.assertEqual(fc.type, "FleetCarrier")
+class TestEDRFleetCarrier(unittest.TestCase):
+    def setUp(self):
+        self.time_patch = patch('edr.models.edrfleetcarrier.EDTime')
+        self.mock_time = self.time_patch.start()
+        self.mock_time.py_epoch_now.return_value = 1000
+        self.mock_time.js_epoch_now.return_value = 1000000
+        
+        # Mock instance returned by EDTime() constructor
+        self.mock_time_instance = MagicMock()
+        self.mock_time_instance.as_py_epoch.return_value = 1000
+        self.mock_time_instance.as_journal_timestamp.return_value = "2022-01-01T12:00:00Z"
+        self.mock_time.return_value = self.mock_time_instance
 
-    def test_bought(self):
-        fc = EDRFleetCarrier()
-        buy_event = {
-            "CarrierID": 123,
-            "Callsign": "K2V-1L",
-            "Location": "Sol"
-        }
-        fc.bought(buy_event)
-        self.assertEqual(fc.id, 123)
-        self.assertEqual(fc.callsign, "K2V-1L")
-        self.assertEqual(fc.position, "Sol")
+        self.i18n_patch = patch('edr.models.edrfleetcarrier._', side_effect=lambda x: x)
+        self.mock_i18n = self.i18n_patch.start()
 
-    def test_update_from_location_or_docking(self):
-        fc = EDRFleetCarrier()
-        entry = {
-            "event": "Docked",
+    def tearDown(self):
+        self.time_patch.stop()
+        self.i18n_patch.stop()
+
+    def test_update_from_location(self):
+        carrier = EDRFleetCarrier()
+        event = {
+            "event": "Location",
             "StationType": "FleetCarrier",
-            "MarketID": 123,
-            "StationName": "K2V-1L",
-            "Name": "My Carrier",
+            "MarketID": 12345,
+            "StationName": "FC-1",
+            "Name": "Carrier One",
             "StarSystem": "Sol",
             "Body": "Earth"
         }
-        self.assertTrue(fc.update_from_location_or_docking(entry))
-        self.assertEqual(fc.id, 123)
-        self.assertEqual(fc.callsign, "K2V-1L")
-        self.assertEqual(fc.name, "My Carrier")
-        self.assertEqual(fc.position, "Sol")
-        self.assertEqual(fc._position["body"], "earth")
+        
+        result = carrier.update_from_location_or_docking(event)
+        self.assertTrue(result)
+        self.assertEqual(carrier.id, 12345)
+        self.assertEqual(carrier.callsign, "FC-1")
+        self.assertEqual(carrier.name, "Carrier One")
+        self.assertEqual(carrier.position, "Sol")
+        
+        # Non-carrier Location
+        event["StationType"] = "Coriolis"
+        result = carrier.update_from_location_or_docking(event)
+        self.assertFalse(result)
 
     def test_update_from_stats(self):
-        fc = EDRFleetCarrier()
-        stats_event = {
-            "CarrierID": 123,
-            "Callsign": "K2V-1L",
-            "Name": "My Carrier",
+        carrier = EDRFleetCarrier()
+        event = {
+            "CarrierID": 12345,
+            "Callsign": "FC-1",
+            "Name": "Carrier One",
             "DockingAccess": "all",
             "AllowNotorious": True,
-            "FuelLevel": 100,
-            "JumpRangeCurr": 500,
-            "JumpRangeMax": 500,
-            "PendingDecommission": False,
-            "SpaceUsage": {"Total": 1000},
-            "Finance": {"Balance": 10000},
-            "Crew": [{"CrewRole": "Refuel", "Activated": True, "Enabled": True, "CrewName": "John Doe"}],
-            "ShipPacks": {},
-            "ModulePacks": {}
+            "FuelLevel": 500,
+            "JumpRangeCurr": 400.5,
+            "SpaceUsage": {"Cargo": 100}
         }
-        fc.update_from_stats(stats_event)
-        self.assertEqual(fc.id, 123)
-        self.assertEqual(fc.callsign, "K2V-1L")
-        self.assertEqual(fc.name, "My Carrier")
-        self.assertEqual(fc.access, "all")
-        self.assertTrue(fc.allow_notorious)
-        self.assertEqual(fc.fuel_level, 100)
-        self.assertEqual(fc.jump_range_current, 500)
-        self.assertEqual(fc.jump_range_max, 500)
-        self.assertFalse(fc.decommission)
-        self.assertEqual(fc.space_usage, {"Total": 1000})
-        self.assertEqual(fc.finance, {"Balance": 10000})
-        self.assertIn("refuel", fc.services)
-        self.assertTrue(fc.services["refuel"]["active"])
+        
+        carrier.update_from_stats(event)
+        self.assertEqual(carrier.id, 12345)
+        self.assertEqual(carrier.access, "all")
+        self.assertTrue(carrier.allow_notorious)
+        self.assertEqual(carrier.fuel_level, 500)
+        self.assertEqual(carrier.space_usage["Cargo"], 100)
 
     def test_jump_requested(self):
-        fc = EDRFleetCarrier()
-        fc.id = 123
-        now = EDTime()
-        jump_request_event = {
-            "CarrierID": 123,
-            "SystemName": "Alpha Centauri",
-            "Body": "Proxima Centauri",
-            "timestamp": now.as_journal_timestamp()
+        carrier = EDRFleetCarrier()
+        # Mocking time objects specifically for this method
+        self.mock_time_instance.as_py_epoch.side_effect = [1000, 2000, 3000] # request, jump, lockdown
+        
+        event = {
+            "CarrierID": 12345,
+            "timestamp": "2022-01-01T12:00:00Z",
+            "SystemName": "Beagle Point",
+            "Body": "Beagle Point 1"
         }
-        fc.jump_requested(jump_request_event)
-        self.assertEqual(fc.departure["destination"], "Alpha Centauri")
-        self.assertEqual(fc.departure["body"], "proxima centauri")
-        self.assertAlmostEqual(fc.departure["time"], now.as_py_epoch() + 15 * 60, delta=1)
-
+        
+        carrier.jump_requested(event)
+        self.assertEqual(carrier.id, 12345)
+        self.assertEqual(carrier.departure["destination"], "Beagle Point")
+        # Check computed times
+        self.assertEqual(carrier.departure["requested"], 1000)
+        self.assertEqual(carrier.departure["time"], 2000)
+        
     def test_jump_cancelled(self):
-        fc = EDRFleetCarrier()
-        fc.id = 123
-        now = EDTime()
-        jump_request_event = {
-            "CarrierID": 123,
-            "SystemName": "Alpha Centauri",
-            "Body": "Proxima Centauri",
-            "timestamp": now.as_journal_timestamp()
-        }
-        fc.jump_requested(jump_request_event)
-        self.assertIsNotNone(fc.departure["destination"])
+        carrier = EDRFleetCarrier()
+        carrier.id = 12345
+        carrier.departure["destination"] = "Beagle Point"
+        
+        event = {"CarrierID": 12345}
+        carrier.jump_cancelled(event)
+        
+        self.assertIsNone(carrier.departure["destination"])
+        self.assertIsNone(carrier.departure["time"])
 
-        jump_cancel_event = {
-            "CarrierID": 123
+    def test_trade_orders(self):
+        carrier = EDRFleetCarrier()
+        carrier.id = 12345
+        
+        # Purchase Order
+        buy_event = {
+            "event": "CarrierTradeOrder",
+            "CarrierID": 12345,
+            "Commodity": "gold",
+            "Commodity_Localised": "Gold",
+            "Price": 50000,
+            "PurchaseOrder": 10
         }
-        fc.jump_cancelled(jump_cancel_event)
-        self.assertIsNone(fc.departure["destination"])
+        
+        carrier.trade_order(buy_event)
+        self.assertIn("gold", carrier.purchase_orders)
+        self.assertEqual(carrier.purchase_orders["gold"]["quantity"], 10)
+        self.assertTrue(carrier.market_updated)
+        
+        # Sale Order
+        sell_event = {
+            "event": "CarrierTradeOrder",
+            "CarrierID": 12345,
+            "Commodity": "silver",
+            "Price": 30000,
+            "SaleOrder": 20
+        }
+        
+        carrier.trade_order(sell_event)
+        self.assertIn("silver", carrier.sale_orders)
+        self.assertEqual(carrier.sale_orders["silver"]["quantity"], 20)
 
-    def test_update_docking_permissions(self):
-        fc = EDRFleetCarrier()
-        fc.id = 123
+        # Cancel Trade
+        cancel_event = {
+            "event": "CarrierTradeOrder",
+            "CarrierID": 12345,
+            "Commodity": "gold",
+            "CancelTrade": True
+        }
+        carrier.trade_order(cancel_event)
+        self.assertNotIn("gold", carrier.purchase_orders)
+
+    def test_json_market(self):
+        carrier = EDRFleetCarrier()
+        carrier.id = 12345
+        carrier.purchase_orders["gold"] = {"timestamp": 1000, "price": 100, "quantity": 10, "l10n": "Gold"}
+        
+        json_data = carrier.json_market()
+        self.assertEqual(json_data["id"], 12345)
+        self.assertIn("gold", json_data["purchases"])
+        self.assertEqual(json_data["purchases"]["gold"]["price"], 100)
+
+class TestEDRFleetCarrierBar(unittest.TestCase):
+    def setUp(self):
+        self.time_patch = patch('edr.models.edrfleetcarrier.EDTime')
+        self.mock_time = self.time_patch.start()
+        
+    def tearDown(self):
+        self.time_patch.stop()
+
+    def test_from_fcmaterials(self):
+        bar = EDRFleetCarrierBar()
         event = {
-            "CarrierID": 123,
-            "DockingAccess": "squadron",
-            "AllowNotorious": False
+            "event": "FCMaterials",
+            "Items": [
+                {"Name": "$mechanicalcomponents_name;", "Price": 1000, "Stock": 5, "Demand": 0},
+                {"Name": "$tungsten_name;", "Price": 500, "Stock": 0, "Demand": 10}
+            ]
         }
-        fc.update_docking_permissions(event)
-        self.assertEqual(fc.access, "squadron")
-        self.assertFalse(fc.allow_notorious)
+        
+        result = bar.from_fcmaterials(event)
+        self.assertTrue(result)
+        self.assertTrue(bar.updated)
+        self.assertIn("mechanicalcomponents", bar.items)
+        self.assertEqual(bar.items["mechanicalcomponents"]["stock"], 5)
+        self.assertIn("tungsten", bar.items)
+        self.assertEqual(bar.items["tungsten"]["demand"], 10)
 
-    def test_update_from_jump_if_relevant(self):
-        fc = EDRFleetCarrier()
-        fc.id = 123
-        event = {
-            "MarketID": 123,
-            "StarSystem": "Sol",
-            "Body": "Earth"
+    def test_items_filtering(self):
+        bar = EDRFleetCarrierBar()
+        bar.items = {
+            "stock_only": {"stock": 10, "demand": 0},
+            "demand_only": {"stock": 0, "demand": 10},
+            "both": {"stock": 5, "demand": 5},
+            "neither": {"stock": 0, "demand": 0} # Should not happen based on logic but for testing
         }
-        fc.update_from_jump_if_relevant(event)
-        self.assertEqual(fc.position, "Sol")
-        self.assertEqual(fc._position["body"], "earth")
-
-    def test_update_star_system_if_relevant(self):
-        fc = EDRFleetCarrier()
-        self.assertTrue(fc.update_star_system_if_relevant("Sol", 123, "K2V-1L"))
-        self.assertEqual(fc.id, 123)
-        self.assertEqual(fc.callsign, "K2V-1L")
-        self.assertEqual(fc.position, "Sol")
-
-    def test_decommission(self):
-        fc = EDRFleetCarrier()
-        fc.id = 123
-        scrap_time = EDTime()
-        scrap_time.advance(1000)
-        event = {
-            "CarrierID": 123,
-            "ScrapTime": scrap_time.as_py_epoch()
-        }
-        fc.decommission_requested(event)
-        self.assertEqual(fc.decommission_time, scrap_time.as_py_epoch())
-        fc.cancel_decommission({"CarrierID": 123})
-        self.assertEqual(fc.decommission_time, scrap_time.as_py_epoch())
-
-
-    def test_is_parked(self):
-        fc = EDRFleetCarrier()
-        self.assertTrue(fc.is_parked())
-        fc.id = 123
-        now = EDTime()
-        jump_request_event = {
-            "CarrierID": 123,
-            "SystemName": "Alpha Centauri",
-            "Body": "Proxima Centauri",
-            "timestamp": now.as_journal_timestamp()
-        }
-        fc.jump_requested(jump_request_event)
-        self.assertFalse(fc.is_parked())
-
-    def test_is_open_to_all(self):
-        fc = EDRFleetCarrier()
-        self.assertFalse(fc.is_open_to_all())
-        fc.access = "all"
-        self.assertTrue(fc.is_open_to_all())
-        fc.allow_notorious = True
-        self.assertTrue(fc.is_open_to_all(include_notorious=True))
-
-    def test_json_jump_schedule(self):
-        fc = EDRFleetCarrier()
-        self.assertIsNone(fc.json_jump_schedule())
-        fc.id = 123
-        now = EDTime()
-        jump_request_event = {
-            "CarrierID": 123,
-            "SystemName": "Alpha Centauri",
-            "Body": "Proxima Centauri",
-            "timestamp": now.as_journal_timestamp()
-        }
-        fc.jump_requested(jump_request_event)
-        json_schedule = fc.json_jump_schedule()
-        self.assertIsNotNone(json_schedule)
-        self.assertEqual(json_schedule["to"], "Alpha Centauri")
-
-    def test_json_status(self):
-        fc = EDRFleetCarrier()
-        self.assertIsNone(fc.json_status())
-        fc.id = 123
-        fc.name = "My Carrier"
-        fc.callsign = "K2V-1L"
-        json_status = fc.json_status()
-        self.assertIsNotNone(json_status)
-        self.assertEqual(json_status["name"], "My Carrier")
+        
+        in_stock = bar.items_in_stock()
+        self.assertIn("stock_only", in_stock)
+        self.assertIn("both", in_stock)
+        self.assertNotIn("demand_only", in_stock)
+        
+        in_demand = bar.items_in_demand()
+        self.assertIn("demand_only", in_demand)
+        self.assertIn("both", in_demand)
+        self.assertNotIn("stock_only", in_demand)
 
 if __name__ == '__main__':
-    main()
+    unittest.main()

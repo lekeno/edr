@@ -1,99 +1,111 @@
 
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 from edr.models.edrmarket import EDRMarket
 
 class TestEDRMarket(unittest.TestCase):
     def setUp(self):
-        self.market = EDRMarket()
+        self.reader_patch = patch('edr.models.edrmarket.EDMarketReader')
+        self.mock_reader_cls = self.reader_patch.start()
+        self.mock_reader = self.mock_reader_cls.return_value
 
-    def test_normalize_commodity_name(self):
-        self.assertEqual(self.market.normalize_commodity_name("$gold_name;"), "gold")
-        self.assertEqual(self.market.normalize_commodity_name("$silver_name"), "silver")
-        self.assertEqual(self.market.normalize_commodity_name("indite"), "indite")
-        self.assertEqual(self.market.normalize_commodity_name("$palladium_name;"), "palladium")
-    
-    @patch('edr.models.edrmarket.EDMarketReader')
-    def test_update_success(self, MockReader):
-        # Mock the reader
-        mock_reader_instance = MockReader.return_value
+    def tearDown(self):
+        self.reader_patch.stop()
+        EDRMarket.PRICE_THRESHOLDS = {}
+
+    def test_init(self):
+        market = EDRMarket()
+        self.assertIsNone(market.market_id)
+        self.assertEqual(market.commodities, {})
+
+    def test_update_success(self):
+        market = EDRMarket()
+        
         market_data = {
-            'timestamp': '2025-01-01T12:00:00Z',
-            'StarSystem': 'Sol',
-            'StationName': 'Abraham Lincoln',
-            'StationType': 'Orbis',
-            'CarrierDockingAccess': 'all',
+            'timestamp': "2022-01-01T12:00:00Z",
+            'StarSystem': "Sol",
+            'StationName': "Galileo",
+            'StationType': "Orbis",
+            'CarrierDockingAccess': "all",
             'MarketID': 12345,
             'Items': [
                 {
-                    'Name': '$gold_name;',
-                    'MeanPrice': 9000,
-                    'BuyPrice': 9500,
-                    'Stock': 100,
-                    'StockBracket': 2,
-                    'SellPrice': 9200,
-                    'Demand': 500,
-                    'DemandBracket': 3
+                    'Name': 'gold', 'MeanPrice': 10000, 
+                    'BuyPrice': 9000, 'Stock': 100, 
+                    'SellPrice': 11000, 'Demand': 50
+                },
+                {
+                    'Name': 'silver', 'MeanPrice': 5000, 
+                    'BuyPrice': 4500, 'Stock': 200, 
+                    'SellPrice': 5500, 'Demand': 100
                 }
             ]
         }
-        mock_reader_instance.process.return_value = market_data
+        self.mock_reader.process.return_value = market_data
         
-        # Run update
-        result = self.market.update()
+        result = market.update()
         
-        # Verify
         self.assertTrue(result)
-        self.assertEqual(self.market.system, 'Sol')
-        self.assertEqual(self.market.station_name, 'Abraham Lincoln')
-        self.assertEqual(self.market.market_id, 12345)
-        self.assertIn('gold', self.market.commodities)
-        self.assertEqual(self.market.commodities['gold']['buyPrice'], 9500)
+        self.assertEqual(market.market_id, 12345)
+        self.assertEqual(market.system, "Sol")
+        self.assertEqual(market.station_name, "Galileo")
+        self.assertIn("gold", market.commodities)
+        self.assertIn("silver", market.commodities)
+        self.assertEqual(market.commodities["gold"]["stock"], 100)
 
-    @patch('edr.models.edrmarket.EDMarketReader')
-    def test_update_failure(self, MockReader):
-        MockReader.return_value.process.return_value = None
-        result = self.market.update()
+    def test_update_failure(self):
+        market = EDRMarket()
+        self.mock_reader.process.return_value = None
+        
+        result = market.update()
         self.assertFalse(result)
 
-    def test_noteworthy_filtering(self):
-        # Setup fake data
-        self.market.PRICE_THRESHOLDS = {
-            "gold": {"buyThreshold": 4000, "sellThreshold": 10000},
-            "voidopal": {"buyThreshold": 200000, "sellThreshold": 800000}
-        }
-        self.market.access = "all"
-        
-        # Case 1: Gold is cheap (noteworthy buy)
-        self.market.commodities = {
-            "gold": {"name": "gold", "buyPrice": 3000, "sellPrice": 3200}, # Cheap!
-            "silver": {"name": "silver", "buyPrice": 500, "sellPrice": 550} # Ignored
-        }
-        self.market._noteworthyfy()
-        self.assertIn("gold", self.market.noteworthy_commodities)
-        self.assertNotIn("silver", self.market.noteworthy_commodities)
+    def test_normalization(self):
+        market = EDRMarket()
+        self.assertEqual(market.normalize_commodity_name("Gold"), "gold")
+        self.assertEqual(market.normalize_commodity_name("$gold_name;"), "gold")
+        self.assertEqual(market.normalize_commodity_name("biowaste"), "biowaste")
 
-        # Case 2: Gold is average (not noteworthy)
-        self.market.commodities = {
-            "gold": {"name": "gold", "buyPrice": 5000, "sellPrice": 5200}
-        }
-        self.market._noteworthyfy()
-        self.assertNotIn("gold", self.market.noteworthy_commodities)
-
-        # Case 3: Void Opals are expensive (noteworthy sell - based on buyPrice logic in code, wait logic says buyPrice >= sellThreshold? That seems to imply we are selling TO station? Or buying FROM station?
-        # Code: commodity['buyPrice'] >= self.PRICE_THRESHOLDS[name]["sellThreshold"]
-        # If I can buy it for X, and X is >= SellThreshold... that seems odd.
-        # Usually:
-        # If I can BUY for LOW, it's good (Buy < BuyThreshold).
-        # If I can SELL for HIGH, it's good (Sell > SellThreshold).
-        # But the code checks `commodity['buyPrice']` for both.
-        # Let's preserve logic for now, but ensure test matches code.
+    def test_noteworthy(self):
+        market = EDRMarket()
         
-        self.market.commodities = {
-            "gold": {"name": "gold", "buyPrice": 12000, "sellPrice": 11000} # buyPrice > 10000
+        # Inject thresholds
+        EDRMarket.PRICE_THRESHOLDS = {
+            "gold": {"buyThreshold": 8000, "sellThreshold": 12000},
+            "voidopals": {"sellThreshold": 500000}
         }
-        self.market._noteworthyfy()
-        self.assertIn("gold", self.market.noteworthy_commodities)
+        
+        market_data = {
+            'Items': [
+                {'Name': 'gold', 'BuyPrice': 7000, 'SellPrice': 9000}, # Buy is low enough -> noteworthy
+                {'Name': 'silver', 'BuyPrice': 4000, 'SellPrice': 5000}, # No threshold
+                {'Name': 'voidopals', 'BuyPrice': 100000, 'SellPrice': 600000} # Sell is high enough -> noteworthy
+            ],
+            'CarrierDockingAccess': "all"
+        }
+        self.mock_reader.process.return_value = market_data
+        
+        market.update()
+        
+        self.assertIn("gold", market.noteworthy_commodities)
+        self.assertIn("voidopals", market.noteworthy_commodities)
+        self.assertNotIn("silver", market.noteworthy_commodities)
+
+    def test_noteworthy_ignore_private(self):
+        market = EDRMarket()
+        EDRMarket.PRICE_THRESHOLDS = {
+            "gold": {"buyThreshold": 8000}
+        }
+        
+        market_data = {
+            'Items': [{'Name': 'gold', 'BuyPrice': 7000}],
+            'CarrierDockingAccess': "squadron" # Not "all"
+        }
+        self.mock_reader.process.return_value = market_data
+        
+        market.update()
+        
+        self.assertEqual(len(market.noteworthy_commodities), 0)
 
 if __name__ == '__main__':
     unittest.main()

@@ -13,9 +13,17 @@ class TestEDRAfkDetector(unittest.TestCase):
 
     def test_process_passive_event(self):
         # Passive event should not update last_active_event
-        event = {"event": "Music", "timestamp": "2023-01-01T12:00:00Z"}
+        # Iterate through all defined passive events
+        for event_type in EDRAfkDetector.PASSIVE_EVENTS:
+            event = {"event": event_type, "timestamp": "2023-01-01T12:00:00Z"}
+            self.detector.process(event)
+            self.assertIsNone(self.detector.last_active_event, f"Event {event_type} should be passive")
+
+    def test_process_unknown_event(self):
+        # Unknown event should be treated as active
+        event = {"event": "UnknownEvent", "timestamp": "2023-01-01T12:00:00Z"}
         self.detector.process(event)
-        self.assertIsNone(self.detector.last_active_event)
+        self.assertEqual(self.detector.last_active_event, event)
 
     def test_process_active_event(self):
         # Active event SHOULD update last_active_event

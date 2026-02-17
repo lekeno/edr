@@ -387,7 +387,7 @@ class EDRInventory:
     EDR_INVENTORY_ITEM_CACHE = os.path.join(edr_root, 'cache', 'item_mats.v1.p')
     EDR_INVENTORY_CONSUMABLE_CACHE = os.path.join(edr_root, 'cache', 'consumables.v1.p')
     EDR_INVENTORY_DATA_CACHE = os.path.join(edr_root, 'cache', 'data_mats.v1.p')
-    EDR_INVENTORY_BACKPACK_CACHE = os.path.join(edr_root, 'cache', 'backpack.v1.p')
+    EDR_INVENTORY_BACKPACK_CACHE = os.path.join(edr_root, 'cache', 'backpack.v2.p')
 
     def __init__(self):
         self.initialized = False
@@ -468,16 +468,16 @@ class EDRInventory:
             self.backpack["manufactured"][cname] = thing["Count"]
 
         if "Items" in materials:
-            self.backpack["items"] = {}
+            self.backpack["item"] = {}
         for thing in materials.get("Items", []):
             cname = self.__c_name(thing["Name"])
-            self.backpack["items"][cname] = thing["Count"]
+            self.backpack["item"][cname] = thing["Count"]
 
         if "Components" in materials:
-            self.backpack["components"] = {}
+            self.backpack["component"] = {}
         for thing in materials.get("Components", []):
             cname = self.__c_name(thing["Name"])
-            self.backpack["components"][cname] = thing["Count"]
+            self.backpack["component"][cname] = thing["Count"]
 
         if "Data" in materials:
             self.backpack["data"] = {}
@@ -486,10 +486,10 @@ class EDRInventory:
             self.backpack["data"][cname] = thing["Count"]
 
         if "Consumables" in materials:
-            self.backpack["consumables"] = {}
+            self.backpack["consumable"] = {}
         for thing in materials.get("Consumables", []):
             cname = self.__c_name(thing["Name"])
-            self.backpack["consumables"][cname] = thing["Count"]
+            self.backpack["consumable"][cname] = thing["Count"]
 
         self.initialized = True
         self.inconsistencies = False

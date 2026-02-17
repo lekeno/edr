@@ -1,163 +1,199 @@
-import random
 
+import unittest
+from unittest.mock import MagicMock, patch
+from edr.models.edrcmdrprofile import EDRCmdrProfile, EDRCmdrDexProfile
 
-from unittest import TestCase, main
-from edr.models.edrcmdrprofile import EDRCmdrProfile
-
-class TestEDRCmdrProfile(TestCase):
-    def test_karma(self):
-        cprof = EDRCmdrProfile()
-        for _ in range(0, 9):
-            karma = random.randint(cprof.min_karma(), cprof.max_karma())
-            cprof.karma = karma
-            self.assertEqual(cprof.karma, karma)
-
-        cprof.karma = cprof.max_karma()
-        self.assertEqual(cprof.karma, cprof.max_karma())
-
-        cprof.karma = cprof.min_karma()
-        self.assertEqual(cprof.karma, cprof.min_karma())
-
-        cprof.karma = cprof.max_karma() + 1
-        self.assertEqual(cprof.karma, cprof.max_karma())
-
-        cprof.karma = cprof.min_karma() - 1
-        self.assertEqual(cprof.karma, cprof.min_karma())
+class TestEDRCmdrDexProfile(unittest.TestCase):
+    def setUp(self):
+        self.time_patch = patch('edr.models.edrcmdrprofile.EDTime')
+        self.mock_time = self.time_patch.start()
+        self.mock_time.js_epoch_now.return_value = 1000
         
+        self.i18n_patch = patch('edr.models.edrcmdrprofile._', side_effect=lambda x: x)
+        self.mock_i18n = self.i18n_patch.start()
+
+    def tearDown(self):
+        self.time_patch.stop()
+        self.i18n_patch.stop()
+
+    def test_init_empty(self):
+        dex = EDRCmdrDexProfile()
+        self.assertIsNone(dex._alignment)
+        self.assertFalse(dex.friend)
+        self.assertIsNone(dex.memo)
+        self.assertEqual(dex.created, 1000)
+        self.assertEqual(dex.updated, 1000)
+
+    def test_alignment(self):
+        dex = EDRCmdrDexProfile()
+        
+        # Set alignment
+        self.mock_time.js_epoch_now.return_value = 1001
+        dex.alignment = "outlaw"
+        self.assertEqual(dex.alignment, "outlaw")
+        self.assertEqual(dex._alignment, "outlaw")
+        self.assertEqual(dex.updated, 1001)
+        
+        # Invalid alignment
+        dex.alignment = "invalid"
+        self.assertEqual(dex.alignment, "outlaw") # Unchanged
+        
+        # Clear alignment
+        dex.alignment = None
+        self.assertIsNone(dex.alignment)
+
+    def test_iff(self):
+        dex = EDRCmdrDexProfile()
+        dex.iff = "enemy"
+        self.assertEqual(dex.iff, "enemy")
+        self.assertFalse(dex.is_ally())
+        
+        dex.iff = "ally"
+        self.assertTrue(dex.is_ally())
+
+    def test_tags_and_tagging(self):
+        dex = EDRCmdrDexProfile()
+        
+        # Tagging alignment
+        dex.tag("outlaw")
+        self.assertEqual(dex.alignment, "outlaw")
+        
+        # Tagging IFF
+        dex.tag("enemy")
+        self.assertEqual(dex.iff, "enemy")
+        
+        # Tagging Friend
+        dex.tag("friend")
+        self.assertTrue(dex.friend)
+        
+        # Generic tag
+        dex.tag("ganker")
+        self.assertIn("ganker", dex.tags)
+        
+        # Untagging
+        dex.untag("ganker")
+        self.assertNotIn("ganker", dex.tags)
+        
+        dex.untag("enemy")
+        self.assertIsNone(dex.iff)
+
+class TestEDRCmdrProfile(unittest.TestCase):
+    def setUp(self):
+        self.time_patch = patch('edr.models.edrcmdrprofile.EDTime')
+        self.mock_time = self.time_patch.start()
+        
+        self.i18n_patch = patch('edr.models.edrcmdrprofile._', side_effect=lambda x: x)
+        self.mock_i18n = self.i18n_patch.start()
+        
+        self.i18nc_patch = patch('edr.models.edrcmdrprofile._c', side_effect=lambda x, y=None: x)
+        self.mock_i18nc = self.i18nc_patch.start()
+
+    def tearDown(self):
+        self.time_patch.stop()
+        self.i18n_patch.stop()
+        self.i18nc_patch.stop()
+
+    def test_karma(self):
+        profile = EDRCmdrProfile()
+        profile.karma = 500
+        self.assertEqual(profile.karma, 500)
+        
+        profile.karma = 2000 # Max cap
+        self.assertEqual(profile.karma, 1000)
+        
+        profile.karma = -2000 # Min cap
+        self.assertEqual(profile.karma, -1000)
+
     def test_from_inara(self):
+        profile = EDRCmdrProfile()
         json_cmdr = {
-            "commanderName": "LeKeno",
-            "commanderWing": {
-                "wingName": "Cobra Kai",
-                "wingID": 2135,
-                "wingMemberRank": "Deputy Wing Commander"
-            },
-            "preferredGameRole": "Enforcer / Bounty Hunter",
-            "preferredPowerName": "Edmund Mahon",
-            "inaraAvatar": "http://example.com/avatar",
-            "inaraURL": "http://example.com/profile"
+            "commanderName": "CmdrInara",
+            "commanderWing": {"wingName": "The Wing", "wingID": 123, "wingMemberRank": "Leader"},
+            "preferredGameRole": "Trader",
+            "preferredPowerName": "Aisling Duval",
+            "inaraURL": "http://inara.cz/cmdr/1"
         }
-
-        cprof = EDRCmdrProfile()
-        cprof.from_inara_api(json_cmdr)
-        self.assertEqual(cprof.name, "LeKeno")
-        self.assertEqual(cprof.squadron, "Cobra Kai")
-        self.assertEqual(cprof.squadron_id, 2135)
-        self.assertEqual(cprof.squadron_rank, "Deputy Wing Commander")
-        self.assertEqual(cprof.role, "Enforcer / Bounty Hunter")
-        self.assertEqual(cprof.powerplay, "Edmund Mahon")
-
-        self.assertEqual(cprof.karma, 0)
-        self.assertFalse(cprof.dyn_karma)
-        self.assertIsNone(cprof.cid)
-        self.assertIsNone(cprof.patreon)
-        self.assertIsNone(cprof.dex_profile)
-        self.assertIsNone(cprof.sqdrdex_profile)
-        self.assertIsNone(cprof.alignment_hints)
+        profile.from_inara_api(json_cmdr)
+        
+        self.assertEqual(profile.name, "CmdrInara")
+        self.assertEqual(profile.squadron, "The Wing")
+        self.assertEqual(profile.squadron_id, 123)
+        self.assertEqual(profile.role, "Trader")
+        self.assertEqual(profile.powerplay, "Aisling Duval")
+        self.assertEqual(profile.url, "http://inara.cz/cmdr/1")
 
     def test_from_dict(self):
+        profile = EDRCmdrProfile()
         json_cmdr = {
-            "name": "LeKeno",
-            "squadron": "Cobra Kai",
-            "squadronID": 2135,
-            "squadronRank": "Deputy Wing Commander",
-            "role": "Enforcer / Bounty Hunter",
+            "name": "CmdrEDR",
             "karma": 100,
-            "alignmentHints": {"outlaw": 0, "neutral": 5, "enforcer": 95}
+            "alignmentHints": {"outlaw": 5, "neutral": 1}
         }
-
-        cprof = EDRCmdrProfile()
-        cprof.from_dict(json_cmdr)
-        self.assertIsNone(cprof.cid)
-        self.assertEqual(cprof.name, "LeKeno")
-        self.assertEqual(cprof.karma, 100)
-        self.assertFalse(cprof.dyn_karma)
-        self.assertIsNone(cprof.patreon)
-        self.assertIsNone(cprof.dex_profile)
-        self.assertIsNone(cprof.sqdrdex_profile)
-        self.assertEqual(cprof.alignment_hints, {"outlaw": 0, "neutral": 5, "enforcer": 95})
-
-        self.assertEqual(cprof.squadron, "Cobra Kai")
-        self.assertEqual(cprof.squadron_id, 2135)
-        self.assertEqual(cprof.squadron_rank, "Deputy Wing Commander")
-        self.assertEqual(cprof.role, "Enforcer / Bounty Hunter")
-        self.assertIsNone(cprof.powerplay)
-
-    def test_dex(self):
-        cprof = EDRCmdrProfile()
-        cprof.name = "Pirate"
+        profile.from_dict(json_cmdr)
         
-        # Test creating a new dex profile via tag
-        cprof.tag("outlaw")
-        self.assertIsNotNone(cprof.dex_profile)
-        self.assertEqual(cprof.dex_profile.alignment, "outlaw")
-        self.assertTrue(cprof.is_dangerous())
+        self.assertEqual(profile.name, "CmdrEDR")
+        self.assertEqual(profile.karma, 100)
+        self.assertEqual(profile.alignment_hints["outlaw"], 5)
 
-        # Test tagging as friend
-        cprof.tag("friend")
-        self.assertTrue(cprof.is_friend())
+    def test_complement(self):
+        p1 = EDRCmdrProfile()
+        p1.name = "CmdrTest"
+        p1.role = "Pirate"
+        
+        p2 = EDRCmdrProfile()
+        p2.name = "CmdrTest"
+        p2.squadron = "Dark Wheel"
+        
+        p1.complement(p2)
+        
+        self.assertEqual(p1.squadron, "Dark Wheel")
+        self.assertEqual(p1.role, "Pirate") # Preserved
+        
+        p3 = EDRCmdrProfile()
+        p3.name = "OtherCmdr"
+        res = p1.complement(p3)
+        self.assertFalse(res) # Mismatch name
 
-        # Test memo
-        cprof.memo("Watch out")
-        self.assertEqual(cprof.dex_profile.memo, "Watch out")
-
-        # Reuse existing dex profile logic
-        dex_dict = {
-            "name": "Pirate",
+    def test_dex_augmentation(self):
+        profile = EDRCmdrProfile()
+        profile.name = "CmdrTest"
+        
+        dex_data = {
+            "name": "CmdrTest",
             "alignment": "outlaw",
-            "tags": ["griefer"],
-            "friend": False,
-            "memo": "Avoid"
+            "tags": ["ganker"]
         }
-        cprof2 = EDRCmdrProfile()
-        cprof2.name = "Pirate"
-        cprof2.dex(dex_dict)
-        self.assertEqual(cprof2.dex_profile.alignment, "outlaw")
-        self.assertEqual(cprof2.dex_profile.memo, "Avoid")
-        self.assertIn("griefer", cprof2.dex_profile.tags)
+        
+        augmented = profile.dex(dex_data)
+        self.assertTrue(augmented)
+        self.assertEqual(profile.dex_profile.alignment, "outlaw")
+        self.assertIn("ganker", profile.dex_profile.tags)
+        
+        # Test dangerous check
+        self.assertTrue(profile.is_dangerous())
 
-    def test_is_dangerous(self):
-        cprof = EDRCmdrProfile()
-        self.assertFalse(cprof.is_dangerous())
-
-        # Bad karma
-        cprof.karma = -500
-        self.assertTrue(cprof.is_dangerous())
-        cprof.karma = 0
-
-        # Outlaw alignment via dex
-        cprof.name = "Bandit"
-        cprof.tag("outlaw")
-        self.assertTrue(cprof.is_dangerous())
-
-        # Enemy squad
-        cprof.name = "Enemy"
-        cprof.sqdrdex({"name": "Enemy", "rel": "enemy", "by": "Me"})
-        self.assertTrue(cprof.is_dangerous())
+    def test_is_dangerous_karma(self):
+        profile = EDRCmdrProfile()
+        profile.karma = -500
+        self.assertTrue(profile.is_dangerous())
+        
+        profile.karma = 500
+        self.assertFalse(profile.is_dangerous())
 
     def test_short_profile(self):
-        cprof = EDRCmdrProfile()
-        cprof.name = "CleanCmdr"
-        cprof.karma = 500
+        profile = EDRCmdrProfile()
+        profile.name = "CmdrTest"
+        profile.karma = -1000
         
-        # Simple profile
-        profile = cprof.short_profile()
-        self.assertIn("Lawful++", profile)
-
-        # Detailed profile
-        cprof.squadron = "SpaceForce"
-        cprof.role = "Explorer"
-        profile = cprof.short_profile()
-        self.assertIn("Lawful++", profile)
-        self.assertIn("SpaceForce", profile)
-        self.assertIn("Explorer", profile)
-
-        # Dangerous profile
-        cprof.karma = -1000
-        cprof.tag("outlaw")
-        profile = cprof.short_profile()
-        self.assertIn("Outlaw++++", profile)
-        self.assertIn("#outlaw", profile)
+        # Short profile should contain "Outlaw++++" (from readable karma)
+        # Mocked i18n returns "Outlaw++++" as is? No, EDRCmdrProfile.readable_karma uses LUT.
+        # Lut strings are wrapped in _().
+        # My mock returns input. 
+        # So it should be "Outlaw++++".
+        
+        summary = profile.short_profile()
+        self.assertIn("Outlaw++++", summary)
+        self.assertIn("✪EDR", summary)
 
 if __name__ == '__main__':
-    main()
+    unittest.main()

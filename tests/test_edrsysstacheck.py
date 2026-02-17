@@ -29,7 +29,11 @@ class TestEDRSystemStationCheck(unittest.TestCase):
         self.assertFalse(self.checker.check_station(odyssey_station))
         
         self.checker.set_dlc("Odyssey")
+        self.checker.set_dlc("Odyssey")
         self.assertTrue(self.checker.check_station(odyssey_station))
+
+    def test_is_service_availability_ambiguous(self):
+        self.assertFalse(self.checker.is_service_availability_ambiguous({}))
 
 class TestEDRApexSystemStationCheck(unittest.TestCase):
     def setUp(self):

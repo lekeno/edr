@@ -82,7 +82,7 @@ class EDRMaterialOutcomes:
         # The logic here seems to average likelihood by number of outcomes?? 
         # But outcomes is a dict, so len(self.outcomes) is number of distinct materials.
         # This seems like weird logic in original code, but preserving logic for refactor.
-        likelihood = self.outcomes[material]["likelihood"] // len(self.outcomes)
+        likelihood = self.outcomes[material]["likelihood"] / len(self.outcomes)
         return (int(grade), likelihood)
 
 
@@ -792,15 +792,6 @@ class EDRFactions:
             local_faction.government = GVT_LUT.get(entry["StationGovernment"], entry["StationGovernment"])
             local_faction.allegiance = entry["StationAllegiance"]
             local_faction.state = state
-            # local_faction.active_states.add(self.state) # This seems wrong in original code 'self.state'?
-            # Usually EDRFaction instance has .state. Here 'self' is EDRFactions instance.
-            # EDRFactions does not have a 'state' attribute.
-            # This looks like a bug in original code: `local_faction.active_states.add(self.state)`
-            # `self` refers to EDRFactions object.
-            # Wait, looking at the code, it probably meant `local_faction.state` (which was just updated to `state` variable).
-            # The local variable `state` comes from `entry["StationFaction"].get("FactionState", "None")`.
-            # So `local_faction.active_states.add(state)` presumably.
-            # I will fix this bug too.
             local_faction.active_states.add(state)
             
             edt = EDTime()

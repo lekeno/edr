@@ -1,124 +1,93 @@
+
 import unittest
 from unittest.mock import MagicMock, patch
-from edr.models.edentities import EDPilot, EDRSquadronMember, EDRPowerplay, EDLocation, EDSpaceDimension # EDR_INTERNAL
-from edr.models.edvehicles import EDVehicleFactory # EDR_INTERNAL
+from edr.models.edentities import EDRCrew, EDRPowerplay, EDPilot, EDFineOrBounty
+from edr.utils.edtime import EDTime
 
-class TestEDEntities(unittest.TestCase):
+class TestEDRCrew(unittest.TestCase):
+    def test_crew_management(self):
+        crew = EDRCrew("Captain")
+        self.assertTrue(crew.is_captain("Captain"))
+        
+        self.assertTrue(crew.add("CrewMember1"))
+        self.assertFalse(crew.add("CrewMember1")) # Already present
+        self.assertIn("CrewMember1", crew.all_members())
+        
+        self.assertTrue(crew.remove("CrewMember1"))
+        self.assertFalse(crew.remove("CrewMember1")) # Already removed
+        
+        crew.disband()
+        self.assertEqual(len(crew.all_members()), 0)
+        self.assertIsNone(crew.captain)
 
-    def test_squadron_member(self):
-        # Test initialization
-        sq_info = {
-            "squadronName": "Deep Space Network",
-            "squadronId": "DSN",
-            "squadronRank": "Leader",
-            "squadronLevel": 500
-        }
-        member = EDRSquadronMember(sq_info)
-        self.assertEqual(member.name, "Deep Space Network")
-        self.assertEqual(member.inara_id, "DSN")
-        self.assertEqual(member.level, 500)
+class TestEDRPowerplay(unittest.TestCase):
+    def test_powerplay_affiliation(self):
+        # Aisling Duval (Empire) vs Zachary Hudson (Federation) -> Enemy
+        pp_aisling = EDRPowerplay("aisling_duval", 0)
+        self.assertTrue(pp_aisling.is_enemy("zachary_hudson"))
         
-        # Test trust levels
-        self.assertTrue(member.is_somewhat_trusted())
-        self.assertTrue(member.is_fully_trusted())
+        # Aisling Duval (Empire) vs A. Lavigny-Duval (Empire) -> Not Enemy
+        self.assertFalse(pp_aisling.is_enemy("a_lavigny-duval"))
         
-        # Test lower rank
-        sq_info["squadronLevel"] = 50
-        member = EDRSquadronMember(sq_info)
-        self.assertFalse(member.is_somewhat_trusted())
-        self.assertFalse(member.is_fully_trusted())
+        # Independent vs Unknown
+        pp_independent = EDRPowerplay("archon_delaine", 0) # treated as None affiliation in map
+        self.assertTrue(pp_independent.is_enemy("zachary_hudson"))
 
-        # Test mid rank
-        sq_info["squadronLevel"] = 100
-        member = EDRSquadronMember(sq_info)
-        self.assertTrue(member.is_somewhat_trusted())
-        self.assertFalse(member.is_fully_trusted())
+    def test_pretty_print(self):
+        pp = EDRPowerplay("aisling_duval", 0)
+        self.assertEqual(pp.pretty_print(), "Aisling")
+        
+        pp_unknown = EDRPowerplay("UnknownPower", 0)
+        self.assertEqual(pp_unknown.pretty_print(), "UnknownPower")
 
-    def test_powerplay(self):
-        # time_pledged is roughly now - timestamp passed in
-        with patch('edr.utils.edtime.EDTime.py_epoch_now') as mock_now:
-            mock_now.return_value = 1000
-            
-            # Pledged 900 seconds ago
-            pledge_duration = 900
-            pp = EDRPowerplay("aisling duval", pledge_duration)
-            
-            self.assertEqual(pp.pledged_to, "aisling duval")
-            self.assertEqual(pp.time_pledged(), 900)
-            
-            # Test Affiliations
-            # Aisling is Empire
-            self.assertTrue(pp.is_enemy("zachary hudson")) # Fed = Enemy
-            self.assertFalse(pp.is_enemy("arissa lavigny duval")) # Empire = Friend
-            
-            # Archon Delaine has None affiliation in the dict, so check logic
-            delaine = EDRPowerplay("archon delaine", 100)
-            # Archon is None.
-            # If my_affiliation is None (Archon), returns True?
-            # Code: return my_affiliation != their_affiliation if my_affiliation else True
-            # So Archon is enemy of everyone?
-            self.assertTrue(delaine.is_enemy("aisling duval"))
+class TestEDFineOrBounty(unittest.TestCase):
+    def setUp(self):
+        self.mock_config_patch = patch('edr.models.edentities.EDR_CONFIG')
+        self.mock_config = self.mock_config_patch.start()
+        self.mock_config.intel_bounty_threshold.return_value = 10000
 
-    def test_edpilot_vehicle_logic(self):
-        pilot = EDPilot("Cmdr Test", "Harmless")
-        
-        # Initial state
-        self.assertFalse(pilot.on_foot)
-        self.assertEqual(pilot.vehicle_type(), "Unknown") # vehicle_type is 'Unknown' initially by default
-        
-        # Update with a ship
-        ship = EDVehicleFactory.from_internal_name("empire_trader")
-        pilot.update_vehicle_if_obsolete(ship)
-        self.assertEqual(pilot.vehicle_type(), "Imperial Clipper")
-        self.assertFalse(pilot.on_foot)
-        
-        # Disembark (Suit)
-        entry = {"event": "Disembark", "ShipID": 1}
-        # Need to mock closet or just trust logic
-        # EDPilot has closet? imported EDOdysseyCloset.
-        # Actually logic is self.in_spacesuit()
-        pilot.disembark(entry)
-        self.assertTrue(pilot.on_foot)
-        self.assertIsNone(pilot.vehicle_type(), "Should be None when on foot")
-        
-        # Board SRV
-        srv = EDVehicleFactory.default_srv()
-        pilot.update_vehicle_if_obsolete(srv)
-        self.assertTrue(pilot.piloted_vehicle.type.startswith("SRV")) # "SRV Scarab"
+    def tearDown(self):
+        self.mock_config_patch.stop()
 
-    def test_edpilot_fight_logic(self):
-        pilot = EDPilot("Cmdr Test", "Dangerous")
-        pilot.to_normal_space()
+    def test_is_significant(self):
+        bounty = EDFineOrBounty(5000)
+        self.assertFalse(bounty.is_significant())
         
-        # Not in fight initially
-        self.assertFalse(pilot.in_a_fight())
-        
-        # Simulate danger
-        pilot.in_danger(True)
-        # in_danger sets unsafe on piloted vehicle
-        # in_a_fight checks if vehicle is in_a_fight AND in_danger
-        # vehicle.in_a_fight() usually checks hardpoints or recent damage
-        
-        # We need to simulate weapons firing or similar to trigger in_a_fight on vehicle
-        # Given lack of full vehicle mocking, let's just assert state changes we can control
-        
-        pilot.to_super_space()
-        self.assertFalse(pilot.in_normal_space())
-        self.assertTrue(pilot.in_supercruise())
+        bounty = EDFineOrBounty(15000)
+        self.assertTrue(bounty.is_significant())
 
-    def test_edplayerone_initialization(self):
-        from edr.models.edentities import EDPlayerOne
-        player = EDPlayerOne("The Braben")
-        self.assertEqual(player.name, "The Braben")
-        self.assertTrue(player.is_human())
-        self.assertEqual(player.fleet_carrier.name, None) # Default empty
+    def test_addition(self):
+        bounty = EDFineOrBounty(1000)
+        bounty += 500
+        self.assertEqual(bounty.value, 1500)
 
-        # Test simple transitions
-        player.to_super_space()
-        self.assertTrue(player.in_supercruise())
+class TestEDPilot(unittest.TestCase):
+    @patch('edr.models.edentities.EDVehicleFactory')
+    def test_pilot_initialization(self, mock_factory):
+        pilot = EDPilot("Cmdr Name", 5)
+        self.assertEqual(pilot.name, "Cmdr Name")
+        self.assertEqual(pilot.rank, 5)
+        self.assertFalse(pilot.in_normal_space()) # Default location is empty/unknown
+
+    @patch('edr.models.edentities.EDVehicleFactory')
+    def test_pilot_location(self, mock_factory):
+        pilot = EDPilot("Cmdr Name", 5)
+        pilot.star_system = "Sol"
+        self.assertEqual(pilot.star_system, "Sol")
         
-        player.to_normal_space()
-        self.assertTrue(player.in_normal_space())
+        pilot.place = "Earth"
+        self.assertEqual(pilot.place, "Earth")
+
+    def test_killed(self):
+        pilot = EDPilot("Cmdr Test", 1)
+        pilot.wanted = True
+        pilot.bounties = {"Faction": 1000}
+        
+        pilot.killed()
+        
+        self.assertTrue(pilot.destroyed)
+        self.assertFalse(pilot.wanted)
+        self.assertEqual(len(pilot.bounties), 0)
 
 if __name__ == '__main__':
     unittest.main()

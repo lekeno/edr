@@ -143,14 +143,14 @@ class EDRParkingSystemFinder(threading.Thread):
         if not bodies:
             return None
 
-        stats = {"max": 0, "median": 0, "min": 0, "avg": 0, "count": 0}
-        stars_stats = {"max": 0, "median": 0, "min": 0, "avg": 0, "count": 0}
+        stats = {"max": 0, "median": 0, "min": None, "avg": 0, "count": 0}
+        stars_stats = {"max": 0, "median": 0, "min": None, "avg": 0, "count": 0}
         sum_dist = {"all": 0, "stars": 0}
         sum_bodies = {"all": 0, "stars": 0}
         distances = []
         stars_distances = []
 
-        for body in sorted(bodies, key=lambda b: b['distanceToArrival']):
+        for body in sorted(bodies, key=lambda b: b.get('distanceToArrival', float('inf'))):
             distance = body.get("distanceToArrival", None)
             if distance is None:
                 continue
@@ -158,14 +158,14 @@ class EDRParkingSystemFinder(threading.Thread):
             sum_dist["all"] += distance
             sum_bodies["all"] += 1
             stats["max"] = max(stats["max"], distance)
-            stats["min"] = min(stats["min"], distance) if stats["min"] != 0 else distance
+            stats["min"] = min(stats["min"], distance) if stats["min"] is not None else distance
 
             if body.get("type", "").lower() == "star":
                 stars_distances.append(distance)
                 sum_dist["stars"] += distance
                 sum_bodies["stars"] += 1
                 stars_stats["max"] = max(stars_stats["max"], distance)
-                stars_stats["min"] = min(stars_stats["min"], distance) if stars_stats["min"] != 0 else distance
+                stars_stats["min"] = min(stars_stats["min"], distance) if stars_stats["min"] is not None else distance
 
         stats["count"] = sum_bodies["all"]
         stars_stats["count"] = sum_bodies["stars"]

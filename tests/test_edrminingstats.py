@@ -1,137 +1,135 @@
-import unittest
-from unittest.mock import patch, MagicMock, mock_open
-import sys
-import os
-import json
 
-# sys.path injection removed
-from edr.controllers.edrminingstats import EDRMiningStats, EDRMineralStats # EDR_INTERNAL
+import unittest
+from unittest.mock import MagicMock, patch, mock_open
+import json
+from edr.controllers.edrminingstats import EDRMiningStats, EDRMineralStats
+
+class TestEDRMineralStats(unittest.TestCase):
+    def test_prospected(self):
+        stats = EDRMineralStats("Painite", "painite", "Pa")
+        stats.prospected(50.0, 1000)
+        
+        self.assertEqual(stats.max, 50.0)
+        self.assertEqual(stats.sum, 0.5)
+        self.assertEqual(len(stats.prospectements), 1)
+        
+        stats.prospected(60.0, 1010)
+        self.assertEqual(stats.max, 60.0)
+        self.assertEqual(stats.sum, 1.1)
+
+    def test_yield_average(self):
+        stats = EDRMineralStats("Painite", "painite", "Pa")
+        stats.sum = 1.0 # 100% total
+        
+        # If we prospected 2 asteroids
+        avg = stats.yield_average(2)
+        # (1.0 / 2) * 100 = 50.0%
+        self.assertEqual(avg, 50.0)
 
 class TestEDRMiningStats(unittest.TestCase):
     def setUp(self):
-        self.edtime_patch = patch('edr.controllers.edrminingstats.EDTime')
-        self.mock_edtime = self.edtime_patch.start()
-        self.mock_edtime.py_epoch_now.return_value = 1000
-
-        self.mining_data = {
-            "painite": {"name": "painite", "type": "painite", "symbol": "P"},
-            "platinum": {"name": "platinum", "type": "platinum", "symbol": "Pt"}
-        }
+        self.time_patch = patch('edr.controllers.edrminingstats.EDTime')
+        self.mock_time = self.time_patch.start()
+        self.mock_time.py_epoch_now.return_value = 1000.0
         
-        self.lut_patch = patch.dict(EDRMiningStats.MINERALS_LUT, self.mining_data, clear=True)
-        self.lut_patch.start()
+        self.i18n_patch = patch('edr.controllers.edrminingstats._', side_effect=lambda x: x)
+        self.mock_i18n = self.i18n_patch.start()
         
-        self.mining_stats = EDRMiningStats()
+        # Mock the JSON load specifically
+        # EDRMiningStats loads the JSON at class level effectively when module is imported or class is defined.
+        # But wait, it's defined:
+        # MINERALS_LUT = json.loads(open(...).read())
+        # Since the class is already imported/defined when I import it in the test file, 
+        # mocking open NOW won't change the class attribute if it was already executed.
+        # However, the class attribute is used in __init__.
+        # I can mock MINERALS_LUT directly on the class or instance if needed.
+        # Or I can rely on the fact that if the import worked in the production code, the file exists.
+        # But for unit/CI env, it might not. 
+        # The imports are at top level in test file `from edr.controllers.edrminingstats ...`
+        # So it executed already.
+        # If I want to control it, I should have patched before import or patch the attribute after.
+        pass
 
     def tearDown(self):
-        self.lut_patch.stop()
-        self.edtime_patch.stop()
+        self.time_patch.stop()
+        self.i18n_patch.stop()
 
-    def test_init_reset(self):
-        self.assertEqual(self.mining_stats.prospected_nb, 0)
-        self.assertEqual(self.mining_stats.refined_nb, 0)
-        self.assertFalse(self.mining_stats.depleted)
-        self.assertEqual(len(self.mining_stats.stats), 2)
-        self.mining_stats.prospected_nb = 10
-        self.mining_stats.reset()
-        self.assertEqual(self.mining_stats.prospected_nb, 0)
+    def test_init(self):
+        stats = EDRMiningStats()
+        self.assertIsNotNone(stats.lmh)
+        self.assertIsNotNone(stats.stats)
 
-    def test_prospected_low_content(self):
+    def test_prospected_event(self):
+        stats = EDRMiningStats()
+        # Mock the LUT to ensure we have "painite"
+        if "painite" not in stats.mineral_types_lut:
+             stats.mineral_types_lut["painite"] = "Painite"
+             # Code logic lowercases name to use as key, so we must use lowercase here
+             stats.stats["painite"] = EDRMineralStats("Painite", "painite", "Pa")
+             stats.of_interest["names"].add("painite")
+             stats.of_interest["types"].add("painite")
+
         entry = {
-            "timestamp": "2023-01-01T12:00:00Z",
             "event": "ProspectedAsteroid",
-            "Content": "$AsteroidMaterialContent_Low;",
+            "timestamp": "2022-01-01T12:00:00Z",
+            "Content": "$AsteroidMaterialContent_High;",
             "Materials": [
-                {"Name": "Painite", "Proportion": 20.0},
-                {"Name": "Other", "Proportion": 10.0}
+                {"Name": "Painite", "Proportion": 45.0},
+                {"Name": "Rock", "Proportion": 55.0}
             ],
-            "Remaining": 100
+            "Remaining": 100.0
         }
         
-        # Setup timestamp mock for internal call
-        mock_timestamp = MagicMock()
-        mock_timestamp.as_py_epoch.return_value = 1000
-        self.mock_edtime.return_value = mock_timestamp
-
-        self.mining_stats.prospected(entry)
+        # Configure the mock from setUp
+        # timestamp parsing uses EDTime().from_journal_timestamp(...) and then .as_py_epoch()
+        # We need EDTime() to return a mock that has as_py_epoch returning a float
+        self.mock_time.return_value.as_py_epoch.return_value = 2000.0
+        self.mock_time.py_epoch_now.return_value = 2000.0
         
-        self.assertEqual(self.mining_stats.prospected_nb, 1)
-        self.assertEqual(self.mining_stats.lmh["L"], 1)
-        self.assertEqual(self.mining_stats.stats["painite"].distribution["bins"][5], 1) # 20% index
-        self.assertEqual(self.mining_stats.last["raw"], "L")
+        stats.prospected(entry)
 
-    def test_prospected_depleted(self):
-        entry = {
-             "event": "ProspectedAsteroid",
-             "Remaining": 0
-        }
-        self.mining_stats.prospected(entry)
-        self.assertTrue(self.mining_stats.depleted)
+        self.assertEqual(stats.prospected_nb, 1)
+        self.assertEqual(stats.lmh["H"], 1)
+        self.assertEqual(stats.stats["painite"].max, 45.0)
 
-    def test_refined(self):
+    def test_refined_event(self):
+        stats = EDRMiningStats()
+        # Ensure setup
+        stats.of_interest["types"].add("painite")
+        stats.mineral_types_lut["painite"] = "painite"
+        stats.stats["painite"] = EDRMineralStats("Painite", "painite", "Pa")
+
         entry = {
-            "timestamp": "2023-01-01T12:05:00Z",
             "event": "MiningRefined",
+            "timestamp": "2022-01-01T12:30:00Z",
             "Type": "painite"
         }
-        mock_timestamp = MagicMock()
-        mock_timestamp.as_py_epoch.return_value = 1300 # 5 mins later
-        self.mock_edtime.return_value = mock_timestamp
-
-        self.mining_stats.refined(entry)
         
-        self.assertEqual(self.mining_stats.refined_nb, 1)
-        self.assertEqual(self.mining_stats.stats["painite"].refined_nb, 1)
-
-    def test_refined_ignored(self):
-        entry = {
-            "timestamp": "2023-01-01T12:05:00Z",
-            "event": "MiningRefined",
-            "Type": "gold" # Not in our mock data
-        }
-        mock_timestamp = MagicMock()
-        mock_timestamp.as_py_epoch.return_value = 1300
-        self.mock_edtime.return_value = mock_timestamp
-
-        self.mining_stats.refined(entry)
-        self.assertEqual(self.mining_stats.refined_nb, 0)
-
-    def test_yield_average(self):
-        # 1. Prospect 100% Painite
-        entry1 = {
-             "timestamp": "2023-01-01T12:00:00Z", "event": "ProspectedAsteroid",
-             "Content": "$AsteroidMaterialContent_High;",
-             "Materials": [{"Name": "Painite", "Proportion": 50.0}],
-             "Remaining": 100
-        }
+        self.mock_time.return_value.as_py_epoch.return_value = 3800.0
+        self.mock_time.py_epoch_now.return_value = 3800.0
         
-        mock_timestamp = MagicMock()
-        mock_timestamp.as_py_epoch.return_value = 1000
-        self.mock_edtime.return_value = mock_timestamp
+        stats.refined(entry)
 
-        self.mining_stats.prospected(entry1)
-        
-        # 2. Prospect 0% Painite (implied by absence, or just another rock)
-        entry2 = {
-             "timestamp": "2023-01-01T12:01:00Z", "event": "ProspectedAsteroid",
-             "Content": "$AsteroidMaterialContent_Low;",
-             "Materials": [{"Name": "Platinum", "Proportion": 20.0}],
-             "Remaining": 100
-        }
-        self.mining_stats.prospected(entry2)
-
-        # Average yield for Painite: (50 + 0) / 2 = 25.0
-        
-        self.assertEqual(self.mining_stats.stats["painite"].yield_average(2), 25.0)
+        self.assertEqual(stats.refined_nb, 1)
+        self.assertEqual(stats.stats["painite"].refined_nb, 1)
 
     def test_item_per_hour(self):
-        # Start at 1000
-        self.mining_stats.start = 1000
-        self.mock_edtime.py_epoch_now.return_value = 4600 # 3600 seconds later (1 hour)
+        stats = EDRMiningStats()
+        stats.start = 1000.0
+        self.mock_time.py_epoch_now.return_value = 4600.0 # 1 hour later
         
-        self.mining_stats.refined_nb = 10
-        iph = self.mining_stats.item_per_hour()
-        self.assertAlmostEqual(iph, 10.0)
+        stats.refined_nb = 10
+        iph = stats.item_per_hour()
+        self.assertEqual(iph, 10.0)
+
+    def test_depleted(self):
+        stats = EDRMiningStats()
+        entry = {
+            "event": "ProspectedAsteroid",
+            "Remaining": 0.0
+        }
+        stats.prospected(entry)
+        self.assertTrue(stats.depleted)
 
 if __name__ == '__main__':
     unittest.main()

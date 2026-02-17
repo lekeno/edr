@@ -284,12 +284,12 @@ class EDRClient:
         Check for EDR updates and handle version obsolescence.
         """
         version_range = self.server.server_version()
-        self.motd = _edr(version_range["l10n_motd"])
-
         if version_range is None:
             # Translators: this is shown on EDMC's status bar when the version check fails
             self.status = _("check for version update has failed.")
             return
+
+        self.motd = _edr(version_range["l10n_motd"])
 
         if self.is_obsolete(version_range["min"]):
             EDR_LOG.error(f"Mandatory update! {self.edr_version} vs. {version_range['min']}")

@@ -1,94 +1,171 @@
+
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 from edr.controllers.edrbountyhuntingstats import EDRBountyHuntingStats
-from edr.utils.edtime import EDTime # EDR_INTERNAL
 
 class TestEDRBountyHuntingStats(unittest.TestCase):
     def setUp(self):
-        # We need to mock EDTime to control "now"
-        self.mock_time = MagicMock()
-        self.mock_time.py_epoch_now.return_value = 1000
-        
-        # Patch EDTime in edrbountyhuntingstats module namespace if possible, 
-        # but class usage might require patching where it is imported.
-        # inspecting edrbountyhuntingstats.py: `from edr.edtime import EDTime`
-        # so we patch `edrbountyhuntingstats.EDTime`
-        
-        self.patcher = patch('edr.controllers.edrbountyhuntingstats.EDTime', self.mock_time)
-        self.patcher.start()
-        
-        # Also need to mock EDRConfig to avoid file reads in __init__
-        self.edr_config_patch = patch('edr.controllers.edrbountyhuntingstats.EDR_CONFIG')
-        self.mock_config = self.edr_config_patch.start()
-        # Setup expected config return values
+        self.config_patch = patch('edr.controllers.edrbountyhuntingstats.EDR_CONFIG')
+        self.mock_config = self.config_patch.start()
         self.mock_config.lru_max_size.return_value = 100
-        self.mock_config.blips_max_age.return_value = 3600
+        self.mock_config.blips_max_age.return_value = 600
 
-        self.stats = EDRBountyHuntingStats()
+        self.time_patch = patch('edr.controllers.edrbountyhuntingstats.EDTime')
+        self.mock_time = self.time_patch.start()
+        self.mock_time.py_epoch_now.return_value = 1000.0
 
     def tearDown(self):
-        self.patcher.stop()
-        self.edr_config_patch.stop()
+        self.config_patch.stop()
+        self.time_patch.stop()
 
-    def test_init_reset(self):
-        self.assertEqual(self.stats.max, 0)
-        self.assertEqual(self.stats.min, float('inf'))
-        self.assertEqual(self.stats.sum_scanned, 0)
-        self.assertEqual(self.stats.scanned_nb, 0)
+    def test_init(self):
+        stats = EDRBountyHuntingStats()
+        self.assertEqual(stats.max, 0)
+        self.assertEqual(stats.min, float('inf'))
+        self.assertEqual(stats.sum_scanned, 0)
+        self.assertEqual(stats.scanned_nb, 0)
+        self.assertEqual(stats.awarded_nb, 0)
 
-    def test_scanned(self):
-        # Setup a scan event
-        event = {
+    def test_reset(self):
+        stats = EDRBountyHuntingStats()
+        stats.sum_scanned = 1000
+        stats.scanned_nb = 5
+        
+        stats.reset()
+        self.assertEqual(stats.sum_scanned, 0)
+        self.assertEqual(stats.scanned_nb, 0)
+        self.assertEqual(stats.min, float('inf'))
+
+    def test_scanned_valid(self):
+        stats = EDRBountyHuntingStats()
+        entry = {
             "event": "ShipTargeted",
             "ScanStage": 3,
-            "PilotName": "Pirate Lord",
-            "PilotName_Localised": "Pirate Lord",
-            "Bounty": 50000,
-            "LegalStatus": "Wanted"
+            "PilotName": "BadGuy",
+            "PilotName_Localised": "Bad Guy",
+            "LegalStatus": "Wanted",
+            "Bounty": 50000
         }
         
-        self.stats.scanned(event)
+        # First scan
+        stats.scanned(entry)
+        self.assertEqual(stats.scanned_nb, 1)
+        self.assertEqual(stats.sum_scanned, 50000)
+        self.assertEqual(stats.max, 50000)
+        self.assertEqual(stats.min, 50000)
+        self.assertEqual(len(stats.scans), 1)
         
-        self.assertEqual(self.stats.scanned_nb, 1)
-        self.assertEqual(self.stats.sum_scanned, 50000)
-        self.assertEqual(self.stats.max, 50000)
-        self.assertEqual(self.stats.min, 50000)
-        self.assertEqual(self.stats.bounty_average(), 50000)
+        # Second scan, higher bounty
+        entry2 = entry.copy()
+        entry2["Bounty"] = 100000
+        entry2["PilotName"] = "WorseGuy"
         
-        # Scan another one
-        event2 = {
+        stats.scanned(entry2)
+        self.assertEqual(stats.scanned_nb, 2)
+        self.assertEqual(stats.sum_scanned, 150000)
+        self.assertEqual(stats.max, 100000)
+        self.assertEqual(stats.min, 50000)
+
+    def test_scanned_invalid(self):
+        stats = EDRBountyHuntingStats()
+        
+        # Wrong event
+        stats.scanned({"event": "OtherEvent"})
+        self.assertEqual(stats.scanned_nb, 0)
+        
+        # Low scan stage
+        stats.scanned({"event": "ShipTargeted", "ScanStage": 1})
+        self.assertEqual(stats.scanned_nb, 0)
+        
+        # No pilot name
+        stats.scanned({"event": "ShipTargeted", "ScanStage": 3})
+        self.assertEqual(stats.scanned_nb, 0)
+        
+        # Zero bounty
+        stats.scanned({
+            "event": "ShipTargeted", 
+            "ScanStage": 3, 
+            "PilotName": "BrokeGuy", 
+            "LegalStatus": "Wanted",
+            "Bounty": 0
+        })
+        self.assertEqual(stats.scanned_nb, 0)
+
+    def test_scanned_duplicate(self):
+        stats = EDRBountyHuntingStats()
+        entry = {
             "event": "ShipTargeted",
             "ScanStage": 3,
-            "PilotName": "Minion",
-            "PilotName_Localised": "Minion",
-            "Bounty": 10000,
-            "LegalStatus": "Wanted"
+            "PilotName": "BadGuy",
+            "LegalStatus": "Wanted",
+            "Bounty": 50000
         }
-        self.stats.scanned(event2)
         
-        self.assertEqual(self.stats.scanned_nb, 2)
-        self.assertEqual(self.stats.sum_scanned, 60000)
-        self.assertEqual(self.stats.max, 50000)
-        self.assertEqual(self.stats.min, 10000)
-        self.assertEqual(self.stats.bounty_average(), 30000)
+        stats.scanned(entry)
+        self.assertEqual(stats.scanned_nb, 1)
+        
+        # Same pilot, same bounty = duplicate
+        stats.scanned(entry)
+        self.assertEqual(stats.scanned_nb, 1)
+        
+        # Same pilot, different bounty = update?
+        # Code logic: 
+        # last_scan = self.scans_cache.get(raw_pilot_name)
+        # return (entry["LegalStatus"] == last_scan["LegalStatus"]) and (entry.get("Bounty", 0) == last_scan.get("Bounty",0))
+        
+        entry_diff = entry.copy()
+        entry_diff["Bounty"] = 60000
+        stats.scanned(entry_diff)
+        self.assertEqual(stats.scanned_nb, 2)
 
     def test_awarded(self):
-        # Scan first (normally awarded comes after scan, but logic separates them partially)
-        # But stats.efficiency needs time elapsed.
-        self.mock_time.py_epoch_now.return_value = 2000 # 1000s elapsed
-        
-        event = {
+        stats = EDRBountyHuntingStats()
+        entry = {
             "event": "Bounty",
-            "Rewards": [{"Reward": 50000}],
-            "TotalReward": 50000
+            "Rewards": [
+                {"Faction": "Fed", "Reward": 10000},
+                {"Faction": "Emp", "Reward": 20000}
+            ]
         }
-        self.stats.awarded(event)
         
-        self.assertEqual(self.stats.awarded_nb, 1)
-        self.assertEqual(self.stats.sum_awarded, 50000)
+        stats.awarded(entry)
+        self.assertEqual(stats.awarded_nb, 1)
+        self.assertEqual(stats.sum_awarded, 30000)
+        self.assertEqual(len(stats.awarded_bounties), 1)
+
+    def test_credits_per_hour(self):
+        stats = EDRBountyHuntingStats()
         
-        # Credits per hour: 50000 / (1000/3600) = 50000 / 0.2777 = 180000
-        self.assertAlmostEqual(self.stats.credits_per_hour(), 180000.0)
+        # Start at 1000
+        # Award at 4600 (1 hour later)
+        self.mock_time.py_epoch_now.return_value = 4600.0
+        
+        entry = {
+            "event": "Bounty",
+            "Rewards": [{"Reward": 1000000}]
+        }
+        stats.awarded(entry)
+        
+        cph = stats.credits_per_hour()
+        self.assertEqual(cph, 1000000.0)
+        
+    def test_averages(self):
+        stats = EDRBountyHuntingStats()
+        stats.sum_scanned = 100000
+        stats.scanned_nb = 2
+        stats.sum_awarded = 50000
+        stats.awarded_nb = 1
+        
+        self.assertEqual(stats.bounty_average(), 50000.0)
+        # NOTE: reward_average uses self.scanned_nb as divisor in the code?
+        # return (self.sum_awarded / self.awarded_nb) if self.scanned_nb else 0.0
+        # Wait, if scanned_nb != 0, it divides by awarded_nb. 
+        # But if scanned_nb is 0, it returns 0.
+        
+        self.assertEqual(stats.reward_average(), 50000.0)
+        
+        stats.scanned_nb = 0
+        self.assertEqual(stats.reward_average(), 0.0)
 
 if __name__ == '__main__':
     unittest.main()

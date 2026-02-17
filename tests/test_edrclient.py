@@ -309,5 +309,38 @@ class TestEDRClient(unittest.TestCase):
         self.client.eval_mission(entry_completed)
         # Verify no crash
 
+    @patch('edr.controllers.edrclient.EDR_LOG')
+    def test_shutdown(self, mock_log):
+        self.client.shutdown()
+        # shutdown() calls persist() on components, but NOT server.shutdown() (it doesn't exist)
+        # It calls logout() only if everything=True
+        self.client.edrcmdrs.persist.assert_called_once()
+        self.client.edrsystems.persist.assert_called_once()
+        self.client.player.persist.assert_called_once()
+
+    def test_app_main(self):
+        parent = MagicMock()
+        
+        # Ensure server.server_version calls return None to avoid side effects
+        self.client.server.server_version.return_value = None
+        
+        # Ensure EDRClientUI class mock returns a mock instance
+        # self.mock_ui is the Class mock. self.mock_ui.return_value is the instance.
+        mock_ui_instance = self.mock_ui.return_value
+        mock_ui_instance.app_ui.return_value = MagicMock()
+        
+        # Call app_ui
+        result = self.client.app_ui(parent)
+        
+        # Verify EDRClientUI was instantiated with (self.client, parent)
+        self.mock_ui.assert_called_with(self.client, parent)
+        
+        # Verify app_ui() was called on the instance
+        mock_ui_instance.app_ui.assert_called()
+        
+        # Verify the result is what app_ui() returned
+        self.assertEqual(result, mock_ui_instance.app_ui.return_value)
+
+
 if __name__ == '__main__':
     unittest.main()

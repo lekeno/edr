@@ -1,17 +1,10 @@
 import unittest
 from unittest.mock import Mock, patch
-import sys
-import os
-
-# Setup paths
-# Setup paths
-# Add 'edr' directory to sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'edr')))
-
-from edr.models.edrhitppoints import EDRHitPPoints # EDR_INTERNAL
+from edr.models.edrhitppoints import EDRHitPPoints
 
 class TestEDRHitPPoints(unittest.TestCase):
     def setUp(self):
+
         self.edtime_patch = patch('edr.models.edrhitppoints.EDTime')
         self.mock_edtime = self.edtime_patch.start()
         # Default time
@@ -38,7 +31,22 @@ class TestEDRHitPPoints(unittest.TestCase):
         # distinct value
         self.mock_edtime.ms_epoch_now.return_value = 12000
         self.hp.update(90)
+        self.mock_edtime.ms_epoch_now.return_value = 12000
+        self.hp.update(90)
         self.assertEqual(self.hp.len(), 3)
+
+    def test_redundant_values(self):
+        self.hp.update(100)
+        self.mock_edtime.ms_epoch_now.return_value = 11000
+        self.hp.update(100)
+        self.assertEqual(self.hp.len(), 2)
+        
+        # Third redundant value should replace the second one (timestamp update)
+        self.mock_edtime.ms_epoch_now.return_value = 12000
+        self.hp.update(100)
+        self.assertEqual(self.hp.len(), 2)
+        self.assertEqual(self.hp.last()["timestamp"], 12000)
+        self.assertEqual(self.hp.history[0]["timestamp"], 10000)
 
     def test_trend_stable(self):
         self.hp.update(100)

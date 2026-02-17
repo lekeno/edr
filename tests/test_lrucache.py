@@ -138,5 +138,91 @@ class TestLRUCache(TestCase):
         self.assertTrue(cache.is_stale(key_custom))
 
 
+    def test_peek(self):
+        cache = LRUCache(5, 60)
+        cache.set("a", 1)
+        
+        # Peek should return value but not change order? 
+        # Actually LRUCache.peek implementation does NOT change order.
+        # Let's verify that.
+        cache.set("b", 2)
+        cache.set("c", 3)
+        # Order: a, b, c (most recent)
+        
+        val = cache.peek("a")
+        self.assertEqual(val, 1)
+        
+        # If peek updated LRU, 'a' would be most recent.
+        # If it didn't, 'c' is still most recent.
+        # Let's add 3 more items to force eviction of least recent.
+        cache.set("d", 4)
+        cache.set("e", 5)
+        cache.set("f", 6)
+        
+        # Now we have 5 items. capacity is 5.
+        # If 'a' was not updated, it should have been evicted first (as it was inserted first).
+        # Order before d,e,f: a, b, c.
+        # After d: b, c, d. (a evicted)
+        # After e: c, d, e. (b evicted)
+        # After f: d, e, f. (c evicted)
+        # Wait, capacity is 5.
+        # Insert a, b, c. Size 3.
+        # Peek a.
+        # Insert d (4), e (5). Size 5. [a, b, c, d, e]
+        # Insert f (6). Size 6 -> Evict LRU.
+        
+        # If peek updated a, order would be b, c, a, d, e. LRU is b.
+        # If peek did NOT update a, order is a, b, c, d, e. LRU is a.
+        
+        # So if we insert 'f', and 'a' is gone, then peek did not update.
+        self.assertFalse(cache.has_key("a"))
+        
+    def test_is_older_than(self):
+        cache = LRUCache(5, 60)
+        cache.set("a", 1)
+        time.sleep(0.1)
+        # Should be older than 0 seconds
+        self.assertTrue(cache.is_older_than("a", 0))
+        # Should NOT be older than 2 seconds
+        self.assertFalse(cache.is_older_than("a", 2))
+        
+    def test_magic_methods(self):
+        cache = LRUCache(5, 60)
+        cache.set("a", 1)
+        self.assertTrue(cache.has_key("a"))
+        del cache["a"]
+        self.assertFalse(cache.has_key("a"))
+
+    def test_persistence(self):
+        import tempfile
+        import os
+        
+        with tempfile.NamedTemporaryFile(delete=False) as tmp:
+            tmp_path = tmp.name
+            
+        try:
+            # 1. Save
+            cache = LRUCache(5, 60)
+            cache.set("a", {"data": 123})
+            cache.save(tmp_path)
+            
+            # 2. Load
+            loaded_cache = LRUCache.load(tmp_path, 5, 60)
+            self.assertTrue(loaded_cache.has_key("a"))
+            self.assertEqual(loaded_cache.get("a"), {"data": 123})
+            
+            # 3. Load with different config
+            loaded_cache_resized = LRUCache.load(tmp_path, 10, 120)
+            self.assertEqual(loaded_cache_resized.capacity, 10)
+            self.assertEqual(loaded_cache_resized.default_max_age.total_seconds(), 120)
+            
+            # 4. Load non-existent (should start fresh)
+            fresh_cache = LRUCache.load(tmp_path + ".missing", 5, 60)
+            self.assertEqual(len(fresh_cache.keys()), 0)
+            
+        finally:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+
 if __name__ == '__main__':
     main()

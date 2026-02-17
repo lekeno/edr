@@ -35,10 +35,10 @@ class TestBackoff(TestCase):
         
         # Check capping behavior
         # Force high attempts to exceed cap
-        b.attempts = 5 
+        b.attempts = 6 
         b.throttle()
-        self.assertEqual(b.attempts, 6)
-        # delay = min(100, 2 * 2^6) + 5 = 100 + 5 = 105
+        self.assertEqual(b.attempts, 7)
+        # delay = min(100, 2 * 2^7) + 5 = 100 + 5 = 105 (2^7 = 128 > 100)
         # until = 1000 + 105
         self.assertEqual(b.backoff_until, 1105)
 

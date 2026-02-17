@@ -51,12 +51,27 @@ class TestEDRI18n(unittest.TestCase):
         }
         self.assertEqual(edri18n.edrgettext(msgs), "Hello") # Fallback to en
 
+    def test_edrgettext_str_or_none(self):
+        self.assertEqual(edri18n.edrgettext("Direct String"), "Direct String")
+        self.assertEqual(edri18n.edrgettext(None), "")
+        self.assertEqual(edri18n.edrgettext({}), "")
+
     def test_pgettext_context(self):
         # Setup mock behavior simulating translation missing
-        edri18n.TRANSLATE.gettext.return_value = "Context|Message" 
+        self.mock_translate.gettext.side_effect = None
+        self.mock_translate.gettext.return_value = "Context|Message" 
         result = edri18n.pgettext("Context|Message")
         self.assertEqual(result, "Message")
+        
+        # Simulating translation found (no separator in result usually, but let's say it returns just message)
+        self.mock_translate.gettext.return_value = "TranslatedMessage" 
+        result = edri18n.pgettext("Context|Message")
+        self.assertEqual(result, "TranslatedMessage")
 
+    def test_ugettext(self):
+        self.mock_translate.gettext.side_effect = None
+        self.mock_translate.gettext.return_value = "Translated"
+        self.assertEqual(edri18n.ugettext("Original"), "Translated")
 
 if __name__ == '__main__':
     unittest.main()

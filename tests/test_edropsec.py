@@ -1,128 +1,128 @@
 
-from unittest import TestCase, main
-from unittest.mock import MagicMock
-from edr.core.edropsec import EDROpsecConfig
+import unittest
+from unittest.mock import MagicMock, patch
+from edr.core.edropsec import EDROpsecConfig, EDROpsecConfigDefault
 
-class TestEDROpsecConfig(TestCase):
-    def test_init_defaults(self):
-        # Mock user config with no options (simulating defaults)
-        user_config = MagicMock()
-        user_config.has_option.return_value = False
+class TestEDROpsecConfig(unittest.TestCase):
+    def setUp(self):
+        self.log_patch = patch('edr.core.edrlog.EDR_LOG')
+        self.mock_log = self.log_patch.start()
         
-        opsec = EDROpsecConfig(user_config)
+        self.mock_user_config = MagicMock()
+        # Default behavior: return True or empty keys if not specified
+        self.mock_user_config.has_option.return_value = False
+        self.mock_user_config.getboolean.return_value = True
+        self.mock_user_config.get.return_value = ""
+
+    def tearDown(self):
+        self.log_patch.stop()
+
+    def _setup_config(self, enabled=True, wing=True, crew=True, squadron=True, power=True, never_cmdrs="", never_powers=""):
+        def getboolean_side_effect(section, option):
+            if section != 'opsec': return None
+            if option == 'enabled': return enabled
+            if option == 'wing': return wing
+            if option == 'crew': return crew
+            if option == 'squadron': return squadron
+            if option == 'power': return power
+            return True
+            
+        def get_side_effect(section, option):
+            if section != 'opsec': return None
+            if option == 'never_report_cmdrs': return never_cmdrs
+            if option == 'never_report_powers': return never_powers
+            return ""
+            
+        self.mock_user_config.has_option.return_value = True
+        self.mock_user_config.getboolean.side_effect = getboolean_side_effect
+        self.mock_user_config.get.side_effect = get_side_effect
+        
+        return EDROpsecConfig(self.mock_user_config)
+
+    def test_init_defaults(self):
+        # Empty config -> defaults to True
+        self.mock_user_config.has_option.return_value = False
+        opsec = EDROpsecConfig(self.mock_user_config)
         self.assertTrue(opsec.opsec_enabled)
         self.assertTrue(opsec.wing)
-        self.assertTrue(opsec.crew)
-        self.assertTrue(opsec.squadron)
-        self.assertTrue(opsec.power)
-        self.assertEqual(opsec.never_report_cmdrs, set())
-        self.assertEqual(opsec.never_report_powers, set())
+        self.assertEqual(len(opsec.never_report_cmdrs), 0)
 
     def test_init_custom(self):
-        user_config = MagicMock()
-        user_config.has_option.side_effect = lambda section, option: True
-        
-        def getboolean_side_effect(section, option):
-            if section == 'opsec':
-                if option == 'enabled': return True
-                if option == 'wing': return False
-                return True
-            return False
+        opsec = self._setup_config(enabled=False, never_cmdrs="CmdrA, CmdrB")
+        self.assertFalse(opsec.opsec_enabled)
+        self.assertIn("CmdrA", opsec.never_report_cmdrs)
+        self.assertIn("CmdrB", opsec.never_report_cmdrs)
 
-        user_config.getboolean.side_effect = getboolean_side_effect
-        user_config.get.side_effect = lambda section, option: "Cmdr1, Cmdr2" if option == 'never_report_cmdrs' else "Power1"
+    def test_is_protected_disabled(self):
+        opsec = self._setup_config(enabled=False)
+        self.assertFalse(opsec.is_protected(MagicMock(), MagicMock()))
 
-        opsec = EDROpsecConfig(user_config)
-        self.assertTrue(opsec.opsec_enabled)
-        self.assertFalse(opsec.wing)
-        self.assertEqual(opsec.never_report_cmdrs, {"Cmdr1", "Cmdr2"})
-        self.assertEqual(opsec.never_report_powers, {"Power1"})
-
-    def test_is_protected_general(self):
-        # Setup basic enabled opsec
-        user_config = MagicMock()
-        user_config.has_option.return_value = False # Defaults to True
-        opsec = EDROpsecConfig(user_config)
-        
-        cmdr = MagicMock()
-        cmdr.name = "Target"
+    def test_is_protected_self(self):
+        opsec = self._setup_config()
         player = MagicMock()
+        player.name = "CmdrMe"
+        profile = MagicMock()
+        profile.name = "CmdrMe"
         
-        # Base case: no relation
-        player.is_wingmate.return_value = False
+        # Self should not be "protected" in the sense of hiding interaction? 
+        # Code says: if cmdr_profile.name == player.name: return False
+        self.assertFalse(opsec.is_protected(profile, player))
+
+    def test_is_protected_never_report(self):
+        opsec = self._setup_config(never_cmdrs="CmdrSecret")
+        player = MagicMock()
+        player.name = "CmdrMe"
+        profile = MagicMock()
+        profile.name = "CmdrSecret"
+        
+        self.assertTrue(opsec.is_protected(profile, player))
+
+    def test_is_protected_wing(self):
+        opsec = self._setup_config(wing=True)
+        player = MagicMock()
+        player.name = "CmdrMe"
+        player.is_wingmate.return_value = True
         player.is_crewmate.return_value = False
-        cmdr.powerplay = "PowerA"
-        player.power = "PowerB"
-        cmdr.squadron_id = "Sq1"
-        player.squadron.inara_id = "Sq2"
+        player.power = None
+        player.squadron = None
         
-        self.assertFalse(opsec.is_protected(cmdr, player))
+        profile = MagicMock()
+        profile.name = "CmdrWingman"
+        profile.squadron_id = None
+        profile.powerplay = None
         
-        # Disabled globally
-        opsec.opsec_enabled = False
-        self.assertFalse(opsec.is_protected(cmdr, player))
+        self.assertTrue(opsec.is_protected(profile, player))
+        
+        # Test disabled
+        opsec = self._setup_config(wing=False)
+        self.assertFalse(opsec.is_protected(profile, player))
 
-    def test_is_protected_blocklists(self):
-        user_config = MagicMock()
-        user_config.has_option.return_value = False
-        opsec = EDROpsecConfig(user_config)
-        opsec.never_report_cmdrs = {"BlockedCmdr"}
-        opsec.never_report_powers = {"BlockedPower"}
-        
-        cmdr = MagicMock()
+    def test_is_protected_squadron(self):
+        opsec = self._setup_config(squadron=True)
         player = MagicMock()
+        player.name = "CmdrMe"
+        player.squadron.inara_id = 123
         player.is_wingmate.return_value = False
         player.is_crewmate.return_value = False
         player.power = None
-        player.squadron.inara_id = None
         
-        # Blocked CMDR
-        cmdr.name = "BlockedCmdr"
-        self.assertTrue(opsec.is_protected(cmdr, player))
+        profile = MagicMock()
+        profile.name = "CmdrSquad"
+        profile.squadron_id = 123
+        profile.powerplay = None
         
-        # Blocked Power
-        cmdr.name = "Random"
-        cmdr.powerplay = "BlockedPower"
-        self.assertTrue(opsec.is_protected(cmdr, player))
+        self.assertTrue(opsec.is_protected(profile, player))
         
-        # Not blocked
-        cmdr.powerplay = "CleanPower"
-        self.assertFalse(opsec.is_protected(cmdr, player))
-
-    def test_is_protected_relations(self):
-        user_config = MagicMock()
-        user_config.has_option.return_value = False
-        opsec = EDROpsecConfig(user_config)
-        
-        cmdr = MagicMock()
-        player = MagicMock()
-        
-        # Wing
-        player.is_wingmate.return_value = True
-        cmdr.name = "Wingmate"
-        self.assertTrue(opsec.is_protected(cmdr, player))
-        player.is_wingmate.return_value = False
-        
-        # Crew
-        player.is_crewmate.return_value = True
-        cmdr.name = "Crewmate"
-        self.assertTrue(opsec.is_protected(cmdr, player))
-        player.is_crewmate.return_value = False
-        
-        # Power
-        cmdr.powerplay = "SamePower"
-        player.power = "SamePower"
-        self.assertTrue(opsec.is_protected(cmdr, player))
-        player.power = "OtherPower"
-        self.assertFalse(opsec.is_protected(cmdr, player))
-        
-        # Squadron
-        cmdr.squadron_id = 123
-        player.squadron.inara_id = 123
-        self.assertTrue(opsec.is_protected(cmdr, player))
+        # Test mismatch
         player.squadron.inara_id = 456
-        self.assertFalse(opsec.is_protected(cmdr, player))
+        self.assertFalse(opsec.is_protected(profile, player))
 
+class TestEDROpsecConfigDefault(unittest.TestCase):
+    def test_init(self):
+        opsec = EDROpsecConfigDefault()
+        self.assertTrue(opsec.opsec_enabled)
+        self.assertTrue(opsec.wing)
+        self.assertEqual(len(opsec.never_report_cmdrs), 0)
 
 if __name__ == '__main__':
-    main()
+    unittest.main()

@@ -34,5 +34,29 @@ class TestEDRUtils(TestCase):
         self.assertIsNone(simplified_body_name(None, "Body"))
         self.assertIsNone(simplified_body_name("System", None))
 
+    def test_compare_versions(self):
+        from edr.utils.edrutils import compare_versions
+        self.assertEqual(compare_versions("1.0.0", "1.0.0"), 0)
+        self.assertEqual(compare_versions("1.0.1", "1.0.0"), 1)
+        self.assertEqual(compare_versions("1.0.0", "1.0.1"), -1)
+        self.assertEqual(compare_versions("1.1.0", "1.0.0"), 1)
+        self.assertEqual(compare_versions("2.0.0", "1.0.0"), 1)
+        self.assertEqual(compare_versions("1.0", "1.0.0"), 0)
+        self.assertEqual(compare_versions("1.0.0", "1.0"), 0)
+        self.assertEqual(compare_versions("1.0.0.1", "1.0.0"), 1)
+        
+    def test_is_valid_semver(self):
+        from edr.utils.edrutils import is_valid_semver
+        self.assertTrue(is_valid_semver("1.0.0"))
+        self.assertTrue(is_valid_semver("0.1.0"))
+        self.assertTrue(is_valid_semver("0.0.1"))
+        self.assertTrue(is_valid_semver("10.20.30"))
+        
+        self.assertFalse(is_valid_semver("1.0"))
+        self.assertFalse(is_valid_semver("1.0.0.0"))
+        self.assertFalse(is_valid_semver("v1.0.0"))
+        self.assertFalse(is_valid_semver("1.0.0-beta"))
+        self.assertFalse(is_valid_semver("invalid"))
+
 if __name__ == '__main__':
     main()

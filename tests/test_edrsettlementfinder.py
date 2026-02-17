@@ -5,72 +5,113 @@ from edr.controllers.edrsettlementfinder import EDRSettlementFinder
 
 class TestEDRSettlementFinder(unittest.TestCase):
     def setUp(self):
-        self.checker = MagicMock()
         self.edr_systems = MagicMock()
+        self.checker = MagicMock()
         self.callback = MagicMock()
         self.finder = EDRSettlementFinder("Sol", self.checker, self.edr_systems, self.callback)
-        # Mock translation
-        self.patcher = patch('edr.controllers.edrsettlementfinder._', side_effect=lambda x: x)
-        self.patcher.start()
+        
+        self.i18n_patch = patch('edr.controllers.edrsettlementfinder._', side_effect=lambda x: x)
+        self.mock_i18n = self.i18n_patch.start()
+        
+        self.log_patch = patch('edr.controllers.edrsettlementfinder.EDR_LOG')
+        self.mock_log = self.log_patch.start()
 
     def tearDown(self):
-        self.patcher.stop()
+        self.i18n_patch.stop()
+        self.log_patch.stop()
 
     def test_init(self):
         self.assertEqual(self.finder.star_system, "Sol")
         self.assertEqual(self.finder.radius, 50)
+        self.assertEqual(self.finder.sc_distance, 1500)
 
-    def test_search_prime_candidate(self):
-        self.edr_systems.system.return_value = [{"name": "Sol", "requirePermit": False}]
-        self.checker.check_system.return_value = True
+    def test_nearby_prime_found(self):
+        system = {"name": "Sol", "requirePermit": False}
+        settlement = {"name": "Galileo", "distanceToArrival": 100}
+        
+        self.edr_systems.system.return_value = [system]
         self.edr_systems.are_settlements_stale.return_value = False
-        
-        settlement = {"name": "Outpost", "distanceToArrival": 100}
         self.edr_systems.stations_in_system.return_value = [settlement]
-        self.checker.check_settlement.return_value = True
-        self.checker.is_ambiguous.return_value = False # High confidence
-        
         self.edr_systems.closest_settlement.return_value = settlement
         
-        result = self.finder.nearby()
-        self.assertEqual(result, settlement)
-
-    def test_search_alt_candidate_ambiguous(self):
-        # Current system fails
-        self.edr_systems.system.return_value = None
-        
-        # Neighbors
-        self.edr_systems.systems_within_radius.return_value = [{"name": "Neighbor"}]
         self.checker.check_system.return_value = True
-        
-        settlement = {"name": "Outpost", "distanceToArrival": 100}
-        self.edr_systems.stations_in_system.return_value = [settlement]
         self.checker.check_settlement.return_value = True
-        self.checker.is_ambiguous.return_value = True # Ambiguous -> Alt with Low Confidence check
-        
-        self.edr_systems.closest_settlement.return_value = settlement
+        self.checker.is_ambiguous.return_value = False
         
         result = self.finder.nearby()
         self.assertEqual(result, settlement)
-        self.assertIn("[Confidence: LOW]", settlement['comment'])
 
-    def test_faction_state_filtering(self):
-        self.finder.ignore_states(['War'])
+    def test_nearby_alt_found(self):
+        # Setup: Prime candidate not found (e.g. too far), but alt found (ambiguous or far)
+        # Here we test "too far" which should put into alt?
+        # Code: if check_sc_distance and not ambiguous -> prime. else -> alt.
         
-        settlement_war = {"name": "WarZone", "controllingFaction": {"name": "Warmongers"}, "distanceToArrival": 100}
-        settlement_peace = {"name": "PeaceTime", "controllingFaction": {"name": "Peacemakers"}, "distanceToArrival": 200}
+        system = {"name": "Sol"}
+        settlement = {"name": "Far Out", "distanceToArrival": 10000}
         
-        # Mock faction lookup
-        war_faction = MagicMock()
-        war_faction.state = 'War'
-        peace_faction = MagicMock()
-        peace_faction.state = 'None'
+        self.edr_systems.system.return_value = [system]
+        self.edr_systems.stations_in_system.return_value = [settlement]
+        self.edr_systems.closest_settlement.side_effect = lambda sys, cand: sys['settlement']
         
-        self.edr_systems.faction_in_system.side_effect = lambda name, sys: war_faction if name == "Warmongers" else peace_faction
+        self.checker.check_system.return_value = True
+        self.checker.check_settlement.return_value = True
+        self.checker.is_ambiguous.return_value = False
+        
+        result = self.finder.nearby()
+        self.assertEqual(result, settlement)
+        # Since it's far (10000 > 1500), it goes to alt.
+        # Since prime is None, it returns alt.
+
+    def test_closest_matching_settlement_state_filtering(self):
+        s1 = {"name": "S1", "distanceToArrival": 100, "controllingFaction": {"name": "Faction1"}}
+        s2 = {"name": "S2", "distanceToArrival": 200, "controllingFaction": {"name": "Faction2"}}
+        
         self.checker.check_settlement.return_value = True
         
-        result = self.finder.closest_matching_settlement([settlement_war, settlement_peace], "Sol")
-        self.assertEqual(result, settlement_peace) # Should skip war settlement
+        f1 = MagicMock()
+        f1.state = "War"
+        f2 = MagicMock()
+        f2.state = "Boom"
+        
+        self.edr_systems.faction_in_system.side_effect = lambda f, s: f1 if f == "Faction1" else f2
+        
+        # Test ignore states
+        self.finder.ignore_states(["War"])
+        result = self.finder.closest_matching_settlement([s1, s2], "Sol")
+        self.assertEqual(result, s2)
+        
+        # Test require states
+        self.finder.ignore_states([])
+        self.finder.require_states(["War"])
+        result = self.finder.closest_matching_settlement([s1, s2], "Sol")
+        self.assertEqual(result, s1)
+
+    def test_closest_matching_settlement_distance(self):
+        s1 = {"name": "S1", "distanceToArrival": 500}
+        s2 = {"name": "S2", "distanceToArrival": 100}
+        
+        self.checker.check_settlement.return_value = True
+        self.edr_systems.faction_in_system.return_value = None # No faction info, ignores state check
+        
+        result = self.finder.closest_matching_settlement([s1, s2], "Sol")
+        self.assertEqual(result, s2)
+
+    def test_ambiguous_settlement(self):
+        system = {"name": "Sol"}
+        settlement = {"name": "Ambiguous", "distanceToArrival": 100}
+        
+        self.edr_systems.system.return_value = [system]
+        self.edr_systems.stations_in_system.return_value = [settlement]
+        self.edr_systems.closest_settlement.return_value = settlement
+        
+        self.checker.check_system.return_value = True
+        self.checker.check_settlement.return_value = True
+        self.checker.is_ambiguous.return_value = True
+        
+        result = self.finder.nearby()
+        self.assertEqual(result, settlement)
+        self.assertIn("comment", result)
+        self.assertIn("[Confidence: LOW]", result["comment"])
 
 if __name__ == '__main__':
     unittest.main()

@@ -74,7 +74,7 @@ class EDRMarket:
             commodity = self.commodities[name]
             thresholds = self.PRICE_THRESHOLDS[name]
             if (commodity['buyPrice'] <= thresholds.get("buyThreshold", 0) or
-                    commodity['buyPrice'] >= thresholds.get("sellThreshold", float('inf'))):
+                    commodity['sellPrice'] >= thresholds.get("sellThreshold", float('inf'))):
                 self.noteworthy_commodities[name] = commodity
 
     def normalize_commodity_name(self, name):

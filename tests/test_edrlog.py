@@ -13,7 +13,28 @@ class TestEDRLog(unittest.TestCase):
         self.assertIsInstance(log1.logger, logging.Logger)
         self.assertIsInstance(log2.logger, logging.Logger)
 
+    @patch('edr.core.edrconfig.EDR_CONFIG')
+    def test_init_level(self, mock_config):
+        mock_config.logging_level.return_value = "DEBUG"
+        
+        # We need to force re-instantiation or handle the fact that logging.getLogger returns the same logger
+        # For testing __init__ logic, we can construct EDRLog again.
+        log = EDRLog()
+        self.assertEqual(log.logger.level, logging.DEBUG)
+        
+        mock_config.logging_level.return_value = "INFO"
+        log = EDRLog()
+        self.assertEqual(log.logger.level, logging.INFO)
+
+    def test_singleton_accessor(self):
+        from edr.core.edrlog import get_edr_log
+        log1 = get_edr_log()
+        log2 = get_edr_log()
+        self.assertIs(log1, log2)
+
     def test_logging_methods(self):
+        # We can't easily mock the internal logger creation without patching __init__, 
+        # but we can patch the logger attribute after creation.
         log = EDRLog()
         log.logger = MagicMock()
         
@@ -34,3 +55,6 @@ class TestEDRLog(unittest.TestCase):
 
         log.exception("test")
         log.logger.exception.assert_called_with("test", stacklevel=2)
+
+if __name__ == '__main__':
+    unittest.main()

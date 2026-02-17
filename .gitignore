@@ -112,3 +112,6 @@ test_sandbox/
 test_sandbox_locked/
 mock_update.zip
 test_updater.py
+# Private/Sensitive Data
+edr/private/
+edr/db/rawdepletables

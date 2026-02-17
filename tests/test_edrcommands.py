@@ -1,64 +1,100 @@
-import unittest
-from unittest.mock import Mock, patch, MagicMock
-import sys
-import os
 
-# Setup paths
-# sys.path injection removed
+import unittest
+from unittest.mock import MagicMock, patch
 from edr.controllers.edrcommands import EDRCommands
 
 class TestEDRCommands(unittest.TestCase):
     def setUp(self):
-        self.edr_client = MagicMock()
-        self.edr_client.player.target_pilot.return_value = None # Default no target
-        self.edr_commands = EDRCommands(self.edr_client)
-
-        self.logger_patch = patch('edr.controllers.edrcommands.EDR_LOG')
-        self.mock_logger = self.logger_patch.start()
-
-    def tearDown(self):
-        self.logger_patch.stop()
+        self.mock_edr_client = MagicMock()
+        self.mock_player = MagicMock()
+        self.mock_edr_client.player = self.mock_player
+        self.commands = EDRCommands(self.mock_edr_client)
 
     def test_process_empty(self):
-        self.edr_commands.process("")
-        self.edr_client.assert_not_called()
+        self.assertFalse(self.commands.process(""))
 
-    def test_process_overlay(self):
-        self.edr_commands.process("!overlay on")
-        self.assertTrue(self.edr_client.visual_feedback)
+    def test_process_bang_command_who(self):
+        self.commands.process("!who cmdr_name")
+        self.mock_edr_client.who.assert_called_with("cmdr_name")
+
+    def test_process_bang_command_who_implicit_target(self):
+        # Mock a target
+        mock_target = MagicMock()
+        mock_target.name = "TargetCmdr"
+        mock_target.is_human.return_value = True
+        self.mock_player.target_pilot.return_value = mock_target
+
+        self.commands.process("!who")
+        self.mock_edr_client.who.assert_called_with("TargetCmdr")
+
+    def test_process_bang_command_sitrep(self):
+        self.mock_player.star_system = "CurrentSys"
+        self.commands.process("!sitrep")
+        self.mock_edr_client.check_system.assert_called_with("CurrentSys")
+
+    def test_process_query_command_outlaws(self):
+        # Test enabling
+        self.commands.process("?outlaws on")
+        self.mock_edr_client.enable_outlaws_alerts.assert_called_once()
         
-        self.edr_commands.process("!overlay off")
-        self.assertFalse(self.edr_client.visual_feedback)
+        # Test disabling
+        self.commands.process("?outlaws off")
+        self.mock_edr_client.disable_outlaws_alerts.assert_called_once()
 
-    def test_process_audiocues(self):
-        self.edr_commands.process("!audiocue on")
-        self.assertTrue(self.edr_client.audio_feedback)
+    def test_process_hash_command_tag(self):
+        # Implicit target from earlier mock or set up new one
+        mock_target = MagicMock()
+        mock_target.name = "BadGuy"
+        mock_target.is_human.return_value = True
+        self.mock_player.target_pilot.return_value = mock_target
         
-        self.edr_commands.process("!audiocue off")
-        self.assertFalse(self.edr_client.audio_feedback)
+        self.commands.process("#outlaw")
+        self.mock_edr_client.tag_cmdr.assert_called_with("BadGuy", "outlaw")
 
-    def test_process_sitrep(self):
-        self.edr_commands.process("!sitrep System Name")
-        self.edr_client.check_system.assert_called_with("System Name")
+        self.commands.process("#enemy")
+        self.mock_edr_client.tag_cmdr.assert_called_with("BadGuy", "enemy")
 
-    def test_process_help(self):
-        self.edr_commands.process("!help")
-        self.edr_client.help.assert_called()
+    def test_process_minus_command_untag(self):
+        mock_target = MagicMock()
+        mock_target.name = "GoodGuy"
+        mock_target.is_human.return_value = True
+        self.mock_player.target_pilot.return_value = mock_target
 
-    def test_process_clear(self):
-        self.edr_commands.process("!clear")
-        self.edr_client.clear.assert_called()
+        self.commands.process("-#outlaw")
+        self.mock_edr_client.untag_cmdr.assert_called_with("GoodGuy", "outlaw")
 
-    def test_process_dist(self):
-        self.edr_client.player.star_system = "Sol"
-        self.edr_commands.process("!distance Colonia")
-        self.edr_client.distance.assert_called_with("Sol", "Colonia")
+    def test_process_at_command_memo(self):
+        mock_target = MagicMock()
+        mock_target.name = "MemoTarget"
+        mock_target.is_human.return_value = True
+        self.mock_player.target_pilot.return_value = mock_target
+
+        # The command expects " memo=" as a separator and the prefix to be "@# " (with a space)
+        self.commands.process("@#  memo=this is a memo")
+        self.mock_edr_client.memo_cmdr.assert_called_with("MemoTarget", "this is a memo")
+
+    def test_o7_command(self):
+        self.commands.process("o7", recipient="CmdrFriend")
+        self.mock_edr_client.who.assert_called_with("CmdrFriend", autocreate=True)
+
+    def test_overlay_command(self):
+        self.commands.process("!overlay on")
+        self.assertTrue(self.mock_edr_client.visual_feedback)
         
-    def test_process_who(self):
-        self.edr_commands.process("!who CmdrName")
-        self.edr_client.who.assert_called_with("CmdrName")
+        self.commands.process("!overlay off")
+        self.assertFalse(self.mock_edr_client.visual_feedback)
 
-    def test_process_unknown_command(self):
-        self.edr_commands.process("!unknown foo")
-        # Should verify no critical method called
-        self.edr_client.who.assert_not_called()
+    def test_audiocue_command(self):
+        self.commands.process("!audiocue loud")
+        self.mock_edr_client.loud_audio_feedback.assert_called_once()
+        self.assertTrue(self.mock_edr_client.audio_feedback)
+
+    def test_crimes_command(self):
+        self.commands.process("!crimes on")
+        self.assertTrue(self.mock_edr_client.crimes_reporting)
+        
+        self.commands.process("!crimes off")
+        self.assertFalse(self.mock_edr_client.crimes_reporting)
+
+if __name__ == '__main__':
+    unittest.main()

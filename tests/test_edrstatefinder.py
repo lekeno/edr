@@ -73,5 +73,40 @@ class TestEDRStateFinder(unittest.TestCase):
             self.finder.run()
             self.callback.assert_called_with("TestChecker", "Sol", 50, self.checker, 'System', 10)
 
+    def test_max_trials_reached(self):
+        # Setup many systems that are all stale
+        systems = [{'name': f'Sys{i}', 'requirePermit': False} for i in range(30)]
+        self.edr_systems.systems_within_radius.return_value = systems
+        self.checker.grade_system.return_value = 1
+        
+        # Always stale
+        self.edr_systems.are_factions_stale.return_value = True
+        
+        # Mock system_state to avoid ValueError during unpacking
+        self.edr_systems.system_state.return_value = ('None', 0)
+        self.edr_systems.system_allegiance.return_value = 'None'
+        self.checker.grade_allegiance.return_value = 0
+        self.checker.grade_state.return_value = 0
+
+        # run search
+        result, grade = self.finder.nearby()
+        
+        # Should return None because it exhausted max_trials (25) without finding a fresh one
+        # Actually, the code breaks the loop but doesn't necessarily return None if it had a previous best?
+        # In this test setup, best_system_so_far starts as None.
+        # Inside loop:
+        # It checks stale. If stale, trials++, if trials > max_trials break.
+        # If it breaks, it returns best_system_so_far (which is None).
+        
+        self.assertIsNone(result)
+        self.assertEqual(grade, 0)
+        # Verify we checked at least max_trials + 1 times (since check happens before increment?)
+        # trials starts at 0. 
+        # Check 1: stale. trials=1.
+        # ...
+        # Check 26: stale. trials=26. break.
+        # So are_factions_stale called 26 times?
+        self.assertGreater(self.edr_systems.are_factions_stale.call_count, 20)
+
 if __name__ == '__main__':
     unittest.main()

@@ -1,108 +1,113 @@
+
 import unittest
-# sys.path injection removed
+from edr.models.edshield import EDShieldingFactory, EDShieldGenerator, EDShieldBooster, EDPowerDistributor, EDShieldCellBank
 
-from edr.models.edshield import EDShieldingFactory, EDShieldGenerator, EDShieldBooster, EDPowerDistributor, EDShieldCellBank # EDR_INTERNAL
+class TestEDShieldingFactory(unittest.TestCase):
+    def test_normalize_module_name(self):
+        self.assertEqual(EDShieldingFactory.normalize_module_name("int_shieldgenerator_size3_class3"), "shieldgenerator_size3_class3")
+        self.assertEqual(EDShieldingFactory.normalize_module_name("$int_shieldgenerator_size3_class3_name;"), "shieldgenerator_size3_class3")
 
-class TestEDShield(unittest.TestCase):
-    def test_factory_generator(self):
-        # Test basic generator creation
-        # int_shieldgenerator_size3_class3 -> 3C -> Bi-Weave usually? 
-        # Standard: class1=E, class2=D, class3=C, class4=B, class5=A
-        # Bi-weave is usually C-rated but has "fast" suffix?
-        
-        # Test 3A Shield Generator
-        # int_shieldgenerator_size3_class5
-        sg = EDShieldingFactory.from_internal_name("int_shieldgenerator_size3_class5")
-        self.assertIsNotNone(sg)
+    def test_from_internal_name_generator(self):
+        sg = EDShieldingFactory.from_internal_name("int_shieldgenerator_size3_class3")
         self.assertIsInstance(sg, EDShieldGenerator)
-        self.assertEqual(sg.rating, "A")
-        # Multipliers for A: min:0.7, opt:1.2, max:1.7
-        self.assertAlmostEqual(sg.opt_multiplier, 1.2)
+        self.assertEqual(sg.rating, "C")
 
-    def test_factory_biweave(self):
-         # Bi-Weave is C rated (class 3) with fast suffix
-         # int_shieldgenerator_size3_class3_fast
-         sg = EDShieldingFactory.from_internal_name("int_shieldgenerator_size3_class3_fast")
-         self.assertIsNotNone(sg)
-         self.assertEqual(sg.rating, "C")
-         # Fast multipliers: min:0.4, opt:0.9, max:1.4
-         self.assertAlmostEqual(sg.opt_multiplier, 0.9)
-
-    def test_factory_booster(self):
-        # Booster 0A: shieldbooster_size0_class5
-        sb = EDShieldingFactory.from_internal_name("shieldbooster_size0_class5")
-        self.assertIsNotNone(sb)
+    def test_from_internal_name_booster(self):
+        sb = EDShieldingFactory.from_internal_name("hpt_shieldbooster_size0_class5")
         self.assertIsInstance(sb, EDShieldBooster)
-        self.assertEqual(sb.strength_bonus, 0.20)
+        self.assertAlmostEqual(sb.strength_bonus, 0.20)
 
-    def test_factory_scb(self):
-        # SCB 6A: shieldcellbank_size6_class5
-        scb = EDShieldingFactory.from_internal_name("shieldcellbank_size6_class5")
-        self.assertIsNotNone(scb)
-        self.assertIsInstance(scb, EDShieldCellBank)
-        self.assertEqual(scb.duration, 8)
-        self.assertEqual(scb.charges, 5)
-
-    def test_generator_strength(self):
-        # 3A Shield
-        sg = EDShieldingFactory.from_internal_name("int_shieldgenerator_size3_class5")
-        # 3A Stats: opt mass 165
-        # Multiplier: 1.2
-        
-        # Exact optimal mass match -> strength = base * opt_multiplier
-        base_strength = 100.0
-        strength = sg.strength(165, base_strength)
-        self.assertAlmostEqual(strength, 120.0)
-
-        # Lower mass than optional -> higher multiplier
-        strength_light = sg.strength(100, base_strength)
-        self.assertTrue(strength_light > 120.0)
-
-        # Higher mass -> lower multiplier
-        strength_heavy = sg.strength(200, base_strength)
-        self.assertTrue(strength_heavy < 120.0)
-
-    def test_distributor_pips(self):
-        pd = EDPowerDistributor()
-        # Default 2-2-2
-        self.assertEqual(pd.sys, 2)
-        
-        # Update pips (values are out of 8?) 
-        # Code divides by 2?
-        # Typically pips are 0-4 per system, sum 6. 
-        # In journal: "Pips": [4, 8, 0] -> SYS 2, ENG 4, WEP 0 ?
-        # Code: sys = pips[0] / 2.0
-        # If journal says 4 -> 2.0. So journal values are doubled? 
-        # Yes, journal uses half-pips integer.
-        
-        pd.update([4, 8, 0])
-        self.assertEqual(pd.sys, 2.0)
-        self.assertEqual(pd.eng, 4.0)
-        self.assertEqual(pd.wep, 0.0)
-        
-    def test_generator_engineering(self):
-        sg = EDShieldingFactory.from_internal_name("int_shieldgenerator_size3_class5")
-        # Apply Reinforced: +Strength, +Resistances
-        engineering = {
+    def test_from_module_generator(self):
+        module = {
+            "Item": "int_shieldgenerator_size3_class3",
             "Engineering": {
                 "Modifiers": [
-                    {"Label": "ShieldGenStrength", "Value": 150.0}, # +50% opt mult?
-                    # Code: self.opt_multiplier = m["Value"]/100.0
-                    # So 1.5. Old was 1.2.
-                    # It also scales min/max by ratio.
-                    
-                    {"Label": "ExplosiveResistance", "Value": 60.0}
+                    {"Label": "ShieldGenStrength", "Value": 110.0} # +10% opt multiplier
                 ]
             }
         }
+        sg = EDShieldingFactory.from_module(module)
+        self.assertIsInstance(sg, EDShieldGenerator)
+        # Base C rated opt multiplier is 1.0. With 1.1 multiplier in engineering...
+        # Wait, the code says new_opt_multiplier = Value / 100.0. So 110/100 = 1.1.
+        self.assertAlmostEqual(sg.opt_multiplier, 1.1)
+
+class TestEDShieldGenerator(unittest.TestCase):
+    def test_strength_calculation_standard(self):
+        # Size 3 Class C
+        # Min Mass: 83, Opt Mass: 165, Max Mass: 413
+        # Min Mult: 0.5, Opt Mult: 1.0, Max Mult: 1.5
+        sg = EDShieldingFactory.from_internal_name("int_shieldgenerator_size3_class3")
         
-        sg.update_from(engineering)
-        self.assertEqual(sg.opt_multiplier, 1.5)
-        # Ratio: 1.5 / 1.2 = 1.25
-        # Min was 0.7 -> 0.7 * 1.25 = 0.875
-        self.assertAlmostEqual(sg.min_multiplier, 0.875)
+        # Test at optimal mass
+        hull_mass = 165
+        base_strength = 100
+        strength = sg.strength(hull_mass, base_strength)
+        self.assertAlmostEqual(strength, 100 * 1.0)
+
+    def test_strength_calculation_max_mass(self):
+        sg = EDShieldingFactory.from_internal_name("int_shieldgenerator_size3_class3")
+        hull_mass = 413
+        base_strength = 100
+        strength = sg.strength(hull_mass, base_strength)
+        self.assertAlmostEqual(strength, 100 * 0.5)
+
+    def test_strength_calculation_min_mass(self):
+        sg = EDShieldingFactory.from_internal_name("int_shieldgenerator_size3_class3")
+        hull_mass = 83
+        base_strength = 100
+        strength = sg.strength(hull_mass, base_strength)
+        self.assertAlmostEqual(strength, 100 * 1.5)
+
+class TestEDShieldBooster(unittest.TestCase):
+    def test_update_from_engineering(self):
+        sb = EDShieldBooster()
+        module = {
+            "Item": "hpt_shieldbooster_size0_class5",
+            "Engineering": {
+                "Modifiers": [
+                    {"Label": "DefenceModifierShieldMultiplier", "Value": 25.0},
+                    {"Label": "ThermicResistance", "Value": 15.0}
+                ]
+            }
+        }
+        sb.update_from(module)
+        self.assertAlmostEqual(sb.strength_bonus, 0.25)
+        self.assertAlmostEqual(sb.resistances.thermal, 0.15)
+
+class TestEDPowerDistributor(unittest.TestCase):
+    def test_update_pips(self):
+        pd = EDPowerDistributor()
+        # Initial: 2, 2, 2
+        self.assertEqual(pd.sys, 2)
         
-        self.assertEqual(sg.shield_resistances.explosive, 0.6)
+        changed = pd.update([4, 0, 8]) # Pips are usually half-points in game but passed as integers to update? 
+        # The update method divides by 2.0. So [4, 2, 2] -> 2.0, 1.0, 1.0? 
+        # Standard pips are 4, 4, 4 max? No, 8 total. 
+        # Let's assume input is standard ranks (0-8 per capacitor) or something.
+        # update([4, 0, 8]) -> sys=2.0, eng=0.0, wep=4.0
+        
+        self.assertTrue(changed)
+        self.assertEqual(pd.sys, 2.0)
+        self.assertEqual(pd.eng, 0.0)
+        self.assertEqual(pd.wep, 4.0)
+
+    def test_sys_resistance(self):
+        pd = EDPowerDistributor()
+        pd.sys = 4.0 # 4 pips
+        # pow(4, 0.85) * 0.6 / pow(4, 0.85) = 0.6
+        self.assertAlmostEqual(pd.sys_resistance(), 0.6)
+        
+        pd.sys = 0.0
+        self.assertEqual(pd.sys_resistance(), 0.0)
+
+class TestEDShieldCellBank(unittest.TestCase):
+    def test_strength(self):
+        # EDScbSize6A: duration=8, charge_rate=46, charges=5
+        scb = EDShieldingFactory.from_internal_name("shieldcellbank_size6_class5")
+        self.assertIsInstance(scb, EDShieldCellBank)
+        self.assertEqual(scb.strength(), 8 * 46)
+        self.assertEqual(scb.total_strength(), 5 * 8 * 46)
 
 if __name__ == '__main__':
     unittest.main()

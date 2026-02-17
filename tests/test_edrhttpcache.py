@@ -26,15 +26,24 @@ class TestEDRHttpCache(unittest.TestCase):
         cache = EDRHttpCache()
         url = "http://example.com/api"
         content = {"data": "test"}
-        max_age = 1 # 1 second
+        max_age = 60
         
-        cache.set(url, content, max_age)
-        cached = cache.get(url)
-        self.assertEqual(cached, content)
-        
-        time.sleep(1.1)
-        cached = cache.get(url)
-        self.assertIsNone(cached)
+        # Start at T=1000
+        initial_time = datetime.datetime(2023, 1, 1, 12, 0, 0)
+        with unittest.mock.patch('edr.utils.edrhttpcache.datetime.datetime') as mock_datetime:
+            mock_datetime.now.return_value = initial_time
+            mock_datetime.timedelta = datetime.timedelta # Passthrough
+            
+            cache.set(url, content, max_age)
+            
+            # Check immediately (T=1000) -> Not expired
+            cached = cache.get(url)
+            self.assertEqual(cached, content)
+            
+            # Advance to T=1061 (Expired)
+            mock_datetime.now.return_value = initial_time + datetime.timedelta(seconds=61)
+            cached = cache.get(url)
+            self.assertIsNone(cached)
 
     def test_eviction(self):
         cache = EDRHttpCache()

@@ -1,77 +1,134 @@
+
 import unittest
-from unittest.mock import MagicMock, patch
-from edr.models.edengineers import EDEngineers, EDEngineerFactory, EDKitFowler
+from unittest.mock import MagicMock, patch, mock_open
+import json
+from edr.models.edengineers import (
+    EDEngineer,
+    EDDominoGreen,
+    EDKitFowler,
+    EDEngineerFactory,
+    EDEngineers,
+    EDUnknownEngineer
+)
+
+class TestEDEngineer(unittest.TestCase):
+    def test_base_engineer(self):
+        engineer = EDEngineer()
+        self.assertIsNone(engineer.name)
+        self.assertIsNone(engineer.progress)
+        self.assertFalse(engineer.relevant("Anything"))
+        self.assertFalse(engineer.interested_in("Anything"))
+        self.assertIsNone(engineer.dibs({}))
+
+    def test_update_progress(self):
+        engineer = EDEngineer()
+        engineer.name = "Test Engineer"
+        
+        progress_data = {
+            "Engineer": "Test Engineer",
+            "Progress": "Unlocked",
+            "Rank": 5,
+            "RankProgress": 100
+        }
+        engineer.update(progress_data)
+        
+        self.assertEqual(engineer.progress, "Unlocked")
+        self.assertEqual(engineer.rank, 5)
+        self.assertEqual(engineer.rank_progress, 100)
+
+    def test_update_mismatch_name(self):
+        engineer = EDEngineer()
+        engineer.name = "Test Engineer"
+        
+        progress_data = {
+            "Engineer": "Other Engineer",
+            "Progress": "Unlocked"
+        }
+        engineer.update(progress_data)
+        # Should not update
+        self.assertIsNone(engineer.progress)
+
+class TestSpecificEngineers(unittest.TestCase):
+    def test_kit_fowler(self):
+        engineer = EDKitFowler()
+        self.assertEqual(engineer.name, "Kit Fowler")
+        
+        # Initial state (Locked)
+        self.assertTrue(engineer.relevant("opinionpolls"))
+        self.assertTrue(engineer.interested_in("push"))
+        self.assertTrue(engineer.interested_in("opinionpolls"))
+        
+        dibs = engineer.dibs({})
+        self.assertEqual(dibs.get("push"), 5)
+
+        # Unlocked state
+        engineer.update({"Engineer": "Kit Fowler", "Progress": "Unlocked"})
+        self.assertFalse(engineer.interested_in("push"))
+        self.assertFalse(engineer.interested_in("opinionpolls"))
+        self.assertFalse(engineer.dibs({}))
+
+class TestEDEngineerFactory(unittest.TestCase):
+    def test_factory_creation(self):
+        e = EDEngineerFactory.from_engineer_name("Domino Green")
+        self.assertIsInstance(e, EDDominoGreen)
+        
+        e = EDEngineerFactory.from_engineer_name("Unknown Name")
+        self.assertIsInstance(e, EDUnknownEngineer)
+
+    def test_from_progress(self):
+        progress = {"Engineer": "Kit Fowler", "Progress": "Unlocked"}
+        e = EDEngineerFactory.from_engineer_progress_dict(progress)
+        self.assertIsInstance(e, EDKitFowler)
+        self.assertEqual(e.progress, "Unlocked")
 
 class TestEDEngineers(unittest.TestCase):
     def setUp(self):
-        # Mock ODYSSEY_MATS to avoid dependency on actual JSON file
-        self.mock_mats = {
-            "push": {"used": 1},
-            "opinionpolls": {"used": 1},
-            "useless_mat": {"used": 0}
+        self.odyssey_mats_mock = {
+            "carbonfibreplating": {"used": 1},
+            "encryptedmemorychip": {"used": 0}
         }
-        self.patcher = patch.dict(EDEngineers.ODYSSEY_MATS, self.mock_mats, clear=True)
+        self.patcher = patch('builtins.open', mock_open(read_data=json.dumps(self.odyssey_mats_mock)))
         self.patcher.start()
         
-        self.engineers = EDEngineers()
+        # Also need to patch os.path.join because the class level attribute initialization uses it
+        # However, the class attribute is initialized at import time. 
+        # So we might need to rely on the side_effect or just instantiate it and hope the file read behaves mocked if we were re-importing or if we patch before class definition...
+        # Since class is already imported, the ODYSSEY_MATS is already populated.
+        # We should patch the attribute on the class directly for the test instance.
+        EDEngineers.ODYSSEY_MATS = self.odyssey_mats_mock
 
     def tearDown(self):
         self.patcher.stop()
 
-    def test_init(self):
-        self.assertIn("kit fowler", self.engineers.engineers)
-        self.assertIsInstance(self.engineers.engineers["kit fowler"], EDKitFowler)
-
-    def test_update(self):
+    def test_process_update(self):
+        engineers = EDEngineers()
         event = {
             "Engineers": [
-                {
-                    "Engineer": "Kit Fowler",
-                    "Progress": "Unlocked",
-                    "RankProgress": 0,
-                    "Rank": 5
-                }
+                {"Engineer": "Kit Fowler", "Progress": "Unlocked"},
+                {"Engineer": "Domino Green", "Progress": "Invited"}
             ]
         }
-        self.engineers.update(event)
-        kit = self.engineers.engineers["kit fowler"]
-        self.assertEqual(kit.progress, "Unlocked")
-        self.assertEqual(kit.rank, 5)
-
-    def test_dibs_unlocked_engineer(self):
-        # Kit Fowler needs opinionpolls if not unlocked, but checks 'dibs' logic
-        # Implementation of EDKitFowler.dibs:
-        # if progress is None: needed["push"] = 5
-        # if progress != "Unlocked": needed["opinionpolls"] = 5
+        engineers.update(event)
         
-        # Default is progress None
-        kit = self.engineers.engineers["kit fowler"]
-        self.assertIsNone(kit.progress)
+        self.assertEqual(engineers.engineers["kit fowler"].progress, "Unlocked")
+        self.assertEqual(engineers.engineers["domino green"].progress, "Invited")
+
+    def test_relevance_checks(self):
+        engineers = EDEngineers()
+        # Kit Fowler needs OpinionPolls
+        self.assertTrue(engineers.is_contributing("OpinionPolls"))
         
-        materials = {"push": 10}
-        dibs = self.engineers.dibs(materials)
-        # Should want push
-        self.assertTrue(any("push" in d for d in dibs))
-
-    def test_is_useless(self):
-        self.assertTrue(self.engineers.is_useless("useless_mat"))
-        # push is used by engineer (Kit Fowler) so not useless
-        self.assertFalse(self.engineers.is_useless("push"))
-        # Unknown mat is safe (False)
-        self.assertFalse(self.engineers.is_useless("unknown_mat"))
-
-    def test_factory_unknown(self):
-        eng = EDEngineerFactory.from_engineer_name("NonExistent")
-        self.assertEqual(eng.type, "Unknown")
+        # Carbon Fibre Plating is used (mocked data)
+        # Note: EDEngineers logic for useless check:
+        # if not in odyssey_mats -> return False (safe)
+        # if used > 0 -> return False
+        # else -> check if contributing
         
-    def test_factory_known(self):
-        eng = EDEngineerFactory.from_engineer_name("Domino Green")
-        self.assertEqual(eng.name, "Domino Green")
-
-    def test_is_contributing(self):
-        # Push is relevant to Kit Fowler
-        self.assertTrue(self.engineers.is_contributing("push"))
-        self.assertFalse(self.engineers.is_contributing("useless_mat"))
+        # "carbonfibreplating" used=1
+        self.assertFalse(engineers.is_useless("carbonfibreplating")) 
+        
+        # "encryptedmemorychip" used=0, and not relevant to any engineer
+        self.assertTrue(engineers.is_useless("encryptedmemorychip"))
 
 if __name__ == '__main__':
     unittest.main()

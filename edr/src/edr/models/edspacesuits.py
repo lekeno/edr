@@ -539,10 +539,10 @@ class EDSuitFactory:
         Get suit grade from name.
         """
         cname = name.lower()
-        player_space_suit_regexp = r"^[a-z0-9_]suit_class([1-5])$" # TODO confirm that those are the internal names used for players
+        player_space_suit_regexp = r"^[a-z0-9_]+suit_class([1-5])$" # TODO confirm that those are the internal names used for players
         m = re.match(player_space_suit_regexp, cname)
         if m:
-            return m.group(1)
+            return int(m.group(1))
         return 1
 
 
