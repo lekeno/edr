@@ -55,6 +55,8 @@ class EDRClient:
     """
     SFX = EDRSoundEffects()
 
+    EDRTopPlanetCountInSystemReportConfigKey = "EDRTopPlanetCountInSystemReport"
+
     def __init__(self):
         """
         Initialize the EDR Client.
@@ -67,6 +69,8 @@ class EDRClient:
         if not is_valid_semver(self.edr_version):
             EDR_LOG.warning(f"Current version {self.edr_version} does not follow strict semantic versioning standards!")
         EDR_LOG.info(f"Version {self.edr_version}")
+
+        self.EDRTopPlanetCountInSystemReportValues = [_("5"), _("10"), _("15"), _("All")]
 
         self.enemy_alerts_pledge_threshold = edr_config.enemy_alerts_pledge_threshold()
         self.system_novelty_threshold = edr_config.system_novelty_threshold()
@@ -138,6 +142,13 @@ class EDRClient:
             fc_jump_psa = config.get_str("EDRFCJumpPSA")
             self.server.fc_jump_psa = fc_jump_psa == _("Public")
         self._fc_jump_psa = tk.StringVar(value=fc_jump_psa)
+
+        val_top_planets_count = _("5") #default value
+        cf_top_planets_count = config.get_str(self.EDRTopPlanetCountInSystemReportConfigKey)
+        if cf_top_planets_count in self.EDRTopPlanetCountInSystemReportValues:
+            val_top_planets_count = cf_top_planets_count
+        self._top_planets_count_in_system_report = tk.StringVar(value=val_top_planets_count)
+
 
         self.realtime_params = {
             EDROpponents.OUTLAWS: self.__get_realtime_params("EDROutlawsAlerts"),
@@ -230,6 +241,7 @@ class EDRClient:
         c_redact_my_info = config.get_str("EDRRedactMyInfo")
         c_crimes_reporting = config.get_str("EDRCrimesReporting")
         c_fc_jump_announcements = config.get_str("EDRFCJumpPSA")
+        c_top_planets_count_in_system_report = config.get_str(self.EDRTopPlanetCountInSystemReportConfigKey)
 
         if c_email is None:
             self._email.set("")
@@ -240,6 +252,9 @@ class EDRClient:
             self._password.set("")
         else:
             self._password.set(c_password)
+        
+        if c_top_planets_count_in_system_report in self.EDRTopPlanetCountInSystemReportValues:
+            self.top_planets_count_in_system_report = c_top_planets_count_in_system_report
 
         self.visual_feedback_type = c_visual_feedback_type
         
@@ -416,6 +431,18 @@ class EDRClient:
     @audio_feedback.setter
     def audio_feedback(self, new_value):
         self._audio_feedback.set(new_value)
+
+    @property
+    def top_planets_count_in_system_report(self):
+        """
+        Returns:
+            str: used in system_value, define number of top planets in the system report when HONKING
+        """
+        return self._top_planets_count_in_system_report.get()
+        
+    @top_planets_count_in_system_report.setter
+    def top_planets_count_in_system_report(self, new_value):
+        self._top_planets_count_in_system_report.set(new_value)
 
     @property
     def gesture_triggers(self):
@@ -722,6 +749,7 @@ class EDRClient:
         config.set("EDRRedactMyInfo", self.anonymous_reports)
         config.set("EDRCrimesReporting", "True" if self.crimes_reporting else "False")
         config.set("EDRFCJumpPSA", self.fc_jump_psa)
+        config.set(self.EDRTopPlanetCountInSystemReportConfigKey, self.top_planets_count_in_system_report)
         EDR_LOG.debug(f"Audio cues: {config.get_str('EDRAudioFeedback')}, {config.get_str('EDRAudioFeedbackVolume')}")
         EDR_LOG.debug(f"Anonymous reports: {config.get_str('EDRRedactMyInfo')}")
         EDR_LOG.debug(f"Crimes reporting: {config.get_str('EDRCrimesReporting')}")
@@ -1493,7 +1521,18 @@ class EDRClient:
 
             first_disco = 0
             first_map = 0
+
+            #[_("5"),_("10"),_("15"), ("All")]
             top = 5
+            
+            try:
+                if self.top_planets_count_in_system_report and self.top_planets_count_in_system_report.isnumeric():
+                    top = int(self.top_planets_count_in_system_report)
+                else: #value is "All" or some translation
+                    top = len(valuableBodies)
+            except Exception as e:
+                    top = 5 #someting went wrong use default
+
             extra_details = []
             for body in valuableBodies:
                 adjBodyName = simplified_body_name(star_system, body.get("bodyName", "?"), " 0")
