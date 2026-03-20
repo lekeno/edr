@@ -290,7 +290,7 @@ class EDRCommands:
                 EDR_LOG.info("Next custom POI")
                 self.edr_client.player.planetary_destination = None
                 self.edr_client.next_custom_poi()
-            elif command_parts[1].lower() == "previous":
+            elif command_parts[1].lower() in ["previous", "prev"]:
                 EDR_LOG.info("Previous custom POI")
                 self.edr_client.player.planetary_destination = None
                 self.edr_client.previous_custom_poi()
@@ -369,7 +369,7 @@ class EDRCommands:
                 better_parts = command_parts[1].split(" ", 1)
                 if better_parts[0] == "next":
                     self.edr_client.journey_next()
-                elif better_parts[0] == "previous":
+                elif better_parts[0] in ["previous", "prev"]:
                     self.edr_client.journey_previous()
                 elif better_parts[0] == "clear":
                     self.edr_client.journey_clear()

@@ -230,6 +230,17 @@ class EDRClientUI:
             variable=self.edr_client._audio_feedback
         ).grid(padx=10, row=24, sticky=tk.W)
 
+        notebook.Label(frame, text=_("Nb of top planets on a honk")).grid(padx=10, row = 25, sticky=tk.W)
+        choices = { _("5"), _("10"), _("15"), _("All")}
+        popupMenu = notebook.OptionMenu(
+            frame, 
+            self.edr_client._top_planets_count_in_system_report, 
+            self.edr_client.top_planets_count_in_system_report, 
+            *choices
+        )
+        popupMenu.grid(padx=10, row=25, column=1, sticky=tk.EW)
+        popupMenu["menu"].configure(background="white", foreground="black")
+
         return frame
 
     def __toggle_fc_links(self, choice):
