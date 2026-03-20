@@ -1625,6 +1625,18 @@ class EDMandalay(EDVehicle):
         self.hull_hardness = 55
         self.hull_base_strength = 414 / 1.8
 
+class EDKestrelMkII(EDVehicle):
+    def __init__(self):
+        super().__init__()
+        self.type = 'Kestrel Mk II'
+        self.size = EDVehicleSize.SMALL
+        self.seats = 1
+        self.value = 14273820
+        self.shield_base_strength = 293
+        self.hull_mass = 190
+        self.hull_hardness = 55
+        self.hull_base_strength = 126 / 1.8
+
 class EDShipLaunchedFighter(EDVehicle):
     def __init__(self):
         super().__init__()
@@ -1798,6 +1810,7 @@ class EDVehicleFactory:
         "krait_light": EDKraitPhantom, 
         "mamba": EDMamba,
         "mandalay": EDMandalay,
+        "kestrel_mkii": EDKestrelMkII,
         "empire_fighter": EDImperialFighter,
         "federation_fighter": EDF63Condor,
         "independent_fighter" : EDTaipanFighter,

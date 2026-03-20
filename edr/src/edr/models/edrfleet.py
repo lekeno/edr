@@ -51,6 +51,8 @@ class EDRFleet:
         "challenger": "typex_3",
         "krait": "krait_mkii",
         "phantom": "krait_light",
+        "kestrel 2": "kestrel_mkii",
+        "kestrel ii": "kestrel_mkii",
         "python 2": "python_nx",
         "python II": "python_nx",
     }
