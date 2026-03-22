@@ -26,6 +26,18 @@ class EDRUnpickler(pickle.Unpickler):
         'audiofeedback': 'edr.utils.audiofeedback',
         'ingamemsg': 'edr.ui.ingamemsg',
         'edrclient': 'edr.controllers.edrclient',
+        'edrfactions': 'edr.controllers.edrfactions',
+        'edrcmdrprofile': 'edr.models.edrcmdrprofile',
+        'edrcmdrs': 'edr.models.edrcmdrs',
+        'edrlegalrecords': 'edr.models.edrlegalrecords',
+        'edrsystems': 'edr.controllers.edrsystems',
+        'edrresourcefinder': 'edr.controllers.edrresourcefinder',
+        'edrhotkeys': 'edr.controllers.edrhotkeys',
+        'edrminingstats': 'edr.controllers.edrminingstats',
+        'edrbountyhuntingstats': 'edr.controllers.edrbountyhuntingstats',
+        'edrdiscord': 'edr.controllers.edrdiscord',
+        'edrfssinsights': 'edr.controllers.edrfssinsights',
+        'edrbodiesofinterest': 'edr.models.edrbodiesofinterest',
     }
 
     def find_class(self, module, name):
