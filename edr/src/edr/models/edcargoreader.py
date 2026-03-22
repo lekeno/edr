@@ -1,6 +1,10 @@
 import json
 from os.path import join
-from config import config
+try:
+    from config import config
+except ImportError:
+    from edr.fakeenv.config import config
+
 from edr.core.edrlog import EDR_LOG  # EDR_INTERNAL
 
 

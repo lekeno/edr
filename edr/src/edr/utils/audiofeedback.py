@@ -3,6 +3,7 @@ import sys
 import configparser as cp
 
 from edr.core.edrlog import EDR_LOG  # EDR_INTERNAL
+from edr.utils.edrpath import plugin_root, edr_sound_path  # EDR_INTERNAL
 
 
 class SFXConfig:
@@ -21,8 +22,7 @@ class SFXConfig:
         """
         self.config = cp.ConfigParser()
         self.fallback_config = cp.ConfigParser()
-
-        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+        base_dir = plugin_root()
         self.fallback_config.read(os.path.join(base_dir, config_file))
 
         user_cfg_path = os.path.join(base_dir, user_config_file)
@@ -85,7 +85,7 @@ if sys.platform == 'darwin':
             self.snd = None
             if not audio_filename:
                 return
-            audio_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sounds', audio_filename)
+            audio_file_path = edr_sound_path(audio_filename)
             if os.path.exists(audio_file_path):
                 self.snd = NSSound.alloc().initWithContentsOfFile_byReference_(audio_file_path, False)
 
@@ -111,7 +111,7 @@ elif sys.platform == 'win32':
             self.snd = None
             if not audio_filename:
                 return
-            audio_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sounds', audio_filename)
+            audio_file_path = edr_sound_path(audio_filename)
             if os.path.exists(audio_file_path):
                 self.snd = audio_file_path
 
@@ -137,7 +137,7 @@ elif sys.platform.startswith('linux'):
             self.snd = None
             if not audio_filename:
                 return
-            audio_file_path = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')), 'sounds', audio_filename)
+            audio_file_path = edr_sound_path(audio_filename)
             if os.path.exists(audio_file_path):
                 self.snd = audio_file_path
 

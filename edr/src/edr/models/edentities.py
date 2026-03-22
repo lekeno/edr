@@ -17,6 +17,7 @@ from .edrfleetcarrier import EDRFleetCarrier  # EDR_INTERNAL
 from edr.controllers.edrminingstats import EDRMiningStats  # EDR_INTERNAL
 from edr.controllers.edrbountyhuntingstats import EDRBountyHuntingStats  # EDR_INTERNAL
 from .edengineers import EDEngineers  # EDR_INTERNAL
+from edr.utils.edrpath import edr_cache_path  # EDR_INTERNAL
 from edr.utils.edrutils import pretty_print_number  # EDR_INTERNAL
 from edr.controllers.edrroutes import EDRNavigator  # EDR_INTERNAL
 
@@ -1455,7 +1456,7 @@ class EDPlayerOne(EDPlayer):
     """
     Represents the main player (the user).
     """
-    EDR_FLEET_CARRIER_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'fleet_carrier.v3.p')
+    EDR_FLEET_CARRIER_CACHE = edr_cache_path(os.path.join('fleet_carrier.v3.p'))
 
     def __init__(self, name=None):
         """

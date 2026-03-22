@@ -3,10 +3,11 @@ import os
 
 import l10n
 from .edrlog import EDR_LOG  # EDR_INTERNAL
+from edr.utils.edrpath import plugin_root # EDR_INTERNAL
 
 # Constants
 CONTEXT_SEPARATOR = "|"
-L10N_DIR = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')), 'l10n')
+L10N_DIR = os.path.join(plugin_root(), 'l10n')
 LANG_LIST = ["fr", "it", "de"]
 
 # Global variables

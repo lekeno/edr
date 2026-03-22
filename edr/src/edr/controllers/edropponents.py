@@ -11,19 +11,20 @@ from edr.core.edrlog import EDR_LOG # EDR_INTERNAL
 from edr.utils import edtime
 from edr.models.edentities import EDFineOrBounty # EDR_INTERNAL
 from edr.core.edri18n import _, _c # EDR_INTERNAL
+from edr.utils.edrpath import edr_cache_path  # EDR_INTERNAL
 
 class EDROpponents:
     OUTLAWS = "Outlaws"
     ENEMIES = "Enemies"
 
     EDR_OPPONENTS_SIGHTINGS_CACHES = {
-        "Outlaws": os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')), 'cache', 'outlaws_sigthings.v2.p'),
-        "Enemies": os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')), 'cache', 'enemies_sigthings.v2.p')
+        "Outlaws": edr_cache_path('outlaws_sigthings.v2.p'),
+        "Enemies": edr_cache_path('enemies_sigthings.v2.p')
     }
 
     EDR_OPPONENTS_RECENTS_CACHES = {
-        "Outlaws": os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')), 'cache', 'outlaws_recents.v2.p'),
-        "Enemies": os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')), 'cache', 'enemies_recents.v2.p')
+        "Outlaws": edr_cache_path('outlaws_recents.v2.p'),
+        "Enemies": edr_cache_path('enemies_recents.v2.p')
     }
 
     def __init__(self, server, opponent_kind, client_callback):

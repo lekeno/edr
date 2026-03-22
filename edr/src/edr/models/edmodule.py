@@ -3,11 +3,12 @@ import re
 import os
 
 from edr.core.edrlog import EDR_LOG  # EDR_INTERNAL
+from edr.utils.edrpath import edr_data_path  # EDR_INTERNAL
 
 
 def load_power_data():
     try:
-        path = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')), 'data', 'modules_power_data.json')
+        path = edr_data_path('modules_power_data.json')
         with open(path, 'r') as f:
             return json.loads(f.read())
     except Exception:

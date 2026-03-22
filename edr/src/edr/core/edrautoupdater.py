@@ -5,7 +5,8 @@ import errno
 import os
 import datetime
 import shutil
-from .core.edrlog import EDR_LOG  # EDR_INTERNAL
+from .edrlog import EDR_LOG  # EDR_INTERNAL
+from edr.utils.edrpath import plugin_root # EDR_INTERNAL
 
 
 class EDRAutoUpdater:
@@ -14,7 +15,7 @@ class EDRAutoUpdater:
     backing up the current version, and extracting the new version.
     """
     REPO = "lekeno/edr"
-    EDR_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    EDR_PATH = plugin_root()
     UPDATES = os.path.join(EDR_PATH, 'updates')
     LATEST = os.path.join(EDR_PATH, 'updates', 'latest.zip')
     BACKUP = os.path.join(EDR_PATH, 'backup')
@@ -95,6 +96,7 @@ class EDRAutoUpdater:
         "lrucache.py",
         "randomtips.py",
         "sseclient.py",
+        "utils2to3.py",
     ]
 
 
@@ -209,14 +211,7 @@ class EDRAutoUpdater:
 
                 if is_new_structure:
                     EDR_LOG.info("New package structure detected. Starting surgical cleanup.")
-                    for filename in self.OBSOLETE_ROOT_FILES:
-                        fp = os.path.join(self.EDR_PATH, filename)
-                        if os.path.exists(fp):
-                            try:
-                                os.remove(fp)
-                                EDR_LOG.info(f"Cleaned up legacy file: {filename}")
-                            except (OSError, PermissionError) as e:
-                                EDR_LOG.warning(f"Could not remove {filename}: {e}")
+                    EDRAutoUpdater.clean_up_obsolete_files(self.EDR_PATH)
 
                     # 2. Clean up __pycache__
                     pycache_path = os.path.join(self.EDR_PATH, "__pycache__")
@@ -236,6 +231,22 @@ class EDRAutoUpdater:
         except Exception as e:
             EDR_LOG.error(f"Failed to extract update: {e}")
             return False
+
+    @staticmethod
+    def clean_up_obsolete_files(edr_path=None):
+        """
+        Removes known legacy files from the plugin root.
+        """
+        if edr_path is None:
+            edr_path = EDRAutoUpdater.EDR_PATH
+        for filename in EDRAutoUpdater.OBSOLETE_ROOT_FILES:
+            fp = os.path.join(edr_path, filename)
+            if os.path.exists(fp):
+                try:
+                    os.remove(fp)
+                    EDR_LOG.info(f"Cleaned up legacy file: {filename}")
+                except (OSError, PermissionError) as e:
+                    EDR_LOG.warning(f"Could not remove {filename}: {e}")
 
     def __latest_release_url(self):
         """

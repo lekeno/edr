@@ -1,4 +1,3 @@
-
 import pickle
 import os
 import re
@@ -6,12 +5,12 @@ import json
 
 from edr.core.edri18n import _ # EDR_INTERNAL
 from edr.utils.edtime import EDTime # EDR_INTERNAL
+from edr.utils.edrpath import edr_data_path, edr_cache_path # EDR_INTERNAL
 
 #TODO anarchy only microresources...
-edr_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-ODYSSEY_MATS = json.loads(open(os.path.join(edr_root, 'data', 'odyssey_mats.json')).read())
+ODYSSEY_MATS = json.loads(open(edr_data_path('odyssey_mats.json')).read())
 
-HORIZONS_MATS = json.loads(open(os.path.join(edr_root, 'data', 'horizons_mats.json')).read())
+HORIZONS_MATS = json.loads(open(edr_data_path('horizons_mats.json')).read())
 
 MATERIALS_LUT = {
     "zinc": {"localized": _("Zinc"), "raw": "Zinc", "category": "raw", "grade": 2},
@@ -379,15 +378,14 @@ INTERNAL_NAMES_LUT = { 'classified scan databanks': 'scandatabanks', 'conductive
     'surveillance logs': 'surveilleancelogs', 'surveillance log': 'surveilleancelogs'}
 
 class EDRInventory:
-    edr_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-    EDR_INVENTORY_ENCODED_CACHE = os.path.join(edr_root, 'cache', 'encoded_mats.v1.p')
-    EDR_INVENTORY_RAW_CACHE = os.path.join(edr_root, 'cache', 'raw_mats.v1.p')
-    EDR_INVENTORY_MANUFACTURED_CACHE = os.path.join(edr_root, 'cache', 'manufactured_mats.v1.p')
-    EDR_INVENTORY_COMPONENT_CACHE = os.path.join(edr_root, 'cache', 'component_mats.v1.p')
-    EDR_INVENTORY_ITEM_CACHE = os.path.join(edr_root, 'cache', 'item_mats.v1.p')
-    EDR_INVENTORY_CONSUMABLE_CACHE = os.path.join(edr_root, 'cache', 'consumables.v1.p')
-    EDR_INVENTORY_DATA_CACHE = os.path.join(edr_root, 'cache', 'data_mats.v1.p')
-    EDR_INVENTORY_BACKPACK_CACHE = os.path.join(edr_root, 'cache', 'backpack.v2.p')
+    EDR_INVENTORY_ENCODED_CACHE = edr_cache_path('encoded_mats.v1.p')
+    EDR_INVENTORY_RAW_CACHE = edr_cache_path('raw_mats.v1.p')
+    EDR_INVENTORY_MANUFACTURED_CACHE = edr_cache_path('manufactured_mats.v1.p')
+    EDR_INVENTORY_COMPONENT_CACHE = edr_cache_path('component_mats.v1.p')
+    EDR_INVENTORY_ITEM_CACHE = edr_cache_path('item_mats.v1.p')
+    EDR_INVENTORY_CONSUMABLE_CACHE = edr_cache_path('consumables.v1.p')
+    EDR_INVENTORY_DATA_CACHE = edr_cache_path('data_mats.v1.p')
+    EDR_INVENTORY_BACKPACK_CACHE = edr_cache_path('backpack.v2.p')
 
     def __init__(self):
         self.initialized = False

@@ -1,5 +1,6 @@
 import json
 import os
+from edr.utils.edrpath import edr_data_path  # EDR_INTERNAL
 
 
 class EDEngineer:
@@ -361,8 +362,7 @@ class EDEngineers:
     """
     Manages a collection of Engineers and determines material relevance.
     """
-    edr_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-    ODYSSEY_MATS = json.loads(open(os.path.join(edr_root, 'data', 'odyssey_mats.json')).read())
+    ODYSSEY_MATS = json.loads(open(edr_data_path('odyssey_mats.json')).read())
 
     def __init__(self):
         self.engineers = {}

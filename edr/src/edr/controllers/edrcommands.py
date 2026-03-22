@@ -1,4 +1,7 @@
 from edr.core.edrlog import EDR_LOG # EDR_INTERNAL
+import re
+import os
+import json
 import random
 import codecs
 
@@ -17,6 +20,7 @@ class EDRCommands:
             edr_client (EDRClient): The EDR client instance.
         """
         self.edr_client = edr_client
+        self.last_success_command = None
 
     def process(self, text, recipient=None):
         """
@@ -39,6 +43,20 @@ class EDRCommands:
             target = cmdr.target_pilot()
             recipient = target.name if target and target.is_human() else None
 
+        if command == "o7":
+            if recipient and not recipient in ["local", "voicechat", "wing", "friend", "starsystem", "squadron", "squadleaders"]:
+                EDR_LOG.info("Implicit who command for {}".format(recipient))
+                to_cmdr = recipient
+                if recipient.startswith("$cmdr_decorate:#name="):
+                    to_cmdr = recipient[len("$cmdr_decorate:#name="):-1]
+                return self.edr_client.who(to_cmdr, autocreate=True)
+
+        processed = self._process(command, command_parts, cmdr, recipient)
+        if processed and command[0] in ["!", "?", "#", "-", "@"]:
+            self.last_success_command = text
+        return processed
+
+    def _process(self, command, command_parts, cmdr, recipient):
         if command[0] == "!":
             return self.handle_bang_commands(cmdr, command, command_parts)
         elif command[0] == "?":
@@ -48,14 +66,7 @@ class EDRCommands:
         elif command[0] == "-":
             return self.handle_minus_commands(command, command_parts, recipient)
         elif command[0] == "@":
-            return self.handle_at_commands(text, recipient)
-        elif command == "o7":
-            if recipient and not recipient in ["local", "voicechat", "wing", "friend", "starsystem", "squadron", "squadleaders"]:
-                EDR_LOG.info("Implicit who command for {}".format(recipient))
-                to_cmdr = recipient
-                if recipient.startswith("$cmdr_decorate:#name="):
-                    to_cmdr = recipient[len("$cmdr_decorate:#name="):-1]
-                return self.edr_client.who(to_cmdr, autocreate=True)
+            return self.handle_at_commands(" ".join(command_parts), recipient)
         return False
 
     def handle_bang_commands(self, cmdr, command, command_parts):
@@ -88,6 +99,8 @@ class EDRCommands:
                 self.edr_client.who(target_cmdr)
         elif command == "!crimes":
             self.crimes_command("" if len(command_parts) == 1 else command_parts[1])
+        elif command == "!macro":
+            return self.handle_macro(command_parts)
         elif command == "!sitrep":
             system = cmdr.star_system if len(command_parts) == 1 else command_parts[1]
             EDR_LOG.info("Sitrep command for {}".format(system))
@@ -714,4 +727,84 @@ class EDRCommands:
                 target = player.target_pilot()
                 target_cmdr = target.name if target and target.is_human() else None
         return target_cmdr
+    
+    def handle_macro(self, command_parts):
+        """
+        Handle !macro command.
+        """
+        if len(command_parts) < 2:
+            return False
+
+        subcommand_parts = command_parts[1].split(" ", 1)
+        subcommand = subcommand_parts[0].lower()
+        
+        if subcommand == "set":
+            if len(subcommand_parts) < 2:
+                return False
+            
+            slot_and_command = subcommand_parts[1].split(" ", 1)
+            slot = slot_and_command[0]
+            command = slot_and_command[1] if len(slot_and_command) > 1 else self.last_success_command
+            
+            if not command:
+                self.edr_client.notify_with_details(_("Macro System"), [_("No command specified and no successful command to record.")])
+                return False
+            
+            if self.edr_client.hotkey_manager.update_macro(slot, command):
+                self.edr_client.notify_with_details(_("Macro System"), [_("Slot {} programmed: {}").format(slot, command)])
+                return True
+        elif subcommand == "show":
+            if len(subcommand_parts) < 2:
+                return False
+            slot = subcommand_parts[1]
+            action_id = f"edr.macro_{slot}"
+            if action_id in self.edr_client.hotkey_manager.mappings:
+                data = self.edr_client.hotkey_manager.mappings[action_id]
+                self.edr_client.notify_with_details(_("Macro System"), [_("Slot {}: {}").format(slot, data['command'])])
+                return True
+            else:
+                self.edr_client.notify_with_details(_("Macro System"), [_("Slot {} is not programmed.").format(slot)])
+                return True
+        elif subcommand == "name":
+            if len(subcommand_parts) < 2:
+                return False
+            
+            slot_and_name = subcommand_parts[1].split(" ", 1)
+            slot = slot_and_name[0]
+            name = slot_and_name[1] if len(slot_and_name) > 1 else None
+            
+            if not name:
+                self.edr_client.notify_with_details(_("Macro System"), [_("No name specified.")])
+                return False
+            
+            if not re.match(r"^[a-zA-Z0-9]+$", name):
+                self.edr_client.notify_with_details(_("Macro System"), [_("Invalid name. Use a single alphanumeric word.")])
+                return False
+            
+            if self.edr_client.hotkey_manager.update_label(slot, name):
+
+                self.edr_client.notify_with_details(_("Macro System"), [
+                    _("Slot {} name set to: {}").format(slot, name),
+                    _("Restart EDMC to see this name in EDMCHotkeys."),
+                    _("Remember to set or update the hotkey in EDMCHotkeys.")
+                ])
+                return True
+        elif subcommand == "clear":
+            if len(subcommand_parts) < 2:
+                return False
+            slot = subcommand_parts[1]
+            if self.edr_client.hotkey_manager.clear_macro(slot):
+                self.edr_client.notify_with_details(_("Macro System"), [_("Slot {} cleared.").format(slot)])
+                return True
+        elif subcommand == "list":
+            macros = self.edr_client.hotkey_manager.get_macros()
+            
+            if not macros:
+                self.edr_client.notify_with_details(_("Macro System"), [_("No macros defined.")])
+            else:
+                self.edr_client.notify_with_details(_("Macro System"), macros)
+            return True
+
+        return False
+
     

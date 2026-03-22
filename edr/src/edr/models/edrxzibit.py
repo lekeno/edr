@@ -2,6 +2,7 @@ import json
 import os
 from edr.core.edrlog import EDR_LOG
 from edr.core.edri18n import _
+from edr.utils.edrpath import edr_data_path  # EDR_INTERNAL
 
 
 class EDRXzibit:
@@ -15,8 +16,7 @@ class EDRXzibit:
     def load_power_data(cls):
         if cls.POWER_DATA is None:
             try:
-                edr_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-                data_path = os.path.join(edr_root, 'data', 'modules_power_data.json')
+                data_path = edr_data_path('modules_power_data.json')
                 with open(data_path, 'r') as f:
                     cls.POWER_DATA = json.load(f)
             except Exception as e:

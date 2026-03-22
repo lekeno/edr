@@ -1,9 +1,7 @@
-import os
-import json
 import random
 
 import edr.core.edri18n as edri18n
-import os
+from edr.utils.edrpath import edr_resource_path  # EDR_INTERNAL
 
 def _(message): return message
 
@@ -159,6 +157,8 @@ DEFAULT_TIPS = {
         _("Send '!journey check 1 a 1, 1 a 2' to manually clear-off bodies (1 a 1, and 1 a 2), off the list for an active Spansh journey"),
         _("Send '!gesture on' in chat to enable triggering EDR features with gestures."),
         _("Send '!gesture off' in chat to disable triggering EDR features with gestures."),
+        _("Program your own keyboard shortcuts with '!macro set <slot>' and the EDMCHotkeys plugin."),
+        _("Use '!help hotkeys' to learn how to integrate keyboard shortcuts with EDR."),
     ],
     "open": [
         _("Never fly what you can't afford to lose. Check your rebuy and credit balance on your right panel."),
@@ -220,7 +220,7 @@ class RandomTips:
     def __init__(self, tips_file=None):
         global DEFAULT_TIPS
         if tips_file:
-            self.tips = json.loads(open(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')), tips_file)).read())
+            self.tips = json.loads(open(edr_resource_path(tips_file)).read())
         else:
             self.tips = DEFAULT_TIPS
 

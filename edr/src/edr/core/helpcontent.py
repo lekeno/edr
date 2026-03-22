@@ -1,5 +1,6 @@
 import os
 import json
+from edr.utils.edrpath import plugin_root  # EDR_INTERNAL
 
 def _(message): return message
 
@@ -25,6 +26,7 @@ class HelpContent:
                 _(" - !help odyssey: evaluate your storage of materials, know if a material is useful or not"),
                 _(" - !help travel: spansh companion, in-game route overview"),
                 _(" - !help config: configuration options"),
+                _(" - !help hotkeys: hotkeys and macro system"),
                 "⚶",
                 _("Send !clear in chat to clear everything on the overlay.")
             ]
@@ -257,7 +259,7 @@ class HelpContent:
                 _(" - '!journey next', '!journey previous' to manually change the target waypoint"),
                 _(" -  '!journey check <comma separated bodies>' to manually check-off one or more bodies as visited/surveyed, e.g. !journey check 1 a 1, 1 a 2"), 
                 _(" - '!journey clear' to clear a currently active journey"),
-                _(" - '!journey load <optional filename>' to load a local journey saved in a csv file ()'journey.csv' by default), e.g. !journey load myjourney.csv"),
+                _(" - '!journey load <optional filename>' to load a local journey saved in a csv file ('journey.csv' by default), e.g. !journey load myjourney.csv"),
                 "⚶",
                 _("Send !clear in chat to clear everything on the overlay.")
             ]
@@ -301,12 +303,32 @@ class HelpContent:
                 "⚶",
                 _("Send !clear in chat to clear everything on the overlay.")
             ]
+        },
+        "hotkeys": {
+            "header": _("Hotkeys and Macros"),
+            "details": [
+                _("EDR supports hotkey integration via the EDMCHotkeys plugin."),
+                _(" - Bind an Action ID in EDMCHotkeys to trigger an EDR command."),
+                _(" - Commands can be any chat command like '!intel', '-if', etc."),
+                "⚶",
+                _("Macro System:"),
+                _(" - '!macro set 1': records the last successful command to macro slot 1."),
+                _(" - '!macro set 1 !intel': records '!intel' to macro slot 1."),
+                _(" - '!macro show 1': shows the command recorded for macro slot 1."),
+                _(" - '!macro name 1 MyName': sets the label for macro slot 1 to 'MyName' (alphanumeric, one word)."),
+                _(" - '!macro clear 1': clears macro slot 1."),
+                _(" - '!macro list': lists all programmed macro slots."),
+                _(" - Programmed macros are saved in config/hotkeys.json."),
+                "⚶",
+                _("Send !clear in chat to clear everything on the overlay.")
+            ]
         }
+
     }
 
     def __init__(self, help_file=None):
         if help_file:
-            self.content = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), help_file)).read())
+            self.content = json.loads(open(os.path.join(plugin_root(), help_file)).read())
         else:
             self.content = HelpContent.DEFAULT_CONTENT
 

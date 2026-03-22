@@ -6,6 +6,7 @@ import os
 from enum import Enum
 
 from edr.core.edrlog import EDR_LOG # EDR_INTERNAL
+from edr.utils.edrpath import plugin_root # EDR_INTERNAL
 
 class AuthState(Enum):
     SUCCESS = (1, "Authenticated.")
@@ -22,9 +23,8 @@ class AuthState(Enum):
         self.description = message
 
 class RESTFirebaseAuth:
-    edr_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-    FIREBASE_ANON_AUTH_CACHE = os.path.join(edr_root, 'private', 'fbaa.v2.json')
-    FIREBASE_ANON_AUTH_CACHE_LEGACY = os.path.join(edr_root, 'private', 'fbaa.v2.p')
+    FIREBASE_ANON_AUTH_CACHE = os.path.join(plugin_root(), 'private', 'fbaa.v2.json')
+    FIREBASE_ANON_AUTH_CACHE_LEGACY = os.path.join(plugin_root(), 'private', 'fbaa.v2.p')
 
     def __init__(self, version):
         self.email = ""

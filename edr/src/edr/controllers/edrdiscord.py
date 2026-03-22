@@ -17,6 +17,7 @@ from .edrafkdetector import EDRAfkDetector  # EDR_INTERNAL
 from edr.utils.edtime import EDTime  # EDR_INTERNAL
 from edr.utils.backoff import Backoff  # EDR_INTERNAL
 from edr.core.edrlog import EDR_LOG  # EDR_INTERNAL
+from edr.utils.edrpath import edr_config_path  # EDR_INTERNAL
 
 
 class EDRDiscordSimpleMessage:
@@ -219,8 +220,7 @@ class EDRDiscordIntegration:
         user_config = EDRUserConfig()
         edr_config = EDR_CONFIG
 
-        players_cfg_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'config',
-                                        'user_discord_players.json')
+        players_cfg_path = edr_config_path('user_discord_players.json')
         try:
             self.channels_players_cfg = json.loads(open(players_cfg_path).read())
         except:
