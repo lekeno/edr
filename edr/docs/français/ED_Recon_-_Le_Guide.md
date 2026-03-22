@@ -94,6 +94,7 @@
   - [Commandes et options](#commandes-et-options)
   - [Personnalisation](#personnalisation)
     - [_Type d'événements_](#type-dévénements)
+- [Touches de raccourci et Macros](#touches-de-raccourci-et-macros)
 - [Annexe](#annexe)
   - [Dépannage](#dépannage)
     - [Rien ne s'affiche / La superposition ne fonctionne pas](#rien-ne-saffiche--la-superposition-ne-fonctionne-pas)
@@ -412,6 +413,9 @@ EDR affiche un aperçu des signaux connus pour le système actuel (ex. les sites
 ## Système courant
 
 EDR montre une estimation de la valeur d'exploration ainsi que les informations clés pour les étoiles, planètes et systèmes. Cette fonctionnalité se déclenche après: un scan du système, une analyse du spectre complet, ou une analyse détaillée de la surface d'une planète.
+
+### Nb de planètes les plus précieuses lors d'un honk
+Lors d'un "honk" du scanner de découverte, EDR peut afficher une liste des planètes les plus précieuses du système. Vous pouvez configurer le nombre de planètes affichées dans l'onglet EDR des paramètres d'EDMC (menu `Fichier`, `Paramètres`, onglet `EDR`) via l'option "Nb de planètes les plus précieuses lors d'un honk". Les choix possibles sont 5, 10, 15 ou Tout ("All").
 
 # Fonctionnalités Planète
 
@@ -990,6 +994,30 @@ Modifiez ensuite la ligne de l'événement associé pour spécifier votre son pe
 - `failed`: lorsque EDR rencontre une erreur
 - `jammed`: lorsque les serveurs EDR sont trop occupés pour traiter vos requêtes
 - `biology`: quand EDR affiche les informations de navigation pour les activités d'Exobiologie
+
+# Touches de raccourci et Macros
+EDR prend en charge l'intégration des touches de raccourci via le plugin [EDMCHotkeys](https://github.com/SweetJonnySauce/EDMCHotkeys). 
+
+> [!IMPORTANT]
+> EDMCHotkeys est un plugin tiers. L'auteur d'EDR n'est pas responsable de sa maintenance, de son support ou de tout problème découlant de son utilisation. Veuillez vous référer à la documentation et au suivi des tickets du plugin pour obtenir de l'aide.
+
+## Configuration des touches de raccourci
+Pour utiliser les touches de raccourci avec EDR, vous devez:
+1.  Installer le plugin [EDMCHotkeys](https://github.com/SweetJonnySauce/EDMCHotkeys).
+2.  Dans les paramètres d'EDMCHotkeys, liez un identifiant d'action ("Action ID") à une touche ou un bouton physique.
+3.  Dans EDR, vous pouvez alors déclencher n'importe quelle commande de chat (ex: `!intel`, `-if`, etc.) en utilisant l'Action ID correspondant.
+
+## Système de Macros
+EDR dispose d'un système de macros intégré qui vous permet d'enregistrer et de rappeler les commandes fréquemment utilisées.
+
+- `!macro set <slot>`: enregistre la dernière commande réussie dans le slot de macro spécifié (1-20).
+- `!macro set <slot> <commande>`: enregistre la commande spécifiée dans le slot de macro.
+- `!macro show <slot>`: affiche la commande enregistrée pour le slot de macro spécifié.
+- `!macro name <slot> <étiquette>`: définit une étiquette pour le slot de macro (alphanumérique, un seul mot).
+- `!macro clear <slot>`: efface le slot de macro spécifié.
+- `!macro list`: liste tous les slots de macros programmés et leurs étiquettes.
+
+Les macros programmées sont sauvegardées dans `config/hotkeys.json`.
 
 # Annexe
 
