@@ -159,6 +159,8 @@ DEFAULT_TIPS = {
         _("Send '!journey check 1 a 1, 1 a 2' to manually clear-off bodies (1 a 1, and 1 a 2), off the list for an active Spansh journey"),
         _("Send '!gesture on' in chat to enable triggering EDR features with gestures."),
         _("Send '!gesture off' in chat to disable triggering EDR features with gestures."),
+        _("Program your own keyboard shortcuts with '!macro set <slot>' and the EDMCHotkeys plugin."),
+        _("Use '!help hotkeys' to learn how to integrate keyboard shortcuts with EDR."),
     ],
     "open": [
         _("Never fly what you can't afford to lose. Check your rebuy and credit balance on your right panel."),

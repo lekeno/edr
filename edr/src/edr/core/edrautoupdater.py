@@ -5,7 +5,7 @@ import errno
 import os
 import datetime
 import shutil
-from .core.edrlog import EDR_LOG  # EDR_INTERNAL
+from .edrlog import EDR_LOG  # EDR_INTERNAL
 
 
 class EDRAutoUpdater:
@@ -14,7 +14,7 @@ class EDRAutoUpdater:
     backing up the current version, and extracting the new version.
     """
     REPO = "lekeno/edr"
-    EDR_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    EDR_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
     UPDATES = os.path.join(EDR_PATH, 'updates')
     LATEST = os.path.join(EDR_PATH, 'updates', 'latest.zip')
     BACKUP = os.path.join(EDR_PATH, 'backup')
@@ -95,6 +95,7 @@ class EDRAutoUpdater:
         "lrucache.py",
         "randomtips.py",
         "sseclient.py",
+        "utils2to3.py",
     ]
 
 

@@ -3,7 +3,11 @@ import tkinter as tk
 from tkinter import ttk
 
 import sys
-import config as EDMCConfig
+try:
+    import config as EDMCConfig
+except ImportError:
+    from edr.fakeenv import config as EDMCConfig
+
 try:
     import ttkHyperlinkLabel
 except ImportError:

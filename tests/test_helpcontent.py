@@ -9,7 +9,9 @@ class TestHelpContent(unittest.TestCase):
         hc = HelpContent()
         self.assertIn("about", hc.content)
         self.assertIn("basics", hc.content)
+        self.assertIn("hotkeys", hc.content)
         self.assertEqual(hc.get("about"), HelpContent.DEFAULT_CONTENT["about"])
+
 
     def test_custom_content(self):
         mock_data = json.dumps({"custom": {"header": "Custom", "details": ["Detail"]}})

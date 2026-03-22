@@ -4,7 +4,7 @@ import re
 try:
     import edmc_data
 except ImportError:
-    import plug as edmc_data
+    from edr.fakeenv import plug as edmc_data
 
 
 class EDSpaceDimension:

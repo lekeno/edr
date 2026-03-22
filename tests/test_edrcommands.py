@@ -96,5 +96,38 @@ class TestEDRCommands(unittest.TestCase):
         self.commands.process("!crimes off")
         self.assertFalse(self.mock_edr_client.crimes_reporting)
 
+    def test_macro_set_implicit(self):
+        self.commands.last_success_command = "!intel"
+        self.commands.process("!macro set 1")
+        self.mock_edr_client.hotkey_manager.update_macro.assert_called_with("1", "!intel")
+
+    def test_macro_set_explicit(self):
+        self.commands.process("!macro set 2 !status")
+        self.mock_edr_client.hotkey_manager.update_macro.assert_called_with("2", "!status")
+
+    def test_macro_show(self):
+        self.mock_edr_client.hotkey_manager.mappings = {"edr.macro_1": {"label": "L1", "command": "!intel"}}
+        self.commands.process("!macro show 1")
+        self.assertTrue(self.mock_edr_client.notify_with_details.called)
+
+    def test_macro_name_valid(self):
+        self.commands.process("!macro name 1 ValidName")
+        self.mock_edr_client.hotkey_manager.update_label.assert_called_with("1", "ValidName")
+
+    def test_macro_name_invalid(self):
+        self.mock_edr_client.hotkey_manager.update_label.reset_mock()
+        self.commands.process("!macro name 1 Invalid Name")
+        self.assertFalse(self.mock_edr_client.hotkey_manager.update_label.called)
+        self.assertTrue(self.mock_edr_client.notify_with_details.called)
+
+    def test_macro_clear(self):
+        self.commands.process("!macro clear 1")
+        self.mock_edr_client.hotkey_manager.clear_macro.assert_called_with("1")
+
+    def test_macro_list(self):
+        self.commands.process("!macro list")
+        self.mock_edr_client.hotkey_manager.get_macros.assert_called_once()
+
+
 if __name__ == '__main__':
     unittest.main()

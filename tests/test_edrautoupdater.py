@@ -6,7 +6,7 @@ import sys
 import tempfile
 import shutil
 import zipfile
-from edr.edrautoupdater import EDRAutoUpdater
+from edr.core.edrautoupdater import EDRAutoUpdater
 
 class TestEDRAutoUpdater(unittest.TestCase):
     def setUp(self):
@@ -20,7 +20,7 @@ class TestEDRAutoUpdater(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
 
-    @patch('edr.edrautoupdater.requests')
+    @patch('edr.core.edrautoupdater.requests')
     def test_download_latest_success(self, mock_requests):
         updater = EDRAutoUpdater()
         updater.updates = self.updater_target_dir

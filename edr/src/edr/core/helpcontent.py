@@ -25,6 +25,7 @@ class HelpContent:
                 _(" - !help odyssey: evaluate your storage of materials, know if a material is useful or not"),
                 _(" - !help travel: spansh companion, in-game route overview"),
                 _(" - !help config: configuration options"),
+                _(" - !help hotkeys: hotkeys and macro system"),
                 "⚶",
                 _("Send !clear in chat to clear everything on the overlay.")
             ]
@@ -301,7 +302,27 @@ class HelpContent:
                 "⚶",
                 _("Send !clear in chat to clear everything on the overlay.")
             ]
+        },
+        "hotkeys": {
+            "header": _("Hotkeys and Macros"),
+            "details": [
+                _("EDR supports hotkey integration via the EDMCHotkeys plugin."),
+                _(" - Bind an Action ID in EDMCHotkeys to trigger an EDR command."),
+                _(" - Commands can be any chat command like '!intel', '-if', etc."),
+                "⚶",
+                _("Macro System:"),
+                _(" - '!macro set 1': records the last successful command to macro slot 1."),
+                _(" - '!macro set 1 !intel': records '!intel' to macro slot 1."),
+                _(" - '!macro show 1': shows the command recorded for macro slot 1."),
+                _(" - '!macro name 1 MyName': sets the label for macro slot 1 to 'MyName' (alphanumeric, one word)."),
+                _(" - '!macro clear 1': clears macro slot 1."),
+                _(" - '!macro list': lists all programmed macro slots."),
+                _(" - Programmed macros are saved in config/hotkeys.json."),
+                "⚶",
+                _("Send !clear in chat to clear everything on the overlay.")
+            ]
         }
+
     }
 
     def __init__(self, help_file=None):

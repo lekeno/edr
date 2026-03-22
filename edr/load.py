@@ -15,7 +15,7 @@ from datetime import datetime, timedelta, timezone
 try:
     import edmc_data
 except ImportError:
-    import plug as edmc_data
+    from edr.fakeenv import plug as edmc_data
 
 from edr.models.edspacesuits import EDSpaceSuit  # EDR_INTERNAL
 from edr.controllers.edrclient import EDRClient
@@ -25,7 +25,7 @@ from edr.models.edvehicles import EDVehicleFactory  # EDR_INTERNAL
 from edr.models.edrrawdepletables import EDRRawDepletables
 from edr.utils.edtime import EDTime  # EDR_INTERNAL
 from edr.core.edrlog import EDR_LOG  # EDR_INTERNAL
-from edr import edrautoupdater
+from edr.core import edrautoupdater  # EDR_INTERNAL
 from edr.core.edri18n import _, _c  # EDR_INTERNAL
 
 EDR_CLIENT = EDRClient()

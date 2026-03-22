@@ -9,7 +9,11 @@ import json
 import webbrowser # For navigation routes via Spansh
 
 import tkinter as tk
-from config import config
+try:
+    from config import config
+except ImportError:
+    from edr.fakeenv.config import config
+
 
 from edr.models.edrfleetcarrier import EDRFleetCarrier # EDR_INTERNAL
 from edr.core.edrconfig import EDR_CONFIG, EDRUserConfig, __version__ # EDR_INTERNAL
@@ -42,6 +46,7 @@ from edr.core.edri18n import _, _c, _edr, set_language # EDR_INTERNAL
 from edr.utils.clippy import copy, paste
 from .edrfssinsights import EDRFSSInsights
 from .edrcommands import EDRCommands
+from .edrhotkeys import EDRHotkeyManager
 from . import edrroutes
 from edr.utils.edrutils import simplified_body_name, pretty_print_number, compare_versions, is_valid_semver # EDR_INTERNAL
 
@@ -175,6 +180,7 @@ class EDRClient:
         self.edrfssinsights = EDRFSSInsights()
         self.edrdiscord = EDRDiscordIntegration(self.edrcmdrs)
         self.edrcommands = EDRCommands(self)
+        self.hotkey_manager = EDRHotkeyManager(self)
         
     def __get_realtime_params(self, kind):
         """
@@ -235,6 +241,7 @@ class EDRClient:
         c_audio_feedback = config.get_str("EDRAudioFeedback")
         c_audio_volume = config.get_str("EDRAudioFeedbackVolume")
         c_gesture_triggers = config.get_str("EDRGestureTriggers")
+        c_hotkeys = config.get_str("EDMCHotkeys")
         c_redact_my_info = config.get_str("EDRRedactMyInfo")
         c_crimes_reporting = config.get_str("EDRCrimesReporting")
         c_fc_jump_announcements = config.get_str("EDRFCJumpPSA")
@@ -271,6 +278,12 @@ class EDRClient:
             self._gesture_triggers.set(0)
         else:
             self._gesture_triggers.set(1)
+
+        if c_hotkeys is None or c_hotkeys == "True":
+            self.hotkey_manager.enabled = True
+        else:
+            self.hotkey_manager.enabled = False
+        self.hotkey_manager.register()
 
         if c_redact_my_info is None:
             self.anonymous_reports = _("Auto")
@@ -768,6 +781,21 @@ class EDRClient:
             self.client_ui.enable_entry()
         
         return self.edrcommands.process(entry["Message"], entry.get("To", None))
+
+    def process_command(self, command_str):
+        """
+        Process a command string (e.g., from a hotkey).
+
+        Args:
+            command_str (str): The command to process.
+
+        Returns:
+            bool: True if processed, False otherwise.
+        """
+        if not command_str:
+            return False
+            
+        return self.edrcommands.process(command_str)
 
     def noteworthy_about_system(self, fsdjump_event):
         """
