@@ -3,6 +3,7 @@ from collections import deque
 from time import time
 from edr.utils.edtime import EDTime # EDR_INTERNAL
 from edr.core.edri18n import _ # EDR_INTERNAL
+from edr.utils.edrpath import edr_data_path # EDR_INTERNAL
 import json
 import os
 
@@ -48,7 +49,7 @@ class EDRMineralStats:
 
 
 class EDRMiningStats:
-    MINERALS_LUT = json.loads(open(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')), 'data', 'mining.json')).read())
+    MINERALS_LUT = json.loads(open(edr_data_path('mining.json')).read())
 
     def __init__(self):
         self.lmh = {"-": 0, "L": 0, "M": 0, "H": 0}

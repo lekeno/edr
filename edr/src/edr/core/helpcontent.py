@@ -1,5 +1,6 @@
 import os
 import json
+from edr.utils.edrpath import plugin_root  # EDR_INTERNAL
 
 def _(message): return message
 
@@ -258,7 +259,7 @@ class HelpContent:
                 _(" - '!journey next', '!journey previous' to manually change the target waypoint"),
                 _(" -  '!journey check <comma separated bodies>' to manually check-off one or more bodies as visited/surveyed, e.g. !journey check 1 a 1, 1 a 2"), 
                 _(" - '!journey clear' to clear a currently active journey"),
-                _(" - '!journey load <optional filename>' to load a local journey saved in a csv file ()'journey.csv' by default), e.g. !journey load myjourney.csv"),
+                _(" - '!journey load <optional filename>' to load a local journey saved in a csv file ('journey.csv' by default), e.g. !journey load myjourney.csv"),
                 "⚶",
                 _("Send !clear in chat to clear everything on the overlay.")
             ]
@@ -327,7 +328,7 @@ class HelpContent:
 
     def __init__(self, help_file=None):
         if help_file:
-            self.content = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), help_file)).read())
+            self.content = json.loads(open(os.path.join(plugin_root(), help_file)).read())
         else:
             self.content = HelpContent.DEFAULT_CONTENT
 

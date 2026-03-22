@@ -7,6 +7,7 @@ from edr.core.edrlog import EDR_LOG  # EDR_INTERNAL
 from edr.utils.edtime import EDTime  # EDR_INTERNAL
 from .edentities import EDFineOrBounty  # EDR_INTERNAL
 from edr.core.edri18n import _, _c  # EDR_INTERNAL
+from edr.utils.edrpath import edr_cache_path  # EDR_INTERNAL
 
 
 class EDRLegalRecords:
@@ -14,10 +15,7 @@ class EDRLegalRecords:
     Manages legal records (bounties, fines) for commanders.
     Uses an LRU cache to store fetched records.
     """
-    edr_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-    EDR_LEGAL_RECORDS_CACHE = os.path.join(
-        edr_root, 'cache', 'legal_records.v3.p'
-    )
+    EDR_LEGAL_RECORDS_CACHE = edr_cache_path('legal_records.v3.p')
 
     def __init__(self, server):
         """

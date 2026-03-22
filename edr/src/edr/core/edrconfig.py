@@ -1,6 +1,7 @@
 import os
 import configparser as cp
 from .edropsec import EDROpsecConfig, EDROpsecConfigDefault  # EDR_INTERNAL
+from edr.utils.edrpath import plugin_root  # EDR_INTERNAL
 
 
 class EDRUserConfig:
@@ -16,7 +17,7 @@ class EDRUserConfig:
              config_file (str): Path to the user configuration file. Defaults to 'config/user_config.ini'.
         """
         self.config = cp.ConfigParser()
-        edr_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+        edr_root = plugin_root()
         try:
             self.config.read(os.path.join(edr_root, config_file))
         except Exception:
@@ -86,7 +87,7 @@ class EDRConfig:
             config_file (str): Path to the main configuration file. Defaults to 'config/config.ini'.
         """
         self.config = cp.ConfigParser()
-        edr_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+        edr_root = plugin_root()
         self.config.read(os.path.join(edr_root, config_file))
 
     def edr_version(self):

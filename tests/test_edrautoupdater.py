@@ -91,5 +91,23 @@ class TestEDRAutoUpdater(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(self.edr_path, 'edr', '__init__.py')))
         self.assertTrue(os.path.exists(os.path.join(self.edr_path, 'edr', 'edrclient.py')))
 
+    def test_clean_up_obsolete_files_proactive(self):
+        # Setup: Simulate legacy files existing in the root
+        legacy_files = ['utils2to3.py', 'edrutils.py']
+        for f in legacy_files:
+            with open(os.path.join(self.edr_path, f), 'w') as fh:
+                fh.write("legacy")
+        
+        # Verify they exist
+        for f in legacy_files:
+            self.assertTrue(os.path.exists(os.path.join(self.edr_path, f)))
+
+        # Run proactive cleanup
+        EDRAutoUpdater.clean_up_obsolete_files(self.edr_path)
+
+        # Verify they are gone
+        for f in legacy_files:
+            self.assertFalse(os.path.exists(os.path.join(self.edr_path, f)), f"File {f} should have been cleaned up")
+
 if __name__ == '__main__':
     unittest.main()

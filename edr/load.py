@@ -43,6 +43,7 @@ def plugin_start():
     """
     Start up EDR, try to login.
     """
+    edrautoupdater.EDRAutoUpdater.clean_up_obsolete_files()
     EDR_CLIENT.apply_config()
 
     if not EDR_CLIENT.email:

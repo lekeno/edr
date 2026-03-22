@@ -5,9 +5,8 @@
 ### 1. Objective
 Enable EDR users to trigger features via keyboard shortcuts. This reduces the need to manually type commands in the in-game chat interface during high-intensity gameplay (e.g., combat or time-sensitive events).
 
-### 6. Alternatives Considered
-* **Direct Function Mapping:** Rejected. Mapping keys directly to internal methods would create a rigid API surface and bypass the validation present in the command processor.
-* **Simulated Keypresses:** Rejected. Simulating keys to "type" into the game chat is fragile, prone to focus-loss errors, and intrusive to the user experience.
+---
+
 ### 2. Architecture: The "Bridge" Pattern
 To avoid exposing internal methods or duplicating logic, the integration treats a hotkey press as a **virtual chat event**.
 
@@ -98,4 +97,10 @@ class EDRHotkeyManager(object):
 # edr/load.py
 def plugin_start():
     EDR_CLIENT.apply_config() # This triggers EDR_CLIENT.hotkey_manager.register()
-```
+```
+
+---
+
+### 6. Alternatives Considered
+* **Direct Function Mapping:** Rejected. Mapping keys directly to internal methods would create a rigid API surface and bypass the validation present in the command processor.
+* **Simulated Keypresses:** Rejected. Simulating keys to "type" into the game chat is fragile, prone to focus-loss errors, and intrusive to the user experience.

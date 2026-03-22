@@ -14,6 +14,7 @@ from .edcargo import EDCargo
 from .edshield import EDPowerDistributor, EDShieldGenerator, EDShieldingFactory
 from .edarmour import EDHullFactory
 from .edweapons import EDWeaponFactory
+from edr.utils.edrpath import edr_data_path
 
 class EDVehicleSize:
     """
@@ -1825,8 +1826,8 @@ class EDVehicleFactory:
         "unknown (captain)": EDCaptainUnknownVehicle
     }
 
-    CANONICAL_SHIP_NAMES = json.loads(open(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')), 'data', 'shipnames.json')).read())
-    CANONICAL_MODULE_NAMES = json.loads(open(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')), 'data', 'modulenames.json'), encoding="utf-8", errors='ignore').read())
+    CANONICAL_SHIP_NAMES = json.loads(open(edr_data_path('shipnames.json')).read())
+    CANONICAL_MODULE_NAMES = json.loads(open(edr_data_path('modulenames.json'), encoding="utf-8", errors='ignore').read())
 
     @staticmethod
     def canonicalize(name):

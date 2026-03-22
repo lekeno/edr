@@ -1,9 +1,7 @@
-import os
-import json
 import random
 
 import edr.core.edri18n as edri18n
-import os
+from edr.utils.edrpath import edr_resource_path  # EDR_INTERNAL
 
 def _(message): return message
 
@@ -222,7 +220,7 @@ class RandomTips:
     def __init__(self, tips_file=None):
         global DEFAULT_TIPS
         if tips_file:
-            self.tips = json.loads(open(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')), tips_file)).read())
+            self.tips = json.loads(open(edr_resource_path(tips_file)).read())
         else:
             self.tips = DEFAULT_TIPS
 

@@ -1,3 +1,4 @@
+import os
 from copy import deepcopy
 import datetime
 import itertools
@@ -49,6 +50,7 @@ from .edrcommands import EDRCommands
 from .edrhotkeys import EDRHotkeyManager
 from . import edrroutes
 from edr.utils.edrutils import simplified_body_name, pretty_print_number, compare_versions, is_valid_semver # EDR_INTERNAL
+from edr.utils.edrpath import plugin_root # EDR_INTERNAL
 
 from edr.utils.RESTFirebase import AuthState
 
@@ -5063,6 +5065,8 @@ class EDRClient:
         Returns:
             bool: True if loaded successfully.
         """
+        if not os.path.isabs(filename):
+            filename = os.path.join(plugin_root(), filename)
         route = edrroutes.CSVJourney(filename)
         if route:
             self.player.routenav.set_journey(route)
@@ -5285,7 +5289,7 @@ class EDRClient:
         if self.player.routenav.no_journey():
             if self.journey_fetch():
                 return True
-            if self.journey_load("route.csv"):
+            if self.journey_load("journey.csv"):
                 return True
             return self.journey_new_adv()
         else:

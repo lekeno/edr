@@ -2,6 +2,7 @@ import os
 import configparser as cp
 
 from .edrlog import EDR_LOG  # EDR_INTERNAL
+from edr.utils.edrpath import plugin_root # EDR_INTERNAL
 
 
 class IGMConfig:
@@ -19,16 +20,16 @@ class IGMConfig:
         """
         self.config = cp.ConfigParser()
         self.fallback_config = cp.ConfigParser()
-        edr_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-        self.fallback_config.read(os.path.join(edr_root, config_file))
+        root = plugin_root()
+        self.fallback_config.read(os.path.join(root, config_file))
         # TODO assumes that there is always 2 user config options...
-        user_cfg_path = os.path.join(edr_root, user_config_file[0])
+        user_cfg_path = os.path.join(root, user_config_file[0])
         if os.path.exists(user_cfg_path):
             EDR_LOG.info(u"Using user defined layout at {}.".format(user_config_file[0]))
             self.config.read(user_cfg_path)
         else:
             EDR_LOG.info(u"No user defined layout at {}, using {} instead.".format(user_config_file[0], user_config_file[1]))
-            user_cfg_path = os.path.join(edr_root, user_config_file[1])
+            user_cfg_path = os.path.join(root, user_config_file[1])
             if os.path.exists(user_cfg_path):
                 EDR_LOG.info(u"Using user defined layout at {}.".format(user_config_file[1]))
                 self.config.read(user_cfg_path)

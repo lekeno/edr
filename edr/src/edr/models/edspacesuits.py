@@ -6,6 +6,7 @@ from copy import deepcopy
 from edr.utils.edtime import EDTime
 from edr.core.edrconfig import EDR_CONFIG
 from edr.core.edrlog import EDR_LOG
+from edr.utils.edrpath import edr_data_path  # EDR_INTERNAL
 
 
 
@@ -321,7 +322,7 @@ class EDOdysseyCloset:
         return self.loadouts[loadout_id]
 
 class EDGeneticSampler:
-    BIOLOGY = json.loads(open(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')), 'data', 'biology.json')).read())
+    BIOLOGY = json.loads(open(edr_data_path('biology.json')).read())
     
     def __init__(self):
         self.samples = {}

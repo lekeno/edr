@@ -1,13 +1,12 @@
-
 import os
 import sys
 import sqlite3
 import math
 
-import os
 from .edvehicles import EDVehicleFactory # EDR_INTERNAL
 from edr.utils.edtime import EDTime # EDR_INTERNAL
 from edr.core.edrlog import EDR_LOG # EDR_INTERNAL
+from edr.utils.edrpath import plugin_root # EDR_INTERNAL
 
 
 
@@ -59,8 +58,7 @@ class EDRFleet:
 
 
     def __init__(self):
-        edr_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-        path = os.path.join(edr_root, 'db', 'fleet')
+        path = os.path.join(plugin_root(), 'db', 'fleet')
         try:
             self.db = sqlite3.connect(path)
             cursor = self.db.cursor()

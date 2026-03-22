@@ -13,13 +13,14 @@ from . import edrstatecheck
 from .edrstatefinder import EDRStateFinder
 from edr.core.edri18n import _ # EDR_INTERNAL
 from edr.models.edrrawdepletables import EDRRawDepletables
+from edr.utils.edrpath import edr_data_path  # EDR_INTERNAL
 
 class EDRResourceFinder:
 
-    RAW_MATS = json.loads(open(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')), 'data', 'raw.json')).read())
-    RAW_MATS_PROFILES = json.loads(open(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')), 'data', 'raw_profiles.json')).read())
+    RAW_MATS = json.loads(open(edr_data_path('raw.json')).read())
+    RAW_MATS_PROFILES = json.loads(open(edr_data_path('raw_profiles.json')).read())
     try:
-        RAW_MATS_PROFILES = json.loads(open(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')), 'data', 'user_raw_profiles.json')).read())
+        RAW_MATS_PROFILES = json.loads(open(edr_data_path('user_raw_profiles.json')).read())
     except:
         pass
 
@@ -629,7 +630,7 @@ class EDRResourceFinder:
         if resource != "selenium":
             return False
         filename = '{}_sel.json'.format(self.dlc) if self.dlc else 'sel.json'
-        candidates = json.loads(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', filename)).read())
+        candidates = json.loads(open(edr_data_path(filename)).read())
         if not candidates:
             return False
 

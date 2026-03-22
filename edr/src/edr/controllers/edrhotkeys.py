@@ -2,6 +2,7 @@ import os
 import json
 from edr.core.edrlog import EDR_LOG
 from edr.core.edrconfig import EDR_CONFIG
+from edr.utils.edrpath import edr_config_path  # EDR_INTERNAL
 
 try:
     import ExternalHotkeyPlugin as ehp
@@ -12,7 +13,7 @@ class EDRHotkeyManager(object):
     def __init__(self, edr_client):
         self.edr_client = edr_client
         self.config = EDR_CONFIG
-        self.hotkeys_path = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'hotkeys.json')
+        self.hotkeys_path = edr_config_path('hotkeys.json')
         self.mappings = {}
         self.enabled = False
         self.load_mappings()

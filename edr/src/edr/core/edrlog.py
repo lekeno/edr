@@ -2,10 +2,25 @@
 import logging
 import sys
 import os
+import threading
 from config import appname  # EDR_INTERNAL
 
 if sys.version_info.major == 3:
     sys.stdout.reconfigure(encoding="utf-8")
+
+
+class EDRLogFilter(logging.Filter):
+    """
+    Filter to ensure 'osthreadid' is present in LogRecords.
+    EDMC's logging formatter expects this field.
+    """
+    def filter(self, record):
+        if not hasattr(record, 'osthreadid'):
+            if hasattr(threading, 'get_native_id'):
+                record.osthreadid = threading.get_native_id()
+            else:
+                record.osthreadid = threading.current_thread().ident
+        return True
 
 
 class EDRLog:
@@ -27,6 +42,8 @@ class EDRLog:
         level = logging.getLevelName(level_name.upper())
         self.logger.setLevel(level)
 
+        self.logger.addFilter(EDRLogFilter())
+
         if not self.logger.hasHandlers():
             logger_channel = logging.StreamHandler()
             log_format = '%(asctime)s - %(name)s - %(levelname)s - %(module)s:%(lineno)d:%(funcName)s: %(message)s'
@@ -47,7 +64,9 @@ class EDRLog:
             *args: Arguments for the message format string.
             **kwargs: Keyword arguments for the logger.
         """
-        self.logger.debug(msg, *args, stacklevel=2, **kwargs)
+        if sys.version_info >= (3, 8):
+            kwargs.setdefault('stacklevel', 2)
+        self.logger.debug(msg, *args, **kwargs)
 
     def info(self, msg, *args, **kwargs):
         """
@@ -58,7 +77,9 @@ class EDRLog:
             *args: Arguments for the message format string.
             **kwargs: Keyword arguments for the logger.
         """
-        self.logger.info(msg, *args, stacklevel=2, **kwargs)
+        if sys.version_info >= (3, 8):
+            kwargs.setdefault('stacklevel', 2)
+        self.logger.info(msg, *args, **kwargs)
 
     def warning(self, msg, *args, **kwargs):
         """
@@ -69,7 +90,9 @@ class EDRLog:
             *args: Arguments for the message format string.
             **kwargs: Keyword arguments for the logger.
         """
-        self.logger.warning(msg, *args, stacklevel=2, **kwargs)
+        if sys.version_info >= (3, 8):
+            kwargs.setdefault('stacklevel', 2)
+        self.logger.warning(msg, *args, **kwargs)
 
     def error(self, msg, *args, **kwargs):
         """
@@ -80,7 +103,9 @@ class EDRLog:
             *args: Arguments for the message format string.
             **kwargs: Keyword arguments for the logger.
         """
-        self.logger.error(msg, *args, stacklevel=2, **kwargs)
+        if sys.version_info >= (3, 8):
+            kwargs.setdefault('stacklevel', 2)
+        self.logger.error(msg, *args, **kwargs)
 
     def exception(self, msg, *args, **kwargs):
         """
@@ -91,7 +116,9 @@ class EDRLog:
             *args: Arguments for the message format string.
             **kwargs: Keyword arguments for the logger.
         """
-        self.logger.exception(msg, *args, stacklevel=2, **kwargs)
+        if sys.version_info >= (3, 8):
+            kwargs.setdefault('stacklevel', 2)
+        self.logger.exception(msg, *args, **kwargs)
 
     def critical(self, msg, *args, **kwargs):
         """
@@ -102,7 +129,9 @@ class EDRLog:
             *args: Arguments for the message format string.
             **kwargs: Keyword arguments for the logger.
         """
-        self.logger.critical(msg, *args, stacklevel=2, **kwargs)
+        if sys.version_info >= (3, 8):
+            kwargs.setdefault('stacklevel', 2)
+        self.logger.critical(msg, *args, **kwargs)
 
 
 _edr_logger_instance = None

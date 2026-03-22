@@ -4,15 +4,16 @@ from edr.utils.edtime import EDTime # EDR_INTERNAL
 from edr.core.edrconfig import EDR_CONFIG # EDR_INTERNAL
 from edr.utils.lrucache import LRUCache # EDR_INTERNAL
 from edr.core.edrlog import EDR_LOG # EDR_INTERNAL
+from edr.utils.edrpath import edr_cache_path # EDR_INTERNAL
 from .edentities import EDPlayerOne # EDR_INTERNAL
 from edr.controllers.edrserver import CommsJammedError # EDR_INTERNAL
 
 
 class EDRCmdrs:
     #TODO these should be player and/or squadron specific
-    EDR_CMDRS_CACHE = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')), 'cache', 'cmdrs.v8.p')
-    EDR_INARA_CACHE = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')), 'cache', 'inara.v8.p')
-    EDR_SQDRDEX_CACHE = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')), 'cache', 'sqdrdex.v2.p')
+    EDR_CMDRS_CACHE = edr_cache_path('cmdrs.v8.p')
+    EDR_INARA_CACHE = edr_cache_path('inara.v8.p')
+    EDR_SQDRDEX_CACHE = edr_cache_path('sqdrdex.v2.p')
 
     def __init__(self, edrserver):
         """
@@ -200,7 +201,7 @@ class EDRCmdrs:
             dex_profile = None
 
         if dex_profile:
-            EDR_LOG.debug("EDR CmdrDex entry found for {cmdr}: {id}".format(cmdr=cmdr_name, id=profile.cid))
+            EDR_LOG.debug("EDR CmdrDex entry found for {cmdr}: {id}".format(cmdr=cmdr_name, id=updated_profile.cid))
             updated_profile.dex(dex_profile)
         
         self.cmdrs_cache.set(key, updated_profile)

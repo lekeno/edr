@@ -1,19 +1,18 @@
-
 import os
 import json
 import copy
 
-import os
 from .edsitu import EDPlanetaryLocation # EDR_INTERNAL
 from edr.core.edrlog import EDR_LOG # EDR_INTERNAL
 from edr.utils.edrutils import simplified_body_name # EDR_INTERNAL
+from edr.utils.edrpath import edr_data_path # EDR_INTERNAL
 
 
 
 class EDRBodiesOfInterest:
     def __init__(self, dlc=None):
         filename = "{}_boi.json".format(dlc) if dlc else "boi.json"
-        self.boi = json.loads(open(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')), 'data', filename)).read())
+        self.boi = json.loads(open(edr_data_path(filename)).read())
         self.custom_pois = {}
         self.index_custom_pois = {}
         self.dlc = None
@@ -25,7 +24,7 @@ class EDRBodiesOfInterest:
         else:
             self.dlc = c_dlc
         filename = "{}_boi.json".format(self.dlc) if self.dlc else "boi.json"
-        self.boi = json.loads(open(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')), 'data', filename)).read())
+        self.boi = json.loads(open(edr_data_path(filename)).read())
 
     def bodies_of_interest(self, star_system):
         if not star_system:

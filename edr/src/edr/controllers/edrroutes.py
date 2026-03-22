@@ -10,6 +10,7 @@ import re
 
 from edr.core.edri18n import _ # EDR_INTERNAL
 from edr.utils.edtime import EDTime # EDR_INTERNAL
+from edr.utils.edrpath import edr_cache_path # EDR_INTERNAL
 from collections import deque
 from edr.utils.edrutils import pretty_print_number, simplified_body_name # EDR_INTERNAL
 from edr.core.edrconfig import EDR_CONFIG # EDR_INTERNAL
@@ -1603,7 +1604,7 @@ class EDRNavigator:
     """
     Manages navigation, routes, and journeys for EDR.
     """
-    EDR_JOURNEY_CACHE = path.join(path.abspath(path.dirname(__file__)), 'cache', 'navigator.v1.p')
+    EDR_JOURNEY_CACHE = edr_cache_path('navigator.v1.p')
 
     def __init__(self):
         """

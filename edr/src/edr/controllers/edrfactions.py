@@ -6,6 +6,7 @@ from edr.utils.lrucache import LRUCache  # EDR_INTERNAL
 from edr.core.edri18n import _  # EDR_INTERNAL
 from edr.utils.edtime import EDTime  # EDR_INTERNAL
 from edr.core.edrlog import EDR_LOG  # EDR_INTERNAL
+from edr.utils.edrpath import edr_cache_path  # EDR_INTERNAL
 
 
 class EDRMaterialOutcomes:
@@ -615,9 +616,9 @@ class EDRFactions:
     """
     Manages faction information, caching, and EDSM synchronization.
     """
-    EDR_FACTIONS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edr_factions.v2.p')
-    EDR_CONTROLLING_FACTIONS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edr_controlling_factions.v2.p')
-    EDSM_FACTIONS_CACHE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cache', 'edsm_factions.v2.p')
+    EDR_FACTIONS_CACHE = edr_cache_path('edr_factions.v2.p')
+    EDR_CONTROLLING_FACTIONS_CACHE = edr_cache_path('edr_controlling_factions.v2.p')
+    EDSM_FACTIONS_CACHE = edr_cache_path('edsm_factions.v2.p')
 
     def __init__(self, edsm_server):
         """

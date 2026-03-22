@@ -1,6 +1,6 @@
-
 import os
 import json
+from edr.utils.edrpath import edr_data_path  # EDR_INTERNAL
 
 
 class EDRLandables:
@@ -17,8 +17,7 @@ class EDRLandables:
         """
         if cls._MAPS is None:
             try:
-                edr_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-                filename = os.path.join(edr_root, 'data', 'landable-maps.json')
+                filename = edr_data_path('landable-maps.json')
                 with open(filename, 'r') as handle:
                     cls._MAPS = json.load(handle)
             except Exception:
