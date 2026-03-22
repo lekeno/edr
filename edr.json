@@ -1,0 +1,23 @@
+{
+  "pluginName": "ED Recon (EDR)",
+  "pluginVer": "3.3.0",
+  "autoUpdateEnabled": false,
+  "autoInstallEnabled": false,
+  "pluginAuthors": [
+    "lekeno"
+  ],
+  "pluginMainLink": "https://edrecon.com",
+  "pluginLastUpdate": "2026-03-22",
+  "pluginDirName": "edr",
+  "pluginCategory": [
+    "Social",
+    "Combat",
+    "Exploration",
+    "Navigation",
+    "Engineering",
+    "Utility"
+  ],
+  "pluginDesc": "EDR (ED Recon) provides real-time tactical intel, commander search, and various helpful features for most of the activites in Elite: Dangerous.",
+  "pluginLastTestedEDMC": "6.1.2",
+  "pluginLicense": "Apache-2.0"
+}

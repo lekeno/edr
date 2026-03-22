@@ -27,6 +27,9 @@ from edr.utils.edtime import EDTime  # EDR_INTERNAL
 from edr.core.edrlog import EDR_LOG  # EDR_INTERNAL
 from edr.core import edrautoupdater  # EDR_INTERNAL
 from edr.core.edri18n import _, _c  # EDR_INTERNAL
+from edr.core.edrconfig import EDR_CONFIG # EDR_INTERNAL
+
+VERSION = EDR_CONFIG.edr_version()
 
 EDR_CLIENT = EDRClient()
 
