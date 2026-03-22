@@ -6,11 +6,8 @@ import os
 import sys
 
 # Ensure the src directory is in the path
-try:
-    from edr.utils.edrpath import plugin_root
-    sys.path.insert(0, os.path.join(plugin_root(), 'src'))
-except ImportError:
-    pass
+PLUGIN_DIR = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, os.path.join(PLUGIN_DIR, 'src'))
 
 from edr.controllers.edrclient import EDRClient
 from edr.controllers.edreventhandler import EDREventHandler
