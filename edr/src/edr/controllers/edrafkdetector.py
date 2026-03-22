@@ -1,4 +1,4 @@
-from edr.utils.edtime import EDTime  # EDR_INTERNAL
+from edr.utils.edtime import EDTime
 
 
 class EDRAfkDetector:

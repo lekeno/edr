@@ -12,7 +12,7 @@ from edr.core.edrlog import EDR_LOG # EDR_INTERNAL
 from edr.utils import edtime
 from edr.models.edentities import EDFineOrBounty # EDR_INTERNAL
 from edr.core.edri18n import _, _c # EDR_INTERNAL
-from edr.utils.edrpath import edr_cache_path  # EDR_INTERNAL
+from edr.utils.edrpath import edr_cache_path
 
 class EDROpponents:
     OUTLAWS = "Outlaws"

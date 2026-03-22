@@ -6,7 +6,7 @@
 </div>
 <p align=right>
   Draft by <b>CMDR Lekeno</b><br>
-  Version 2.7.7.0
+  Version 3.3.0
 </p>
 
 <h1>Summary</h1>
@@ -133,7 +133,7 @@ Steps:
 ## ED Recon (aka EDR)
 Steps:
 
-1. [Download EDR’s latest release](https://github.com/lekeno/EDR/releases/latest) (the EDR.v#.#.#.zip file where #.#.# is the version number, e.g. 1.0.0 in the screenshot below)
+1. [Download EDR’s latest release](https://github.com/lekeno/EDR/releases/latest) (the EDR.v#.#.#.zip file where #.#.# is the version number, e.g. 3.3.0 in the screenshot below)
 
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="https://github.com/lekeno/edr/blob/master/edr/docs/assets/EDR_1.0.0_Black.png?raw=true">
@@ -172,7 +172,7 @@ Steps:
     <img alt="Location and folder structure of EDR" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_07_White.png?raw=true">
 
 9. Launch Elite, start a new game.
-10. You should see an intro message (e.g. `EDR V1.0.0 […]`) overlayed on top of Elite.
+10. You should see an intro message (e.g. `EDR V3.3.0 […]`) overlayed on top of Elite.
     - On Windows 10: the overlay should work for all the modes (Fullscreen, Borderless, Windowed).
     - On Windows 7: the overlay does NOT work in Fullscreen, use Borderless or Windowed instead.
     - If the overlay does not work, see the [troubleshooting](#troubleshooting) section.

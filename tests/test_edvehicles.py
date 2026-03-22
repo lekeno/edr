@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch, PropertyMock
-from edr.models.edvehicles import EDVehicleFactory, EDUnknownVehicle, EDSidewinder, EDAnaconda, EDDiamondbackExplorer, EDVehicle
+from edr.models.edvehicles import EDUnknownVehicle, EDVehicle
+from edr.models.edshipyard import EDVehicleFactory, EDSidewinder, EDAnaconda, EDDiamondbackExplorer
 import json
 import os
 
@@ -86,7 +87,7 @@ class TestEDVehicles(unittest.TestCase):
     def test_subsystem_health(self):
         with patch('edr.models.edvehicles.EDTime') as mock_time:
             # Patch readable_module_names to avoid dependency on external JSON files
-            with patch('edr.models.edvehicles.EDVehicleFactory.readable_module_names', return_value=("Power Plant", "PP")):
+            with patch('edr.models.edshipyard.EDVehicleFactory.readable_module_names', return_value=("Power Plant", "PP")):
                 self.vehicle.subsystem_health("PowerPlant", 80.0)
                 
                 details = self.vehicle.subsystem_details("PowerPlant")

@@ -342,5 +342,6 @@ class TestEDRClient(unittest.TestCase):
         self.assertEqual(result, mock_ui_instance.app_ui.return_value)
 
 
+
 if __name__ == '__main__':
     unittest.main()

@@ -2,7 +2,7 @@ import json
 import os
 from edr.core.edrlog import EDR_LOG
 from edr.core.edri18n import _
-from edr.utils.edrpath import edr_data_path  # EDR_INTERNAL
+from edr.utils.edrpath import edr_data_path
 
 
 class EDRXzibit:
