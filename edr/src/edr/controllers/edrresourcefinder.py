@@ -13,7 +13,7 @@ from . import edrstatecheck
 from .edrstatefinder import EDRStateFinder
 from edr.core.edri18n import _ # EDR_INTERNAL
 from edr.models.edrrawdepletables import EDRRawDepletables
-from edr.utils.edrpath import edr_data_path  # EDR_INTERNAL
+from edr.utils.edrpath import edr_data_path
 
 class EDRResourceFinder:
 

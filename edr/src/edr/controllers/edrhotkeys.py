@@ -2,7 +2,7 @@ import os
 import json
 from edr.core.edrlog import EDR_LOG
 from edr.core.edrconfig import EDR_CONFIG
-from edr.utils.edrpath import edr_config_path  # EDR_INTERNAL
+from edr.utils.edrpath import edr_config_path
 
 try:
     import ExternalHotkeyPlugin as ehp

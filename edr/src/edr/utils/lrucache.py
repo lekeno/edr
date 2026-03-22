@@ -2,7 +2,7 @@ import os
 import collections
 import datetime
 import pickle
-from edr.core.edrlog import EDR_LOG  # EDR_INTERNAL
+from edr.core.edrlog import EDR_LOG
 from .edrpickle import edr_load_pickle
 
 

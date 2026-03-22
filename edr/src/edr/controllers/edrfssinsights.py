@@ -1,8 +1,8 @@
 from os import system
-from edr.core.edri18n import _, _c  # EDR_INTERNAL
+from edr.core.edri18n import _, _c
 import re
 import copy
-from edr.utils.edtime import EDTime  # EDR_INTERNAL
+from edr.utils.edtime import EDTime
 
 
 class EDRFSSInsights:

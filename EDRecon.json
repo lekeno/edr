@@ -17,7 +17,7 @@
     "Engineering",
     "Utility"
   ],
-  "pluginDesc": "EDR (ED Recon) provides real-time tactical intel, commander search, and various helpful features for most of the activites in Elite: Dangerous.",
+  "pluginDesc": "ED Recon (EDR) provides real-time tactical intel including IFF (Identification Friend or Foe) and SitReps, as well as other helpful features for most activities in Elite: Dangerous.",
   "pluginLastTestedEDMC": "6.1.2",
   "pluginLicense": "Apache-2.0"
 }

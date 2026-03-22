@@ -36,9 +36,15 @@ class TestEDRSystems(unittest.TestCase):
             self.edr_systems.fc_reports_cache = self.mock_fc_reports_cache
             self.edr_systems.fc_materials_cache = self.mock_fc_materials_cache
             self.edr_systems.edsm_systems_cache = self.mock_edsm_systems_cache
-            self.edr_systems.edsm_stations_cache = self.mock_edsm_stations_cache
-            self.edr_systems.edsm_bodies_cache = self.mock_edsm_bodies_cache
-            self.edr_systems.edsm_system_values_cache = self.mock_edsm_system_values_cache
+            
+            # Update manager caches
+            self.edr_systems.station_manager.edsm_stations_cache = self.mock_edsm_stations_cache
+            self.edr_systems.body_manager.edsm_bodies_cache = self.mock_edsm_bodies_cache
+            self.edr_systems.body_manager.materials_cache = MagicMock() # or add a mock for it
+            self.edr_systems.intel.traffic_cache = MagicMock()
+            self.edr_systems.intel.crimes_cache = MagicMock()
+            self.edr_systems.intel.sitreps_cache = MagicMock()
+            self.edr_systems.intel.notams_cache = MagicMock()
 
     def test_system_id_cache_hit(self):
         star_system = "Sol"

@@ -2,7 +2,7 @@
 import logging
 import sys
 import os
-from config import appname  # EDR_INTERNAL
+from config import appname
 
 if sys.version_info.major == 3:
     sys.stdout.reconfigure(encoding="utf-8")

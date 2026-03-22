@@ -31,23 +31,28 @@ from .edrsystems import EDRSystems # EDR_INTERNAL
 from .edrfactions import EDRFactions # EDR_INTERNAL
 from .edrresourcefinder import EDRResourceFinder # EDR_INTERNAL
 from edr.models.edrbodiesofinterest import EDRBodiesOfInterest # EDR_INTERNAL
-from edr.models.edrcmdrs import EDRCmdrs  # EDR_INTERNAL
-from .edropponents import EDROpponents  # EDR_INTERNAL
-from edr.utils.randomtips import RandomTips  # EDR_INTERNAL
-from edr.core.helpcontent import HelpContent  # EDR_INTERNAL
+from edr.models.edrcmdrs import EDRCmdrs
+from .edropponents import EDROpponents
+from edr.utils.randomtips import RandomTips
+from edr.core.helpcontent import HelpContent
 from edr.utils.edtime import EDTime # EDR_INTERNAL
 from edr.models.edrlegalrecords import EDRLegalRecords # EDR_INTERNAL
-from edr.models.edrxzibit import EDRXzibit  # EDR_INTERNAL
+from edr.models.edrxzibit import EDRXzibit
 from .edrdiscord import EDRDiscordIntegration
 from edr.models.edvehicles import EDVehicleFactory # EDR_INTERNAL
-from .edrsysplacheck import EDRGenusCheckerFactory  # EDR_INTERNAL
-from .edrsyssetlcheck import EDRSettlementCheckerFactory  # EDR_INTERNAL
+from .edrsysplacheck import EDRGenusCheckerFactory
+from .edrsyssetlcheck import EDRSettlementCheckerFactory
 
 from edr.core.edri18n import _, _c, _edr, set_language # EDR_INTERNAL
 from edr.utils.clippy import copy, paste
 from .edrfssinsights import EDRFSSInsights
 from .edrcommands import EDRCommands
 from .edrhotkeys import EDRHotkeyManager
+from .edrintel import EDRIntelManager
+from .edrguidance import EDRGuidanceManager
+from .edrsearch import EDRSearchManager
+from .edrcarrier import EDRCarrierManager
+from .edrnavigation import EDRNavigationManager
 from . import edrroutes
 from edr.utils.edrutils import simplified_body_name, pretty_print_number, compare_versions, is_valid_semver # EDR_INTERNAL
 from edr.utils.edrpath import plugin_root # EDR_INTERNAL
@@ -183,6 +188,11 @@ class EDRClient:
         self.edrdiscord = EDRDiscordIntegration(self.edrcmdrs)
         self.edrcommands = EDRCommands(self)
         self.hotkey_manager = EDRHotkeyManager(self)
+        self.intel_manager = EDRIntelManager(self)
+        self.guidance_manager = EDRGuidanceManager(self)
+        self.search_manager = EDRSearchManager(self)
+        self.carrier_manager = EDRCarrierManager(self)
+        self.navigation_manager = EDRNavigationManager(self)
         
     def __get_realtime_params(self, kind):
         """
@@ -1270,24 +1280,7 @@ class EDRClient:
             longitude (float): Destination longitude.
             title (str): Title for the navpoint.
         """
-        position = {"latitude": float(latitude), "longitude": float(longitude)}
-        boi = {}
-        poi = {}
-        body = self.player.body or "unknown body"
-        poi[body.lower()] = [{
-            "title": title,
-            "latitude": float(latitude),
-            "longitude": float(longitude)
-        }]
-        boi[self.player.star_system.lower()] = poi
-        copy(json.dumps(boi))
-        loc = EDPlanetaryLocation(position)
-        if loc.valid():
-            self.player.planetary_destination = loc
-            self.__notify(_('Assisted Navigation'), [_("Destination set to {} | {}").format(latitude, longitude), _("Guidance will be shown when approaching a stellar body"), _("Destination added to the clipboard")], clear_before = True)
-        else:
-            self.player.planetary_destination = None
-            self.__notify(_('Assisted Navigation'), [_("Invalid destination")], clear_before = True)
+        self.guidance_manager.navigation(latitude, longitude, title)
 
     def docking_guidance(self, entry):
         """
@@ -1812,25 +1805,7 @@ class EDRClient:
         """
         Attempt to set a custom POI as destination based on current attitude.
         """
-        current = self.player.attitude
-        if not current or not current.valid():
-            return
-        
-        location = self.player.location
-        body = self.edrsystems.body(location.star_system, location.body or location.place)
-        radius = body.get("radius", None) if body else None
-
-        star_system = location.star_system
-        body_name = location.body or location.place
-        if not star_system or not body_name:
-            return
-        
-        poi = self.edrboi.closest_custom_point_of_interest(star_system, body_name, current, radius)
-        if not poi:
-            return
-
-        self.player.planetary_destination = EDPlanetaryLocation(poi)
-    
+        self.navigation_manager.try_custom_poi()
     def biology_guidance(self):
         """
         Provide guidance for exobiological sampling.
@@ -2004,17 +1979,7 @@ class EDRClient:
         """
         Show active NOTAMs (Notice to Air Men).
         """
-        summary = self.edrsystems.systems_with_active_notams()
-        if summary:
-            details = []
-            safe_summary = [str(s) for s in summary if s is not None]
-            
-            # Translators: this shows a ist of systems {} with active NOtice To Air Men via the overlay
-            details.append(_("Active NOTAMs for: {}").format("; ".join(safe_summary)))
-            # Translators: this is the heading for the active NOTAMs overlay
-            self.__sitrep(_("NOTAMs"), details)
-        else:
-            self.__sitrep(_("NOTAMs"), [_("No active NOTAMs.")])
+        self.guidance_manager.notams()
 
     def notam(self, star_system):
         """
@@ -2023,36 +1988,13 @@ class EDRClient:
         Args:
             star_system (str): The star system.
         """
-        summary = self.edrsystems.active_notams(star_system)
-        if summary:
-            EDR_LOG.debug("NOTAMs for {}: {}".format(star_system, summary))
-            # Translators: this is the heading to show any active NOTAM for a given system {} 
-            self.__sitrep(_("NOTAM for {}").format(star_system), summary)
-        else:
-            self.__sitrep(_("NOTAM for {}").format(star_system), [_("No active NOTAMs.")])
+        self.guidance_manager.notam(star_system)
 
     def sitreps(self):
         """
         Show Situation Reports (SITREPs) for systems with recent activity.
         """
-        try:
-            details = []
-            summary = self.edrsystems.systems_with_recent_activity()
-
-            if not summary:
-                return
-            
-            for section in summary:
-                systems = summary.get(section)
-                if systems:
-                    safe_systems = [str(s) for s in systems if s is not None]
-                    details.append("{}: {}".format(section, "; ".join(safe_systems)))
-            
-            if details:
-                header = _("SITREPS") if self.player.in_open() else _("SITREPS (Open)")
-                self.__sitrep(header, details)
-        except CommsJammedError:
-            self.__commsjammed()
+        self.guidance_manager.sitreps()
 
 
     def cmdr_id(self, cmdr_name):
@@ -2324,76 +2266,7 @@ class EDRClient:
         return details
 
     def __summarize_fc_market(self, sale_orders, purchase_orders, max_len=2048):
-        remaining = max_len
-        details_purchases = []
-        details_sales = []
-        if sale_orders:
-            sale_orders_with_value = [[sale_orders[order], self.player.remlok_helmet.how_useful(order), order] for order in sale_orders if self.player.remlok_helmet.how_useful(order) >= 0]
-            sorted_sale_orders = sorted(sale_orders_with_value, key=lambda b: b[1], reverse=True)
-            for order in sorted_sale_orders:
-                quantity = pretty_print_number(order[0]["quantity"])
-                item = order[0]["l10n"][:21].capitalize()
-                price = pretty_print_number(order[0]["price"])
-                worthy = self.player.remlok_helmet.worthiness_odyssey_material(order[2])
-                if worthy:
-                    details_sales.append(f'{quantity: >5} {item: <21} {price: >7} {worthy: >15}')
-                else:
-                    details_sales.append(f'{quantity: >5} {item: <21} {price: >7}')
-
-        for order in purchase_orders:
-            quantity = pretty_print_number(purchase_orders[order]["quantity"])
-            item = purchase_orders[order]["l10n"][:21].capitalize()
-            price = pretty_print_number(purchase_orders[order]["price"])
-            details_purchases.append(f'{quantity: >5} {item: <21} {price: >7}')
-
-        
-        header_sales = ""
-        if details_sales:
-            header_sales += _(f'{"Units": >5} {"Item": <21} {"Credits": >7} {"Worthiness*": >15}\n')
-            header_sales += _(f'{" [Selling] ":-^50}\n')
-            
-
-        header_purchases = ""                
-        if details_purchases:
-            if header_sales:
-                header_purchases += "\n\n"
-                header_purchases += _(f'{" [Buying] ":-^50}\n')
-            else:
-                header_purchases += _(f'{"Units": >5} {"Item": <15} {"Credits": >7}\n')
-                header_purchases += _(f'{" [Buying] ":-^50}\n')
-            
-        opening = "```"
-        closing = "```"
-        summary = opening
-        summary_footer = closing
-        if details_sales:
-            summary_footer = "\n\n*: b=blueprint u=upgrades x=trading e=eng. unlocks"
-            summary_footer += closing
-        
-        included_sales = []
-        included_purchases = []
-        remaining -= len(summary) + len(header_sales) + len(header_purchases) + len(summary_footer) 
-        for s,p in itertools.zip_longest(details_sales, details_purchases):
-            if remaining <= 0:
-                break
-            if s and len(s) <= remaining:
-                included_sales.append(s)
-                remaining -= len(s)+1
-            if p and len(p) <= remaining:
-                included_purchases.append(p)
-                remaining -= len(p)+1
-        
-        if included_sales:
-            summary += header_sales
-            summary += "\n".join(included_sales)
-    
-        if included_purchases:
-            summary += header_purchases
-            summary += "\n".join(included_purchases)
-
-        summary += summary_footer
-        return summary
-
+        return self.carrier_manager._EDRCarrierManager__summarize_fc_market(sale_orders, purchase_orders, max_len)
     def evict_system(self, star_system):
         """
         Evict a system from caches.
@@ -2816,21 +2689,7 @@ class EDRClient:
             cmdr_name (str): The commander name.
             autocreate (bool): Whether to create the profile if missing.
         """
-        try:
-            profile = self.cmdr(cmdr_name, autocreate, check_inara_server=True)
-            if profile:
-                self.status = _("got info about {}").format(cmdr_name)
-                EDR_LOG.info("Who {} : {}".format(cmdr_name, profile.short_profile(self.player.powerplay)))
-                legal = self.edrlegal.summarize(profile.cid)
-                details = [profile.short_profile(self.player.powerplay)]
-                if legal:
-                    details.append(legal["overview"])
-                self.__intel(_("Intel about {}").format(cmdr_name), details, clear_before=True, legal=legal)
-            else:
-                EDR_LOG.info("Who {} : no info".format(cmdr_name))
-                self.__intel(_("Intel about {}").format(cmdr_name), [_("No info").format(cmdr=cmdr_name)], clear_before=True)
-        except CommsJammedError:
-            self.__commsjammed()    
+        self.intel_manager.who(cmdr_name, autocreate)
 
     def distance(self, from_system, to_system):
         """
@@ -2840,26 +2699,7 @@ class EDRClient:
             from_system (str): Origin system.
             to_system (str): Destination system.
         """
-        details = []
-        distance = None
-        try:
-            distance = self.edrsystems.distance(from_system, to_system)
-        except ValueError:
-            pass
-            
-        if distance:
-            pretty_dist = _("{distance:.3g}").format(distance=distance) if distance < 50.0 else _("{distance}").format(distance=int(distance))
-            details.append(_("{dist}ly from {from_sys} to {to_sys}").format(dist=pretty_dist, from_sys=from_system, to_sys=to_system))
-            taxi_jump_range = 50
-            jumping_time = self.edrsystems.jumping_time(from_system, to_system, taxi_jump_range)
-            transfer_time = self.edrsystems.transfer_time(from_system, to_system)
-            details.append(_("Taxi time ({}LY): {}").format(taxi_jump_range, EDTime.pretty_print_timespan(jumping_time)))
-            details.append(_("Transfer time: {}").format(EDTime.pretty_print_timespan(transfer_time)))
-            self.status = _("distance: {dist}ly").format(dist=pretty_dist)
-        else:
-            self.status = _("distance failed")
-            details.append(_("Couldn't calculate a distance. Invalid or unknown system names?"))
-        self.__notify(_("Distance"), details, clear_before = True)
+        self.guidance_manager.distance(from_system, to_system)
 
     # Assuming this goes inside the same class as scanned/blip/etc.
 
@@ -3611,24 +3451,7 @@ class EDRClient:
         Args:
             cmdr_name (str): The commander name.
         """
-        report = {}
-        try:
-            for kind in self.edropponents:
-                candidate_report = self.edropponents[kind].where(cmdr_name)
-                if candidate_report and (not report or report["timestamp"] < candidate_report["timestamp"]):
-                    report = candidate_report
-            
-            if report:
-                self.status = _("got info about {}").format(cmdr_name)
-                header = _("Intel about {}") if self.player.in_open() else _("Intel about {} (Open)")
-                self.__intel(header.format(cmdr_name), report["readable"], clear_before=True)
-            else:
-                EDR_LOG.info("Where {} : no info".format(cmdr_name))
-                self.status = _("no info about {}").format(cmdr_name)
-                header = _("Intel about {}") if self.player.in_open() else _("Intel about {} (Open)")
-                self.__intel(header.format(cmdr_name), [_("Not recently sighted or not an outlaw.")], clear_before=True)
-        except CommsJammedError:
-            self.__commsjammed()
+        self.intel_manager.where(cmdr_name)
 
     def where_ship(self, name_or_type):
         """
@@ -3959,22 +3782,7 @@ class EDRClient:
         return True
 
     def __search_prerequisites(self, star_system):
-        if not star_system:
-            return False
-
-        if self.__is_searching_recently():
-            self.__notify(_("EDR Search"), [_("Already searching for something, please wait...")], clear_before = True, sfx=False)
-            if self.audio_feedback:
-                self.SFX.searching()
-            return False
-        
-        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
-            self.__notify(_("EDR Search"), [_("Search features only work in the bubble or Colonia.")], clear_before = True, sfx=False)
-            if self.audio_feedback:
-                self.SFX.failed()
-            return False
-        return True
-
+        return self.search_manager._EDRSearchManager__search_prerequisites(star_system)
     def interstellar_factors_near(self, star_system, override_sc_distance = None):
         """
         Search for Interstellar Factors near a system.
@@ -3983,21 +3791,7 @@ class EDRClient:
             star_system (str): The reference system.
             override_sc_distance (int, optional): Max supercruise distance.
         """
-        if not self.__search_prerequisites(star_system):
-            return
-
-        try:
-            self.edrsystems.search_interstellar_factors(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
-            self.__searching()
-            self.status = _("I.Factors: searching...")
-            self.__notify(_("EDR Search"), [_("Interstellar Factors: searching...")], clear_before = True, sfx=False)
-            if self.audio_feedback:
-                self.SFX.searching()
-        except ValueError:
-            self.__searching(False)
-            self.status = _("I.Factors: failed")
-            self.notify_with_details(_("EDR Search"), [_("Unknown system")])
-
+        self.search_manager.interstellar_factors_near(star_system, override_sc_distance)
     def raw_material_trader_near(self, star_system, override_sc_distance = None):
         """
         Search for Raw Material Traders near a system.
@@ -4006,21 +3800,7 @@ class EDRClient:
             star_system (str): The reference system.
             override_sc_distance (int, optional): Max supercruise distance.
         """
-        if not self.__search_prerequisites(star_system):
-            return
-
-        try:
-            self.edrsystems.search_raw_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
-            self.__searching()
-            self.status = _("Raw mat. trader: searching...")
-            self.__notify(_("EDR Search"), [_("Raw material trader: searching...")], clear_before = True, sfx=False)
-            if self.audio_feedback:
-                self.SFX.searching()
-        except ValueError:
-            self.__searching(False)
-            self.status = _("Raw mat. trader: failed")
-            self.notify_with_details(_("EDR Search"), [_("Unknown system")])
-        
+        self.search_manager.raw_material_trader_near(star_system, override_sc_distance)
     def encoded_material_trader_near(self, star_system, override_sc_distance = None):
         """
         Search for Encoded Material Traders near a system.
@@ -4029,22 +3809,7 @@ class EDRClient:
             star_system (str): The reference system.
             override_sc_distance (int, optional): Max supercruise distance.
         """
-        if not self.__search_prerequisites(star_system):
-            return
-
-        try:
-            self.edrsystems.search_encoded_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
-            self.__searching()
-            self.status = _("Encoded data trader: searching...")
-            self.__notify(_("EDR Search"), [_("Encoded data trader: searching...")], clear_before = True, sfx=False)
-            if self.audio_feedback:
-                self.SFX.searching()
-        except ValueError:
-            self.__searching(False)
-            self.status = _("Encoded data trader: failed")
-            self.notify_with_details(_("EDR Search"), [_("Unknown system")])
-
-
+        self.search_manager.encoded_material_trader_near(star_system, override_sc_distance)
     def manufactured_material_trader_near(self, star_system, override_sc_distance = None):
         """
         Search for Manufactured Material Traders near a system.
@@ -4053,22 +3818,7 @@ class EDRClient:
             star_system (str): The reference system.
             override_sc_distance (int, optional): Max supercruise distance.
         """
-        if not self.__search_prerequisites(star_system):
-            return
-        
-        try:
-            self.edrsystems.search_manufactured_trader(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
-            self.__searching()
-            self.status = _("Manufactured mat. trader: searching...")
-            self.__notify(_("EDR Search"), [_("Manufactured material trader: searching...")], clear_before = True, sfx=False)
-            if self.audio_feedback:
-                self.SFX.searching()
-        except ValueError:
-            self.__searching(False)
-            self.status = _("Manufactured mat. trader: failed")
-            self.__notify(_("EDR Search"), [_("Unknown system")], clear_before = True)
-
-
+        self.search_manager.manufactured_material_trader_near(star_system, override_sc_distance)
     def staging_station_near(self, star_system, override_sc_distance = None):
         """
         Search for a staging station (shipyard+outfitting) near a system.
@@ -4077,21 +3827,7 @@ class EDRClient:
             star_system (str): The reference system.
             override_sc_distance (int, optional): Max supercruise distance.
         """
-        if not self.__search_prerequisites(star_system):
-            return
-
-        try:
-            self.edrsystems.search_staging_station(star_system, self.__staoi_found, override_sc_distance=override_sc_distance)
-            self.__searching()
-            self.status = _("Staging station: searching...")
-            self.__notify(_("EDR Search"), [_("Staging station: searching...")], clear_before = True, sfx=False)
-            if self.audio_feedback:
-                self.SFX.searching()
-        except ValueError:
-            self.__searching(False)
-            self.status = _("Staging station: failed")
-            self.__notify(_("EDR Search"), [_("Unknown system")], clear_before = True)
-
+        self.search_manager.staging_station_near(star_system, override_sc_distance)
     def parking_system_near(self, star_system, override_rank = None):
         """
         Search for a parking system (for Fleet Carriers) near a system.
@@ -4100,24 +3836,7 @@ class EDRClient:
             star_system (str): The reference system.
             override_rank (int, optional): Min security rank? (context specific).
         """
-        self.feature_ads["parking"]["advertised"] = True # no need to advertise since the user clearly knows about it
-        if not self.__search_prerequisites(star_system):
-            return
-
-        self.register_fss_signals() # we might as well gets this out in case it's useful
-
-        try:
-            self.edrsystems.search_parking_system(star_system, self.__parking_found, override_rank=override_rank)
-            self.__searching()
-            self.status = _("Parking system: searching...")
-            self.__notify(_("EDR Search"), [_("Parking system: searching...")], clear_before = True, sfx=False)
-            if self.audio_feedback:
-                self.SFX.searching()
-        except ValueError:
-            self.__searching(False)
-            self.status = _("Parking system: failed")
-            self.__notify(_("EDR Search"), [_("Unknown system")], clear_before = True)
-
+        self.search_manager.parking_system_near(star_system, override_rank)
     def rrr_fc_near(self, star_system, override_radius = None):
         """
         Search for a RRR (Refuel, Repair, Restock) Fleet Carrier near a system.
@@ -4126,24 +3845,7 @@ class EDRClient:
             star_system (str): The reference system.
             override_radius (int, optional): Max search radius.
         """
-        if not self.__search_prerequisites(star_system):
-            return
-
-        try:
-            self.edrsystems.search_rrr_fc(star_system, self.__staoi_found, override_radius=override_radius)
-            self.__searching()
-            self.status = _("RRR Fleet Carrier: searching...")
-            details = [_("RRR Fleet Carrier: searching in {}...").format(star_system), _("If there are no results, try: !rrrfc {} < 15").format(star_system)]
-            if override_radius:
-                details = [_("RRR Fleet Carrier: searching within {} LY of {}...").format(override_radius, star_system)]
-            self.__notify(_("EDR Search"), details, clear_before = True, sfx=False)
-            if self.audio_feedback:
-                self.SFX.searching()
-        except ValueError:
-            self.__searching(False)
-            self.status = _("RRR Fleet Carrier: failed")
-            self.__notify(_("EDR Search"), [_("Unknown system")], clear_before = True)
-
+        self.search_manager.rrr_fc_near(star_system, override_radius)
     def rrr_near(self, star_system, override_radius = None):
         """
         Search for a RRR (Refuel, Repair, Restock) station near a system.
@@ -4152,24 +3854,7 @@ class EDRClient:
             star_system (str): The reference system.
             override_radius (int, optional): Max search radius.
         """
-        if not self.__search_prerequisites(star_system):
-            return
-
-        try:
-            self.edrsystems.search_rrr(star_system, self.__staoi_found, override_radius=override_radius)
-            self.__searching()
-            self.status = _("RRR Station: searching...")
-            details = [_("RRR Station: searching in {}...").format(star_system), _("If there are no results, try: !rrr {} < 15").format(star_system)]
-            if override_radius:
-                details = [_("RRR Station: searching within {} LY of {}...").format(override_radius, star_system)]
-            self.__notify(_("EDR Search"), details, clear_before = True, sfx=False)
-            if self.audio_feedback:
-                self.SFX.searching()
-        except ValueError:
-            self.__searching(False)
-            self.status = _("RRR Station: failed")
-            self.__notify(_("EDR Search"), [_("Unknown system")], clear_before = True)
-
+        self.search_manager.rrr_near(star_system, override_radius)
     def fc_in_current_system(self, callsign_or_name):
         """
         Find a Fleet Carrier in the current system.
@@ -4177,30 +3862,7 @@ class EDRClient:
         Args:
             callsign_or_name (str): The callsign or name to search for.
         """
-        fcs = self.edrfssinsights.fuzzy_match_fleet_carriers(callsign_or_name)
-        callsign = callsign_or_name
-        fc_name = "Fleet Carrier"
-        if len(fcs) == 1:
-            callsign = next(iter(fcs))
-            fc_name = fcs[callsign]
-        elif len(fcs) > 1:
-            self.__notify(_("EDR Fleet Carrier Local Search"), [_("{} fleet carriers have {} in their callsign or name").format(len(fcs), callsign_or_name), _("Try something more specific, or the full callsign.")], clear_before=True)
-            return
-        
-        fc_regexp = r"^([A-Z0-9]{3}-[A-Z0-9]{3})$"
-        if not re.match(fc_regexp, callsign):
-            self.__notify(_("EDR Fleet Carrier Local Search"), [_("Couldn't find a fleet carrier with {} in its callsign or name").format(callsign_or_name), _("{} is not a valid callsign").format(callsign), _("Try a more specific term, the full callsign, or honk your discovery scanner first.")], clear_before=True)
-            return
-
-        fc = self.edrsystems.fleet_carrier(self.player.star_system, callsign)
-        if fc is None:
-            self.__notify(_("EDR Fleet Carrier Local Search"), [_("No info on fleet carrier with {} callsign").format(callsign)], clear_before=True)
-            return
-        
-        header = "{} ({})".format(fc_name, fc["name"])
-        details = self.describe_fleet_carrier(fc)
-        self.__notify(header, details, clear_before=True)
-
+        self.search_manager.fc_in_current_system(callsign_or_name)
     def describe_fleet_carrier(self, fc):
         """
         Format Fleet Carrier details.
@@ -4211,38 +3873,7 @@ class EDRClient:
         Returns:
             list: List of descriptive strings.
         """
-        fc_other_services = (fc.get("otherServices", []) or []) 
-        details = []
-        
-        a = "●" if fc.get("haveOutfitting", False) else "◌"
-        b = "●" if fc.get("haveShipyard", False) else "◌"
-        details.append(_("Outfit:{}   Shipyard:{}").format(a,b))
-        
-        a = "●" if "Refuel" in fc_other_services else "◌"
-        b = "●" if "Repair" in fc_other_services else "◌"
-        c = "●" if "Restock" in fc_other_services else "◌"
-        details.append(_("Refuel:{}   Repair:{}   Restock:{}").format(a,b,c))
-        
-        a = "●" if fc.get("haveMarket", False) else "◌"
-        b = "●" if "Black Market" in fc_other_services else "◌"
-        details.append(_("Market:{}   B.Market:{}").format(a,b))
-        
-        a = "●" if "Universal Cartographics" in fc_other_services else "◌"
-        b = "●" if "Vista Genomics" in fc_other_services else "◌"
-        if a == "●" or b == "●":
-             details.append(_("U.Cart:{}   Vista G:{}").format(a,b))
-        
-        a = "●" if "Pioneer Supplies" in fc_other_services else "◌"
-        b = "●" if "Contacts" in fc_other_services else "◌"
-        c = "●" if "Crew Lounge" in fc_other_services else "◌"
-        if a == "●" or b == "●" or c == "●":
-            details.append(_("Redempt.O:{}   Pioneer S:{}   Lounge:{}").format(a,b,c))
-
-        updated= EDTime()
-        updated.from_edsm_timestamp(fc['updateTime']['information'])
-        details.append(_("as of {date}").format(date=updated.as_local_timestamp()))
-        return details
-
+        return self.search_manager.describe_fleet_carrier(fc)
     def station_in_current_system(self, station_name, passive=False):
         """
         Find a Station in the current system.
@@ -4254,36 +3885,7 @@ class EDRClient:
         Returns:
             bool: True if found.
         """
-        stations = self.edrsystems.fuzzy_stations(self.player.star_system, station_name)
-        if stations is None:
-            if not passive:
-                self.__notify(_("EDR Station Local Search"), [_("No info on Station with {} in its name").format(station_name)], clear_before=True)
-            return False
-
-        if len(stations) > 1:
-            if passive:
-                return False
-            self.__notify(_("EDR Station Local Search"), [_("{} stations have {} in their name").format(len(stations), station_name), _("Try something more specific, or the full name.")], clear_before=True)
-            return True
-        elif len(stations) == 0:
-            if not passive:
-                self.__notify(_("EDR Station Local Search"), [_("No Station with {} in their name").format(station_name)], clear_before=True)
-            return False
-        
-        station = stations[0]
-                
-        economy = "{}/{}".format(station["economy"], station["secondEconomy"]) if station["secondEconomy"] else station["economy"]
-        header = "{} ({})".format(station["name"], economy)
-
-        faction = None
-        if station and "controllingFaction" in station:
-            controllingFaction = station["controllingFaction"]
-            factionName = controllingFaction.get("name", "???")
-            faction = self.edrfactions.get(factionName, self.player.star_system)
-        details = self.describe_station(station, faction)
-        self.__notify(header, details, clear_before=True)
-        return True
-
+        return self.search_manager.station_in_current_system(station_name, passive)
     def pointing_guidance(self, entry):
         """
         Provide guidance based on what the player is pointing at (Odyssey).
@@ -4294,26 +3896,7 @@ class EDRClient:
         Returns:
             bool: True if guidance was provided.
         """
-        if (not self.gesture_triggers):
-            EDR_LOG.info("Gestures setting is off, skipping processing")
-            return True
-        # TODO add the name of the thing in the header
-        target = self.player.remlok_helmet.pointing_at(entry)
-        if not target:
-            return False
-        details = []
-        description = self.player.describe_item(target)
-        inventory_description = self.player.inventory.oneliner(target, fallback=False)
-        if inventory_description:
-            details.append(inventory_description)
-        if not description:
-            return False
-
-        details.extend(description)
-        self.__notify(_("Remlok Insights"), details, clear_before=True)
-        
-        return True
-    
+        return self.navigation_manager.pointing_guidance(entry)
     def gesture(self, entry):
         """
         Handle gesture events (Odyssey emotes).
@@ -4321,167 +3904,34 @@ class EDRClient:
         Args:
             entry (dict): The journal event.
         """
-        if (not self.gesture_triggers):
-            EDR_LOG.info("Gestures setting is off, skipping processing")
-            return
-        default_emote_regex = r"^\$HumanoidEmote_DefaultMessage:#player=\$cmdr_decorate:#name=(.+);:#action=\$HumanoidEmote_(.+)_Action[;]+$"
-        m = re.match(default_emote_regex, entry.get("Message", ""))
-        action = None
-        target = None
-        if not m:
-            targeted_emote_regex = r"^\$HumanoidEmote_TargetMessage:#player=\$cmdr_decorate:#name=(.+);:#targetedAction=\$HumanoidEmote_(.+)_Action_Targeted;:#target=(.+)[;]+$"
-            m = re.match(targeted_emote_regex, entry.get("Message", ""))
-            if m:
-                target = m.group(3)
-            
-        if not m:
-            return
-        
-        action = m.group(2)
-        
-        if action == "point":
-            if not (self.player.body and self.player.star_system):
-                EDR_LOG.info("Skipping point gesture: not on/near a body, or no system set")
-                return
-
-            if not (self.player.location.on_foot_location.on_planet):
-                EDR_LOG.info("Skipping point gesture: not on a planet")
-                return
-
-            now = datetime.datetime.now()
-            title = "POI ({})".format(now.strftime("%H:%M:%S"))
-            if target:
-                m = re.match(r"^\$Codex_Ent_([^_]+)_.+_Name[;]+$", target)
-                if m:
-                    title = "{} ({})".format(m.group(1), now.strftime("%H:%M:%S"))
-            poi = {
-                "title": title,
-                "latitude": self.player.attitude.latitude,
-                "longitude": self.player.attitude.longitude,
-                "heading": self.player.attitude.heading
-            }
-            system_name = self.player.star_system
-            body_name = self.player.body
-            if not body_name or body_name.lower() == "unknown":
-                return
-
-            if self.edrboi.add_custom_poi(system_name, body_name, poi):
-                details = [
-                    _("Added a point of interest at the current position."),
-                    _("Use the '!nav next' or '!nav previous! to select the next or previous POI."),
-                    _("Use the 'stop' gesture or '!nav clear' to clear the current point of interest."),
-                    _("Use the '!nav reset' to reset all custom POI for the current planet.")
-                ]
-                self.__notify(_("EDR Navigation (pointing gesture)"), details)
-            pass
-        elif action == "wave":
-            pass
-        elif action == "agree":
-            self.next_custom_poi()
-            self.__notify(_("EDR Navigation (thumb up gesture)"), [_("Switched to next POI.")])
-        elif action == "disagree":
-            self.previous_custom_poi()
-            self.__notify(_("EDR Navigation (thumb down gesture)"), [_("Switched to previous POI.")])
-        elif action == "go":
-            pass
-        elif action == "stop":
-            self.player.planetary_destination = None
-            self.clear_current_custom_poi()
-            self.__notify(_("EDR Navigation (stop gesture)"), [_("Cleared current POI.")])
-        elif action == "applaud":
-            pass
-        elif action == "salute":
-            pass        
-    
+        self.navigation_manager.gesture(entry)
     def reset_custom_pois(self):
         """
         Reset custom Points of Interest (POIs) for the current body.
         """
-        system_name = self.player.star_system
-        body_name = self.player.body
-        if not body_name or body_name.lower() == "unknown":
-            EDR_LOG.warning("Can't reset custom POIs, no body name: {}".format(body_name))
-            return
-
-        self.edrboi.reset_custom_poi(system_name, body_name)
-    
+        self.navigation_manager.reset_custom_pois()
     def clear_current_custom_poi(self):
         """
         Clear the currently selected custom POI.
         """
-        system_name = self.player.star_system
-        body_name = self.player.body
-        if not body_name or body_name.lower() == "unknown":
-            EDR_LOG.warning("Can't clear current custom POI, no body name: {}".format(body_name))
-            return
-
-        self.edrboi.clear_current_custom_poi(system_name, body_name)
-    
+        self.navigation_manager.clear_current_custom_poi()
     def next_custom_poi(self):
         """
         Select the next custom POI.
         """
-        return self.__next_previous_custom_poi(True)
-    
+        return self.navigation_manager.next_custom_poi()
     def previous_custom_poi(self):
         """
         Select the previous custom POI.
         """
-        return self.__next_previous_custom_poi(False)
-
+        return self.navigation_manager.previous_custom_poi()
     def __next_previous_custom_poi(self, next):
-        location = self.player.location
-        
-        poi = None
-        if next:
-            poi = self.edrboi.next_custom_point_of_interest(location.star_system, location.body or location.place)
-        else:
-            poi = self.edrboi.previous_custom_point_of_interest(location.star_system, location.body or location.place)
-        
-        if not poi:
-            return
-
-        self.player.planetary_destination = EDPlanetaryLocation(poi)
-
+        self.navigation_manager._EDRNavigationManager__next_previous_custom_poi(next)
     def fleet_carrier_update(self):
         """
         Update Fleet Carrier market data (if owner).
         """
-        if self.player.fleet_carrier.has_market_changed():
-            timeframe = 60*15
-            market = self.player.fleet_carrier.json_market(timeframe)
-            text_summary = self.player.fleet_carrier.text_summary(timeframe)
-            details = []
-            if market.get("sales", None):
-                details.append(_("{} sale orders").format(len(market["sales"])))
-            if market.get("purchases", None):
-                details.append(_("{} purchase orders").format(len(market["purchases"])))
-            
-            fc = self.server.fc(self.player.fleet_carrier.callsign, self.player.fleet_carrier.name, self.player.fleet_carrier.position, may_create=True)
-            if market and fc:
-                if self.player.fleet_carrier.is_open_to_all():
-                    fc_id = list(fc)[0] if fc else None
-                    market["owner"] = self.player.name
-                    if self.server.report_fc_market(fc_id, market):
-                        details.append(_("Access: all => Market info sent."))
-                    else:
-                        EDR_LOG.debug("Failed to report FC market update.")
-                else:
-                    EDR_LOG.debug("Skip reporting FC market given that the FC is not open to all.")
-                sale_orders = self.player.fleet_carrier.sale_orders_within(timeframe)
-                purchase_orders = self.player.fleet_carrier.purchase_orders_within(timeframe)
-                summary = self.__summarize_fc_market(sale_orders, purchase_orders)
-                market["summary"] = summary
-                if self.edrdiscord.fc_market_update(market):
-                    details.append(_("Sent FC trading info to your discord channel."))
-
-            self.player.fleet_carrier.acknowledge_market()
-
-            if details:
-                copy(text_summary)
-                details.append(_("Summary placed in the clipboard"))
-                self.__notify(_("Fleet Carrier status summary"), details, clear_before=True)
-
+        self.carrier_manager.fleet_carrier_update()
     def carrier_trade(self, entry):
         """
         Handle Carrier Trade Order events.
@@ -4489,18 +3939,7 @@ class EDRClient:
         Args:
             entry (dict): The journal event.
         """
-        if entry.get("event", "") != "CarrierTradeOrder":
-            return
-        item = entry.get("Commodity", None)
-        if item is None:
-            return
-        description = self.player.describe_item(item)
-        if description:
-            l_item = entry.get("Commodity_Localised", item)
-            self.__notify(_("Trading Insights for {}").format(l_item), description, clear_before=True)
-        
-        self.player.fleet_carrier.trade_order(entry)
-
+        self.carrier_manager.carrier_trade(entry)
     def hyperspace_jump(self, system):
         """
         Handle Hyperspace Jump events.
@@ -4508,19 +3947,7 @@ class EDRClient:
         Args:
             system (str): The destination system name.
         """
-        self.player.to_hyper_space()
-        if self.player.piloted_vehicle:
-            self.player.routenav.fsd_range(self.player.piloted_vehicle.max_jump_range)
-        coords = self.edrsystems.system_coords(system)
-        updates = self.player.routenav.update(system, coords)
-        
-        if updates["route_updated"]:
-            if self.visual_feedback:
-                self.IN_GAME_MSG.navroute(self.player.routenav)
-            
-        if updates["journey_updated"]:
-            self.journey_show_waypoint()
-
+        self.navigation_manager.hyperspace_jump(system)
     def update_star_system_if_obsolete(self, system, address=None):
         """
         Update the current star system if the stored one is obsolete.
@@ -4532,15 +3959,7 @@ class EDRClient:
         Returns:
             bool: True if updated.
         """
-        updated = self.player.update_star_system_if_obsolete(system, address)
-        if updated:
-            if self.player.piloted_vehicle:
-                self.player.routenav.fsd_range(self.player.piloted_vehicle.max_jump_range)
-            coords = self.edrsystems.system_coords(system)
-            updates = self.player.routenav.update(system, coords)
-            
-        return updated
-
+        return self.navigation_manager.update_star_system_if_obsolete(system, address)
     def system_guidance(self, system_name, passive=False):
         """
         Provide guidance/intel about a system.
@@ -4552,16 +3971,7 @@ class EDRClient:
         Returns:
             bool: True if info found/displayed.
         """
-        description = self.edrsystems.describe_system(system_name, self.player.star_system == system_name)
-        if not description:
-            if not passive:
-                self.__notify(_("EDR System Search"), [_("No info on System called {}").format(system_name)], clear_before=True)
-            return False
-
-        header = "{}".format(system_name)
-        self.__notify(header, description, clear_before=True)
-        return True
-
+        return self.navigation_manager.system_guidance(system_name, passive)
     def body_guidance(self, system_name, body_name, passive=False):
         """
         Provide guidance/intel about a body.
@@ -4574,26 +3984,7 @@ class EDRClient:
         Returns:
             bool: True if info found/displayed.
         """
-        description = self.edrsystems.describe_body(system_name, body_name, self.player.star_system == system_name)
-        if not description:
-            if not passive:
-                self.__notify(_("EDR System Search"), [_("No info on Body called {}").format(body_name)], clear_before=True)
-            return False
-
-        materials_info = self.edrsystems.materials_on(system_name, body_name)
-        facts = self.edrresourcefinder.assess_materials_density(materials_info, self.player.inventory)
-        if facts:
-            description.extend(facts)
-        bio_info = self.edrsystems.biology_on(system_name, body_name)
-        if bio_info and bio_info.get("species", None):
-            description.append(_("Expected Bio: {}").format(", ".join(bio_info["species"])))
-            progress = self.__biome_progress_oneliner(system_name, body_name)
-            if progress:
-                description.append(progress)
-        header = "{}".format(body_name)
-        self.__notify(header, description, clear_before=True)
-        return True
-        
+        return self.navigation_manager.body_guidance(system_name, body_name, passive)
     def human_tech_broker_near(self, star_system, override_sc_distance = None):
         """
         Search for Human Tech Brokers near a system.
@@ -4602,21 +3993,7 @@ class EDRClient:
             star_system (str): The reference system.
             override_sc_distance (int, optional): Max supercruise distance.
         """
-        if not self.__search_prerequisites(star_system):
-            return
-
-        try:
-            self.edrsystems.search_human_tech_broker(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
-            self.__searching()
-            self.status = _("Human tech broker: searching...")
-            self.__notify(_("EDR Search"), [_("Human tech broker: searching...")], clear_before = True, sfx=False)
-            if self.audio_feedback:
-                self.SFX.searching()
-        except ValueError:
-            self.__searching(False)
-            self.status = _("Human tech broker: failed")
-            self.__notify(_("EDR Search"), [_("Unknown system")], clear_before = True)
-    
+        self.search_manager.human_tech_broker_near(star_system, override_sc_distance)
     def guardian_tech_broker_near(self, star_system, override_sc_distance = None):
         """
         Search for Guardian Tech Brokers near a system.
@@ -4625,21 +4002,7 @@ class EDRClient:
             star_system (str): The reference system.
             override_sc_distance (int, optional): Max supercruise distance.
         """
-        if not self.__search_prerequisites(star_system):
-            return
-
-        try:
-            self.edrsystems.search_guardian_tech_broker(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
-            self.__searching()
-            self.status = _("Guardian tech broker: searching...")
-            self.__notify(_("EDR Search"), [_("Guardian tech broker: searching...")], clear_before = True, sfx=False)
-            if self.audio_feedback:
-                self.SFX.searching()
-        except ValueError:
-            self.__searching(False)
-            self.status = _("Guardian tech broker: failed")
-            self.__notify(_("EDR Search"), [_("Unknown system")], clear_before = True)
-
+        self.search_manager.guardian_tech_broker_near(star_system, override_sc_distance)
     def offbeat_station_near(self, star_system, override_sc_distance = None):
         """
         Search for offbeat/rare stations (e.g. asteroid bases) near a system.
@@ -4648,21 +4011,7 @@ class EDRClient:
             star_system (str): The reference system.
             override_sc_distance (int, optional): Max supercruise distance.
         """
-        if not self.__search_prerequisites(star_system):
-            return
-
-        try:
-            self.edrsystems.search_offbeat_station(star_system, self.__staoi_found, with_large_pad=self.player.needs_large_landing_pad(), with_medium_pad=self.player.needs_medium_landing_pad(), override_sc_distance = override_sc_distance)
-            self.__searching()
-            self.status = _("Offbeat station: searching...")
-            self.__notify(_("EDR Search"), [_("Offbeat station: searching...")], clear_before = True, sfx=False)
-            if self.audio_feedback:
-                self.SFX.searching()
-        except ValueError:
-            self.__searching(False)
-            self.status = _("Offbeat station: failed")
-            self.__notify(_("EDR Search"), [_("Unknown system")], clear_before = True)
-
+        self.search_manager.offbeat_station_near(star_system, override_sc_distance)
     def search_genus_near(self, genus, star_system):
         """
         Search for planets with a specific biology genus.
@@ -4671,21 +4020,7 @@ class EDRClient:
             genus (str): The genus name.
             star_system (str): The reference system.
         """
-        if not self.__search_prerequisites(star_system):
-            return
-
-        try:
-            self.edrsystems.search_planet_with_genus(star_system, genus, self.__plaoi_found)
-            self.__searching()
-            self.status = _("Biofit planet: searching...")
-            self.__notify(_("EDR Search"), [_("Biofit planet: searching...")], clear_before = True, sfx=False)
-            if self.audio_feedback:
-                self.SFX.searching()
-        except ValueError:
-            self.__searching(False)
-            self.status = _("Biofit planet: failed")
-            self.__notify(_("EDR Search"), [_("Unknown system")], clear_before = True)
-
+        self.search_manager.search_genus_near(genus, star_system)
     def search_settlement_near(self, settlement, star_system):
         """
         Search for a specific settlement type or name.
@@ -4694,204 +4029,15 @@ class EDRClient:
             settlement (str): The settlement query.
             star_system (str): The reference system.
         """
-        if not self.__search_prerequisites(star_system):
-            return
-
-        try:
-            self.edrsystems.search_settlement(star_system, settlement, self.__settloi_found)
-            self.__searching()
-            self.status = _("Settlement: searching...")
-            self.__notify(_("EDR Search"), [_("Settlement: searching...")], clear_before = True, sfx=False)
-            if self.audio_feedback:
-                self.SFX.searching()
-        except ValueError:
-            self.__searching(False)
-            self.status = _("Settlement: failed")
-            self.__notify(_("EDR Search"), [_("Unknown system")], clear_before = True)
-
-
+        self.search_manager.search_settlement_near(settlement, star_system)
     def __staoi_found(self, reference, radius, sc, soi_checker, result):
-        self.__searching(False)
-        details = []
-        if result and "station" in result:
-            sc_distance = result['station']['distanceToArrival']
-            distance = result['distance']
-            pretty_dist = _("{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _("{dist}LY").format(dist=int(distance))
-            pretty_sc_dist = _("{dist}LS").format(dist=int(sc_distance))
-            updated = EDTime()
-            updated.from_edsm_timestamp(result['station']['updateTime']['information'])
-            details.append(_("{system}, {dist}").format(system=result['name'], dist=pretty_dist))
-            details.append(_("{station} ({type}), {sc_dist}").format(station=result['station']['name'], type=result['station']['type'], sc_dist=pretty_sc_dist))
-            details.append(_("as of {date} {ci}").format(date=updated.as_local_timestamp(),ci=result['station'].get('comment', '')))
-            self.status = "{item}: {system}, {dist} - {station} ({type}), {sc_dist}".format(item=soi_checker.name, system=result['name'], dist=pretty_dist, station=result['station']['name'], type=result['station']['type'], sc_dist=pretty_sc_dist)
-            copy(result["name"])
-        else:
-            if result and 'station' not in result:
-                EDR_LOG.error("Unsupported search result: {}".format(result))
-            
-            self.status = _("{}: nothing within [{}LY, {}LS] of {}").format(soi_checker.name, int(radius), int(sc), reference)
-            checked = _("checked {} systems").format(soi_checker.systems_counter) 
-            if soi_checker.stations_counter: 
-                checked = _("checked {} systems and {} stations").format(soi_checker.systems_counter, soi_checker.stations_counter) 
-            details.append(_("nothing found within [{}LY, {}LS], {}.").format(int(radius), int(sc), checked))
-            if soi_checker.hint:
-                details.append(soi_checker.hint)
-        self.__notify(_("{} near {}").format(soi_checker.name, reference), details, clear_before = True)
-
+        self.search_manager._EDRSearchManager__staoi_found(reference, radius, sc, soi_checker, result)
     def __plaoi_found(self, reference, radius, sc, plaoi_checker, result):
-        self.__searching(False)
-        details = []
-        if result:
-            sc_distance = result['planet']['distanceToArrival']
-            distance = result['distance']
-            pretty_dist = _("{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _("{dist}LY").format(dist=int(distance))
-            pretty_sc_dist = _("{dist}LS").format(dist=int(sc_distance))
-            planet_name = simplified_body_name(result['name'], result['planet']['name'])
-            updated = EDTime()
-            updated.from_edsm_timestamp(result['planet']['updateTime'])
-            details.append(_("{system}, {dist}").format(system=result['name'], dist=pretty_dist))
-            details.append(_("{planet} ({type}, {atm}), {sc_dist}").format(planet=planet_name, type=result['planet']['subType'], atm=result['planet']['atmosphereType'], sc_dist=pretty_sc_dist))
-            details.append(_("as of {date}").format(date=updated.as_local_timestamp()))
-            self.status = "{item}: {system}, {dist} - {planet}, {sc_dist}".format(item=plaoi_checker.name, system=result['name'], dist=pretty_dist, planet=planet_name, sc_dist=pretty_sc_dist)
-            copy(result["name"])
-        else:
-            self.status = _("{}: nothing within [{}LY, {}LS] of {}").format(plaoi_checker.name, int(radius), int(sc), reference)
-            checked = _("checked {} systems").format(plaoi_checker.systems_counter)
-            if plaoi_checker.planets_counter: 
-                checked = _("checked {} systems and {} planets").format(plaoi_checker.systems_counter, plaoi_checker.planets_counter)
-            details.append(_("nothing found within [{}LY, {}LS], {}.").format(int(radius), int(sc), checked))
-            if plaoi_checker.hint:
-                details.append(plaoi_checker.hint)
-        self.__notify(_("{} near {}").format(plaoi_checker.name, reference), details, clear_before = True)
-
+        self.search_manager._EDRSearchManager__plaoi_found(reference, radius, sc, plaoi_checker, result)
     def __settloi_found(self, reference, radius, sc, settloi_checker, result):
-        self.__searching(False)
-        details = []
-        if result and 'settlement' in result:
-            settlement = result['settlement']
-            sc_distance = settlement['distanceToArrival']
-            distance = result['distance']
-            pretty_dist = _("{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _("{dist}LY").format(dist=int(distance))
-            pretty_sc_dist = _("{dist}LS").format(dist=int(sc_distance))
-            updated = EDTime()
-            updated.from_edsm_timestamp(settlement['updateTime']['information'])
-            details.append(_("{system}, {dist}").format(system=result['name'], dist=pretty_dist))
-            if 'body' in settlement:
-                bodyName = settlement['body']['name']
-                adjBodyName = simplified_body_name(result['name'], bodyName, " 0")
-                details.append(_("{settlement} ({eco}), {body}, {sc_dist}").format(settlement=settlement['name'], eco=settlement["economy"], body=adjBodyName, sc_dist=pretty_sc_dist))
-            else:
-                details.append(_("{settlement} ({eco}), {sc_dist}").format(settlement=settlement['name'], eco=settlement["economy"], sc_dist=pretty_sc_dist))
-            
-            if 'controllingFaction' in settlement:
-                faction = self.edrfactions.get(result["name"], settlement['controllingFaction']['name'])
-                if faction:
-                    updated = faction.lastUpdated
-                    if faction.state != None:
-                        details.append(_("{faction} ({bgs}, {gvt}, {alg})").format(faction=faction.name, bgs=faction.state, gvt=faction.government, alg=faction.allegiance))
-                    else:
-                        details.append(_("{faction} ({gvt}, {alg})").format(faction=settlement['controllingFaction']['name'], gvt=settlement['government'], alg=settlement['allegiance']))
-                else:
-                    if 'state' in settlement["controllingFaction"]:
-                        details.append(_("{faction} ({bgs}, {gvt}, {alg})").format(faction=settlement['controllingFaction']['name'], bgs=settlement['controllingFaction']['state'], gvt=settlement['government'], alg=settlement['allegiance']))
-                    else:
-                        details.append(_("{faction} ({gvt}, {alg})").format(faction=settlement['controllingFaction']['name'], gvt=settlement['government'], alg=settlement['allegiance']))
-            details.append(_("as of {date} {ci}").format(date=updated.as_local_timestamp(),ci=settlement.get('comment', '')))
-            self.status = "{system}, {dist} - {settlement}, {sc_dist}".format(system=result['name'], dist=pretty_dist, settlement=settlement['name'], sc_dist=pretty_sc_dist)
-            copy(result["name"])
-        else:
-            self.status = _("{}: nothing within [{}LY, {}LS] of {}").format(settloi_checker.name, int(radius), int(sc), reference)
-            checked = _("checked {} systems").format(settloi_checker.systems_counter) 
-            if settloi_checker.settlements_counter: 
-                checked = _("checked {} systems and {} settlements").format(settloi_checker.systems_counter, settloi_checker.settlements_counter) 
-            details.append(_("nothing found within [{}LY, {}LS], {}.").format(int(radius), int(sc), checked))
-            if settloi_checker.hint:
-                details.append(settloi_checker.hint)
-        self.__notify(_("Settlement near {}").format(reference), details, clear_before = True)
-
+        self.search_manager._EDRSearchManager__settloi_found(reference, radius, sc, settloi_checker, result)
     def __parking_found(self, reference, radius, rank, result):
-        self.__searching(False)
-        details = []
-        if result:
-            distance = result['distance']
-            pretty_dist = "0LY"
-            if distance > 0:
-                pretty_dist = _("{dist:.3g}LY").format(dist=distance) if distance < 50.0 else _("{dist}LY").format(dist=int(distance))
-                details.append(_("{system}, {dist} from {ref} [#{rank}]").format(system=result['name'], dist=pretty_dist, ref=reference, rank=rank))
-            else:
-                details.append(_("{system} [#{rank}]").format(system=result['name'], rank=rank))
-            fc = self.edrsystems.fleet_carriers(result['name'])
-            fc_count = fc.get("fcCount", None)
-            timestamp = fc.get("timestamp", None)
-            if not fc_count is None and fc_count >= 0 and timestamp:
-                remaining = max(0, result['parking']['slots'] - fc_count)
-                threshold = 1000*60*60*24
-                plus = 0
-                minus = 0
-                observations = fc.get("observations", {})
-                for o in observations:
-                    if abs(timestamp - observations[o]) > threshold:
-                        continue
-                    count = int(o[1:])
-                    if count > fc_count:
-                        minus = max(minus, count-fc_count)
-                    elif count < fc_count:
-                        plus = max(plus, fc_count-count)
-                tminus = EDTime.t_minus(timestamp, short=True)
-                plusminus = ""
-                if plus == minus and plus > 0:
-                    plusminus = "±{}".format(plus)
-                else:
-                    if plus > 0:
-                        plusminus = "+{}".format(plus)
-                        if minus > 0:
-                            plusminus += " -{}".format(minus)
-                    elif minus > 0:
-                        plusminus = "-{}".format(minus)
-
-                
-                if len(plusminus):
-                    details.append(_("Slots ≈ {} ({}) / {} (as of {})").format(remaining, plusminus, result['parking']['slots'], tminus))
-                else:
-                    details.append(_("Slots ≈ {} / {} (as of {})").format(remaining, result['parking']['slots'], tminus))
-            else:
-                details.append(_("Slots: ???/{} (no intel)").format(result['parking']['slots']))
-            stats = result['parking']['info']['all']['stats']
-            stars_stats = result['parking']['info']['stars']['stats']
-            if stats["count"] > 1 and stats["count"] > stars_stats["count"]:
-                bodyCount = _("{nb} bodies").format(nb=stats["count"]) if stats["count"] > 0 else _("{nb} body").format(nb=stats["count"])
-                median = pretty_print_number(int(stats['median']))
-                avg = pretty_print_number(int(stats['avg']))
-                max_v = pretty_print_number(int(stats['max']))
-                details.append(_("{} (LS): median={}, avg={}, max={}").format(bodyCount, median, avg, max_v))
-            
-            starCount = _("{nb} stars").format(nb=stars_stats["count"]) if stars_stats["count"] > 0 else _("{nb} stars").format(nb=stars_stats["count"])
-            stars_median = pretty_print_number(int(stars_stats['median']))
-            stars_avg = pretty_print_number(int(stars_stats['avg']))
-            stars_max = pretty_print_number(int(stars_stats['max']))
-            if stars_stats["count"] > 1:
-                details.append(_("{} (LS): median={}, avg={}, max={}").format(starCount, stars_median, stars_avg, stars_max))
-            elif stars_stats["count"] == 1:
-                details.append(_("1 star (no gravity well)"))
-
-            if reference == self.player.star_system:
-                details.append(_("If full, try the next one with !parking #{}.").format(int(rank+1)))
-            else:
-                details.append(_("If full, try the next one with !parking {} #{}.").format(reference, int(rank+1)))
-            
-            self.status = "FC Parking: {system}, {dist}".format(system=result['name'], dist=pretty_dist)
-            copy(result["name"])
-        else:
-            self.status = _("FC Parking: no #{} system within [{}LY] of {}").format(int(rank), int(radius), reference)
-            details.append(_("No #{} system found within [{}LY].").format(int(rank), int(radius)))
-            if rank > 0:
-                if reference == self.player.star_system:
-                    details.append(_("Try !parking #{}").format(int(rank-1)))
-                else:
-                    details.append(_("Try !parking {} #{}").format(reference, int(rank-1), int(rank-1)))
-        self.__notify(_("FC Parking near {}").format(reference), details, clear_before = True)
-        self.__searching(False)
-
+        self.search_manager._EDRSearchManager__parking_found(reference, radius, rank, result)
     def configure_resourcefinder(self, raw_profile):
         """
         Configure the resource finder profile.
@@ -4902,42 +4048,16 @@ class EDRClient:
         Returns:
             bool: True if successfully configured.
         """
-        canonical_raw_profile = raw_profile.lower()
-        adjusted_profile = None if canonical_raw_profile == "default" else canonical_raw_profile
-        result = self.edrresourcefinder.configure(adjusted_profile)
-        if not result:
-            self.__notify(_("Unrecognized materials profile"), [_("To see a list of profiles, send: !materials")], clear_before = True)
-            return result
-        
-        if adjusted_profile:
-            self.__notify(_("Using materials profile '{}'").format(raw_profile), [_("Revert to default profile by sending: !materials default")], clear_before = True)
-        else:
-            self.__notify(_("Using default materials profile"), [_("See the list of profiles by sending: !materials")], clear_before = True)
-        return result
-
+        return self.search_manager.configure_resourcefinder(raw_profile)
     def show_material_profiles(self):
         """
         List available material profiles.
         """
-        profiles = self.edrresourcefinder.profiles()
-        self.__notify(_("Available materials profiles"), [" ;; ".join(profiles)], clear_before=True)
-
+        self.search_manager.show_material_profiles()
     def __searching(self, active=True):
-        self.searching["active"] = active
-        self.searching["timestamp"] = EDTime.py_epoch_now()
-    
+        self.search_manager._EDRSearchManager__searching(active)
     def __is_searching_recently(self):
-        if not self.searching["active"] or not self.searching["timestamp"]:
-            return False
-        
-        threshold = 60*60*5
-        if EDTime.py_epoch_now() - self.searching["timestamp"] < threshold:
-            return self.searching["active"]
-
-        EDR_LOG.debug("Resetting searching state due to no completion in {} seconds".format(threshold))
-        self.__searching(False)
-        return False
-        
+        return self.search_manager._EDRSearchManager__is_searching_recently()
     def search(self, thing, star_system):
         """
         General search entry point (resource, genus, settlement, etc).
@@ -4946,23 +4066,7 @@ class EDRClient:
             thing (str): The search query.
             star_system (str): The reference system.
         """
-        cresource = self.edrresourcefinder.canonical_name(thing)
-        if EDRGenusCheckerFactory.recognized_genus(thing):
-            self.search_genus_near(thing, star_system)
-        elif EDRSettlementCheckerFactory.recognized_settlement(thing):
-            self.search_settlement_near(thing, star_system)
-        elif cresource:
-            self.search_resource(thing, star_system)
-        else:
-            matches = EDRGenusCheckerFactory.recognized_candidates(thing)
-            matches.extend(self.edrresourcefinder.recognized_candidates(thing))
-            matches.extend(EDRSettlementCheckerFactory.recognized_candidates(thing))
-            if matches:
-                self.__notify(_("EDR Search: suggested terms"), [" ;; ".join(matches)], clear_before=True)
-            else:
-                self.__notify(_("EDR Search"), [_("{}: not supported.").format(thing), _("To learn how to use the feature, send: !help search")], clear_before = True)
-        
-
+        self.search_manager.search(thing, star_system)
     def search_resource(self, resource, star_system):
         """
         Search for a materials/resource.
@@ -4971,68 +4075,9 @@ class EDRClient:
             resource (str): The resource name.
             star_system (str): The reference system.
         """
-        if not star_system:
-            return
-        
-        if self.__is_searching_recently():
-            self.__notify(_("EDR Search"), [_("Already searching for something, please wait...")], clear_before = True)
-            return
-
-        if not (self.edrsystems.in_bubble(star_system) or self.edrsystems.in_colonia(star_system)):
-            self.__notify(_("EDR Search"), [_("Search features only work in the bubble or Colonia.")], clear_before = True)
-            return
-
-        cresource = self.edrresourcefinder.canonical_name(resource)
-        if cresource is None:
-            self.status = _("{}: not supported.").format(resource)
-            self.__notify(_("EDR Search"), [_("{}: not supported.").format(resource), _("To learn how to use the feature, send: !help search")], clear_before = True)
-            return
-
-        try:
-            outcome = self.edrresourcefinder.resource_near(resource, star_system, self.__resource_found)
-            if outcome == True:
-                self.__searching()
-                self.status = _("{}: searching...").format(cresource)
-                self.__notify(_("EDR Search"), [_("{}: searching...").format(cresource)], clear_before = True, sfx=False)
-                if self.audio_feedback:
-                    self.SFX.searching()
-            elif outcome == False or outcome == None:
-                self.status = _("{}: failed...").format(cresource)
-                self.__notify(_("EDR Search"), [_("{}: failed...").format(cresource), _("To learn how to use the feature, send: !help search")], clear_before = True)
-            else:
-                self.status = _("{}: found").format(cresource)
-                self.__notify("{}".format(cresource), outcome, clear_before = True)
-        except ValueError:
-            self.__searching(False)
-            self.status = _("{}: failed...").format(cresource)
-            self.__notify(_("EDR Search"), [_("{}: failed...").format(cresource), _("To learn how to use the feature, send: !help search")], clear_before = True)
-
+        self.search_manager.search_resource(resource, star_system)
     def __resource_found(self, resource, reference, radius, checker, result, grade):
-        self.__searching(False)
-        details = []
-        if result:
-            distance = result['distance']
-            pretty_dist = _("{dist:.3g}").format(dist=distance) if distance < 50.0 else _("{dist}").format(dist=int(distance))
-            details.append(_("{} ({}LY, {})").format(result['name'], pretty_dist, '+' * grade))
-            edt = EDTime()
-            if 'updateTime' in result:
-                edt.from_js_epoch(result['updateTime'] * 1000)
-                details.append(_("as of {}").format(edt.as_local_timestamp()))
-            if checker.hint():
-                details.append(checker.hint())
-            self.status = "{}: {} ({}LY)".format(checker.name, result['name'], pretty_dist)
-            copy(result["name"])
-        else:
-            self.status = _("{}: nothing within [{}LY] of {}").format(checker.name, int(radius), reference)
-            checked = _("checked {} systems").format(checker.systems_counter) 
-            if checker.systems_counter: 
-                checked = _("checked {} systems").format(checker.systems_counter)
-            details.append(_("nothing found within {}LY, {}.").format(int(radius), checked))
-            if checker.hint():
-                details.append(checker.hint())
-        self.__notify(_("{} near {}").format(checker.name, reference), details, clear_before = True)
-
-
+        self.search_manager._EDRSearchManager__resource_found(resource, reference, radius, checker, result, grade)
     def journey_new_adv(self, destination=None, genre=None):
         """
         Create a new advanced journey (via Spansh).

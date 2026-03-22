@@ -7,7 +7,7 @@
 <p align=right>
   Rédigé par le <b>CMDR Lekeno</b><br>
   Traduction par le <b>CMDR Lekeno</b><br>
-  Version 2.7.7.0
+  Version 3.3.0
 </p>
 
 <h1>Sommaire</h1>
@@ -141,7 +141,7 @@ ED Recon est proposé en tant que plugin pour Elite Dangerous Market Connector, 
 
 Étapes:
 
-1. [Téléchargez la dernière version d'EDR](https://github.com/lekeno/EDR/releases/latest) (le fichier EDR.v#.#.#.zip où #.#.# est le numéro de version, ex. 1.0.0 dans la capture d'écran)
+1. [Téléchargez la dernière version d'EDR](https://github.com/lekeno/EDR/releases/latest) (le fichier EDR.v#.#.#.zip où #.#.# est le numéro de version, ex. 3.3.0 dans la capture d'écran)
 
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="https://github.com/lekeno/edr/blob/master/edr/docs/assets/EDR_1.0.0_Black.png?raw=true">
@@ -183,7 +183,7 @@ ED Recon est proposé en tant que plugin pour Elite Dangerous Market Connector, 
 
 9. Lancez Elite: Dangerous, démarrez une nouvelle partie.
 
-10. Vous devriez voir un message d'introduction (ex. EDR V1.0.0 […]) superposé sur Elite.
+10. Vous devriez voir un message d'instruction (ex. EDR V3.3.0 […]) superposé sur Elite.
     - Sous Windows 10: la superposition devrait fonctionner pour tous les modes (Plein écran, Sans bordure, Fenêtré).
     - Sous Windows 7: la superposition ne fonctionne PAS en plein écran, utilisez plutôt Borderless ou Windowed.
     - Si la superposition ne fonctionne pas, consultez la [section de dépannage](#dépannage).

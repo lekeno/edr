@@ -39,11 +39,12 @@ class TestLoad(unittest.TestCase):
         # Note: If import load ran successfully, load.EDR_CLIENT is already an instance of our mock EDRClient
         
         # Test
-        load.plugin_start()
+        load.plugin_start('some_dir')
         
         # Verify
-        mock_client.apply_config.assert_called()
-        mock_client.login.assert_called()
+        # We need to check the global EDR_CLIENT in load, not the patched one which was overwritten
+        load.EDR_CLIENT.apply_config.assert_called()
+        load.EDR_CLIENT.login.assert_called()
 
     @patch('load.EDR_CLIENT')
     def test_plugin_stop(self, mock_client):

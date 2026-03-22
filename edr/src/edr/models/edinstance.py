@@ -1,5 +1,5 @@
-from edr.utils.edtime import EDTime  # EDR_INTERNAL
-from .edvehicles import EDVehicleFactory  # EDR_INTERNAL
+from edr.utils.edtime import EDTime
+from .edvehicles import EDVehicleFactory
 
 
 class EDInstance:

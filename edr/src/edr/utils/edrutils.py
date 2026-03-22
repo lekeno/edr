@@ -1,4 +1,4 @@
-from edr.core.edri18n import _  # EDR_INTERNAL
+from edr.core.edri18n import _
 import re
 
 

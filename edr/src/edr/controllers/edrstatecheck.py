@@ -1,4 +1,4 @@
-from edr.core.edri18n import _, _c, _edr  # EDR_INTERNAL
+from edr.core.edri18n import _, _c, _edr
 import math
 
 

@@ -7,7 +7,7 @@
 <p align=right>
   Stesura a cura del <b>CMDR Lekeno</b><br>
   Traduzione a cura del <b>CMDR FrostBit</b><br>
-  Versione 2.7.7.0
+  Versione 3.3.0
 </p>
 
 <h1>Sommario</h1>
@@ -141,7 +141,7 @@ Passaggi:
 
 Passaggi:
 
-1. [Scarica l'ultima versione di EDR](https://github.com/lekeno/EDR/releases/latest) (il file EDR.v#.#.#.zip dove #.#.# è il numero di versione, es. 1.0.0 nello screenshot seguente)
+1. [Scarica l'ultima versione di EDR](https://github.com/lekeno/EDR/releases/latest) (il file EDR.v#.#.#.zip dove #.#.# è il numero di versione, es. 3.3.0 nello screenshot seguente)
 
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="https://github.com/lekeno/edr/blob/master/edr/docs/assets/EDR_1.0.0_Black.png?raw=true">
@@ -183,7 +183,7 @@ Passaggi:
 
 9. Avvia Elite, avvia una nuova sessione.
 
-10. Dovresti vedere un messaggio introduttivo (es. `EDR V0.9.5 […]`) sovrapposto a Elite.
+10. Dovresti vedere un messaggio introduttivo (es. `EDR V3.3.0 […]`) sovrapposto a Elite.
     - Su Windows 10: l'overlay dovrebbe funzionare per tutte le modalità (Fullscreen, Borderless, Windowed).
     - Su Windows 7: l'overlay NON funziona in Fullscreen, utilizza invece il Borderless o il Windowed.
     - Se l'overlay non funziona, consultare la sezione sulla [risoluzione dei problemi](#risoluzione-dei-problemi).

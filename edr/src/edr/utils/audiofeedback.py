@@ -2,8 +2,8 @@ import os
 import sys
 import configparser as cp
 
-from edr.core.edrlog import EDR_LOG  # EDR_INTERNAL
-from edr.utils.edrpath import plugin_root, edr_sound_path  # EDR_INTERNAL
+from edr.core.edrlog import EDR_LOG
+from edr.utils.edrpath import plugin_root, edr_sound_path
 
 
 class SFXConfig:

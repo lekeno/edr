@@ -44,7 +44,7 @@ class EDROpsecConfig:
         if cmdr_profile.name == player.name:
             return False
 
-        from .edrlog import EDR_LOG  # EDR_INTERNAL
+        from .edrlog import EDR_LOG
         if self._is_never_report_cmdr(cmdr_profile.name):
             EDR_LOG.debug(f"{cmdr_profile.name} is in never_report_cmdrs (OPSEC).")
             return True
