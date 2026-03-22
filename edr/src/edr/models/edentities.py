@@ -1,5 +1,6 @@
 import os
 import pickle
+from edr.utils.edrpickle import edr_load_pickle
 
 from .edsitu import EDLocation, EDAttitude, EDSpaceDimension, EDDestination  # EDR_INTERNAL
 from edr.utils.edtime import EDTime  # EDR_INTERNAL
@@ -1488,7 +1489,7 @@ class EDPlayerOne(EDPlayer):
         self.fleet = EDRFleet()
         try:
             with open(self.EDR_FLEET_CARRIER_CACHE, 'rb') as handle:
-                self.fleet_carrier = pickle.load(handle)
+                self.fleet_carrier = edr_load_pickle(handle)
         except (IOError, EOFError, pickle.PickleError):
             self.fleet_carrier = EDRFleetCarrier()
         self.mining_stats = EDRMiningStats()

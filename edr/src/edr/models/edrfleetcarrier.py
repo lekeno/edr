@@ -1,5 +1,4 @@
 import copy
-from pickle import TRUE
 import re
 
 from edr.utils.edtime import EDTime # EDR_INTERNAL

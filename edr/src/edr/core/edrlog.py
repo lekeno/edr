@@ -2,25 +2,10 @@
 import logging
 import sys
 import os
-import threading
 from config import appname  # EDR_INTERNAL
 
 if sys.version_info.major == 3:
     sys.stdout.reconfigure(encoding="utf-8")
-
-
-class EDRLogFilter(logging.Filter):
-    """
-    Filter to ensure 'osthreadid' is present in LogRecords.
-    EDMC's logging formatter expects this field.
-    """
-    def filter(self, record):
-        if not hasattr(record, 'osthreadid'):
-            if hasattr(threading, 'get_native_id'):
-                record.osthreadid = threading.get_native_id()
-            else:
-                record.osthreadid = threading.current_thread().ident
-        return True
 
 
 class EDRLog:
@@ -37,12 +22,10 @@ class EDRLog:
         """
         from .edrconfig import EDR_CONFIG
         config = EDR_CONFIG
-        self.logger = logging.getLogger(f'{appname}.{self.PLUGIN_NAME}')
+        self.logger = logging.getLogger(self.PLUGIN_NAME)
         level_name = config.logging_level()
         level = logging.getLevelName(level_name.upper())
         self.logger.setLevel(level)
-
-        self.logger.addFilter(EDRLogFilter())
 
         if not self.logger.hasHandlers():
             logger_channel = logging.StreamHandler()

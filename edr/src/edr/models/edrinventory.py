@@ -1,5 +1,6 @@
-import pickle
 import os
+import pickle
+from edr.utils.edrpickle import edr_load_pickle
 import re
 import json
 
@@ -393,49 +394,49 @@ class EDRInventory:
         self.locker_timestamp = None
         try:
             with open(self.EDR_INVENTORY_ENCODED_CACHE, 'rb') as handle:
-                self.encoded = pickle.load(handle)
+                self.encoded = edr_load_pickle(handle)
         except:
             self.encoded = {}
 
         try:
             with open(self.EDR_INVENTORY_RAW_CACHE, 'rb') as handle:
-                self.raw = pickle.load(handle)
+                self.raw = edr_load_pickle(handle)
         except:
             self.raw = {}
 
         try:
             with open(self.EDR_INVENTORY_MANUFACTURED_CACHE, 'rb') as handle:
-                self.manufactured = pickle.load(handle)
+                self.manufactured = edr_load_pickle(handle)
         except:
             self.manufactured = {}
 
         try:
             with open(self.EDR_INVENTORY_COMPONENT_CACHE, 'rb') as handle:
-                self.components = pickle.load(handle)
+                self.components = edr_load_pickle(handle)
         except:
             self.components = {}
 
         try:
             with open(self.EDR_INVENTORY_ITEM_CACHE, 'rb') as handle:
-                self.items = pickle.load(handle)
+                self.items = edr_load_pickle(handle)
         except:
             self.items = {}
 
         try:
             with open(self.EDR_INVENTORY_CONSUMABLE_CACHE, 'rb') as handle:
-                self.consumables = pickle.load(handle)
+                self.consumables = edr_load_pickle(handle)
         except:
             self.consumables = {}
 
         try:
             with open(self.EDR_INVENTORY_DATA_CACHE, 'rb') as handle:
-                self.data = pickle.load(handle)
+                self.data = edr_load_pickle(handle)
         except:
             self.data = {}
 
         try:
             with open(self.EDR_INVENTORY_BACKPACK_CACHE, 'rb') as handle:
-                self.backpack = pickle.load(handle)
+                self.backpack = edr_load_pickle(handle)
         except:
             self.backpack = {}
         self.__check()

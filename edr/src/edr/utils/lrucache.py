@@ -3,6 +3,7 @@ import collections
 import datetime
 import pickle
 from edr.core.edrlog import EDR_LOG  # EDR_INTERNAL
+from .edrpickle import edr_load_pickle
 
 
 class LRUCache:
@@ -281,7 +282,7 @@ class LRUCache:
             with open(file_path, 'rb') as handle:
                 # The pickle.load process automatically calls __setstate__ 
                 # to handle attribute migration and entry healing.
-                cache_instance = pickle.load(handle)
+                cache_instance = edr_load_pickle(handle)
 
                 # IMPORTANT: Ensure the loaded cache uses the current max_size/max_age 
                 # configuration, as config can change between runs.

@@ -1,6 +1,7 @@
 import threading
 import csv
 import pickle
+from edr.utils.edrpickle import edr_load_pickle
 import requests
 from urllib.parse import urlparse
 import json
@@ -1617,7 +1618,7 @@ class EDRNavigator:
         self.position = None
         try:
             with open(self.EDR_JOURNEY_CACHE, 'rb') as handle:
-                self.journey = pickle.load(handle)
+                self.journey = edr_load_pickle(handle)
                 if self.journey:
                     self.journey_stats = EDRRouteStatistics(self.journey)
         except Exception:

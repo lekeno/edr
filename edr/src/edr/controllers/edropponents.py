@@ -2,6 +2,7 @@ import datetime
 import time
 import os
 import pickle
+from edr.utils.edrpickle import edr_load_pickle
 
 from edr.utils import lrucache
 from collections import deque 
@@ -44,7 +45,7 @@ class EDROpponents:
         
         try:
             with open(self.EDR_OPPONENTS_RECENTS_CACHES[opponent_kind], 'rb') as handle:
-                self.recents = pickle.load(handle)
+                self.recents = edr_load_pickle(handle)
         except:
             self.recents = deque(maxlen=config.opponents_max_recents(self.kind))
 
