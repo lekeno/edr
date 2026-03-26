@@ -12,7 +12,9 @@ class TestEDRSystems(unittest.TestCase):
         self.factions = MagicMock()
         
         # Mock LRUCache to avoid disk I/O and isolate logic
-        with patch('edr.controllers.edrsystems.LRUCache.load') as mock_load:
+        with patch('edr.controllers.edrsystems.EDRCacheManager') as mock_cache_manager_class:
+            self.mock_cache_manager = mock_cache_manager_class.return_value
+            
             # Create separate mocks for different caches to track calls individually
             self.mock_systems_cache = MagicMock()
             self.mock_fcs_cache = MagicMock()
@@ -24,12 +26,20 @@ class TestEDRSystems(unittest.TestCase):
             self.mock_edsm_bodies_cache = MagicMock()
             self.mock_edsm_system_values_cache = MagicMock()
             
-            # Configure load to return appropriate mocks based on some call order or just return a generic mock that we configure later
-            # Simpler approach: let load return a new MagicMock each time, and we capture them from the instance after init
+            # Set the mock cache manager properties to return our specific mocks
+            self.mock_cache_manager.systems_cache = self.mock_systems_cache
+            self.mock_cache_manager.fcs_cache = self.mock_fcs_cache
+            self.mock_cache_manager.fc_presence_cache = self.mock_fc_presence_cache
+            self.mock_cache_manager.fc_reports_cache = self.mock_fc_reports_cache
+            self.mock_cache_manager.fc_materials_cache = self.mock_fc_materials_cache
+            self.mock_cache_manager.edsm_systems_cache = self.mock_edsm_systems_cache
+            self.mock_cache_manager.edsm_stations_cache = self.mock_edsm_stations_cache
+            self.mock_cache_manager.edsm_bodies_cache = self.mock_edsm_bodies_cache
+            self.mock_cache_manager.edsm_system_values_cache = self.mock_edsm_system_values_cache
             
             self.edr_systems = EDRSystems(self.server, self.edsm_server, self.factions)
             
-            # Replace the instance caches with our specific mocks for easier assertions
+            # Make sure edrsystems properties actually point to the same caches for testing
             self.edr_systems.systems_cache = self.mock_systems_cache
             self.edr_systems.fcs_cache = self.mock_fcs_cache
             self.edr_systems.fc_presence_cache = self.mock_fc_presence_cache
@@ -159,9 +169,7 @@ class TestEDRSystems(unittest.TestCase):
     def test_persist(self, mock_config):
         self.edr_systems.persist()
         
-        self.mock_systems_cache.save.assert_called()
-        self.mock_fcs_cache.save.assert_called()
-        self.mock_edsm_systems_cache.save.assert_called()
+        self.mock_cache_manager.persist.assert_called_once()
 
     def test_update_fc_presence_novel(self):
         fc_report = {"starSystem": "Sol", "fcCount": 5}

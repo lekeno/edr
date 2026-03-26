@@ -15,10 +15,17 @@ sys.modules['EDMCOverlay'] = MagicMock()
 sys.modules['ttkHyperlinkLabel'] = MagicMock()
 sys.modules['tkinter'] = MagicMock()
 sys.modules['tkinter.ttk'] = MagicMock()
-sys.modules['config'] = MagicMock()
+
+# Mock config properly so gettext doesn't crash during EDRClient initialization
+config_mock = MagicMock()
+config_mock.get_str.return_value = 'en'
+sys.modules['config'] = config_mock
 
 # Add the 'edr' directory to sys.path to ensure modules can be imported
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'edr')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'edr', 'src')))
+
+sys.modules['edr.controllers.edrevents'] = MagicMock()
 
 try:
     import load
@@ -56,22 +63,30 @@ class TestLoad(unittest.TestCase):
         # Verify
         mock_client.shutdown.assert_called_with(everything=True)
 
-    @patch('load.EDR_CLIENT')
-    def test_prerequisites(self, mock_client):
+    @patch('load.EDR_EVENTS')
+    def test_journal_entry_delegation(self, mock_events):
         # Setup
-        mock_client.mandatory_update = False
-        mock_client.is_logged_in.return_value = True
+        cmdr = "TestCmdr"
+        entry = {"event": "FSDJump", "StarSystem": "Sol"}
+        state = {"Friends": []}
         
-        # Test Success
-        self.assertTrue(load.prerequisites(mock_client, False, False))
+        # Test
+        load.journal_entry(cmdr, False, "Sol", None, entry, state)
         
-        # Test Failures
-        mock_client.mandatory_update = True
-        self.assertFalse(load.prerequisites(mock_client, False, False))
+        # Verify delegation
+        mock_events.journal_entry.assert_called_with(cmdr, False, "Sol", None, entry, state)
+
+    @patch('load.EDR_EVENTS')
+    def test_dashboard_entry_delegation(self, mock_events):
+        # Setup
+        cmdr = "TestCmdr"
+        entry = {"Flags": 0}
         
-        mock_client.mandatory_update = False
-        mock_client.is_logged_in.return_value = False
-        self.assertFalse(load.prerequisites(mock_client, False, False))
+        # Test
+        load.dashboard_entry(cmdr, False, entry)
+        
+        # Verify delegation
+        mock_events.dashboard_entry.assert_called_with(cmdr, False, entry)
 
 if __name__ == '__main__':
     unittest.main()
