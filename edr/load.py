@@ -4,8 +4,9 @@ Plugin for "EDR"
 import sys
 import os
 
-# Add the src directory to sys.path to allow importing the edr package
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+# Ensure the src directory is in the path
+PLUGIN_DIR = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, os.path.join(PLUGIN_DIR, 'src'))
 
 import re
 import random
