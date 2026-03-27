@@ -10,12 +10,12 @@ import json
 
 from edr.utils import edtime
 from edr.core import edrconfig
-from edr.core.edrlog import EDR_LOG  # EDR_INTERNAL
-from edr.utils.lrucache import LRUCache  # EDR_INTERNAL
-from edr.models.edentities import EDFineOrBounty  # EDR_INTERNAL
-from edr.utils.edrpath import edr_cache_path, edr_data_path  # EDR_INTERNAL
-from edr.utils.edrutils import pretty_print_number  # EDR_INTERNAL
-from edr.core.edri18n import _, _c, _edr  # EDR_INTERNAL
+from edr.core.edrlog import EDR_LOG
+from edr.utils.lrucache import LRUCache
+from edr.models.edentities import EDFineOrBounty
+from edr.utils.edrpath import edr_cache_path, edr_data_path
+from edr.utils.edrutils import pretty_print_number
+from edr.core.edri18n import _, _c, _edr
 from . import edrservicecheck
 from . import edrsysplacheck
 from . import edrsyssetlcheck

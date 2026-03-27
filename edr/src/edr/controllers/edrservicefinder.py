@@ -1,7 +1,7 @@
 import threading
 from random import shuffle
-from edr.core.edri18n import _  # EDR_INTERNAL
-from edr.core.edrlog import EDR_LOG  # EDR_INTERNAL
+from edr.core.edri18n import _
+from edr.core.edrlog import EDR_LOG
 
 
 class EDRServiceFinder(threading.Thread):

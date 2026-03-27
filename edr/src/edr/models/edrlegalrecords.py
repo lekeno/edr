@@ -1,13 +1,13 @@
 import datetime
 import os
 
-from edr.utils.lrucache import LRUCache  # EDR_INTERNAL
-from edr.core.edrconfig import EDR_CONFIG  # EDR_INTERNAL
-from edr.core.edrlog import EDR_LOG  # EDR_INTERNAL
-from edr.utils.edtime import EDTime  # EDR_INTERNAL
-from .edentities import EDFineOrBounty  # EDR_INTERNAL
-from edr.core.edri18n import _, _c  # EDR_INTERNAL
-from edr.utils.edrpath import edr_cache_path  # EDR_INTERNAL
+from edr.utils.lrucache import LRUCache
+from edr.core.edrconfig import EDR_CONFIG
+from edr.core.edrlog import EDR_LOG
+from edr.utils.edtime import EDTime
+from .edentities import EDFineOrBounty
+from edr.core.edri18n import _, _c
+from edr.utils.edrpath import edr_cache_path
 
 
 class EDRLegalRecords:

@@ -2,8 +2,8 @@ import json
 import re
 import os
 
-from edr.core.edrlog import EDR_LOG  # EDR_INTERNAL
-from edr.utils.edrpath import edr_data_path  # EDR_INTERNAL
+from edr.core.edrlog import EDR_LOG
+from edr.utils.edrpath import edr_data_path
 
 
 def load_power_data():

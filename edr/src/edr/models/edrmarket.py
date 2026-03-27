@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from .edmarketreader import EDMarketReader  # EDR_INTERNAL
+from .edmarketreader import EDMarketReader
 
 
 class EDRMarket:

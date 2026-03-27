@@ -5,7 +5,7 @@ try:
 except ImportError:
     from edr.fakeenv.config import config
 
-from edr.core.edrlog import EDR_LOG  # EDR_INTERNAL
+from edr.core.edrlog import EDR_LOG
 
 
 class EDModulesInfoReader:

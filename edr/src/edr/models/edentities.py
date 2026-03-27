@@ -2,25 +2,25 @@ import os
 import pickle
 from edr.utils.edrpickle import edr_load_pickle
 
-from .edsitu import EDLocation, EDAttitude, EDSpaceDimension, EDDestination  # EDR_INTERNAL
-from edr.utils.edtime import EDTime  # EDR_INTERNAL
-from .edvehicles import EDVehicleFactory  # EDR_INTERNAL
-from .edspacesuits import EDSuitFactory, EDOdysseyCloset  # EDR_INTERNAL
-from .edcodex import EDCodex  # EDR_INTERNAL
-from .edinstance import EDInstance  # EDR_INTERNAL
-from edr.core.edrlog import EDR_LOG  # EDR_INTERNAL
-from edr.core.edrconfig import EDR_CONFIG  # EDR_INTERNAL
-from edr.ui.edreconbox import EDReconBox  # EDR_INTERNAL
-from .edrinventory import EDRInventory, EDRRemlokHelmet  # EDR_INTERNAL
-from edr.core.edri18n import _, _c  # EDR_INTERNAL
-from .edrfleet import EDRFleet  # EDR_INTERNAL
-from .edrfleetcarrier import EDRFleetCarrier  # EDR_INTERNAL
-from edr.controllers.edrminingstats import EDRMiningStats  # EDR_INTERNAL
-from edr.controllers.edrbountyhuntingstats import EDRBountyHuntingStats  # EDR_INTERNAL
-from .edengineers import EDEngineers  # EDR_INTERNAL
-from edr.utils.edrpath import edr_cache_path  # EDR_INTERNAL
-from edr.utils.edrutils import pretty_print_number  # EDR_INTERNAL
-from edr.controllers.edrroutes import EDRNavigator  # EDR_INTERNAL
+from .edsitu import EDLocation, EDAttitude, EDSpaceDimension, EDDestination
+from edr.utils.edtime import EDTime
+from .edvehicles import EDVehicleFactory
+from .edspacesuits import EDSuitFactory, EDOdysseyCloset
+from .edcodex import EDCodex
+from .edinstance import EDInstance
+from edr.core.edrlog import EDR_LOG
+from edr.core.edrconfig import EDR_CONFIG
+from edr.ui.edreconbox import EDReconBox
+from .edrinventory import EDRInventory, EDRRemlokHelmet
+from edr.core.edri18n import _, _c
+from .edrfleet import EDRFleet
+from .edrfleetcarrier import EDRFleetCarrier
+from edr.controllers.edrminingstats import EDRMiningStats
+from edr.controllers.edrbountyhuntingstats import EDRBountyHuntingStats
+from .edengineers import EDEngineers
+from edr.utils.edrpath import edr_cache_path
+from edr.utils.edrutils import pretty_print_number
+from edr.controllers.edrroutes import EDRNavigator
 
 
 class EDRCrew:

@@ -6,7 +6,7 @@ from copy import deepcopy
 from edr.utils.edtime import EDTime
 from edr.core.edrconfig import EDR_CONFIG
 from edr.core.edrlog import EDR_LOG
-from edr.utils.edrpath import edr_data_path  # EDR_INTERNAL
+from edr.utils.edrpath import edr_data_path
 
 
 

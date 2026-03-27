@@ -1,6 +1,6 @@
 import os
 import json
-from edr.utils.edrpath import plugin_root  # EDR_INTERNAL
+from edr.utils.edrpath import plugin_root
 
 def _(message): return message
 

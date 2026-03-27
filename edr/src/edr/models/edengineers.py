@@ -1,6 +1,6 @@
 import json
 import os
-from edr.utils.edrpath import edr_data_path  # EDR_INTERNAL
+from edr.utils.edrpath import edr_data_path
 
 
 class EDEngineer:

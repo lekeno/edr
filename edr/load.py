@@ -18,16 +18,16 @@ try:
 except ImportError:
     from edr.fakeenv import plug as edmc_data
 
-from edr.models.edspacesuits import EDSpaceSuit  # EDR_INTERNAL
+from edr.models.edspacesuits import EDSpaceSuit
 from edr.controllers.edrclient import EDRClient
-from edr.models.edentities import EDPlayer  # EDR_INTERNAL
-from edr.models.edsitu import EDPlanetaryLocation  # EDR_INTERNAL
-from edr.models.edvehicles import EDVehicleFactory  # EDR_INTERNAL
+from edr.models.edentities import EDPlayer
+from edr.models.edsitu import EDPlanetaryLocation
+from edr.models.edvehicles import EDVehicleFactory
 from edr.models.edrrawdepletables import EDRRawDepletables
-from edr.utils.edtime import EDTime  # EDR_INTERNAL
-from edr.core.edrlog import EDR_LOG  # EDR_INTERNAL
-from edr.core import edrautoupdater  # EDR_INTERNAL
-from edr.core.edri18n import _, _c  # EDR_INTERNAL
+from edr.utils.edtime import EDTime
+from edr.core.edrlog import EDR_LOG
+from edr.core import edrautoupdater
+from edr.core.edri18n import _, _c
 from edr.core.edrconfig import EDR_CONFIG # EDR_INTERNAL
 
 VERSION = EDR_CONFIG.edr_version()

@@ -10,14 +10,14 @@ from hashlib import md5
 from numbers import Number
 from itertools import dropwhile
 
-from edr.core.edri18n import _  # EDR_INTERNAL
-from edr.core.edrconfig import EDRUserConfig, EDR_CONFIG  # EDR_INTERNAL
-from edr.utils.lrucache import LRUCache  # EDR_INTERNAL
-from .edrafkdetector import EDRAfkDetector  # EDR_INTERNAL
-from edr.utils.edtime import EDTime  # EDR_INTERNAL
-from edr.utils.backoff import Backoff  # EDR_INTERNAL
-from edr.core.edrlog import EDR_LOG  # EDR_INTERNAL
-from edr.utils.edrpath import edr_config_path  # EDR_INTERNAL
+from edr.core.edri18n import _
+from edr.core.edrconfig import EDRUserConfig, EDR_CONFIG
+from edr.utils.lrucache import LRUCache
+from .edrafkdetector import EDRAfkDetector
+from edr.utils.edtime import EDTime
+from edr.utils.backoff import Backoff
+from edr.core.edrlog import EDR_LOG
+from edr.utils.edrpath import edr_config_path
 
 
 class EDRDiscordSimpleMessage:

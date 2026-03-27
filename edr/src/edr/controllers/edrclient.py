@@ -31,17 +31,17 @@ from .edrsystems import EDRSystems # EDR_INTERNAL
 from .edrfactions import EDRFactions # EDR_INTERNAL
 from .edrresourcefinder import EDRResourceFinder # EDR_INTERNAL
 from edr.models.edrbodiesofinterest import EDRBodiesOfInterest # EDR_INTERNAL
-from edr.models.edrcmdrs import EDRCmdrs  # EDR_INTERNAL
-from .edropponents import EDROpponents  # EDR_INTERNAL
-from edr.utils.randomtips import RandomTips  # EDR_INTERNAL
-from edr.core.helpcontent import HelpContent  # EDR_INTERNAL
+from edr.models.edrcmdrs import EDRCmdrs
+from .edropponents import EDROpponents
+from edr.utils.randomtips import RandomTips
+from edr.core.helpcontent import HelpContent
 from edr.utils.edtime import EDTime # EDR_INTERNAL
 from edr.models.edrlegalrecords import EDRLegalRecords # EDR_INTERNAL
-from edr.models.edrxzibit import EDRXzibit  # EDR_INTERNAL
+from edr.models.edrxzibit import EDRXzibit
 from .edrdiscord import EDRDiscordIntegration
 from edr.models.edvehicles import EDVehicleFactory # EDR_INTERNAL
-from .edrsysplacheck import EDRGenusCheckerFactory  # EDR_INTERNAL
-from .edrsyssetlcheck import EDRSettlementCheckerFactory  # EDR_INTERNAL
+from .edrsysplacheck import EDRGenusCheckerFactory
+from .edrsyssetlcheck import EDRSettlementCheckerFactory
 
 from edr.core.edri18n import _, _c, _edr, set_language # EDR_INTERNAL
 from edr.utils.clippy import copy, paste
