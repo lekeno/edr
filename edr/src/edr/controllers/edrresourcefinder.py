@@ -11,7 +11,7 @@ from edr.utils.clippy import copy
 from .edrfactions import EDRFactions, EDRFaction
 from . import edrstatecheck
 from .edrstatefinder import EDRStateFinder
-from edr.core.edri18n import _ # EDR_INTERNAL
+from edr.core.edri18n import _
 from edr.models.edrrawdepletables import EDRRawDepletables
 from edr.utils.edrpath import edr_data_path
 

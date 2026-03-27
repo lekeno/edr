@@ -5,8 +5,8 @@ import pickle
 import os
 from enum import Enum
 
-from edr.core.edrlog import EDR_LOG # EDR_INTERNAL
-from edr.utils.edrpath import plugin_root # EDR_INTERNAL
+from edr.core.edrlog import EDR_LOG
+from edr.utils.edrpath import plugin_root
 
 class AuthState(Enum):
     SUCCESS = (1, "Authenticated.")

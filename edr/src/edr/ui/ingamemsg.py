@@ -7,14 +7,14 @@ from string import ascii_uppercase, digits
 import re
 
 from edr.core import igmconfig
-from edr.core.edrlog import EDR_LOG # EDR_INTERNAL
+from edr.core.edrlog import EDR_LOG
 import textwrap
-from edr.core.edri18n import _, _c # EDR_INTERNAL
+from edr.core.edri18n import _, _c
 from edr.models.edrlandables import EDRLandables
-from edr.models.edentities import EDFineOrBounty # EDR_INTERNAL
-from edr.utils.edrutils import pretty_print_number # EDR_INTERNAL
-from edr.utils.edrpath import plugin_root # EDR_INTERNAL
-from edr.utils.edtime import EDTime # EDR_INTERNAL
+from edr.models.edentities import EDFineOrBounty
+from edr.utils.edrutils import pretty_print_number
+from edr.utils.edrpath import plugin_root
+from edr.utils.edtime import EDTime
 
 if sys.platform == "win32":
     _overlay_dir = os.path.join(plugin_root(), 'EDMCOverlay')

@@ -9,8 +9,8 @@ try:
     import ttkHyperlinkLabel
 except ImportError:
     ttkHyperlinkLabel = None
-from .edrtogglingpanel import EDRTogglingPanel # EDR_INTERNAL
-from edr.core.edri18n import _ # EDR_INTERNAL
+from .edrtogglingpanel import EDRTogglingPanel
+from edr.core.edri18n import _
 
 class EDRClientUI:
     """

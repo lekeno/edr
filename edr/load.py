@@ -9,9 +9,7 @@ PLUGIN_DIR = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(PLUGIN_DIR, 'src'))
 
 import re
-import random
-import codecs
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 try:
     import edmc_data
@@ -28,7 +26,7 @@ from edr.utils.edtime import EDTime
 from edr.core.edrlog import EDR_LOG
 from edr.core import edrautoupdater
 from edr.core.edri18n import _, _c
-from edr.core.edrconfig import EDR_CONFIG # EDR_INTERNAL
+from edr.core.edrconfig import EDR_CONFIG
 
 VERSION = EDR_CONFIG.edr_version()
 

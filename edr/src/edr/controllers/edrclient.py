@@ -16,41 +16,41 @@ except ImportError:
     from edr.fakeenv.config import config
 
 
-from edr.models.edrfleetcarrier import EDRFleetCarrier # EDR_INTERNAL
-from edr.core.edrconfig import EDR_CONFIG, EDRUserConfig, __version__ # EDR_INTERNAL
-from edr.utils.lrucache import LRUCache # EDR_INTERNAL
-from edr.models.edentities import EDFineOrBounty # EDR_INTERNAL
-from edr.models.edsitu import EDPlanetaryLocation, EDLocation # EDR_INTERNAL
-from .edrserver import EDRServer, CommsJammedError # EDR_INTERNAL
-from .edsmserver import EDSMServer # EDR_INTERNAL
-from edr.utils.audiofeedback import EDRSoundEffects # EDR_INTERNAL
-from edr.core.edrlog import EDR_LOG # EDR_INTERNAL
-from edr.ui.ingamemsg import InGameMsg # EDR_INTERNAL
-from edr.ui.edrclientui import EDRClientUI # EDR_INTERNAL
-from .edrsystems import EDRSystems # EDR_INTERNAL
-from .edrfactions import EDRFactions # EDR_INTERNAL
-from .edrresourcefinder import EDRResourceFinder # EDR_INTERNAL
-from edr.models.edrbodiesofinterest import EDRBodiesOfInterest # EDR_INTERNAL
+from edr.models.edrfleetcarrier import EDRFleetCarrier
+from edr.core.edrconfig import EDR_CONFIG, EDRUserConfig, __version__
+from edr.utils.lrucache import LRUCache
+from edr.models.edentities import EDFineOrBounty
+from edr.models.edsitu import EDPlanetaryLocation, EDLocation
+from .edrserver import EDRServer, CommsJammedError
+from .edsmserver import EDSMServer
+from edr.utils.audiofeedback import EDRSoundEffects
+from edr.core.edrlog import EDR_LOG
+from edr.ui.ingamemsg import InGameMsg
+from edr.ui.edrclientui import EDRClientUI
+from .edrsystems import EDRSystems
+from .edrfactions import EDRFactions
+from .edrresourcefinder import EDRResourceFinder
+from edr.models.edrbodiesofinterest import EDRBodiesOfInterest
 from edr.models.edrcmdrs import EDRCmdrs
 from .edropponents import EDROpponents
 from edr.utils.randomtips import RandomTips
 from edr.core.helpcontent import HelpContent
-from edr.utils.edtime import EDTime # EDR_INTERNAL
-from edr.models.edrlegalrecords import EDRLegalRecords # EDR_INTERNAL
+from edr.utils.edtime import EDTime
+from edr.models.edrlegalrecords import EDRLegalRecords
 from edr.models.edrxzibit import EDRXzibit
 from .edrdiscord import EDRDiscordIntegration
-from edr.models.edvehicles import EDVehicleFactory # EDR_INTERNAL
+from edr.models.edvehicles import EDVehicleFactory
 from .edrsysplacheck import EDRGenusCheckerFactory
 from .edrsyssetlcheck import EDRSettlementCheckerFactory
 
-from edr.core.edri18n import _, _c, _edr, set_language # EDR_INTERNAL
+from edr.core.edri18n import _, _c, _edr, set_language
 from edr.utils.clippy import copy, paste
 from .edrfssinsights import EDRFSSInsights
 from .edrcommands import EDRCommands
 from .edrhotkeys import EDRHotkeyManager
 from . import edrroutes
-from edr.utils.edrutils import simplified_body_name, pretty_print_number, compare_versions, is_valid_semver # EDR_INTERNAL
-from edr.utils.edrpath import plugin_root # EDR_INTERNAL
+from edr.utils.edrutils import simplified_body_name, pretty_print_number, compare_versions, is_valid_semver
+from edr.utils.edrpath import plugin_root
 
 from edr.utils.RESTFirebase import AuthState
 

@@ -1,7 +1,7 @@
 # sys.path injection removed (handled by config_tests.py)
 
 from unittest import TestCase, main
-from edr.models.edcargo import EDCargo # EDR_INTERNAL
+from edr.models.edcargo import EDCargo
 
 class TestEDCargo(TestCase):
     def setUp(self):
