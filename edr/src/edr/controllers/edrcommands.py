@@ -1,10 +1,8 @@
-from edr.core.edrlog import EDR_LOG
 import re
-import os
-import json
 import random
 import codecs
 
+from edr.core.edrlog import EDR_LOG
 from edr.core.edri18n import _
 
 
