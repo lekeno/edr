@@ -1,16 +1,106 @@
 from edr.core.edrlog import EDR_LOG
+from edr.core.edri18n import _
+from edr.utils.edtime import EDTime
+from edr.models.edsitu import EDPlanetaryLocation
+
 from edr.core.edrconfig import EDR_CONFIG
 from edr.core.edrplayer import EDRPlayer
 from edr.core.edrvehicle import EDVehicleFactory
 from edr.core.edrrawdepletables import EDRRawDepletables
-from edr.core.edrutils import _
 
 class EDRJournalHandler:
     def __init__(self, edr_client):
         self.edr_client = edr_client
+        self.ed_player = edr_client.ed_player
         self.last_known_ship_name = ""
+        self.snapshot = None
 
-    def journal_entry(self, cmdr, is_beta, system, station, entry, state):
+        self.event_map = {
+            "SupercruiseEntry": self._on_supercruise_entry,
+            "SupercruiseExit": self._on_supercruise_exit,
+            "FSDJump": self._on_fsd_jump,
+            "StartJump": self._on_start_jump,
+            "CarrierJump": self._on_carrier_jump,
+            "ApproachSettlement": self._on_approach_settlement,
+            "ApproachBody": self._on_approach_body,
+            "LeaveBody": self._on_leave_body,
+
+            "FuelScoop": self._on_fuel_scoop,
+            "RefuelAll": self._on_refuel_all,
+            "RefuelPartial": self._on_refuel_partial,
+            "Repair": self._on_repair,
+            "RepairAll": self._on_repair_all,
+            "AfmuRepairs": self._on_afmu_repairs,
+            "RebootRepair": self._on_reboot_repair,
+            "RepairDrone": self._on_repair_drone,
+
+            "PayFines": self._on_pay_fines,
+            "PayBounties": self._on_pay_bounties,
+
+            "SendText": self._on_send_text,
+
+            "BookTaxi": self._on_book_taxi,
+            "BookDropship": self._on_book_dropship,
+            "CancelTaxi": self._on_cancel_taxi,
+            "CancelDropship": self._on_cancel_dropship,
+
+            "NavRoute": self._on_nav_route,
+            "NavRouteClear": self._on_nav_route_clear,
+        }
+    
+    def _take_snapshot(self):
+        """Captures the key state variables before an event is processed."""
+        self.snapshot = {
+            "star_system": self.ed_player.star_system,
+            "place": self.ed_player.place,
+            "body": self.ed_player.body,
+            "docked": self.ed_player.is_docked,
+            "vehicle": self.ed_player.vehicle_type()
+        }
+
+    def _should_report(self):
+        """Compares current state to snapshot to see if a blip is needed."""
+        if not self.snapshot:
+            return True
+
+        if self.ed_player.in_solo():
+            return False
+
+        if self.ed_player.has_partial_status():
+            return False
+            
+        return (
+            self.ed_player.star_system != self.snapshot["star_system"] or
+            self.ed_player.place != self.snapshot["place"] or
+            self.ed_player.body != self.snapshot["body"] or
+            self.ed_player.is_docked != self.snapshot["docked"] or
+            self.ed_player.vehicle_type() != self.snapshot["vehicle"]
+        )
+
+    def journal_entry(self, entry, state):
+        self._take_snapshot()
+        
+        event_type = entry.get("event")
+        handler = self.event_map.get(event_type)        
+        if handler:
+            handler(entry, state)
+
+        self._finalize_and_report(entry)
+
+    def _finalize_and_report(self, entry):
+        self.ed_player.location.from_entry(entry)
+        
+        if self._should_report():
+            self._update_cmdr_status(entry["event"], entry["timestamp"])
+
+    
+    @staticmethod
+    def _plain_cmdr_name(journal_cmdr_name):
+        if journal_cmdr_name.startswith("$cmdr_decorate:#name="):
+            return journal_cmdr_name[len("$cmdr_decorate:#name="):-1]
+        return journal_cmdr_name
+
+    def legacy_journal_entry(self, cmdr, is_beta, system, station, entry, state):
         self.edr_client.edrdiscord.process(entry)
 
         if entry["event"] in ["Shutdown", "ShutDown", "Music", "Resurrect", "Fileheader", "LoadGame", "Loadout", "SuitLoadout", "SwitchSuitLoadout", "LaunchSRV", "DockSRV", "Disembark", "Embark", "DropShipDeploy"]:
@@ -93,13 +183,6 @@ class EDRJournalHandler:
             if outcome["updated"]:
                 status_outcome["updated"] = True
                 status_outcome["reason"] = outcome["reason"]
-
-        if entry["event"] in ["SupercruiseExit", "FSDJump", "SupercruiseEntry", "StartJump",
-                            "ApproachSettlement", "ApproachBody", "LeaveBody", "CarrierJump"]:
-            outcome = handle_movement_events(ed_player, entry)
-            if outcome["updated"]:
-                status_outcome["updated"] = True
-                status_outcome["reason"] = outcome["reason"]
         
         # TODO take advantage of nearestdestination for the place, use that in the nav set blob too
         if entry["event"] == "Touchdown" and entry.get("PlayerControlled", None) and entry.get("NearestDestination", None):
@@ -160,10 +243,7 @@ class EDRJournalHandler:
         
         if entry["event"] in ["HullDamage", "UnderAttack", "SRVDestroyed", "FighterDestroyed", "HeatDamage", "ShieldState", "CockpitBreached", "SelfDestruct"]:
             handle_damage_events(ed_player, entry)
-
-        if entry["event"] in ["FuelScoop", "RefuelAll", "RefuelPartial", "Repair", "RepairAll", "AfmuRepairs", "RebootRepair", "RepairDrone"]:
-            handle_fixing_events(ed_player, entry)
-
+        
         if entry["event"] in ["ModuleStore", "ModuleSell", "ModuleBuy", "ModuleRetrieve", "MassModuleStore"]:
             handle_outfitting_events(ed_player, entry)
 
@@ -190,43 +270,43 @@ class EDRJournalHandler:
         if ed_player.maybe_in_a_pvp_fight():
             report_fight(ed_player)
 
-    def edr_update_cmdr_status(self, cmdr, reason_for_update, timestamp):
+    def _update_cmdr_status(self, reason_for_update, timestamp):
         """
         Send a status update for a given cmdr
         :param cmdr:
         :param reason_for_update:
         :return:
         """
-        if cmdr.in_solo():
+        if self.ed_player.in_solo():
             EDR_LOG.error("Skipping cmdr update due to Solo mode")
             return
 
-        if cmdr.has_partial_status():
+        if self.ed_player.has_partial_status():
             EDR_LOG.error("Skipping cmdr update due to partial status")
             return
 
         edt = EDTime()
         edt.from_journal_timestamp(timestamp)
         report = {
-            "cmdr" : cmdr.name,
-            "starSystem": cmdr.star_system,
-            "place": cmdr.place,
+            "cmdr" : self.ed_player.name,
+            "starSystem": self.ed_player.star_system,
+            "place": self.ed_player.place,
             "timestamp": edt.as_js_epoch(),
             "source": reason_for_update,
-            "reportedBy": cmdr.name,
-            "mode": cmdr.game_mode,
-            "dlc": cmdr.dlc_name,
-            "group": cmdr.private_group
+            "reportedBy": self.ed_player.name,
+            "mode": self.ed_player.game_mode,
+            "dlc": self.ed_player.dlc_name,
+            "group": self.ed_player.private_group
         }
 
-        if cmdr.vehicle_type():
-            report["ship"] = cmdr.vehicle_type()
-        elif cmdr.spacesuit_type():
-            report["suit"] = cmdr.spacesuit_type()
+        if self.ed_player.vehicle_type():
+            report["ship"] = self.ed_player.vehicle_type()
+        elif self.ed_player.spacesuit_type():
+            report["suit"] = self.ed_player.spacesuit_type()
 
         EDR_LOG.debug("report: {}".format(report))
 
-        if not self.edr_client.blip(cmdr.name, report):
+        if not self.edr_client.blip(self.ed_player.name, report):
             self.edr_client.status = _("blip failed.")
             return
 
@@ -660,29 +740,35 @@ class EDRJournalHandler:
             return False
         return True
 
-    def handle_fixing_events(self, ed_player, entry):
-        if entry["event"] not in ["FuelScoop", "RefuelAll", "RefuelPartial", "Repair", "RepairAll", "AfmuRepairs", "RebootRepair", "RepairDrone"]:
-            return False
+    def _on_fuel_scoop(self, entry, state):
+        self.ed_player.mothership.fuel_scooping(entry["Total"])
 
-        if entry["event"] == "AfmuRepairs":
-            ed_player.mothership.subsystem_health(entry["Module"], entry["Health"] * 100.0) # AfmuRepairs' health is normalized to 0.0 ... 1.0
-        elif entry["event"] == "FuelScoop":
-            ed_player.mothership.fuel_scooping(entry["Total"])
-        elif entry["event"] == "RefuelAll":
-            ed_player.mothership.refuel()
-        elif entry["event"] == "RefuelPartial":
-            ed_player.mothership.refuel(entry["Amount"])
-        elif entry["event"] == "RepairAll":
-            ed_player.mothership.repair()
-        elif entry["event"] == "Repair":
-            items = entry["Items"] if "Items" in entry else [entry["Item"]]
-            for item in items:
-                ed_player.mothership.repair(item)
-        elif entry["event"] == "RepairDrone":
-            if entry.get("HullRepaired", None):
-                ed_player.mothership.hull_health = entry["HullRepaired"]
-            if entry.get("CockpitRepaired", None):
-                ed_player.mothership.cockpit_health(entry["CockpitRepaired"])
+    def _on_afmu_repairs(self, entry, state):
+        self.ed_player.mothership.subsystem_health(entry["Module"], entry["Health"] * 100.0)
+
+    def _on_refuel_all(self, entry, state):
+        self.ed_player.mothership.refuel()
+
+    def _on_refuel_partial(self, entry, state):
+        self.ed_player.mothership.refuel(entry["Amount"])
+
+    def _on_repair_all(self, entry, state):
+        self.ed_player.mothership.repair()
+
+    def _on_repair(self, entry, state):
+        items = entry["Items"] if "Items" in entry else [entry["Item"]]
+        for item in items:
+            self.ed_player.mothership.repair(item)
+
+    def _on_repair_drone(self, entry, state):
+        if entry.get("HullRepaired", None):
+            self.ed_player.mothership.hull_health = entry["HullRepaired"]
+        if entry.get("CockpitRepaired", None):
+            self.ed_player.mothership.cockpit_health(entry["CockpitRepaired"])
+
+    def _on_reboot_repair(self, entry, state):
+        # TODO not sure this exists and works
+        self.ed_player.mothership.reboot_repair()
 
     def handle_outfitting_events(self, player, entry):
         if entry["event"] not in ["MassModuleStore", "ModuleStore", "ModuleSell", "ModuleBuy", "ModuleRetrieve"]:
@@ -708,25 +794,26 @@ class EDRJournalHandler:
                 player.mothership.remove_subsystem(entry["SwapOutItem"])
             player.mothership.add_subsystem(entry["RetrievedItem"])
 
-    def handle_legal_fees(self, player, entry):
-        if entry["event"] not in ["PayFines", "PayBounties"]:
-            return False
-        
+    
+    def _on_pay_fines(self, entry, state):
         #TODO this should be on a ship whose id is in the entry rather than the player
         #TODO also use the Wanted flag on FSDJump, Docked + StationFaction, Location events and the status file's legalstate
-        #TODO also use the "Hot" flag on Loadout event
-        if entry["event"] == "PayFines":
-            if entry.get("AllFines", None):
-                player.paid_all_fines()
-            else:
-                player.paid_fine(entry)
-        elif entry["event"] == "PayBounties":
-            if entry.get("AllFines", None):
-                player.paid_all_bounties()
-            else:
-                player.paid_bounty(entry)
-                true_amount = entry["Amount"] * (1.0 - entry.get("BrokerPercentage", 0)/100.0)
-                player.bounty = max(0, player.bounty - true_amount)
+        #TODO also use the "Hot" flag on Loadout event        
+        if entry.get("AllFines", None):
+            self.ed_player.paid_all_fines()
+        else:
+            self.ed_player.paid_fine(entry)
+
+    def _on_pay_bounties(self, entry, state):
+        #TODO this should be on a ship whose id is in the entry rather than the player
+        #TODO also use the Wanted flag on FSDJump, Docked + StationFaction, Location events and the status file's legalstate
+        #TODO also use the "Hot" flag on Loadout event        
+        if entry.get("AllFines", None) or entry.get("AllBounties", None):
+            self.ed_player.paid_all_bounties()
+        else:
+            self.ed_player.paid_bounty(entry)
+            true_amount = entry["Amount"] * (1.0 - entry.get("BrokerPercentage", 0)/100.0)
+            self.ed_player.bounty = max(0, self.ed_player.bounty - true_amount)
 
     def handle_scan_events(player, entry):
         if not (entry["event"] == "ShipTargeted"):
@@ -887,30 +974,27 @@ class EDRJournalHandler:
             cmdr.inventory.traded(entry)
             self.edr_client.eval_locker(passive=True)
 
-    def handle_commands(self, cmdr, entry):
-        if not entry["event"] == "SendText":
-            return
+    def _on_send_text(self, entry, state):
+        self.edr_client.process_sent_message(entry)
 
-        return self.edr_client.process_sent_message(entry)
-        
-    def handle_shuttle_events(self, entry):
-        if entry["event"]  not in ["BookTaxi", "BookDropship", "CancelTaxi", "CancelDropship"]:
-            return
-        ed_player = self.edr_client.player
-        if entry["event"] in ["BookTaxi", "BookDropship"]:
-            ed_player.booked_shuttle(entry)
-        elif entry["event"] in ["CancelTaxi", "CancelDropship"]:
-            ed_player.cancelled_shuttle(entry)
+    def _on_book_taxi(self, entry, state):
+        self.ed_player.booked_shuttle(entry)
 
-    def handle_nav_route_events(self, entry, state):
-        if entry["event"] not in ["NavRoute", "NavRouteClear"]:
-            return
-        
-        if entry["event"] == "NavRouteClear":
-            self.edr_client.nav_route_clear()
-        elif entry["event"] == "NavRoute" and state.get("NavRoute", None):
+    def _on_book_dropship(self, entry, state):
+        self.ed_player.booked_shuttle(entry)
+
+    def _on_cancel_taxi(self, entry, state):
+        self.ed_player.cancelled_shuttle(entry)
+
+    def _on_cancel_dropship(self, entry, state):
+        self.ed_player.cancelled_shuttle(entry)
+    
+    def _on_nav_route(self, entry, state):
+        if state.get("NavRoute", None):
             self.edr_client.nav_route_set(state["NavRoute"])
 
+    def _on_nav_route_clear(self, entry, state):
+        self.edr_client.nav_route_clear()
 
     def handle_fleet_events(self, entry):
         if entry["event"] not in ["SetUserShipName", "SellShipOnRebuy", "ShipyardBuy", "ShipyardNew", "ShipyardSell", "ShipyardTransfer", "ShipyardSwap"]:
@@ -947,12 +1031,6 @@ class EDRJournalHandler:
     def handle_mission_events(self, ed_player, entry):
         if entry["event"] == "MissionAccepted":
             self.edr_client.eval_mission(entry)
-
-    
-    def plain_cmdr_name(self, journal_cmdr_name):
-        if journal_cmdr_name.startswith("$cmdr_decorate:#name="):
-                return journal_cmdr_name[len("$cmdr_decorate:#name="):-1]
-        return journal_cmdr_name
 
     def handle_wing_events(self, ed_player, entry):
         if entry["event"] in ["WingAdd"]:
@@ -1068,8 +1146,6 @@ class EDRJournalHandler:
             ed_player.fleet_carrier.cancel_decommission(entry)
         elif entry["event"] == "CarrierDockingPermission":
             ed_player.fleet_carrier.update_docking_permissions(entry)
-        elif entry["event"] == "CarrierJump":
-            self.edr_client.fc_jumped(entry)
         elif entry["event"] == "CarrierTradeOrder":
             self.edr_client.carrier_trade(entry)
         elif entry["event"] == "CarrierCrewServices":
@@ -1079,84 +1155,87 @@ class EDRJournalHandler:
             if not self.edr_client.eval_bar():
                 self.edr_client.eval_bar(stock=False)
             
-
-    def handle_movement_events(self, ed_player, entry):
-        outcome = {"updated": False, "reason": None}
-        place = "Unknown"
-
-        if entry["event"] in ["SupercruiseExit"]:
-            body = entry["Body"]
-            outcome["updated"] |= ed_player.update_body_if_obsolete(body)
-            outcome["updated"] |= ed_player.update_place_if_obsolete(body)
-            outcome["reason"] = "Supercruise exit"
-            ed_player.to_normal_space()
-            if "SystemAddress" in entry:
-                ed_player.star_system_address = entry["SystemAddress"]
-            self.edr_client.register_fss_signals(entry.get("SystemAddress", None), entry.get("StarSystem", None))
-            # TODO probably should be cleared to avoid keeping old FC around?
-            EDR_LOG.info("Body changed: {}".format(body))
-        elif entry["event"] in ["FSDJump", "CarrierJump"]:
-            place = "Supercruise" if entry["event"] == "FSDJump" else entry.get("StationName", "Unknown")
-            outcome["updated"] |= ed_player.update_place_if_obsolete(place)
-            ed_player.wanted = entry.get("Wanted", False)
-            ed_player.mothership.fuel_level = entry.get("FuelLevel", ed_player.mothership.fuel_level)
-            ed_player.location.population = entry.get('Population', 0)
-            ed_player.location.allegiance = entry.get('SystemAllegiance', 0)
-            outcome["reason"] = entry["event"]
-            if entry["event"] == "FSDJump":
-                ed_player.to_super_space()
-            else:
-                ed_player.to_normal_space()
-            EDR_LOG.info("Place changed: {}".format(place))
-            self.edr_client.docking_guidance(entry)
-            self.edr_client.noteworthy_about_system(entry)
-        elif entry["event"] in ["SupercruiseEntry"]:
-            if "SystemAddress" in entry:
-                ed_player.star_system_address = entry["SystemAddress"]
-            place = "Supercruise"
-            outcome["updated"] |= ed_player.update_place_if_obsolete(place)
-            outcome["reason"] = "Jump events"
-            ed_player.to_super_space()
-            self.edr_client.docking_guidance(entry)
-            EDR_LOG.info("Place changed: {}".format(place))
-        elif entry["event"] == "StartJump" and entry["JumpType"] == "Hyperspace":
-            place = "Hyperspace"
-            outcome["updated"] |= ed_player.update_place_if_obsolete(place)
-            outcome["reason"] = "Hyperspace"
-            self.edr_client.hyperspace_jump(entry.get("StarSystem", None))
-            EDR_LOG.info("Place changed: {}".format(place))
-            self.edr_client.docking_guidance(entry)
-            self.edr_client.check_system(entry["StarSystem"], may_create=True)
-            self.edr_client.register_fss_signals()
-            self.edr_client.edrfssinsights.reset(entry["timestamp"])
-        elif entry["event"] in ["ApproachSettlement"]:
-            place = entry["Name"]
-            body = entry.get("BodyName", None)
-            outcome["updated"] |= ed_player.update_place_if_obsolete(place)
-            outcome["updated"] |= ed_player.update_body_if_obsolete(body)        
-            EDR_LOG.info("Place/Body changed: {}, {}".format(place, body))
-            outcome["reason"] = "Approach event"
-            self.edr_client.noteworthy_about_settlement(entry)
-        elif entry["event"] in ["ApproachBody"]:
-            body = entry["Body"]
-            outcome["updated"] |= ed_player.update_body_if_obsolete(body)
-            outcome["updated"] |= ed_player.update_place_if_obsolete(body)
-            EDR_LOG.info("Body & place changed: {}".format(body))
-            outcome["reason"] = "Approach event"
-            if self.edr_client.noteworthy_about_body(entry["StarSystem"], entry["Body"]) and ed_player.planetary_destination is None:
-                poi = self.edr_client.closest_poi_on_body(entry["StarSystem"], entry["Body"], ed_player.attitude)
-                ed_player.planetary_destination = EDPlanetaryLocation(poi)
+    def _on_fsd_jump(self, entry, state):
+        self.ed_player.to_super_space()
+        self.ed_player.wanted = entry.get("Wanted", False)
         
-        ed_player.location.from_entry(entry)
+        place = "Supercruise" if entry["event"] == "FSDJump" else entry.get("StationName", "Unknown")
+        self.ed_player.update_place_if_obsolete(place)
+        self.ed_player.mothership.fuel_level = entry.get("FuelLevel", self.ed_player.mothership.fuel_level)
+        self.ed_player.location.population = entry.get('Population', 0)
+        self.ed_player.location.allegiance = entry.get('SystemAllegiance', 0)
         
-        if entry["event"] in ["LeaveBody"]:
-            body_name = entry.get("Body", None)
-            star_system = entry.get("StarSystem", None)
-            outcome["updated"] |= self.edr_client.leave_body(star_system, body_name)
-            EDR_LOG.info("Place changed: Supercruise, body cleared")
-            outcome["reason"] = "Leave event"
+        # UI Guidance
+        self.edr_client.docking_guidance(entry)
+        self.edr_client.noteworthy_about_system(entry)
 
-        return outcome
+    def _on_carrier_jump(self, entry, state):
+        self.edr_client.fc_jumped(entry)
+
+        place = entry.get("StationName", "Unknown")
+        self.ed_player.update_place_if_obsolete(place)
+        self.ed_player.wanted = entry.get("Wanted", False)
+        self.ed_player.mothership.fuel_level = entry.get("FuelLevel", self.ed_player.mothership.fuel_level)
+        self.ed_player.location.population = entry.get('Population', 0)
+        self.ed_player.location.allegiance = entry.get('SystemAllegiance', 0)
+        self.ed_player.to_normal_space()
+        self.edr_client.docking_guidance(entry)
+        self.edr_client.noteworthy_about_system(entry)
+
+    def _on_supercruise_entry(self, entry, state):
+        self.ed_player.to_super_space()
+
+        if "SystemAddress" in entry:
+            self.ed_player.star_system_address = entry["SystemAddress"]
+        
+        place = "Supercruise"
+        self.ed_player.update_place_if_obsolete(place)
+        self.edr_client.docking_guidance(entry)
+
+    def _on_supercruise_exit(self, entry, state):
+        self.ed_player.to_normal_space()
+
+        body = entry.get("Body", "Unknown")
+        self.ed_player.update_body_if_obsolete(body)
+        self.ed_player.update_place_if_obsolete(body)
+        
+        if "SystemAddress" in entry:
+            self.ed_player.star_system_address = entry["SystemAddress"]
+        self.edr_client.register_fss_signals(entry.get("SystemAddress", None), entry.get("StarSystem", None))
+
+    def _on_start_jump(self, entry, state):
+        if  entry["JumpType"] != "Hyperspace":
+            return
+
+        self.ed_player.update_place_if_obsolete("Hyperspace")
+        self.edr_client.hyperspace_jump(entry.get("StarSystem", None))
+        self.edr_client.docking_guidance(entry)
+        self.edr_client.check_system(entry["StarSystem"], may_create=True)
+        self.edr_client.register_fss_signals()
+        self.edr_client.edrfssinsights.reset(entry["timestamp"])
+
+    def _on_approach_settlement(self, entry, state):
+        place = entry["Name"]
+        body = entry.get("BodyName", None)
+        self.ed_player.update_place_if_obsolete(place)
+        self.ed_player.update_body_if_obsolete(body)        
+        
+        self.edr_client.noteworthy_about_settlement(entry)
+
+    def _on_approach_body(self, entry, state):
+        body = entry.get("Body", "Unknown")
+        self.ed_player.update_body_if_obsolete(body)
+        self.ed_player.update_place_if_obsolete(body)
+        
+        noteworthy = self.edr_client.noteworthy_about_body(entry["StarSystem"], body)
+        if noteworthy and self.ed_player.planetary_destination is None:
+            poi = self.edr_client.closest_poi_on_body(entry["StarSystem"], body, self.ed_player.attitude)
+            self.ed_player.planetary_destination = EDPlanetaryLocation(poi)
+
+    def _on_leave_body(self, entry, state):
+        body_name = entry.get("Body", None)
+        star_system = entry.get("StarSystem", None)
+        self.edr_client.leave_body(star_system, body_name)
 
     def handle_change_events(self, ed_player, entry):
         outcome = {"updated": False, "reason": None}
