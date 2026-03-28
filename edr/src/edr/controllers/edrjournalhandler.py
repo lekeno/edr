@@ -232,7 +232,7 @@ class EDRJournalHandler:
         if isinstance(handlers, list):
             for handler in handlers:
                 handler(entry, state)
-        else:
+        elif isinstance(handlers, function):
             handlers(entry, state)
 
         self._finalize_and_report(entry)
