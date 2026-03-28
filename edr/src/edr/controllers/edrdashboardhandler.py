@@ -1,3 +1,8 @@
+try:
+    import edmc_data
+except ImportError:
+    from edr.fakeenv import plug as edmc_data
+
 from edr.core.edrlog import EDR_LOG
 from edr.core.edri18n import _
 

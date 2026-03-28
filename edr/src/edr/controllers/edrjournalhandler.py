@@ -1,17 +1,18 @@
+import re
+
 from edr.core.edrlog import EDR_LOG
 from edr.core.edri18n import _
 from edr.utils.edtime import EDTime
 from edr.models.edsitu import EDPlanetaryLocation
-
 from edr.core.edrconfig import EDR_CONFIG
-from edr.core.edrplayer import EDRPlayer
-from edr.core.edrvehicle import EDVehicleFactory
-from edr.core.edrrawdepletables import EDRRawDepletables
+from edr.models.edentities import EDPlayer
+from edr.models.edvehicles import EDVehicleFactory
+from edr.models.edrrawdepletables import EDRRawDepletables
 
 class EDRJournalHandler:
     def __init__(self, edr_client):
         self.edr_client = edr_client
-        self.ed_player = edr_client.ed_player
+        self.ed_player = edr_client.player
         self.last_known_ship_name = ""
         self.snapshot = None
         self.first_run = True
@@ -58,15 +59,14 @@ class EDRJournalHandler:
 
             "CarrierBuy": self._on_carrier_buy,
             "CarrierStats": self._on_carrier_stats,
-            "CarrierSell": self._on_carrier_sell,
-            "CarrierTrade": self._on_carrier_trade,
-            "CarrierJumpRequested": self._on_carrier_jump_requested,
+            "CarrierJumpRequest": self._on_carrier_jump_request,
             "CarrierJumpCancelled": self._on_carrier_jump_cancelled,
-            "CarrierJump": self._on_carrier_jump,
             "CarrierDecommission": self._on_carrier_decommission,
             "CarrierCancelDecommission": self._on_carrier_cancel_decommission,
             "CarrierDockingPermission": self._on_carrier_docking_permission,
+            "CarrierJump": self._on_carrier_jump,
             "CarrierTradeOrder": self._on_carrier_trade_order,
+            "CarrierCrewServices": self._on_carrier_crew_services,
             "FCMaterials": self._on_fc_materials,
             
             "Music": self._on_music,
@@ -161,7 +161,7 @@ class EDRJournalHandler:
             "ScanOrganic": self._on_scan,
             "CodexEntry": self._on_codex_entry,
 
-            "Materials": self._on_materials,
+            "Materials": self._baseline_materials_events,
             "MaterialCollected": self._on_material_collected,
             "MaterialDiscarded": self._on_material_discarded,
             "EngineerContribution": self._on_engineer_contribution,
@@ -171,7 +171,7 @@ class EDRJournalHandler:
             "ScientificResearch": self._on_scientific_research,
             "TechnologyBroker": self._on_technology_broker,
             "Synthesis": self._on_synthesis,
-            "Backpack": self._on_backpack,
+            "Backpack": self._baseline_materials_events,
             "BackpackChange": self._on_backpack_change,
             "BuyMicroResources": self._on_buy_micro_resources,
             "SellMicroResources": self._on_sell_micro_resources,
@@ -242,9 +242,17 @@ class EDRJournalHandler:
         
         if self._should_report():
             self._update_cmdr_status(entry["event"], entry["timestamp"])
+            if self.ed_player.in_a_crew():
+                for member in self.ed_player.crew.members:
+                    if member == self.ed_player.name:
+                        continue
+                    source = "Multicrew (captain)" if self.ed_player.is_captain(member) else "Multicrew (crew)"
+                    crew_player = EDPlayer(member)
+                    crew_player.mothership = self.ed_player.mothership
+                    self.edr_submit_contact(crew_player, entry["timestamp"], source, self.ed_player)
 
         if self.ed_player.maybe_in_a_pvp_fight():
-            self.report_fight(self.ed_player)
+            self.report_fight()
 
     
     @staticmethod
@@ -331,8 +339,8 @@ class EDRJournalHandler:
 
     def _on_ship_targeted(self, entry, state):
         if "ScanStage" in entry and entry["ScanStage"] > 0:
-            handle_scan_events(ed_player, entry)
-            handle_bounty_hunting_events(ed_player, entry)
+            self.handle_scan_events(entry)
+            self._handle_bounty_hunting_events(entry)
         elif ("ScanStage" in entry and entry["ScanStage"] == 0) or ("TargetLocked" in entry and not entry["TargetLocked"]):
             self.ed_player.untarget()
             self.edr_client.target_guidance(entry, turn_off=True)
@@ -342,24 +350,24 @@ class EDRJournalHandler:
         status_outcome = {"updated": False, "reason": "Unspecified"}
 
         vehicle = None
-        if ed_player.is_crew_member():
+        if self.ed_player.is_crew_member():
             vehicle = EDVehicleFactory.unknown_crew_vehicle()
         elif state.get("ShipType", None):
             vehicle = EDVehicleFactory.from_edmc_state(state)
 
-        status_outcome["updated"] = ed_player.update_vehicle_if_obsolete(vehicle, piloted=False)
+        status_outcome["updated"] = self.ed_player.update_vehicle_if_obsolete(vehicle, piloted=False)
         status_outcome["updated"] |= self.edr_client.update_star_system_if_obsolete(system)
         
         if status_outcome["updated"]:
-            edr_update_cmdr_status(ed_player, status_outcome["reason"], entry["timestamp"])
-            if ed_player.in_a_crew():
-                for member in ed_player.crew.members:
-                    if member == ed_player.name:
+            self._update_cmdr_status(status_outcome["reason"], entry["timestamp"])
+            if self.ed_player.in_a_crew():
+                for member in self.ed_player.crew.members:
+                    if member == self.ed_player.name:
                         continue
-                    source = "Multicrew (captain)" if ed_player.is_captain(member) else "Multicrew (crew)"
+                    source = "Multicrew (captain)" if self.ed_player.is_captain(member) else "Multicrew (crew)"
                     crew_player = EDPlayer(member)
                     crew_player.mothership = vehicle
-                    edr_submit_contact(crew_player, entry["timestamp"], source, ed_player)
+                    self.edr_submit_contact(crew_player, entry["timestamp"], source, self.ed_player)
         
         
 
@@ -516,13 +524,13 @@ class EDRJournalHandler:
             self.edr_client.status = _("failed to report crime.")
             self.edr_client.evict_system(criminal_cmdr.star_system)
 
-    def report_fight(self, player):
-        if not player.in_open():
+    def report_fight(self):
+        if not self.ed_player.in_open():
             EDR_LOG.info("Skipping reporting fight due to unconfirmed Open mode")
             self.edr_client.status = _("Fight reporting disabled in solo/private modes.")
             return
 
-        report = player.json(with_target=True)
+        report = self.ed_player.json(with_target=True)
         self.edr_client.fight(report)
 
     def edr_submit_contact(self, contact, timestamp, source, witness, system_wide=False):
@@ -565,7 +573,7 @@ class EDRJournalHandler:
         if not self.edr_client.blip(contact.name, report, system_wide):
             self.edr_client.status = _("failed to report contact.")
             
-        edr_submit_traffic(contact, timestamp, source, witness, system_wide)
+        self.edr_submit_traffic(contact, timestamp, source, witness, system_wide)
 
     def edr_submit_scan(self, scan, timestamp, source, witness):
         edt = EDTime()
@@ -628,9 +636,8 @@ class EDRJournalHandler:
         if not self.edr_client.traffic(witness.star_system, report, system_wide):
             self.edr_client.status = _("failed to report traffic.")
             self.edr_client.evict_system(witness.star_system)
-
-    def edr_submit_multicrew_session(self, player, report):
-        if not player.in_open() and not player.destroyed:
+    def edr_submit_multicrew_session(self, report):
+        if not self.ed_player.in_open() and not self.ed_player.destroyed:
             EDR_LOG.info("Skipping submit multicrew report: not in Open and not destroyed")
             self.edr_client.status = _("Multicrew reporting disabled in private mode.")
             return
@@ -726,19 +733,19 @@ class EDRJournalHandler:
             from_cmdr = entry["From"]
             if entry["From"].startswith("$cmdr_decorate:#name="):
                 from_cmdr = entry["From"][len("$cmdr_decorate:#name="):-1]
-            contact = player.instanced_player(from_cmdr)
-            edr_submit_contact(contact, entry["timestamp"], "Received text (local)", player)
+            contact = self.ed_player.instanced_player(from_cmdr)
+            self.edr_submit_contact(contact, entry["timestamp"], "Received text (local)", self.ed_player)
         elif channel == "player":
             from_cmdr = entry["From"]
             if entry["From"].startswith("$cmdr_decorate:#name="):
                 from_cmdr = entry["From"][len("$cmdr_decorate:#name="):-1]
-            if self.ed_player.is_friend(from_cmdr) or player.is_wingmate(from_cmdr):
+            if self.ed_player.is_friend(from_cmdr) or self.ed_player.is_wingmate(from_cmdr):
                 EDR_LOG.debug(f"Text from {from_cmdr} friend / wing. Can't infer location")
             else:
                 if self.ed_player.from_genesis:
                     EDR_LOG.debug(f"Text from {from_cmdr} (not friend/wing) == same location")
                     contact = self.ed_player.instanced_player(from_cmdr)
-                    edr_submit_contact(contact, entry["timestamp"],
+                    self.edr_submit_contact(contact, entry["timestamp"],
                                     "Received text (non wing/friend player)", self.ed_player)
                 else:
                     EDR_LOG.debug(f"Received text from {from_cmdr}. Player not created from game start => can't infer location")
@@ -750,7 +757,7 @@ class EDRJournalHandler:
             contact = EDPlayer(from_cmdr)
             contact.star_system = self.ed_player.star_system
             # TODO add blip to systemwideinstance ?
-            edr_submit_contact(contact, entry["timestamp"],
+            self.edr_submit_contact(contact, entry["timestamp"],
                                 "Received text (starsystem channel)", self.ed_player, system_wide = True)
         elif channel == "npc" and entry["From"] == "$CHAT_System;":
             emote_regex = r"^\$HumanoidEmote_TargetMessage:#player=\$cmdr_decorate:#name=(.+);:#targetedAction=\$HumanoidEmote_([a-zA-Z]+)_Action_Targeted;:#target=\$cmdr_decorate:#name=(.+);;$"
@@ -760,7 +767,7 @@ class EDRJournalHandler:
                 receiving_party = m.group(3)
                 EDR_LOG.info("Emote to {} (not friend/wing) == same location".format(receiving_party))
                 contact = self.ed_player.instanced_player(receiving_party)
-                edr_submit_contact(contact, entry["timestamp"], "Emote sent (non wing/friend player)", self.ed_player)
+                self.edr_submit_contact(contact, entry["timestamp"], "Emote sent (non wing/friend player)", self.ed_player)
                 if action in ["wave", "point"] and self.edr_client.gesture_triggers:
                     EDR_LOG.info("Implicit who emote-command for {}".format(receiving_party))
                     self.edr_client.who(receiving_party, autocreate=True)
@@ -925,7 +932,7 @@ class EDRJournalHandler:
             piloted = True
             npc = True
         else:
-            player.untarget()
+            self.ed_player.untarget()
             self.edr_client.target_guidance(entry, turn_off=True)
             self.edr_client.bounty_hunting_guidance(turn_off=True)
             return False
@@ -1096,7 +1103,7 @@ class EDRJournalHandler:
                 if self.ed_player.from_genesis:
                     EDR_LOG.info(f"Sent text to {to_cmdr} (not friend/wing) == same location")
                     contact = self.ed_player.instanced_player(to_cmdr)
-                    edr_submit_contact(contact, entry["timestamp"], "Sent text (non wing/friend player)",
+                    self.edr_submit_contact(contact, entry["timestamp"], "Sent text (non wing/friend player)",
                                     self.ed_player)
                 else:
                     EDR_LOG.warning(f"Sent text to {to_cmdr}. Player not created from game start => can't infer location")
@@ -1164,7 +1171,7 @@ class EDRJournalHandler:
         self.edr_client.eval_mission(entry)
 
     def _on_wing_add(self, entry, state):
-        wingmate = plain_cmdr_name(entry["Name"])
+        wingmate = self._plain_cmdr_name(entry["Name"])
         self.ed_player.add_to_wing(wingmate)
         self.edr_client.status = _("added to wing: ").format(wingmate)
         EDR_LOG.info("Addition to wing: {}".format(self.ed_player.wing))
@@ -1212,7 +1219,7 @@ class EDRJournalHandler:
             self.edr_client.who(crew, autocreate=True)
 
     def _on_crew_member_quits(self, entry, state):
-        crew = plain_cmdr_name(entry["Crew"])
+        crew = self._plain_cmdr_name(entry["Crew"])
         duration = self.ed_player.crew_time_elapsed(crew)
         kicked = entry["event"] == "KickCrewMember"
         crimes = False if not "OnCrimes" in entry else entry["OnCrimes"]
@@ -1230,10 +1237,10 @@ class EDRJournalHandler:
             "crimes": crimes,
             "destroyed":  self.ed_player.destroyed if self.ed_player.is_captain() else False
         }
-        self.edr_submit_multicrew_session(self.ed_player, report)
+        self.edr_submit_multicrew_session(report)
 
     def _on_kick_crew_member(self, entry, state):
-        crew = plain_cmdr_name(entry["Crew"])
+        crew = self._plain_cmdr_name(entry["Crew"])
         duration = self.ed_player.crew_time_elapsed(crew)
         kicked = entry["event"] == "KickCrewMember"
         crimes = False if not "OnCrimes" in entry else entry["OnCrimes"]
@@ -1251,17 +1258,17 @@ class EDRJournalHandler:
             "crimes": crimes,
             "destroyed":  self.ed_player.destroyed if self.ed_player.is_captain() else False
         }
-        self.edr_submit_multicrew_session(self.ed_player, report)
+        self.edr_submit_multicrew_session(report)
 
     def _on_join_a_crew(self, entry, state):
-        captain = plain_cmdr_name(entry["Captain"])
+        captain = self._plain_cmdr_name(entry["Captain"])
         self.ed_player.join_crew(captain)
         self.edr_client.status = _("joined a crew.")
         EDR_LOG.info("Joined captain {}'s crew".format(captain))
         self.edr_client.who(captain, autocreate=True)
 
     def _on_quit_a_crew(self, entry, state):
-        if not ed_player.crew:
+        if not self.ed_player.crew:
             return
 
         for member in self.ed_player.crew.members:
@@ -1277,13 +1284,13 @@ class EDRJournalHandler:
                 "crimes": False,
                 "destroyed": self.ed_player.destroyed if self.ed_player.is_captain() else False
             }    
-            self.edr_submit_multicrew_session(self.ed_player, report)
+            self.edr_submit_multicrew_session(report)
         self.ed_player.leave_crew()
         self.edr_client.status = _("left crew.")
         EDR_LOG.info("Left the crew.")
 
     def _on_end_crew_session(self, entry, state):
-        if  not self.ed_player.crew:
+        if not self.ed_player.crew:
             return
 
         crimes = False if not "OnCrimes" in entry else entry["OnCrimes"]
@@ -1300,7 +1307,7 @@ class EDRJournalHandler:
                 "crimes": crimes,
                 "destroyed": self.ed_player.destroyed if self.ed_player.is_captain() else False
             }    
-            self.edr_submit_multicrew_session(self.ed_player, report)
+            self.edr_submit_multicrew_session(report)
         self.ed_player.disband_crew()
         self.edr_client.status = _("crew disbanded.")
         EDR_LOG.info("Crew disbanded.")
@@ -1311,7 +1318,7 @@ class EDRJournalHandler:
     def _on_carrier_stats(self, entry, state):
         self.ed_player.fleet_carrier.update_from_stats(entry)
 
-    def _on_carrier_jump_requested(self, entry, state):
+    def _on_carrier_jump_request(self, entry, state):
         self.edr_client.fc_jump_requested(entry)
 
     def _on_carrier_jump_cancelled(self, entry, state):
@@ -1336,7 +1343,13 @@ class EDRJournalHandler:
         self.edr_client.fc_materials(entry)
         if not self.edr_client.eval_bar():
             self.edr_client.eval_bar(stock=False)
-            
+
+    def _on_material_discarded(self, entry, state):
+        self.ed_player.inventory.discarded(entry)
+
+    def _on_backpack(self, entry, state):
+        self._baseline_materials_events(entry, state)
+
     def _on_fsd_jump(self, entry, state):
         self.ed_player.to_super_space()
         self.ed_player.wanted = entry.get("Wanted", False)
@@ -1350,12 +1363,6 @@ class EDRJournalHandler:
         # UI Guidance
         self.edr_client.docking_guidance(entry)
         self.edr_client.noteworthy_about_system(entry)
-
-    def _on_carrier_jump_requested(self, entry, state):
-        self.edr_client.fc_jump_requested(entry)
-
-    def _on_carrier_jump_cancelled(self, entry, state):
-        self.edr_client.fc_jump_cancelled(entry)
 
     def _on_carrier_jump(self, entry, state):
         self.edr_client.fc_jumped(entry)
@@ -1425,19 +1432,6 @@ class EDRJournalHandler:
         star_system = entry.get("StarSystem", None)
         self.edr_client.leave_body(star_system, body_name)
 
-    def handle_change_events(self, ed_player, entry):
-        if entry["event"] in ["Touchdown", "Liftoff"]:
-            body = entry.get("Body", "Unknown")
-            outcome["updated"] |= ed_player.update_body_if_obsolete(body)
-            ed_player.to_normal_space()
-            if entry.get("PlayerControlled", False):
-                ed_player.in_mothership()
-                
-            outcome["reason"] = "Touchdown/Liftoff events"
-            EDR_LOG.info("Body changed: {}".format(body))
-
-        ed_player.location.from_entry(entry)
-        return outcome
 
     def _fc_position_related_events(self, entry):
         station_type = entry.get("StationType", None)
@@ -1636,7 +1630,7 @@ class EDRJournalHandler:
         EDR_LOG.debug(f"Loadout event {entry}")
         # Sometimes it's not a ship but the spacesuit, maybe the srv too :/
         if self.ed_player.mothership.id == entry.get("ShipID", -1):
-            EDR_LOG.debug(f"updating current vehicle {ed_player.mothership.type}")
+            EDR_LOG.debug(f"updating current vehicle {self.ed_player.mothership.type}")
             self.ed_player.mothership.update_from_loadout(entry)
             self.ed_player.mothership.update_cargo()
             if self.ed_player.mothership.could_use_limpets() and self.ed_player.is_docked:
@@ -1646,7 +1640,7 @@ class EDRJournalHandler:
             self.last_known_ship_name = self.ed_player.mothership.name
             EDR_LOG.debug(f"new current vehicle {self.ed_player.mothership.name}")
         else:
-            updated = ed_player.update_vehicle_if_obsolete(EDVehicleFactory.from_load_game_event(entry), piloted=True)
+            updated = self.ed_player.update_vehicle_if_obsolete(EDVehicleFactory.from_load_game_event(entry), piloted=True)
             EDR_LOG.debug(f"udpate current vehicle if obsolete: {updated}, {self.ed_player.mothership.type}")
     
     def _on_suit_loadout(self, entry, state):
@@ -1718,9 +1712,10 @@ class EDRJournalHandler:
         self.ed_player.bounty_awarded(entry)
         self.edr_client.bounty_hunting_guidance()
 
-    def _on_ship_targeted(self, entry, state):
-        if entry["TargetLocked"] and entry["ScanStage"] >= 3 and entry.get("Bounty", 0) > 0:
+    def _handle_bounty_hunting_events(self, entry):
+        if entry.get("TargetLocked", False) and entry.get("ScanStage", 0) >= 3 and entry.get("Bounty", 0) > 0:
             self.ed_player.bounty_scanned(entry)
             self.edr_client.bounty_hunting_guidance()
         else:
-            self.edr_client.bounty_hunting_guidance(turn_off=True)
+            # Note: don't turn off here as it might be called after handle_scan_events which could have legitimate reasons to keep it on or off
+            pass

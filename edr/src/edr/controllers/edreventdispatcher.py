@@ -3,7 +3,8 @@ import re
 
 from edr.controllers.edrjournalhandler import EDRJournalHandler
 from edr.controllers.edrdashboardhandler import EDRDashboardHandler
-from edr.edr_logger import EDR_LOG
+from edr.core.edrlog import EDR_LOG
+from edr.core.edri18n import _
 
 class EDREventDispatcher:
     def __init__(self, edr_client):
@@ -65,4 +66,4 @@ class EDREventDispatcher:
         if not self.prerequisites(is_beta):
             return
         
-        self.journal_handler.journal_entry(cmdr, is_beta, system, station, entry, state)
+        self.journal_handler.journal_entry(entry, state)
