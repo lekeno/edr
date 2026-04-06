@@ -1,8 +1,9 @@
 """
-Plugin for "EDR"
+ED Recon Plugin for EDMC
 """
-import sys
+
 import os
+import sys
 
 # Ensure the src directory is in the path
 PLUGIN_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -26,39 +27,28 @@ EDR_CLIENT = EDRClient()
 EDR_EVENT_DISPATCHER = EDREventDispatcher(EDR_CLIENT)
 
 def plugin_start3(plugin_dir):
-    return plugin_start()
-
-
-def plugin_start():
     """
-    Start up EDR, try to login.
+    Called by EDMC when the plugin is started (Python 3).
     """
-    edrautoupdater.EDRAutoUpdater.clean_up_obsolete_files()
+    global EDR_CLIENT, EVENT_HANDLER
+    EDR_LOG.info("Starting ED Recon.")
+    EDR_CLIENT = EDRClient()
     EDR_CLIENT.apply_config()
-
-    if not EDR_CLIENT.email:
-        EDR_CLIENT.email = ""
-
-    if not EDR_CLIENT.password:
-        EDR_CLIENT.password = ""
-
     EDR_CLIENT.login()
-
+    EVENT_HANDLER = EDREventHandler(EDR_CLIENT, edmc_data)
+    return "ED Recon"
 
 def plugin_stop():
     """
-    Stop the EDR plugin and perform cleanup.
+    Called by EDMC when the plugin is stopped.
     """
-    EDR_LOG.info("Stopping the plugin...")
-    EDR_CLIENT.shutdown(everything=True)
-    if EDR_CLIENT.autoupdate_pending:
-        plugin_update()
-    EDR_LOG.info("Plugin stopped")
+    EDR_LOG.info("Stopping ED Recon.")
+    if EDR_CLIENT:
+        EDR_CLIENT.shutdown(everything=True)
 
-
-def plugin_update():
+def prerequisites(edr_client, is_beta, from_genesis=False):
     """
-    Perform automatic update of the plugin.
+    Check if EDR is ready to process events.
     """
     EDR_LOG.info("Please wait: auto updating EDR")
     auto_updater = edrautoupdater.EDRAutoUpdater()
