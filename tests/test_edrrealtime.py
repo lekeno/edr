@@ -10,7 +10,7 @@ except ImportError:
 
 # Setup paths
 # sys.path injection removed
-from edr.controllers.edrrealtime import EDRRealtimeUpdates, RemoteThread, EDRSEEReader # EDR_INTERNAL
+from edr.controllers.edrrealtime import EDRRealtimeUpdates, RemoteThread, EDRSEEReader
 
 class TestEDRRealtimeUpdates(unittest.TestCase):
     def setUp(self):

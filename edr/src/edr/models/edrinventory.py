@@ -4,9 +4,9 @@ from edr.utils.edrpickle import edr_load_pickle
 import re
 import json
 
-from edr.core.edri18n import _ # EDR_INTERNAL
-from edr.utils.edtime import EDTime # EDR_INTERNAL
-from edr.utils.edrpath import edr_data_path, edr_cache_path # EDR_INTERNAL
+from edr.core.edri18n import _
+from edr.utils.edtime import EDTime
+from edr.utils.edrpath import edr_data_path, edr_cache_path
 
 #TODO anarchy only microresources...
 ODYSSEY_MATS = json.loads(open(edr_data_path('odyssey_mats.json')).read())

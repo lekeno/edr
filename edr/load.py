@@ -9,17 +9,22 @@ import sys
 PLUGIN_DIR = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(PLUGIN_DIR, 'src'))
 
-from edr.controllers.edrclient import EDRClient
-from edr.controllers.edreventhandler import EDREventHandler
-from edr.core.edrlog import EDR_LOG
-
 try:
     import edmc_data
 except ImportError:
-    from edr.fakeenv import edmc_data
+    from edr.fakeenv import plug as edmc_data
 
-EDR_CLIENT = None
-EVENT_HANDLER = None
+from edr.controllers.edrclient import EDRClient
+from edr.controllers.edreventdispatcher import EDREventDispatcher
+
+from edr.core.edrlog import EDR_LOG
+from edr.core.edrconfig import EDR_CONFIG
+from edr.core import edrautoupdater
+
+VERSION = EDR_CONFIG.edr_version()
+
+EDR_CLIENT = EDRClient()
+EDR_EVENT_DISPATCHER = EDREventDispatcher(EDR_CLIENT)
 
 def plugin_start3(plugin_dir):
     """
@@ -45,53 +50,31 @@ def prerequisites(edr_client, is_beta, from_genesis=False):
     """
     Check if EDR is ready to process events.
     """
-    if edr_client is None:
-        return False
-    if edr_client.mandatory_update:
-        return False
-    if not edr_client.is_logged_in():
-        return False
-    return True
+    EDR_LOG.info("Please wait: auto updating EDR")
+    auto_updater = edrautoupdater.EDRAutoUpdater()
+    downloaded = auto_updater.download_latest()
+    if downloaded:
+        EDR_LOG.info("Download successful, creating a backup.")
+        auto_updater.make_backup()
+        EDR_LOG.info("Cleaning old backups.")
+        auto_updater.clean_old_backups()
+        EDR_LOG.info("Extracting latest version.")
+        auto_updater.extract_latest()
 
-def journal_entry(cmdr, is_beta, system, station, entry, state):
-    """
-    Called by EDMC for every journal entry.
-    """
-    if prerequisites(EDR_CLIENT, is_beta):
-        if EVENT_HANDLER:
-            EVENT_HANDLER.process_journal_entry(entry, state)
-
-def dashboard_entry(cmdr, is_beta, entry):
-    """
-    Called by EDMC for every dashboard entry (status.json).
-    """
-    if prerequisites(EDR_CLIENT, is_beta):
-        if EVENT_HANDLER:
-            EVENT_HANDLER.process_dashboard_entry(cmdr, entry)
 
 def plugin_app(parent):
-    """
-    Called by EDMC to build the plugin UI.
-    """
-    if EDR_CLIENT:
-        return EDR_CLIENT.app_ui(parent)
-    return None
+    return EDR_CLIENT.app_ui(parent)
+
 
 def plugin_prefs(parent, cmdr, is_beta):
-    """
-    Called by EDMC to build the preferences UI.
-    """
-    if EDR_CLIENT:
-        return EDR_CLIENT.prefs_ui(parent)
-    return None
+    return EDR_CLIENT.prefs_ui(parent)
+
 
 def prefs_changed(cmdr, is_beta):
-    """
-    Called by EDMC when preferences are saved.
-    """
-    if EDR_CLIENT:
-        EDR_CLIENT.prefs_changed()
+    EDR_CLIENT.prefs_changed()
+            
+def journal_entry(cmdr, is_beta, system, station, entry, state):
+    EDR_EVENT_DISPATCHER.journal_entry(cmdr, is_beta, system, station, entry, state)
 
-# Backward compatibility for old EDMC versions
-def plugin_start(plugin_dir):
-    return plugin_start3(plugin_dir)
+def dashboard_entry(cmdr, is_beta, entry):
+    EDR_EVENT_DISPATCHER.dashboard_entry(cmdr, is_beta, entry)

@@ -118,3 +118,9 @@ edr/private/
 edr/db/rawdepletables
 edr/backup/
 edr/updates/
+# Release automation
+_build/
+_build_assets/
+*.zip
+release_notes.txt
+release_history.json

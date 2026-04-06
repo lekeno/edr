@@ -3,7 +3,7 @@ import os
 
 import l10n
 from .edrlog import EDR_LOG
-from edr.utils.edrpath import plugin_root # EDR_INTERNAL
+from edr.utils.edrpath import plugin_root
 
 # Constants
 CONTEXT_SEPARATOR = "|"

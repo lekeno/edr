@@ -2,10 +2,10 @@ import os
 import json
 import copy
 
-from .edsitu import EDPlanetaryLocation # EDR_INTERNAL
-from edr.core.edrlog import EDR_LOG # EDR_INTERNAL
-from edr.utils.edrutils import simplified_body_name # EDR_INTERNAL
-from edr.utils.edrpath import edr_data_path # EDR_INTERNAL
+from .edsitu import EDPlanetaryLocation
+from edr.core.edrlog import EDR_LOG
+from edr.utils.edrutils import simplified_body_name
+from edr.utils.edrpath import edr_data_path
 
 
 

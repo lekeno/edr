@@ -1,9 +1,9 @@
 import copy
 import re
 
-from edr.utils.edtime import EDTime # EDR_INTERNAL
-from edr.utils.edrutils import simplified_body_name # EDR_INTERNAL
-from edr.core.edri18n import _ # EDR_INTERNAL
+from edr.utils.edtime import EDTime
+from edr.utils.edrutils import simplified_body_name
+from edr.core.edri18n import _
 
 
 class EDRFleetCarrier:

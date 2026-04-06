@@ -3,9 +3,9 @@ import sys
 import sqlite3
 import math
 
-from edr.utils.edtime import EDTime # EDR_INTERNAL
-from edr.core.edrlog import EDR_LOG # EDR_INTERNAL
-from edr.utils.edrpath import plugin_root # EDR_INTERNAL
+from edr.utils.edtime import EDTime
+from edr.core.edrlog import EDR_LOG
+from edr.utils.edrpath import plugin_root
 
 
 

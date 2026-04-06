@@ -1,11 +1,9 @@
-from edr.core.edrlog import EDR_LOG # EDR_INTERNAL
 import re
-import os
-import json
 import random
 import codecs
 
-from edr.core.edri18n import _ # EDR_INTERNAL
+from edr.core.edrlog import EDR_LOG
+from edr.core.edri18n import _
 
 
 class EDRCommands:

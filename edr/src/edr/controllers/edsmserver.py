@@ -3,11 +3,11 @@ import re
 import time
 import requests
 
-from edr.core.edrconfig import EDR_CONFIG # EDR_INTERNAL
-from edr.core.edrlog import EDR_LOG # EDR_INTERNAL
+from edr.core.edrconfig import EDR_CONFIG
+from edr.core.edrlog import EDR_LOG
 from edr.utils.backoff import Backoff
-from edr.utils.edtime import EDTime # EDR_INTERNAL
-from edr.utils.edrhttpcache import EDRHttpCache # EDR_INTERNAL
+from edr.utils.edtime import EDTime
+from edr.utils.edrhttpcache import EDRHttpCache
 
 
 class EDSMServer:

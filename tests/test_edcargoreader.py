@@ -4,7 +4,7 @@ import tempfile
 import shutil
 import os
 import json
-from edr.models.edcargoreader import EDCargoReader # EDR_INTERNAL
+from edr.models.edcargoreader import EDCargoReader
 
 class TestEDCargoReader(unittest.TestCase):
     def setUp(self):

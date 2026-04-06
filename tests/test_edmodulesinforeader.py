@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock, patch, mock_open
 import json
-from edr.models.edmodulesinforeader import EDModulesInfoReader # EDR_INTERNAL
+from edr.models.edmodulesinforeader import EDModulesInfoReader
 
 class TestEDModulesInfoReader(unittest.TestCase):
     @patch('edr.models.edmodulesinforeader.config')

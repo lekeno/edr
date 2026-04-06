@@ -9,14 +9,14 @@ from os import path
 from math import sqrt
 import re
 
-from edr.core.edri18n import _ # EDR_INTERNAL
-from edr.utils.edtime import EDTime # EDR_INTERNAL
-from edr.utils.edrpath import edr_cache_path # EDR_INTERNAL
+from edr.core.edri18n import _
+from edr.utils.edtime import EDTime
+from edr.utils.edrpath import edr_cache_path
 from collections import deque
-from edr.utils.edrutils import pretty_print_number, simplified_body_name # EDR_INTERNAL
-from edr.core.edrconfig import EDR_CONFIG # EDR_INTERNAL
+from edr.utils.edrutils import pretty_print_number, simplified_body_name
+from edr.core.edrconfig import EDR_CONFIG
 
-from edr.core.edrlog import EDR_LOG # EDR_INTERNAL
+from edr.core.edrlog import EDR_LOG
 
 
 class BidiWaypointIterator:

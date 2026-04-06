@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock, patch, mock_open
 import json
-from edr.models.edmarketreader import EDMarketReader # EDR_INTERNAL
+from edr.models.edmarketreader import EDMarketReader
 
 class TestEDMarketReader(unittest.TestCase):
     @patch('edr.models.edmarketreader.config')

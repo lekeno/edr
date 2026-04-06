@@ -1,9 +1,9 @@
 
 from collections import deque
 from time import time
-from edr.utils.edtime import EDTime # EDR_INTERNAL
-from edr.core.edri18n import _ # EDR_INTERNAL
-from edr.utils.edrpath import edr_data_path # EDR_INTERNAL
+from edr.utils.edtime import EDTime
+from edr.core.edri18n import _
+from edr.utils.edrpath import edr_data_path
 import json
 import os
 

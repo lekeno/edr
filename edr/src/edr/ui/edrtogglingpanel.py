@@ -13,8 +13,8 @@ try:
 except ImportError:
     ttkHyperlinkLabel = None
 
-from edr.core.igmconfig import IGMConfig # EDR_INTERNAL
-from edr.core.edri18n import _ # EDR_INTERNAL
+from edr.core.igmconfig import IGMConfig
+from edr.core.edri18n import _
 
 class EntryWithPlaceholder(tk.Entry):
     def __init__(self, master=None, placeholder="type here", placeholder_color='grey'):
