@@ -78,6 +78,13 @@ class TestEDPilot(unittest.TestCase):
         pilot.place = "Earth"
         self.assertEqual(pilot.place, "Earth")
 
+        # Test security and allegiance
+        pilot.security = "High"
+        self.assertEqual(pilot.security, "High")
+        
+        pilot.allegiance = "Federation"
+        self.assertEqual(pilot.allegiance, "Federation")
+
     def test_killed(self):
         pilot = EDPilot("Cmdr Test", 1)
         pilot.wanted = True

@@ -40,7 +40,7 @@ class TestEDRJournalHandler(unittest.TestCase):
         mock_fsd = MagicMock()
         # event_map holds references to methods established at init, so we must replace it there too
         self.handler.event_map["FSDJump"] = mock_fsd
-        self.handler.journal_entry(entry, state)
+        self.handler.journal_entry("Self", False, "Sol", "Station", entry, state)
         mock_fsd.assert_called_with(entry, state)
 
     def test_on_fsd_jump(self):

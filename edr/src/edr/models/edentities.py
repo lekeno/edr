@@ -566,15 +566,23 @@ class EDPilot:
         """
         self.attitude.update(attitude)
 
-    def location_security(self, ed_security_state):
-        """
-        Update security state of current location.
+    @property
+    def security(self):
+        return self.location.security
 
-        Args:
-            ed_security_state (str): Security level.
-        """
+    @security.setter
+    def security(self, security):
         self._touch()
-        self.location.security = ed_security_state
+        self.location.security = security
+
+    @property
+    def allegiance(self):
+        return self.location.allegiance
+
+    @allegiance.setter
+    def allegiance(self, allegiance):
+        self._touch()
+        self.location.allegiance = allegiance
 
     def in_bad_neighborhood(self):
         """

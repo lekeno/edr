@@ -15,7 +15,9 @@ class EDRJournalHandler:
         self.ed_player = edr_client.player
         self.last_known_ship_name = ""
         self.snapshot = None
+        self.force_report = False
         self.first_run = True
+        self.from_genesis = False
 
         self.event_map = {
             "SupercruiseEntry": self._on_supercruise_entry,
@@ -195,12 +197,16 @@ class EDRJournalHandler:
     
     def _take_snapshot(self):
         """Captures the key state variables before an event is processed."""
+        # TODO CRITICAL: This snapshot is insufficient. 
         self.snapshot = {
             "star_system": self.ed_player.star_system,
             "place": self.ed_player.place,
             "body": self.ed_player.body,
             "docked": self.ed_player.is_docked,
-            "vehicle": self.ed_player.vehicle_type()
+            "vehicle": self.ed_player.vehicle_type(), # unclear if sufficient
+            "wanted": self.ed_player.wanted,
+            "security": self.ed_player.security,
+            "powerplay": self.ed_player.powerplay.canonicalize() if self.ed_player.powerplay else '',
         }
 
     def _should_report(self):
@@ -213,27 +219,49 @@ class EDRJournalHandler:
 
         if self.ed_player.has_partial_status():
             return False
+
+        if self.force_report:
+            self.force_report = False
+            return True
             
+        # TODO CRITICAL: This snapshot comparison is insufficient.
         return (
             self.ed_player.star_system != self.snapshot["star_system"] or
             self.ed_player.place != self.snapshot["place"] or
             self.ed_player.body != self.snapshot["body"] or
             self.ed_player.is_docked != self.snapshot["docked"] or
-            self.ed_player.vehicle_type() != self.snapshot["vehicle"]
+            self.ed_player.vehicle_type() != self.snapshot["vehicle"] or
+            self.ed_player.wanted != self.snapshot.get("wanted") or
+            self.ed_player.security != self.snapshot.get("security") or
+            (self.ed_player.powerplay.canonicalize() if self.ed_player.powerplay else '') != self.snapshot.get("powerplay")
         )
 
-    def journal_entry(self, entry, state):
+        # name?
+        # piloted_vehicle extended
+        # powerplay
+        # handle_change_events: place, body
+        # handle_movement_events:  place, body
+
+    def journal_entry(self, cmdr, is_beta, system, station, entry, state):
         self.edr_client.edrdiscord.process(entry)
+
+        event_type = entry.get("event")
+        if event_type in ["Shutdown", "ShutDown", "Music", "Resurrect", "Fileheader", "LoadGame", "Loadout", "SuitLoadout", "SwitchSuitLoadout", "LaunchSRV", "DockSRV", "Disembark", "Embark", "DropShipDeploy"]:
+            if self.first_run:
+                self.first_run = False
+                self.from_genesis = (event_type == "LoadGame") and (cmdr and system is None and station is None)
+            # TODO: maybe take advantage of the StartUp event and the state object which should have a cumulative friends field
+            # to populate the friends list
 
         self._take_snapshot()
         
-        event_type = entry.get("event")
         handlers = self.event_map.get(event_type)
-        if isinstance(handlers, list):
-            for handler in handlers:
-                handler(entry, state)
-        elif isinstance(handlers, function):
-            handlers(entry, state)
+        if handlers:
+            if isinstance(handlers, list):
+                for handler in handlers:
+                    handler(entry, state)
+            else:
+                handlers(entry, state)
 
         self._finalize_and_report(entry)
 
@@ -1189,13 +1217,13 @@ class EDRJournalHandler:
         EDR_LOG.info(" Left the wing.")
 
     def _on_wing_invite(self, entry, state):
-        requester = plain_cmdr_name(entry["Name"])
+        requester = self._plain_cmdr_name(entry["Name"])
         self.edr_client.status = _("wing invite from: ").format(requester)
         EDR_LOG.info("Wing invite from: {}".format(requester))
         self.edr_client.who(requester, autocreate=True)
 
     def _on_crew_member_joins(self, entry, state):
-        crew = plain_cmdr_name(entry["Crew"])
+        crew = self._plain_cmdr_name(entry["Crew"])
         success = self.ed_player.add_to_crew(crew)
         if success: # only show intel on the first add 
             self.edr_client.status = _(f"added to crew: {crew}")
@@ -1203,7 +1231,7 @@ class EDRJournalHandler:
             self.edr_client.who(crew, autocreate=True)
 
     def _on_crew_member_role_change(self, entry, state):
-        crew = plain_cmdr_name(entry["Crew"])
+        crew = self._plain_cmdr_name(entry["Crew"])
         success = self.ed_player.add_to_crew(crew)
         if success: # only show intel on the first add 
             self.edr_client.status = _(f"added to crew: {crew}")
@@ -1211,7 +1239,7 @@ class EDRJournalHandler:
             self.edr_client.who(crew, autocreate=True)
 
     def _on_crew_launch_fighter(self, entry, state):
-        crew = plain_cmdr_name(entry["Crew"])
+        crew = self._plain_cmdr_name(entry["Crew"])
         success = self.ed_player.add_to_crew(crew)
         if success: # only show intel on the first add 
             self.edr_client.status = _(f"added to crew: {crew}")
@@ -1358,7 +1386,8 @@ class EDRJournalHandler:
         self.ed_player.update_place_if_obsolete(place)
         self.ed_player.mothership.fuel_level = entry.get("FuelLevel", self.ed_player.mothership.fuel_level)
         self.ed_player.location.population = entry.get('Population', 0)
-        self.ed_player.location.allegiance = entry.get('SystemAllegiance', 0)
+        self.ed_player.allegiance = entry.get('SystemAllegiance', 0)
+        self.ed_player.security = entry.get('SystemSecurity', None)
         
         # UI Guidance
         self.edr_client.docking_guidance(entry)
@@ -1372,7 +1401,8 @@ class EDRJournalHandler:
         self.ed_player.wanted = entry.get("Wanted", False)
         self.ed_player.mothership.fuel_level = entry.get("FuelLevel", self.ed_player.mothership.fuel_level)
         self.ed_player.location.population = entry.get('Population', 0)
-        self.ed_player.location.allegiance = entry.get('SystemAllegiance', 0)
+        self.ed_player.allegiance = entry.get('SystemAllegiance', 0)
+        self.ed_player.security = entry.get('SystemSecurity', None)
         self.ed_player.to_normal_space()
         self.edr_client.docking_guidance(entry)
         self.edr_client.noteworthy_about_system(entry)
@@ -1433,7 +1463,7 @@ class EDRJournalHandler:
         self.edr_client.leave_body(star_system, body_name)
 
 
-    def _fc_position_related_events(self, entry):
+    def _fc_position_related_events(self, entry, state=None):
         station_type = entry.get("StationType", None)
         if station_type and station_type != "FleetCarrier":
             return
@@ -1461,9 +1491,9 @@ class EDRJournalHandler:
         EDR_LOG.info("Body changed: {} (location event)".format(body))
         self.ed_player.to_normal_space()
         self.ed_player.wanted = entry.get("Wanted", False)
-        self.ed_player.location_security(entry.get("SystemSecurity", None))
+        self.ed_player.security = entry.get("SystemSecurity", None)
         self.ed_player.location.population = entry.get("Population", None)
-        self.ed_player.location.allegiance = entry.get("SystemAllegiance", None)
+        self.ed_player.allegiance = entry.get("SystemAllegiance", None)
         if "StarSystem" in entry:
             self.edr_client.update_star_system_if_obsolete(entry["StarSystem"], entry.get("SystemAddress", None))
         
@@ -1474,7 +1504,7 @@ class EDRJournalHandler:
             self.edr_client.docked_at(entry)
         self.edr_client.process_location_event(entry)
 
-        self._fc_position_related_events(entry)
+        self._fc_position_related_events(entry, state)
 
     def _on_docking_related_events(self, entry, state):
         place = entry.get("StationName", "Unknown")
@@ -1492,7 +1522,7 @@ class EDRJournalHandler:
             capacity = self.ed_player.mothership.cargo_capacity
             self.edr_client.notify_with_details(_(U"Restock reminder"), [_("Don't forget to restock on limpets before heading out."), _("Limpets: {}/{}").format(limpets, capacity)])
     
-        self._fc_position_related_events(entry)
+        self._fc_position_related_events(entry, state)
 
     def _on_undocked(self, entry, state):
         self._on_docking_related_events(entry, state)
@@ -1500,27 +1530,27 @@ class EDRJournalHandler:
         self.ed_player.docked(False)
         self.ed_player.reset_stats()
         
-        self._fc_position_related_events(entry)
+        self._fc_position_related_events(entry, state)
 
     def _on_docking_cancelled(self, entry, state):
         self._on_docking_related_events(entry, state)
-        self._fc_position_related_events(entry)
+        self._fc_position_related_events(entry, state)
 
     def _on_docking_denied(self, entry, state):
         self._on_docking_related_events(entry, state)
-        self._fc_position_related_events(entry)
+        self._fc_position_related_events(entry, state)
 
     def _on_docking_granted(self, entry, state):
         self._on_docking_related_events(entry, state)
-        self._fc_position_related_events(entry)
+        self._fc_position_related_events(entry, state)
 
     def _on_docking_requested(self, entry, state):
         self._on_docking_related_events(entry, state)
-        self._fc_position_related_events(entry)
+        self._fc_position_related_events(entry, state)
 
     def _on_docking_timeout(self, entry, state):
         self._on_docking_related_events(entry, state)
-        self._fc_position_related_events(entry)
+        self._fc_position_related_events(entry, state)
 
     def _on_music(self, entry, state):
         # TODO another map to shed the ifs
@@ -1603,7 +1633,7 @@ class EDRJournalHandler:
         
         if self.first_run:
             self.first_run = False
-            # TODO update this now that we are passing the parameters
+            # TODO CRITICAL: update this now that we are passing the parameters
             from_genesis = (cmdr and system is None and station is None)
 
         if self.ed_player.inventory.stale_or_incorrect():
@@ -1676,7 +1706,7 @@ class EDRJournalHandler:
 
     def _on_friends(self, entry, state):
         if entry["Status"] == "Requested":
-            requester = plain_cmdr_name(entry["Name"])
+            requester = self._plain_cmdr_name(entry["Name"])
             self.edr_client.who(requester, autocreate=True)
         elif entry["Status"] == "Offline":
             self.ed_player.deinstanced_player(entry["Name"])

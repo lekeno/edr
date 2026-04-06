@@ -810,7 +810,7 @@ class EDRClient:
             bool: True if noteworthy information was found/displayed.
         """
         if fsdjump_event["SystemSecurity"]:
-            self.player.location_security(fsdjump_event["SystemSecurity"])
+            self.player.security = fsdjump_event["SystemSecurity"]
         self.edrsystems.system_id(fsdjump_event['StarSystem'], may_create=not self.is_anonymous(), coords=fsdjump_event.get("StarPos", None))
         self.edrfactions.process_jump_event(fsdjump_event)
         facts = self.edrresourcefinder.assess_jump(fsdjump_event, self.player.inventory)

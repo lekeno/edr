@@ -66,4 +66,4 @@ class EDREventDispatcher:
         if not self.prerequisites(is_beta):
             return
         
-        self.journal_handler.journal_entry(entry, state)
+        self.journal_handler.journal_entry(cmdr, is_beta, system, station, entry, state)
