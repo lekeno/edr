@@ -198,13 +198,25 @@ def create_build_structure(version, codename):
         with open(os.path.join(path, 'dummy'), 'w') as f:
             f.write('')
 
+    def release_ignore(path, names):
+        ignored = []
+        is_lc_messages = 'LC_MESSAGES' in path
+        for name in names:
+            if name in ['__pycache__', '.vscode', '.ropeproject', 'config_sample.ini']:
+                ignored.append(name)
+            elif name.endswith(('.pyc', '.po')):
+                ignored.append(name)
+            elif name.endswith('.mo') and not is_lc_messages:
+                ignored.append(name)
+        return ignored
+
     # Copy standard folders from edr/
     folders_to_copy = ['config', 'data', 'l10n', 'sounds', 'src']
     for folder in folders_to_copy:
         src = os.path.join(EDR_DIR, folder)
         dst = os.path.join(BUILD_DIR, folder)
         if os.path.exists(src):
-            shutil.copytree(src, dst, ignore=shutil.ignore_patterns('__pycache__', '.vscode', '*.pyc', '.ropeproject'))
+            shutil.copytree(src, dst, ignore=release_ignore)
         else:
             print(f"Warning: Folder {folder} not found in edr/")
 
