@@ -14,6 +14,7 @@
   "type7": "Type-7 Transporter",
   "type8": "Type-8 Transporter",
   "asp": "Asp Explorer",
+  "explorer_nx": "Caspian Explorer",
   "vulture": "Vulture",
   "vulture_taxi": "Vulture Frontlines",
   "empire_trader": "Imperial Clipper",
@@ -53,6 +54,7 @@
   "gdn_hybrid_fighter_v1": "Trident",
   "gdn_hybrid_fighter_v2": "Javelin",
   "gdn_hybrid_fighter_v3": "Lance",
+  "kestrel_mkii": "Kestrel Mk II",
   "unknown": "Unknown",
   "unknown (crew)": "Unknown (crew)",
   "unknown (captain)": "Unknown (captain)"

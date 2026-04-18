@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
   <img Alt="Logo_ED_Recon" src="https://edrecon.com/img/icon-192x192.8422df55.png">
   <h1><a href="https://edrecon.com"><b>ED Recon</b></a>
   <br>
@@ -6,7 +6,7 @@
 </div>
 <p align=right>
   Draft by <b>CMDR Lekeno</b><br>
-  Version 2.7.7.0
+  Version 3.3.0
 </p>
 
 <h1>Summary</h1>
@@ -93,6 +93,7 @@
   - [Commands and options](#commands-and-options)
   - [Customization](#customization)
       - [*Type of events*](#type-of-events)
+- [Hotkeys and Macros](#hotkeys-and-macros)
 - [Appendix](#appendix)
   - [Troubleshooting](#troubleshooting)
     - [Nothing is displayed / Overlay does not work](#nothing-is-displayed--overlay-does-not-work)
@@ -132,7 +133,7 @@ Steps:
 ## ED Recon (aka EDR)
 Steps:
 
-1. [Download EDR’s latest release](https://github.com/lekeno/EDR/releases/latest) (the EDR.v#.#.#.zip file where #.#.# is the version number, e.g. 1.0.0 in the screenshot below)
+1. [Download EDR’s latest release](https://github.com/lekeno/EDR/releases/latest) (the EDR.v#.#.#.zip file where #.#.# is the version number, e.g. 3.3.0 in the screenshot below)
 
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="https://github.com/lekeno/edr/blob/master/edr/docs/assets/EDR_1.0.0_Black.png?raw=true">
@@ -171,7 +172,7 @@ Steps:
     <img alt="Location and folder structure of EDR" src="https://github.com/lekeno/edr/blob/master/edr/docs/assets/IMG_07_White.png?raw=true">
 
 9. Launch Elite, start a new game.
-10. You should see an intro message (e.g. `EDR V1.0.0 […]`) overlayed on top of Elite.
+10. You should see an intro message (e.g. `EDR V3.3.0 […]`) overlayed on top of Elite.
     - On Windows 10: the overlay should work for all the modes (Fullscreen, Borderless, Windowed).
     - On Windows 7: the overlay does NOT work in Fullscreen, use Borderless or Windowed instead.
     - If the overlay does not work, see the [troubleshooting](#troubleshooting) section.
@@ -363,6 +364,9 @@ EDR can show an overview of known signals for the current system (e.g. resource 
 **Odyssey only:** EDR will show key information about your next destination (station, fleet carrier, system). For station or fleet carriers, EDR will show the list of available services, as well as information about the controlling faction (BGS state, government, allegiance and whether the faction is a **P**layer **M**inor **F**action).
 ## Current system
 EDR will show estimated exploration value and key information for stars, planets and systems. This feature triggers on: Discovery Scanner honk, Full Spectrum Scan, and Detailed Surface Scan.
+
+### Top Planets on a honk
+When performing a Discovery Scanner honk, EDR can show a list of the most valuable planets in the system. You can configure how many planets are shown in the EDR settings panel (EDMC `File` menu, `Settings`, `EDR` tab) under the "Nb of top planets on a honk" option. Available choices are 5, 10, 15, or All.
 # Planet Features
 ## Point of Interest
 EDR has a list of Points of Interest (e.g. crashed ships, abandoned bases, etc). Guidance will be shown automatically when entering a system with PoI’s, as well as when approaching a body with PoI’s. This includes a navigation feature (heading, distance, altitude, pitch) to help you land near a PoI.
@@ -833,6 +837,30 @@ Then edit the line for the related event to specify your custom sound, including
 - `jammed`: when the EDR servers are too busy to handle your requests
 - `biology`: when EDR shows navigation information for Exobiology activities
 
+
+# Hotkeys and Macros
+EDR supports hotkey integration via the [EDMCHotkeys plugin](https://github.com/SweetJonnySauce/EDMCHotkeys). 
+
+> [!IMPORTANT]
+> EDMCHotkeys is a third-party plugin. EDR's author is not responsible for its maintenance, support, or any issues arising from its use. Please refer to the plugin's own documentation and issue tracker for help.
+
+## Setting up Hotkeys
+To use hotkeys with EDR, you need to:
+1.  Install the [EDMCHotkeys plugin](https://github.com/SweetJonnySauce/EDMCHotkeys).
+2.  In the EDMCHotkeys settings, bind an Action ID to a physical key or button.
+3.  In EDR, you can then trigger any chat command (e.g., `!intel`, `-if`, etc.) by using the corresponding Action ID.
+
+## Macro System
+EDR features a built-in macro system that allows you to record and recall frequently used commands.
+
+- `!macro set <slot>`: records the last successful command to the specified macro slot (1-20).
+- `!macro set <slot> <command>`: records the specified command to the macro slot.
+- `!macro show <slot>`: displays the command recorded for the specified macro slot.
+- `!macro name <slot> <label>`: sets a label for the macro slot (alphanumeric, one word).
+- `!macro clear <slot>`: clears the specified macro slot.
+- `!macro list`: lists all programmed macro slots and their labels.
+
+Programmed macros are saved in `config/hotkeys.json`.
 
 # Appendix
 ## Troubleshooting

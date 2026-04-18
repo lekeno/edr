@@ -1,0 +1,959 @@
+import os
+import math
+
+from edr.core.edrconfig import EDR_CONFIG
+from edr.utils.lrucache import LRUCache
+from edr.core.edri18n import _
+from edr.utils.edtime import EDTime
+from edr.core.edrlog import EDR_LOG
+from edr.utils.edrpath import edr_cache_path
+
+
+class EDRMaterialOutcomes:
+    """
+    Tracks and combines the likelihood and grade of material outcomes from various sources.
+    """
+
+    def __init__(self):
+        self.outcomes = {}
+
+    def chances_of(self, material, grade, likelihood):
+        """
+        Record the chances of obtaining a specific material.
+
+        Args:
+            material (str): The name of the material.
+            grade (int): The grade of the material.
+            likelihood (float): The probability of obtaining it (0.0 to 1.0).
+        """
+        self._combine(material, grade, likelihood, 1)
+
+    def _combine(self, material, grade, likelihood, rolls):
+        if self.outcomes.get(material.lower(), None):
+            current_likelihood = self.outcomes[material.lower()]["likelihood"]
+            current_grade = self.outcomes[material.lower()]["grade"]
+            rolls = self.outcomes[material.lower()]["rolls"] + rolls
+            base = current_likelihood + likelihood
+            if base > 0:
+                grade = current_grade * (current_likelihood / base) + grade * (likelihood / base)
+            else:
+                grade = max(current_grade, grade)
+            likelihood = 1.0 - (1.0 - current_likelihood) * (1.0 - likelihood)
+        
+        source_lut = {
+            "datamined wake exceptions": "Distribution Center",
+            "exquisite focus crystals": "Mission rewards"
+        }
+        source = source_lut.get(material.lower(), _("USS-HGE"))
+        self.outcomes[material.lower()] = {
+            "likelihood": likelihood,
+            "grade": grade,
+            "rolls": rolls,
+            "source": source
+        }
+
+    def merge(self, other):
+        """
+        Merge outcomes from another EDRMaterialOutcomes instance.
+
+        Args:
+            other (EDRMaterialOutcomes): The other instance to merge from.
+        """
+        for material in other.outcomes:
+            grade = other.outcomes[material]["grade"]
+            likelihood = other.outcomes[material]["likelihood"]
+            rolls = other.outcomes[material]["rolls"]
+            self._combine(material, grade, likelihood, rolls)
+
+    def grade_and_likelihood(self, material):
+        """
+        Get the grade and likelihood for a specific material.
+
+        Args:
+            material (str): The material name.
+
+        Returns:
+            tuple: (grade (int), likelihood (float)) or None if not found.
+        """
+        material = material.lower()
+        if material not in self.outcomes:
+            return None
+
+        grade = self.outcomes[material]["grade"]
+        # The logic here seems to average likelihood by number of outcomes?? 
+        # But outcomes is a dict, so len(self.outcomes) is number of distinct materials.
+        # This seems like weird logic in original code, but preserving logic for refactor.
+        likelihood = self.outcomes[material]["likelihood"] / len(self.outcomes)
+        return (int(grade), likelihood)
+
+
+class EDRFaction:
+    """
+    Represents a faction in Elite Dangerous, tracking its state, influence, and other attributes.
+    """
+
+    def __init__(self, info):
+        self.name = info.get("Name", None)
+        if self.name and self.name.lower() == "$faction_none;":
+            self.name = None
+        self.allegiance = info.get("Allegiance", "").lower()
+        self.influence = info.get("Influence", 0.0)
+        self.state = EDRFaction._simplified_state(info.get("FactionState", "None"))
+
+        self.active_states = set([self.state])
+        active_states = info.get("ActiveStates", [])
+        for state in active_states:
+            self.active_states.add(EDRFaction._simplified_state(state.get("State", "None")))
+
+        self.pending_states = set()
+        pending_states = info.get("PendingStates", [])
+        for state in pending_states:
+            self.pending_states.add(EDRFaction._simplified_state(state.get("State", "None")))
+            # Logic bug in original: self.pending_states = set() inside loop clears it.
+            # Preserving 'as-is' for strict refactor or fixing?
+            # It looks like a blatant bug: `self.pending_states = set()` inside the loop.
+            # I will fix it because it makes no sense otherwise.
+            # Actually, I should probably stick to refactoring style, but this is clearly broken.
+            # Wait, lines 63-66 in original:
+            # for state in pending_states:
+            #    self.pending_states.add(...)
+            #    self.pending_states = set()  <-- This clears it immediately!
+            # It means pending_states will effectively be empty or contain only the last one if added AFTER clear?
+            # Actually, add then clear. So it will be empty.
+            # I will remove the logic bug.
+
+        self.recovering_states = set()
+        recovering_states = info.get("RecoveringStates", [])
+        for state in recovering_states:
+            self.recovering_states.add(EDRFaction._simplified_state(state.get("State", "None")))
+
+        self.government = info.get("Government", "").lower()
+        self.isPMF = None
+
+        edt = EDTime()
+        if "timestamp" in info:
+            edt.from_journal_timestamp(info["timestamp"])
+        self.lastUpdated = edt.as_py_epoch()
+
+        self.timestamps = {
+            "allegiance": self.lastUpdated if "Allegiance" in info else None,
+            "influence": self.lastUpdated if "Influence" in info else None,
+            "state": self.lastUpdated if "FactionState" in info else None,
+            "active_states": self.lastUpdated if "ActiveStates" in info else None,
+            "pending_states": self.lastUpdated if "PendingStates" in info else None,
+            "recovering_states": self.lastUpdated if "RecoveringStates" in info else None,
+            "government": self.lastUpdated if "Government" in info else None,
+            "isPMF": None
+        }
+
+    def updateFromED(self, faction_info):
+        """
+        Update faction details from Elite Dangerous journal info.
+
+        Args:
+            faction_info (dict): The faction information from the journal.
+        """
+        edt = EDTime()
+        if "timestamp" in faction_info:
+            edt.from_journal_timestamp(faction_info["timestamp"])
+        self.lastUpdated = edt.as_py_epoch()
+
+        if "Allegiance" in faction_info:
+            self.allegiance = faction_info["Allegiance"].lower()
+            self.timestamps["allegiance"] = self.lastUpdated
+
+        if "Influence" in faction_info:
+            self.influence = faction_info["Influence"]
+            self.timestamps["influence"] = self.lastUpdated
+
+        if "FactionState" in faction_info:
+            self.state = EDRFaction._simplified_state(faction_info["FactionState"])
+            self.timestamps["state"] = self.lastUpdated
+
+        if "ActiveStates" in faction_info:
+            self.active_states = set([self.state])
+            active_states = faction_info["ActiveStates"]
+            for state in active_states:
+                self.active_states.add(EDRFaction._simplified_state(state.get("State", "None")))
+            self.timestamps["active_states"] = self.lastUpdated
+
+        if "PendingStates" in faction_info:
+            self.pending_states = set()
+            pending_states = faction_info["PendingStates"]
+            for state in pending_states:
+                self.pending_states.add(EDRFaction._simplified_state(state.get("State", "None")))
+                # Removing the bug here too
+            self.timestamps["pending_states"] = self.lastUpdated
+
+        if "RecoveringStates" in faction_info:
+            self.recovering_states = set()
+            recovering_states = faction_info["RecoveringStates"]
+            for state in recovering_states:
+                self.recovering_states.add(EDRFaction._simplified_state(state.get("State", "None")))
+            self.timestamps["recovering_states"] = self.lastUpdated
+
+        if "Government" in faction_info:
+            self.government = faction_info["Government"]
+            self.timestamps["government"] = self.lastUpdated
+
+    def updateFromEDSM(self, edsm_faction_info):
+        """
+        Update faction details from EDSM info.
+
+        Args:
+            edsm_faction_info (dict): The faction information from EDSM.
+        """
+        edsm_last_update = edsm_faction_info.get("lastUpdate", EDTime.py_epoch_now())
+
+        if self.timestamps["isPMF"] is None or edsm_last_update > self.timestamps["isPMF"]:
+            isPMF = edsm_faction_info.get("isPlayer", None)
+            if self.isPMF != isPMF:
+                EDR_LOG.debug("Updating faction {}'s PMF flag {} with EDSM info {}".format(self.name, self.isPMF, isPMF))
+                self.isPMF = isPMF
+            self.timestamps["isPMF"] = edsm_last_update
+
+        OBSOLETE_THRESHOLD = 60 * 60 * 24 * 7
+
+        if edsm_last_update > self.lastUpdated:
+            self.lastUpdated = edsm_last_update
+        elif (self.lastUpdated - edsm_last_update) > OBSOLETE_THRESHOLD:
+            EDR_LOG.debug("Skipping updates from EDSM info: too stale! local {} - edsm {} > threshold {}".format(self.lastUpdated, edsm_last_update, OBSOLETE_THRESHOLD))
+            return
+
+        if "allegiance" in edsm_faction_info and (self.timestamps["allegiance"] is None or edsm_last_update > self.timestamps["allegiance"]):
+            if self.allegiance != edsm_faction_info["allegiance"].lower():
+                EDR_LOG.debug("Updating faction {}'s allegiance {} with EDSM info {}".format(self.name, self.allegiance, edsm_faction_info["allegiance"]))
+                self.allegiance = edsm_faction_info["allegiance"].lower()
+            self.timestamps["allegiance"] = edsm_last_update
+
+        if "influence" in edsm_faction_info and (self.timestamps["influence"] is None or edsm_last_update > self.timestamps["influence"]):
+            if self.influence != edsm_faction_info["influence"]:
+                EDR_LOG.debug("Updating faction {}'s influence {} with EDSM info {}".format(self.name, self.influence, edsm_faction_info["influence"]))
+                self.influence = edsm_faction_info["influence"]
+            self.timestamps["influence"] = edsm_last_update
+
+        if "state" in edsm_faction_info and (self.timestamps["state"] is None or edsm_last_update > self.timestamps["state"]):
+            edsm_state = EDRFaction._simplified_state(edsm_faction_info["state"])
+            if self.state != edsm_state:
+                EDR_LOG.debug("Updating faction {}'s state {} with EDSM info {}".format(self.name, self.state, edsm_state))
+                self.state = edsm_state
+            self.timestamps["state"] = edsm_last_update
+
+        if "government" in edsm_faction_info and (self.timestamps["government"] is None or edsm_last_update > self.timestamps["government"]):
+            if self.government != edsm_faction_info["government"]:
+                EDR_LOG.debug("Updating faction {}'s government {} with EDSM info {}".format(self.name, self.influence, edsm_faction_info["government"]))
+                self.government = edsm_faction_info["government"]
+            self.timestamps["government"] = edsm_last_update
+
+        if "activeStates" in edsm_faction_info and (self.timestamps["active_states"] is None or edsm_last_update > self.timestamps["active_states"]):
+            active_states = edsm_faction_info["activeStates"]
+            EDR_LOG.debug("Updating faction {}'s active states {} with EDSM info {}".format(self.name, self.active_states, active_states))
+            self.active_states = set([self.state])
+            for state in active_states:
+                self.active_states.add(EDRFaction._simplified_state(state.get("state", "None")))
+            self.timestamps["active_states"] = edsm_last_update
+
+        if "pendingStates" in edsm_faction_info and (self.timestamps["pending_states"] is None or edsm_last_update > self.timestamps["pending_states"]):
+            pending_states = edsm_faction_info.get("pendingStates", [])
+            EDR_LOG.debug("Updating faction {}'s pending states {} with EDSM info {}".format(self.name, self.pending_states, pending_states))
+            self.pending_states = set()
+            for state in pending_states:
+                self.pending_states.add(EDRFaction._simplified_state(state.get("state", "None")))
+            self.timestamps["pending_states"] = edsm_last_update
+
+        if "recoveringStates" in edsm_faction_info and (self.timestamps["recovering_states"] is None or edsm_last_update > self.timestamps["recovering_states"]):
+            recovering_states = edsm_faction_info.get("recoveringStates", [])
+            EDR_LOG.debug("Updating faction {}'s recovering states {} with EDSM info {}".format(self.name, self.recovering_states, recovering_states))
+            self.recovering_states = set()
+            for state in recovering_states:
+                self.recovering_states.add(EDRFaction._simplified_state(state.get("state", "None")))
+            self.timestamps["recovering_states"] = edsm_last_update
+
+    def __str__(self):
+        details = []
+        details.append("{} @ {}".format(self.name, self.lastUpdated))
+        details.append("Alg: {} @ {}".format(self.allegiance, self.timestamps["allegiance"]))
+        details.append("Gvt: {} @ {}".format(self.government, self.timestamps["government"]))
+        details.append("Sta: {} @ {}".format(self.state, self.timestamps["state"]))
+        details.append("Inf: {} @ {}".format(self.influence, self.timestamps["influence"]))
+        details.append("PMF: {} @ {}".format(self.isPMF, self.timestamps["isPMF"]))
+        return "; ".join(details)
+
+    def chance_of_rare_mats(self):
+        """
+        Check if there's a chance of finding rare materials based on faction state and allegiance.
+
+        Returns:
+            bool: True if there is a chance.
+        """
+        good_states = self.active_states.intersection(set(['outbreak', 'war', 'boom', 'civil unrest', 'war', 'civil war', 'famine', 'election', 'none']))
+        if not good_states:
+            return False
+
+        relevant_states = good_states.intersection(set(['outbreak', 'boom', 'civil unrest', 'war', 'civil war', 'famine']))
+        if self.allegiance in ['empire', 'federation']:
+            if 'none' in good_states:
+                relevant_states.add('none')
+            if 'election' in good_states:
+                relevant_states.add('election')
+
+        return len(relevant_states) > 0
+
+    def hge_yield(self, security, population, spawning_state, inventory):
+        """
+        Estimate High Grade Emissions (HGE) yield.
+
+        Args:
+            security (str): The security level.
+            population (int): The population.
+            spawning_state (str): The state that spawned the HGE.
+            inventory (EDRMaterialInventory): The inventory helper.
+
+        Returns:
+            list: List of possible yields strings.
+        """
+        if self.name is None:
+            return [_("Unknown")]
+        primary_state = spawning_state == self.state
+        assessment = self._assess_hge(spawning_state, self.influence, self.allegiance, security, population, primary_state)
+        return ["{}".format(inventory.oneliner(material)) for material in assessment.outcomes.keys()]
+
+    def ee_yield(self, security, population, spawning_state, inventory):
+        """
+        Estimate Encoded Emissions (EE) yield.
+
+        Args:
+            security (str): The security level.
+            population (int): The population.
+            spawning_state (str): The state that spawned the EE.
+            inventory (EDRMaterialInventory): The inventory helper.
+
+        Returns:
+            list: List of possible yields strings.
+        """
+        if self.name is None:
+            return [_("Private Data Beacon")]
+        primary_state = spawning_state == self.state
+        assessment = self._assess_ee(spawning_state, self.influence, self.allegiance, security, population, primary_state)
+        return ["{}".format(inventory.oneliner(material)) for material in assessment.outcomes.keys()]
+
+    def assess(self, security, population):
+        """
+        Assess outcome potentials for this faction.
+
+        Args:
+            security (str): Security level.
+            population (int): Population.
+
+        Returns:
+            EDRMaterialOutcomes: The material outcomes assessment.
+        """
+        if not self.chance_of_rare_mats():
+            return None
+
+        overall_outcomes = EDRMaterialOutcomes()
+        for state in self.active_states:
+            primary_state = state == self.state
+            outcomes = self._assess_state(state, self.influence, self.allegiance, security, population, primary_state)
+            if outcomes:
+                overall_outcomes.merge(outcomes)
+        return overall_outcomes
+    
+    @staticmethod
+    def _assess_state(state, influence, allegiance, security, population, primary_state=False):
+        """
+        Assess material outcomes for a specific state.
+
+        Args:
+            state (str): The faction state.
+            influence (float): Faction influence.
+            allegiance (str): Faction allegiance.
+            security (str): System security.
+            population (int): System population.
+            primary_state (bool, optional): If this is the primary state. Defaults to False.
+
+        Returns:
+            EDRMaterialOutcomes: The outcomes assessment.
+        """
+        grade = 2 if primary_state else 1
+        bonus = 0
+        if population >= 1000000:
+            bonus = int(max(3, math.log10(population // 100000)))
+        outcomes = EDRMaterialOutcomes()
+        if state == 'outbreak':
+            if allegiance in ['alliance', 'independent'] or security == '$GAlAXY_MAP_INFO_state_anarchy;':
+                grade += 1
+            elif allegiance == 'empire':
+                lgrade = grade + 1
+                outcomes.chances_of('Imperial Shielding', lgrade + bonus, influence)
+            outcomes.chances_of('Pharmaceutical Isolators', grade + bonus, influence)
+        elif state in ['none', 'election']:
+            if allegiance == 'empire':
+                lgrade = grade + 1
+                outcomes.chances_of('Imperial Shielding', lgrade + bonus, influence)
+            if allegiance == 'federation':
+                lgrade = grade + 1
+                outcomes.chances_of('Core Dynamics Composites', lgrade + bonus, influence)
+            if state == 'election' and allegiance in ['federation', 'empire']:
+                outcomes.chances_of('Proprietary Composites', grade + bonus, influence)
+        elif state == 'boom':
+            outcomes.chances_of('Exquisite Focus Crystals', grade + bonus, influence)
+            if allegiance in ['alliance', 'independent']:
+                grade += 1
+            outcomes.chances_of('Proto Light Alloys', grade + bonus, influence)
+            outcomes.chances_of('Proto Heat Radiators', grade + bonus, influence)
+            outcomes.chances_of('Proto Radiolic Alloys', grade + bonus, influence)
+        elif state == 'civil unrest':
+            if allegiance in ['alliance', 'independent']:
+                grade += 1
+            outcomes.chances_of('Improvised Components', grade + bonus, influence)
+        elif state in ['war', 'civil war']:
+            if allegiance in ['alliance', 'independent'] or security == '$GAlAXY_MAP_INFO_state_anarchy;':
+                grade += 1
+            outcomes.chances_of('Military Grade Alloys', grade + bonus, influence)
+            outcomes.chances_of('Military Supercapacitors', grade + bonus, influence)
+        elif state == 'famine':
+            outcomes.chances_of('Datamined Wake Exceptions', grade + bonus, influence)
+
+        return outcomes
+
+    @staticmethod
+    def _assess_hge(state, influence, allegiance, security, population, primary_state=False):
+        """
+        Assess HGE material outcomes.
+
+        Args:
+            state (str): The faction state.
+            influence (float): Faction influence.
+            allegiance (str): Faction allegiance.
+            security (str): System security.
+            population (int): System population.
+            primary_state (bool, optional): If this is the primary state. Defaults to False.
+
+        Returns:
+            EDRMaterialOutcomes: The outcomes assessment.
+        """
+        grade = 2 if primary_state else 1
+        bonus = 0
+        if population >= 1000000:
+            bonus = int(max(3, math.log10(population // 100000)))
+        outcomes = EDRMaterialOutcomes()
+        if state == 'outbreak':
+            if allegiance in ['alliance', 'independent'] or security == '$GAlAXY_MAP_INFO_state_anarchy;':
+                grade += 1
+            elif allegiance == 'empire':
+                lgrade = grade + 1
+                outcomes.chances_of('Imperial Shielding', lgrade + bonus, influence)
+            outcomes.chances_of('Pharmaceutical Isolators', grade + bonus, influence)
+        elif state in ['none', 'election']:
+            if allegiance == 'empire':
+                lgrade = grade + 1
+                outcomes.chances_of('Imperial Shielding', lgrade + bonus, influence)
+            if allegiance == 'federation':
+                lgrade = grade + 1
+                outcomes.chances_of('Core Dynamics Composites', lgrade + bonus, influence)
+            if state == 'election' and allegiance in ['federation', 'empire']:
+                outcomes.chances_of('Proprietary Composites', grade + bonus, influence)
+        elif state == 'boom':
+            if allegiance in ['alliance', 'independent']:
+                grade += 1
+            outcomes.chances_of('Proto Light Alloys', grade + bonus, influence)
+            outcomes.chances_of('Proto Heat Radiators', grade + bonus, influence)
+            outcomes.chances_of('Proto Radiolic Alloys', grade + bonus, influence)
+        elif state == 'civil unrest':
+            if allegiance in ['alliance', 'independent']:
+                grade += 1
+            outcomes.chances_of('Improvised Components', grade + bonus, influence)
+        elif state in ['war', 'civil war']:
+            if allegiance in ['alliance', 'independent'] or security == '$GAlAXY_MAP_INFO_state_anarchy;':
+                grade += 1
+            outcomes.chances_of('Military Grade Alloys', grade + bonus, influence)
+            outcomes.chances_of('Military Supercapacitors', grade + bonus, influence)
+        return outcomes
+
+    @staticmethod
+    def _assess_ee(state, influence, allegiance, security, population, primary_state=False):
+        """
+        Assess Encoded Emissions outcome.
+        """
+        grade = 2 if primary_state else 1
+        bonus = 0
+        if population >= 1000000:
+            bonus = int(max(3, math.log10(population // 100000)))
+        outcomes = EDRMaterialOutcomes()
+        if security == '$SYSTEM_SECURITY_low;':
+            outcomes.chances_of('Configurable Components', grade + bonus, influence)
+        elif security == '$SYSTEM_SECURITY_medium;':
+            outcomes.chances_of('Compound Shielding', grade + bonus, influence)
+            outcomes.chances_of('Chemical Manipulators', grade + bonus, influence)
+            outcomes.chances_of('Refined Focus Crystals', grade + bonus, influence)
+        elif security == '$SYSTEM_SECURITY_high;':
+            outcomes.chances_of('Compound Shielding', grade + bonus, influence)
+            outcomes.chances_of('Chemical Manipulators', grade + bonus, influence)
+            outcomes.chances_of('Refined Focus Crystals', grade + bonus, influence)
+            outcomes.chances_of('Private Data Beacon', grade + bonus, influence)
+        elif security == '$GAlAXY_MAP_INFO_state_anarchy;':
+            outcomes.chances_of('Conductive Polymers', grade + bonus, influence)
+            outcomes.chances_of('Heat Vanes', grade + bonus, influence)
+            outcomes.chances_of('Polymer Capacitors', grade + bonus, influence)
+
+        return outcomes
+
+    @staticmethod
+    def _assess_convoy(state, influence, allegiance, security, population, primary_state=False):
+        """
+        Assess Convoy Beacon outcome.
+        """
+        grade = 2 if primary_state else 1
+        bonus = 0
+        if population >= 1000000:
+            bonus = int(max(3, math.log10(population // 100000)))
+        outcomes = EDRMaterialOutcomes()
+        outcomes.chances_of('Thermic Alloys', grade + bonus, influence)
+        if security == '$GAlAXY_MAP_INFO_state_anarchy;':
+            lgrade = grade + 1
+            outcomes.chances_of("Polymer Capacitors", lgrade + bonus, influence)
+        if state == 'election' and allegiance in ['federation', 'empire']:
+            lgrade = grade + 1
+            outcomes.chances_of('Proprietary Composites', lgrade + bonus, influence)
+
+        return outcomes
+
+    @staticmethod
+    def _simplified_state(internal_name):
+        """
+        Convert internal state name to simplified state name.
+
+        Args:
+            internal_name (str): Internal state name from journal.
+
+        Returns:
+            str: Simplified state name.
+        """
+        if internal_name is None:
+            return None
+        state = internal_name.lower()
+        if state.endswith("_desc"):
+            useless_suffix_length = len("_desc")
+            state = state[:-useless_suffix_length]
+        elif state.endswith("_desc;"):
+            useless_suffix_length = len("_desc;")
+            state = state[:-useless_suffix_length]
+        elif state.endswith(";"):
+            state = state[:-1]
+        if state.startswith("$"):
+            state = state[1:]
+        if state.startswith("factionstate_"):
+            useless_prefix_length = len("factionstate_")
+            state = state[useless_prefix_length:]
+        LUT = {
+            "": "none",
+            "civilwar": "civil war",
+            "civilunrest": "civil unrest",
+            "civilliberty": "civil liberty"
+        }
+        return LUT.get(state, state)
+
+
+class EDRFactionEDSM(EDRFaction):
+    """
+    Represents a faction with data sourced from EDSM.
+    Inherits from EDRFaction.
+    """
+
+    def __init__(self, info_edsm):
+        """
+        Initialize EDRFactionEDSM.
+
+        Args:
+            info_edsm (dict): Faction info from EDSM API.
+        """
+        # Note: calling super().__init__ might fail if info_edsm structure is drastically different
+        # from what EDRFaction expects. EDRFaction expects keys like "Name", "Allegiance", "Influence".
+        # EDSM uses "name", "allegiance", "influence".
+        # So manual initialization is likely safer or we map keys.
+        # Original code did manual init, so we keep manual init but clean it up.
+        
+        self.name = info_edsm.get("name", None)
+        if self.name and self.name.lower() == "$faction_none;":
+            self.name = None
+        self.allegiance = info_edsm.get("allegiance", "").lower()
+        self.influence = info_edsm.get("influence", 0.0)
+        self.state = EDRFaction._simplified_state(info_edsm.get("state", "None"))
+
+        self.active_states = set([self.state])
+        active_states = info_edsm.get("activeStates", [])
+        for state in active_states:
+            self.active_states.add(EDRFaction._simplified_state(state.get("state", "None")))
+
+        self.pending_states = set()
+        pending_states = info_edsm.get("pendingStates", [])
+        for state in pending_states:
+            self.pending_states.add(EDRFaction._simplified_state(state.get("state", "None")))
+
+        self.recovering_states = set()
+        recovering_states = info_edsm.get("recoveringStates", [])
+        for state in recovering_states:
+            self.recovering_states.add(EDRFaction._simplified_state(state.get("state", "None")))
+
+        self.government = info_edsm.get("government", None)
+        self.isPMF = info_edsm.get("isPlayer", None)
+        self.lastUpdated = info_edsm.get("lastUpdate", EDTime.py_epoch_now())
+        self.timestamps = {
+            "allegiance": self.lastUpdated if "allegiance" in info_edsm else None,
+            "influence": self.lastUpdated if "influence" in info_edsm else None,
+            "state": self.lastUpdated if "state" in info_edsm else None,
+            "active_states": self.lastUpdated if "activeStates" in info_edsm else None,
+            "pending_states": self.lastUpdated if "pendingStates" in info_edsm else None,
+            "recovering_states": self.lastUpdated if "recoveringStates" in info_edsm else None,
+            "government": self.lastUpdated if "government" in info_edsm else None,
+            "isPMF": self.lastUpdated if "isPlayer" in info_edsm else None,
+        }
+        # TODO happiness
+
+
+class EDRFactions:
+    """
+    Manages faction information, caching, and EDSM synchronization.
+    """
+    EDR_FACTIONS_CACHE = edr_cache_path('edr_factions.v2.p')
+    EDR_CONTROLLING_FACTIONS_CACHE = edr_cache_path('edr_controlling_factions.v2.p')
+    EDSM_FACTIONS_CACHE = edr_cache_path('edsm_factions.v2.p')
+
+    def __init__(self, edsm_server):
+        """
+        Initialize EDRFactions.
+
+        Args:
+            edsm_server (EDREDSMServer): The EDSM server interface.
+        """
+        edr_config = EDR_CONFIG
+        self.edsm_server = edsm_server
+
+        self.factions_cache = LRUCache.load(
+            file_path=self.EDR_FACTIONS_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.factions_max_age()
+        )
+
+        self.controlling_factions_cache = LRUCache.load(
+            file_path=self.EDR_CONTROLLING_FACTIONS_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.factions_max_age()
+        )
+
+        self.edsm_factions_cache = LRUCache.load(
+            file_path=self.EDSM_FACTIONS_CACHE,
+            max_size=edr_config.lru_max_size(),
+            max_age_seconds=edr_config.edsm_factions_max_age()
+        )
+
+    def persist(self):
+        """
+        Save caches to disk.
+        """
+        # 1. Save EDR Factions Cache
+        if self.factions_cache:
+            self.factions_cache.save(self.EDR_FACTIONS_CACHE)
+
+        # 2. Save EDR Controlling Factions Cache
+        if self.controlling_factions_cache:
+            self.controlling_factions_cache.save(self.EDR_CONTROLLING_FACTIONS_CACHE)
+
+        # 3. Save EDSM Factions Cache
+        if self.edsm_factions_cache:
+            self.edsm_factions_cache.save(self.EDSM_FACTIONS_CACHE)
+
+    def process(self, factions, star_system):
+        """
+        Process updated faction info for a star system.
+
+        Args:
+            factions (list): List of faction dicts from journal.
+            star_system (str): The star system name.
+        """
+        factions_in_system = self.factions_cache.get(star_system.lower()) or {}
+
+        tracked = set()
+        for faction in factions:
+            cname = faction["Name"].lower()
+            tracked.add(cname)
+            if cname in factions_in_system:
+                EDR_LOG.debug("Updating faction in {}: before= {}".format(star_system, factions_in_system[cname]))
+                factions_in_system[cname].updateFromED(faction)
+                EDR_LOG.debug("Updating faction in {}: after= {}".format(star_system, factions_in_system[cname]))
+            else:
+                new_faction = EDRFaction(faction)
+                EDR_LOG.debug("Adding faction for {}: {}".format(star_system, new_faction))
+                factions_in_system[cname] = new_faction
+
+        if tracked != factions_in_system.keys():
+            EDR_LOG.debug("Pruning some factions. Seen in ED info={}; Local cache={}".format(tracked, factions_in_system.keys()))
+            remaining_factions_in_system = {n: factions_in_system[n] for n in tracked}
+            EDR_LOG.debug("Updating local faction cache for {}".format(star_system))
+            self.factions_cache.set(star_system.lower(), remaining_factions_in_system)
+        else:
+            self.factions_cache.set(star_system.lower(), factions_in_system)
+
+    def process_jump_event(self, entry):
+        """
+        Process a FSDJump event.
+
+        Args:
+            entry (dict): The journal event.
+        """
+        if not (entry and entry.get("event", "") == "FSDJump"):
+            return
+
+        factions = entry.get("Factions", [])
+        star_system = entry.get("StarSystem", "")
+        if not (factions and star_system):
+            return
+
+        self.process(factions, star_system)
+
+    def process_fc_jump_event(self, entry):
+        """
+        Process a CarrierJump event.
+
+        Args:
+            entry (dict): The journal event.
+        """
+        if not (entry and entry.get("event", "") == "CarrierJump"):
+            return
+
+        factions = entry.get("Factions", [])
+        star_system = entry.get("StarSystem", "")
+        if not (factions and star_system):
+            return
+
+        self.process(factions, star_system)
+
+    def process_location_event(self, entry):
+        """
+        Process a Location event.
+
+        Args:
+            entry (dict): The journal event.
+        """
+        if not (entry and entry.get("event", "") == "Location"):
+            return
+
+        factions = entry.get("Factions", [])
+        star_system = entry.get("StarSystem", "")
+        if not (factions and star_system):
+            return
+
+        self.process(factions, star_system)
+
+    def process_approach_event(self, entry, star_system):
+        self.__process_station_settlement_event(entry, star_system)
+
+    def process_docking_event(self, entry, star_system):
+        self.__process_station_settlement_event(entry, star_system)
+
+    def __process_station_settlement_event(self, entry, star_system):
+        if entry["event"] not in ["Docked", "ApproachSettlement"]:
+            return
+
+        required = ["timestamp", "StationFaction", "StationAllegiance", "StationGovernment"]
+        if not all(keys in entry for keys in required):
+            return
+
+        GVT_LUT = {
+            "$government_Anarchy;": "Anarchy",
+            "$government_Communism;": "Communism",
+            "$government_Confederacy;": "Confederary",
+            "$government_Cooperative;": "Cooperative",
+            "$government_Corporate;": "Corporate",
+            "$government_Dictatorship;": "Dictatorship",
+            "$government_Democracy;": "Democracy",
+            "$government_Engineer;": "Engineer",
+            "$government_Feudal;": "Feudal",
+            "$government_None;": "None",
+            "$government_Patronage;": "Patronage",
+            "$government_Prison;": "Prison",
+            "$government_Theocracy;": "Theocracy"
+        }
+
+        name = entry["StationFaction"].get("Name", "")
+        state = entry["StationFaction"].get("FactionState", "None")
+
+        worth_refreshing_age = 60 * 60 * 6
+        if self.edsm_factions_cache.has_key(star_system.lower()) and self.edsm_factions_cache.is_older_than(star_system.lower(), worth_refreshing_age):
+            # BGS can be quite dynamic, so proactively evict a lukewarm entry to get a fresh take
+            EDR_LOG.debug("Refreshing edsm factions for {}".format(star_system))
+            self.edsm_factions_cache.evict(star_system.lower())
+
+        factions_in_system = self.get_all(star_system)
+
+        if factions_in_system and name.lower() in factions_in_system:
+            EDR_LOG.debug("Using info from local event to update faction: {}".format(factions_in_system[name.lower()]))
+            local_faction = factions_in_system[name.lower()]
+            local_faction.government = GVT_LUT.get(entry["StationGovernment"], entry["StationGovernment"])
+            local_faction.allegiance = entry["StationAllegiance"]
+            local_faction.state = state
+            local_faction.active_states.add(state)
+            
+            edt = EDTime()
+            edt.from_journal_timestamp(entry["timestamp"])
+            local_faction.lastUpdated = edt.as_py_epoch()
+            local_faction.timestamps["government"] = local_faction.lastUpdated
+            local_faction.timestamps["allegiance"] = local_faction.lastUpdated
+            local_faction.timestamps["state"] = local_faction.lastUpdated
+            local_faction.timestamps["active_states"] = local_faction.lastUpdated
+            EDR_LOG.debug("Post-update faction: {}".format(factions_in_system[name.lower()]))
+            return
+
+        art_info = {
+            "Name": name,
+            "Allegiance": entry["StationAllegiance"],
+            "Government": entry["StationGovernment"],
+            "timestamp": entry["timestamp"]
+        }
+
+        factions_in_system[name.lower()] = EDRFaction(art_info)
+
+    def get(self, name, star_system):
+        """
+        Get a specific faction in a system.
+        """
+        factions_in_system = self.get_all(star_system)
+        if factions_in_system:
+            return factions_in_system.get(name.lower(), None)
+        return None
+
+    def get_all(self, star_system):
+        """
+        Get all factions in a system, syncing with EDSM if needed.
+        """
+        if not star_system:
+            return None
+
+        factions_in_system = self.factions_cache.get(star_system.lower()) or {}
+        controlling_faction_for_system = self.controlling_factions_cache.get(star_system.lower())
+
+        edsm_factions = self.__get_all_from_edsm(star_system)
+        if not edsm_factions:
+            EDR_LOG.debug("No factions from EDSM for {}".format(star_system))
+            return factions_in_system
+
+        edsm_controlling_faction_name = edsm_factions["controllingFaction"]["name"] if "controllingFaction" in edsm_factions else None
+
+        edsm_more_recent = True
+        edsm_tracked = set()
+        for faction in edsm_factions["factions"]:
+            edsm_tracked.add(faction["name"].lower())
+
+            if faction["name"] == edsm_controlling_faction_name:
+                if controlling_faction_for_system:
+                    local_last_update = controlling_faction_for_system.lastUpdated
+                    edsm_last_update = faction["lastUpdate"]
+                    if edsm_last_update > local_last_update:
+                        EDR_LOG.debug("Updating controlling faction with EDSM info: {}".format(faction["name"]))
+                        self.controlling_factions_cache.set(star_system.lower(), EDRFactionEDSM(faction))
+                    else:
+                        controlling_faction_for_system.updateFromEDSM(faction)
+                else:
+                    EDR_LOG.debug("Setting controlling faction with EDSM info: {}".format(faction["name"]))
+                    self.controlling_factions_cache.set(star_system.lower(), EDRFactionEDSM(faction))
+
+            if faction["name"].lower() in factions_in_system:
+                local_faction = factions_in_system[faction["name"].lower()]
+                local_faction.updateFromEDSM(faction)
+                local_last_update = local_faction.lastUpdated
+                edsm_last_update = faction["lastUpdate"]
+                if edsm_last_update <= local_last_update:
+                    edsm_more_recent = False
+            else:
+                EDR_LOG.debug("Setting faction with EDSM info: {}".format(faction["name"]))
+                factions_in_system[faction["name"].lower()] = EDRFactionEDSM(faction)
+
+        if edsm_more_recent and edsm_tracked != factions_in_system.keys():
+            EDR_LOG.debug("Pruning some factions. Seen in EDSM info={}; Local cache={}".format(edsm_tracked, factions_in_system.keys()))
+            remaining_factions_in_system = {n: factions_in_system[n] for n in edsm_tracked}
+            self.factions_cache.set(star_system.lower(), remaining_factions_in_system)
+        else:
+            self.factions_cache.set(star_system.lower(), factions_in_system)
+
+        return factions_in_system
+
+    def assess(self, star_system, security, population):
+        """
+        Assess material yields for all factions in a system.
+        """
+        factions_in_system = self.get_all(star_system)
+        assessments = {}
+        for faction in factions_in_system:
+            assessments[faction] = factions_in_system[faction].assess(security, population)
+        return assessments
+
+    def summarize_yields(self, star_system, security, population, inventory):
+        """
+        Summarize material yields for a system.
+        """
+        assessment = self.assess(star_system, security, population)
+        if not assessment:
+            return None
+
+        yields = {}
+        for faction_name in assessment:
+            if not assessment[faction_name]:
+                continue
+            faction = self.get(faction_name, star_system)
+            faction_chance = faction.influence
+            state_chance = 1.0 / len(faction.active_states) if faction.active_states else 0.0
+            chance = faction_chance * state_chance
+            outcomes = assessment[faction_name].outcomes
+            for material in outcomes:
+                if yields.get(material, None) is None:
+                    yields[material] = 0
+                yields[material] += chance
+        return ["{:.0f}%: {}".format(chance * 100.0, inventory.oneliner(material.title())) for (material, chance) in sorted(yields.items(), key=lambda x: x[1], reverse=True)]
+
+    def are_factions_stale(self, star_system):
+        if not star_system:
+            return False
+
+        return self.factions_cache.is_stale(star_system.lower())
+
+    def __get_all_from_edsm(self, star_system):
+        if not star_system:
+            return None
+        factions = self.edsm_factions_cache.get(star_system.lower())
+        cached = self.edsm_factions_cache.has_key(star_system.lower())
+        if cached or factions:
+            return factions
+
+        EDR_LOG.debug("Factions for system {} are NOT in the cache.".format(star_system))
+        factions = self.edsm_server.factions_in_system(star_system)
+        if factions:
+            self.edsm_factions_cache.set(star_system.lower(), factions)
+            EDR_LOG.debug("Cached {}'s factions".format(star_system))
+            return factions
+
+        self.edsm_factions_cache.set(star_system.lower(), None)
+        EDR_LOG.debug("No match on EDSM. Temporary entry to be nice on EDSM's server.")
+        return None
+
+    def getControllingFactionAllegiance(self, star_system):
+        faction = self.__get_controlling_faction(star_system)
+        if not faction:
+            return None
+
+        return faction.allegiance
+
+    def getControllingFactionState(self, star_system):
+        faction = self.__get_controlling_faction(star_system)
+        if not faction:
+            return (None, None)
+
+        return (faction.state, faction.lastUpdated)
+
+    def __get_controlling_faction(self, star_system):
+        if not star_system:
+            return None
+
+        factions = self.get_all(star_system)
+
+        return self.controlling_factions_cache.get(star_system.lower())

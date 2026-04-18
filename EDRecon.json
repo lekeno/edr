@@ -1,0 +1,23 @@
+{
+  "pluginName": "ED Recon (EDR)",
+  "pluginVer": "3.3.0",
+  "autoUpdateEnabled": false,
+  "autoInstallEnabled": false,
+  "pluginAuthors": [
+    "lekeno"
+  ],
+  "pluginMainLink": "https://edrecon.com",
+  "pluginLastUpdate": "2026-04-06",
+  "pluginDirName": "edr",
+  "pluginCategory": [
+    "Social",
+    "Combat",
+    "Exploration",
+    "Navigation",
+    "Engineering",
+    "Utility"
+  ],
+  "pluginDesc": "ED Recon (EDR) provides real-time tactical intel including IFF (Identification Friend or Foe) and SitReps, as well as other helpful features for most activities in Elite: Dangerous.",
+  "pluginLastTestedEDMC": "6.1.2",
+  "pluginLicense": "Apache-2.0"
+}

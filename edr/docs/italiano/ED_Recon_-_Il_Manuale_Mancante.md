@@ -7,7 +7,7 @@
 <p align=right>
   Stesura a cura del <b>CMDR Lekeno</b><br>
   Traduzione a cura del <b>CMDR FrostBit</b><br>
-  Versione 2.7.7.0
+  Versione 3.3.0
 </p>
 
 <h1>Sommario</h1>
@@ -94,6 +94,7 @@
   - [Comandi e opzioni](#comandi-e-opzioni)
   - [Personalizzazione](#personalizzazione)
     - [_Tipo di eventi_](#tipo-di-eventi)
+- [Tasti scelta rapida e Macro](#tasti-scelta-rapida-e-macro)
 - [Appendice](#appendice)
   - [Risoluzione dei problemi](#risoluzione-dei-problemi)
     - [Non viene visualizzato nulla / L'overlay non funziona](#non-viene-visualizzato-nulla--loverlay-non-funziona)
@@ -140,7 +141,7 @@ Passaggi:
 
 Passaggi:
 
-1. [Scarica l'ultima versione di EDR](https://github.com/lekeno/EDR/releases/latest) (il file EDR.v#.#.#.zip dove #.#.# è il numero di versione, es. 1.0.0 nello screenshot seguente)
+1. [Scarica l'ultima versione di EDR](https://github.com/lekeno/EDR/releases/latest) (il file EDR.v#.#.#.zip dove #.#.# è il numero di versione, es. 3.3.0 nello screenshot seguente)
 
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="https://github.com/lekeno/edr/blob/master/edr/docs/assets/EDR_1.0.0_Black.png?raw=true">
@@ -182,7 +183,7 @@ Passaggi:
 
 9. Avvia Elite, avvia una nuova sessione.
 
-10. Dovresti vedere un messaggio introduttivo (es. `EDR V0.9.5 […]`) sovrapposto a Elite.
+10. Dovresti vedere un messaggio introduttivo (es. `EDR V3.3.0 […]`) sovrapposto a Elite.
     - Su Windows 10: l'overlay dovrebbe funzionare per tutte le modalità (Fullscreen, Borderless, Windowed).
     - Su Windows 7: l'overlay NON funziona in Fullscreen, utilizza invece il Borderless o il Windowed.
     - Se l'overlay non funziona, consultare la sezione sulla [risoluzione dei problemi](#risoluzione-dei-problemi).
@@ -412,6 +413,9 @@ EDR può mostrare una panoramica dei segnali conosciuti per il sistema corrente 
 ## Sistema attuale
 
 EDR mostrerà il valore di esplorazione stimato e le informazioni chiave per le stelle, i pianeti e i sistemi. Questa funzione si attiva quando usi: Discovery Scanner honk, Full Spectrum Scan, e Detailed Surface Scan.
+
+### Numero di pianeti principali dopo un honk
+Quando si esegue un "honk" con lo scanner di scoperta, EDR può mostrare un elenco dei pianeti più preziosi nel sistema. È possibile configurare il numero di pianeti visualizzati nel pannello delle impostazioni di EDR (menu `File` di EDMC, `Impostazioni`, scheda `EDR`) sotto l'opzione "Nb of top planets on a honk" (Nb di pianeti principali dopo un honk). Le opzioni disponibili sono 5, 10, 15 o Tutti ("All").
 
 # Funzionalità Dedicate al Planet
 
@@ -983,6 +987,30 @@ Quindi modificare la riga dell'evento correlato per specificare il suono persona
 - `failed`: quando EDR incontra un errore
 - `jammed`: quando i server EDR sono troppo occupati per gestire le richieste
 - `biology`: quando l'EDR mostra le informazioni di navigazione per le attività di Esobiologia
+
+# Tasti scelta rapida e Macro
+EDR supporta l'integrazione dei tasti di scelta rapida tramite il plugin [EDMCHotkeys](https://github.com/SweetJonnySauce/EDMCHotkeys). 
+
+> [!IMPORTANT]
+> EDMCHotkeys è un plugin di terze parti. L'autore di EDR non è responsabile della sua manutenzione, del supporto o di eventuali problemi derivanti dal suo utilizzo. Per assistenza, fare riferimento alla documentazione del plugin e al sistema di tracciamento dei problemi.
+
+## Impostazione dei tasti di scelta rapida
+Per utilizzare i tasti di scelta rapida con EDR, è necessario:
+1.  Installare il plugin [EDMCHotkeys](https://github.com/SweetJonnySauce/EDMCHotkeys).
+2.  Nelle impostazioni di EDMCHotkeys, associare un ID azione ("Action ID") a un tasto o pulsante fisico.
+3.  In EDR, è possibile attivare qualsiasi comando di chat (es. `!intel`, `-if`, ecc.) utilizzando l'Action ID corrispondente.
+
+## Sistema Macro
+EDR include un sistema macro integrato che consente di registrare e richiamare i comandi utilizzati più frequentemente.
+
+- `!macro set <slot>`: registra l'ultimo comando eseguito correttamente nello slot macro specificato (1-20).
+- `!macro set <slot> <comando>`: registra il comando specificato nello slot macro.
+- `!macro show <slot>`: visualizza il comando registrato per lo slot macro specificato.
+- `!macro name <slot> <etichetta>`: imposta un'etichetta per lo slot macro (alfanumerica, una sola parola).
+- `!macro clear <slot>`: cancella lo slot macro specificato.
+- `!macro list`: elenca tutti gli slot macro programmati e le relative etichette.
+
+Le macro programmate sono salvate in `config/hotkeys.json`.
 
 # Appendice
 
