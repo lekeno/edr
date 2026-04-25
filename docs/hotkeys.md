@@ -71,7 +71,7 @@ EDR implements an `EDRHotkeyManager` that bridges EDMCHotkeys actions to the EDR
 
 ```python
 # edr/src/edr/controllers/edrhotkeys.py
-import ExternalHotkeyPlugin as ehp
+import EDMCHotkeys as ehp
 
 class EDRHotkeyManager(object):
     def register(self):

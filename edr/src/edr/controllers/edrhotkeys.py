@@ -5,7 +5,7 @@ from edr.core.edrconfig import EDR_CONFIG
 from edr.utils.edrpath import edr_config_path
 
 try:
-    import ExternalHotkeyPlugin as ehp
+    import EDMCHotkeys as ehp
 except ImportError:
     ehp = None
 
@@ -46,14 +46,14 @@ class EDRHotkeyManager(object):
 
     def register(self):
         if not ehp:
-            EDR_LOG.info("ExternalHotkeyPlugin not found. Hotkey integration disabled.")
+            EDR_LOG.info("EDMCHotkeys not found. Hotkey integration disabled.")
             return
 
         if not self.enabled:
             EDR_LOG.info("Hotkey integration is disabled via configuration.")
             return
 
-        EDR_LOG.info("Registering hotkeys with ExternalHotkeyPlugin.")
+        EDR_LOG.info("Registering hotkeys with EDMCHotkeys.")
         for action_id, data in self.mappings.items():
             ehp.register_action(
                 ehp.Action(
