@@ -1638,6 +1638,18 @@ class EDKestrelMkII(EDVehicle):
         self.hull_hardness = 55
         self.hull_base_strength = 126 / 1.8
 
+class EDLynxHighliner(EDVehicle):
+    def __init__(self):
+        super().__init__()
+        self.type = 'Lynx Highliner'
+        self.size = EDVehicleSize.MEDIUM
+        self.seats = 2
+        self.value = 69289470
+        self.shield_base_strength = 228
+        self.hull_mass = 260
+        self.hull_hardness = 55
+        self.hull_base_strength = 630 / 1.8
+
 class EDShipLaunchedFighter(EDVehicle):
     def __init__(self):
         super().__init__()
@@ -1811,6 +1823,7 @@ class EDVehicleFactory:
         "krait_light": EDKraitPhantom, 
         "mamba": EDMamba,
         "mandalay": EDMandalay,
+        "mediumtransport01": EDLynxHighliner,
         "kestrel_mkii": EDKestrelMkII,
         "empire_fighter": EDImperialFighter,
         "federation_fighter": EDF63Condor,

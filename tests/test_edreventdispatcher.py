@@ -48,7 +48,7 @@ class TestEDREventDispatcher(unittest.TestCase):
         with patch.object(self.dispatcher, 'is_legacy', return_value=False):
             self.dispatcher.journal_entry("cmdr", False, "system", "station", entry, state)
             self.mock_client.player_name.assert_called_with("cmdr")
-            self.dispatcher.journal_handler.journal_entry.assert_called_with(entry, state)
+            self.dispatcher.journal_handler.journal_entry.assert_called_with("cmdr", False, "system", "station", entry, state)
 
 if __name__ == '__main__':
     unittest.main()
