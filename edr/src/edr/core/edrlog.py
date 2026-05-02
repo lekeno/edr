@@ -2,9 +2,21 @@
 import logging
 import sys
 import os
+import threading
 
 if sys.version_info.major == 3:
     sys.stdout.reconfigure(encoding="utf-8")
+
+
+class EDMCCompatFilter(logging.Filter):
+    def filter(self, record):
+        if not hasattr(record, 'osthreadid'):
+            record.osthreadid = threading.get_native_id() if hasattr(threading, 'get_native_id') else threading.get_ident()
+        if not hasattr(record, 'qualname'):
+            record.qualname = record.funcName
+        if not hasattr(record, 'class_'):
+            record.class_ = ''
+        return True
 
 
 class EDRLog:
@@ -21,7 +33,16 @@ class EDRLog:
         """
         from .edrconfig import EDR_CONFIG
         config = EDR_CONFIG
-        self.logger = logging.getLogger(self.PLUGIN_NAME)
+        
+        app_name = "EDMarketConnector"
+        try:
+            import config as edmc_config
+            app_name = getattr(edmc_config, 'appname', "EDMarketConnector")
+        except ImportError:
+            pass
+
+        self.logger = logging.getLogger(f"{app_name}.{self.PLUGIN_NAME}")
+        self.logger.addFilter(EDMCCompatFilter())
         level_name = config.logging_level()
         level = logging.getLevelName(level_name.upper())
         self.logger.setLevel(level)
