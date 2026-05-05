@@ -243,7 +243,6 @@ class EDRClient:
         c_audio_feedback = config.get_str("EDRAudioFeedback")
         c_audio_volume = config.get_str("EDRAudioFeedbackVolume")
         c_gesture_triggers = config.get_str("EDRGestureTriggers")
-        c_hotkeys = config.get_str("EDMCHotkeys")
         c_redact_my_info = config.get_str("EDRRedactMyInfo")
         c_crimes_reporting = config.get_str("EDRCrimesReporting")
         c_fc_jump_announcements = config.get_str("EDRFCJumpPSA")
@@ -281,10 +280,6 @@ class EDRClient:
         else:
             self._gesture_triggers.set(1)
 
-        if c_hotkeys is None or c_hotkeys == "True":
-            self.hotkey_manager.enabled = True
-        else:
-            self.hotkey_manager.enabled = False
         self.hotkey_manager.register()
 
         if c_redact_my_info is None:

@@ -38,12 +38,12 @@ class EDRHotkeyManager(object):
                     self.enabled = data.get("enabled", True)
                     self.mappings = data.get("mappings", {})
                 else:
-                    self.enabled = False
-                    self.mappings = {}
+                    self.enabled = True
+                    self.mappings = data
                     self._save()
         except Exception as e:
             EDR_LOG.error(f"Failed to load hotkeys.json: {e}")
-            self.enabled = False
+            self.enabled = True
             self.mappings = {}
 
     def _save(self):
@@ -79,26 +79,23 @@ class EDRHotkeyManager(object):
                     id=action_id,
                     label=data.get("label", action_id),
                     plugin="EDRecon",
-                    callback=self.hotkey_callback,
-                    payload={"action_id": action_id}
+                    callback=self.make_callback(action_id)
                 )
             )
 
-    def hotkey_callback(self, payload=None, source="hotkey", hotkey=None):
+    def make_callback(self, action_id):
         """
-        The Bridge: Converts an Action ID into an application command execution.
+        The Bridge: Generates a callback that converts an Action ID into an application command execution.
         """
-        if not payload:
-            return
-
-        action_id = payload.get("action_id")
-        if action_id in self.mappings:
-            command_str = self.mappings[action_id].get("command")
-            if command_str:
-                EDR_LOG.info(f"Hotkey triggered: {action_id} -> {command_str}")
-                # Dispatch to main thread if necessary (EDRClient/EDRCommands call)
-                # For now, calling directly as EDRClient.process_command
-                self.edr_client.process_command(command_str)
+        def callback(payload=None, source="hotkey", hotkey=None):
+            if action_id in self.mappings:
+                command_str = self.mappings[action_id].get("command")
+                if command_str:
+                    EDR_LOG.info(f"Hotkey triggered: {action_id} -> {command_str}")
+                    # Dispatch to main thread if necessary (EDRClient/EDRCommands call)
+                    # For now, calling directly as EDRClient.process_command
+                    self.edr_client.process_command(command_str)
+        return callback
 
     def update_macro(self, slot, command, label=None):
         if not slot:
@@ -115,7 +112,10 @@ class EDRHotkeyManager(object):
             if label:
                 self.mappings[action_id]["label"] = label
         
-        return self._save()
+        success = self._save()
+        if success:
+            self.register()
+        return success
 
     def update_label(self, slot, label):
         if not slot or not label:
@@ -130,7 +130,10 @@ class EDRHotkeyManager(object):
         else:
             self.mappings[action_id]["label"] = label
         
-        return self._save()
+        success = self._save()
+        if success:
+            self.register()
+        return success
 
     def clear_macro(self, slot):
         if not slot:
@@ -139,7 +142,12 @@ class EDRHotkeyManager(object):
         action_id = f"edr.macro_{slot}"
         if action_id in self.mappings:
             del self.mappings[action_id]
-            return self._save()
+            success = self._save()
+            if success:
+                # Re-registering doesn't unregister, but we should at least save.
+                # Currently EDMCHotkeys doesn't expose an unregister API, but saving is enough.
+                self.register()
+            return success
         return True
 
     def get_macros(self):

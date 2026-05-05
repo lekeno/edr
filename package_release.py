@@ -340,8 +340,9 @@ def main():
 
     if not is_rc:
         update_metadata(new_ver, edmc_ver)
-        save_history(new_ver, codename, features)
         sync_to_fork()
+    
+    save_history(new_ver, codename, features)
     
     create_build_structure(new_ver, codename)
     create_zip(new_ver, is_rc)
