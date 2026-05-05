@@ -20,21 +20,40 @@ class EDRHotkeyManager(object):
 
     def load_mappings(self):
         if not os.path.exists(self.hotkeys_path):
-            EDR_LOG.info("No hotkeys.json found, using default empty mappings.")
-            self.mappings = {}
+            EDR_LOG.info("No hotkeys.json found, creating default mappings.")
+            self.enabled = True
+            self.mappings = {
+                "edr.macro_1": {"label": "Target Intel", "command": "!who"},
+                "edr.macro_2": {"label": "Sitrep", "command": "!sitrep"},
+                "edr.macro_3": {"label": "Tag Outlaw", "command": "#!"},
+                "edr.macro_4": {"label": "Clear Overlay", "command": "!clear"}
+            }
+            self._save()
             return
 
         try:
             with open(self.hotkeys_path, 'r') as f:
-                self.mappings = json.load(f)
+                data = json.load(f)
+                if "mappings" in data:
+                    self.enabled = data.get("enabled", True)
+                    self.mappings = data.get("mappings", {})
+                else:
+                    self.enabled = False
+                    self.mappings = {}
+                    self._save()
         except Exception as e:
             EDR_LOG.error(f"Failed to load hotkeys.json: {e}")
+            self.enabled = False
             self.mappings = {}
 
     def _save(self):
         try:
             with open(self.hotkeys_path, 'w') as f:
-                json.dump(self.mappings, f, indent=2)
+                data = {
+                    "enabled": self.enabled,
+                    "mappings": self.mappings
+                }
+                json.dump(data, f, indent=2)
             return True
         except Exception as e:
             EDR_LOG.error(f"Failed to save hotkeys.json: {e}")

@@ -19,25 +19,29 @@ To avoid exposing internal methods or duplicating logic, the integration treats 
 ### 3. Configuration & Persistence
 EDR follows a tiered configuration pattern to ensure human readability and flexibility.
 
-#### A. Global Settings (`user_configs.ini`)
-A new section handles the high-level toggle. It defaults to `True` in the plugin's base config.
-```ini
-[EDMCHotkeys]
-enabled = True
-```
-
-#### B. Mapping Storage (`hotkeys.json`)
-Hotkey mappings (Action ID → Command) are stored in JSON to handle complex strings and custom labels.
+#### A. Configuration & Storage (`hotkeys.json`)
+The hotkey system is enabled by default. Both the global toggle and the hotkey mappings are stored in `config/hotkeys.json`.
 
 ```json
 {
-  "edr.slot1": {
-    "label": "Ganker Search",
-    "command": "!intel \"CMDR Braben\""
-  },
-  "edr.slot2": {
-    "label": "EDR Macro 2",
-    "command": "!traffic"
+  "enabled": true,
+  "mappings": {
+    "edr.macro_1": {
+      "label": "Target Intel",
+      "command": "!who"
+    },
+    "edr.macro_2": {
+      "label": "Sitrep",
+      "command": "!sitrep"
+    },
+    "edr.macro_3": {
+      "label": "Tag Outlaw",
+      "command": "#!"
+    },
+    "edr.macro_4": {
+      "label": "Clear Overlay",
+      "command": "!clear"
+    }
   }
 }
 ```
@@ -61,8 +65,14 @@ Users manage "Hotkey Slots" via chat to decouple command logic from physical key
 
 **Persistence:** Changes are written immediately to `config/hotkeys.json`.
 
+#### III. Recommended Key Bindings (Chords)
+Elite Dangerous utilizes a vast amount of key combinations. To avoid conflicts with in-game actions or other overlays, we recommend using "chords" (combinations of multiple modifiers) for your EDMCHotkeys physical bindings:
+* `Ctrl` + `Alt` + `F1` (Target Intel)
+* `Ctrl` + `Alt` + `F2` (Sitrep)
+* `Ctrl` + `Alt` + `F3` (Tag Outlaw)
+* `Ctrl` + `Alt` + `F4` (Clear Overlay)
 
----
+Other safe chords generally include `Ctrl` + `Shift` + `[Numpad Key]` or `Alt` + `Shift` + `[Letter]`. You must assign these chords manually within the EDMCHotkeys settings menu in EDMC.---
 
 ### 5. Technical Implementation (Python)
 
