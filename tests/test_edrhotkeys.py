@@ -12,15 +12,17 @@ class TestEDRHotkeyManager(unittest.TestCase):
         self.mock_edr_client.config = self.mock_config
         
         # Mock file operations
-        self.hotkeys_json_path = os.path.join("config", "hotkeys.json")
+        self.canonical_hotkeys_path = os.path.join("config", "hotkeys.json")
+        self.user_hotkeys_path = os.path.join("config", "user_hotkeys.v1.json")
         self.initial_mappings = {
             "edr.macro_1": {"label": "Macro 1", "command": "!intel"}
         }
 
-    @patch("edr.controllers.edrhotkeys.open", new_callable=mock_open, read_data='{"edr.macro_1": {"label": "Macro 1", "command": "!intel"}}')
+    @patch("edr.controllers.edrhotkeys.open", new_callable=mock_open, read_data='{"mappings": {"edr.macro_1": {"label": "Macro 1", "command": "!intel"}}}')
     @patch("edr.controllers.edrhotkeys.os.path.exists")
     def test_load_mappings(self, mock_exists, mock_file):
-        mock_exists.return_value = True
+        # exists returns True for canonical, False for user override
+        mock_exists.side_effect = lambda path: path.endswith("hotkeys.json") and not path.endswith("user_hotkeys.v1.json")
         manager = EDRHotkeyManager(self.mock_edr_client)
         self.assertEqual(manager.mappings["edr.macro_1"]["command"], "!intel")
 
@@ -38,7 +40,7 @@ class TestEDRHotkeyManager(unittest.TestCase):
     @patch("edr.controllers.edrhotkeys.open", new_callable=mock_open, read_data='{}')
     @patch("edr.controllers.edrhotkeys.os.path.exists")
     def test_register(self, mock_exists, mock_file, mock_ehp):
-        mock_exists.return_value = True
+        mock_exists.return_value = False
         manager = EDRHotkeyManager(self.mock_edr_client)
         manager.mappings = {"edr.macro_1": {"label": "Macro 1", "command": "!intel"}}
         manager.enabled = True
@@ -48,19 +50,19 @@ class TestEDRHotkeyManager(unittest.TestCase):
     @patch("edr.controllers.edrhotkeys.open", new_callable=mock_open, read_data='{}')
     @patch("edr.controllers.edrhotkeys.os.path.exists")
     def test_hotkey_callback(self, mock_exists, mock_file):
-        mock_exists.return_value = True
+        mock_exists.return_value = False
         manager = EDRHotkeyManager(self.mock_edr_client)
         manager.mappings = {"edr.macro_1": {"label": "Macro 1", "command": "!intel"}}
         
-        payload = {"action_id": "edr.macro_1"}
-        manager.hotkey_callback(payload)
+        callback = manager.make_callback("edr.macro_1")
+        callback(payload={"action_id": "edr.macro_1"})
         self.mock_edr_client.process_command.assert_called_with("!intel")
 
     @patch("edr.controllers.edrhotkeys.open", new_callable=mock_open, read_data='{}')
     @patch("edr.controllers.edrhotkeys.os.path.exists")
     @patch("edr.controllers.edrhotkeys.EDRHotkeyManager._save")
     def test_update_macro(self, mock_save, mock_exists, mock_file):
-        mock_exists.return_value = True
+        mock_exists.return_value = False
         manager = EDRHotkeyManager(self.mock_edr_client)
         
         manager.update_macro("1", "!status")
@@ -71,7 +73,7 @@ class TestEDRHotkeyManager(unittest.TestCase):
     @patch("edr.controllers.edrhotkeys.os.path.exists")
     @patch("edr.controllers.edrhotkeys.EDRHotkeyManager._save")
     def test_update_label(self, mock_save, mock_exists, mock_file):
-        mock_exists.return_value = True
+        mock_exists.return_value = False
         manager = EDRHotkeyManager(self.mock_edr_client)
         
         manager.update_label("1", "StatusCheck")

@@ -197,15 +197,20 @@ class EDRJournalHandler:
     
     def _take_snapshot(self):
         """Captures the key state variables before an event is processed."""
-        # TODO CRITICAL: This snapshot is insufficient. 
         self.snapshot = {
             "star_system": self.ed_player.star_system,
             "place": self.ed_player.place,
             "body": self.ed_player.body,
             "docked": self.ed_player.is_docked,
-            "vehicle": self.ed_player.vehicle_type(), # unclear if sufficient
+            "on_foot": self.ed_player.on_foot,
+            "vehicle": self.ed_player.vehicle_type(),
+            "suit": self.ed_player.spacesuit_type(),
             "wanted": self.ed_player.wanted,
+            "bounty": self.ed_player.bounty,
+            "enemy": self.ed_player.enemy,
             "security": self.ed_player.security,
+            "game_mode": self.ed_player.game_mode,
+            "group": self.ed_player.private_group,
             "powerplay": self.ed_player.powerplay.canonicalize() if self.ed_player.powerplay else '',
         }
 
@@ -224,15 +229,20 @@ class EDRJournalHandler:
             self.force_report = False
             return True
             
-        # TODO CRITICAL: This snapshot comparison is insufficient.
         return (
-            self.ed_player.star_system != self.snapshot["star_system"] or
-            self.ed_player.place != self.snapshot["place"] or
-            self.ed_player.body != self.snapshot["body"] or
-            self.ed_player.is_docked != self.snapshot["docked"] or
-            self.ed_player.vehicle_type() != self.snapshot["vehicle"] or
+            self.ed_player.star_system != self.snapshot.get("star_system") or
+            self.ed_player.place != self.snapshot.get("place") or
+            self.ed_player.body != self.snapshot.get("body") or
+            self.ed_player.is_docked != self.snapshot.get("docked") or
+            self.ed_player.on_foot != self.snapshot.get("on_foot") or
+            self.ed_player.vehicle_type() != self.snapshot.get("vehicle") or
+            self.ed_player.spacesuit_type() != self.snapshot.get("suit") or
             self.ed_player.wanted != self.snapshot.get("wanted") or
+            self.ed_player.bounty != self.snapshot.get("bounty") or
+            self.ed_player.enemy != self.snapshot.get("enemy") or
             self.ed_player.security != self.snapshot.get("security") or
+            self.ed_player.game_mode != self.snapshot.get("game_mode") or
+            self.ed_player.private_group != self.snapshot.get("group") or
             (self.ed_player.powerplay.canonicalize() if self.ed_player.powerplay else '') != self.snapshot.get("powerplay")
         )
 
@@ -1629,19 +1639,12 @@ class EDRJournalHandler:
         EDR_LOG.debug("Journal player got created: accurate picture of friends/wings.")
 
     def _on_load_game(self, entry, state):
-        from_genesis = False
-        
-        if self.first_run:
-            self.first_run = False
-            # TODO CRITICAL: update this now that we are passing the parameters
-            from_genesis = (cmdr and system is None and station is None)
-
         if self.ed_player.inventory.stale_or_incorrect():
             self.ed_player.inventory.initialize_with_edmc(state)
         self.edr_client.clear()
         self.edr_client.edrfssinsights.reset()
-        self.ed_player.inception(genesis=from_genesis)
-        if from_genesis:
+        self.ed_player.inception(genesis=self.from_genesis)
+        if self.from_genesis:
             EDR_LOG.debug("Heuristics genesis: probably accurate picture of friends/wings.")
         if entry.get("Odyssey", False):
             self.edr_client.set_dlc("Odyssey")

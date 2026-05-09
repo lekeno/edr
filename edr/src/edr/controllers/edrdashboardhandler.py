@@ -79,7 +79,7 @@ class EDRDashboardHandler:
 
     def _update_attitude_states(self, entry, flags, flags2):
         attitude_keys = { "Latitude", "Longitude", "Heading", "Altitude"}
-        if entry.keys() < attitude_keys:
+        if attitude_keys.isdisjoint(entry.keys()):
             return
         
         attitude = { key.lower():value for key,value in entry.items() if key in attitude_keys }

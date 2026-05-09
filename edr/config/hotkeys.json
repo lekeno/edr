@@ -1,0 +1,21 @@
+{
+  "enabled": true,
+  "mappings": {
+    "edr.macro_1": {
+      "label": "Target Intel",
+      "command": "!who"
+    },
+    "edr.macro_2": {
+      "label": "Sitrep",
+      "command": "!sitrep"
+    },
+    "edr.macro_3": {
+      "label": "Tag Outlaw",
+      "command": "#!"
+    },
+    "edr.macro_4": {
+      "label": "Clear Overlay",
+      "command": "!clear"
+    }
+  }
+}

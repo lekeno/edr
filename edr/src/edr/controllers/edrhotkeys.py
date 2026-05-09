@@ -13,42 +13,50 @@ class EDRHotkeyManager(object):
     def __init__(self, edr_client):
         self.edr_client = edr_client
         self.config = EDR_CONFIG
-        self.hotkeys_path = edr_config_path('hotkeys.json')
+        self.canonical_hotkeys_path = edr_config_path('hotkeys.json')
+        self.user_hotkeys_path = edr_config_path('user_hotkeys.v1.json')
         self.mappings = {}
         self.enabled = False
         self.load_mappings()
 
     def load_mappings(self):
-        if not os.path.exists(self.hotkeys_path):
-            EDR_LOG.info("No hotkeys.json found, creating default mappings.")
-            self.enabled = True
-            self.mappings = {
-                "edr.macro_1": {"label": "Target Intel", "command": "!who"},
-                "edr.macro_2": {"label": "Sitrep", "command": "!sitrep"},
-                "edr.macro_3": {"label": "Tag Outlaw", "command": "#!"},
-                "edr.macro_4": {"label": "Clear Overlay", "command": "!clear"}
-            }
-            self._save()
-            return
+        self.enabled = True
+        self.mappings = {
+            "edr.macro_1": {"label": "Target Intel", "command": "!who"},
+            "edr.macro_2": {"label": "Sitrep", "command": "!sitrep"},
+            "edr.macro_3": {"label": "Tag Outlaw", "command": "#!"},
+            "edr.macro_4": {"label": "Clear Overlay", "command": "!clear"}
+        }
 
-        try:
-            with open(self.hotkeys_path, 'r') as f:
-                data = json.load(f)
-                if "mappings" in data:
-                    self.enabled = data.get("enabled", True)
-                    self.mappings = data.get("mappings", {})
-                else:
-                    self.enabled = True
-                    self.mappings = data
-                    self._save()
-        except Exception as e:
-            EDR_LOG.error(f"Failed to load hotkeys.json: {e}")
-            self.enabled = True
-            self.mappings = {}
+        # Load Canonical Mappings
+        if os.path.exists(self.canonical_hotkeys_path):
+            try:
+                with open(self.canonical_hotkeys_path, 'r') as f:
+                    data = json.load(f)
+                    if "mappings" in data:
+                        self.enabled = data.get("enabled", True)
+                        self.mappings.update(data.get("mappings", {}))
+                    else:
+                        self.mappings.update(data)
+            except Exception as e:
+                EDR_LOG.error(f"Failed to load canonical hotkeys.json: {e}")
+
+        # Override with User Mappings
+        if os.path.exists(self.user_hotkeys_path):
+            try:
+                with open(self.user_hotkeys_path, 'r') as f:
+                    data = json.load(f)
+                    if "mappings" in data:
+                        self.enabled = data.get("enabled", self.enabled)
+                        self.mappings.update(data.get("mappings", {}))
+                    else:
+                        self.mappings.update(data)
+            except Exception as e:
+                EDR_LOG.error(f"Failed to load user_hotkeys.v1.json: {e}")
 
     def _save(self):
         try:
-            with open(self.hotkeys_path, 'w') as f:
+            with open(self.user_hotkeys_path, 'w') as f:
                 data = {
                     "enabled": self.enabled,
                     "mappings": self.mappings
@@ -56,7 +64,7 @@ class EDRHotkeyManager(object):
                 json.dump(data, f, indent=2)
             return True
         except Exception as e:
-            EDR_LOG.error(f"Failed to save hotkeys.json: {e}")
+            EDR_LOG.error(f"Failed to save user_hotkeys.v1.json: {e}")
             return False
 
     def save_mappings(self):
@@ -141,7 +149,7 @@ class EDRHotkeyManager(object):
         
         action_id = f"edr.macro_{slot}"
         if action_id in self.mappings:
-            del self.mappings[action_id]
+            self.mappings[action_id] = {"label": "Cleared", "command": ""}
             success = self._save()
             if success:
                 # Re-registering doesn't unregister, but we should at least save.
