@@ -164,6 +164,7 @@ class SpanshServer(threading.Thread):
     """
     SPANSH_URL = "https://spansh.co.uk"
     SESSION = requests.Session()
+    SESSION.headers["User-Agent"] = f"EDR-Plugin/v{EDR_CONFIG.edr_version()}"
 
     def __init__(self, url, callback):
         """

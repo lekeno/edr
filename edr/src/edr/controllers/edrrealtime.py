@@ -13,6 +13,7 @@ except ImportError:
 from edr.utils.sseclient import SSEClient
 from edr.utils.edtime import EDTime
 from edr.core.edrlog import EDR_LOG
+from edr.core.edrconfig import EDR_CONFIG
 
 class EDRRealtimeUpdates:
     def __init__(self, callback, kind, endpoint, authenticator):
@@ -77,6 +78,7 @@ class ClosableSSEClient(SSEClient):
 class RemoteThread(threading.Thread):
 
     SESSION = requests.Session()
+    SESSION.headers["User-Agent"] = f"EDR-Plugin/v{EDR_CONFIG.edr_version()}"
 
     def __init__(self, message_queue, endpoint, authenticator, minutes_ago=5):
         self.message_queue = message_queue

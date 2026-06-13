@@ -130,6 +130,7 @@ class EDRDiscordField:
 
 class EDRDiscordWebhook:
     SESSION = requests.Session()
+    SESSION.headers["User-Agent"] = f"EDR-Plugin/v{EDR_CONFIG.edr_version()}"
 
     def __init__(self, webhook_url):
         self.webhook_url = webhook_url

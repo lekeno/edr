@@ -182,7 +182,7 @@ class LRUCache:
             ttl = self.default_max_age  # Fallback to global default
 
         try:
-            self.cache.pop(key)
+            self.cache.pop(key, None)
         except KeyError:
             pass
 
@@ -208,7 +208,7 @@ class LRUCache:
             key (object): The key to remove.
         """
         try:
-            self.cache.pop(key)
+            self.cache.pop(key, None)
         except KeyError:
             pass
 

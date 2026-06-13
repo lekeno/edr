@@ -15,6 +15,7 @@ class EDSMServer:
     Client for the EDSM API.
     """
     SESSION = requests.Session()
+    SESSION.headers["User-Agent"] = f"EDR-Plugin/v{EDR_CONFIG.edr_version()}"
 
     def __init__(self):
         self.edsm_api_key = EDR_CONFIG.edsm_api_key()

@@ -7,6 +7,7 @@ import datetime
 import shutil
 from .edrlog import EDR_LOG
 from edr.utils.edrpath import plugin_root
+from .edrconfig import EDR_CONFIG
 
 
 class EDRAutoUpdater:
@@ -15,6 +16,8 @@ class EDRAutoUpdater:
     backing up the current version, and extracting the new version.
     """
     REPO = "lekeno/edr"
+    SESSION = requests.Session()
+    SESSION.headers["User-Agent"] = f"EDR-Plugin/v{EDR_CONFIG.edr_version()}"
     EDR_PATH = plugin_root()
     UPDATES = os.path.join(EDR_PATH, 'updates')
     LATEST = os.path.join(EDR_PATH, 'updates', 'latest.zip')
@@ -127,7 +130,7 @@ class EDRAutoUpdater:
             return False
 
         try:
-            response = requests.get(download_url, stream=True)
+            response = EDRAutoUpdater.SESSION.get(download_url, stream=True)
             response.raise_for_status()
         except requests.exceptions.RequestException:
             return False
@@ -257,7 +260,7 @@ class EDRAutoUpdater:
         """
         latest_release_api = "https://api.github.com/repos/{}/releases/latest".format(self.REPO)
         try:
-            response = requests.get(latest_release_api)
+            response = EDRAutoUpdater.SESSION.get(latest_release_api)
             if response.status_code != requests.codes.ok:
                 EDR_LOG.warning(f"Couldn't check the latest release on github: {response.status_code}")
                 return None

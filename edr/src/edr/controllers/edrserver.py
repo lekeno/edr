@@ -21,6 +21,7 @@ class EDRServer:
     """
 
     SESSION = requests.Session()
+    SESSION.headers["User-Agent"] = f"EDR-Plugin/v{EDR_CONFIG.edr_version()}"
 
     @staticmethod
     def nodify(name):

@@ -618,7 +618,7 @@ class EDRFactions:
     """
     EDR_FACTIONS_CACHE = edr_cache_path('edr_factions.v2.p')
     EDR_CONTROLLING_FACTIONS_CACHE = edr_cache_path('edr_controlling_factions.v2.p')
-    EDSM_FACTIONS_CACHE = edr_cache_path('edsm_factions.v2.p')
+    EDSM_FACTIONS_CACHE = edr_cache_path('edsm_factions.v3.p')
 
     def __init__(self, edsm_server):
         """
